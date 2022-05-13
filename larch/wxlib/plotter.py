@@ -15,7 +15,7 @@ import time
 import os
 import sys
 import wx
-
+from copy import deepcopy
 from wxmplot import PlotFrame, ImageFrame, StackedPlotFrame
 
 import larch
@@ -40,6 +40,13 @@ IMG_DISPLAYS = {}
 PLOT_DISPLAYS = {}
 FITPLOT_DISPLAYS = {}
 XRF_DISPLAYS = {}
+
+PLOTOPTS = {'theme': 'light',
+            'height': 550,
+            'width': 600,
+            'linewidth': 2.5,
+            'show_grid': True,
+            'show_fullbox': True}
 
 _larch_name = '_plotter'
 
@@ -313,19 +320,33 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
 
     display = _get_disp(symname, creator, win, display_dict, wxparent,
                         size, _larch)
-    if creator == PlotDisplay:
-        conf = display.panel.conf
-        if theme is not None:
-            conf.set_theme(theme=theme)
-        if show_grid is not None:
-            conf.enable_grid(show_grid)
-        if show_fullbox is not None:
-            boxstyle = 'box' if show_fullbox else 'open'
-            conf.set_axes = boxstyle
-        if linewidth is not None:
-            for i in range(16):
-                conf.traces[i].linewidth = linewidth
+    if creator in (PlotDisplay, StackedPlotDisplay):
+        global PLOTOPTS
+        try:
+            PLOTOPTS = deepcopy(_larch.symtable._sys.wx.plotopts)
+        except:
+            pass
 
+        if theme is not None:
+            PLOTOPTS['theme'] = theme
+        if show_grid is not None:
+            PLOTOPTS['show_grid'] = show_grid
+        if show_fullbox is not None:
+            PLOTOPTS['show_fullbox'] = show_fullbox
+        if linewidth is not None:
+            PLOTOPTS['linewidth'] = linewidth
+
+        panels = [display.panel]
+        if creator == StackedPlotDisplay:
+            panels.append(display.panel_bot)
+
+        for panel in panels:
+            conf = panel.conf
+            conf.set_theme(theme=PLOTOPTS['theme'])
+            conf.enable_grid(PLOTOPTS['show_grid'])
+            conf.axes_style = 'box' if PLOTOPTS['show_fullbox'] else 'open'
+            for i in range(16):
+                conf.traces[i].linewidth = PLOTOPTS['linewidth']
     try:
         display.SetTitle(title)
     except:

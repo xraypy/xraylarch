@@ -15,9 +15,10 @@ from larch.math import index_of, index_nearest, interp
 from larch.utils.strutils import file2groupname, unique_name
 
 from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl, FloatSpin,
-                         FloatSpinWithPin, get_icon, SimpleText, Choice,
-                         SetTip, Check, Button, HLine, OkCancel, LEFT, pack,
-                         plotlabels, ReportFrame, DictFrame, FileCheckList)
+                         set_color, FloatSpinWithPin, get_icon, SimpleText,
+                         Choice, SetTip, Check, Button, HLine, OkCancel,
+                         LEFT, pack, plotlabels, ReportFrame, DictFrame,
+                         FileCheckList)
 
 from larch.wxlib.xafsplots import plotlabels
 from larch.xafs.xafsutils  import etok, ktoe
@@ -1313,7 +1314,6 @@ clear undo history''')
 
         self.parent.process_normalization(ngroup)
 
-
     def plot_results(self):
         ppanel = self.controller.get_display(stacked=False).panel
 
@@ -1765,11 +1765,12 @@ class LoadSessionDialog(wx.Frame):
 
         sel_none = Button(ltop, 'Select None', size=(100, 30), action=self.onSelNone)
         sel_all  = Button(ltop, 'Select All', size=(100, 30), action=self.onSelAll)
-        sel_imp  = Button(ltop, 'Import Selected Data', size=(200, 30), action=self.onImport)
-
+        sel_imp  = Button(ltop, 'Import Selected Data', size=(200, 30),
+                          action=self.onImport)
 
         self.select_imported = sel_imp
         self.grouplist = FileCheckList(leftpanel, select_action=self.onShowGroup)
+        set_color(self.grouplist, 'list_fg', bg='list_bg')
 
         tsizer = wx.GridBagSizer(2, 2)
         tsizer.Add(sel_all, (0, 0), (1, 1), LEFT, 0)
@@ -1865,6 +1866,9 @@ class LoadSessionDialog(wx.Frame):
 
         self.plotpanel = PlotPanel(rightpanel, messenger=self.plot_messages)
         self.plotpanel.SetSize((475, 450))
+        plotconf = self.controller.get_config('plot')
+        self.plotpanel.conf.set_theme(plotconf['theme'])
+        self.plotpanel.conf.enable_grid(plotconf['show_grid'])
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(panel, 0, LEFT, 2)
@@ -1978,6 +1982,5 @@ class LoadSessionDialog(wx.Frame):
         cmds.append("# _xasgroups = %s" % repr(symtab._xasgroups))
         cmds.append("##########")
         self.controller.larch.eval('\n'.join(cmds))
-
 
         wx.CallAfter(self.Destroy)

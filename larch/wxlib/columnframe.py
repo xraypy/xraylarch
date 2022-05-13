@@ -28,6 +28,8 @@ from larch.io import look_for_nans
 from larch.utils.physical_constants import PLANCK_HC, DEG2RAD
 from larch.io.columnfile import guess_filereader
 
+from . import FONTSIZE
+
 CEN |=  wx.ALL
 FNB_STYLE = fnb.FNB_NO_X_BUTTON|fnb.FNB_SMART_TABS
 FNB_STYLE |= fnb.FNB_NO_NAV_BUTTONS|fnb.FNB_NODRAG
@@ -386,8 +388,8 @@ class ColumnDataFileFrame(wx.Frame) :
 
         x0, y0 = parent.GetPosition()
         self.SetPosition((x0+60, y0+60))
-        self.SetFont(Font(11))
 
+        self.SetFont(Font(FONTSIZE))
         panel = wx.Panel(self)
         self.SetMinSize((600, 700))
         self.colors = GUIColors()
@@ -581,6 +583,14 @@ class ColumnDataFileFrame(wx.Frame) :
         self.nb.SetActiveTabTextColour(wx.Colour(80,0,0))
 
         self.plotpanel = PlotPanel(self, messenger=self.plot_messages)
+        try:
+            plotopts = self._larch.symtable._sys.wx.plotopts
+            self.plotpanel.conf.set_theme(plotopts['theme'])
+            self.plotpanel.conf.enable_grid(plotopts['show_grid'])
+        except:
+            pass
+
+
         self.plotpanel.SetMinSize((200, 200))
         textpanel = wx.Panel(self)
         ftext = wx.TextCtrl(textpanel, style=wx.TE_MULTILINE|wx.TE_READONLY,

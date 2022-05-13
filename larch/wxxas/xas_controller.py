@@ -57,6 +57,7 @@ class XASController():
                             config[sname] = val
 
         self.config = self.larch.symtable._sys.xasviewer_config = config
+        self.larch.symtable._sys.wx.plotopts = config['plot']
 
         self.init_workdir()
 

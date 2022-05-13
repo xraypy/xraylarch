@@ -208,11 +208,11 @@ def lincombo_fit(group, components, weights=None, minvals=None,
         yfit += ycomps[:, i] * result.params['c%i' % i].value
     if params['e0_shift'].vary:
         yfit = interp(xdat+params['e0_shift'].value, yfit, xdat, kind='cubic')
-    result.rfactor = ((ydat-yfit)**2).sum() / (ydat**2).sum()
+    rfactor = ((ydat-yfit)**2).sum() / (ydat**2).sum()
     return Group(result=result, chisqr=result.chisqr, redchi=result.redchi,
                  params=params, weights=weights, weights_lstsq=weights_lstsq,
                  xdata=xdat, ydata=ydat, yfit=yfit, ycomps=fcomps,
-                 arrayname=arrayname,
+                 arrayname=arrayname, rfactor=rfactor,
                  xmin=xmin, xmax=xmax)
 
 def lincombo_fitall(group, components, weights=None, minvals=None, maxvals=None,

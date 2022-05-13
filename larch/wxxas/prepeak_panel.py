@@ -23,9 +23,9 @@ from larch.io import save_groups, read_groups
 
 from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          SetTip, GridPanel, get_icon, SimpleText, pack,
-                         Button, HLine, Choice, Check, MenuItem, GUIColors,
-                         CEN, RIGHT, LEFT, FRAMESTYLE, Font, FONTSIZE,
-                         FileSave, FileOpen, flatnotebook, Popup,
+                         Button, HLine, Choice, Check, MenuItem, COLORS,
+                         set_color, CEN, RIGHT, LEFT, FRAMESTYLE, Font,
+                         FONTSIZE, FileSave, FileOpen, flatnotebook, Popup,
                          EditableListBox)
 
 from larch.wxlib.parameter import ParameterWidgets
@@ -151,7 +151,6 @@ class PrePeakFitResultFrame(wx.Frame):
 
         if datagroup is None:
             symtab = self.peakframe.larch.symtable
-
             xasgroups = getattr(symtab, '_xasgroups', None)
             if xasgroups is not None:
                 for dname, dgroup in xasgroups.items():
@@ -191,19 +190,20 @@ class PrePeakFitResultFrame(wx.Frame):
 
         self.datalistbox = EditableListBox(splitter, self.ShowDataSet,
                                            size=(250, -1))
+        set_color(self.datalistbox, 'list_fg', bg='list_bg')
+
         panel = scrolled.ScrolledPanel(splitter)
 
         panel.SetMinSize((775, 575))
-        self.colors = GUIColors()
 
         # title row
         self.wids = wids = {}
         title = SimpleText(panel, 'Fit Results', font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LEFT)
+                           colour=COLORS['title'], style=LEFT)
 
         wids['data_title'] = SimpleText(panel, '< > ', font=Font(FONTSIZE+2),
                                         minsize=(350, -1),
-                                        colour=self.colors.title, style=LEFT)
+                                        colour=COLORS['title'], style=LEFT)
 
         opts = dict(default=False, size=(200, -1), action=self.onPlot)
         wids['plot_bline'] = Check(panel, label='Plot baseline-subtracted?', **opts)
@@ -246,7 +246,7 @@ class PrePeakFitResultFrame(wx.Frame):
 
         irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LEFT)
+                           colour=COLORS['title'], style=LEFT)
         subtitle = SimpleText(panel, ' (most recent fit is at the top)',
                               font=Font(FONTSIZE+1),  style=LEFT)
 
@@ -278,7 +278,7 @@ class PrePeakFitResultFrame(wx.Frame):
 
         irow += 1
         title = SimpleText(panel, '[[Variables]]',  font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LEFT)
+                           colour=COLORS['title'], style=LEFT)
         sizer.Add(title, (irow, 0), (1, 1), LEFT)
 
         self.wids['copy_params'] = Button(panel, 'Update Model with these values',
@@ -310,7 +310,7 @@ class PrePeakFitResultFrame(wx.Frame):
 
         irow += 1
         title = SimpleText(panel, '[[Correlations]]',  font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LEFT)
+                           colour=COLORS['title'], style=LEFT)
 
         self.wids['all_correl'] = Button(panel, 'Show All',
                                           size=(100, -1), action=self.onAllCorrel)
@@ -635,7 +635,6 @@ class PrePeakFitResultFrame(wx.Frame):
             wids['params'].AppendItem((pname, val, serr, extra))
             wids['paramsdata'].append(pname)
         self.Refresh()
-
 
 class PrePeakPanel(TaskPanel):
     def __init__(self, parent=None, controller=None, **kws):
@@ -1033,6 +1032,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             minst = mclass(prefix=prefix)
 
         panel = GridPanel(self.mod_nb, ncols=2, nrows=5, pad=1, itemstyle=CEN)
+        panel.SetFont(Font(FONTSIZE))
 
         def SLabel(label, size=(80, -1), **kws):
             return  SimpleText(panel, label,

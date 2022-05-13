@@ -47,13 +47,13 @@ if HAS_WXPYTHON:
                          MenuItem, Popup, RIGHT, LEFT, CEN , LTEXT,
                          FRAMESTYLE, hms, DateTimeCtrl, Button, TextCtrl,
                          ToggleButton, BitmapButton, Choice, YesNo,
-                         SimpleText, LabeledTextCtrl, HyperText,
-                         get_icon, GUIColors, OkCancel,
-                         FileOpen, FileSave, SelectWorkdir, fix_filename,
-                         SavedParameterDialog,
-                         GridPanel, RowPanel, make_steps,
-                         set_float, FloatCtrl, EditableListBox)
+                         SimpleText, LabeledTextCtrl, HyperText, get_icon,
+                         OkCancel, FileOpen, FileSave, SelectWorkdir,
+                         fix_filename, SavedParameterDialog, GridPanel,
+                         RowPanel, make_steps, set_float, FloatCtrl,
+                         EditableListBox)
 
+    from .colors import COLORS, GUIColors, set_color
     from .filechecklist import FileCheckList, FileDropTarget
 
     from .floats import NumericCombo, FloatSpin, FloatSpinWithPin
