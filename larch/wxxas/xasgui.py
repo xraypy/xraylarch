@@ -33,12 +33,14 @@ from larch.utils.strutils import (file2groupname, unique_name,
 from larch.larchlib import read_workdir, save_workdir, read_config, save_config
 
 from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
-                         SpecfileImporter, FileCheckList, FloatCtrl, FloatSpin,
-                         SetTip, get_icon, SimpleText, TextCtrl, pack, Button, Popup,
-                         HLine, FileSave, FileOpen, Choice, Check, MenuItem,
-                         GUIColors, CEN, LEFT, FRAMESTYLE, Font, FONTSIZE,
+                         SpecfileImporter, FileCheckList, FloatCtrl,
+                         FloatSpin, SetTip, get_icon, SimpleText, TextCtrl,
+                         pack, Button, Popup, HLine, FileSave, FileOpen,
+                         Choice, Check, MenuItem, HyperText, GUIColors,
+                         CEN, LEFT, FRAMESTYLE, Font, FONTSIZE,
                          flatnotebook, LarchUpdaterDialog, GridPanel,
                          CIFFrame, FeffResultsFrame, LarchWxApp)
+
 from larch.wxlib.plotter import _getDisplay
 
 from larch.fitting import fit_report
@@ -135,45 +137,57 @@ class PreferencesFrame(wx.Frame):
             return SimpleText(panel, label, size=(size, -1), style=LEFT)
 
         for name, data in FULLCONF.items():
+            self.wids[name] = {}
+
             panel = GridPanel(self.nb, ncols=3, nrows=8, pad=3, itemstyle=LEFT)
             title = CONF_SECTIONS.get(name, name)
-            panel.Add(SimpleText(panel, f"   Configuration: {title}",
-                                 size=(550, -1), font=Font(FONTSIZE+2),
-                                 colour=self.colors.title, style=LEFT), dcol=4, newrow=True)
+            title = SimpleText(panel, f"  {title}",
+                               size=(550, -1), font=Font(FONTSIZE+2),
+                               colour=self.colors.title, style=LEFT)
 
-            panel.Add(HLine(panel, (625, 3)), dcol=4, newrow=True)
+            self.wids[name]['_key_'] = SimpleText(panel, " <name> ",
+                                                  size=(150, -1), style=LEFT)
+            self.wids[name]['_help_'] = SimpleText(panel, " <click on name for description> ",
+                                                   size=(525, 30), style=LEFT)
+
             panel.Add((5, 5), newrow=True)
+            panel.Add(title, dcol=4)
+            panel.Add((5, 5), newrow=True)
+            panel.Add(self.wids[name]['_key_'])
+            panel.Add(self.wids[name]['_help_'],  dcol=3)
+            panel.Add((5, 5), newrow=True)
+            panel.Add(HLine(panel, (625, 3)), dcol=4)
+
             panel.Add((5, 5), newrow=True)
             panel.Add(text(panel, 'Name', 150))
 
-            panel.Add(text(panel, 'Value', 200))
-            panel.Add(text(panel, 'Factory Default Value', 250))
+            panel.Add(text(panel, 'Value', 250))
+            panel.Add(text(panel, 'Factory Default Value', 225))
 
-            self.wids[name] = {}
             for key, cvar in data.items():
                 val = conf[name][key]
                 cb = partial(self.update_value, section=name, option=key)
+                helpcb = partial(self.update_help, section=name, option=key)
                 wid = None
                 if cvar.dtype == 'choice':
-                    wid = Choice(panel, size=(200, -1), choices=cvar.choices, action=cb)
+                    wid = Choice(panel, size=(250, -1), choices=cvar.choices, action=cb)
                     if not isinstance(val, str): val = str(val)
                     wid.SetStringSelection(val)
                 elif cvar.dtype == 'bool':
-                    wid = Choice(panel, size=(200, -1), choices=['True', 'False'], action=cb)
+                    wid = Choice(panel, size=(250, -1), choices=['True', 'False'], action=cb)
                     wid.SetStringSelection('True' if val else 'False')
                 elif cvar.dtype in ('int', 'float'):
                     digits = 2 if cvar.dtype == 'float' else 0
                     wid = FloatSpin(panel, value=val, min_val=cvar.min, max_val=cvar.max,
-                                  digits=digits, increment=cvar.step, size=(200, -1), action=cb)
+                                  digits=digits, increment=cvar.step, size=(250, -1), action=cb)
                 else:
-                    wid = TextCtrl(panel, size=(200, -1), value=val, action=cb)
+                    wid = TextCtrl(panel, size=(250, -1), value=val, action=cb)
 
-                label = text(panel, key, size=150)
+                label = HyperText(panel, key, action=helpcb, size=(150, -1))
                 panel.Add((5, 5), newrow=True)
                 panel.Add(label)
                 panel.Add(wid)
-                panel.Add(text(panel, f'{cvar.value}', 250))
-                SetTip(label, cvar.desc)
+                panel.Add(text(panel, f'{cvar.value}', 225))
                 SetTip(wid, cvar.desc)
                 self.wids[name][key] = wid
 
@@ -190,6 +204,11 @@ class PreferencesFrame(wx.Frame):
         self.SetSize((650, 650))
         self.Show()
         self.Raise()
+
+    def update_help(self, label=None, event=None, section='main', option=None):
+        cvar = FULLCONF[section][option]
+        self.wids[section]['_key_'].SetLabel("%s : " % option)
+        self.wids[section]['_help_'].SetLabel(cvar.desc)
 
     def update_value(self, event=None, section='main', option=None):
         cvar = FULLCONF[section][option]
@@ -354,8 +373,6 @@ class XASFrame(wx.Frame):
         return out
 
     def onNBChanged(self, event=None):
-        print("nb change ", self.nb.GetCurrentPage())
-
         callback = getattr(self.nb.GetCurrentPage(), 'onPanelExposed', None)
         if callable(callback):
             callback()
