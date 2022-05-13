@@ -439,10 +439,10 @@ class SpecfileImporter(wx.Frame) :
         self.ypop = Choice(panel, choices=YPRE_OPS, action=self.onUpdate, size=(150, -1))
         self.yop =  Choice(panel, choices=ARR_OPS, action=self.onUpdate, size=(50, -1))
         self.yerr_op = Choice(panel, choices=YERR_OPS, action=self.onYerrChoice, size=(150, -1))
-        
+
         self.yerr_val = FloatCtrl(panel, value=1, precision=4, size=(90, -1))
         self.monod_val  = FloatCtrl(panel, value=3.1355316, precision=7, size=(90, -1))
-        
+
         xlab = SimpleText(panel, ' X array: ')
         ylab = SimpleText(panel, ' Y array: ')
         units_lab = SimpleText(panel, '  Units:  ')
@@ -459,7 +459,7 @@ class SpecfileImporter(wx.Frame) :
         self.yop.SetStringSelection(self.array_sel['yop'])
         self.monod_val.SetValue(self.array_sel['monod'])
         self.monod_val.SetAction(self.onUpdate)
-        
+
         self.monod_val.Enable(self.array_sel['en_units'].startswith('deg'))
         self.en_units.SetStringSelection(self.array_sel['en_units'])
         self.yerr_op.SetStringSelection(self.array_sel['yerror'])
@@ -508,7 +508,7 @@ class SpecfileImporter(wx.Frame) :
         sizer.Add(self.yarr1, (ir, 2), (1, 1), LEFT, 0)
         sizer.Add(self.yop,   (ir, 3), (1, 1), RIGHT, 0)
         sizer.Add(self.yarr2, (ir, 4), (1, 1), LEFT, 0)
-        sizer.Add(self.ysuf,  (ir, 5), (1, 1), LEFT, 0)        
+        sizer.Add(self.ysuf,  (ir, 5), (1, 1), LEFT, 0)
 
         ir += 1
         sizer.Add(yerr_lab,      (ir, 0), (1, 1), LEFT, 0)
@@ -528,23 +528,30 @@ class SpecfileImporter(wx.Frame) :
         self.nb.SetActiveTabTextColour(wx.Colour(80,0,0))
 
         self.plotpanel = PlotPanel(rightpanel, messenger=self.plot_messages)
+        try:
+            plotopts = self._larch.symtable._sys.wx.plotopts
+            self.plotpanel.conf.set_theme(plotopts['theme'])
+            self.plotpanel.conf.enable_grid(plotopts['show_grid'])
+        except:
+            pass
+
         self.plotpanel.SetMinSize((300, 250))
 
         shead = wx.Panel(rightpanel)
         self.scanheader = wx.TextCtrl(shead, style=wx.TE_MULTILINE|wx.TE_READONLY,
                                       size=(400, 250))
         self.scanheader.SetValue('\n'.join(self.curscan.scan_header))
-        self.scanheader.SetFont(Font(10))        
+        self.scanheader.SetFont(Font(10))
         textsizer = wx.BoxSizer(wx.VERTICAL)
         textsizer.Add(self.scanheader, 1, LEFT|wx.GROW, 1)
         pack(shead, textsizer)
 
-        
+
         fhead = wx.Panel(rightpanel)
         self.fileheader = wx.TextCtrl(fhead, style=wx.TE_MULTILINE|wx.TE_READONLY,
                                       size=(400, 250))
         self.fileheader.SetValue('\n'.join(self.curscan.file_header))
-        self.fileheader.SetFont(Font(10))        
+        self.fileheader.SetFont(Font(10))
         textsizer = wx.BoxSizer(wx.VERTICAL)
         textsizer.Add(self.fileheader, 1, LEFT|wx.GROW, 1)
         pack(fhead, textsizer)
@@ -585,7 +592,7 @@ class SpecfileImporter(wx.Frame) :
             ncol, npts = rdata.shape
         except:
             self.statusbar.SetStatusText(f"Warning: Could not read data for scan '{self.curscan.title:s}'")
-            
+
         workgroup = self.workgroup
         if xname.startswith('_index') or ix >= ncol:
             workgroup.xdat = 1.0*np.arange(npts)
@@ -727,8 +734,8 @@ class SpecfileImporter(wx.Frame) :
         ypop     = self.ypop.GetStringSelection()
         yop      = self.yop.GetStringSelection()
         yerr_op = self.yerr_op.GetStringSelection()
-        yerr_arr = self.yerr_arr.GetStringSelection()        
-        yerr_idx = self.yerr_arr.GetSelection()        
+        yerr_arr = self.yerr_arr.GetStringSelection()
+        yerr_idx = self.yerr_arr.GetSelection()
         yerr_val = self.yerr_val.GetValue()
         yerr_expr = '1'
         if yerr_op.startswith('const'):
@@ -843,7 +850,7 @@ class SpecfileImporter(wx.Frame) :
                 self.monod_val.Enable()
             else:
                 self.en_units.SetSelection(0)
-                
+
         self.onUpdate()
 
     def onEnUnitsSelect(self, evt=None):
@@ -888,7 +895,7 @@ class SpecfileImporter(wx.Frame) :
         elif en_units.startswith('keV'):
             workgroup.xdat *= 1000.0
             xlabel = xname + ' (eV)'
-        
+
         workgroup.datatype = self.datatype.GetStringSelection().strip().lower()
 
         def pre_op(opwid, arr):

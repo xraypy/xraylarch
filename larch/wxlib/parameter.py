@@ -12,8 +12,8 @@ import wx
 from wx.lib.embeddedimage import PyEmbeddedImage
 
 from wxutils import (GridPanel, Choice, FloatCtrl,
-                     LEFT, pack, HLine, SetTip)
-
+                     LEFT, pack, HLine, SetTip, Font)
+from . import FONTSIZE
 from lmfit import Parameter
 from larch import Group
 from larch.larchlib import Empty
@@ -22,7 +22,6 @@ PAR_FIX = 'fix'
 PAR_VAR = 'vary'
 PAR_CON = 'constrain'
 VARY_CHOICES = (PAR_VAR, PAR_FIX, PAR_CON)
-
 
 BOUNDS_custom = 'custom'
 BOUNDS_none   = 'unbound'
@@ -184,6 +183,10 @@ class ParameterWidgets(object):
                                  choices=BOUNDS_CHOICES,
                                  action=self.onBOUNDSChoice)
             self.widgets.append(self.bounds)
+
+            for w in self.widgets:
+                w.SetFont(Font(FONTSIZE))
+
             self.bounds.SetStringSelection(bounds_choice)
 
     def onBOUNDSChoice(self, evt=None):

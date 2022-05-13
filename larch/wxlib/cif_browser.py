@@ -27,11 +27,11 @@ from larch.xrd.cif2feff import cif_sites
 from larch.utils.paths import unixpath
 from larch.utils.strutils import fix_filename, unique_name, strict_ascii
 from larch.site_config import user_larchdir
-
+from .colors import set_color
 from larch.wxlib import (LarchFrame, FloatSpin, EditableListBox,
                          FloatCtrl, SetTip, get_icon, SimpleText, pack,
                          Button, Popup, HLine, FileSave, FileOpen, Choice,
-                         Check, MenuItem, GUIColors, CEN, LEFT, FRAMESTYLE,
+                         Check, MenuItem, CEN, LEFT, FRAMESTYLE,
                          Font, FONTSIZE, flatnotebook, LarchUpdaterDialog,
                          PeriodicTablePanel, FeffResultsPanel, LarchWxApp)
 
@@ -105,6 +105,7 @@ class CIFFrame(wx.Frame):
         leftpanel = wx.Panel(splitter)
         self.ciflist = EditableListBox(leftpanel,
                                        self.onShowCIF, size=(300,-1))
+        set_color(self.ciflist, 'list_fg', bg='list_bg')
         self.cif_selections = {}
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -258,13 +259,18 @@ class CIFFrame(wx.Frame):
             pass
 
         self.plotpanel = PlotPanel(rightpanel, messenger=_swallow_plot_messages)
+        try:
+            plotopts = self.larch.symtable._sys.wx.plotopts
+            self.plotpanel.conf.set_theme(plotopts['theme'])
+            self.plotpanel.conf.enable_grid(plotopts['show_grid'])
+        except:
+            pass
+
         self.plotpanel.SetMinSize((250, 250))
         self.plotpanel.onPanelExposed = self.showXRD1D
 
-
         cif_panel = wx.Panel(rightpanel)
-        wids['cif_text'] = wx.TextCtrl(cif_panel,
-                                       value='<CIF TEXT>',
+        wids['cif_text'] = wx.TextCtrl(cif_panel, value='<CIF TEXT>',
                                        style=wx.TE_MULTILINE|wx.TE_READONLY,
                                        size=(300, 350))
         wids['cif_text'].SetFont(Font(FONTSIZE+1))

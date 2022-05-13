@@ -11,11 +11,11 @@ import wx
 import larch
 from larch import Group
 from larch.io import fix_varname, read_athena
+from .colors import COLORS, set_color
 
-from wxutils import (SimpleText, Button, Choice, GUIColors,
-                     FileCheckList, FileDropTarget, pack,
-                     Check, MenuItem, SetTip, Popup, CEN,
-                     LEFT, FRAMESTYLE, Font)
+from wxutils import (SimpleText, Button, Choice, FileCheckList,
+                     FileDropTarget, pack, Check, MenuItem, SetTip, Popup,
+                     CEN, LEFT, FRAMESTYLE, Font)
 
 from wxmplot import PlotPanel
 
@@ -23,14 +23,15 @@ CEN |=  wx.ALL
 
 class AthenaImporter(wx.Frame) :
     """Import Athena File"""
-    def __init__(self, parent, filename=None, read_ok_cb=None,
-                 size=(725, 450), _larch=None):
+    def __init__(self, parent, controller=None, filename=None, read_ok_cb=None,
+                 size=(725, 450)):
         self.parent = parent
         self.filename = filename
-        self.larch = _larch
+        _larch = None
+        self.controller = controller
+        if controller is not None:
+            _larch = controller.larch
         self.read_ok_cb = read_ok_cb
-
-        self.colors = GUIColors()
 
         wx.Frame.__init__(self, parent, -1,   size=size, style=FRAMESTYLE)
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
@@ -45,6 +46,8 @@ class AthenaImporter(wx.Frame) :
 
         self.select_imported = sel_imp
         self.grouplist = FileCheckList(leftpanel, select_action=self.onShowGroup)
+        set_color(self.grouplist, 'list_fg', bg='list_bg')
+
 
         tsizer = wx.GridBagSizer(2, 2)
         tsizer.Add(sel_all, (0, 0), (1, 1), LEFT, 0)
@@ -63,9 +66,12 @@ class AthenaImporter(wx.Frame) :
 
         self.SetTitle("Reading Athena Project '%s'" % self.filename)
         self.title = SimpleText(rightpanel, self.filename, font=Font(13),
-                                colour=self.colors.title, style=LEFT)
+                                colour=COLORS['title'], style=LEFT)
 
         self.plotpanel = PlotPanel(rightpanel, messenger=self.plot_messages)
+        plotconf = self.controller.get_config('plot')
+        self.plotpanel.conf.set_theme(plotconf['theme'])
+        self.plotpanel.conf.enable_grid(plotconf['show_grid'])
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.title, 0, LEFT, 2)
