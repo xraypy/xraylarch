@@ -974,33 +974,34 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
         raise ValueError('Group needs prepeaks')
     #endif
     if show_init:
-        result = dgroup.prepeaks
+        result = pkfit = dgroup.prepeaks
     else:
-        result = getattr(dgroup.prepeaks, 'fit_history', None)
-        if nfit > len(result):
+        hist = getattr(dgroup.prepeaks, 'fit_history', None)
+        if nfit > len(hist):
             nfit = 0
-        result = result[nfit]
+        pkfit = hist[nfit]
+        result = pkfit.result
     #endif
 
-    if result is None:
+    if pkfit is None:
         raise ValueError('Group needs prepeaks.fit_history or init_fit')
     #endif
 
-    opts = result.user_options
+    opts = pkfit.user_options
     xeps = min(diff(dgroup.xdat)) / 5.
-    xdat = 1.0*result.energy
-    ydat = 1.0*result.norm
+    xdat = 1.0*pkfit.energy
+    ydat = 1.0*pkfit.norm
 
     xdat_full = 1.0*dgroup.xdat
     ydat_full = 1.0*dgroup.ydat
 
     if show_init:
-        yfit   = 1.0*result.init_fit
-        ycomps = None
+        yfit   = pkfit.init_fit
+        ycomps = None #  pkfit.init_ycomps
         ylabel = 'model'
     else:
         yfit   = 1.0*result.best_fit
-        ycomps = result.ycomps
+        ycomps = pkfit.ycomps
         ylabel = 'best fit'
 
     baseline = 0.*ydat
