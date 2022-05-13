@@ -12,16 +12,14 @@ import wx.lib.scrolledpanel as scrolled
 import wx.dataview as dv
 
 from lmfit import Parameter
-from lmfit.model import (save_modelresult, load_modelresult,
-                             save_model, load_model)
 
 import lmfit.models as lm_models
 from lmfit.printfuncs import gformat
 
 from larch import Group, site_config
 from larch.math import index_of
-from larch.utils.jsonutils import encode4js, decode4js
 from larch.io.export_modelresult import export_modelresult
+from larch.io import save_groups, read_groups
 
 from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          SetTip, GridPanel, get_icon, SimpleText, pack,
@@ -110,8 +108,8 @@ if not hasattr({group}.prepeaks, 'fit_history'): {group}.prepeaks.fit_history = 
 COMMANDS['prepeaks_setup'] = """# setup prepeaks
 {group:s}.xdat = 1.0*{group:s}.energy
 {group:s}.ydat = 1.0*{group:s}.{array_name:s}
-prepeaks_setup(energy={group:s}.energy, norm={group:s}.ydat, group={group:s},
-               elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
+prepeaks_setup(energy={group:s}, arrayname='{array_name:s}', elo={elo:.3f}, ehi={ehi:.3f},
+               emin={emin:.3f}, emax={emax:.3f})
 """
 
 COMMANDS['set_yerr_const'] = "{group}.prepeaks.norm_std = {group}.yerr*ones(len({group}.prepeaks.norm))"
@@ -122,16 +120,9 @@ yerr_min = 1.e-9*{group}.prepeaks.ydat.mean()
 """
 
 COMMANDS['dofit'] = """# do fit
-peakresult = peakmodel.fit({group}.prepeaks.norm, params=peakpars, x={group}.prepeaks.energy, weights=1.0/{group}.prepeaks.norm_std)
-peakresult.energy   = {group}.prepeaks.energy[:]
-peakresult.norm     = {group}.prepeaks.norm[:]
-peakresult.norm_std = {group}.prepeaks.norm_std[:]
-peakresult.ycomps   = peakmodel.eval_components(params=peakresult.params, x={group}.prepeaks.energy)
-peakresult.init_fit = {group}.prepeaks.init_fit[:]
-peakresult.init_ycomps = peakmodel.eval_components(params=peakpars, x={group}.prepeaks.energy)
+peakresult = prepeaks_fit({group}, peakmodel, peakpars)
 peakresult.user_options = {user_opts:s}
-peakresult.label = 'Fit %i' % (1+len({group}.prepeaks.fit_history))
-{group}.prepeaks.fit_history.insert(0, peakresult)"""
+"""
 
 def get_xlims(x, xmin, xmax):
     xeps = min(np.diff(x))/ 5.
@@ -145,16 +136,31 @@ class PrePeakFitResultFrame(wx.Frame):
         wx.Frame.__init__(self, None, -1, title='Pre-edge Peak Fit Results',
                           style=FRAMESTYLE, size=(900, 700), **kws)
         self.peakframe = peakframe
-        self.datagroup = datagroup
-        prepeaks = getattr(datagroup, 'prepeaks', None)
-        self.peakfit_history = getattr(prepeaks, 'fit_history', [])
+
+        if datagroup is not None:
+            self.datagroup = datagroup
+            # prepeaks = getattr(datagroup, 'prepeaks', None)
+            # self.peakfit_history = getattr(prepeaks, 'fit_history', [])
         self.parent = parent
         self.datasets = {}
         self.form = {}
-        self.larch_eval = None
+        self.larch_eval = self.peakframe.larch_eval
         self.nfit = 0
         self.createMenus()
         self.build()
+
+        if datagroup is None:
+            symtab = self.peakframe.larch.symtable
+
+            xasgroups = getattr(symtab, '_xasgroups', None)
+            if xasgroups is not None:
+                for dname, dgroup in xasgroups.items():
+                    dgroup = getattr(symtab, dgroup, None)
+                    ppeak = getattr(dgroup, 'prepeaks', None)
+                    hist =  getattr(ppeak, 'fit_history', None)
+                    if hist is not None:
+                        self.add_results(dgroup, show=True)
+
 
     def createMenus(self):
         self.menubar = wx.MenuBar()
@@ -370,9 +376,10 @@ class PrePeakFitResultFrame(wx.Frame):
                 return
 
         ppeaks_tmpl = self.datasets[fnames[0]].prepeaks
-        param_names = list(reversed(ppeaks_tmpl.fit_history[0].params.keys()))
+        res0 = ppeaks_tmpl.fit_history[0].result
+        param_names = list(reversed(res0.params.keys()))
         user_opts = ppeaks_tmpl.user_options
-        model_desc = self.get_model_desc(ppeaks_tmpl.fit_history[0].model).replace('\n', ' ')
+        model_desc = self.get_model_desc(res0.model).replace('\n', ' ')
         out = ['# Pre-edge Peak Fit Report %s' % time.ctime(),
                '# Fitted Array name: %s' %  user_opts['array_name'],
                '# Model form: %s' % model_desc,
@@ -389,7 +396,8 @@ class PrePeakFitResultFrame(wx.Frame):
             labels.append(pname+'_stderr')
         out.append('# %s' % (', '.join(labels)))
         for name, dgroup in self.datasets.items():
-            result = dgroup.prepeaks.fit_history[0]
+            pkfit = dgroup.prepeaks.fit_history[0]
+            result = pkfit.result
             label = dgroup.filename
             if len(label) < 25:
                 label = (label + ' '*25)[:25]
@@ -416,8 +424,8 @@ class PrePeakFitResultFrame(wx.Frame):
         sfile = FileSave(self, 'Save Fit Model', default_file=deffile,
                            wildcard=ModelWcards)
         if sfile is not None:
-            result = self.get_fitresult()
-            save_modelresult(result, sfile)
+            pkfit = self.get_fitresult()
+            save_groups(sfile, ['#peakfit 1.0', pkfit])
 
     def onExportFitResult(self, event=None):
         dgroup = self.datagroup
@@ -426,11 +434,12 @@ class PrePeakFitResultFrame(wx.Frame):
 
         outfile = FileSave(self, 'Export Fit Result', default_file=deffile)
 
-        result = self.get_fitresult()
+        pkfit = self.get_fitresult()
+        result = pkfit.result
         if outfile is not None:
             i1, i2 = get_xlims(dgroup.xdat,
-                               result.user_options['emin'],
-                               result.user_options['emax'])
+                               pkfit.user_options['emin'],
+                               pkfit.user_options['emax'])
             x = dgroup.xdat[i1:i2]
             y = dgroup.ydat[i1:i2]
             yerr = None
@@ -453,15 +462,16 @@ class PrePeakFitResultFrame(wx.Frame):
         self.nfit = max(0, nfit)
         if self.nfit > len(self.peakfit_history):
             self.nfit = 0
-        return self.peakfit_history[self.nfit]
+        if len(self.peakfit_history) > 0:
+            return self.peakfit_history[self.nfit]
 
     def onPlot(self, event=None):
         show_resid = self.wids['plot_resid'].IsChecked()
         sub_bline = self.wids['plot_bline'].IsChecked()
         cmd = "plot_prepeaks_fit(%s, nfit=%i, show_residual=%s, subtract_baseline=%s)"
         cmd = cmd % (self.datagroup.groupname, self.nfit, show_resid, sub_bline)
-
         self.peakframe.larch_eval(cmd)
+        self.Raise()
 
     def onSelectFit(self, evt=None):
         if self.wids['stats'] is None:
@@ -482,7 +492,7 @@ class PrePeakFitResultFrame(wx.Frame):
         self.wids['correl'].DeleteAllItems()
 
         result = self.get_fitresult()
-        this = result.params[pname]
+        this = result.result.params[pname]
         if this.correl is not None:
             sort_correl = sorted(this.correl.items(), key=lambda it: abs(it[1]))
             for name, corval in reversed(sort_correl):
@@ -491,7 +501,7 @@ class PrePeakFitResultFrame(wx.Frame):
 
     def onAllCorrel(self, evt=None):
         result = self.get_fitresult()
-        params = result.params
+        params = result.result.params
         parnames = list(params.keys())
 
         cormin= self.wids['min_correl'].GetValue()
@@ -517,13 +527,14 @@ class PrePeakFitResultFrame(wx.Frame):
 
     def onCopyParams(self, evt=None):
         result = self.get_fitresult()
-        self.peakframe.update_start_values(result.params)
+        self.peakframe.update_start_values(result.result.params)
 
     def ShowDataSet(self, evt=None):
         dataset = evt.GetString()
         group = self.datasets.get(evt.GetString(), None)
         if group is not None:
-            self.show_results(datagroup=group)
+            self.show_results(datagroup=group, show_plot=True)
+
 
     def add_results(self, dgroup, form=None, larch_eval=None, show=True):
         name = dgroup.filename
@@ -533,7 +544,7 @@ class PrePeakFitResultFrame(wx.Frame):
         if show:
             self.show_results(datagroup=dgroup, form=form, larch_eval=larch_eval)
 
-    def show_results(self, datagroup=None, form=None, larch_eval=None):
+    def show_results(self, datagroup=None, form=None, show_plot=False, larch_eval=None):
         if datagroup is not None:
             self.datagroup = datagroup
         if larch_eval is not None:
@@ -542,11 +553,10 @@ class PrePeakFitResultFrame(wx.Frame):
         datagroup = self.datagroup
         self.peakfit_history = getattr(self.datagroup.prepeaks, 'fit_history', [])
 
-        cur = self.get_fitresult()
+        # cur = self.get_fitresult()
         wids = self.wids
         wids['stats'].DeleteAllItems()
         for i, res in enumerate(self.peakfit_history):
-            # '%2.2d' % (i+1)
             args = [res.label]
             for attr in ('ndata', 'nvarys', 'chisqr', 'redchi', 'aic'):
                 val = getattr(res.result, attr)
@@ -558,6 +568,15 @@ class PrePeakFitResultFrame(wx.Frame):
             wids['stats'].AppendItem(tuple(args))
         wids['data_title'].SetLabel(self.datagroup.filename)
         self.show_fitresult(nfit=0)
+
+        if show_plot:
+            show_resid= self.wids['plot_resid'].IsChecked()
+            sub_bline = self.wids['plot_bline'].IsChecked()
+            cmd = "plot_prepeaks_fit(%s, nfit=0, show_residual=%s, subtract_baseline=%s)"
+            cmd = cmd % (datagroup.groupname, show_resid, sub_bline)
+
+            self.peakframe.larch_eval(cmd)
+            self.Raise()
 
     def get_model_desc(self, model):
         model_repr = model._reprstring(long=True)
@@ -585,10 +604,10 @@ class PrePeakFitResultFrame(wx.Frame):
         wids = self.wids
         wids['fit_label'].SetValue(result.label)
         wids['data_title'].SetLabel(self.datagroup.filename)
-        wids['model_desc'].SetLabel(self.get_model_desc(result.model))
+        wids['model_desc'].SetLabel(self.get_model_desc(result.result.model))
         wids['params'].DeleteAllItems()
         wids['paramsdata'] = []
-        for param in reversed(result.params.values()):
+        for param in reversed(result.result.params.values()):
             pname = param.name
             try:
                 val = gformat(param.value, 10)
@@ -638,8 +657,15 @@ class PrePeakPanel(TaskPanel):
         except:
             pass # print(" Cannot Fill prepeak panel from group ")
 
+        pkfit = getattr(self.larch.symtable, 'peakresult', None)
+        if pkfit is not None:
+            self.showresults_btn.Enable()
+            self.use_modelresult(pkfit)
+
+    def onModelPanelExposed(self, event=None, **kws):
+        pass
+
     def build_display(self):
-        self.mod_nb = flatnotebook(self, {})
         pan = self.panel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LEFT)
 
         self.wids = {}
@@ -650,6 +676,10 @@ class PrePeakPanel(TaskPanel):
         ppeak_ehi  = self.add_floatspin('ppeak_ehi',  value=-3, **fsopts)
         ppeak_emin = self.add_floatspin('ppeak_emin', value=-20, **fsopts)
         ppeak_emax = self.add_floatspin('ppeak_emax', value=0, **fsopts)
+
+        self.showresults_btn = Button(pan, 'Show Fit Results',
+                                      action=self.onShowResults, size=(150, -1))
+        self.showresults_btn.Disable()
 
         self.fitbline_btn  = Button(pan,'Fit Baseline', action=self.onFitBaseline,
                                     size=(150, -1))
@@ -702,7 +732,8 @@ class PrePeakPanel(TaskPanel):
 
         add_text('Array to fit: ')
         pan.Add(self.array_choice, dcol=3)
-
+        pan.Add((5,5))
+        pan.Add(self.showresults_btn)
         # add_text('E0: ', newrow=False)
         # pan.Add(ppeak_e0)
         # pan.Add(self.show_e0)
@@ -748,6 +779,8 @@ class PrePeakPanel(TaskPanel):
 
         pan.Add(HLine(self, size=(600, 2)), dcol=6, newrow=True)
         pan.pack()
+
+        self.mod_nb = flatnotebook(self, {}, on_change=self.onModelPanelExposed)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add((10, 10), 0, LEFT, 3)
@@ -951,6 +984,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             args.append("show_init=%s" % (show_init))
         cmd = "%s(%s)" % (cmd, ', '.join(args))
         self.larch_eval(cmd.format(**opts))
+        self.Raise()
 
     def addModel(self, event=None, model=None, prefix=None, isbkg=False):
         if model is None and event is not None:
@@ -1207,14 +1241,22 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         if rfile is None:
             return
 
-        self.larch_eval("# peakmodel = lm_load_modelresult('%s')" %rfile)
+        self.larch_eval(f"# peakmodel = read_groups('{rfile}')[1]")
+        dat = read_groups(str(rfile))
+        if len(dat) != 2 or not dat[0].startswith('#peakfit'):
+            Popup(self, f" '{rfile}' is not a valid Peak Model file",
+                  "Invalid file")
 
-        result = load_modelresult(str(rfile))
+        self.use_modelresult(dat[1])
+
+    def use_modelresult(self, pkfit):
         for prefix in list(self.fit_components.keys()):
             self.onDeleteComponent(prefix=prefix)
 
+        result = pkfit.result
+        bkg_comps = pkfit.user_options['bkg_components']
         for comp in result.model.components:
-            isbkg = comp.prefix in result.user_options['bkg_components']
+            isbkg = comp.prefix in bkg_comps
             self.addModel(model=comp.func.__name__,
                           prefix=comp.prefix, isbkg=isbkg)
 
@@ -1235,7 +1277,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                     if wids.vary is not None:
                         wids.vary.SetStringSelection(varstr)
 
-        self.fill_form(result.user_options)
+        self.fill_form(pkfit.user_options)
 
     def get_xranges(self, x):
         opts = self.read_form()
@@ -1330,7 +1372,6 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                                ehi=opts['ehi'], emin=opts['emin'],
                                emax=opts['emax'])
             dgroup.journal.add_ifnew('prepeaks_setup', ppeaks_opts)
-
             ppeaks = dgroup.prepeaks
 
             # add bkg_component to saved user options
@@ -1338,6 +1379,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             for label, comp in self.fit_components.items():
                 if comp.bkgbox.IsChecked():
                     bkg_comps.append(label)
+
             opts['bkg_components'] = bkg_comps
             imin, imax = self.get_xranges(dgroup.xdat)
             cmds = ["## do peak fit for group %s / %s " % (gname, dgroup.filename) ]
@@ -1362,18 +1404,17 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                                        imin=imin, imax=imax,
                                        user_opts=repr(opts)))
 
-            result = self.larch_get("peakresult")
-            jnl = {'label': result.label, 'var_names': result.var_names,
-                   'model': repr(result.model)}
-            jnl.update(result.user_options)
+            pkfit = self.larch_get("peakresult")
+            jnl = {'label': pkfit.label, 'var_names': pkfit.result.var_names,
+                   'model': repr(pkfit.result.model)}
+            jnl.update(pkfit.user_options)
             dgroup.journal.add('peakfit', jnl)
             if igroup == 0:
-                self.autosave_modelresult(result)
+                self.autosave_modelresult(pkfit)
 
             self.subframes['prepeak_result'].add_results(dgroup, form=opts,
                                                          larch_eval=self.larch_eval,
                                                          show=igroup==ngroups-1)
-
 
     def onFitModel(self, event=None):
         dgroup = self.controller.get_group()
@@ -1403,7 +1444,6 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         imin, imax = self.get_xranges(dgroup.xdat)
 
         cmds = ["## do peak fit: "]
-
         yerr_type = 'set_yerr_const'
         yerr = getattr(dgroup, 'yerr', None)
         if yerr is None:
@@ -1418,28 +1458,31 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         elif isinstance(dgroup.yerr, np.ndarray):
                 yerr_type = 'set_yerr_array'
 
-
         cmds.extend([COMMANDS[yerr_type], COMMANDS['dofit']])
-
         cmd = '\n'.join(cmds)
         self.larch_eval(cmd.format(group=dgroup.groupname,
                                    imin=imin, imax=imax,
                                    user_opts=repr(opts)))
 
         # journal about peakresult
-        result = self.larch_get("peakresult")
-        jnl = {'label': result.label, 'var_names': result.var_names,
-               'model': repr(result.model)}
-        jnl.update(result.user_options)
+        pkfit = self.larch_get("peakresult")
+        jnl = {'label': pkfit.label, 'var_names': pkfit.result.var_names,
+               'model': repr(pkfit.result.model)}
+        jnl.update(pkfit.user_options)
         dgroup.journal.add('peakfit', jnl)
 
-        self.autosave_modelresult(result)
-
+        self.autosave_modelresult(pkfit)
         self.onPlot()
+        self.showresults_btn.Enable()
         self.show_subframe('prepeak_result', PrePeakFitResultFrame,
-                                  datagroup=dgroup, peakframe=self)
+                           datagroup=dgroup, peakframe=self)
         self.subframes['prepeak_result'].add_results(dgroup, form=opts,
                                                      larch_eval=self.larch_eval)
+
+    def onShowResults(self, event=None):
+        self.show_subframe('prepeak_resulat',
+                           PrePeakFitResultFrame, peakframe=self)
+
 
     def update_start_values(self, params):
         """fill parameters with best fit values"""
@@ -1463,5 +1506,5 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                 print("Warning: cannot create XAS_Viewer user folder")
                 return
         if fname is None:
-            fname = 'autosave.fitmodel'
-        save_modelresult(result, os.path.join(confdir, fname))
+            fname = 'autosave_peakfile.modl'
+        save_groups(os.path.join(confdir, fname), ['#peakfit 1.0', result])
