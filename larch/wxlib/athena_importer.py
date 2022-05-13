@@ -97,6 +97,7 @@ class AthenaImporter(wx.Frame) :
                     self.grouplist.Append(label)
                 except:
                     print(' ? ', sname, label, item)
+        self.grouplist.SetCheckedStrings(list(self.allgroups.keys()))
         self.Show()
         self.Raise()
 
