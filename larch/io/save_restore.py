@@ -29,7 +29,7 @@ def is_larch_session_file(fname):
         text = fh.read(64).decode('utf-8')
     return text.startswith('##LARIX:')
 
-def save_groups(fname, grouplist, _larch:None):
+def save_groups(fname, grouplist):
     """save a list of groups (and other supported datatypes) to file
 
     This is a simplified and minimal version of save_session()
@@ -46,7 +46,7 @@ def save_groups(fname, grouplist, _larch:None):
     fh.write(str2bytes("\n".join(buff)))
     fh.close()
 
-def read_groups(fname, _larch=None):
+def read_groups(fname):
     """read a list of groups (and other supported datatypes)
     from a file saved with 'save_groups()'
 
