@@ -47,6 +47,7 @@ from larch.utils.strutils import bytes2str, version_ge
 from larch.utils import get_cwd
 from larch.io import nativepath
 from larch.site_config import icondir
+from larch.version import check_larchversion
 
 from ..xrd import lambda_from_E, xrd1d, save1D, calculate_xvalues
 from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup, DEFAULT_XRAY_ENERGY
@@ -1325,8 +1326,14 @@ class MapViewerFrame(wx.Frame):
                                    'Left-Drag to select points for XRF Spectra')}
 
     def __init__(self, parent=None, filename=None, _larch=None,
-                 use_scandb=False, version_info=None,
+                 use_scandb=False, check_version=True,
                  size=(925, 650), **kwds):
+
+        if check_version:
+            def check_version():
+                self.vinfo = check_larchversion()
+            version_thread = Thread(target=check_version)
+            version_thread.start()
 
         kwds['style'] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, parent, -1, size=size,  **kwds)
@@ -1387,12 +1394,16 @@ class MapViewerFrame(wx.Frame):
         self.instdb = None
         self.inst_name = None
         self.move_callback = None
-        if version_info is not None:
-            if version_info.update_available:
-                self.onCheckforUpdates()
 
         if filename is not None:
             wx.CallAfter(self.onRead, filename)
+
+        if check_version:
+            version_thread.join()
+            if self.vinfo is not None:
+                if self.vinfo.update_available:
+                    self.onCheckforUpdates()
+
 
     def CloseFile(self, filename, event=None):
         if filename in self.filemap:
@@ -2678,17 +2689,17 @@ class OpenMapFolder(wx.Dialog):
 
 class MapViewer(LarchWxApp):
     def __init__(self, use_scandb=False, _larch=None, filename=None,
-                 version_info=None, with_inspect=False, **kws):
+                 check_version=True, with_inspect=False, **kws):
         self.filename = filename
         self.use_scandb = use_scandb
+        self.check_version = check_version
         LarchWxApp.__init__(self, _larch=_larch,
-                            version_info=version_info,
                             with_inspect=with_inspect, **kws)
 
     def createApp(self):
         frame = MapViewerFrame(use_scandb=self.use_scandb,
                                filename=self.filename,
-                               version_info=self.version_info,
+                               check_version=self.check_version,
                                _larch=self._larch)
         self.SetTopWindow(frame)
         return True

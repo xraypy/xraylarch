@@ -93,7 +93,7 @@ def check_larchversion():
 
     requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
     try:
-        req = requests.get(VERSION_URL, verify=False, timeout=3)
+        req = requests.get(VERSION_URL, verify=False, timeout=3.10)
     except:
         return VersionStatus(False, local_version, 'unknown', 'offline')
     remote_version = '0.9.001'

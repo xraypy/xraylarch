@@ -140,11 +140,10 @@ def run_gse_mapviewer():
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
     install_extras(extras_epics)
-    vinfo = check_larchversion()
     from larch.wxmap import MapViewer
     kwargs = make_cli(description="Larch's XRM Map Viewer and Analysis Program",
                       filedesc='XRM Map File (.h5)')
-    MapViewer(version_info=vinfo, **kwargs).MainLoop()
+    MapViewer(check_version=True, **kwargs).MainLoop()
 
 def run_gse_dtcorrect():
     """GSE DT Correct """
@@ -160,10 +159,9 @@ def run_xas_viewer():
     set_locale()
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
-    vinfo = check_larchversion()
     from larch.wxxas import XASViewer
     kwargs = make_cli(description="Larch's XAS Viewer and Analysis Program")
-    XASViewer(version_info=vinfo, **kwargs).MainLoop()
+    XASViewer(check_version=True, **kwargs).MainLoop()
 
 def run_xrfdisplay():
     """ XRF Display"""

@@ -8,6 +8,7 @@ import time
 import copy
 import shutil
 import platform
+from threading import Thread
 import numpy as np
 np.seterr(all='ignore')
 
@@ -45,6 +46,7 @@ from larch.wxlib.plotter import _getDisplay
 
 from larch.fitting import fit_report
 from larch.site_config import icondir, home_dir, user_larchdir
+from larch.version import check_larchversion
 
 from .prepeak_panel import PrePeakPanel
 from .xasnorm_panel import XASNormPanel
@@ -235,8 +237,14 @@ class XASFrame(wx.Frame):
     Matt Newville <newville @ cars.uchicago.edu>
     """
     def __init__(self, parent=None, _larch=None, filename=None,
-                 version_info=None, **kws):
+                 check_version=True, **kws):
         wx.Frame.__init__(self, parent, -1, size=XASVIEW_SIZE, style=FRAMESTYLE)
+
+        if check_version:
+            def check_version():
+                self.vinfo = check_larchversion()
+            version_thread = Thread(target=check_version)
+            version_thread.start()
 
         self.last_array_sel_col = {}
         self.last_array_sel_spec = {}
@@ -279,10 +287,6 @@ class XASFrame(wx.Frame):
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
         self.Show()
-        if version_info is not None:
-            if version_info.update_available:
-                self.onCheckforUpdates()
-
         plotframe = self.controller.get_display(stacked=False)
         xpos, ypos = self.GetPosition()
         xsiz, ysiz = self.GetSize()
@@ -291,9 +295,15 @@ class XASFrame(wx.Frame):
         self.Raise()
         self.statusbar.SetStatusText('ready', 1)
         self.timers['autosave'].Start(30_000)
+
         if self.current_filename is not None:
             wx.CallAfter(self.onRead, self.current_filename)
 
+        if check_version:
+            version_thread.join()
+            if self.vinfo is not None:
+                if self.vinfo.update_available:
+                    self.onCheckforUpdates()
 
     def createMainPanel(self):
         display0 = wx.Display(0)
@@ -1548,13 +1558,14 @@ class XASFrame(wx.Frame):
 
 
 class XASViewer(LarchWxApp):
-    def __init__(self, filename=None, **kws):
+    def __init__(self, filename=None, check_version=True, **kws):
         self.filename = filename
+        self.check_version = check_version
         LarchWxApp.__init__(self, **kws)
 
     def createApp(self):
         frame = XASFrame(filename=self.filename,
-                         version_info=self.version_info)
+                         check_version=self.check_version)
         self.SetTopWindow(frame)
         return True
 
