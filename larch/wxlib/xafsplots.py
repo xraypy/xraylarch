@@ -1090,7 +1090,6 @@ def plot_pca_components(result, min_weight=0, ncomps=None, min_variance=1.e-5, w
     result must be output of `pca_train`
     """
     title = "PCA components"
-    print(' plot pca comps ', result.arrayname, dir(result))
     popts = dict(xmin=result.xmin, xmax=result.xmax, title=title,
                  xlabel=plotlabels.energy, ylabel=plotlabels.norm,
                  delay_draw=True, show_legend=True, style='solid',
