@@ -9,7 +9,7 @@ import wx.grid as wxgrid
 import numpy as np
 import pickle
 import base64
-
+from copy import deepcopy
 from functools import partial
 
 from lmfit.printfuncs import gformat
@@ -18,9 +18,8 @@ from larch.math import index_of
 from larch.wxlib import (BitmapButton, TextCtrl, FloatCtrl, get_icon,
                          SimpleText, pack, Button, HLine, Choice, Check,
                          NumericCombo, CEN, LEFT, Font, FileSave, FileOpen,
-                         DataTableGrid)
-
-from larch.io import read_csv
+                         DataTableGrid, Popup)
+from larch.io import save_groups, read_groups, read_csv
 from larch.utils.strutils import fix_varname
 from larch.utils import get_cwd
 
@@ -70,7 +69,7 @@ class RegressionPanel(TaskPanel):
 
         wids['method'] = Choice(panel, choices=Regress_Choices, size=(250, -1),
                                 action=self.onRegressMethod)
-
+        wids['method'].SetSelection(1)
         add_text = self.add_text
 
         opts = dict(digits=2, increment=1.0)
@@ -122,10 +121,10 @@ class RegressionPanel(TaskPanel):
 
 
         collabels = [' File /Group Name ', 'External Value',
-                     'Predicted Value']
-        colsizes = [300, 120, 120]
-        coltypes = ['str', 'float:12,4', 'float:12,4']
-        coldefs  = ['', 0.0, 0.0]
+                     'Predicted Value', 'Training?']
+        colsizes = [250, 100, 100, 100]
+        coltypes = ['str', 'float:12,4', 'float:12,4', 'str']
+        coldefs  = ['', 0.0, 0.0, '']
 
         wids['table'] = DataTableGrid(panel, nrows=MAX_ROWS,
                                       collabels=collabels,
@@ -157,9 +156,6 @@ class RegressionPanel(TaskPanel):
         panel.Add(wids['alpha'])
         panel.Add(wids['auto_alpha'], dcol=2)
         panel.Add(wids['fit_intercept'])
-        wids['alpha'].Disable()
-        wids['auto_alpha'].Disable()
-        wids['fit_intercept'].Disable()
 
         add_text('Cross Validation: ')
         add_text(' # folds, # repeats: ', newrow=False)
@@ -198,6 +194,7 @@ class RegressionPanel(TaskPanel):
         sizer.Add((10, 10), 0, LEFT, 3)
         sizer.Add(panel, 1, LEFT, 3)
         pack(self, sizer)
+        self.onRegressMethod()
         self.skip_process = False
 
     def onRegressMethod(self, evt=None):
@@ -205,7 +202,6 @@ class RegressionPanel(TaskPanel):
         use_lasso = meth.lower().startswith('lasso')
         self.wids['alpha'].Enable(use_lasso)
         self.wids['auto_alpha'].Enable(use_lasso)
-        self.wids['fit_intercept'].Enable(use_lasso)
         self.wids['fit_intercept'].Enable(use_lasso)
         self.wids['auto_scale_pls'].Enable(not use_lasso)
         self.wids['ncomps'].Enable(not use_lasso)
@@ -216,25 +212,72 @@ class RegressionPanel(TaskPanel):
         arrname = Linear_ArrayChoices.get(fitspace, 'norm')
         self.update_fit_xspace(arrname)
         self.plot()
-       
 
-    def fill_form(self, dgroup):
-        opts = self.get_config(dgroup, with_erange=True)
+
+    def fill_form(self, dgroup=None, opts=None):
+        conf = deepcopy(self.get_config(dgroup=dgroup, with_erange=True))
+        if opts is None:
+            opts = {}
+        conf.update(opts)
         self.dgroup = dgroup
         self.skip_process = True
         wids = self.wids
-        for attr in ('elo', 'ehi', 'alpha'):
-            val = opts.get(attr, None)
+
+        for attr in ('fitspace','method'):
+            if attr in conf:
+                wids[attr].SetStringSelection(conf[attr])
+
+        for attr in ('elo', 'ehi', 'alpha', 'variable', 'cv_folds', 'cv_repeats'):
+            val = conf.get(attr, None)
             if val is not None:
                 if attr == 'alpha':
-                    val = "%.6g" % val
+                    if val < 0:
+                        val = 0.001
+                        conf['auto_alpha'] = True
+                    val = '%.6g' % alpha
                 wids[attr].SetValue(val)
 
-        for attr in ('fitspace',):
-            if attr in opts:
-                wids[attr].SetStringSelection(opts[attr])
+        use_lasso = conf['method'].lower().startswith('lasso')
+
+        for attr in ('auto_alpha', 'fit_intercept','auto_scale_pls'):
+            val = conf.get(attr, True)
+            if attr == 'auto_scale_pls':
+                val = val and not use_lasso
+            else:
+                val = val and use_lasso
+            wids[attr].SetValue(val)
+        self.onRegressMethod()
 
         self.skip_process = False
+
+    def read_form(self):
+        dgroup = self.controller.get_group()
+        form = {'groupname': getattr(dgroup, 'groupname', 'No Group')}
+
+        for k in ('fitspace', 'method'):
+            form[k] = self.wids[k].GetStringSelection()
+
+        for k in ('elo', 'ehi', 'alpha', 'cv_folds',
+                  'cv_repeats', 'ncomps', 'varname'):
+            form[k] = self.wids[k].GetValue()
+
+        form['alpha'] = float(form['alpha'])
+        if form['alpha'] < 0:
+            form['alpha'] = 1.e-3
+
+        for k in ('auto_scale_pls', 'auto_alpha',  'fit_intercept'):
+            form[k] = self.wids[k].IsChecked()
+
+        mname = form['method'].lower()
+        form['use_lars'] = 'lars' in mname
+        form['funcname'] = 'pls'
+        if mname.startswith('lasso'):
+            form['funcname'] = 'lasso'
+            if form['auto_alpha']:
+                form['alpha'] = None
+
+        return form
+
 
     def onFillTable(self, event=None):
         selected_groups = self.controller.filelist.GetCheckedStrings()
@@ -245,19 +288,19 @@ class RegressionPanel(TaskPanel):
             gname = self.controller.file_groups[fname]
             grp = self.controller.get_group(gname)
             grid_data.append([fname, getattr(grp, varname, 0.0),
-                              getattr(grp, predname, 0.0)])
+                              getattr(grp, predname, 0.0), 'Yes'])
 
         self.wids['table'].table.data = grid_data
         self.wids['table'].table.View.Refresh()
 
     def onTrainModel(self, event=None):
-        opts = self.read_form()
-        varname = opts['varname']
+        form = self.read_form()
+        varname = form['varname']
         predname = varname + '_predicted'
 
         grid_data = self.wids['table'].table.data
         groups = []
-        for fname, yval, pval in grid_data:
+        for fname, yval, pval, istrain in grid_data:
             gname = self.controller.file_groups[fname]
             grp = self.controller.get_group(gname)
             setattr(grp, varname, yval)
@@ -267,68 +310,104 @@ class RegressionPanel(TaskPanel):
         cmds = ['# train linear regression model',
                'training_groups = [%s]' % ', '.join(groups)]
 
-        copts = ["varname='%s'" % varname, "xmin=%.4f" % opts['elo'],
-                 "xmax=%.4f" % opts['ehi']]
+        copts = ["varname='%s'" % varname, "xmin=%.4f" % form['elo'],
+                 "xmax=%.4f" % form['ehi']]
 
-        arrname = Linear_ArrayChoices.get(opts['fitspace'], 'norm')
+        arrname = Linear_ArrayChoices.get(form['fitspace'], 'norm')
         copts.append("arrayname='%s'" % arrname)
 
-        self.method = 'pls'
-        if opts['method'].lower().startswith('lasso'):
-            self.method = 'lasso'
-            if opts['auto_alpha']:
+        if form['method'].lower().startswith('lasso'):
+            if form['auto_alpha']:
                 copts.append('alpha=None')
             else:
-                copts.append('alpha=%s' % opts['alpha'])
-            copts.append('use_lars=%s' % repr('lars' in opts['method'].lower()))
-            copts.append('fit_intercept=%s' % repr(opts['fit_intercept']))
+                copts.append('alpha=%.6g' % form['alpha'])
+            copts.append('use_lars=%s' % repr('lars' in form['method'].lower()))
+            copts.append('fit_intercept=%s' % repr(form['fit_intercept']))
         else:
-            copts.append('ncomps=%d' % opts['ncomps'])
-            copts.append('scale=%s' % repr(opts['auto_scale_pls']))
+            copts.append('ncomps=%d' % form['ncomps'])
+            copts.append('scale=%s' % repr(form['auto_scale_pls']))
 
-        copts = ', '.join(copts)
+        callargs = ', '.join(copts)
+
         cmds.append("reg_model = %s_train(training_groups, %s)" %
-                    (self.method, copts))
+                    (form['funcname'], callargs))
+
         self.larch_eval('\n'.join(cmds))
         reg_model = self.larch_get('reg_model')
+        reg_model.form = form
+        self.use_regmodel(reg_model)
+
+    def use_regmodel(self, reg_model):
+        if reg_model is None:
+            return
+        opts = self.read_form()
+
+        if hasattr(reg_model, 'form'):
+            opts.update(reg_model.form)
+
+        self.write_message('Regression Model trained: %s' % opts['method'])
+        rmse_cv = reg_model.rmse_cv
+        if rmse_cv is not None:
+            rmse_cv = "%.4f" % rmse_cv
+        stat = "RMSE_CV = %s, RMSE = %.4f" % (rmse_cv, reg_model.rmse)
+        self.wids['stat1'].SetLabel(stat)
+        if opts['funcname'].startswith('lasso'):
+            stat = "Alpha = %.4f, %d active components"
+            self.wids['stat2'].SetLabel(stat % (reg_model.alpha,
+                                                len(reg_model.active)))
+
+            if opts['auto_alpha']:
+                self.wids['alpha'].add_choice(reg_model.alpha)
+
+        else:
+            self.wids['stat2'].SetLabel('- - - ')
+        training_groups = reg_model.groupnames
+        ntrain = len(training_groups)
+        grid_data = self.wids['table'].table.data
+        grid_new = []
+        for i in range(ntrain): # min(ntrain, len(grid_data))):
+            fname = training_groups[i]
+            istrain = 'Yes' if fname in training_groups else 'No'
+            grid_new.append( [fname, reg_model.ydat[i], reg_model.ypred[i], istrain])
+        self.wids['table'].table.data = grid_new
+        self.wids['table'].table.View.Refresh()
+
+        if reg_model.cv_folds not in (0, None):
+            self.wids['cv_folds'].SetValue(reg_model.cv_folds)
+        if reg_model.cv_repeats not in (0, None):
+            self.wids['cv_repeats'].SetValue(reg_model.cv_repeats)
+
+        self.wids['save_model'].Enable()
+        self.wids['fit_group'].Enable()
+
+        wx.CallAfter(self.onPlotModel, model=reg_model)
+
+    def onPanelExposed(self, **kws):
+        # called when notebook is selected
+        try:
+            fname = self.controller.filelist.GetStringSelection()
+            gname = self.controller.file_groups[fname]
+            dgroup = self.controller.get_group(gname)
+            if not hasattr(dgroup, 'norm'):
+                self.xasmain.process_normalization(dgroup)
+            self.fill_form(dgroup)
+        except:
+            pass # print(" Cannot Fill prepeak panel from group ")
+
+        reg_model = getattr(self.larch.symtable, 'reg_model', None)
         if reg_model is not None:
-            self.write_message('Regression Model trained: %s' % opts['method'])
-            rmse_cv = reg_model.rmse_cv
-            if rmse_cv is not None:
-                rmse_cv = "%.4f" % rmse_cv
-            stat = "RMSE_CV = %s, RMSE = %.4f" % (rmse_cv, reg_model.rmse)
-            self.wids['stat1'].SetLabel(stat)
-            if self.method == 'lasso':
-                stat = "Alpha = %.4f, %d active components"
-                self.wids['stat2'].SetLabel(stat % (reg_model.alpha,
-                                                    len(reg_model.active)))
+            self.use_regmodel(reg_model)
 
-                if opts['auto_alpha']:
-                    self.wids['alpha'].add_choice(reg_model.alpha)
-
-            else:
-                self.wids['stat2'].SetLabel('- - - ')
-
-            for i, row in enumerate(grid_data):
-                grid_data[i] = [row[0], row[1], reg_model.ypred[i]]
-            self.wids['table'].table.data = grid_data
-            self.wids['table'].table.View.Refresh()
-
-            if reg_model.cv_folds not in (0, None):
-                self.wids['cv_folds'].SetValue(reg_model.cv_folds)
-            if reg_model.cv_repeats not in (0, None):
-                self.wids['cv_repeats'].SetValue(reg_model.cv_repeats)
-
-            self.wids['save_model'].Enable()
-            self.wids['fit_group'].Enable()
-
-            wx.CallAfter(self.onPlotModel, model=reg_model)
 
     def onPredictGroups(self, event=None):
         opts = self.read_form()
         varname = opts['varname'] + '_predicted'
 
+        reg_model = self.larch_get('reg_model')
+        training_groups = reg_model.groupnames
+
         grid_data = self.wids['table'].table.data
+
         gent = {}
         if len(grid_data[0][0].strip()) == 0:
             grid_data = []
@@ -341,13 +420,14 @@ class RegressionPanel(TaskPanel):
             grp   = self.controller.get_group(gname)
             extval = getattr(grp, opts['varname'], 0)
             cmd = "%s.%s = %s_predict(%s, reg_model)" % (gname, varname,
-                                                         self.method, gname)
+                                                         opts['funcname'], gname)
             self.larch_eval(cmd)
             val = self.larch_get('%s.%s' % (gname, varname))
             if fname in gent:
                 grid_data[gent[fname]][2] = val
             else:
-                grid_data.append([fname, extval, val])
+                istrain = 'Yes' if fname in training_groups else 'No'
+                grid_data.append([fname, extval, val, istrain])
             self.wids['table'].table.data = grid_data
             self.wids['table'].table.View.Refresh()
 
@@ -371,12 +451,7 @@ class RegressionPanel(TaskPanel):
         dlg.Destroy()
         if fname is None:
             return
-        self.save_modelfile = os.path.split(fname)[1]
-        text = str(base64.b64encode(pickle.dumps(reg_model)), 'utf-8')
-        with open(fname, 'w') as fh:
-            fh.write("%s\n" % text)
-        fh.flush()
-        fh.close()
+        save_groups(fname, ['#regression model 1.0', reg_model])
         self.write_message('Wrote Regression Model to %s ' % fname)
 
     def onLoadModel(self, event=None):
@@ -390,15 +465,18 @@ class RegressionPanel(TaskPanel):
         dlg.Destroy()
         if fname is None:
             return
-        self.save_modelfile = os.path.split(fname)[1]
-        with open(fname, 'rb') as fh:
-            text = fh.read().decode('utf-8')
+        dat = read_groups(fname)
+        if len(dat) != 2 or not dat[0].startswith('#regression model'):
+            Popup(self, f" '{rfile}' is not a valid Regression model file",
+                  "Invalid file")
 
-        reg_model = pickle.loads(base64.b64decode(bytes(text, 'utf-8')))
+        reg_model = dat[1]
         self.controller.symtable.reg_model = reg_model
+
         self.write_message('Read Regression Model from %s ' % fname)
         self.wids['fit_group'].Enable()
 
+        self.use_regmodel(reg_model)
 
     def onLoadCSV(self, event=None):
         dlg = wx.FileDialog(self, message="Load CSV Data File",
@@ -450,6 +528,7 @@ class RegressionPanel(TaskPanel):
         opts = self.read_form()
         if model is None:
             return
+        opts.update(model.form)
 
         ppanel = self.controller.get_display(win=1).panel
         viewlims = ppanel.get_viewlimits()
@@ -458,8 +537,10 @@ class RegressionPanel(TaskPanel):
         d_ave = model.spectra.mean(axis=0)
         d_std = model.spectra.std(axis=0)
         ymin, ymax = (d_ave-d_std).min(), (d_ave+d_std).max()
-        if self.method == 'lasso':
-            active_coefs = (model.coefs[model.active])
+
+        if opts['funcname'].startswith('lasso'):
+            active = [int(i) for i in model.active]
+            active_coefs = (model.coefs[active])
             active_coefs = active_coefs/max(abs(active_coefs))
             ymin = min(active_coefs.min(), ymin)
             ymax = max(active_coefs.max(), ymax)
@@ -472,7 +553,7 @@ class RegressionPanel(TaskPanel):
         ymax = ymax + 0.02*(ymax-ymin)
 
 
-        title = '%s Regression results' % (self.method.upper())
+        title = '%s Regression results' % (opts['method'])
 
         ppanel.plot(model.x, d_ave, win=1, title=title,
                     label='mean spectra', xlabel='Energy (eV)',
@@ -480,8 +561,8 @@ class RegressionPanel(TaskPanel):
                     ymin=ymin, ymax=ymax)
         ppanel.axes.fill_between(model.x, d_ave-d_std, d_ave+d_std,
                                  color='#1f77b433')
-        if self.method == 'lasso':
-            ppanel.axes.bar(model.x[model.active], active_coefs,
+        if opts['funcname'].startswith('lasso'):
+            ppanel.axes.bar(model.x[active], active_coefs,
                             1.0, color='#9f9f9f88',
                             label='coefficients')
         else:
@@ -515,5 +596,4 @@ class RegressionPanel(TaskPanel):
 
 
     def onCopyParam(self, name=None, evt=None):
-        print("on Copy Param")
         conf = self.get_config()
