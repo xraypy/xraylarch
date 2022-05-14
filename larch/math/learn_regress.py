@@ -8,9 +8,9 @@ These methods are built on the methods from scikit-learn
 import numpy as np
 
 try:
-    from sklearn.cross_decomposition import PLSRegression, PLSCanonical, PLSSVD, CCA
+    from sklearn.cross_decomposition import PLSRegression
     from sklearn.model_selection import KFold, RepeatedKFold
-    from sklearn.linear_model import LassoLarsCV, LassoLars, LassoCV, Lasso
+    from sklearn.linear_model import LassoLarsCV, LassoLars, Lasso
     HAS_SKLEARN = True
 except ImportError:
     HAS_SKLEARN = False
@@ -144,7 +144,7 @@ def lasso_train(groups, varname='valence', arrayname='norm', alpha=None,
             (rounded to integer).  if cv_repeats is None, sqrt(len(groups))-1
             will be used (rounded).
      5.  alpha is the regularization parameter. if alpha is None it will
-         be set using LassoLarsSCV
+         be set using LassoLarsCV
     """
     if not HAS_SKLEARN:
         raise ImportError("scikit-learn not installed")

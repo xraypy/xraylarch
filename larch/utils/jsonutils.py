@@ -8,6 +8,16 @@ import numpy as np
 import h5py
 from datetime import datetime
 
+try:
+    from sklearn.cross_decomposition import PLSRegression
+    from sklearn.linear_model import LassoLarsCV, LassoLars, Lasso
+    SKLEARN_CLASSES = {'PLSRegression': PLSRegression, 'LassoLarsCV':
+                       LassoLarsCV, 'LassoLars': LassoLars, 'Lasso': Lasso}
+
+except ImportError:
+    SKLEARN_CLASSES = {}
+
+
 from lmfit import Parameter, Parameters
 from lmfit.model import Model, ModelResult
 from lmfit.minimizer import Minimizer, MinimizerResult
@@ -232,6 +242,13 @@ def decode4js(obj):
         if 'ufunc' in mname:
             mname = mname.replace('<ufunc', '').replace('>', '').replace("'","").strip()
         out = SCIPY_FUNCTIONS.get(mname, None)
+
+    elif classname == 'StatefulObject':
+        dtype = obj.get('__type__')
+        if dtype in SKLEARN_CLASSES:
+            out = SKLEARN_CLASSES[dtype]()
+            out.__setstate__(decode4js(obj.get('value')))
+
     else:
         print("cannot decode ", classname)
     return out
