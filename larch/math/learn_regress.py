@@ -9,12 +9,11 @@ import numpy as np
 
 try:
     from sklearn.cross_decomposition import PLSRegression
-    from sklearn.model_selection import KFold, RepeatedKFold
+    from sklearn.model_selection import  RepeatedKFold
     from sklearn.linear_model import LassoLarsCV, LassoLars, Lasso
     HAS_SKLEARN = True
 except ImportError:
     HAS_SKLEARN = False
-
 
 from .. import Group, isgroup
 
