@@ -51,7 +51,7 @@ def make_array_choice(opts):
 
 Linear_ArrayChoices = make_array_choice(['norm', 'flat', 'dmude', 'chi0', 'chi1', 'chi2'])
 PrePeak_ArrayChoices = make_array_choice(['norm', 'flat', 'deconv'])
-Regress_Choices = ['Partial Least Squares', 'Lasso', 'LassoLars']
+Regress_Choices = ['Partial Least Squares', 'LassoLars']
 
 
 NNORM_CHOICES = {'auto':None,  'constant':0, 'linear':1, 'quadratic':2, 'cubic':3}
@@ -206,7 +206,7 @@ regression = [CVar('elo_rel', -40, 'float',  desc='low-energy fit range, relativ
               CVar('cv_repeats',  -1, 'int', min=-1,
                    desc='number of Cross-Validation repeats to do (set to -1 for "auto")'),
               CVar('fit_intercept',  True, 'bool', desc='whether to fit the intercept with LassoLars'),
-              CVar('scale',  True, 'bool', desc='whether to scale data with Partial-Least-Squares')
+              CVar('auto_scale_pls',  True, 'bool', desc='whether to scale data with Partial-Least-Squares')
        ]
 
 xasnorm = [CVar('auto_e0',  True, 'bool', desc='whether to automatically set E0'),
