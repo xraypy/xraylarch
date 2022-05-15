@@ -266,7 +266,7 @@ Within a shell:
 
 .. code:: bash
 
-   conda create -y --name xraylarch python==3.8
+   conda create -y --name xraylarch python==3.9
    conda activate xraylarch
    conda update --all
 
@@ -274,10 +274,8 @@ Within a shell:
 
 .. code:: bash
 
-   conda install -y "numpy=>1.20" "scipy=>1.5" "matplotlib=>3.0" scikit-learn pandas
-   conda install -y -c conda-forge wxpython
-   conda install -y -c conda-forge tomopy
-   conda install -y -c conda-forge pymatgen
+   conda install -y "numpy=>1.20" "scipy=>1.6" "matplotlib=>3.0" scikit-learn pandas
+   conda install -y -c conda-forge wxpython pymatgen tomopy pycifrw
 
 4. install Larch (latest release):
 
