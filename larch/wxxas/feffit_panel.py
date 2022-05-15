@@ -787,7 +787,7 @@ class FeffitPanel(TaskPanel):
         #        pan.Add(wids['do_fit_sel'], dcol=2)
         pan.Add((5, 5), newrow=True)
 
-        pan.Add(HLine(self, size=(600, 2)), dcol=6, newrow=True)
+        pan.Add(HLine(pan, size=(600, 2)), dcol=6, newrow=True)
         pan.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)

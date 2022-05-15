@@ -287,7 +287,7 @@ class EXAFSPanel(TaskPanel):
         panel.Add(self.wids['is_frozen'], dcol=1, newrow=True)
         # panel.Add(saveconf, dcol=4)
         panel.Add((10, 10), newrow=True)
-        panel.Add(HLine(self, size=(500, 3)), dcol=8, newrow=True)
+        panel.Add(HLine(panel, size=(500, 3)), dcol=8, newrow=True)
 
         panel.pack()
 

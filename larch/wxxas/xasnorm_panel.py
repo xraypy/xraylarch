@@ -326,7 +326,7 @@ class XASNormPanel(TaskPanel):
 
 
             self.wids['energy_shift'].SetValue(opts['energy_shift'])
-            self.wids['nvict'].SetSelection(opts['nvict'])
+            self.wids['nvict'].SetSelection(int(opts['nvict']))
             self.wids['showe0'].SetValue(opts['show_e0'])
             self.wids['auto_e0'].SetValue(opts['auto_e0'])
             self.wids['auto_step'].SetValue(opts['auto_step'])

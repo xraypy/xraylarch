@@ -784,7 +784,7 @@ class PrePeakPanel(TaskPanel):
         pan.Add(self.message, dcol=4)
         pan.Add(self.fitselected_btn)
 
-        pan.Add(HLine(self, size=(600, 2)), dcol=6, newrow=True)
+        pan.Add(HLine(pan, size=(600, 2)), dcol=6, newrow=True)
         pan.pack()
 
         self.mod_nb = flatnotebook(self, {}, on_change=self.onModelPanelExposed)
