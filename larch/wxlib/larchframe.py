@@ -204,9 +204,7 @@ class LarchPanel(wx.Panel):
 
         self.output.CanCopy()
         self.output.SetInsertionPointEnd()
-        # self.output.SetDefaultStyle(wx.TextAttr('black', 'white', sfont))
-
-        splitter.SplitHorizontally(self.objtree, self.output, 0.5)
+        splitter.SplitHorizontally(self.objtree, self.output, 1)
 
         ipanel = wx.Panel(self)
 
