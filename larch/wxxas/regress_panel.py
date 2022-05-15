@@ -234,7 +234,7 @@ class RegressionPanel(TaskPanel):
                     if val < 0:
                         val = 0.001
                         conf['auto_alpha'] = True
-                    val = '%.6g' % alpha
+                    val = '%.6g' % val
                 wids[attr].SetValue(val)
 
         use_lasso = conf['method'].lower().startswith('lasso')
