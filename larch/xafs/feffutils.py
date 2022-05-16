@@ -3,45 +3,47 @@ from datetime import datetime
 from collections import namedtuple
 
 FPathInfo = namedtuple('FeffPathInfo',
-                       ('filename', 'reff', 'nleg',
-                        'degeneracy', 'cwratio', 'geom'))
+                       ('filename', 'absorber', 'shell', 'reff', 'nleg',
+                        'degen', 'cwratio', 'geom'))
 class FeffCalcResults:
     def __init__(self, folder, header=None, ipots=None,
                  paths=None, datetime=None, absorber=None,
-                 edge=None):
+                 shell=None, input_text=None):
         self.folder = folder
         self.header = header
         self.ipots = ipots
         self.paths = paths
         self.datetime = datetime
         self.absorber = absorber
-        self.edge = edge
+        self.shell = shell
+        self.input_text = input_text
 
     def __getstate__(self):
         """Get state for pickle."""
-        return (self.folder, self.absorber, self.edge, self.header,
-                self.ipots, self.paths, self.datetime)
+        return (self.folder, self.absorber, self.shell, self.header,
+                self.ipots, self.paths, self.datetime, self.input_text)
 
     def __setstate__(self, state):
         """Set state from pickle."""
-        (self.folder, self.absorber, self.edge, self.header,
-         self.ipots, self.paths, self.datetime) = state
+        (self.folder, self.absorber, self.shell, self.header,
+         self.ipots, self.paths, self.datetime, self.input_text) = state
 
 
 def get_feff_pathinfo(folder):
     """get list of Feff path info for a Feff folder
     """
-
     fdat = os.path.join(folder, 'files.dat')
     pdat = os.path.join(folder, 'paths.dat')
     f001 = os.path.join(folder, 'feff0001.dat')
     finp = os.path.join(folder, 'feff.inp')
+
     # check for valid, complete calculation
     if (not os.path.exists(fdat) or not os.path.exists(pdat) or
         not os.path.exists(f001) or not os.path.exists(finp)):
         return FeffCalcResults(os.path.abspath(folder), absorber=None,
-                               edge=None, ipots=[], header='',
+                               shell=None, ipots=[], header='',
                                paths=[], datetime=None)
+
 
     dtime = datetime.fromtimestamp(os.stat(fdat).st_mtime).isoformat()
     with open(fdat, 'r') as fh:
@@ -52,6 +54,7 @@ def get_feff_pathinfo(folder):
 
     paths = {}
     header = []
+    shell = 'K'
     waiting_for_dashes = True
     for xline in fdatlines:
         xline = xline.strip()
@@ -59,6 +62,11 @@ def get_feff_pathinfo(folder):
             waiting_for_dashes = False
         if waiting_for_dashes:
             header.append(xline)
+
+            if (xline.startswith('Abs ') and 'Rmt=' in xline and
+                'Rnm=' in xline and 'shell' in xline):
+                words = xline.replace('shell', '').strip().split()
+                shell = words[-1]
             continue
         if xline.startswith('feff0'):
             w = xline.split()
@@ -99,24 +107,29 @@ def get_feff_pathinfo(folder):
         pots = [0] + pinfo[5]
         geom =  ' > '.join([ipots[i] for i in pots])
         opaths.append(FPathInfo(filename=pinfo[0],
+                                absorber=absorber,
+                                shell=shell,
                                 reff=float(pinfo[1]),
                                 nleg=int(float(pinfo[2])),
-                                degeneracy=float(pinfo[3]),
+                                degen=float(pinfo[3]),
                                 cwratio=float(pinfo[4]),
                                 geom=geom))
 
     # read absorbing shell
     for line in header:
         line = line.strip()
-        if (line.startswith('Abs ') and 'Rmt=' in line
-            and 'Rnm=' in line and 'shell' in line):
-            words= line.replace('shell', '').strip().split()
-            edge = words[-1]
+
+    # read input
+    try:
+        input_text = open(finp, 'rb').read().decode('utf-8')
+    except:
+        input_text = '<not available>'
 
     return FeffCalcResults(os.path.abspath(folder),
                            absorber=absorber,
-                           edge=edge,
+                           shell=shell,
                            ipots=ipots,
                            header='\n'.join(header),
                            paths=opaths,
+                           input_text=input_text,
                            datetime=dtime)
