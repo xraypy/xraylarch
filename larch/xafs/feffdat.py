@@ -111,6 +111,8 @@ class FeffDatFile(Group):
                 iz = int(words[1])
                 rmt = float(words[3])
                 rnm = float(words[5])
+                if line.startswith('Abs'):
+                    self.shell = words[6]
                 self.potentials.append((ipot, iz, rmt, rnm))
             elif mode == 'header' and line.startswith('Gam_ch'):
                 words  = line.replace('=', ' ').split(' ', 2)
@@ -139,6 +141,8 @@ class FeffDatFile(Group):
                         lab = atomic_symbol(iz)
                     amass = atomic_mass(iz)
                     geom = [lab, iz, ipot, amass] + xyz
+                    if len(self.geom) == 0:
+                        self.absorber = lab
                     self.geom.append(tuple(geom))
             elif mode == 'arrays':
                 d = np.array([float(x) for x in line.split()])
@@ -162,7 +166,7 @@ PATH_PARS = ('degen', 's02', 'e0', 'ei', 'deltar', 'sigma2', 'third', 'fourth')
 class FeffPathGroup(Group):
     def __init__(self, filename, label=None, s02=None, degen=None,
                  e0=None, ei=None, deltar=None, sigma2=None, third=None,
-                 fourth=None, _larch=None, **kws):
+                 fourth=None, feffrun=None, _larch=None, **kws):
 
         kwargs = dict(name='FeffPath: %s' % filename)
         kwargs.update(kws)
@@ -174,10 +178,9 @@ class FeffPathGroup(Group):
 
         self._feffdat = FeffDatFile(filename=filename)
         self.geom  = self._feffdat.geom
+        self.shell = self._feffdat.shell
+        self.absorber = self._feffdat.absorber
         def_degen  = self._feffdat.degen
-
-        self.hashkey = self.__geom2label()
-        self.label = label if label is not None else self.hashkey
 
         self.degen = def_degen if degen  is None else degen
         self.s02    = 1.0      if s02    is None else s02
@@ -188,6 +191,18 @@ class FeffPathGroup(Group):
         self.third  = 0.0      if third  is None else third
         self.fourth = 0.0      if fourth is None else fourth
 
+        if feffrun is None:
+            try:
+                dirname, fpfile = os.path.split(filename)
+                parent, folder = os.path.split(dirname)
+                feffrun = folder
+            except:
+                feffrun = 'unknown'
+        self.feffrun = feffrun
+
+        self.hashkey = self.__geom2label()
+        self.label = label if label is not None else self.hashkey
+
         self.k = None
         self.chi = None
         if self._feffdat is not None:
@@ -195,7 +210,8 @@ class FeffPathGroup(Group):
 
     def __geom2label(self):
         """generate label by hashing path geometry"""
-        rep = [self._feffdat.degen, self._feffdat.reff]
+        rep = [self._feffdat.degen, self._feffdat.reff,
+               self._feffdat.shell, self.feffrun]
         for atom in self.geom:
             rep.extend(atom)
 
@@ -214,13 +230,15 @@ class FeffPathGroup(Group):
         return FeffPathGroup(filename=self.filename, label=self.label,
                              s02=self.s02, degen=self.degen, e0=self.e0,
                              ei=self.ei, deltar=self.deltar, sigma2=self.sigma2,
-                             third=self.third, fourth=self.fourth)
+                             third=self.third, fourth=self.fourth,
+                             feffrun=self.feffrun)
 
     def __deepcopy__(self, memo):
         return FeffPathGroup(filename=self.filename, label=self.label,
                              s02=self.s02, degen=self.degen, e0=self.e0,
                              ei=self.ei, deltar=self.deltar, sigma2=self.sigma2,
-                             third=self.third, fourth=self.fourth)
+                             third=self.third, fourth=self.fourth,
+                             feffrun=self.feffrun)
 
     @property
     def reff(self): return self._feffdat.reff
@@ -314,10 +332,11 @@ class FeffPathGroup(Group):
                       'sigma2', 'third', 'fourth', 'ei'):
             parname = self.pathpar_name(pname)
             if parname in self.params:
-                pathpars[pname] = (self.params[parname].value, self.params[parname].stderr)
+                pathpars[pname] = (self.params[parname].value,
+                                   self.params[parname].stderr)
 
-        out = [f" = Path '{self.label}' = ",
-               f'    feffdat file = {self.filename}']
+        out = [f" = Path '{self.label}' = {self.absorber} {self.shell} Edge",
+               f"    feffdat file = {self.filename}, from feff run '{self.feffrun}'"]
         geomlabel  = '    geometry  atom      x        y        z      ipot'
         geomformat = '            %4s      % .4f, % .4f, % .4f  %i'
         out.append(geomlabel)
@@ -517,7 +536,7 @@ def ff2chi(paths, group=None, paramgroup=None, k=None, kmax=None,
 
 def feffpath(filename=None, label=None, s02=None, degen=None,
              e0=None,ei=None, deltar=None, sigma2=None, third=None,
-             fourth=None, _larch=None, **kws):
+             fourth=None, feffrun=None, _larch=None, **kws):
     """create a Feff Path Group from a *feffNNNN.dat* file.
 
     Parameters:
@@ -532,6 +551,7 @@ def feffpath(filename=None, label=None, s02=None, degen=None,
       third:     c_3      value or parameter [0.0]
       fourth:    c_4      value or parameter [0.0]
       ei:        E_i      value or parameter [0.0]
+      feffrun:   label for Feff run          [parent folder of Feff.dat file]
 
     For all the options described as **value or parameter** either a
     numerical value or a Parameter (as created by param()) can be given.
@@ -543,4 +563,5 @@ def feffpath(filename=None, label=None, s02=None, degen=None,
     """
     return FeffPathGroup(filename=filename, label=label, s02=s02,
                          degen=degen, e0=e0, ei=ei, deltar=deltar,
-                         sigma2=sigma2, third=third, fourth=fourth)
+                         sigma2=sigma2, third=third, fourth=fourth,
+                         feffrun=feffrun)
