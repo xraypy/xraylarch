@@ -114,7 +114,7 @@ class EventLoopRunner(object):
         try:
             if (not IN_MODAL_DIALOG and (stdin_ready() or
                                         update_requested() or
-                                        (clock() - self.t0) > 5)):
+                                        (clock() - self.t0) > 15)):
                 self.timer.Stop()
                 self.evtloop.Exit()
                 del self.timer, self.evtloop
@@ -195,7 +195,7 @@ def inputhook_darwin():
             ptime = POLLTIME
             if update_requested():
                 ptime /= 10
-            eloop.run(poll_time=ptime)
+            eloop.run(poll_time=int(ptime+1))
     except KeyboardInterrupt:
         print(" See KeyboardInterrupt from darwin hook")
         if callable(ON_INTERRUPT):
