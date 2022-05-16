@@ -300,11 +300,12 @@ manager called *conda* that makes it easy to update the packages it manages,
 including Larch.
 
 Start by installing the latest version of Anaconda Python from the
-`Anaconda Downloads`_ site.  Python 3.8 or Python 3.9 is recommended.
-Larch should work with Python 3.7 and Python 3.6 (to be clear, it will not
-work with Python 2.7).  You can also download and install Miniconda from
+`Anaconda Downloads`_ site.  Python 3.8 or Python 3.9 is recommended.  As
+of this writing, some testing has been done with Python 3.10: this requires
+a "bleeding edge" versions of wxPython, which we hope is resolved soon.  We
+no longer test with Python 3.7 or earlier: Python 3.7 might work, Python
+3.6 and earlier will not.  You can also download and install Miniconda from
 `Miniconda Downloads` as a starting distribution.
-
 
 
 Updating a previous installation
