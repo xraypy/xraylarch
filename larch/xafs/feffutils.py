@@ -6,7 +6,7 @@ FPathInfo = namedtuple('FeffPathInfo',
                        ('filename', 'absorber', 'shell', 'reff', 'nleg',
                         'degen', 'cwratio', 'geom'))
 class FeffCalcResults:
-    def __init__(self, folder, header=None, ipots=None,
+    def __init__(self, folder=None, header=None, ipots=None,
                  paths=None, datetime=None, absorber=None,
                  shell=None, input_text=None):
         self.folder = folder
