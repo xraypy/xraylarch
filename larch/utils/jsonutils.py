@@ -97,8 +97,15 @@ def encode4js(obj):
         except:
             classname = 'Group'
         out = {'__class__': classname}
-        for item in dir(obj):
-            out[item] = encode4js(getattr(obj, item))
+
+        if classname == 'ParameterGroup':  # save in order of parameter names
+            parnames = dir(obj)
+            for par in obj.__params__.keys():
+                if par in parnames:
+                    out[par] = encode4js(getattr(obj, par))
+        else:
+            for item in dir(obj):
+                out[item] = encode4js(getattr(obj, item))
         return out
     elif isinstance(obj, MinimizerResult):
         out = {'__class__': 'MinimizerResult'}
@@ -239,7 +246,6 @@ def decode4js(obj):
     elif classname == 'Journal':
         out = Journal()
         out.__setstate__(decode4js(obj['state']))
-
     elif classname in LarchGroupTypes:
         out = {}
         for key, val in obj.items():
