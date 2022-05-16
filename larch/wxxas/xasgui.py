@@ -725,7 +725,10 @@ class XASFrame(wx.Frame):
                 _session  = read_session(path)
             except:
                 Popup(self, f"{path} is not a valid Larch Session File",
-                      f"{path} is not a valid Larch Session File")
+                      f"""{path} is not a valid Larch Session File:
+
+                      {sys.exc_info}
+                      """)
                 return
 
             LoadSessionDialog(self, _session, path, self.controller).Show()
@@ -743,9 +746,9 @@ class XASFrame(wx.Frame):
         if path is None:
             return
 
-        try:
+        if True: # try:
             _session  = read_session(path)
-        except:
+        else: # except:
             Popup(self, f"{path} is not a valid Larch Session File",
                    f"{path} is not a valid Larch Session File")
             return
@@ -1044,8 +1047,10 @@ class XASFrame(wx.Frame):
         self.show_subframe('cif_feff', CIFFrame, _larch=self.larch)
 
     def onFeffBrowse(self, event=None):
+        path_importer = self.get_nbpage('feffit')[1].add_path
         self.show_subframe('feff_paths', FeffResultsFrame,
-                           xasmain=self, _larch=self.larch)
+                           xasmain=self, _larch=self.larch,
+                           path_importer=path_importer)
 
     def onLoadFitResult(self, event=None):
         pass
