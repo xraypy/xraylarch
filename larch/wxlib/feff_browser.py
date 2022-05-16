@@ -20,8 +20,8 @@ from larch.wxlib import (GridPanel, GUIColors, Button, pack, SimpleText,
 from larch.xafs import get_feff_pathinfo
 from larch.xray import atomic_symbols
 
-ATSYMS = ['< All >'] + atomic_symbols
-EDGES  = ['< All >', 'K', 'L3', 'L2', 'L1', 'M5']
+ATSYMS = ['< All Atoms>'] + atomic_symbols
+EDGES  = ['< All Edges>', 'K', 'L3', 'L2', 'L1', 'M5']
 
 
 LEFT = LEFT|wx.ALL
@@ -51,7 +51,7 @@ class FeffPathsModel(dv.DataViewIndexListModel):
         else:
             for fp in self.feffpaths:
                 row = [fp.filename, '%.4f' % fp.reff,
-                       '%.0f' % fp.nleg, '%.0f' % fp.degeneracy,
+                       '%.0f' % fp.nleg, '%.0f' % fp.degen,
                        '%.3f' % fp.cwratio]
                 use = False
                 if self.with_use:
@@ -154,7 +154,7 @@ class FeffResultsPanel(wx.Panel):
         self.report_frame = None
 
         self.dvc = dv.DataViewCtrl(self, style=DVSTYLE)
-        self.dvc.SetMinSize((600, 350))
+        self.dvc.SetMinSize((650, 350))
 
         self.model = FeffPathsModel(None, with_use=callable(path_importer))
         self.dvc.AssociateModel(self.model)
@@ -225,14 +225,14 @@ class FeffResultsPanel(wx.Panel):
 
         pack(panel, sizer)
 
-        columns = [('Feff File',   90, 'text'),
-                   ('R (\u212B)',  65, 'text'),
-                   ('# legs',      60, 'text'),
-                   ('# paths',     65, 'text'),
-                   ('Importance',  90, 'text')]
+        columns = [('Feff File',   80, 'text'),
+                   ('R (\u212B)',  50, 'text'),
+                   ('#legs',       50, 'text'),
+                   ('#paths',      50, 'text'),
+                   ('Importance',  80, 'text')]
         if callable(self.path_importer):
             columns.append(('Use',     50, 'bool'))
-        columns.append(('Geometry',   200, 'text'))
+        columns.append(('Geometry',   175, 'text'))
 
         for icol, dat in enumerate(columns):
              label, width, dtype = dat
@@ -318,8 +318,8 @@ class FeffResultsPanel(wx.Panel):
 
         self.onSelNone()
         # print(' on import xasmain = ', self.xasmain)
-        if self.xasmain is not None:
-            self.xasmain.nb.SetSelection(self.xasmain.get_nbpage('feffit')[0])
+        #if self.xasmain is not None:
+        #    self.xasmain.nb.SetSelection(self.xasmain.get_nbpage('feffit')[0])
 
     def set_feffresult(self, feffresult):
         self.feffresult = feffresult
@@ -334,7 +334,8 @@ class FeffResultsPanel(wx.Panel):
 
 class FeffResultsFrame(wx.Frame):
     """ present Feff results """
-    def __init__(self,  parent=None, feffresult=None, xasmain=None, _larch=None):
+    def __init__(self,  parent=None, feffresult=None, xasmain=None,
+                 path_importer=None, _larch=None):
         wx.Frame.__init__(self, parent, -1, size=(850, 650), style=FRAMESTYLE)
 
         title = "Manage Feff calculation results"
@@ -346,12 +347,6 @@ class FeffResultsFrame(wx.Frame):
         if not hasattr(self.larch.symtable._sys, '_feffruns'):
             self.larch.symtable._sys._feffruns = {}
         self.parent = parent
-        path_importer = None
-        if parent is not None:
-            try:
-                path_importer = parent.get_nbpage('feffit')[1].add_path
-            except:
-                pass
 
         path = unixpath(os.path.join(user_larchdir, 'feff'))
         if not os.path.exists(path):
@@ -359,7 +354,7 @@ class FeffResultsFrame(wx.Frame):
         self.feff_folder = path
 
         self.SetTitle(title)
-        self.SetSize((850, 650))
+        self.SetSize((925, 650))
         self.SetFont(Font(FONTSIZE))
         self.createMenus()
 
@@ -402,12 +397,12 @@ class FeffResultsFrame(wx.Frame):
         wids = self.wids = {}
         toprow = wx.Panel(panel)
 
-        wids['central_atom'] = Choice(toprow, choices=ATSYMS, size=(100, -1),
+        wids['central_atom'] = Choice(toprow, choices=ATSYMS, size=(125, -1),
                                       action=self.onCentralAtom)
-        wids['edge']         = Choice(toprow, choices=EDGES, size=(100, -1),
+        wids['edge']         = Choice(toprow, choices=EDGES, size=(125, -1),
                                       action=self.onAbsorbingEdge)
 
-        flabel = SimpleText(toprow, 'Filter Calculations by Element and Edge:', size=(275, -1))
+        flabel = SimpleText(toprow, 'Filter Calculations by Element and Edge:', size=(200, -1))
         tsizer = wx.BoxSizer(wx.HORIZONTAL)
         tsizer.Add(flabel,               1, LEFT, 2)
         tsizer.Add(wids['central_atom'], 0, LEFT|wx.GROW, 2)
@@ -416,7 +411,7 @@ class FeffResultsFrame(wx.Frame):
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.feff_panel = FeffResultsPanel(panel, path_importer=path_importer,
-                                           xasmain=xasmain, _larch=_larch)
+                                           _larch=_larch)
         sizer.Add(toprow, 0, LEFT|wx.GROW|wx.ALL, 2)
         sizer.Add(HLine(panel, size=(550, 2)), 0,  LEFT|wx.GROW|wx.ALL, 2)
         sizer.Add(self.feff_panel, 1, LEFT|wx.GROW|wx.ALL, 2)
@@ -438,7 +433,6 @@ class FeffResultsFrame(wx.Frame):
 
         self.fefflist.Clear()
         self.feffruns = {}
-        self.larch.eval("## gathering results:\n")
         flist = os.listdir(self.feff_folder)
         flist = sorted(flist, key=lambda t: -os.stat(unixpath(os.path.join(self.feff_folder, t))).st_mtime)
         _feffruns = self.larch.symtable._sys._feffruns
@@ -450,13 +444,13 @@ class FeffResultsFrame(wx.Frame):
                     # self.larch.eval(f"_sys._feffruns['{path:s}'] = get_feff_pathinfo('{fullpath:s}')")
                     # thisrun = self.larch.symtable._sys._feffruns[path]
                     if ((len(thisrun.paths) < 1) or
-                        (len(thisrun.ipots) < 1) or thisrun.edge is None):
+                        (len(thisrun.ipots) < 1) or thisrun.shell is None):
 
                         self.larch.symtable._sys._feffruns.pop(path)
                     else:
                         self.feffruns[path] = thisrun
                         if ((all_catoms or (thisrun.absorber == catom)) and
-                            (all_edges  or (thisrun.edge == edge))):
+                            (all_edges  or (thisrun.shell == edge))):
                             self.fefflist.Append(path)
                 except:
                     print(f"could not read Feff calculation from '{path}'")
