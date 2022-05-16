@@ -7,16 +7,18 @@ import io
 import numpy as np
 import h5py
 from datetime import datetime
+from collections import namedtuple
 
+STATEFUL_CLASSES = {}
 try:
     from sklearn.cross_decomposition import PLSRegression
     from sklearn.linear_model import LassoLarsCV, LassoLars, Lasso
-    SKLEARN_CLASSES = {'PLSRegression': PLSRegression, 'LassoLarsCV':
-                       LassoLarsCV, 'LassoLars': LassoLars, 'Lasso': Lasso}
+    STATEFUL_CLASSES.update({'PLSRegression': PLSRegression,
+                            'LassoLarsCV':LassoLarsCV,
+                            'LassoLars': LassoLars, 'Lasso': Lasso})
 
 except ImportError:
-    SKLEARN_CLASSES = {}
-
+    pass
 
 from lmfit import Parameter, Parameters
 from lmfit.model import Model, ModelResult
@@ -36,6 +38,9 @@ LarchGroupTypes = {'Group': Group,
                    'TransformGroup': TransformGroup,
                    'MinimizerResult': MinimizerResult
                    }
+
+from larch.xafs.feffutils import FeffCalcResults
+STATEFUL_CLASSES['FeffCalcResults'] = FeffCalcResults
 
 def encode4js(obj):
     """return an object ready for json encoding.
@@ -61,7 +66,9 @@ def encode4js(obj):
         return out
     elif isinstance(obj, (bool, np.bool_)):
         return bool(obj)
-    elif isinstance(obj, (float, np.float64, np.float32, int, np.int64, np.int32)):
+    elif isinstance(obj, (int, np.int64, np.int32)):
+        return int(obj)
+    elif isinstance(obj, (float, np.float64, np.float32)):
         return float(obj)
     elif isinstance(obj, str):
         return str(obj)
@@ -128,12 +135,16 @@ def encode4js(obj):
     elif hasattr(obj, 'dumps'):
         print("Encode Warning: using dumps for ", obj)
         return {'__class__': 'DumpableObject', 'value': obj.dumps()}
-    elif isinstance(obj, (tuple, list)):
-        ctype = 'List'
-        if isinstance(obj, tuple):
-            ctype = 'Tuple'
-        val = [encode4js(item) for item in obj]
-        return {'__class__': ctype, 'value': val}
+    elif isinstance(obj, list):
+        return {'__class__': 'List', 'value': [encode4js(item) for item in obj]}
+    elif isinstance(obj, tuple):
+        if hasattr(obj, '_fields'):  # named tuple!
+            return {'__class__': 'NamedTuple',
+                    '__name__': obj.__class__.__name__,
+                    '_fields': obj._fields,
+                    'value': [encode4js(item) for item in obj]}
+        else:
+            return {'__class__': 'Tuple', 'value': [encode4js(item) for item in obj]}
     elif isinstance(obj, dict):
         out = {'__class__': 'Dict'}
         for key, val in obj.items():
@@ -172,12 +183,14 @@ def decode4js(obj):
 
     if classname == 'Complex':
         out = obj['value'][0] + 1j*obj['value'][1]
-    elif classname in ('List', 'Tuple'):
+    elif classname in ('List', 'Tuple', 'NamedTuple'):
         out = []
         for item in obj['value']:
             out.append(decode4js(item))
         if classname == 'Tuple':
             out = tuple(out)
+        elif classname == 'NamedTuple':
+            out = namedtuple(obj['__name__'], obj['_fields'])(*out)
     elif classname == 'Array':
         if obj['__dtype__'].startswith('complex'):
             re = np.asarray(obj['value'][0], dtype='double')
@@ -245,9 +258,11 @@ def decode4js(obj):
 
     elif classname == 'StatefulObject':
         dtype = obj.get('__type__')
-        if dtype in SKLEARN_CLASSES:
-            out = SKLEARN_CLASSES[dtype]()
+        if dtype in STATEFUL_CLASSES:
+            out = STATEFUL_CLASSES[dtype]()
             out.__setstate__(decode4js(obj.get('value')))
+        else:
+            print(f"Warning: cannot re-create object of type '{dtype}'")
 
     else:
         print("cannot decode ", classname)
