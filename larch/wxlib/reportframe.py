@@ -9,7 +9,6 @@ from . import (FONTSIZE, Font, FRAMESTYLE, MenuItem, LEFT, CEN, SimpleText,
 
 from larch.utils.strutils import break_longstring
 
-
 LEFT = wx.ALIGN_LEFT
 CEN |=  wx.ALL
 
@@ -69,6 +68,7 @@ class ReportFrame(wx.Frame):
             with open(path, 'w') as fh:
                 fh.write(self.report.GetValue())
                 fh.write('')
+
 
 class DictFrame(wx.Frame):
     """ simple display of dict"""
