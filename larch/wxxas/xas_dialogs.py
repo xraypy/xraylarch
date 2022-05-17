@@ -1667,19 +1667,30 @@ class ExportCSVDialog(wx.Dialog):
 class QuitDialog(wx.Dialog):
     """dialog for quitting, prompting to save project"""
 
-    def __init__(self, parent, **kws):
+    def __init__(self, parent, message, **kws):
         title = "Quit Larch XAS Viewer?"
-        wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title, size=(425, 150))
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title, size=(475, 250))
         self.needs_save = True
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
         self.save = Check(panel, default=False,
                           label='Save Larch Session before Quitting?')
 
+        status, filename, stime = message
+        panel.Add((5, 5))
+        fname = None
+        if len(stime) > 2:
+            status = f"{status} at {stime} to file"
+            fname  = f"{filename}"
+        panel.Add(wx.StaticText(panel, label=status), dcol=2)
+        if fname is not None:
+            panel.Add((5, 5), newrow=True)
+            panel.Add(wx.StaticText(panel, label=fname), dcol=2)
+
         panel.Add((5, 5), newrow=True)
-        panel.Add(self.save)
+        panel.Add(self.save, dcol=2)
+        panel.Add(HLine(panel, size=(500, 3)), dcol=3, newrow=True)
         panel.Add((5, 5), newrow=True)
-        panel.Add(HLine(panel, size=(500, 3)), dcol=2, newrow=True)
         panel.Add(OkCancel(panel), dcol=2, newrow=True)
         panel.pack()
 
@@ -1950,13 +1961,14 @@ class LoadSessionDialog(wx.Frame):
 
         _xasfiles = {}
         for fname, sym in _xasgroups.items():
-            _xasfiles[sym] = fname
+            _xasfiles[sym] = fname.strip()
 
         selected = [self.allgroups[n] for n in self.grouplist.GetCheckedStrings()]
         for i in self.session.symbols.keys():
             if i not in _xasgroups and i not in selected:
                 selected.append(i)
 
+        last_fname = None
         for sym in selected:
             install = True
             if sym in _xasgroups.values():
@@ -1976,7 +1988,8 @@ class LoadSessionDialog(wx.Frame):
                     fgroups[fname] = sym
                     dat.filename = fname
                     dat.groupname = sym
-                    self.controller.filelist.Append(fname.strip())
+                    last_fname = fname
+                    self.controller.filelist.Append(fname)
         cmds = ["##########", "# Loaded Larch Session with",
                 f"# load_session('{self.filename}')"]
         cmds.append("# _xasgroups = %s" % repr(symtab._xasgroups))
@@ -1984,3 +1997,5 @@ class LoadSessionDialog(wx.Frame):
         self.controller.larch.eval('\n'.join(cmds))
 
         wx.CallAfter(self.Destroy)
+        if last_fname is not None:
+            self.parent.ShowFile(filename=last_fname)
