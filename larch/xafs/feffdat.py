@@ -12,6 +12,7 @@ the path represented by the feffNNNN.dat
 
 creates a group that contains the chi(k) for the sum of paths.
 """
+import os
 import numpy as np
 from copy import deepcopy
 from scipy.interpolate import UnivariateSpline
@@ -30,11 +31,12 @@ from .sigma2_models import add_sigma2funcs
 SMALL_ENERGY = 1.e-6
 
 class FeffDatFile(Group):
-    def __init__(self, filename,  **kws):
+    def __init__(self, filename=None,  **kws):
         kwargs = dict(name='feff.dat: %s' % filename)
         kwargs.update(kws)
         Group.__init__(self,  **kwargs)
-        self._read(filename)
+        if filename is not None:
+            self._read(filename)
 
     def __repr__(self):
         if self.filename is not None:
@@ -57,7 +59,7 @@ class FeffDatFile(Group):
     def nleg(self): return self.__nleg__
 
     @nleg.setter
-    def nleg(self, val):     pass
+    def nleg(self, val):    pass
 
     @property
     def rmass(self):
@@ -70,14 +72,44 @@ class FeffDatFile(Group):
         return self.__rmass
 
     @rmass.setter
-    def rmass(self, val):     pass
+    def rmass(self, val):  pass
+
+    def __setstate__(self, state):
+        (self.filename, self.title, self.version, self.shell,
+         self.absorber, self.degen, self.__reff__, self.__nleg__,
+         self.rnorman, self.edge, self.gam_ch, self.exch, self.mu, self.kf,
+         self.vint, self.rs_int, self.potentials, self.geom, self.__rmass,
+         self.k, self.real_phc, self.mag_feff, self.pha_feff,
+         self.red_fact, self.lam, self.rep, self.pha, self.amp) = state
+
+        self.k = np.array(self.k)
+        self.real_phc = np.array(self.real_phc)
+        self.mag_feff = np.array(self.mag_feff)
+        self.pha_feff = np.array(self.pha_feff)
+        self.red_fact = np.array(self.red_fact)
+        self.lam = np.array(self.lam)
+        self.rep = np.array(self.rep)
+        self.pha = np.array(self.pha)
+        self.amp = np.array(self.amp)
+
+    def __getstate__(self):
+        return (self.filename, self.title, self.version, self.shell,
+                self.absorber, self.degen, self.__reff__, self.__nleg__,
+                self.rnorman, self.edge, self.gam_ch, self.exch, self.mu,
+                self.kf, self.vint, self.rs_int, self.potentials,
+                self.geom, self.__rmass, self.k.tolist(),
+                self.real_phc.tolist(), self.mag_feff.tolist(),
+                self.pha_feff.tolist(), self.red_fact.tolist(),
+                self.lam.tolist(), self.rep.tolist(), self.pha.tolist(),
+                self.amp.tolist())
+
 
     def _read(self, filename):
         try:
             with open(filename, 'r') as fh:
                 lines = fh.readlines()
         except:
-            print( 'Error reading file %s ' % filename)
+            print('Error reading file %s ' % filename)
             return
         self.filename = filename
         mode = 'header'
@@ -132,7 +164,7 @@ class FeffDatFile(Group):
                     self.degen, self.__reff__, self.rnorman, self.edge = w
                 elif pcounter > 2:
                     words = line.split()
-                    xyz = [float(x) for x in words[:3]]
+                    xyz = ["%7.4f" % float(x) for x in words[:3]]
                     ipot = int(words[3])
                     iz   = int(words[4])
                     if len(words) > 5:
@@ -164,23 +196,50 @@ class FeffDatFile(Group):
 PATH_PARS = ('degen', 's02', 'e0', 'ei', 'deltar', 'sigma2', 'third', 'fourth')
 
 class FeffPathGroup(Group):
-    def __init__(self, filename, label=None, s02=None, degen=None,
+    def __init__(self, filename='', label='', feffrun='', s02=None, degen=None,
                  e0=None, ei=None, deltar=None, sigma2=None, third=None,
-                 fourth=None, feffrun=None, _larch=None, **kws):
+                 fourth=None, _larch=None, **kws):
 
-        kwargs = dict(name='FeffPath: %s' % filename)
+        kwargs = dict(filename=filename)
         kwargs.update(kws)
         Group.__init__(self, **kwargs)
-        self.filename = filename
-        self.params = None
-        self.label = label
-        self.spline_coefs = None
 
-        self._feffdat = FeffDatFile(filename=filename)
-        self.geom  = self._feffdat.geom
-        self.shell = self._feffdat.shell
-        self.absorber = self._feffdat.absorber
-        def_degen  = self._feffdat.degen
+        self.filename = filename
+        self.feffrun = feffrun
+        self.label = label
+        self.params = None
+        self.spline_coefs = None
+        self.geom  = []
+        self.shell = 'K'
+        self.absorber = None
+        self._feffdat = None
+
+        self.hashkey = 'p000'
+        self.k = None
+        self.chi = None
+
+        def_degen = 1
+        if filename not in ('', None) and os.path.exists(filename):
+            self._feffdat = FeffDatFile(filename=filename)
+            self.create_spline_coefs()
+
+            self.geom  = self._feffdat.geom
+            self.shell = self._feffdat.shell
+            self.absorber = self._feffdat.absorber
+            def_degen  = self._feffdat.degen
+
+            self.hashkey = self.__geom2label()
+            if self.label in ('', None):
+                self.label = self.hashkey
+
+            if feffrun in ('',  None):
+                try:
+                    dirname, fpfile = os.path.split(filename)
+                    parent, folder = os.path.split(dirname)
+                    self.feffrun = folder
+                except:
+                    pass
+
 
         self.degen = def_degen if degen  is None else degen
         self.s02    = 1.0      if s02    is None else s02
@@ -191,34 +250,56 @@ class FeffPathGroup(Group):
         self.third  = 0.0      if third  is None else third
         self.fourth = 0.0      if fourth is None else fourth
 
-        if feffrun is None:
-            try:
-                dirname, fpfile = os.path.split(filename)
-                parent, folder = os.path.split(dirname)
-                feffrun = folder
-            except:
-                feffrun = 'unknown'
-        self.feffrun = feffrun
+    def __repr__(self):
+        if self.filename is not None:
+            return 'feffpath((no_file)'
+        return f'feffpath({self.filename})'
+
+    def __getstate__(self):
+        _feffdat_state = self._feffdat.__getstate__()
+        return (self.filename, self.label, self.feffrun, self.degen,
+                self.s02, self.e0, self.ei, self.deltar, self.sigma2,
+                self.third, self.fourth, self.k, self.chi, _feffdat_state)
+
+
+    def __setstate__(self, state):
+        self.params = None
+        self.spline_coefs = None
+
+        (self.filename, self.label, self.feffrun, self.degen, self.s02,
+         self.e0, self.ei, self.deltar, self.sigma2, self.third,
+         self.fourth, self.k, self.chi, _feffdat_state) = state
+
+        self.k = np.array(self.k)
+        self.chi = np.array(self.chi)
+
+        self._feffdat = FeffDatFile()
+        self._feffdat.__setstate__(_feffdat_state)
+
+        self.create_spline_coefs()
+
+        self.geom  = self._feffdat.geom
+        self.shell = self._feffdat.shell
+        self.absorber = self._feffdat.absorber
+        def_degen  = self._feffdat.degen
 
         self.hashkey = self.__geom2label()
-        self.label = label if label is not None else self.hashkey
+        if self.label in ('', None):
+            self.label = self.hashkey
 
-        self.k = None
-        self.chi = None
-        if self._feffdat is not None:
-            self.create_spline_coefs()
 
     def __geom2label(self):
         """generate label by hashing path geometry"""
-        rep = [self._feffdat.degen, self._feffdat.reff,
-               self._feffdat.shell, self.feffrun]
+        rep = [self._feffdat.degen, self._feffdat.shell, self.feffrun]
         for atom in self.geom:
             rep.extend(atom)
+        rep.append("%7.4f" % self._feffdat.reff)
 
-        for attr in ('s02', 'e0', 'ei', 'deltar', 'sigma2', 'third', 'fourth'):
-            rep.append(getattr(self, attr, '_'))
+        # for attr in ('s02', 'e0', 'ei', 'deltar', 'sigma2', 'third', 'fourth'):
+        #     rep.append(getattr(self, attr, '_'))
         s = "|".join([str(i) for i in rep])
-        return "p%s" % (b32hash(s)[:10].lower())
+
+        return "p%s" % (b32hash(s)[:9].lower())
 
     def pathpar_name(self, parname):
         """
@@ -338,7 +419,7 @@ class FeffPathGroup(Group):
         out = [f" = Path '{self.label}' = {self.absorber} {self.shell} Edge",
                f"    feffdat file = {self.filename}, from feff run '{self.feffrun}'"]
         geomlabel  = '    geometry  atom      x        y        z      ipot'
-        geomformat = '            %4s      % .4f, % .4f, % .4f  %i'
+        geomformat = '            %4s      %s, %s, %s  %d'
         out.append(geomlabel)
 
         for atsym, iz, ipot, amass, x, y, z in self.geom:
@@ -463,6 +544,8 @@ class FeffPathGroup(Group):
         self.chi = cchi.imag
         self.chi_imag = -cchi.real
 
+
+
 def path2chi(path, paramgroup=None, **kws):
     """calculate chi(k) for a Feff Path,
     optionally setting path parameter values
@@ -534,9 +617,9 @@ def ff2chi(paths, group=None, paramgroup=None, k=None, kmax=None,
     group.chi = out
     return group
 
-def feffpath(filename=None, label=None, s02=None, degen=None,
+def feffpath(filename='', label='', feffrun='', s02=None, degen=None,
              e0=None,ei=None, deltar=None, sigma2=None, third=None,
-             fourth=None, feffrun=None, _larch=None, **kws):
+             fourth=None,  _larch=None, **kws):
     """create a Feff Path Group from a *feffNNNN.dat* file.
 
     Parameters:
@@ -561,7 +644,6 @@ def feffpath(filename=None, label=None, s02=None, degen=None,
         a FeffPath Group.
 
     """
-    return FeffPathGroup(filename=filename, label=label, s02=s02,
-                         degen=degen, e0=e0, ei=ei, deltar=deltar,
-                         sigma2=sigma2, third=third, fourth=fourth,
-                         feffrun=feffrun)
+    return FeffPathGroup(filename=filename, label=label, feffrun=feffrun,
+                         s02=s02, degen=degen, e0=e0, ei=ei, deltar=deltar,
+                         sigma2=sigma2, third=third, fourth=fourth)
