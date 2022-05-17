@@ -60,14 +60,13 @@ def estimate_noise(k, chi=None, group=None, rmin=15.0, rmax=30.0,
                                      defaults=(chi,), group=group,
                                      fcn_name='esitmate_noise')
 
-    # save _sys.xafsGroup -- we want to NOT write to it here!
-    savgroup = set_xafsGroup(None, _larch=_larch)
+
     tmpgroup = Group()
     rmax_out = min(10*pi, rmax+2)
 
     xftf(k, chi, kmin=kmin, kmax=kmax, rmax_out=rmax_out,
          kweight=kweight, dk=dk, dk2=dk2, kwindow=kwindow,
-         nfft=nfft, kstep=kstep, group=tmpgroup, _larch=_larch)
+         nfft=nfft, kstep=kstep, group=tmpgroup)
 
     chir  = tmpgroup.chir
     rstep = tmpgroup.r[1] - tmpgroup.r[0]
@@ -89,7 +88,7 @@ def estimate_noise(k, chi=None, group=None, rmin=15.0, rmax=30.0,
 
     # do reverse FT to get chiq array
     xftr(tmpgroup.r, tmpgroup.chir, group=tmpgroup, rmin=0.5, rmax=9.5,
-         dr=1.0, window='parzen', nfft=nfft, kstep=kstep, _larch=_larch)
+         dr=1.0, window='parzen', nfft=nfft, kstep=kstep)
 
     # sets kmax_suggest to the largest k value for which
     # | chi(q) / k**kweight| > epsilon_k
@@ -98,8 +97,7 @@ def estimate_noise(k, chi=None, group=None, rmin=15.0, rmax=30.0,
     kmax_suggest = tmpgroup.q[iq0 + where(tst < eps_k)[0][0]]
 
     # restore original _sys.xafsGroup, set output variables
-    _larch.symtable._sys.xafsGroup = savgroup
-    group = set_xafsGroup(group, _larch=_larch)
+
     group.epsilon_k = eps_k
     group.epsilon_r = eps_r
     group.kmax_suggest = kmax_suggest
