@@ -225,10 +225,10 @@ class FeffResultsPanel(wx.Panel):
 
         pack(panel, sizer)
 
-        columns = [('Feff File',   80, 'text'),
-                   ('R (\u212B)',  50, 'text'),
-                   ('#legs',       50, 'text'),
-                   ('#paths',      50, 'text'),
+        columns = [('Feff File',   85, 'text'),
+                   ('R (\u212B)',  55, 'text'),
+                   ('# legs',      55, 'text'),
+                   ('# paths',     55, 'text'),
                    ('Importance',  80, 'text')]
         if callable(self.path_importer):
             columns.append(('Use',     50, 'bool'))
