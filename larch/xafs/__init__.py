@@ -26,7 +26,7 @@ from .xafsutils import KTOE, ETOK, set_xafsGroup, etok, ktoe, guess_energy_units
 from .xafsft import xftf, xftr, xftf_fast, xftr_fast, ftwindow, xftf_prep
 from .pre_edge import pre_edge, preedge, find_e0
 from .prepeaks import prepeaks_setup, pre_edge_baseline, prepeaks_fit
-from .feffdat import FeffDatFile, FeffPathGroup, feffpath, path2chi, ff2chi
+from .feffdat import FeffDatFile, FeffPathGroup, feffpath, path2chi, ff2chi, use_feffpath
 from .feffit import (FeffitDataSet, TransformGroup, feffit,
                      feffit_dataset, feffit_transform, feffit_report)
 
@@ -82,7 +82,9 @@ _larch_builtins = {'_xafs': dict(autobk=autobk, etok=etok, ktoe=ktoe,
                                  feffit_transform=feffit_transform,
                                  feffit_report=feffit_report,
                                  feffrunner=feffrunner, feff6l=feff6l,
-                                 feff8l=feff8l, feffpath= feffpath,
+                                 feff8l=feff8l,
+                                 feffpath= feffpath,
+                                 use_feffpath= use_feffpath,
                                  path2chi=path2chi, ff2chi=ff2chi,
                                  feff8_xafs=feff8_xafs,
                                  get_feff_pathinfo=get_feff_pathinfo)}
