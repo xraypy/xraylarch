@@ -9,13 +9,13 @@ import h5py
 from datetime import datetime
 from collections import namedtuple
 
-STATEFUL_CLASSES = {}
+HAS_STATE = {}
 try:
     from sklearn.cross_decomposition import PLSRegression
     from sklearn.linear_model import LassoLarsCV, LassoLars, Lasso
-    STATEFUL_CLASSES.update({'PLSRegression': PLSRegression,
-                            'LassoLarsCV':LassoLarsCV,
-                            'LassoLars': LassoLars, 'Lasso': Lasso})
+    HAS_STATE.update({'PLSRegression': PLSRegression,
+                      'LassoLarsCV':LassoLarsCV,
+                      'LassoLars': LassoLars, 'Lasso': Lasso})
 
 except ImportError:
     pass
@@ -29,18 +29,22 @@ from larch import Group, isgroup, Journal, ParameterGroup
 
 from larch.xafs import FeffitDataSet, FeffDatFile, FeffPathGroup, TransformGroup
 from larch.utils.strutils import bytes2str, str2bytes, fix_varname
+from larch.xafs.feffutils import FeffCalcResults
+
+HAS_STATE['FeffCalcResults'] = FeffCalcResults
+HAS_STATE['FeffDatFile'] = FeffDatFile
+HAS_STATE['FeffPathGroup'] = FeffPathGroup
+HAS_STATE['Journal'] = Journal
 
 LarchGroupTypes = {'Group': Group,
                    'ParameterGroup': ParameterGroup,
                    'FeffitDataSet': FeffitDataSet,
-                   'FeffDatFile':  FeffDatFile,
-                   'FeffPathGroup': FeffPathGroup,
                    'TransformGroup': TransformGroup,
                    'MinimizerResult': MinimizerResult
                    }
+                   # 'FeffDatFile':  FeffDatFile,
+                   # 'FeffPathGroup': FeffPathGroup,
 
-from larch.xafs.feffutils import FeffCalcResults
-STATEFUL_CLASSES['FeffCalcResults'] = FeffCalcResults
 
 def encode4js(obj):
     """return an object ready for json encoding.
@@ -49,8 +53,6 @@ def encode4js(obj):
       complex numbers
       Larch Groups
       Larch Parameters
-
-    grouplist: list of subclassed Groups to assist reconstucting the object
     """
     if obj is None:
         return None
@@ -62,7 +64,7 @@ def encode4js(obj):
         if 'complex' in obj.dtype.name:
             out['value'] = [(obj.real).tolist(), (obj.imag).tolist()]
         elif obj.dtype.name == 'object':
-            out['value'] = [encode4js(i, grouplist=grouplist) for i in out['value']]
+            out['value'] = [encode4js(i) for i in out['value']]
         return out
     elif isinstance(obj, (bool, np.bool_)):
         return bool(obj)
@@ -91,22 +93,23 @@ def encode4js(obj):
                 'keys': list(obj.keys())}
     elif isinstance(obj, slice):
         return {'__class__': 'Slice', 'value': (obj.start, obj.stop, obj.step)}
-    elif isgroup(obj):
-        try:
-            classname = obj.__class__.__name__
-        except:
-            classname = 'Group'
-        out = {'__class__': classname}
 
-        if classname == 'ParameterGroup':  # save in order of parameter names
-            parnames = dir(obj)
-            for par in obj.__params__.keys():
-                if par in parnames:
-                    out[par] = encode4js(getattr(obj, par))
+    elif isinstance(obj, list):
+        return {'__class__': 'List', 'value': [encode4js(item) for item in obj]}
+    elif isinstance(obj, tuple):
+        if hasattr(obj, '_fields'):  # named tuple!
+            return {'__class__': 'NamedTuple',
+                    '__name__': obj.__class__.__name__,
+                    '_fields': obj._fields,
+                    'value': [encode4js(item) for item in obj]}
         else:
-            for item in dir(obj):
-                out[item] = encode4js(getattr(obj, item))
+            return {'__class__': 'Tuple', 'value': [encode4js(item) for item in obj]}
+    elif isinstance(obj, dict):
+        out = {'__class__': 'Dict'}
+        for key, val in obj.items():
+            out[encode4js(key)] = encode4js(val)
         return out
+
     elif isinstance(obj, MinimizerResult):
         out = {'__class__': 'MinimizerResult'}
         for attr in ('aborted', 'aic', 'bic', 'call_kws', 'chisqr',
@@ -117,11 +120,6 @@ def encode4js(obj):
                      'success', 'var_names'):
             out[attr] = encode4js(getattr(obj, attr, None))
         return out
-    elif isinstance(obj, Journal):
-        out = {'__class__': 'Journal'}
-        out['state'] = obj.__getstate__()
-        return out
-
     elif isinstance(obj, Parameters):
         out = {'__class__': 'Parameters'}
         o_ast = obj._asteval
@@ -139,31 +137,33 @@ def encode4js(obj):
         return {'__class__': 'StatefulObject',
                 '__type__': obj.__class__.__name__,
                 'value': encode4js(obj.__getstate__())}
-    elif hasattr(obj, 'dumps'):
-        print("Encode Warning: using dumps for ", obj)
-        return {'__class__': 'DumpableObject', 'value': obj.dumps()}
-    elif isinstance(obj, list):
-        return {'__class__': 'List', 'value': [encode4js(item) for item in obj]}
-    elif isinstance(obj, tuple):
-        if hasattr(obj, '_fields'):  # named tuple!
-            return {'__class__': 'NamedTuple',
-                    '__name__': obj.__class__.__name__,
-                    '_fields': obj._fields,
-                    'value': [encode4js(item) for item in obj]}
+
+    elif isgroup(obj):
+        try:
+            classname = obj.__class__.__name__
+        except:
+            classname = 'Group'
+        out = {'__class__': classname}
+
+        if classname == 'ParameterGroup':  # save in order of parameter names
+            parnames = dir(obj)
+            for par in obj.__params__.keys():
+                if par in parnames:
+                    out[par] = encode4js(getattr(obj, par))
         else:
-            return {'__class__': 'Tuple', 'value': [encode4js(item) for item in obj]}
-    elif isinstance(obj, dict):
-        out = {'__class__': 'Dict'}
-        for key, val in obj.items():
-            out[encode4js(key)] = encode4js(val)
+            for item in dir(obj):
+                out[item] = encode4js(getattr(obj, item))
         return out
     elif isinstance(obj, type):
         return {'__class__': 'Type',  'value': repr(obj),
                 'module': getattr(obj, '__module__', None)}
     elif callable(obj):
         return {'__class__': 'Method', '__name__': repr(obj)}
+    elif hasattr(obj, 'dumps'):
+        print("Encode Warning: using dumps for ", obj)
+        return {'__class__': 'DumpableObject', 'value': obj.dumps()}
     else:
-        print("Warning: generic object dump for ", repr(obj))
+        print("Encode Warning: generic object dump for ", repr(obj))
         out = {'__class__': 'Object', '__repr__': repr(obj),
                '__classname__': obj.__class__.__name__}
         for attr in dir(obj):
@@ -243,9 +243,14 @@ def decode4js(obj):
         res = ModelResult(Model(lambda x: x, None), params)
         out = res.loads(decode4js(obj['value']))
 
-    elif classname == 'Journal':
-        out = Journal()
-        out.__setstate__(decode4js(obj['state']))
+    elif classname == 'StatefulObject':
+        dtype = obj.get('__type__')
+        if dtype in HAS_STATE:
+            out = HAS_STATE[dtype]()
+            out.__setstate__(decode4js(obj.get('value')))
+        else:
+            print(f"Warning: cannot re-create stateful object of type '{dtype}'")
+
     elif classname in LarchGroupTypes:
         out = {}
         for key, val in obj.items():
@@ -261,14 +266,6 @@ def decode4js(obj):
         if 'ufunc' in mname:
             mname = mname.replace('<ufunc', '').replace('>', '').replace("'","").strip()
         out = SCIPY_FUNCTIONS.get(mname, None)
-
-    elif classname == 'StatefulObject':
-        dtype = obj.get('__type__')
-        if dtype in STATEFUL_CLASSES:
-            out = STATEFUL_CLASSES[dtype]()
-            out.__setstate__(decode4js(obj.get('value')))
-        else:
-            print(f"Warning: cannot re-create object of type '{dtype}'")
 
     else:
         print("cannot decode ", classname)
