@@ -78,7 +78,7 @@ COMMANDS['feffit_top'] = """## saved {ctime}
 ####  for interactive plotting from python (but not the Larch shell!) use:
 #from larch.wxlib.xafsplots import plot_chik, plot_chir
 #from wxmplot.interactive import get_wxapp
-#wxapp = get_wxapp()  # <- needed for plotting to work from python
+#wxapp = get_wxapp()  # <- needed for plotting to work from python command-line
 ####
 """
 
@@ -103,21 +103,25 @@ _feffit_trans = feffit_transform(kmin={kmin:.3f}, kmax={kmax:.3f}, dk={dk:.4f}, 
                       window='{kwindow:s}', fitspace='{fitspace:s}', rmin={rmin:.3f}, rmax={rmax:.3f})
 """
 
-COMMANDS['paths_init'] = """# make sure a dictionary for Feff Paths exists
+COMMANDS['paths_init'] = """# make sure dictionary for Feff Paths exists
 try:
     npaths = len(_feffpaths.keys())
 except:
-    _feffpaths = {}
-    _feffruns = {}
+    _feffcache = {'paths':{}, 'runs':{}}  # group of all paths, info about Feff runs
+    _feffpaths = {}    # dict of paths currently in use, copied from _feffcache.paths
 #endtry
 """
 
 COMMANDS['add_path'] = """
-_feffpaths['{title:s}'] = feffpath('{fullpath:s}',
-             label='{label:s}', feffrun='{feffrun:s}',
-             degen=1,  s02='{amp:s}',  e0='{e0:s}',
-             deltar='{delr:s}', sigma2='{sigma2:s}',
-             third='{third:s}', ei='{ei:s}')
+_feffcache['paths']['{title:s}'] = feffpath('{fullpath:s}',
+                                             label='{title:s}',feffrun='{feffrun:s}', degen=1)
+"""
+
+COMMANDS['use_path'] = """
+_feffpaths['{title:s}'] = use_feffpath(_feffcache['paths'], '{title:s}',
+                                       s02='{amp:s}',  e0='{e0:s}',
+                                       deltar='{delr:s}', sigma2='{sigma2:s}',
+                                       third='{third:s}', ei='{ei:s}')
 """
 
 COMMANDS['ff2chi']   = """# sum paths using a list of paths and a group of parameters
@@ -139,6 +143,8 @@ for label, path in {paths_name:s}.items():
          window='{kwindow:s}', kweight={kweight:.3f})
 #endfor
 """
+
+
 
 
 class ParametersModel(dv.DataViewIndexListModel):
@@ -538,11 +544,17 @@ class FeffPathPanel(wx.Panel):
         def SLabel(label, size=(80, -1), **kws):
             return  SimpleText(panel, label, size=size, style=LEFT, **kws)
 
+        ptitle = title
+        if ptitle.startswith(absorber):
+            ptitle = ptitle[len(absorber):]
+        if ptitle.startswith('_'):
+            ptitle = ptitle[1:]
+
         for name, expr in (('label', user_label),
                            ('amp',  f'{degen:.1f} * s02'),
                            ('e0',  'e0'),
-                           ('delr',  f'delr_{title}'),
-                           ('sigma2',  f'sigma2_{title}'),
+                           ('delr',   f'delr_{ptitle}'),
+                           ('sigma2', f'sigma2_{ptitle}'),
                            ('third',  ''),
                            ('ei',  '')):
             self.wids[name] = wx.TextCtrl(panel, -1, size=(250, -1),
@@ -749,8 +761,6 @@ class FeffitPanel(TaskPanel):
         wids['show_results']  = Button(pan, 'Show Fit Results',
                                       action=self.onShowResults,  size=(150, -1))
         wids['show_results'].Disable()
-        wids['reset']  = Button(pan, 'reset',
-                                action=self.reset_paths,  size=(150, -1))
 
 #         wids['do_fit_sel']= Button(pan, 'Fit Selected Groups',
 #                                    action=self.onFitSelected,  size=(125, -1))
@@ -798,7 +808,6 @@ class FeffitPanel(TaskPanel):
 
         pan.Add(wids['do_fit'], dcol=3, newrow=True)
         pan.Add(wids['show_results'])
-        pan.Add(wids['reset'])
         pan.Add((5, 5), newrow=True)
 
         pan.Add(HLine(pan, size=(600, 2)), dcol=6, newrow=True)
@@ -923,14 +932,20 @@ class FeffitPanel(TaskPanel):
                    wids.vary.SetStringSelection(varstr)
 
     def onPlot(self, evt=None, dgroup=None, pargroup_name='_feffit_params',
-               paths_name='_feffpaths', pathsum_name='_pathsum',
+               paths_name='_feffpaths', pathsum_name='_pathsum', title=None,
                build_fitmodel=True, **kws):
 
         opts = self.read_form(dgroup)
         opts.update(**kws)
         fname = opts['filename']
+        if title is None:
+            title = fname
+
         gname = opts['groupname']
         dgroup = opts['datagroup']
+
+        exafs_conf = self.xasmain.get_nbpage('exafs')[1].read_form()
+        plot_rmax = exafs_conf['plot_rmax']
 
         if build_fitmodel:
             self.build_fitmodel(dgroup)
@@ -984,17 +999,18 @@ class FeffitPanel(TaskPanel):
                 pextra += f', kweight={kw:d}'
             elif plot == 'chir_mag':
                 pcmd = 'plot_chir'
+                pextra +=  f', rmax={plot_rmax}'
             elif plot == 'chir_re':
-                pextra += ', show_mag=False, show_real=True'
+                pextra += f', show_mag=False, show_real=True, rmax={plot_rmax}'
             elif plot == 'chir_mag+chir_re':
-                pextra += ', show_mag=True, show_real=True'
+                pextra += f', show_mag=True, show_real=True, rmax={plot_rmax}'
             else:
                 print(" do not know how to plot ", plot)
                 continue
             newplot = f', show_window={with_win}, new=True'
             overplot = f', show_window=False, new=False'
             if dgroup is not None:
-                cmds.append(f"{pcmd}({gname}, label='data'{pextra}, title='{fname}'{newplot})")
+                cmds.append(f"{pcmd}({gname}, label='data'{pextra}, title='{title}'{newplot})")
                 if pathsum is not None:
                     cmds.append(f"{pcmd}({pathsum_name:s}, label='model'{pextra}{overplot})")
             elif pathsum is not None:
@@ -1004,15 +1020,13 @@ class FeffitPanel(TaskPanel):
 
                 for i, label in enumerate(paths.keys()):
                     objname = f"{paths_name}['{label:s}']"
-                    # plabel = path.replace(pathlist_name, '').replace('[', '').replace(']', '')
                     cmds.append(f"{pcmd}({objname}, label='{label:s}'{pextra}, offset={(i+1)*voff}{overplot})")
 
         self.larch_eval('\n'.join(cmds))
 
     def reset_paths(self, event=None):
-        "reset paths from _feffpaths and _feffruns"
+        "reset paths from _feffpaths"
         self.resetting = True
-
         def get_pagenames():
             allpages = []
             for i in range(self.paths_nb.GetPageCount()):
@@ -1028,32 +1042,30 @@ class FeffitPanel(TaskPanel):
                     self.paths_nb.DeletePage(i)
             allpages = get_pagenames()
 
-
         time.sleep(0.1)
 
-
         self.resetting = False
-        f_paths = deepcopy(getattr(self.larch.symtable, '_feffpaths', {}))
-
-        self.larch.symtable._feffpaths = {}
+        feffpaths = deepcopy(getattr(self.larch.symtable, '_feffpaths', {}))
         self.paths_data = {}
-        for label, path in f_paths.items():
-
+        for label, path in feffpaths.items():
             feffrun = path.feffrun
             self.add_path(path.filename, feffrun=feffrun)
         self.get_pathpage('parameters').Rebuild()
 
 
     def add_path(self, feffdat_file, feffresult=None, feffrun=None):
-        # print("ADD Path ", feffdat_file, feffresult, feffrun)
+        """ add path to cache"""
         pathinfo = None
         parent, fp_file = os.path.split(feffdat_file)
         parent, dirname = os.path.split(parent)
         feff_run = 'unknown'
-        feffruns = getattr(self.larch.symtable, '_feffruns', None)
-        if feffruns is None:
+        feffcache = getattr(self.larch.symtable, '_feffcache', None)
+        if feffcache is None:
             self.larch_eval(COMMANDS['paths_init'])
-            feffruns = self.larch.symtable._feffruns
+            feffcache = getattr(self.larch.symtable, '_feffcache', None)
+
+        feffruns  = feffcache['runs']
+        feffpaths = feffcache['paths']
 
         if feffresult is not None: # add feff run info
             folder, feffrun = os.path.split(feffresult.folder)
@@ -1078,7 +1090,6 @@ class FeffitPanel(TaskPanel):
             pathinfo = feffpath(feffdat_file)
 
         atoms = [s.strip() for s in pathinfo.geom.split('>')]
-        atoms.pop(0)
         atoms.pop()
         title = '_'.join(atoms) + "%d" % (round(100*pathinfo.reff))
         for c in ',.[](){}<>+=-?/\\&%$#@!|:;"\'':
@@ -1117,7 +1128,16 @@ class FeffitPanel(TaskPanel):
                 'feffrun': feffrun, 'use':True}
         pdat.update(pathpanel.get_expressions())
 
-        self.larch_eval(COMMANDS['add_path'].format(**pdat))
+        feffpaths = deepcopy(getattr(self.larch.symtable, '_feffpaths', {}))
+        feffcache = deepcopy(getattr(self.larch.symtable, '_feffcache', {'paths': {}}))
+        if title not in feffcache['paths']:
+            if not os.path.exists(feffdat_file):
+                print(f"cannot file Feff data file '{feffdat_file}'")
+            else:
+                # print("read Feff Path from disk ", feffdat_file)
+                self.larch_eval(COMMANDS['add_path'].format(**pdat))
+
+        self.larch_eval(COMMANDS['use_path'].format(**pdat))
 
         sx,sy = self.GetSize()
         self.SetSize((sx, sy+1))
@@ -1209,9 +1229,12 @@ class FeffitPanel(TaskPanel):
             text = self.paths_nb.GetPageText(i).strip()
             path_pages[text] = self.paths_nb.GetPage(i)
 
-        cmds.append(COMMANDS['paths_init'])
+        _feffpaths = getattr(self.larch.symtable, '_feffpaths', None)
+        if _feffpaths is None:
+            cmds.append(COMMANDS['paths_init'])
 
         paths_list = []
+        opts['paths'] = []
         for title, pathdata in self.paths_data.items():
             if title not in path_pages:
                 continue
@@ -1219,8 +1242,11 @@ class FeffitPanel(TaskPanel):
                     'feffrun': pathdata[1], 'use':True}
             pdat.update(path_pages[title].get_expressions())
             if pdat['use']:
-                cmds.append(COMMANDS['add_path'].format(**pdat))
+                if title not in _feffpaths:
+                    # print("BuildModel - USE PATH " , pdat)
+                    cmds.append(COMMANDS['use_path'].format(**pdat))
                 paths_list.append(f"_feffpaths['{title:s}']")
+            opts['paths'].append(pdat)
 
         paths_string = '[%s]' % (', '.join(paths_list))
         cmds.append(COMMANDS['ff2chi'].format(paths=paths_string))
@@ -1269,14 +1295,27 @@ class FeffitPanel(TaskPanel):
         script.append("######################################")
         script.append(COMMANDS['data_source'].format(groupname=groupname, filename=filename))
         for cmd in session_history:
-            if groupname in cmd or filename in cmd or 'athena' in cmd:
+            if groupname in cmd or filename in cmd or 'athena' in cmd or 'session' in cmd:
                 for cline in cmd.split('\n'):
-                    script.append(f"#{cline}")
+                    script.append(f"# {cline}")
 
-        script.append("## end of data reading and preparation")
+        script.append("#### end of data reading and preparation")
         script.append("######################################")
+        script.append("## read Feff Paths into '_feffpaths'.  You will need to")
+        script.append("## either read feff.dat from disk files with `feffpath()`")
+        script.append("## or use Paths cached from a session file into `feffruns`")
+        script.append("#_feffpaths = {}")
+        for path in opts['paths']:
+            lab, fname, run = path['title'], path['fullpath'], path['feffrun']
+            amp, e0, delr, sigma2, third, ei = path['amp'], path['e0'], path['delr'], path['sigma2'], path['third'], path['ei']
+            script.append(f"""## Path '{lab}' : ############
+#_feffcache['paths']['{lab}'] = feffpath('{fname}',
+#                  label='{lab}', feffrun='{run}', degen=1)
+#_feffpaths['{lab}'] = use_feffpath(_feffcache['paths'], '{lab}',
+#                               s02='{amp:s}', e0='{e0:s}', deltar='{delr:s}',
+#                               sigma2='{sigma2:s}', third='{third:s}', ei='{ei:s}')""")
 
-
+        script.append("######################################")
         self.larch_eval(COMMANDS['do_feffit'].format(**fopts))
 
         self.wids['show_results'].Enable()
@@ -1331,8 +1370,7 @@ class FeffitPanel(TaskPanel):
 ###############
 
 class FeffitResultFrame(wx.Frame):
-    def __init__(self, parent=None, feffit_panel=None, datagroup=None,
-                  **kws):
+    def __init__(self, parent=None, feffit_panel=None, datagroup=None, **kws):
         wx.Frame.__init__(self, None, -1, title='Feffit Results',
                           style=FRAMESTYLE, size=(900, 700), **kws)
 
@@ -1352,6 +1390,17 @@ class FeffitResultFrame(wx.Frame):
         self.nfit = 0
         self.createMenus()
         self.build()
+
+        if datagroup is None:
+            symtab = self.feffit_panel.larch.symtable
+            xasgroups = getattr(symtab, '_xasgroups', None)
+            if xasgroups is not None:
+                for dname, dgroup in xasgroups.items():
+                    dgroup = getattr(symtab, dgroup, None)
+                    hist = getattr(dgroup, 'feffit_history', None)
+                    if hist is not None:
+                        self.add_results(dgroup, show=True)
+
 
     def createMenus(self):
         self.menubar = wx.MenuBar()
@@ -1613,8 +1662,12 @@ class FeffitResultFrame(wx.Frame):
         opts['plotalt_op'] = PlotAlt_Choices[opts['plotalt_op']]
 
         result = self.get_fitresult()
-        dgroup = result.datasets[0].data
-        trans  = result.datasets[0].transform
+
+        dset   = result.datasets[0]
+        dgroup = dset.data
+        trans  = dset.transform
+        dset.prepare_fit(group2params(result.paramgroup))
+        dset._residual(result.paramgroup)
 
         result_name  = f'{self.datagroup.groupname}.feffit_history[{self.nfit}]'
         opts['label'] = f'{result_name}.label'
@@ -1622,13 +1675,14 @@ class FeffitResultFrame(wx.Frame):
         opts['paths_name']    = f'{result_name}.datasets[0].paths'
         opts['pathsum_name']  = f'{result_name}.datasets[0].model'
         opts['dgroup']  = dgroup
-        opts['title'] = f'{self.datagroup.filename} "{result.label}"'
+        opts['title'] = f'{self.datagroup.filename}: {result.label}'
 
         for attr in ('kmin', 'kmax', 'dk', 'rmin', 'rmax', 'fitspace'):
             opts[attr] = getattr(trans, attr)
         opts['kwstring'] = "%s" % getattr(trans, 'kweight')
         opts['kwindow']  = getattr(trans, 'window')
 
+        print("--> onPlot ", result, opts['title'])
         self.feffit_panel.onPlot(**opts)
 
 
