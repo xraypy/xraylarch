@@ -266,7 +266,9 @@ class XASFrame(wx.Frame):
         self.SetIcon(wx.Icon(iconfile, wx.BITMAP_TYPE_ICO))
 
         # self.larch.symtable._sys.wx.inspect = wx_inspect
-        self.last_autosave = time.time()
+        self.last_autosave = 0
+        self.last_save_message = ('Session has not been saved', '', '')
+
 
         self.timers = {'pin': wx.Timer(self),
                        'autosave': wx.Timer(self)}
@@ -738,6 +740,7 @@ class XASFrame(wx.Frame):
                 self.controller.set_workdir()
 
 
+
     def onLoadSession(self, evt=None, path=None):
         if path is None:
             wildcard = 'Larch Session File (*.larix)|*.larix|All files (*.*)|*.*'
@@ -758,6 +761,7 @@ class XASFrame(wx.Frame):
         if self.controller.chdir_on_fileopen():
             os.chdir(fdir)
             self.controller.set_workdir()
+
 
     def onSaveSession(self, evt=None):
         groups = self.controller.filelist.GetItems()
@@ -783,7 +787,9 @@ class XASFrame(wx.Frame):
 
         save_session(fname=fname, _larch=self.larch._larch)
         self.init_lastsession.Enable(False)
-        self.write_message(f"Saved session to '{fname}'")
+        stime = time.strftime("%H:%M")
+        self.last_save_message = ("Session last saved", f"'{fname}'", f"{stime}")
+        self.write_message(f"Saved session to '{fname}' at {stime}")
 
     def onConfigDataProcessing(self, event=None):
         pass
@@ -973,7 +979,7 @@ class XASFrame(wx.Frame):
 
     def onClose(self, event=None, prompt=True):
         if prompt:
-            dlg = QuitDialog(self)
+            dlg = QuitDialog(self, self.last_save_message)
             dlg.Raise()
             dlg.SetWindowStyle(wx.STAY_ON_TOP)
             res = dlg.GetResponse()
@@ -1435,8 +1441,8 @@ class XASFrame(wx.Frame):
                                            'nhistory': 3})
         symtab = self.larch.symtable
         if (time.time() > self.last_autosave + conf['savetime'] and
-            symtab._sys.last_eval_time > self.last_autosave
-            and len(symtab._xasgroups) > 0):
+            symtab._sys.last_eval_time > (self.last_autosave+60) and
+            len(symtab._xasgroups) > 0):
             self.autosave_session()
 
     def autosave_session(self, event=None):
@@ -1460,7 +1466,8 @@ class XASFrame(wx.Frame):
         self.last_autosave = time.time()
         save_session(savefile, _larch=self.larch._larch)
         stime = time.strftime("%H:%M")
-        self.write_message(f"session auto-saved at {stime}", panel=1)
+        self.last_save_message = ("Session last saved", f"'{savefile}'", f"{stime}")
+        self.write_message(f"Session saved to '{savefile}' at {stime}")
         self.init_lastsession.Enable(False)
 
     ## float-spin / pin timer events
