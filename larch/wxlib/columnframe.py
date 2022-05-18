@@ -949,7 +949,7 @@ class ColumnDataFileFrame(wx.Frame) :
             elif eguess.startswith('keV'):
                 self.en_units.SetStringSelection('keV')
 
-    def onUpdate(self, evt=None):
+    def onUpdate(self, evt=None, **kws):
         """column selections changed calc xdat and ydat"""
         rawgroup = self.initgroup
         workgroup = self.workgroup
