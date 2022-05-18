@@ -1678,12 +1678,10 @@ class QuitDialog(wx.Dialog):
 
         status, filename, stime = message
         panel.Add((5, 5))
-        fname = None
         if len(stime) > 2:
             status = f"{status} at {stime} to file"
-            fname  = f"{filename}"
         panel.Add(wx.StaticText(panel, label=status), dcol=2)
-        if fname is not None:
+        if len(filename) > 0:
             panel.Add((5, 5), newrow=True)
             panel.Add(wx.StaticText(panel, label=fname), dcol=2)
 
