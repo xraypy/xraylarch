@@ -233,27 +233,15 @@ def remove_nans2(a, b):
             b = np.array(b)
         except:
             print( 'remove_nans2: argument 2 is not an array')
-    if (np.any(np.isinf(a)) or np.any(np.isinf(b)) or
-        np.any(np.isnan(a)) or np.any(np.isnan(b))):
-        a1 = a[:]
-        b1 = b[:]
-        if np.any(np.isinf(a)):
-            bad = np.where(a==np.inf)[0]
-            a1 = np.delete(a1, bad)
-            b1 = np.delete(b1, bad)
-        if np.any(np.isinf(b)):
-            bad = np.where(b==np.inf)[0]
-            a1 = np.delete(a1, bad)
-            b1 = np.delete(b1, bad)
-        if np.any(np.isnan(a)):
-            bad = np.where(a==np.nan)[0]
-            a1 = np.delete(a1, bad)
-            b1 = np.delete(b1, bad)
-        if np.any(np.isnan(b)):
-            bad = np.where(b==np.nan)[0]
-            a1 = np.delete(a1, bad)
-            b1 = np.delete(b1, bad)
-        return a1, b1
+
+    def fix_bad(isbad, x, y):
+        if np.any(isbad):
+            bad = np.where(isbad)[0]
+            x, y = np.delete(x, bad), np.delete(y, bad)
+        return x, y
+
+    a, b = fix_bad(~np.isfinite(a), a, b)
+    a, b = fix_bad(~np.isfinite(b), a, b)
     return a, b
 
 
