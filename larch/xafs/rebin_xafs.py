@@ -138,7 +138,7 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
         reg = np.linspace(start, stop, npts)
         if isk:
             reg = ktoe(reg)
-        en.extend(e0 + reg)
+        en.extend(e0 + reg[:-1])
 
     # find the segment boundaries of the old energy array
     bounds = [index_of(energy, e) for e in en]
@@ -156,13 +156,17 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
         # if not enough points in segment, do interpolation
         if (j1 - j0) < 3:
             jx = j1 + 1
-            if (jx - j0) < 2:
+            if (jx - j0) < 3:
                 jx += 1
+
             val = interp1d(energy[j0:jx], mu[j0:jx], en[i])
-            err = mu[j0:j1].std()
-            # print(i, en[i], ' interp ', energy[j0:jx])
+            err = mu[j0:jx].std()
+            if np.isnan(val):
+                j0 = max(0, j0-1)
+                jx = min(len(energy), jx+1)
+                val = interp1d(energy[j0:jx], mu[j0:jx], en[i])
+                err = mu[j0:jx].std()
         else:
-            # print(i, en[i],  method, energy[j0:j1])
             if method.startswith('box'):
                 val =  mu[j0:j1].mean()
             else:
