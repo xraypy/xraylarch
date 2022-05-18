@@ -204,7 +204,7 @@ class LarchPanel(wx.Panel):
 
         self.output.CanCopy()
         self.output.SetInsertionPointEnd()
-        splitter.SplitHorizontally(self.objtree, self.output, 1)
+        splitter.SplitHorizontally(self.objtree, self.output, 0)
 
         ipanel = wx.Panel(self)
 
