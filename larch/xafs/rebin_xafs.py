@@ -115,11 +115,11 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
         exafs2 = max(energy) - e0
 
     # determine xanes step size:
-    #  find mean of energy difference, ignoring first/last 1% of energies
-    npts = len(energy)
-    n1 = max(2, int(npts/100.0))
-    de_mean = np.diff(energy[n1:-n1]).mean()
-    xanes_step_def = max(0.1, 0.05 * (1 + int(de_mean/0.05)))
+    #  find mean of energy difference within 10 eV of E0
+    nx1 = index_of(energy, e0-10)
+    nx2 = index_of(energy, e0+10)
+    de_mean = np.diff(energy[nx1:nx1]).mean()
+    xanes_step_def = max(0.05, de_mean/2.0)
     if xanes_step is None:
         xanes_step = xanes_step_def
     else:
@@ -133,7 +133,9 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
         if isk:
             start = etok(start)
             stop = etok(stop)
-        reg = np.linspace(start+step, stop, int(0.1 + abs(stop-start)/step))
+
+        npts = 1 + int(0.1  + abs(stop - start) / step)
+        reg = np.linspace(start, stop, npts)
         if isk:
             reg = ktoe(reg)
         en.extend(e0 + reg)
@@ -142,12 +144,15 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
     bounds = [index_of(energy, e) for e in en]
     mu_out = []
     err_out = []
+
     j0 = 0
     for i in range(len(en)):
         if i == len(en) - 1:
             j1 = len(energy) - 1
         else:
             j1 = int((bounds[i] + bounds[i+1] + 1)/2.0)
+        if i == 0 and j0 == 0:
+            j0 = index_of(energy, en[0]-5)
         # if not enough points in segment, do interpolation
         if (j1 - j0) < 3:
             jx = j1 + 1
@@ -155,7 +160,9 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
                 jx += 1
             val = interp1d(energy[j0:jx], mu[j0:jx], en[i])
             err = mu[j0:j1].std()
+            # print(i, en[i], ' interp ', energy[j0:jx])
         else:
+            # print(i, en[i],  method, energy[j0:j1])
             if method.startswith('box'):
                 val =  mu[j0:j1].mean()
             else:
