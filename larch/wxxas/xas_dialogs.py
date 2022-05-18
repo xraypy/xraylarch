@@ -730,13 +730,13 @@ class RebinDataDialog(wx.Dialog):
         ngroup.energy = ngroup.xdat = xdat
         ngroup.mu     = ngroup.ydat = ydat
 
+        ogroup = self.controller.get_group(fname)
+        olddesc = ogroup.journal.get('source_desc').value
+
         ngroup.delta_mu = getattr(ngroup, 'yerr', 1.0)
         self.parent.process_normalization(ngroup)
-        self.parent.onNewGroup(ngroup)
 
-        ogroup = self.controller.get_group(fname)
         self.parent.onNewGroup(ngroup, journal=ogroup.journal)
-        olddesc = ogroup.journal.get('source_desc').value
         ngroup.journal.add('source_desc', f"rebinned({olddesc})")
         ngroup.journal.add('rebin_command ', self.cmd)
 
@@ -1683,7 +1683,7 @@ class QuitDialog(wx.Dialog):
         panel.Add(wx.StaticText(panel, label=status), dcol=2)
         if len(filename) > 0:
             panel.Add((5, 5), newrow=True)
-            panel.Add(wx.StaticText(panel, label=fname), dcol=2)
+            panel.Add(wx.StaticText(panel, label=filename), dcol=2)
 
         panel.Add((5, 5), newrow=True)
         panel.Add(self.save, dcol=2)
