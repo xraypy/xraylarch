@@ -31,7 +31,7 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
 from larch.wxlib.parameter import ParameterWidgets
 from larch.wxlib.plotter import last_cursor_pos
 from .taskpanel import TaskPanel
-from .config import PrePeak_ArrayChoices
+from .config import PrePeak_ArrayChoices, PlotWindowChoices
 
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
@@ -206,10 +206,22 @@ class PrePeakFitResultFrame(wx.Frame):
                                         colour=COLORS['title'], style=LEFT)
 
         opts = dict(default=False, size=(200, -1), action=self.onPlot)
-        wids['plot_bline'] = Check(panel, label='Plot baseline-subtracted?', **opts)
-        wids['plot_resid'] = Check(panel, label='Plot with residual?', **opts)
-        wids['load_model'] = Button(panel, 'Load this Model',
-                                    size=(200, -1), action=self.onLoadModel)
+        ppanel = wx.Panel(panel)
+        wids['plot_bline'] = Check(ppanel, label='Plot baseline-subtracted?', **opts)
+        wids['plot_resid'] = Check(ppanel, label='Plot with residual?', **opts)
+        wids['plot_win']   = Choice(ppanel, size=(60, -1), choices=PlotWindowChoices, action=self.onPlot)
+        wids['plot_win'].SetStringSelection('1')
+
+        psizer = wx.BoxSizer(wx.HORIZONTAL)
+        psizer.Add( wids['plot_bline'], 0, 5)
+        psizer.Add( wids['plot_resid'], 0, 5)
+        psizer.Add(SimpleText(ppanel, 'Plot Window:'), 0, 5)
+        psizer.Add( wids['plot_win'], 0, 5)
+
+        pack(ppanel, psizer)
+
+        wids['load_model'] = Button(panel, 'Load this Model for Fitting',
+                                    size=(250, -1), action=self.onLoadModel)
 
         wids['plot_choice'] = Button(panel, 'Plot This Fit',
                                      size=(125, -1), action=self.onPlot)
@@ -217,6 +229,8 @@ class PrePeakFitResultFrame(wx.Frame):
         wids['fit_label'] = wx.TextCtrl(panel, -1, ' ', size=(225, -1))
         wids['set_label'] = Button(panel, 'Update Label', size=(175, -1),
                                    action=self.onUpdateLabel)
+
+
 
         irow = 0
         sizer.Add(title,              (irow, 0), (1, 1), LEFT)
@@ -233,8 +247,13 @@ class PrePeakFitResultFrame(wx.Frame):
         irow += 1
         # sizer.Add(SimpleText(panel, 'Plot: '), (irow, 0), (1, 1), LEFT)
         sizer.Add(wids['plot_choice'],(irow, 0), (1, 1), LEFT)
-        sizer.Add(wids['plot_bline'], (irow, 1), (1, 2), LEFT)
-        sizer.Add(wids['plot_resid'], (irow, 3), (1, 1), LEFT)
+        sizer.Add(ppanel, (irow, 1), (1, 4), LEFT)
+#         sizer.Add(wids['plot_resid'], (irow, 3), (1, 1), LEFT)
+#
+#         irow += 1
+#         sizer.Add(SimpleText(panel, 'Use Plot Window: '), (irow, 0), (1, 1), LEFT)
+#         sizer.Add(wids['plot_win'],  (irow, 1), (1, 1), LEFT)
+
 
         irow += 1
         sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
@@ -473,8 +492,9 @@ class PrePeakFitResultFrame(wx.Frame):
     def onPlot(self, event=None):
         show_resid = self.wids['plot_resid'].IsChecked()
         sub_bline = self.wids['plot_bline'].IsChecked()
-        cmd = "plot_prepeaks_fit(%s, nfit=%i, show_residual=%s, subtract_baseline=%s)"
-        cmd = cmd % (self.datagroup.groupname, self.nfit, show_resid, sub_bline)
+        win  = int(self.wids['plot_win'].GetStringSelection())
+        cmd = "plot_prepeaks_fit(%s, nfit=%i, show_residual=%s, subtract_baseline=%s, win=%d)"
+        cmd = cmd % (self.datagroup.groupname, self.nfit, show_resid, sub_bline, win)
         self.peakframe.larch_eval(cmd)
         self.Raise()
 
@@ -585,6 +605,7 @@ class PrePeakFitResultFrame(wx.Frame):
 
             self.peakframe.larch_eval(cmd)
             self.Raise()
+
 
     def get_model_desc(self, model):
         model_repr = model._reprstring(long=True)
@@ -959,12 +980,12 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                     wids.minval.SetValue(par.min)
                 if wids.maxval is not None:
                     wids.maxval.SetValue(par.max)
-                wids.value.SetValue(par.value)
                 varstr = 'vary' if par.vary else 'fix'
                 if par.expr is not None:
                     varstr = 'constrain'
                 if wids.vary is not None:
                     wids.vary.SetStringSelection(varstr)
+                wids.value.SetValue(par.value)
 
     def onPlotModel(self, evt=None):
         dgroup = self.controller.get_group()
@@ -1285,6 +1306,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                         wids.vary.SetStringSelection(varstr)
 
         self.fill_form(pkfit.user_options)
+
 
     def get_xranges(self, x):
         opts = self.read_form()
