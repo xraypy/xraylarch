@@ -960,7 +960,11 @@ class ColumnDataFileFrame(wx.Frame) :
 
         exprs = dict(xdat=None, ydat=None, yerr=None, yref=None)
 
-        ncol, npts = rdata.shape
+        try:
+            ncol, npts = rdata.shape
+        except:
+            return
+
         workgroup.index = 1.0*np.arange(npts)
         if xname.startswith('_index') or ix >= ncol:
             workgroup.xdat = 1.0*np.arange(npts)
