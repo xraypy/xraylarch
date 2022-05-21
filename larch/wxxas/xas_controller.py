@@ -126,25 +126,8 @@ class XASController():
         conf = self.get_config('plot')
         opts = dict(wintitle=wintitle, stacked=stacked, win=win)
         opts.update(conf)
-        out = getattr(self.symtable._plotter, f'plot{win:d}', None)
-        pos = None
-        if win > 1 and out is None and not stacked:
-            pos = self.wxparent.GetPosition()
-            siz = (conf['width'], conf['height'])
-            p1 = getattr(self.symtable._plotter, 'plot1', None)
-            if p1 is not None:
-                try:
-                    pos = p1.GetPosition()
-                except:
-                    pass
+        return self.symtable._plotter.get_display(**opts)
 
-        out = self.symtable._plotter.get_display(**opts)
-        if pos is not None:
-            pos = (pos[0] + int(siz[0]*0.02), pos[1] + int(1.02*siz[1]))
-            # out.SetPosition(pos)
-            print(" Controller would set pos to ", pos)
-
-        return out
 
     def get_group(self, groupname=None):
         if groupname is None:
