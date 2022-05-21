@@ -265,7 +265,6 @@ class XASFrame(wx.Frame):
         iconfile = os.path.join(icondir, ICON_FILE)
         self.SetIcon(wx.Icon(iconfile, wx.BITMAP_TYPE_ICO))
 
-        # self.larch.symtable._sys.wx.inspect = wx_inspect
         self.last_autosave = 0
         self.last_save_message = ('Session has not been saved', '', '')
 
