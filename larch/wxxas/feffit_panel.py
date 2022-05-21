@@ -45,8 +45,8 @@ from larch.wxlib.plotter import last_cursor_pos
 from .taskpanel import TaskPanel
 
 from .config import (Feffit_KWChoices, Feffit_SpaceChoices,
-                     Feffit_PlotChoices, make_array_choice)
-
+                     Feffit_PlotChoices, make_array_choice,
+                     PlotWindowChoices)
 
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
@@ -741,18 +741,32 @@ class FeffitPanel(TaskPanel):
         wids['ffit_fitspace'] = Choice(pan, choices=list(Feffit_SpaceChoices.keys()),
                                        size=(125, -1))
 
-        wids['plot_paths'] = Check(pan, default=False, label='Plot Each Path'
-                                   , size=(125, -1), action=self.onPlot)
-        wids['plot_ftwindows'] = Check(pan, default=False, label='Plot FT Windows'
-                                   , size=(125, -1), action=self.onPlot)
         wids['plotone_op'] = Choice(pan, choices=list(PlotOne_Choices.keys()),
                                     action=self.onPlot, size=(125, -1))
         wids['plotone_op'].SetSelection(1)
         wids['plotalt_op'] = Choice(pan, choices=list(PlotAlt_Choices.keys()),
                                     action=self.onPlot, size=(125, -1))
 
-        wids['plot_voffset'] = FloatSpin(pan, value=0, digits=2, increment=0.25,
+        wids['plot_win'] = Choice(pan, choices=PlotWindowChoices,
+                                  action=self.onPlot, size=(60, -1))
+        wids['plot_win'].SetStringSelection('2')
+
+        ppanel = wx.Panel(pan)
+
+        wids['plot_paths'] = Check(ppanel, default=False, label='Plot Each Path',
+                                   action=self.onPlot)
+        wids['plot_ftwindows'] = Check(ppanel, default=False, label='Plot FT Windows',
+                                       action=self.onPlot)
+
+        wids['plot_voffset'] = FloatSpin(ppanel, value=0, digits=2, increment=0.25,
                                          action=self.onPlot)
+
+        psizer = wx.BoxSizer(wx.HORIZONTAL)
+        psizer.Add( wids['plot_paths'], 0, 2)
+        psizer.Add( wids['plot_ftwindows'], 0, 2)
+        psizer.Add(SimpleText(ppanel, '  Offset'), 0, 5)
+        psizer.Add( wids['plot_voffset'], 0, 5)
+        pack(ppanel, psizer)
 
         wids['plot_current']  = Button(pan,'Plot Current Model',
                                      action=self.onPlot,  size=(150, -1))
@@ -799,12 +813,12 @@ class FeffitPanel(TaskPanel):
 
         pan.Add(wids['plot_current'], dcol=1, newrow=True)
         pan.Add(wids['plotone_op'], dcol=1)
-        pan.Add(wids['plot_paths'], dcol=2)
-        pan.Add(wids['plot_ftwindows'], dcol=2)
+        pan.Add(ppanel, dcol=4)
+        # pan.Add(wids['plot_ftwindows'], dcol=2)
         add_text('Add Second Plot: ', newrow=True)
         pan.Add(wids['plotalt_op'], dcol=1)
-        add_text('Vertical offset: ', newrow=False)
-        pan.Add(wids['plot_voffset'], dcol=1)
+        add_text('Plot Window: ', newrow=False)
+        pan.Add(wids['plot_win'], dcol=1)
 
         pan.Add(wids['do_fit'], dcol=3, newrow=True)
         pan.Add(wids['show_results'])
@@ -881,7 +895,7 @@ class FeffitPanel(TaskPanel):
                 self.wids['ffit_kweight'].SetStringSelection(key)
 
     def read_form(self, dgroup=None):
-        "read for, returning dict of values"
+        "read form, returning dict of values"
 
         if dgroup is None:
             try:
@@ -910,6 +924,8 @@ class FeffitPanel(TaskPanel):
         form_opts['plotone_op'] = PlotOne_Choices[wids['plotone_op'].GetStringSelection()]
         form_opts['plotalt_op'] = PlotAlt_Choices[wids['plotalt_op'].GetStringSelection()]
         form_opts['plot_voffset'] = wids['plot_voffset'].GetValue()
+        form_opts['plot_win'] = int(wids['plot_win'].GetStringSelection())
+
         return form_opts
 
 
@@ -991,9 +1007,11 @@ class FeffitPanel(TaskPanel):
 
             if plot in ('noplot', '<no plot>'):
                 continue
-
+            plotwin = 1
+            if i > 0:
+                plotwin = int(opts.get('plot_win', '2'))
             pcmd = 'plot_chir'
-            pextra = f', win={i+1:d}'
+            pextra = f', win={plotwin:d}'
             if plot == 'chi':
                 pcmd = 'plot_chik'
                 pextra += f', kweight={kw:d}'
@@ -1441,31 +1459,50 @@ class FeffitResultFrame(wx.Frame):
                                         minsize=(350, -1),
                                         colour=self.colors.title, style=LEFT)
 
-        wids['plot_paths'] = Check(panel, default=False, label='Plot Each Path'
-                                   , size=(125, -1), action=self.onPlot)
-        wids['plot_ftwindows'] = Check(panel, default=False, label='Plot FT Windows'
-                                   , size=(125, -1), action=self.onPlot)
         wids['plotone_op'] = Choice(panel, choices=list(PlotOne_Choices.keys()),
                                     action=self.onPlot, size=(125, -1))
         wids['plotone_op'].SetSelection(1)
         wids['plotalt_op'] = Choice(panel, choices=list(PlotAlt_Choices.keys()),
                                     action=self.onPlot, size=(125, -1))
 
-        wids['plot_voffset'] = FloatSpin(panel, value=0, digits=2, increment=0.25,
+        wids['plot_win'] = Choice(panel, choices=PlotWindowChoices,
+                                  action=self.onPlot, size=(60, -1))
+        wids['plot_win'].SetStringSelection('2')
+
+        ppanel = wx.Panel(panel)
+
+        wids['plot_paths'] = Check(ppanel, default=False, label='Plot Each Path',
+                                   action=self.onPlot)
+        wids['plot_ftwindows'] = Check(ppanel, default=False, label='Plot FT Windows',
+                                       action=self.onPlot)
+
+        wids['plot_voffset'] = FloatSpin(ppanel, value=0, digits=2, increment=0.25,
                                          action=self.onPlot)
+
+        psizer = wx.BoxSizer(wx.HORIZONTAL)
+        psizer.Add( wids['plot_paths'], 0, 2)
+        psizer.Add( wids['plot_ftwindows'], 0, 2)
+        psizer.Add(SimpleText(ppanel, ' Offset'), 0, 2)
+        psizer.Add( wids['plot_voffset'], 0, 2)
+        pack(ppanel, psizer)
 
         wids['plot_current']  = Button(panel,'Plot Current Model',
                                      action=self.onPlot,  size=(175, -1))
 
         wids['show_pathpars']  = Button(panel,'Show Path Parameters',
                                         action=self.onShowPathParams, size=(175, -1))
-        wids['show_script']  = Button(panel,'Show Feffit Script',
-                                        action=self.onShowScript, size=(175, -1))
+        wids['show_script']  = Button(panel,'Show Fit Script',
+                                        action=self.onShowScript, size=(150, -1))
 
-        wids['fit_label'] = wx.TextCtrl(panel, -1, ' ', size=(225, -1))
-        wids['set_label'] = Button(panel, 'Update Label', size=(175, -1),
+        lpanel = wx.Panel(panel)
+        wids['fit_label'] = wx.TextCtrl(lpanel, -1, ' ', size=(175, -1))
+        wids['set_label'] = Button(lpanel, 'Update Label', size=(150, -1),
                                    action=self.onUpdateLabel)
 
+        lsizer = wx.BoxSizer(wx.HORIZONTAL)
+        lsizer.Add(wids['fit_label'], 0, 2)
+        lsizer.Add(wids['set_label'], 0, 2)
+        pack(lpanel, lsizer)
 
         irow = 0
         sizer.Add(title,              (irow, 0), (1, 1), LEFT)
@@ -1474,14 +1511,12 @@ class FeffitResultFrame(wx.Frame):
         irow += 1
         sizer.Add(wids['plot_current'],     (irow, 0), (1, 1), LEFT)
         sizer.Add(wids['plotone_op'],       (irow, 1), (1, 1), LEFT)
-        sizer.Add(wids['plot_paths'],       (irow, 2), (1, 1), LEFT)
-        sizer.Add(wids['plot_ftwindows'],   (irow, 3), (1, 1), LEFT)
-
+        sizer.Add(ppanel,                   (irow, 2), (1, 3), LEFT)
         irow += 1
         sizer.Add(SimpleText(panel, 'Add Second Plot:', style=LEFT), (irow, 0), (1, 1), LEFT)
         sizer.Add(wids['plotalt_op'],                                (irow, 1), (1, 1), LEFT)
-        sizer.Add(SimpleText(panel, 'Vertical offset:', style=LEFT), (irow, 2), (1, 1), LEFT)
-        sizer.Add(wids['plot_voffset'],                              (irow, 3), (1, 1), LEFT)
+        sizer.Add(SimpleText(panel, 'Plot Window:', style=LEFT), (irow, 2), (1, 1), LEFT)
+        sizer.Add(wids['plot_win'],                              (irow, 3), (1, 1), LEFT)
 
         irow += 1
         sizer.Add(wids['show_pathpars'], (irow, 0), (1, 1), LEFT)
@@ -1491,8 +1526,7 @@ class FeffitResultFrame(wx.Frame):
 
         irow += 1
         sizer.Add(SimpleText(panel, 'Fit Label:', style=LEFT), (irow, 0), (1, 1), LEFT)
-        sizer.Add(wids['fit_label'], (irow, 1), (1, 2), LEFT)
-        sizer.Add(wids['set_label'], (irow, 3), (1, 1), LEFT)
+        sizer.Add(lpanel, (irow, 1), (1, 4), LEFT)
 
 
         irow += 1
@@ -1502,7 +1536,7 @@ class FeffitResultFrame(wx.Frame):
                               font=Font(FONTSIZE+1),  style=LEFT)
 
         sizer.Add(title, (irow, 0), (1, 1), LEFT)
-        sizer.Add(subtitle, (irow, 1), (1, 1), LEFT)
+        sizer.Add(subtitle, (irow, 1), (1, 3), LEFT)
 
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
@@ -1566,18 +1600,24 @@ class FeffitResultFrame(wx.Frame):
         title = SimpleText(panel, '[[Correlations]]',  font=Font(FONTSIZE+2),
                            colour=self.colors.title, style=LEFT)
 
-        self.wids['all_correl'] = Button(panel, 'Show All',
+        ppanel = wx.Panel(panel)
+
+        self.wids['all_correl'] = Button(ppanel, 'Show All',
                                           size=(100, -1), action=self.onAllCorrel)
 
-        self.wids['min_correl'] = FloatSpin(panel, value=MIN_CORREL,
+        self.wids['min_correl'] = FloatSpin(ppanel, value=MIN_CORREL,
                                             min_val=0, size=(100, -1),
                                             digits=3, increment=0.1)
 
-        ctitle = SimpleText(panel, 'minimum correlation: ')
+        psizer = wx.BoxSizer(wx.HORIZONTAL)
+        psizer.Add(SimpleText(ppanel, 'minimum correlation: '), 0, 2)
+        psizer.Add(self.wids['min_correl'], 0, 2)
+        psizer.Add(self.wids['all_correl'], 0, 2)
+        pack(ppanel, psizer)
+
+
         sizer.Add(title,  (irow, 0), (1, 1), LEFT)
-        sizer.Add(ctitle, (irow, 1), (1, 1), LEFT)
-        sizer.Add(self.wids['min_correl'], (irow, 2), (1, 1), LEFT)
-        sizer.Add(self.wids['all_correl'], (irow, 3), (1, 1), LEFT)
+        sizer.Add(ppanel, (irow, 1), (1, 4), LEFT)
 
         cview = self.wids['correl'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
 
@@ -1655,11 +1695,13 @@ class FeffitResultFrame(wx.Frame):
                           ('plot_paths', 'IsChecked'),
                           ('plotone_op', 'GetStringSelection'),
                           ('plotalt_op', 'GetStringSelection'),
+                          ('plot_win',   'GetStringSelection'),
                           ('plot_voffset', 'GetValue')):
             opts[key] = getattr(self.wids[key], meth)()
 
         opts['plotone_op'] = PlotOne_Choices[opts['plotone_op']]
         opts['plotalt_op'] = PlotAlt_Choices[opts['plotalt_op']]
+        opts['plot_win'] = int(opts['plot_win'])
 
         result = self.get_fitresult()
 
@@ -1682,7 +1724,6 @@ class FeffitResultFrame(wx.Frame):
         opts['kwstring'] = "%s" % getattr(trans, 'kweight')
         opts['kwindow']  = getattr(trans, 'window')
 
-        print("--> onPlot ", result, opts['title'])
         self.feffit_panel.onPlot(**opts)
 
 
