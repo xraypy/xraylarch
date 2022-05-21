@@ -19,7 +19,7 @@ from larch.xafs.xafsutils import etok, ktoe, FT_WINDOWS
 
 from .xas_dialogs import EnergyUnitsDialog
 from .taskpanel import TaskPanel
-from .config import ATHENA_CLAMPNAMES
+from .config import ATHENA_CLAMPNAMES, PlotWindowChoices
 
 np.seterr(all='ignore')
 
@@ -119,6 +119,9 @@ class EXAFSPanel(TaskPanel):
         wids['plot_rmax'] = FloatSpin(panel, value=8, digits=1, increment=0.5,
                                              action=self.onProcess,
                                              min_val=2, max_val=20)
+        wids['plot_win']  = Choice(panel, size=(60, -1), choices=PlotWindowChoices,
+                                   action=self.onProcess)
+        wids['plot_win'].SetStringSelection('2')
 
         opts = dict(digits=2, increment=0.1, min_val=0, action=self.onProcess)
         wids['e0'] = FloatSpin(panel, **opts)
@@ -191,7 +194,8 @@ class EXAFSPanel(TaskPanel):
         panel.Add(self.wids['plotalt_op'], dcol=2)
         add_text('Plot2 k weight: ', newrow=False)
         panel.Add(wids['plot_kweight_alt'])
-        panel.Add((10, 10), dcol=3, newrow=True)
+        add_text('Window for Second Plot: ', newrow=True)
+        panel.Add(self.wids['plot_win'], dcol=2)
         add_text('Plot R max: ', newrow=False)
         panel.Add(wids['plot_rmax'])
 
@@ -400,7 +404,7 @@ class EXAFSPanel(TaskPanel):
                      'plot_kweight_alt', 'plot_voffset'):
             conf[attr] = wids[attr].GetValue()
 
-        for attr in ('bkg_clamplo', 'bkg_clamphi'):
+        for attr in ('bkg_clamplo', 'bkg_clamphi', 'plot_win'):
             conf[attr] = int(wids[attr].GetStringSelection())
 
         for attr in ('fft_kwindow', 'fft_rwindow', 'plotone_op',
@@ -548,7 +552,7 @@ class EXAFSPanel(TaskPanel):
         cmd2 =  PlotCmds[conf['plotalt_op']]
         if cmd2 is not None:
             cmd2 = cmd2.replace('plot_kweight', 'plot_kweight_alt')
-            cmd2 = cmd2 + ", win=2, title={title:s})"
+            cmd2 = cmd2 + ", win={plot_win:d}, title={title:s})"
             cmd = "%s\n%s" % (cmd, cmd2)
             self.controller.get_display(win=2)
 
