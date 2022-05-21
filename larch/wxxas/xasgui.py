@@ -734,7 +734,7 @@ class XASFrame(wx.Frame):
 
             LoadSessionDialog(self, _session, path, self.controller).Show()
             fdir, fname = os.path.split(path)
-            if self.controller.chdir_on_fileopen():
+            if self.controller.chdir_on_fileopen() and len(fdir) > 0:
                 os.chdir(fdir)
                 self.controller.set_workdir()
 
@@ -757,7 +757,7 @@ class XASFrame(wx.Frame):
 
         LoadSessionDialog(self, _session, path, self.controller).Show()
         fdir, fname = os.path.split(path)
-        if self.controller.chdir_on_fileopen():
+        if self.controller.chdir_on_fileopen() and len(fdir) > 0:
             os.chdir(fdir)
             self.controller.set_workdir()
 
@@ -1088,7 +1088,7 @@ class XASFrame(wx.Frame):
 
     def onRead(self, path):
         filedir, filename = os.path.split(os.path.abspath(path))
-        if self.controller.chdir_on_fileopen():
+        if self.controller.chdir_on_fileopen() and len(filedir) > 0:
             os.chdir(filedir)
             self.controller.set_workdir()
 
