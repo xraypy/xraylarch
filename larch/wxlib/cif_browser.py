@@ -19,6 +19,7 @@ from matplotlib.ticker import FuncFormatter
 
 from wxmplot import PlotPanel
 from xraydb.chemparser import chemparse
+from xraydb import atomic_number
 
 import larch
 from larch import Group
@@ -406,6 +407,9 @@ class CIFFrame(wx.Frame):
         self.wids['central_atom'].Select(0)
 
         el0 = list(elems.keys())[0]
+        edge_val = 'K' if atomic_number(el0) < 60 else 'L3'
+        self.wids['edge'].SetStringSelection(edge_val)
+
         sites = cif_sites(cif.ciftext, absorber=el0)
         sites = ['%d' % (i+1) for i in range(len(sites))]
         self.wids['site'].Clear()
@@ -419,11 +423,17 @@ class CIFFrame(wx.Frame):
         cif  = self.current_cif
         if cif is None:
             return
-        sites = cif_sites(cif.ciftext, absorber=event.GetString())
-        sites = ['%d' % (i+1) for i in range(len(sites))]
-        self.wids['site'].Clear()
-        self.wids['site'].AppendItems(sites)
-        self.wids['site'].Select(0)
+        catom = event.GetString()
+        try:
+            sites = cif_sites(cif.ciftext, absorber=catom)
+            sites = ['%d' % (i+1) for i in range(len(sites))]
+            self.wids['site'].Clear()
+            self.wids['site'].AppendItems(sites)
+            self.wids['site'].Select(0)
+        except:
+            self.write_message(f"could not get sites for central atom '{catom}'")
+        edge_val = 'K' if atomic_number(catom) < 60 else 'L3'
+        self.wids['edge'].SetStringSelection(edge_val)
         self.onGetFeff()
 
     def onGetFeff(self, event=None):
