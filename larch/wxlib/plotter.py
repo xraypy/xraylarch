@@ -266,6 +266,13 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
         if (getattr(_larch.symtable._sys.wx, 'wxapp', None) is None or
             getattr(_larch.symtable._plotter, 'no_plotting', False)):
             return None
+
+        global PLOTOPTS
+        try:
+            PLOTOPTS = deepcopy(_larch.symtable._sys.wx.plotopts)
+        except:
+            pass
+
     win = max(1, min(MAX_WINDOWS, int(abs(win))))
     title   = 'Plot Window %i' % win
     symname = '%s.plot%i' % (_larch_name, win)
@@ -290,7 +297,7 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
     if wintitle is not None:
         title = wintitle
 
-    def _get_disp(symname, creator, win, ddict, wxparent, size, _larch):
+    def _get_disp(symname, creator, win, ddict, wxparent, size, height, width, _larch):
         display = None
         s = 'not'
         if win in ddict:
@@ -311,21 +318,28 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
                     display = None
 
         if display is None:
-            if size is None and (height is not None and width is not None):
+            if size is None:
+
+                if height is None:
+                    height = PLOTOPTS['height']
+                if width is None:
+                    width = PLOTOPTS['width']
                 size = (int(width), int(height))
             display = creator(window=win, wxparent=wxparent,
                               size=size, _larch=_larch)
+
+            parent = wx.GetApp().GetTopWindow()
+            if parent is not None:
+                xpos, ypos = parent.GetPosition()
+                xsiz, ysiz = parent.GetSize()
+                display.SetPosition((xpos+xsiz+15*win, ypos+25*win))
+
         ddict[win] = display
         return display
 
     display = _get_disp(symname, creator, win, display_dict, wxparent,
-                        size, _larch)
+                        size, height, width, _larch)
     if creator in (PlotDisplay, StackedPlotDisplay):
-        global PLOTOPTS
-        try:
-            PLOTOPTS = deepcopy(_larch.symtable._sys.wx.plotopts)
-        except:
-            pass
 
         if theme is not None:
             PLOTOPTS['theme'] = theme
