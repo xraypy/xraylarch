@@ -141,7 +141,8 @@ class XASController():
         out = self.symtable._plotter.get_display(**opts)
         if pos is not None:
             pos = (pos[0] + int(siz[0]*0.02), pos[1] + int(1.02*siz[1]))
-            out.SetPosition(pos)
+            # out.SetPosition(pos)
+            print(" Controller would set pos to ", pos)
 
         return out
 
