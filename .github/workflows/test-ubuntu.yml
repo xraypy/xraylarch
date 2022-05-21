@@ -9,17 +9,12 @@ jobs:
       max-parallel: 5
       fail-fast: false
       matrix:
-        python-version: ['3.8', '3.9']
+        python-version: ['3.8', '3.9', '3.10']
     defaults:
       run:
         shell: bash -l {0}
     steps:
     - uses: actions/checkout@v2
-    - name: Install X system libraries for 3.7
-      if: ${{ matrix.python-version == '3.7'}}
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libxxf86vm1 libgtk2.0 libgtk2.0-dev
     - name: Set up Python from Miniconda
       uses: conda-incubator/setup-miniconda@v2
       with:
@@ -32,20 +27,19 @@ jobs:
         conda config --set always_yes true --set changeps1 true
         conda config --add channels conda-forge
         conda install python=${{ matrix.python-version }}
-        conda info -a
-        conda install "numpy=>1.20" "scipy=>1.5" "matplotlib=>3.0" scikit-learn pandas
+        conda install numpy=>1.21 scipy==1.7.3 matplotlib=>3.3 pillow>=8.3 scikit-learn pandas
         conda install pyparsing pytest pytest-cov coverage
-        conda install h5py pillow>=8.3.2 imageio sqlalchemy psutil pyyaml
+        conda install h5py imageio sqlalchemy psutil pyyaml
         conda install psycopg2-binary numdifftools emcee cython
         #conda install tomopy
         conda install wxpython
-        conda install pymatgen
+        conda install pymatgen pycifrw
         conda info -a
         conda list
     - name: Install xraylarch and other dependencies with pip
       run: |
-        pip install lmfit peakutils pyepics pyshortcuts termcolor sphinx dill pycifrw xraydb wxmplot wxutils fabio silx imageio
-        python setup.py install
+        pip install lmfit peakutils pyepics pyshortcuts termcolor sphinx dill xraydb wxmplot wxutils fabio silx imageio
+        pip install .
     - name: Run test suite
       run: |
         cd tests
