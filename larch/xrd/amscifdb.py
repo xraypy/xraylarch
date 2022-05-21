@@ -691,12 +691,23 @@ class AMSCIFDB():
                          'atoms_u_iso', 'atoms_aniso_u11', 'atoms_aniso_u22',
                          'atoms_aniso_u33', 'atoms_aniso_u12',
                          'atoms_aniso_u13', 'atoms_aniso_u23'):
-                val =  get_optarray(getattr(cif, attr))
-                if val == '0':
-                    val = None
-                elif not as_strings and '?' not in val:
-                    val = np.array([float(v) for v in val])
-                setattr(out, attr, val)
+                try:
+                    val =  get_optarray(getattr(cif, attr))
+                    if val == '0':
+                        val = None
+                    elif not as_strings:
+                        tmp = []
+                        for i in range(len(val)):
+                            v = val[i]
+                            if v in ('?', '.'):
+                                v = 2.
+                            else:
+                                v = float(v)
+                            tmp.append(v)
+                        val = tmp
+                    setattr(out, attr, val)
+                except:
+                    print(f"could not parse CIF entry for {cif_id} '{attr}': {val} ")
 
         out.qval = None
         if cif.qdat is not None:
