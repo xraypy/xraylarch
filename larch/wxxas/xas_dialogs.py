@@ -1669,24 +1669,28 @@ class QuitDialog(wx.Dialog):
 
     def __init__(self, parent, message, **kws):
         title = "Quit Larch XAS Viewer?"
-        wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title, size=(475, 250))
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title, size=(500, 150))
         self.needs_save = True
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
-        self.save = Check(panel, default=False,
-                          label='Save Larch Session before Quitting?')
-
         status, filename, stime = message
+        warn_msg = 'All work in this session will be lost!'
+
         panel.Add((5, 5))
         if len(stime) > 2:
             status = f"{status} at {stime} to file"
+            warn_msg = 'Changes made after that will be lost!'
+
         panel.Add(wx.StaticText(panel, label=status), dcol=2)
+
         if len(filename) > 0:
-            panel.Add((5, 5), newrow=True)
+            if filename.startswith("'") and filename.endswith("'"):
+                filename = filename[1:-1]
+            panel.Add((15, 5), newrow=True)
             panel.Add(wx.StaticText(panel, label=filename), dcol=2)
 
         panel.Add((5, 5), newrow=True)
-        panel.Add(self.save, dcol=2)
+        panel.Add(wx.StaticText(panel, label=warn_msg), dcol=2)
         panel.Add(HLine(panel, size=(500, 3)), dcol=3, newrow=True)
         panel.Add((5, 5), newrow=True)
         panel.Add(OkCancel(panel), dcol=2, newrow=True)
@@ -1694,9 +1698,9 @@ class QuitDialog(wx.Dialog):
 
     def GetResponse(self):
         self.Raise()
-        response = namedtuple('QuitResponse', ('ok', 'save'))
+        response = namedtuple('QuitResponse', ('ok',))
         ok = (self.ShowModal() == wx.ID_OK)
-        return response(ok, self.save.IsChecked())
+        return response(ok,)
 
 class RenameDialog(wx.Dialog):
     """dialog for renaming group"""
