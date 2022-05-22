@@ -61,6 +61,11 @@ class XASController():
 
         self.init_workdir()
 
+    def sync_xasgroups(self):
+        "make sure `_xasgroups` is identical to file_groups"
+        if self.file_groups != self.symtable._xasgroups:
+            self.symtable._xasgroups = self.file_groups
+
     def get_config(self, key, default=None):
         "get top-level, program-wide configuration setting"
         if key not in self.config:
