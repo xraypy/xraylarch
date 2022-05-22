@@ -27,7 +27,7 @@ import larch
 from larch import Group, Journal, Entry
 from larch.io import save_session, read_session
 from larch.math import index_of
-from larch.utils import isotime, get_cwd, is_gzip
+from larch.utils import isotime, get_cwd, is_gzip, uname
 from larch.utils.strutils import (file2groupname, unique_name,
                                   common_startstring, asfloat)
 
@@ -404,6 +404,7 @@ class XASFrame(wx.Frame):
             s = str(fname)
             if s in self.controller.file_groups:
                 group = self.controller.file_groups.pop(s)
+            self.controller.sync_xasgroups()
 
     def ShowFile(self, evt=None, groupname=None, process=True,
                  filename=None, plot=True, **kws):
@@ -625,7 +626,7 @@ class XASFrame(wx.Frame):
 
         if outfile is None:
             return
-        if os.path.exists(outfile):
+        if os.path.exists(outfile) and uname != 'darwin':  # darwin prompts in FileSave!
             if wx.ID_YES != Popup(self,
                                   "Overwrite existing CSV File?",
                                   "Overwrite existing file?", style=wx.YES_NO):
@@ -645,6 +646,7 @@ class XASFrame(wx.Frame):
     # Athena
     def onExportAthenaProject(self, evt=None):
         groups = []
+        self.controller.sync_xasgroups()
         for checked in self.controller.filelist.GetCheckedStrings():
             groups.append(self.controller.file_groups[str(checked)])
 
@@ -696,7 +698,7 @@ class XASFrame(wx.Frame):
             if filename is None:
                 return
 
-        if os.path.exists(filename) and warn_overwrite:
+        if os.path.exists(filename) and warn_overwrite and uname != 'darwin':  # darwin prompts in FileSave!
             if wx.ID_YES != Popup(self,
                                   "Overwrite existing Project File?",
                                   "Overwrite existing file?", style=wx.YES_NO):
@@ -748,9 +750,9 @@ class XASFrame(wx.Frame):
         if path is None:
             return
 
-        if True: # try:
+        try:
             _session  = read_session(path)
-        else: # except:
+        except:
             Popup(self, f"{path} is not a valid Larch Session File",
                    f"{path} is not a valid Larch Session File")
             return
@@ -778,9 +780,8 @@ class XASFrame(wx.Frame):
         if fname is None:
             return
 
-        if os.path.exists(fname):
-            if wx.ID_YES != Popup(self,
-                                  "Overwrite existing Project File?",
+        if os.path.exists(fname) and uname != 'darwin':  # darwin prompts in FileSave!
+            if wx.ID_YES != Popup(self, "Overwrite existing Project File?",
                                   "Overwrite existing file?", style=wx.YES_NO):
                 return
 
@@ -836,6 +837,7 @@ class XASFrame(wx.Frame):
                 selected.append(res.newname)
 
             groupname = self.controller.file_groups.pop(fname)
+            self.controller.sync_xasgroups()
             self.controller.file_groups[res.newname] = groupname
             self.controller.filelist.rename_item(self.current_filename, res.newname)
             dgroup = self.controller.get_group(groupname)
@@ -881,6 +883,7 @@ class XASFrame(wx.Frame):
             filelist.Clear()
             for name in all_fnames:
                 filelist.Append(name)
+            self.controller.sync_xasgroups()
 
     def onFreezeGroups(self, event=None):
         self._freeze_handler(True)
@@ -927,6 +930,7 @@ class XASFrame(wx.Frame):
                                source="merge of %n groups" % len(groups),
                                journal={'merged_groups': repr(list(groups.values()))})
             self.controller.filelist.SetStringSelection(fname)
+            self.controller.sync_xasgroups()
 
     def onDeglitchData(self, event=None):
         DeglitchDialog(self, self.controller).Show()
@@ -985,9 +989,6 @@ class XASFrame(wx.Frame):
             dlg.Destroy()
             if not res.ok:
                 return
-
-            if res.save:
-                self.onSaveSession()
 
         self.controller.save_workdir()
         try:
@@ -1263,6 +1264,7 @@ class XASFrame(wx.Frame):
             plot_first = False
         self.write_message("read %d datasets from %s" % (len(namelist), path))
         self.last_athena_file = path
+        self.controller.sync_xasgroups()
 
     def onRead_OK(self, script, path, groupname=None, filename=None,
                   ref_groupname=None, ref_filename=None,
@@ -1422,6 +1424,7 @@ class XASFrame(wx.Frame):
         self.controller.init_group_config(thisgroup)
         self.controller.filelist.Append(filename.strip())
         self.controller.file_groups[filename] = groupname
+        self.controller.sync_xasgroups()
 
         self.nb.SetSelection(0)
         self.ShowFile(groupname=groupname, filename=filename,
