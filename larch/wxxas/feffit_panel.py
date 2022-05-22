@@ -34,11 +34,11 @@ from larch.xafs import feffit_report, feffpath
 from larch.xafs.xafsutils import FT_WINDOWS
 
 from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
-                         SetTip, GridPanel, get_icon, SimpleText,
-                         pack, Button, HLine, Choice, Check, MenuItem,
-                         GUIColors, CEN, RIGHT, LEFT, FRAMESTYLE, Font,
-                         FONTSIZE, FileSave, FileOpen, flatnotebook,
-                         EditableListBox)
+                         SetTip, GridPanel, get_icon, SimpleText, pack,
+                         Button, HLine, Choice, Check, MenuItem, GUIColors,
+                         CEN, RIGHT, LEFT, FRAMESTYLE, Font, FONTSIZE,
+                         COLORS, set_color, FONTSIZE_FW, FileSave,
+                         FileOpen, flatnotebook, EditableListBox)
 
 from larch.wxlib.parameter import ParameterWidgets
 from larch.wxlib.plotter import last_cursor_pos
@@ -242,7 +242,10 @@ class EditParamsFrame(wx.Frame):
         spanel = scrolled.ScrolledPanel(self, size=(500, 275))
         spanel.SetBackgroundColour('#EEEEEE')
 
+        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
+
         self.dvc = dv.DataViewCtrl(spanel, style=DVSTYLE)
+        self.dvc.SetFont(self.font_fixedwidth)
         self.SetMinSize((500, 250))
 
         self.model = ParametersModel(paramgroup, selected)
@@ -1444,20 +1447,23 @@ class FeffitResultFrame(wx.Frame):
 
         self.datalistbox = EditableListBox(splitter, self.ShowDataSet,
                                            size=(250, -1))
+        set_color(self.datalistbox, 'list_fg', bg='list_bg')
+
+        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
+
         panel = scrolled.ScrolledPanel(splitter)
 
         panel.SetMinSize((600, 575))
         panel.SetSize((850, 575))
-        self.colors = GUIColors()
 
         # title row
         self.wids = wids = {}
         title = SimpleText(panel, 'Feffit Results', font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LEFT)
+                           colour=COLORS['title'], style=LEFT)
 
         wids['data_title'] = SimpleText(panel, '< > ', font=Font(FONTSIZE+2),
                                         minsize=(350, -1),
-                                        colour=self.colors.title, style=LEFT)
+                                        colour=COLORS['title'], style=LEFT)
 
         wids['plotone_op'] = Choice(panel, choices=list(PlotOne_Choices.keys()),
                                     action=self.onPlot, size=(125, -1))
@@ -1531,7 +1537,7 @@ class FeffitResultFrame(wx.Frame):
 
         irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LEFT)
+                           colour=COLORS['title'], style=LEFT)
         subtitle = SimpleText(panel, ' (most recent fit is at the top)',
                               font=Font(FONTSIZE+1),  style=LEFT)
 
@@ -1539,6 +1545,7 @@ class FeffitResultFrame(wx.Frame):
         sizer.Add(subtitle, (irow, 1), (1, 3), LEFT)
 
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
+        sview.SetFont(self.font_fixedwidth)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
         sview.AppendTextColumn(' Label', width=120)
         sview.AppendTextColumn('N_paths', width=75)
@@ -1566,7 +1573,7 @@ class FeffitResultFrame(wx.Frame):
 
         irow += 1
         title = SimpleText(panel, '[[Variables]]',  font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LEFT)
+                           colour=COLORS['title'], style=LEFT)
         sizer.Add(title, (irow, 0), (1, 1), LEFT)
 
         self.wids['copy_params'] = Button(panel, 'Update Model with these values',
@@ -1575,6 +1582,7 @@ class FeffitResultFrame(wx.Frame):
         sizer.Add(self.wids['copy_params'], (irow, 1), (1, 3), LEFT)
 
         pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
+        pview.SetFont(self.font_fixedwidth)
         self.wids['paramsdata'] = []
         pview.AppendTextColumn('Parameter',         width=150)
         pview.AppendTextColumn('Best-Fit Value',    width=125)
@@ -1598,7 +1606,7 @@ class FeffitResultFrame(wx.Frame):
 
         irow += 1
         title = SimpleText(panel, '[[Correlations]]',  font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LEFT)
+                           colour=COLORS['title'], style=LEFT)
 
         ppanel = wx.Panel(panel)
 
@@ -1620,6 +1628,7 @@ class FeffitResultFrame(wx.Frame):
         sizer.Add(ppanel, (irow, 1), (1, 4), LEFT)
 
         cview = self.wids['correl'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
+        cview.SetFont(self.font_fixedwidth)
 
         cview.AppendTextColumn('Parameter 1',    width=150)
         cview.AppendTextColumn('Parameter 2',    width=150)
