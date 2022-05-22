@@ -27,7 +27,7 @@ from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
                          DataTableGrid)
 
 from .taskpanel import TaskPanel
-from .config import ARRAYS, Linear_ArrayChoices
+from .config import ARRAYS, Linear_ArrayChoices, PlotWindowChoices
 from larch.io.columnfile import write_ascii
 
 np.seterr(all='ignore')
@@ -45,6 +45,8 @@ def make_lcfplot(dgroup, form, with_fit=True, nfit=0):
     form['filename'] = dgroup.filename
     form['nfit'] = nfit
     form['label'] = label = 'Fit #%2.2d' % (nfit+1)
+
+    if 'win' not in form: form['win'] = 1
     kspace = form['arrayname'].startswith('chi')
     if kspace:
         kw = 0
@@ -53,7 +55,7 @@ def make_lcfplot(dgroup, form, with_fit=True, nfit=0):
         form['plotopt'] = 'kweight=%d' % kw
 
         cmds = ["""plot_chik({group:s}, {plotopt:s}, delay_draw=False, label='data',
-         show_window=False, title='{filename:s}, {label:s}')"""]
+         show_window=False, title='{filename:s}, {label:s}', win={win:d})"""]
 
     else:
         form['plotopt'] = 'show_norm=False'
@@ -69,7 +71,7 @@ def make_lcfplot(dgroup, form, with_fit=True, nfit=0):
         form['pemax'] = 10*int( (form['ehi'] + 5 + erange/4.0) / 10.0)
 
         cmds = ["""plot_mu({group:s}, {plotopt:s}, delay_draw=True, label='data',
-        emin={pemin:.1f}, emax={pemax:.1f}, title='{filename:s}, {label:s}')"""]
+        emin={pemin:.1f}, emax={pemax:.1f}, title='{filename:s}, {label:s}', win={win:d})"""]
 
     if with_fit and hasattr(dgroup, 'lcf_result'):
         with_comps = True # "Components" in form['plotchoice']
@@ -77,18 +79,18 @@ def make_lcfplot(dgroup, form, with_fit=True, nfit=0):
         xarr = "{group:s}.lcf_result[{nfit:d}].xdata"
         yfit = "{group:s}.lcf_result[{nfit:d}].yfit"
         ycmp = "{group:s}.lcf_result[{nfit:d}].ycomps"
-        cmds.append("plot(%s, %s, label='%s', zorder=30, %s)" % (xarr, yfit, label, delay))
+        cmds.append("plot(%s, %s, label='%s', zorder=30, %s, win={win:d})" % (xarr, yfit, label, delay))
         ncomps = len(dgroup.lcf_result[nfit].ycomps)
         if with_comps:
             for i, key in enumerate(dgroup.lcf_result[nfit].ycomps):
                 delay = 'delay_draw=False' if i==(ncomps-1) else 'delay_draw=True'
-                cmds.append("plot(%s, %s['%s'], label='%s', %s)" % (xarr, ycmp, key, key, delay))
+                cmds.append("plot(%s, %s['%s'], label='%s', %s, win={win:d})" % (xarr, ycmp, key, key, delay))
 
     # if form['show_e0']:
     #     cmds.append("plot_axvline({e0:1f}, color='#DDDDCC', zorder=-10)")
     if form['show_fitrange']:
-        cmds.append("plot_axvline({elo:1f}, color='#EECCCC', zorder=-10)")
-        cmds.append("plot_axvline({ehi:1f}, color='#EECCCC', zorder=-10)")
+        cmds.append("plot_axvline({elo:1f}, color='#EECCCC', zorder=-10, win={win:d})")
+        cmds.append("plot_axvline({ehi:1f}, color='#EECCCC', zorder=-10, win={win:d})")
 
     script = "\n".join(cmds)
     return script.format(**form)
@@ -163,6 +165,11 @@ class LinComboResultFrame(wx.Frame):
         wids['plot_sel'] = Button(panel, 'Plot N Best Fits', size=(125, -1),
                                   action=self.onPlotSel)
 
+        wids['plot_win'] = Choice(panel, choices=PlotWindowChoices,
+                                  action=self.onPlotOne, size=(60, -1))
+        wids['plot_win'].SetStringSelection('1')
+
+        wids['plot_wtitle'] = SimpleText(panel, 'Plot Window: ')
         wids['plot_ntitle'] = SimpleText(panel, 'N fits to plot: ')
 
         wids['plot_nchoice'] = Choice(panel, size=(60, -1),
@@ -209,17 +216,23 @@ class LinComboResultFrame(wx.Frame):
             this.Sortable = isort
             this.Alignment = this.Renderer.Alignment = align
 
-
         irow += 1
-        sizer.Add(self.wids['params'],       (irow,   0), (4, 2), LEFT)
+        sizer.Add(self.wids['params'],       (irow,   0), (7, 2), LEFT)
         sizer.Add(self.wids['plot_one'],     (irow,   2), (1, 2), LEFT)
-        sizer.Add(self.wids['plot_sel'],     (irow+1, 2), (1, 2), LEFT)
-        sizer.Add(self.wids['plot_ntitle'],  (irow+2, 2), (1, 1), LEFT)
-        sizer.Add(self.wids['plot_nchoice'], (irow+2, 3), (1, 1), LEFT)
-        # sizer.Add(self.wids['show_e0'],      (irow+3, 1), (1, 2), LEFT)
-        sizer.Add(self.wids['show_fitrange'],(irow+3, 2), (1, 2), LEFT)
 
-        irow += 4
+        sizer.Add(self.wids['plot_wtitle'],  (irow+1, 2), (1, 1), LEFT)
+        sizer.Add(self.wids['plot_win'],     (irow+1, 3), (1, 1), LEFT)
+
+
+        sizer.Add(self.wids['show_fitrange'],(irow+2, 2), (1, 2), LEFT)
+        sizer.Add((5, 5),                    (irow+3, 2), (1, 2), LEFT)
+        sizer.Add(self.wids['plot_sel'],     (irow+4, 2), (1, 2), LEFT)
+        sizer.Add(self.wids['plot_ntitle'],  (irow+5, 2), (1, 1), LEFT)
+        sizer.Add(self.wids['plot_nchoice'], (irow+5, 3), (1, 1), LEFT)
+        # sizer.Add(self.wids['show_e0'],      (irow+3, 1), (1, 2), LEFT)
+
+
+        irow += 7
         sizer.Add(HLine(panel, size=(675, 3)), (irow, 0), (1, 4), LEFT)
 
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
@@ -317,6 +330,8 @@ class LinComboResultFrame(wx.Frame):
         wids['show_fitrange'].SetValue(form['show_fitrange'])
 
         wids['stats'].DeleteAllItems()
+        if not hasattr(self.datagroup, 'lcf_result'):
+            return
         results = self.datagroup.lcf_result[:20]
         self.nresults = len(results)
         wids['nfits_title'].SetLabel('showing %i best results' % (self.nresults,))
@@ -410,11 +425,8 @@ class LinComboResultFrame(wx.Frame):
 
     def onPlotOne(self, evt=None):
         self.form = self.mainpanel.read_form()
-
-
         self.form['show_fitrange'] = self.wids['show_fitrange'].GetValue()
-        # print(make_lcfplot(self.datagroup,
-        #                   self.form, nfit=self.current_fit))
+        self.form['win'] = int(self.wids['plot_win'].GetStringSelection())
         self.larch_eval(make_lcfplot(self.datagroup,
                                      self.form, nfit=self.current_fit))
 
@@ -422,19 +434,22 @@ class LinComboResultFrame(wx.Frame):
         if self.form is None or self.larch_eval is None:
             return
         self.form['show_fitrange'] = self.wids['show_fitrange'].GetValue()
+        self.form['win'] = int(self.wids['plot_win'].GetStringSelection())
         form = self.form
         dgroup = self.datagroup
 
         form['plotopt'] = 'show_norm=True'
         if form['arrayname'] == 'dmude':
             form['plotopt'] = 'show_deriv=True'
+        if form['arrayname'] == 'flat':
+            form['plotopt'] = 'show_flat=True'
 
         erange = form['ehi'] - form['elo']
         form['pemin'] = 10*int( (form['elo'] - 5 - erange/4.0) / 10.0)
         form['pemax'] = 10*int( (form['ehi'] + 5 + erange/4.0) / 10.0)
 
         cmds = ["""plot_mu({group:s}, {plotopt:s}, delay_draw=True, label='data',
-        emin={pemin:.1f}, emax={pemax:.1f}, title='{filename:s}')"""]
+        emin={pemin:.1f}, emax={pemax:.1f}, title='{filename:s}', win={win:d})"""]
 
         nfits = int(self.wids['plot_nchoice'].GetStringSelection())
         for i in range(nfits):
