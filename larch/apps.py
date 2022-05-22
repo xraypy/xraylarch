@@ -131,7 +131,10 @@ def make_cli(description='run larch program', filedesc='data file'):
     parser = ArgumentParser(description=description)
     parser.add_argument('filename', nargs='?',  help=filedesc)
     args = parser.parse_args()
-    return dict(filename=args.filename)
+    filename = None
+    if 'filename' in args:
+        filename = os.path.abspath(args.filename)
+    return dict(filename=filename)
 
 # entry points:
 def run_gse_mapviewer():
