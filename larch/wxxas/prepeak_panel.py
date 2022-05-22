@@ -17,6 +17,7 @@ import lmfit.models as lm_models
 from lmfit.printfuncs import gformat
 
 from larch import Group, site_config
+from larch.utils import uname
 from larch.math import index_of
 from larch.io.export_modelresult import export_modelresult
 from larch.io import save_groups, read_groups
@@ -25,8 +26,8 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          SetTip, GridPanel, get_icon, SimpleText, pack,
                          Button, HLine, Choice, Check, MenuItem, COLORS,
                          set_color, CEN, RIGHT, LEFT, FRAMESTYLE, Font,
-                         FONTSIZE, FileSave, FileOpen, flatnotebook, Popup,
-                         EditableListBox)
+                         FONTSIZE, FONTSIZE_FW, FileSave, FileOpen,
+                         flatnotebook, Popup, EditableListBox)
 
 from larch.wxlib.parameter import ParameterWidgets
 from larch.wxlib.plotter import last_cursor_pos
@@ -196,6 +197,8 @@ class PrePeakFitResultFrame(wx.Frame):
 
         panel.SetMinSize((775, 575))
 
+        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
+
         # title row
         self.wids = wids = {}
         title = SimpleText(panel, 'Fit Results', font=Font(FONTSIZE+2),
@@ -245,14 +248,8 @@ class PrePeakFitResultFrame(wx.Frame):
         sizer.Add(wids['load_model'],(irow, 0), (1, 2), LEFT)
 
         irow += 1
-        # sizer.Add(SimpleText(panel, 'Plot: '), (irow, 0), (1, 1), LEFT)
         sizer.Add(wids['plot_choice'],(irow, 0), (1, 1), LEFT)
         sizer.Add(ppanel, (irow, 1), (1, 4), LEFT)
-#         sizer.Add(wids['plot_resid'], (irow, 3), (1, 1), LEFT)
-#
-#         irow += 1
-#         sizer.Add(SimpleText(panel, 'Use Plot Window: '), (irow, 0), (1, 1), LEFT)
-#         sizer.Add(wids['plot_win'],  (irow, 1), (1, 1), LEFT)
 
 
         irow += 1
@@ -273,6 +270,7 @@ class PrePeakFitResultFrame(wx.Frame):
         sizer.Add(subtitle, (irow, 1), (1, 1), LEFT)
 
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
+        sview.SetFont(self.font_fixedwidth)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
         sview.AppendTextColumn(' Label',  width=120)
         sview.AppendTextColumn(' N_data', width=75)
@@ -306,6 +304,7 @@ class PrePeakFitResultFrame(wx.Frame):
         sizer.Add(self.wids['copy_params'], (irow, 1), (1, 3), LEFT)
 
         pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
+        pview.SetFont(self.font_fixedwidth)
         self.wids['paramsdata'] = []
         pview.AppendTextColumn('Parameter',         width=150)
         pview.AppendTextColumn('Best-Fit Value',    width=125)
@@ -345,6 +344,8 @@ class PrePeakFitResultFrame(wx.Frame):
         sizer.Add(self.wids['all_correl'], (irow, 3), (1, 1), LEFT)
 
         cview = self.wids['correl'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
+        cview.SetFont(self.font_fixedwidth)
+
 
         cview.AppendTextColumn('Parameter 1',    width=150)
         cview.AppendTextColumn('Parameter 2',    width=150)
@@ -393,7 +394,7 @@ class PrePeakFitResultFrame(wx.Frame):
                         default_file=deffile, wildcard=wcards)
         if path is None:
             return
-        if os.path.exists(path):
+        if os.path.exists(path) and uname != 'darwin':  # darwin prompts in FileSave!
             if wx.ID_YES != Popup(self,
                                   "Overwrite existing Statistics File?",
                                   "Overwrite existing file?", style=wx.YES_NO):
