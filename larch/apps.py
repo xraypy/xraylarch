@@ -132,7 +132,7 @@ def make_cli(description='run larch program', filedesc='data file'):
     parser.add_argument('filename', nargs='?',  help=filedesc)
     args = parser.parse_args()
     filename = None
-    if 'filename' in args:
+    if 'filename' in args and args.filename is not None:
         filename = os.path.abspath(args.filename)
     return dict(filename=filename)
 
