@@ -396,9 +396,11 @@ class FeffitParamsPanel(wx.Panel):
         wx.Panel.__init__(self, parent, -1, size=(550, 450))
         self.feffit_panel = feffit_panel
         self.parwids = {}
+        self.SetFont(Font(FONTSIZE))
         spanel = scrolled.ScrolledPanel(self)
 
         panel = self.panel = GridPanel(spanel, ncols=8, nrows=30, pad=1, itemstyle=LEFT)
+        panel.SetFont(Font(FONTSIZE))
 
         def SLabel(label, size=(80, -1), **kws):
             return  SimpleText(panel, label, size=size, style=wx.ALIGN_LEFT, **kws)
@@ -534,6 +536,7 @@ class FeffPathPanel(wx.Panel):
         self.feffit_panel = feffit_panel
         self.editing_enabled = False
         wx.Panel.__init__(self, parent, -1, size=(550, 450))
+        self.SetFont(Font(FONTSIZE))
         panel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LEFT)
 
         self.feffdat_file = feffdat_file
