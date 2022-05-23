@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>13.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment &#8212; xraylarch 0.9.59 documentation</title>
+    <title>13.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment &#8212; xraylarch 0.9.60 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
@@ -143,7 +143,7 @@ called <em>self-absorption</em>) and for spectral convolution and de-convolution
 <h2><span class="section-number">13.2.1. </span>The <code class="xref py py-func docutils literal notranslate"><span class="pre">find_e0()</span></code> function<a class="headerlink" href="#the-find-e0-function" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.xafs.find_e0">
-<span class="sig-prename descclassname"><span class="pre">larch.xafs.</span></span><span class="sig-name descname"><span class="pre">find_e0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_larch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.xafs.find_e0" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.xafs.</span></span><span class="sig-name descname"><span class="pre">find_e0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.xafs.find_e0" title="Permalink to this definition">¶</a></dt>
 <dd><p>calculate <span class="math notranslate nohighlight">\(E_0\)</span>, the energy threshold of absorption, or
 ‘edge energy’, given <span class="math notranslate nohighlight">\(\mu(E)\)</span>.</p>
 <p><span class="math notranslate nohighlight">\(E_0\)</span> is found as the point with maximum derivative with
@@ -568,7 +568,8 @@ and that the spectra has decent pre-edge subtraction and normalization.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>energy</strong> (<em>ndarray</em><em> or </em><em>group</em>) – array of x-ray energies, in eV, or group (see note 1)</p></li>
-<li><p><strong>norm</strong> (<em>ndarray</em><em> or </em><em>None</em>) – array of normalized mu(E)</p></li>
+<li><p><strong>norm</strong> (<em>ndarray</em><em> or </em><em>None</em>) – array of normalized mu(E) to be fit (deprecated, see note 2)</p></li>
+<li><p><strong>arrayname</strong> (<em>string</em><em> or </em><em>None</em>) – name of array to use as data (see note 2)</p></li>
 <li><p><strong>group</strong> (<em>group</em><em> or </em><em>None</em>) – output group</p></li>
 <li><p><strong>emax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em> or </em><em>None</em>) – max energy (eV) to use for baesline fit [e0-5]</p></li>
 <li><p><strong>emin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em> or </em><em>None</em>) – min energy (eV) to use for baesline fit [e0-40]</p></li>
@@ -600,9 +601,13 @@ and that the spectra has decent pre-edge subtraction and normalization.</p>
 </tbody>
 </table>
 </div></blockquote>
+<p>Note that ‘norm’ will be used here even if a differnt input array was used.</p>
 <p class="rubric">Notes</p>
 <ol class="arabic simple">
 <li><p>Supports <a class="reference internal" href="xafs_utilities.html#first-argument-group"><span class="std std-ref">First Argument Group convention</span></a> convention, requiring group members <cite>energy</cite> and <cite>norm</cite></p></li>
+<li><p>You can pass is an array to fit with ‘norm=’, or you can name the array to use with
+<cite>arrayname</cite>, which can be one of [‘norm’, ‘flat’, ‘deconv’, ‘aspassed’, None] with None
+and ‘aspassed’ meaning that the argument of <cite>norm</cite> will be used, as passed in.</p></li>
 <li><p>Supports <a class="reference internal" href="xafs_utilities.html#set-xafs-group"><span class="std std-ref">group argument and _sys.xafsGroup</span></a> convention within Larch or if <cite>_larch</cite> is set.</p></li>
 </ol>
 </dd></dl>
@@ -1028,7 +1033,7 @@ data and the spectrum deconvolved by the energy of its core level.</span></p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.5.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>
 </html>
