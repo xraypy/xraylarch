@@ -26,11 +26,9 @@ from .config import make_array_choice, EDGES, ATSYMS, NNORM_CHOICES, NORM_METHOD
 
 np.seterr(all='ignore')
 
-PLOTOPTS_1 = dict(style='solid', linewidth=3, marker='None', markersize=4)
-PLOTOPTS_2 = dict(style='short dashed', linewidth=2, zorder=3,
-                  marker='None', markersize=4)
-PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
-                  side='right', marker='None', markersize=4)
+PLOTOPTS_1 = dict(style='solid', marker='None')
+PLOTOPTS_2 = dict(style='short dashed', zorder=3, marker='None')
+PLOTOPTS_D = dict(style='solid', zorder=2, side='right', marker='None')
 
 PlotOne_Choices = make_array_choice(['mu','norm', 'flat', 'prelines',
                                      'mback_norm', 'mback_poly', 'dmude',
@@ -919,9 +917,11 @@ class XASNormPanel(TaskPanel):
     def plot(self, dgroup, title=None, plot_yarrays=None, yoff=0,
              delay_draw=False, multi=False, new=True, zoom_out=True,
              with_extras=True, **kws):
+
         if self.skip_plotting:
             return
         ppanel = self.controller.get_display(stacked=False).panel
+
         viewlims = ppanel.get_viewlimits()
         plotcmd = ppanel.oplot
         if new:
@@ -950,7 +950,9 @@ class XASNormPanel(TaskPanel):
         if plot_yarrays is None and hasattr(dgroup, 'plot_yarrays'):
             plot_yarrays = dgroup.plot_yarrays
 
-        popts = kws
+        popts = self.controller.get_plot_conf()
+        popts.update(kws)
+
         path, fname = os.path.split(dgroup.filename)
         if 'label' not in popts:
             popts['label'] = dgroup.plot_ylabel
@@ -1000,17 +1002,16 @@ class XASNormPanel(TaskPanel):
         narr = len(plot_yarrays) - 1
         for i, pydat in enumerate(plot_yarrays):
             yaname, yopts, yalabel = pydat
-            # print(" PLOT :: ", i, pydat)
             popts.update(yopts)
             if yalabel is not None:
                 popts['label'] = yalabel
-
+            linewidth = popts.pop('linewidth')
             popts['delay_draw'] = delay_draw or (i != narr)
             if yaname == 'norm_mback' and not hasattr(dgroup, yaname):
                 self.process(dgroup=dgroup, force=True, force_mback=True)
+            plotcmd(dgroup.xdat, getattr(dgroup, yaname)+yoff, linewidth=linewidth, **popts)
+            ppanel.conf.set_trace_linewidth(linewidth, trace=i)
 
-            plotcmd(dgroup.xdat, getattr(dgroup, yaname)+yoff, **popts)
-            plotcmd = ppanel.oplot
 
         if with_extras and plot_extras is not None:
             axes = ppanel.axes
