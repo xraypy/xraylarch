@@ -75,10 +75,12 @@ class XASController():
     def init_group_config(self, dgroup):
         """set up 'config' group with values from self.config"""
         if not hasattr(dgroup, 'config'):
-            dgroup.config = Group(__name__='xas_viewer config')
+            dgroup.config = larch.Group(__name__='xas_viewer config')
 
-        for section, conf in self.config.items():
-            setattr(dgroup.config, section, deepcopy(conf))
+        for sect in ('exafs', 'feffit', 'lincombo', 'pca', 'prepeaks',
+                     'regression', 'xasnorm'):
+            setattr(dgroup.config, sect, deepcopy(self.config[sect]))
+
 
     def save_config(self):
         """save configuration"""
@@ -172,9 +174,11 @@ class XASController():
             master = grouplist[0]
         this = self.get_group(outgroup)
         master = self.get_group(master)
-        if not hasattr(this, 'xasnorm_config'):
-            this.xasnorm_config = {}
-        this.xasnorm_config.update(master.xasnorm_config)
+        if not hasattr(master, 'config'):
+            self.init_group_config(master)
+        if not hasattr(this, 'config'):
+            self.init_group_config(this)
+        this.config.xasnorm.update(master.config.xasnorm)
         this.datatype = master.datatype
         this.xdat = 1.0*this.energy
         this.ydat = 1.0*getattr(this, yarray)
