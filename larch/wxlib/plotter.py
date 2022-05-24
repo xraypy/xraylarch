@@ -258,8 +258,9 @@ class ImageDisplay(ImageFrame):
 
 def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
                 wintitle=None, xrf=False, image=False, stacked=False,
-                theme=None, linewidth=None, show_grid=None, show_fullbox=None,
-                height=None, width=None):
+                theme=None, linewidth=None, markersize=None,
+                show_grid=None, show_fullbox=None, height=None,
+                width=None):
     """make a plotter"""
     # global PLOT_DISPLAYS, IMG_DISPlAYS
     if  hasattr(_larch, 'symtable'):
@@ -349,6 +350,8 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
             PLOTOPTS['show_fullbox'] = show_fullbox
         if linewidth is not None:
             PLOTOPTS['linewidth'] = linewidth
+        if markersize is not None:
+            PLOTOPTS['markersize'] = markersize
 
         panels = [display.panel]
         if creator == StackedPlotDisplay:
