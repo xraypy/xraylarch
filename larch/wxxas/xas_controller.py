@@ -81,6 +81,14 @@ class XASController():
                      'regression', 'xasnorm'):
             setattr(dgroup.config, sect, deepcopy(self.config[sect]))
 
+    def get_plot_conf(self):
+        """get basic plot options to pass to plot() ** not window sizes **"""
+        dx = {'linewidth': 3, 'markersize': 4,
+              'show_grid': True, 'show_fullbox': True, 'theme': 'light'}
+        out = {}
+        for attr, val in dx.items():
+            out[attr] = self.conf['plot'].get(attr, val)
+        return out
 
     def save_config(self):
         """save configuration"""
