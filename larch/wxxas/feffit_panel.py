@@ -857,7 +857,7 @@ class FeffitPanel(TaskPanel):
             # initial reading: start with default then take Athena Project values
             conf = self.get_defaultconfig()
 
-            econf = getattr(dgroup.config, 'exafs_config', {})
+            econf = getattr(dgroup.config, 'exafs', {})
             for key in ('fft_kmin', 'fft_kmax', 'fft_dk', 'fft_kwindow',
                         'fft_rmin', 'fft_rmax','fft_kweight'):
                 val = econf.get(key, None)
