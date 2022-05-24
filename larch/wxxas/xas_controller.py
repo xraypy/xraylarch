@@ -85,9 +85,10 @@ class XASController():
         """get basic plot options to pass to plot() ** not window sizes **"""
         dx = {'linewidth': 3, 'markersize': 4,
               'show_grid': True, 'show_fullbox': True, 'theme': 'light'}
+        pconf = self.config['plot']
         out = {}
         for attr, val in dx.items():
-            out[attr] = self.conf['plot'].get(attr, val)
+            out[attr] = pconf.get(attr, val)
         return out
 
     def save_config(self):
