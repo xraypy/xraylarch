@@ -133,7 +133,8 @@ plot = [CVar('theme', 'light', 'choice', choices=list(wxmplot.config.Themes.keys
             desc='plotting theme for colors and "look and feel"'),
         CVar('height', 550, 'int', min=100, desc='height of main plot window (in pixels)'),
         CVar('width', 600, 'int', min=100, desc='width of main plot window (in pixels)'),
-        CVar('linewidth', 2.5, 'float', min=0, step=0.5, desc='line width for each trace (in pixels)'),
+        CVar('linewidth', 3.0, 'float', min=0, step=0.5, desc='line width for each trace (in pixels)'),
+        CVar('markersize', 4.0, 'float', min=0, step=0.5, desc='size of plot markers (in pixels)'),
         CVar('show_grid', True, 'bool', desc='whether to show grid lines'),
         CVar('show_fullbox', True, 'bool', desc='whether to show a full box around plot,\nor only left and bottom axes'),
         ]
