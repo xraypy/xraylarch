@@ -90,11 +90,6 @@ FitMethods = ("Levenberg-Marquardt", "Nelder-Mead", "Powell")
 ModelWcards = "Fit Models(*.modl)|*.modl|All files (*.*)|*.*"
 DataWcards = "Data Files(*.dat)|*.dat|All files (*.*)|*.*"
 
-PLOTOPTS_1 = dict(style='solid', linewidth=3, marker='None', markersize=4)
-PLOTOPTS_2 = dict(style='short dashed', linewidth=2, marker='None', markersize=4)
-
-PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
-                  side='right', marker='None', markersize=4)
 
 MIN_CORREL = 0.10
 
