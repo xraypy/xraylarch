@@ -365,7 +365,7 @@ overwriting current arrays''')
             dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
         sharedrefs = [dgroup.filename]
         try:
-            eref = dgroup.xasnorm_config.get('energy_ref', None)
+            eref = dgroup.config.xasnorm.get('energy_ref', None)
         except:
             eref = None
         if eref is None:
@@ -375,7 +375,7 @@ overwriting current arrays''')
                 continue
             g = self.controller.get_group(val)
             try:
-                geref = g.xasnorm_config.get('energy_ref', None)
+                geref = g.config.xasnorm.get('energy_ref', None)
             except:
                 geref = None
             if geref == eref:
