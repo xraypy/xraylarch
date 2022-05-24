@@ -58,11 +58,6 @@ PlotAlt_Choices = make_array_choice(['noplot', 'chi','chir_mag', 'chir_re', 'chi
 # PlotAlt_Choices = [noplot] + PlotOne_Choices
 
 ScriptWcards = "Fit Models(*.lar)|*.lar|All files (*.*)|*.*"
-PLOTOPTS_1 = dict(style='solid', linewidth=3, marker='None', markersize=4)
-PLOTOPTS_2 = dict(style='short dashed', linewidth=2, marker='None', markersize=4)
-
-PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
-                  side='right', marker='None', markersize=4)
 
 MIN_CORREL = 0.10
 
