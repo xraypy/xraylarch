@@ -360,9 +360,10 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
             conf.enable_grid(PLOTOPTS['show_grid'])
             conf.axes_style = 'box' if PLOTOPTS['show_fullbox'] else 'open'
             for i in range(16):
-                conf.traces[i].linewidth = PLOTOPTS['linewidth']
+                conf.set_trace_linewidth(PLOTOPTS['linewidth'], trace=i)
     try:
         display.SetTitle(title)
+
     except:
         display_dict.pop(win)
         display = _get_disp(symname, creator, win, display_dict, wxparent,
