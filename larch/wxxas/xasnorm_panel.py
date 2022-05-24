@@ -432,7 +432,7 @@ class XASNormPanel(TaskPanel):
         dgroup = self.controller.get_group()
         eref = self.wids['energy_ref'].GetStringSelection()
         gname = self.controller.file_groups[eref]
-        dgroup.xasnorm_config['energy_ref'] = eref
+        dgroup.config.xasnorm['energy_ref'] = eref
         dgroup.energy_ref = eref
         self.update_config({'energy_ref': eref}, dgroup=dgroup)
 
