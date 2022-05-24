@@ -926,9 +926,10 @@ class XASFrame(wx.Frame):
                                          master=master,
                                          yarray=yname,
                                          outgroup=gname)
+            mgroups ='[%s]' % (', '.join(list(groups.values())))
             self.install_group(gname, fname, overwrite=False,
-                               source="merge of %n groups" % len(groups),
-                               journal={'merged_groups': repr(list(groups.values()))})
+                               source="merge of %d groups" % len(groups),
+                               journal={'merged_groups': mgroups})
             self.controller.filelist.SetStringSelection(fname)
             self.controller.sync_xasgroups()
 
