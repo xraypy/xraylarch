@@ -952,6 +952,8 @@ class XASNormPanel(TaskPanel):
 
         popts = self.controller.get_plot_conf()
         popts.update(kws)
+        popts['grid'] = popts.pop('show_grid')
+        popts['fullbox'] = popts.pop('show_fullbox')
 
         path, fname = os.path.split(dgroup.filename)
         if 'label' not in popts:
@@ -1010,6 +1012,7 @@ class XASNormPanel(TaskPanel):
             if yaname == 'norm_mback' and not hasattr(dgroup, yaname):
                 self.process(dgroup=dgroup, force=True, force_mback=True)
             plotcmd(dgroup.xdat, getattr(dgroup, yaname)+yoff, linewidth=linewidth, **popts)
+
             ppanel.conf.set_trace_linewidth(linewidth, trace=i)
 
 
