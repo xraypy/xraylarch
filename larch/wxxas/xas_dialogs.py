@@ -18,7 +18,7 @@ from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl, FloatSpin,
                          set_color, FloatSpinWithPin, get_icon, SimpleText,
                          Choice, SetTip, Check, Button, HLine, OkCancel,
                          LEFT, pack, plotlabels, ReportFrame, DictFrame,
-                         FileCheckList)
+                         FileCheckList, Font, FONTSIZE)
 
 from larch.wxlib.xafsplots import plotlabels
 from larch.xafs.xafsutils  import etok, ktoe
@@ -82,7 +82,7 @@ class OverAbsorptionDialog(wx.Dialog):
 
         wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
                            title="Correct Over-absorption")
-
+        self.SetFont(Font(FONTSIZE))
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
         self.wids = wids = {}
 
@@ -148,6 +148,12 @@ class OverAbsorptionDialog(wx.Dialog):
         panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
                   newrow=True)
         panel.pack()
+
+        w0, h0 = self.GetSize()
+        w1, h1 = self.GetBestSize()
+        # print("SetSize",  ((max(w0, w1)+25, max(h0, h1)+25)))
+        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+
 
     def onDone(self, event=None):
         self.Destroy()
@@ -253,7 +259,7 @@ class EnergyCalibrateDialog(wx.Dialog):
 
         wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
                            title="Calibrate / Align Energy")
-
+        self.SetFont(Font(FONTSIZE))
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
 
         self.wids = wids = {}
@@ -345,6 +351,12 @@ overwriting current arrays''')
         panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
                   newrow=True)
         panel.pack()
+
+        w0, h0 = self.GetSize()
+        w1, h1 = self.GetBestSize()
+        # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+
+        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+
         self.plot_results()
         wx.CallAfter(self.get_groups_shared_energyrefs)
 
@@ -580,7 +592,7 @@ class RebinDataDialog(wx.Dialog):
 
         wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
                            title="Rebin mu(E) Data")
-
+        self.SetFont(Font(FONTSIZE))
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
         self.wids = wids = {}
@@ -661,6 +673,11 @@ class RebinDataDialog(wx.Dialog):
         panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
                   newrow=True)
         panel.pack()
+        w0, h0 = self.GetSize()
+        w1, h1 = self.GetBestSize()
+        # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+
+        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+
         self.on_rebin()
         self.plot_results()
 
@@ -782,7 +799,7 @@ class SmoothDataDialog(wx.Dialog):
 
         wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
                            title="Smooth mu(E) Data")
-
+        self.SetFont(Font(FONTSIZE))
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
 
         self.wids = wids = {}
@@ -854,6 +871,12 @@ class SmoothDataDialog(wx.Dialog):
         panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
                   newrow=True)
         panel.pack()
+
+        w0, h0 = self.GetSize()
+        w1, h1 = self.GetBestSize()
+        # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+
+        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+
         self.plot_results()
 
     def onDone(self, event=None):
@@ -973,7 +996,7 @@ class DeconvolutionDialog(wx.Dialog):
 
         wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
                            title="Deconvolve mu(E) Data")
-
+        self.SetFont(Font(FONTSIZE))
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
 
         self.wids = wids = {}
@@ -1021,6 +1044,11 @@ class DeconvolutionDialog(wx.Dialog):
         panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
                   newrow=True)
         panel.pack()
+        w0, h0 = self.GetSize()
+        w1, h1 = self.GetBestSize()
+        # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+
+        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+
         self.plot_results()
 
     def onDone(self, event=None):
@@ -1119,7 +1147,7 @@ class DeglitchDialog(wx.Dialog):
 
         wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
                            title="Select Points to Remove")
-
+        self.SetFont(Font(FONTSIZE))
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
         wids = self.wids
 
@@ -1201,6 +1229,12 @@ clear undo history''')
         panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
                   newrow=True)
         panel.pack()
+
+        w0, h0 = self.GetSize()
+        w1, h1 = self.GetBestSize()
+        # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+
+        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+
         self.plot_results()
 
     def onDone(self, event=None):
@@ -1407,7 +1441,7 @@ class SpectraCalcDialog(wx.Dialog):
 
         wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(475, 525),
                            title="Spectra Calculations: Add, Subtract Spectra")
-
+        self.SetFont(Font(FONTSIZE))
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
 
         def add_text(text, dcol=1, newrow=True):
@@ -1459,6 +1493,12 @@ class SpectraCalcDialog(wx.Dialog):
         panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
                   newrow=True)
         panel.pack()
+
+        w0, h0 = self.GetSize()
+        w1, h1 = self.GetBestSize()
+        # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+
+        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+
 
     def onDone(self, event=None):
         self.Destroy()
@@ -1526,7 +1566,7 @@ class EnergyUnitsDialog(wx.Dialog):
 
         title = "Select Energy Units to convert to 'eV'"
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
-
+        self.SetFont(Font(FONTSIZE))
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
         self.en_units = Choice(panel, choices=self.unit_choices, size=(125, -1),
@@ -1553,6 +1593,12 @@ class EnergyUnitsDialog(wx.Dialog):
         panel.Add(OkCancel(panel), dcol=2, newrow=True)
 
         panel.pack()
+
+        w0, h0 = self.GetSize()
+        w1, h1 = self.GetBestSize()
+        # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+
+        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+
 
     def onUnits(self, event=None):
         units = self.en_units.GetStringSelection()
@@ -1606,6 +1652,12 @@ class MergeDialog(wx.Dialog):
 
         panel.pack()
 
+        w0, h0 = self.GetSize()
+        w1, h1 = self.GetBestSize()
+        # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+
+        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+
+
     def GetResponse(self, master=None, gname=None, ynorm=True):
         self.Raise()
         response = namedtuple('MergeResponse', ('ok', 'master', 'ynorm', 'group'))
@@ -1624,7 +1676,7 @@ class ExportCSVDialog(wx.Dialog):
     def __init__(self, parent, groupnames, **kws):
         title = "Export Selected Groups"
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
-
+        self.SetFont(Font(FONTSIZE))
         self.ychoices = {'normalized mu(E)': 'norm',
                          'raw mu(E)': 'mu',
                          'flattened mu(E)': 'flat',
@@ -1652,6 +1704,12 @@ class ExportCSVDialog(wx.Dialog):
         panel.Add(OkCancel(panel), dcol=2, newrow=True)
         panel.pack()
 
+        w0, h0 = self.GetSize()
+        w1, h1 = self.GetBestSize()
+        # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+
+        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+
+
     def GetResponse(self, master=None, gname=None, ynorm=True):
         self.Raise()
         response = namedtuple('ExportCSVResponse',
@@ -1670,6 +1728,7 @@ class QuitDialog(wx.Dialog):
     def __init__(self, parent, message, **kws):
         title = "Quit Larch XAS Viewer?"
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title, size=(500, 150))
+        self.SetFont(Font(FONTSIZE))
         self.needs_save = True
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
@@ -1696,6 +1755,11 @@ class QuitDialog(wx.Dialog):
         panel.Add(OkCancel(panel), dcol=2, newrow=True)
         panel.pack()
 
+        w0, h0 = self.GetSize()
+        w1, h1 = self.GetBestSize()
+        # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+
+        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+
     def GetResponse(self):
         self.Raise()
         response = namedtuple('QuitResponse', ('ok',))
@@ -1707,7 +1771,7 @@ class RenameDialog(wx.Dialog):
     def __init__(self, parent, oldname,  **kws):
         title = "Rename Group %s" % (oldname)
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
-
+        self.SetFont(Font(FONTSIZE))
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
         self.newname   = wx.TextCtrl(panel, -1, oldname,  size=(250, -1))
@@ -1719,6 +1783,12 @@ class RenameDialog(wx.Dialog):
         panel.Add(OkCancel(panel), dcol=2, newrow=True)
 
         panel.pack()
+
+        w0, h0 = self.GetSize()
+        w1, h1 = self.GetBestSize()
+        # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+
+        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+
 
     def GetResponse(self, newname=None):
         self.Raise()
@@ -1735,7 +1805,7 @@ class RemoveDialog(wx.Dialog):
         title = "Remove %i Selected Group" % len(grouplist)
         self.grouplist = grouplist
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
-
+        self.SetFont(Font(FONTSIZE))
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
         panel.Add(SimpleText(panel, 'Remove %i Selected Groups?' % (len(grouplist))),
@@ -1744,6 +1814,10 @@ class RemoveDialog(wx.Dialog):
         panel.Add(OkCancel(panel), dcol=2, newrow=True)
 
         panel.pack()
+
+        w0, h0 = self.GetSize()
+        w1, h1 = self.GetBestSize()
+        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
 
     def GetResponse(self, ngroups=None):
         self.Raise()
@@ -1891,6 +1965,12 @@ class LoadSessionDialog(wx.Frame):
 
         splitter.SplitVertically(leftpanel, rightpanel, 1)
         self.SetSize((750, 725))
+
+        w0, h0 = self.GetSize()
+        w1, h1 = self.GetBestSize()
+        # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+25)))
+        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+
         self.Show()
         self.Raise()
 

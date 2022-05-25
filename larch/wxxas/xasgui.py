@@ -118,7 +118,7 @@ class PreferencesFrame(wx.Frame):
     def __init__(self, parent, controller, **kws):
         self.controller = controller
         wx.Frame.__init__(self, None, -1,  'XAS_Viewer Preferences',
-                          style=FRAMESTYLE, size=(650, 650))
+                          style=FRAMESTYLE, size=(700, 725))
 
         sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -203,7 +203,10 @@ class PreferencesFrame(wx.Frame):
         sizer.Add((5, 5), 0, LEFT, 5)
         sizer.Add(self.nb, 1, LEFT|wx.EXPAND, 5)
         pack(self, sizer)
-        self.SetSize((650, 650))
+        w0, h0 = self.GetSize()
+        w1, h1 = self.GetBestSize()
+        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+
         self.Show()
         self.Raise()
 
