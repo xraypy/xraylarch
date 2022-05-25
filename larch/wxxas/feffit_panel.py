@@ -842,28 +842,28 @@ class FeffitPanel(TaskPanel):
     def get_config(self, dgroup=None):
         """get and set processing configuration for a group"""
         if dgroup is None:
-             dgroup = self.controller.get_group()
+            dgroup = self.controller.get_group()
         if dgroup is None:
-             return self.get_defaultconfig()
+            conf = None
         if not hasattr(dgroup, 'chi'):
-             self.xasmain.process_exafs(dgroup)
-        conf = getattr(dgroup.config, self.configname, None)
-        if conf is None:
-            # initial reading: start with default then take Athena Project values
-            conf = self.get_defaultconfig()
+            self.xasmain.process_exafs(dgroup)
+        dconf = self.get_defaultconfig()
+        conf = getattr(dgroup.config, self.configname, dconf)
+        econf = getattr(dgroup.config, 'exafs', {})
 
-            econf = getattr(dgroup.config, 'exafs', {})
-            for key in ('fft_kmin', 'fft_kmax', 'fft_dk', 'fft_kwindow',
-                        'fft_rmin', 'fft_rmax','fft_kweight'):
-                val = econf.get(key, None)
-                tkey = key.replace('fft_', '')
-                if key == 'fft_kweight':
-                    val = str(int(val))
-                    tkey = 'kwstring'
-                if val is not None and tkey in conf:
-                    conf[tkey] = val
-
-            setattr(dgroup.config, self.configname, conf)
+        for key in ('fft_kmin', 'fft_kmax', 'fft_dk', 'fft_kwindow',
+                    'fft_rmin', 'fft_rmax','fft_kweight'):
+            val = econf.get(key, None)
+            tkey = key.replace('fft_', '')
+            if key == 'fft_kweight':
+                val = str(int(val))
+                tkey = 'kwstring'
+            if val is not None and tkey in conf:
+                conf[tkey] = val
+        for k, v in dconf.items():
+            if k not in conf:
+                conf[k] = v
+        setattr(dgroup.config, self.configname, conf)
         return conf
 
 
