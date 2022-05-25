@@ -348,9 +348,10 @@ class TaskPanel(wx.Panel):
         defconf = self.get_defaultconfig()
         if conf is None:
             setattr(dgroup.config, self.configname, defconf)
+        conf = getattr(dgroup.config, self.configname)
         for k, v in defconf.items():
-            if k not in dgroup.config:
-                dgroup.config[k] = v
+            if k not in conf:
+                conf[k] = v
 
         if dgroup is not None and with_erange:
             _emin = min(dgroup.energy)
