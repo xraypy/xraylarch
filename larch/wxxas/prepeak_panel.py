@@ -224,9 +224,11 @@ class PrePeakFitResultFrame(wx.Frame):
         wids['plot_choice'] = Button(panel, 'Plot This Fit',
                                      size=(125, -1), action=self.onPlot)
 
-        wids['fit_label'] = wx.TextCtrl(panel, -1, ' ', size=(225, -1))
-        wids['set_label'] = Button(panel, 'Update Label', size=(175, -1),
+        wids['fit_label'] = wx.TextCtrl(panel, -1, ' ', size=(175, -1))
+        wids['set_label'] = Button(panel, 'Update Label', size=(150, -1),
                                    action=self.onUpdateLabel)
+        wids['del_fit'] = Button(panel, 'Remove from Fit History', size=(200, -1),
+                                 action=self.onRemoveFromHistory)
 
 
 
@@ -252,8 +254,9 @@ class PrePeakFitResultFrame(wx.Frame):
 
         irow += 1
         sizer.Add(SimpleText(panel, 'Fit Label:', style=LEFT), (irow, 0), (1, 1), LEFT)
-        sizer.Add(wids['fit_label'], (irow, 1), (1, 2), LEFT)
-        sizer.Add(wids['set_label'], (irow, 3), (1, 1), LEFT)
+        sizer.Add(wids['fit_label'], (irow, 1), (1, 1), LEFT)
+        sizer.Add(wids['set_label'], (irow, 2), (1, 1), LEFT)
+        sizer.Add(wids['del_fit'], (irow, 3), (1, 2), LEFT)
 
         irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(FONTSIZE+2),
@@ -375,6 +378,13 @@ class PrePeakFitResultFrame(wx.Frame):
         item = self.wids['stats'].GetSelectedRow()
         result.label = self.wids['fit_label'].GetValue()
         self.show_results()
+
+    def onRemoveFromHistory(self, event=None):
+        result = self.get_fitresult()
+        self.datagroup.prepeaks.fit_history.pop(self.nfit)
+        self.nfit = 0
+        self.show_results()
+
 
     def onSaveAllStats(self, evt=None):
         "Save Parameters and Statistics to CSV"
