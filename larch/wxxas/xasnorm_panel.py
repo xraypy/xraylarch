@@ -254,10 +254,14 @@ class XASNormPanel(TaskPanel):
             return self.get_defaultconfig()
         self.read_form()
 
+        defconf = self.get_defaultconfig()
         conf = getattr(dgroup.config, self.configname, None)
         if conf is None:
-            conf = self.get_defaultconfig()
+            conf = defconf
 
+        for k, v in defconf.items():
+            if k not in conf:
+                conf[k] = v
         if conf.get('edge_step', None) is None:
             conf['edge_step'] = getattr(dgroup, 'edge_step', 1)
 
@@ -587,7 +591,18 @@ class XASNormPanel(TaskPanel):
         wx.CallAfter(self.onReprocess)
 
     def onSet_EnergyShift(self, evt=None, value=None):
-        time.sleep(0.01)
+        conf = self.get_config()
+        if conf['auto_energy_shift']:
+            eshift = self.wids['energy_shift'].GetValue()
+            dgroup = self.controller.get_group()
+            _eref = dgroup.energy_ref
+            _gname = dgroup.groupname
+            for fname, gname in self.controller.file_groups.items():
+                this = self.controller.get_group(gname)
+                if _gname != gname and this.energy_ref == _eref:
+                    this.energy_shift = this.config.xasnorm['energy_shift'] = eshift
+
+
         wx.CallAfter(self.onReprocess)
 
     def onSet_XASStep(self, evt=None, value=None):
