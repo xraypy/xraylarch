@@ -345,9 +345,13 @@ class TaskPanel(wx.Panel):
         if not hasattr(dgroup, 'config'):
             dgroup.config = Group(__name__='xas_viewer config')
         conf = getattr(dgroup.config, self.configname, None)
+        defconf = self.get_defaultconfig()
         if conf is None:
-            conf = self.get_defaultconfig()
-            setattr(dgroup.config, self.configname, conf)
+            setattr(dgroup.config, self.configname, defconf)
+        for k, v in defconf.items():
+            if k not in dgroup.config:
+                dgroup.config[k] = v
+
         if dgroup is not None and with_erange:
             _emin = min(dgroup.energy)
             _emax = max(dgroup.energy)
