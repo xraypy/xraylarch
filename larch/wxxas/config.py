@@ -215,6 +215,7 @@ xasnorm = [CVar('auto_e0',  True, 'bool', desc='whether to automatically set E0'
            CVar('auto_step',  True, 'bool', desc='whether to automatically set edge step'),
            CVar('show_e0',  True, 'bool', desc='whether to show E0'),
            CVar('energy_shift',  0., 'float', desc='value of Energy shift from original data'),
+           CVar('auto_energy_shift',  True, 'bool', desc='when changing energy_shift for a Group, also shift \nall other Groups sharing that reference'),
            CVar('edge',      'K', 'choice',  choices=EDGES, desc='symbol of absorption edge'),
            CVar('nnorm',     'auto', 'choice', choices=list(NNORM_CHOICES.keys()),
                 desc='type of polynomial for normalization'),
