@@ -227,7 +227,7 @@ class RegressionPanel(TaskPanel):
             if attr in conf:
                 wids[attr].SetStringSelection(conf[attr])
 
-        for attr in ('elo', 'ehi', 'alpha', 'variable', 'cv_folds', 'cv_repeats'):
+        for attr in ('elo', 'ehi', 'alpha', 'varname', 'cv_folds', 'cv_repeats'):
             val = conf.get(attr, None)
             if val is not None:
                 if attr == 'alpha':
@@ -235,7 +235,8 @@ class RegressionPanel(TaskPanel):
                         val = 0.001
                         conf['auto_alpha'] = True
                     val = '%.6g' % val
-                wids[attr].SetValue(val)
+                if attr in wids:
+                    wids[attr].SetValue(val)
 
         use_lasso = conf['method'].lower().startswith('lasso')
 
