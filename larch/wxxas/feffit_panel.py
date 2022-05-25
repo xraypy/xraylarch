@@ -1400,7 +1400,7 @@ class FeffitResultFrame(wx.Frame):
 
         self.feffit_panel = feffit_panel
         self.datagroup = datagroup
-        self.fit_history = getattr(datagroup, 'fit_history', [])
+        self.feffit_history = getattr(datagroup, 'fit_history', [])
         self.parent = parent
         self.report_frame = None
         self.datasets = {}
@@ -1502,10 +1502,13 @@ class FeffitResultFrame(wx.Frame):
         wids['fit_label'] = wx.TextCtrl(lpanel, -1, ' ', size=(175, -1))
         wids['set_label'] = Button(lpanel, 'Update Label', size=(150, -1),
                                    action=self.onUpdateLabel)
+        wids['del_fit'] = Button(lpanel, 'Remove from Fit History', size=(200, -1),
+                                 action=self.onRemoveFromHistory)
 
         lsizer = wx.BoxSizer(wx.HORIZONTAL)
         lsizer.Add(wids['fit_label'], 0, 2)
         lsizer.Add(wids['set_label'], 0, 2)
+        lsizer.Add(wids['del_fit'],   0, 2)
         pack(lpanel, lsizer)
 
         irow = 0
@@ -1696,6 +1699,12 @@ class FeffitResultFrame(wx.Frame):
         result.label = self.wids['fit_label'].GetValue()
         self.show_results()
 
+    def onRemoveFromHistory(self, event=None):
+        result = self.get_fitresult()
+        self.datagroup.feffit_history.pop(self.nfit)
+        self.nfit = 0
+        self.show_results()
+
     def onPlot(self, event=None):
         opts = {'build_fitmodel': False}
         for key, meth in (('plot_ftwindows', 'IsChecked'),
@@ -1813,11 +1822,11 @@ class FeffitResultFrame(wx.Frame):
     def get_fitresult(self, nfit=None):
         if nfit is None:
             nfit = self.nfit
-        self.fit_history = getattr(self.datagroup, 'feffit_history', [])
+        self.feffit_history = getattr(self.datagroup, 'feffit_history', [])
         self.nfit = max(0, nfit)
-        if self.nfit > len(self.fit_history):
+        if self.nfit > len(self.feffit_history):
             self.nfit = 0
-        return self.fit_history[self.nfit]
+        return self.feffit_history[self.nfit]
 
 
     def onSelectFit(self, evt=None):
@@ -1897,12 +1906,12 @@ class FeffitResultFrame(wx.Frame):
             self.larch_eval = larch_eval
 
         datagroup = self.datagroup
-        self.fit_history = getattr(self.datagroup, 'feffit_history', [])
+        self.feffit_history = getattr(self.datagroup, 'feffit_history', [])
 
         cur = self.get_fitresult()
         wids = self.wids
         wids['stats'].DeleteAllItems()
-        for i, res in enumerate(self.fit_history):
+        for i, res in enumerate(self.feffit_history):
             args = [res.label, "%.d" % (len(res.datasets[0].paths))]
             for attr in ('nvarys', 'n_independent', 'chi_square',
                          'chi2_reduced', 'rfactor', 'aic'):
