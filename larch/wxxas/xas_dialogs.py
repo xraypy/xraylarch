@@ -1529,14 +1529,25 @@ class SpectraCalcDialog(wx.Dialog):
         new_fname =self.wids['save_as_name'].GetValue()
         new_gname = file2groupname(new_fname, slen=5, symtable=_larch.symtable)
 
+        gmap = []
+        for k, v in self.group_map.items():
+            gmap.append(f'"{k}": "{v}"')
+        gmap = '{%s}' % (', '.join(gmap))
+
         _larch.eval(SPECCALC_SAVE.format(new=new_gname, fname=new_fname,
                                          group=self.group_a.groupname,
-                                         group_map=repr(self.group_map),
+                                         group_map=gmap,
                                          yname=self.yname, expr=self.expr))
+
+
+        journal={'source_desc': f"{new_fname}: calc({self.expr})",
+                 'calc_groups': gmap,  'calc_expression': self.expr}
 
         ngroup = getattr(_larch.symtable, new_gname, None)
         if ngroup is not None:
-            self.parent.install_group(ngroup.groupname, ngroup.filename)
+            self.parent.install_group(ngroup.groupname, ngroup.filename,
+                                      source=journal['source_desc'],
+                                      journal=journal)
             self.parent.ShowFile(groupname=ngroup.groupname)
 
     def GetResponse(self):
