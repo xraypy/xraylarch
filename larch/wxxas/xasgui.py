@@ -815,7 +815,7 @@ class XASFrame(wx.Frame):
         ogroup = self.controller.get_group(fname)
         ngroup = self.controller.copy_group(fname)
         self.onNewGroup(ngroup, journal=ogroup.journal)
-        ngroup.journal.add('source_dest', f"copied from '{fname:s}'")
+        ngroup.journal.add('source_desc', f"copied from '{fname:s}'")
 
     def onGroupJournal(self, event=None):
         dgroup = self.controller.get_group()
@@ -916,6 +916,7 @@ class XASFrame(wx.Frame):
             return
 
         outgroup = common_startstring(list(groups.keys()))
+        if len(outgroup) < 2: outgroup = "data"
         outgroup = "%s (merge %d)" % (outgroup, len(groups))
         outgroup = unique_name(outgroup, self.controller.file_groups)
         dlg = MergeDialog(self, list(groups.keys()), outgroup=outgroup)
@@ -930,12 +931,19 @@ class XASFrame(wx.Frame):
                                          master=master,
                                          yarray=yname,
                                          outgroup=gname)
-            mgroups ='[%s]' % (', '.join(list(groups.values())))
-            desc = "merge of %d groups" % len(groups)
+
+            mfiles, mgroups = [], []
+            for g in groups.values():
+                mgroups.append(g)
+                mfiles.append(self.controller.get_group(g).filename)
+            mfiles  = '[%s]' % (', '.join(mfiles))
+            mgroups = '[%s]' % (', '.join(mgroups))
+            desc = "%s: merge of %d groups" % (fname, len(groups))
             self.install_group(gname, fname, overwrite=False,
                                source=desc,
                                journal={'source_desc': desc,
-                                        'merged_groups': mgroups})
+                                        'merged_groups': mgroups,
+                                        'merged_filenames': mfiles})
 
             self.controller.filelist.SetStringSelection(fname)
             self.controller.sync_xasgroups()
