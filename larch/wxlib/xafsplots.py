@@ -1012,7 +1012,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
 
     plotopts = dict(title='%s:\npre-edge peak' % dgroup.filename,
                     xlabel='Energy (eV)', ylabel=opts['array_desc'],
-                    delay_draw=True, show_legend=True, style='solid',
+                    delay_draw=True, show_legend=False, style='solid',
                     linewidth=3, marker='None', markersize=4)
 
     if subtract_baseline:
@@ -1027,8 +1027,10 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     fx0, fx1, fy0, fy1 = extend_plotrange(xdat, yfit,
                                           xmin=opts['emin'], xmax=opts['emax'])
 
+
     ncolor = 0
-    popts = {'win': win, '_larch': _larch}
+    popts = {'win': win, '_larch': _larch, 'xmin': dx0, 'xmax': dx1,
+             'ymin': min(dy0, fy0), 'ymax': max(dy1, fy1), 'show_legend': True} # False}
     plotopts.update(popts)
     if show_residual:
         popts['stacked'] = True
@@ -1060,7 +1062,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
         for attr in ('emin', 'emax'):
             _plot_axvline(opts[attr], ymin=0, ymax=1,
                           delay_draw=False, color='#DDDDCC',
-                          label='_nolegend_', **popts)
+                          label='_nolegend_', win=win)
 
     if opts.get('show_centroid', False):
         pcen = getattr(dgroup.prepeaks, 'centroid', None)
@@ -1070,7 +1072,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
                 pcen = pcen.value
         if pcen is not None:
             _plot_axvline(pcen, delay_draw=False, ymin=0, ymax=1,
-                          color='#EECCCC', label='_nolegend_', **popts)
+                          color='#EECCCC', label='_nolegend_', win=win)
 
     redraw(win=win, xmin=dx0, xmax=dx1, ymin=min(dy0, fy0),
            ymax=max(dy1, fy1), show_legend=True, _larch=_larch)
