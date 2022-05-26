@@ -688,6 +688,7 @@ class PrePeakPanel(TaskPanel):
             if not hasattr(dgroup, 'norm'):
                 self.xasmain.process_normalization(dgroup)
             self.fill_form(dgroup)
+
         except:
             pass # print(" Cannot Fill prepeak panel from group ")
 
@@ -1177,7 +1178,6 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             self.fitmodel_btn.Disable()
             self.fitselected_btn.Enable()
 
-
     def onPick2EraseTimer(self, evt=None):
         """erases line trace showing automated 'Pick 2' guess """
         self.pick2erase_timer.Stop()
@@ -1299,17 +1299,12 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             for pname, par in result.params.items():
                 if pname in parwids:
                     wids = parwids[pname]
-                    if wids.minval is not None:
-                        wids.minval.SetValue(par.min)
-                    if wids.maxval is not None:
-                        wids.maxval.SetValue(par.max)
-                    val = result.init_values.get(pname, par.value)
-                    wids.value.SetValue(val)
+                    wids.value.SetValue(result.init_values.get(pname, par.value))
                     varstr = 'vary' if par.vary else 'fix'
-                    if par.expr is not None:
-                        varstr = 'constrain'
-                    if wids.vary is not None:
-                        wids.vary.SetStringSelection(varstr)
+                    if par.expr is not None:   varstr = 'constrain'
+                    if wids.vary is not None:  wids.vary.SetStringSelection(varstr)
+                    if wids.minval is not None: wids.minval.SetValue(par.min)
+                    if wids.maxval is not None: wids.maxval.SetValue(par.max)
 
         self.fill_form(pkfit.user_options)
 
