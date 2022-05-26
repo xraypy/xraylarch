@@ -1319,9 +1319,10 @@ class FeffitPanel(TaskPanel):
 
         script.append("#### end of data reading and preparation")
         script.append("######################################")
-        script.append("## read Feff Paths into '_feffpaths'.  You will need to")
-        script.append("## either read feff.dat from disk files with `feffpath()`")
-        script.append("## or use Paths cached from a session file into `feffruns`")
+        script.append("## read Feff Paths into '_feffpaths'.  You will need to either")
+        script.append("##  read feff.dat from disk files with `feffpath()` or use Paths")
+        script.append("##   cached from a session file into `feffcache`")
+        script.append("#_feffcache = {'runs': {}, 'paths':{}}")
         script.append("#_feffpaths = {}")
         for path in opts['paths']:
             lab, fname, run = path['title'], path['fullpath'], path['feffrun']
@@ -1700,7 +1701,6 @@ class FeffitResultFrame(wx.Frame):
 
     def onRemoveFromHistory(self, event=None):
         result = self.get_fitresult()
-        print("remove ", result, result.label)
         if wx.ID_YES != Popup(self,
                               f"Remove fit '{result.label}' from history?\nThis cannot be undone.",
                               "Remove fit?", style=wx.YES_NO):
