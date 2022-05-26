@@ -467,9 +467,13 @@ class XASNormPanel(TaskPanel):
         if not is_xasgroup(dgroup):
             plot_choices = PlotSel_Choices_nonxas
 
+        erange = Plot_EnergyRanges[self.plot_erange.GetStringSelection()]
+        self.controller.set_plot_erange(erange)
+
         ytitle = self.plotsel_op.GetStringSelection()
         yarray_name = plot_choices[ytitle]
         ylabel = getattr(plotlabels, yarray_name, ytitle)
+        xlabel = getattr(dgroup, 'plot_xlabel', getattr(plotlabels, 'energy'))
 
         if yarray_name == 'norm':
             norm_method = self.wids['norm_method'].GetStringSelection().lower()
@@ -480,21 +484,34 @@ class XASNormPanel(TaskPanel):
                 yarray_name = 'norm_area'
                 ylabel = "%s (Area)" % ylabel
         voff = self.wids['plot_voff'].GetValue()
-        t0 = time.time()
+
+        plot_traces = []
+        newplot = True
+        plotopts = self.controller.get_plot_conf()
+        popts = {'style': 'solid', 'marker': None}
+        popts['linewidth'] = plotopts.pop('linewidth')
+        popts['marksize'] = plotopts.pop('markersize')
+        popts['grid'] = plotopts.pop('show_grid')
+        popts['fullbox'] = plotopts.pop('show_fullbox')
+
         for ix, checked in enumerate(group_ids):
             yoff = ix * voff
             groupname = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(groupname)
-            plot_yarrays = [(yarray_name, PLOTOPTS_1, dgroup.filename)]
-            if dgroup is not None:
-                dgroup.plot_extras = []
-                self.plot(dgroup, title='', new=newplot, multi=True,
-                          yoff=yoff, plot_yarrays=plot_yarrays,
-                          with_extras=False,  delay_draw=True)
-                newplot = False
+            if dgroup is None:
+                continue
+            if erange is not None and hasattr(dgroup, 'e0') and 'xmin' not in popts:
+                popts['xmin'] = dgroup.e0 + erange[0]
+                popts['xmax'] = dgroup.e0 + erange[1]
+
+            trace = {'xdata': dgroup.xdat, 'ydata': getattr(dgroup, yarray_name),
+                     'label': dgroup.filename, 'new': newplot}
+            trace.update(popts)
+            plot_traces.append(trace)
+            newplot = False
+
         ppanel = self.controller.get_display(stacked=False).panel
-        ppanel.conf.show_legend=True
-        ppanel.conf.draw_legend()
+        ppanel.plot_many(plot_traces, xlabel='Energy (eV)', ylabel=ylabel, show_legend=True)
         ppanel.unzoom_all()
 
     def onAutoNorm(self, evt=None):
@@ -974,7 +991,6 @@ class XASNormPanel(TaskPanel):
         if 'label' not in popts:
             popts['label'] = dgroup.plot_ylabel
 
-
         zoom_out = (zoom_out or min(dgroup.xdat) >= viewlims[1] or
                     max(dgroup.xdat) <= viewlims[0] or
                     min(dgroup.ydat) >= viewlims[3] or
@@ -1017,17 +1033,21 @@ class XASNormPanel(TaskPanel):
 
         popts['show_legend'] = len(plot_yarrays) > 1
         narr = len(plot_yarrays) - 1
+
+        _linewidth = popts['linewidth']
         for i, pydat in enumerate(plot_yarrays):
             yaname, yopts, yalabel = pydat
             popts.update(yopts)
             if yalabel is not None:
                 popts['label'] = yalabel
-            linewidth = popts.pop('linewidth')
+            linewidth = _linewidth
+            if 'linewidth' in popts:
+                linewidth = popts.pop('linewidth')
             popts['delay_draw'] = delay_draw or (i != narr)
             if yaname == 'norm_mback' and not hasattr(dgroup, yaname):
                 self.process(dgroup=dgroup, force=True, force_mback=True)
             plotcmd(dgroup.xdat, getattr(dgroup, yaname)+yoff, linewidth=linewidth, **popts)
-
+            plotcmd = ppanel.oplot
             ppanel.conf.set_trace_linewidth(linewidth, trace=i)
 
 
