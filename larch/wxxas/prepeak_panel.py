@@ -381,6 +381,11 @@ class PrePeakFitResultFrame(wx.Frame):
 
     def onRemoveFromHistory(self, event=None):
         result = self.get_fitresult()
+        if wx.ID_YES != Popup(self,
+                              f"Remove fit '{result.label}' from history?\nThis cannot be undone.",
+                              "Remove fit?", style=wx.YES_NO):
+                return
+
         self.datagroup.prepeaks.fit_history.pop(self.nfit)
         self.nfit = 0
         self.show_results()

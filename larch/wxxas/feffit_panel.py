@@ -38,7 +38,7 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          Button, HLine, Choice, Check, MenuItem, GUIColors,
                          CEN, RIGHT, LEFT, FRAMESTYLE, Font, FONTSIZE,
                          COLORS, set_color, FONTSIZE_FW, FileSave,
-                         FileOpen, flatnotebook, EditableListBox)
+                         FileOpen, flatnotebook, EditableListBox, Popup)
 
 from larch.wxlib.parameter import ParameterWidgets
 from larch.wxlib.plotter import last_cursor_pos
@@ -1700,6 +1700,12 @@ class FeffitResultFrame(wx.Frame):
 
     def onRemoveFromHistory(self, event=None):
         result = self.get_fitresult()
+        print("remove ", result, result.label)
+        if wx.ID_YES != Popup(self,
+                              f"Remove fit '{result.label}' from history?\nThis cannot be undone.",
+                              "Remove fit?", style=wx.YES_NO):
+                return
+
         self.datagroup.feffit_history.pop(self.nfit)
         self.nfit = 0
         self.show_results()
