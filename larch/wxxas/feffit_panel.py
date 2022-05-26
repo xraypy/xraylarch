@@ -850,16 +850,14 @@ class FeffitPanel(TaskPanel):
         dconf = self.get_defaultconfig()
         conf = getattr(dgroup.config, self.configname, dconf)
         econf = getattr(dgroup.config, 'exafs', {})
-
         for key in ('fft_kmin', 'fft_kmax', 'fft_dk', 'fft_kwindow',
                     'fft_rmin', 'fft_rmax','fft_kweight'):
             val = econf.get(key, None)
-            tkey = key.replace('fft_', '')
             if key == 'fft_kweight':
                 val = str(int(val))
-                tkey = 'kwstring'
-            if val is not None and tkey in conf:
-                conf[tkey] = val
+                key = 'kwstring'
+            if key not in conf and val is not None:
+                conf[key] = val
         for k, v in dconf.items():
             if k not in conf:
                 conf[k] = v
@@ -879,13 +877,14 @@ class FeffitPanel(TaskPanel):
 
 
     def fill_form(self, dat):
+        dgroup = self.controller.get_group()
         conf = self.get_config(dat)
-        self.wids['ffit_kmin'].SetValue(conf['kmin'])
-        self.wids['ffit_kmax'].SetValue(conf['kmax'])
-        self.wids['ffit_rmin'].SetValue(conf['rmin'])
-        self.wids['ffit_rmax'].SetValue(conf['rmax'])
-        self.wids['ffit_dk'].SetValue(conf['dk'])
-        self.wids['ffit_kwindow'].SetStringSelection(conf['kwindow'])
+        self.wids['ffit_kmin'].SetValue(conf['fft_kmin'])
+        self.wids['ffit_kmax'].SetValue(conf['fft_kmax'])
+        self.wids['ffit_rmin'].SetValue(conf['fft_rmin'])
+        self.wids['ffit_rmax'].SetValue(conf['fft_rmax'])
+        self.wids['ffit_dk'].SetValue(conf['fft_dk'])
+        self.wids['ffit_kwindow'].SetStringSelection(conf['fft_kwindow'])
 
         for key, val in Feffit_SpaceChoices.items():
             if conf['fitspace'] == val:
