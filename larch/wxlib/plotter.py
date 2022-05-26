@@ -828,8 +828,10 @@ def _fitplot(x, y, y2=None, panel='top', label=None, label2=None, win=1,
         plotter.plot(x, y2-y, panel='bot')
         plotter.panel.conf.set_margins(top=0.15, bottom=0.01,
                                        left=0.15, right=0.05)
+        plotter.panel.unzoom_all()
         plotter.panel_bot.conf.set_margins(top=0.01, bottom=0.35,
                                            left=0.15, right=0.05)
+        plotter.panel_bot.unzoom_all()
 
 
 def _hist(x, bins=10, win=1, new=False,

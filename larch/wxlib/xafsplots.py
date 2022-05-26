@@ -98,7 +98,6 @@ def _get_title(dgroup, title=None):
     """get best title for group"""
     if title is not None:
         return title
-    #endif
     data_group = getattr(dgroup, 'data', None)
 
     for attr in ('title', 'plot_title', 'filename', 'name', '__name__'):
@@ -112,17 +111,11 @@ def _get_title(dgroup, title=None):
                     top, folder = os.path.split(folder)
                     t = '/'.join((folder, file))
             return t
-        #endif
         if data_group is not None:
             t = getattr(data_group, attr, None)
             if t is not None:
                 return t
-            #endif
-        #endif
-    #endfor
-
     return repr(dgroup)
-#enddef
 
 
 def _get_kweight(dgroup, kweight=None):
@@ -151,6 +144,7 @@ def _get_erange(dgroup, emin=None, emax=None):
 #enddef
 
 def redraw(win=1, xmin=None, xmax=None, ymin=None, ymax=None,
+           dymin=None, dymax=None,
            show_legend=True, stacked=False, _larch=None):
     disp = _getDisplay(win=win, stacked=stacked, _larch=_larch)
     if disp is None:
@@ -160,12 +154,21 @@ def redraw(win=1, xmin=None, xmax=None, ymin=None, ymax=None,
     if (xmin is not None or xmax is not None or
         ymin is not None or ymax is not None):
         panel.set_xylims((xmin, xmax, ymin, ymax))
-    else:
-        panel.unzoom_all()
+        if stacked:
+            disp.panel_bot.set_xylims((xmin, xmax, dymin, dymax))
+
+    panel.unzoom_all()
+    panel.reset_formats()
+    if stacked:
+        disp.panel_bot.unzoom_all()
+        disp.panel_bot.reset_formats()
     if show_legend:  # note: draw_legend *will* redraw the canvas
         panel.conf.draw_legend()
     else:
         panel.canvas.draw()
+        if stacked:
+            disp.panel_bot.canvas.draw()
+
     #endif
 #enddef
 
@@ -1012,7 +1015,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
 
     plotopts = dict(title='%s:\npre-edge peak' % dgroup.filename,
                     xlabel='Energy (eV)', ylabel=opts['array_desc'],
-                    delay_draw=True, show_legend=False, style='solid',
+                    delay_draw=True, show_legend=True, style='solid',
                     linewidth=3, marker='None', markersize=4)
 
     if subtract_baseline:
@@ -1027,14 +1030,17 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     fx0, fx1, fy0, fy1 = extend_plotrange(xdat, yfit,
                                           xmin=opts['emin'], xmax=opts['emax'])
 
-
     ncolor = 0
-    popts = {'win': win, '_larch': _larch, 'xmin': dx0, 'xmax': dx1,
-             'ymin': min(dy0, fy0), 'ymax': max(dy1, fy1), 'show_legend': True} # False}
+    popts = {'win': win, '_larch': _larch}
     plotopts.update(popts)
+    dymin = dymax = None
     if show_residual:
         popts['stacked'] = True
         _fitplot(xdat, ydat, yfit, label='data', label2=ylabel, **plotopts)
+        dy = yfit - ydat
+        dymax, dymin = dy.max(), dy.min()
+        dymax += 0.05 * (dymax - dymin)
+        dymin -= 0.05 * (dymax - dymin)
     else:
         _plot(xdat_full, ydat_full, new=True, label='data',
               color=LineColors[0], **plotopts)
@@ -1062,7 +1068,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
         for attr in ('emin', 'emax'):
             _plot_axvline(opts[attr], ymin=0, ymax=1,
                           delay_draw=False, color='#DDDDCC',
-                          label='_nolegend_', win=win)
+                          label='_nolegend_', **popts)
 
     if opts.get('show_centroid', False):
         pcen = getattr(dgroup.prepeaks, 'centroid', None)
@@ -1072,10 +1078,10 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
                 pcen = pcen.value
         if pcen is not None:
             _plot_axvline(pcen, delay_draw=False, ymin=0, ymax=1,
-                          color='#EECCCC', label='_nolegend_', win=win)
+                          color='#EECCCC', label='_nolegend_', **popts)
 
-    redraw(win=win, xmin=dx0, xmax=dx1, ymin=min(dy0, fy0),
-           ymax=max(dy1, fy1), show_legend=True, _larch=_larch)
+    redraw(xmin=dx0, xmax=dx1, ymin=min(dy0, fy0),
+           ymax=max(dy1, fy1), dymin=dymin, dymax=dymax, show_legend=True, **popts)
 
 def _pca_ncomps(result, min_weight=0, ncomps=None):
     if ncomps is None:
