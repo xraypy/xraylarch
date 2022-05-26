@@ -55,6 +55,18 @@ def ensure_en_orig(dgroup):
         dgroup.energy_orig = dgroup.energy[:]
 
 
+
+def fit_dialog_window(dialog, panel):
+    sizer = wx.BoxSizer(wx.VERTICAL)
+    sizer.Add(panel, 1, LEFT, 5)
+    pack(dialog, sizer)
+    dialog.Fit()
+    w0, h0 = dialog.GetSize()
+    w1, h1 = dialog.GetBestSize()
+    dialog.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+
+
+
 def add_floatspin(name, value, panel, with_pin=True, xasmain=None,
                   callback=None, relative_e0=False, **kws):
     """create FloatSpin with Pin button for onSelPoint"""
@@ -148,11 +160,7 @@ class OverAbsorptionDialog(wx.Dialog):
         panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
                   newrow=True)
         panel.pack()
-
-        w0, h0 = self.GetSize()
-        w1, h1 = self.GetBestSize()
-        # print("SetSize",  ((max(w0, w1)+25, max(h0, h1)+25)))
-        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+        fit_dialog_window(self, panel)
 
 
     def onDone(self, event=None):
@@ -352,10 +360,7 @@ overwriting current arrays''')
                   newrow=True)
         panel.pack()
 
-        w0, h0 = self.GetSize()
-        w1, h1 = self.GetBestSize()
-        # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+
-        self.SetSize((max(w0, w1)+25, max(h0, h1)+50))
+        fit_dialog_window(self, panel)
 
         self.plot_results()
         wx.CallAfter(self.get_groups_shared_energyrefs)
@@ -673,10 +678,8 @@ class RebinDataDialog(wx.Dialog):
         panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
                   newrow=True)
         panel.pack()
-        w0, h0 = self.GetSize()
-        w1, h1 = self.GetBestSize()
-        # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+
-        self.SetSize((max(w0, w1)+25, max(h0, h1)+50))
+
+        fit_dialog_window(self, panel)
 
         self.on_rebin()
         self.plot_results()
@@ -871,11 +874,7 @@ class SmoothDataDialog(wx.Dialog):
         panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
                   newrow=True)
         panel.pack()
-
-        w0, h0 = self.GetSize()
-        w1, h1 = self.GetBestSize()
-        # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+
-        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+        fit_dialog_window(self, panel)
 
         self.plot_results()
 
@@ -1044,11 +1043,8 @@ class DeconvolutionDialog(wx.Dialog):
         panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
                   newrow=True)
         panel.pack()
-        w0, h0 = self.GetSize()
-        w1, h1 = self.GetBestSize()
-        # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+
-        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
 
+        fit_dialog_window(self, panel)
         self.plot_results()
 
     def onDone(self, event=None):
@@ -1230,11 +1226,7 @@ clear undo history''')
                   newrow=True)
         panel.pack()
 
-        w0, h0 = self.GetSize()
-        w1, h1 = self.GetBestSize()
-        # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+
-        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
-
+        fit_dialog_window(self, panel)
         self.plot_results()
 
     def onDone(self, event=None):
@@ -1493,12 +1485,7 @@ class SpectraCalcDialog(wx.Dialog):
         panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
                   newrow=True)
         panel.pack()
-
-        w0, h0 = self.GetSize()
-        w1, h1 = self.GetBestSize()
-        # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+
-        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
-
+        fit_dialog_window(self, panel)
 
     def onDone(self, event=None):
         self.Destroy()
@@ -1591,13 +1578,9 @@ class EnergyUnitsDialog(wx.Dialog):
         panel.Add((5, 5))
 
         panel.Add(OkCancel(panel), dcol=2, newrow=True)
-
         panel.pack()
 
-        w0, h0 = self.GetSize()
-        w1, h1 = self.GetBestSize()
-        # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+
-        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+        fit_dialog_window(self, panel)
 
 
     def onUnits(self, event=None):
@@ -1651,11 +1634,7 @@ class MergeDialog(wx.Dialog):
         panel.Add(OkCancel(panel), dcol=2, newrow=True)
 
         panel.pack()
-
-        w0, h0 = self.GetSize()
-        w1, h1 = self.GetBestSize()
-        # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+
-        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+        fit_dialog_window(self, panel)
 
 
     def GetResponse(self, master=None, gname=None, ynorm=True):
@@ -1703,11 +1682,7 @@ class ExportCSVDialog(wx.Dialog):
         panel.Add(self.del_name)
         panel.Add(OkCancel(panel), dcol=2, newrow=True)
         panel.pack()
-
-        w0, h0 = self.GetSize()
-        w1, h1 = self.GetBestSize()
-        # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+
-        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+        fit_dialog_window(self, panel)
 
 
     def GetResponse(self, master=None, gname=None, ynorm=True):
@@ -1755,10 +1730,7 @@ class QuitDialog(wx.Dialog):
         panel.Add(OkCancel(panel), dcol=2, newrow=True)
         panel.pack()
 
-        w0, h0 = self.GetSize()
-        w1, h1 = self.GetBestSize()
-        # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+
-        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+        fit_dialog_window(self, panel)
 
     def GetResponse(self):
         self.Raise()
@@ -1783,11 +1755,7 @@ class RenameDialog(wx.Dialog):
         panel.Add(OkCancel(panel), dcol=2, newrow=True)
 
         panel.pack()
-
-        w0, h0 = self.GetSize()
-        w1, h1 = self.GetBestSize()
-        # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+
-        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+        fit_dialog_window(self, panel)
 
 
     def GetResponse(self, newname=None):
@@ -1812,12 +1780,8 @@ class RemoveDialog(wx.Dialog):
                   newrow=True, dcol=2)
 
         panel.Add(OkCancel(panel), dcol=2, newrow=True)
-
         panel.pack()
-
-        w0, h0 = self.GetSize()
-        w1, h1 = self.GetBestSize()
-        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+        fit_dialog_window(self, panel)
 
     def GetResponse(self, ngroups=None):
         self.Raise()
@@ -1965,11 +1929,6 @@ class LoadSessionDialog(wx.Frame):
 
         splitter.SplitVertically(leftpanel, rightpanel, 1)
         self.SetSize((750, 725))
-
-        w0, h0 = self.GetSize()
-        w1, h1 = self.GetBestSize()
-        # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+25)))
-        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
 
         self.Show()
         self.Raise()
