@@ -355,7 +355,7 @@ overwriting current arrays''')
         w0, h0 = self.GetSize()
         w1, h1 = self.GetBestSize()
         # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+
-        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+        self.SetSize((max(w0, w1)+25, max(h0, h1)+50))
 
         self.plot_results()
         wx.CallAfter(self.get_groups_shared_energyrefs)
@@ -676,7 +676,7 @@ class RebinDataDialog(wx.Dialog):
         w0, h0 = self.GetSize()
         w1, h1 = self.GetBestSize()
         # print("SetSize", ((max(w0, w1)+25, max(h0, h1)+
-        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+        self.SetSize((max(w0, w1)+25, max(h0, h1)+50))
 
         self.on_rebin()
         self.plot_results()

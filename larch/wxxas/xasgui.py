@@ -121,16 +121,17 @@ class PreferencesFrame(wx.Frame):
                           style=FRAMESTYLE, size=(700, 725))
 
         sizer = wx.BoxSizer(wx.VERTICAL)
+        tpanel = wx.Panel(self)
 
-        self.title = SimpleText(self, 'Edit Preference and Defaults',
+        self.title = SimpleText(tpanel, 'Edit Preference and Defaults',
                                 size=(500, 25),
                                 font=Font(FONTSIZE+1), style=LEFT,
                                 colour=COLORS['nb_text'])
 
-        self.save_btn = Button(self, 'Save for Future sessions',
+        self.save_btn = Button(tpanel, 'Save for Future sessions',
                                size=(200, -1), action=self.onSave)
 
-        self.nb = flatnotebook(self, {})
+        self.nb = flatnotebook(tpanel, {})
         self.wids = {}
         conf = self.controller.config
 
@@ -202,7 +203,7 @@ class PreferencesFrame(wx.Frame):
         sizer.Add(self.save_btn, 0, LEFT, 5)
         sizer.Add((5, 5), 0, LEFT, 5)
         sizer.Add(self.nb, 1, LEFT|wx.EXPAND, 5)
-        pack(self, sizer)
+        pack(tpanel, sizer)
         w0, h0 = self.GetSize()
         w1, h1 = self.GetBestSize()
         self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
