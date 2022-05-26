@@ -300,7 +300,7 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
 
     def _get_disp(symname, creator, win, ddict, wxparent, size, height, width, _larch):
         display = None
-        s = 'not'
+        new_display = False
         if win in ddict:
             display = ddict[win]
             try:
@@ -308,7 +308,6 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
             except RuntimeError:  # window has been deleted
                 ddict.pop(win)
                 display = None
-
 
         if display is None and hasattr(_larch, 'symtable'):
             display = _larch.symtable.get_symbol(symname, create=True)
@@ -320,7 +319,6 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
 
         if display is None:
             if size is None:
-
                 if height is None:
                     height = PLOTOPTS['height']
                 if width is None:
@@ -328,7 +326,7 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
                 size = (int(width), int(height))
             display = creator(window=win, wxparent=wxparent,
                               size=size, _larch=_larch)
-
+            new_display = True
             parent = wx.GetApp().GetTopWindow()
             if parent is not None:
                 xpos, ypos = parent.GetPosition()
@@ -336,12 +334,11 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
                 display.SetPosition((xpos+xsiz+15*win, ypos+25*win))
 
         ddict[win] = display
-        return display
+        return display, new_display
 
-    display = _get_disp(symname, creator, win, display_dict, wxparent,
-                        size, height, width, _larch)
-    if creator in (PlotDisplay, StackedPlotDisplay):
-
+    display, isnew  = _get_disp(symname, creator, win, display_dict, wxparent,
+                                size, height, width, _larch)
+    if isnew and creator in (PlotDisplay, StackedPlotDisplay):
         if theme is not None:
             PLOTOPTS['theme'] = theme
         if show_grid is not None:
@@ -352,25 +349,23 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
             PLOTOPTS['linewidth'] = linewidth
         if markersize is not None:
             PLOTOPTS['markersize'] = markersize
-
         panels = [display.panel]
         if creator == StackedPlotDisplay:
             panels.append(display.panel_bot)
-
         for panel in panels:
             conf = panel.conf
             conf.set_theme(theme=PLOTOPTS['theme'])
             conf.enable_grid(PLOTOPTS['show_grid'])
             conf.axes_style = 'box' if PLOTOPTS['show_fullbox'] else 'open'
             for i in range(16):
-                conf.set_trace_linewidth(PLOTOPTS['linewidth'], trace=i)
+               conf.set_trace_linewidth(PLOTOPTS['linewidth'], trace=i)
     try:
         display.SetTitle(title)
 
     except:
         display_dict.pop(win)
-        display = _get_disp(symname, creator, win, display_dict, wxparent,
-                            size, _larch)
+        display, isnew = _get_disp(symname, creator, win, display_dict, wxparent,
+                                   size, _larch)
         display.SetTitle(title)
     if  hasattr(_larch, 'symtable'):
         _larch.symtable.set_symbol(symname, display)
