@@ -1509,8 +1509,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         self.autosave_modelresult(pkfit)
         self.onPlot()
         self.showresults_btn.Enable()
-        self.show_subframe('prepeak_result', PrePeakFitResultFrame,
-                           datagroup=dgroup, peakframe=self)
+        self.show_subframe('prepeak_result', PrePeakFitResultFrame, peakframe=self)
         self.subframes['prepeak_result'].add_results(dgroup, form=opts,
                                                      larch_eval=self.larch_eval)
 
