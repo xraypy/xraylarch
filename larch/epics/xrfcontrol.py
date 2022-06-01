@@ -397,15 +397,15 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         if dtype.startswith('sxd7') and self.nmca == 7:
             btnsizer.Add((sx, sy), (0, 0), (1, 2), wx.ALIGN_LEFT, 1)
-            btnsizer.Add(btns[4],  (1, 0), (2, 2), wx.ALIGN_LEFT, 1)
-            btnsizer.Add(btns[5],  (3, 0), (2, 2), wx.ALIGN_LEFT, 1)
+            btnsizer.Add(btns[6],  (1, 0), (2, 2), wx.ALIGN_LEFT, 1)
+            btnsizer.Add(btns[7],  (3, 0), (2, 2), wx.ALIGN_LEFT, 1)
             btnsizer.Add((sx, sy), (5, 0), (1, 2), wx.ALIGN_LEFT, 1)
-            btnsizer.Add(btns[3],  (0, 2), (2, 2), wx.ALIGN_LEFT, 1)
-            btnsizer.Add(btns[7],  (2, 2), (2, 2), wx.ALIGN_LEFT, 1)
-            btnsizer.Add(btns[6],  (4, 2), (2, 2), wx.ALIGN_LEFT, 1)
+            btnsizer.Add(btns[5],  (0, 2), (2, 2), wx.ALIGN_LEFT, 1)
+            btnsizer.Add(btns[4],  (2, 2), (2, 2), wx.ALIGN_LEFT, 1)
+            btnsizer.Add(btns[1],  (4, 2), (2, 2), wx.ALIGN_LEFT, 1)
             btnsizer.Add((sx, sy), (0, 4), (1, 2), wx.ALIGN_LEFT, 1)
-            btnsizer.Add(btns[2],  (1, 4), (2, 2), wx.ALIGN_LEFT, 1)
-            btnsizer.Add(btns[1],  (3, 4), (2, 2), wx.ALIGN_LEFT, 1)
+            btnsizer.Add(btns[3],  (1, 4), (2, 2), wx.ALIGN_LEFT, 1)
+            btnsizer.Add(btns[2],  (3, 4), (2, 2), wx.ALIGN_LEFT, 1)
             btnsizer.Add((sx, sy), (5, 4), (1, 2), wx.ALIGN_LEFT, 1)
         elif dtype.startswith('me7') and self.nmca == 7:
             btnsizer.Add((sx, sy), (0, 0), (1, 2), wx.ALIGN_LEFT, 1)
