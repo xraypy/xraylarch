@@ -1260,9 +1260,7 @@ class FeffitPanel(TaskPanel):
                     'feffrun': pathdata[1], 'use':True}
             pdat.update(path_pages[title].get_expressions())
             if pdat['use']:
-                if title not in _feffpaths:
-                    # print("BuildModel - USE PATH " , pdat)
-                    cmds.append(COMMANDS['use_path'].format(**pdat))
+                cmds.append(COMMANDS['use_path'].format(**pdat))
                 paths_list.append(f"_feffpaths['{title:s}']")
             opts['paths'].append(pdat)
 
