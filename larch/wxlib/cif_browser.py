@@ -114,7 +114,7 @@ class CIFFrame(wx.Frame):
         pack(leftpanel, sizer)
 
         # right hand side
-        rightpanel = wx.Panel(splitter)
+        rightpanel = scrolled.ScrolledPanel(splitter)
         panel = wx.Panel(rightpanel)
         sizer = wx.GridBagSizer(2,2)
 
@@ -318,6 +318,7 @@ class CIFFrame(wx.Frame):
         r_sizer.Add(panel, 0, LEFT|wx.GROW|wx.ALL)
         r_sizer.Add(self.nb, 1, LEFT|wx.GROW, 2)
         pack(rightpanel, r_sizer)
+        rightpanel.SetupScrolling()
         splitter.SplitVertically(leftpanel, rightpanel, 1)
 
     def get_nbpage(self, name):

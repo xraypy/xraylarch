@@ -355,7 +355,7 @@ class XASFrame(wx.Frame):
         pack(leftpanel, sizer)
 
         # right hand side
-        panel = wx.Panel(splitter)
+        panel = scrolled.ScrolledPanel(splitter)
         sizer = wx.BoxSizer(wx.VERTICAL)
 
         self.title = SimpleText(panel, ' ', size=(500, 25),
@@ -370,6 +370,7 @@ class XASFrame(wx.Frame):
                                on_change=self.onNBChanged)
 
         sizer.Add(self.nb, 1, LEFT|wx.EXPAND, 2)
+        panel.SetupScrolling()
         pack(panel, sizer)
         splitter.SplitVertically(leftpanel, panel, 1)
 

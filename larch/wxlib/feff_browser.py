@@ -393,7 +393,7 @@ class FeffResultsFrame(wx.Frame):
         pack(lpanel, lsizer)
 
         # right hand side
-        panel = wx.Panel(splitter)
+        panel = scrolled.ScrolledPanel(splitter)
         wids = self.wids = {}
         toprow = wx.Panel(panel)
 
@@ -416,6 +416,7 @@ class FeffResultsFrame(wx.Frame):
         sizer.Add(HLine(panel, size=(550, 2)), 0,  LEFT|wx.GROW|wx.ALL, 2)
         sizer.Add(self.feff_panel, 1, LEFT|wx.GROW|wx.ALL, 2)
         pack(panel, sizer)
+        panel.SetupScrolling()
         splitter.SplitVertically(lpanel, panel, 1)
         self.Show()
         wx.CallAfter(self.onSearch)
