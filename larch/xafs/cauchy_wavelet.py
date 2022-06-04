@@ -49,8 +49,8 @@ def cauchy_wavelet(k, chi=None, group=None, kweight=0, rmax_out=10,
     Notes:
     -------
     Arrays written to output group:
-    r                  uniform array of R, out to rmax_out.
     wcauchy            complex cauchy wavelet(k, R)
+    wcauchy_r          uniform array of R, out to rmax_out.
     wcauchy_mag        magnitude of wavelet(k, R)
     wcauchy_re         real part of wavelet(k, R)
     wcauchy_im         imaginary part of wavelet(k, R)
