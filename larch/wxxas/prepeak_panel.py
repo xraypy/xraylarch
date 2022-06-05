@@ -706,7 +706,7 @@ class PrePeakPanel(TaskPanel):
         pass
 
     def build_display(self):
-        pan = self.panel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LEFT)
+        pan = self.panel # = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LEFT)
 
         self.wids = {}
 

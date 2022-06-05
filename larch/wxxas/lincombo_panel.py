@@ -254,7 +254,7 @@ class LinComboResultFrame(wx.Frame):
             this.Sortable = isort
             this.Alignment = this.Renderer.Alignment = align
 
-        sview.SetMinSize((675, 175))
+        sview.SetMinSize((700, 175))
 
         irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]', font=Font(FONTSIZE+2),
@@ -277,7 +277,7 @@ class LinComboResultFrame(wx.Frame):
         os = wx.BoxSizer(wx.VERTICAL)
         os.Add(p1, 1, 3)
         pack(ppan, os)
-        ppan.SetMinSize((675, 175))
+        ppan.SetMinSize((700, 175))
 
         irow += 1
         sizer.Add(ppan, (irow, 0), (1, 4), LEFT)
@@ -385,7 +385,7 @@ class LinComboResultFrame(wx.Frame):
         os.Add(wview, 1, wx.GROW|wx.ALL)
         pack(wpan, os)
 
-        wview.SetMinSize((875, 500))
+        wview.SetMinSize((700, 500))
         s1, s2 = self.GetSize()
         if s2 % 2 == 0:
             s2 = s2 + 1
@@ -718,7 +718,7 @@ class LinearComboPanel(TaskPanel):
                                       datatypes=coltypes, defaults=coldefs,
                                       colsizes=colsizes)
 
-        wids['table'].SetMinSize((625, 250))
+        wids['table'].SetMinSize((675, 250))
         panel.Add(wids['table'], newrow=True, dcol=6)
 
         panel.Add(HLine(panel, size=(625, 3)), dcol=5, newrow=True)

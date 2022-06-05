@@ -228,7 +228,7 @@ class EditParamsFrame(wx.Frame):
                  paramgroup=None, selected=None):
         wx.Frame.__init__(self, None, -1,
                           'Edit Feffit Parameters',
-                          style=FRAMESTYLE, size=(550, 300))
+                          style=FRAMESTYLE, size=(550, 325))
 
         self.parent = parent
         self.feffit_panel = feffit_panel
@@ -388,7 +388,7 @@ class EditParamsFrame(wx.Frame):
 
 class FeffitParamsPanel(wx.Panel):
     def __init__(self, parent=None, feffit_panel=None, **kws):
-        wx.Panel.__init__(self, parent, -1, size=(550, 450))
+        wx.Panel.__init__(self, parent, -1, size=(550, 250))
         self.feffit_panel = feffit_panel
         self.parwids = {}
         self.SetFont(Font(FONTSIZE))
@@ -530,7 +530,7 @@ class FeffPathPanel(wx.Panel):
         self.user_label = user_label
         self.feffit_panel = feffit_panel
         self.editing_enabled = False
-        wx.Panel.__init__(self, parent, -1, size=(550, 450))
+        wx.Panel.__init__(self, parent, -1, size=(550, 250))
         self.SetFont(Font(FONTSIZE))
         panel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LEFT)
 
@@ -721,7 +721,7 @@ class FeffitPanel(TaskPanel):
                                               feffit_panel=self)
         self.paths_nb.AddPage(self.params_panel, ' Parameters ', True)
 
-        pan = self.panel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LEFT)
+        pan = self.panel # = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LEFT)
 
         self.wids = wids = {}
 

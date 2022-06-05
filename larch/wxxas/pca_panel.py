@@ -96,7 +96,7 @@ class PCAPanel(TaskPanel):
         wids['save_model'].Disable()
 
         collabels = [' Variance ', ' IND value ', 'IND/IND_Best']
-        colsizes = [90, 90, 90]
+        colsizes = [125, 125, 125]
         coltypes = ['float:12,6', 'float:12,6', 'float:12,5']
         coldefs  = [0.0, 0.0, 1.0]
 
@@ -106,7 +106,7 @@ class PCAPanel(TaskPanel):
                                           defaults=coldefs,
                                           colsizes=colsizes, rowlabelsize=60)
 
-        wids['pca_table'].SetMinSize((425, 150))
+        wids['pca_table'].SetMinSize((500, 150))
         wids['pca_table'].EnableEditing(False)
 
 
@@ -126,7 +126,7 @@ class PCAPanel(TaskPanel):
                                           defaults=coldefs,
                                           colsizes=colsizes, rowlabelsize=60)
 
-        wids['fit_table'].SetMinSize((625, 200))
+        wids['fit_table'].SetMinSize((700, 200))
         wids['fit_table'].EnableEditing(False)
 
 

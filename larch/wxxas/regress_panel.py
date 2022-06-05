@@ -132,7 +132,7 @@ class RegressionPanel(TaskPanel):
                                       defaults=coldefs,
                                       colsizes=colsizes)
 
-        wids['table'].SetMinSize((650, 225))
+        wids['table'].SetMinSize((675, 225))
 
         wids['use_selected'] = Button(panel, 'Use Selected Groups',
                                       size=(150, -1),  action=self.onFillTable)
