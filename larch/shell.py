@@ -13,7 +13,7 @@ from .version import make_banner
 from .inputText import InputText
 from .larchlib import StdWriter
 from .utils import uname, get_homedir
-from .wxlib import LarchWxApp
+
 HAS_READLINE = False
 try:
     import readline
@@ -24,6 +24,7 @@ except ImportError:
 HAS_WXPYTHON = False
 try:
     import wx
+    from .wxlib import LarchWxApp
     HAS_WXPYTHON = True
 except ImportError:
     wx = None
