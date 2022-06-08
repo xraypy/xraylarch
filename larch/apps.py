@@ -307,8 +307,11 @@ def run_larch():
         if with_wx:
             set_locale()
             use_mpl_wxagg()
+        try:
             install_extras(extras_wxgraph)
-        install_extras(extras_epics)
+            install_extras(extras_epics)
+        except:
+            pass
         vinfo = check_larchversion()
         if vinfo.update_available:
             print(vinfo.message)
