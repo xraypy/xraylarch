@@ -32,7 +32,7 @@ with open('requirements.txt', 'r') as f:
 
 try:
     import wx
-    install_reqs.extend(['wxutils>=0.2.3', 'wxmplot>=0.9.43'])
+    # install_reqs.extend(['wxutils>=0.2.3', 'wxmplot>=0.9.43'])
 except (ImportError, AttributeError):
     pass
 
