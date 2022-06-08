@@ -46,10 +46,12 @@ except (ImportError, AttributeError):
 from . import wxlib
 __core_modules.extend([wxlib])
 if HAS_WXPYTHON:
-    from .wxlib import plotter
-    from . import wxmap, wxxas, wxxrd
-    __core_modules.extend([plotter, wxmap, wxxas, wxxrd])
-
+    try:
+        from .wxlib import plotter
+        from . import wxmap, wxxas, wxxrd
+        __core_modules.extend([plotter, wxmap, wxxas, wxxrd])
+    except:
+        pass
 
 helper = Helper()
 
