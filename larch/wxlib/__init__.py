@@ -16,7 +16,7 @@ import locale
 
 from pyshortcuts import platform
 import os
-
+import sys
 HAS_WXPYTHON = False
 try:
     import wx
@@ -38,7 +38,16 @@ if platform == 'darwin':
     FONTSIZE = 12
     FONTSIZE_FW = 12
 
-try:
+if HAS_WXPYTHON:
+    try:
+        import wxutils
+        import wxmplot
+    except:
+        from ..apps import install_extras
+        from ..site_config import extras_wxgraph
+        install_extras(extras_wxgraph)
+
+
     from . import larchframe
     from . import larchfilling
     from . import readlinetextctrl
@@ -145,8 +154,7 @@ try:
             _sys.gui_apps = {}
         _sys.gui_apps['xrfviewer'] = ('XRF Spectrum Viewer', XRFDisplayFrame)
 
-except:
-
+else:
     def nullfunc(*args, **kws):
         pass
 
