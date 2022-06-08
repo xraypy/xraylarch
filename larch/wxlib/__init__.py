@@ -38,7 +38,7 @@ if platform == 'darwin':
     FONTSIZE = 12
     FONTSIZE_FW = 12
 
-if HAS_WXPYTHON:
+try:
     from . import larchframe
     from . import larchfilling
     from . import readlinetextctrl
@@ -145,32 +145,8 @@ if HAS_WXPYTHON:
             _sys.gui_apps = {}
         _sys.gui_apps['xrfviewer'] = ('XRF Spectrum Viewer', XRFDisplayFrame)
 
+except:
 
-    #############################
-    ## Hack System and Startfile on Windows totry to track down
-    ## weird error of starting other applications, like Mail
-    if platform=='win':
-        from os import system as os_system
-        from os import startfile as os_startfile
-        def my_system(command):
-            print("#@ os.system: ", command)
-            return os_system(command)
-
-        def my_startfile(filepath, operation=None):
-            print("#@ os.startfile: ", filepath, operation)
-            try:
-                if operation is None:
-                    return os_startfile(filepath)
-                else:
-                    return os_startfile(filepath, operation)
-            except WindowsError:
-                print("#@ os.startfile failed: ", filepath, operation)
-
-        os.system = my_system
-        os.startfile = my_startfile
-    #############################
-
-else:
     def nullfunc(*args, **kws):
         pass
 
