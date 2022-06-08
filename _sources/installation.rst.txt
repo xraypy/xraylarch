@@ -266,9 +266,8 @@ Within a shell:
 
 .. code:: bash
 
-   conda create -y --name xraylarch python==3.9
+   conda create -y --name xraylarch python==3.9.12
    conda activate xraylarch
-   conda update --all
 
 3. install main dependencies:
 
@@ -285,6 +284,16 @@ Within a shell:
 
 5. if anything of the above fails, report it to the `Larch Github Issues`_
 
+Putting that all together:
+
+.. code:: bash
+
+   conda create -y --name xraylarch python==3.9.12
+   conda activate xraylarch
+   conda install -y "numpy=>1.20" "scipy=>1.6" "matplotlib=>3.0" scikit-learn pandas
+   conda install -y -c conda-forge wxpython pymatgen tomopy pycifrw
+   pip install xraylarch
+   larch -m
 
 
 Notes on Anaconda

@@ -345,9 +345,8 @@ conda update -y conda python pip
 <ol class="arabic simple" start="2">
 <li><p><strong>(optional/expert)</strong> create a dedicated environment for Larch and activate it:</p></li>
 </ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create -y --name xraylarch <span class="nv">python</span><span class="o">==</span><span class="m">3</span>.9
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create -y --name xraylarch <span class="nv">python</span><span class="o">==</span><span class="m">3</span>.9.12
 conda activate xraylarch
-conda update --all
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">
@@ -366,6 +365,15 @@ conda install -y -c conda-forge wxpython pymatgen tomopy pycifrw
 <ol class="arabic simple" start="5">
 <li><p>if anything of the above fails, report it to the <a class="reference external" href="https://github.com/xraypy/xraylarch/issues">Larch Github Issues</a></p></li>
 </ol>
+<p>Putting that all together:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create -y --name xraylarch <span class="nv">python</span><span class="o">==</span><span class="m">3</span>.9.12
+conda activate xraylarch
+conda install -y <span class="s2">&quot;numpy=&gt;1.20&quot;</span> <span class="s2">&quot;scipy=&gt;1.6&quot;</span> <span class="s2">&quot;matplotlib=&gt;3.0&quot;</span> scikit-learn pandas
+conda install -y -c conda-forge wxpython pymatgen tomopy pycifrw
+pip install xraylarch
+larch -m
+</pre></div>
+</div>
 <section id="notes-on-anaconda">
 <h3><span class="section-number">1.3.1. </span>Notes on Anaconda<a class="headerlink" href="#notes-on-anaconda" title="Permalink to this headline">¶</a></h3>
 <p>By default, Anaconda Python installs into your own home folder (on Windows, this
