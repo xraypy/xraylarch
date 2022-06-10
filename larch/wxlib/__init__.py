@@ -97,7 +97,7 @@ if HAS_WXPYTHON:
                           last_cursor_pos, _imshow, _contour, _xrf_plot,
                           _xrf_oplot, _fitplot, _redraw_plot)
 
-    from .xrfdisplay import  XRFDisplayFrame
+    # from .xrfdisplay import  XRFDisplayFrame
 
     from . import xafsplots
     from .xafsplots import plotlabels
@@ -152,7 +152,7 @@ if HAS_WXPYTHON:
         _sys = _larch.symtable._sys
         if not hasattr(_sys, 'gui_apps'):
             _sys.gui_apps = {}
-        _sys.gui_apps['xrfviewer'] = ('XRF Spectrum Viewer', XRFDisplayFrame)
+        # _sys.gui_apps['xrfviewer'] = ('XRF Spectrum Viewer', XRFDisplayFrame)
 
 else:
     def nullfunc(*args, **kws):
