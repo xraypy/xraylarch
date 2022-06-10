@@ -10,6 +10,15 @@ from scipy.interpolate import interp1d as scipy_interp1d
 
 from .lineshapes import gaussian, lorentzian, voigt
 
+
+import scipy.constants as consts
+KTOE = 1.e20*consts.hbar**2 / (2*consts.m_e * consts.e) # 3.8099819442818976
+ETOK = 1.0/KTOE
+def etok(energy):
+    """convert photo-electron energy to wavenumber"""
+    if energy < 0: return 0
+    return np.sqrt(energy*ETOK)
+
 def as_ndarray(obj):
     """
     make sure a float, int, list of floats or ints,

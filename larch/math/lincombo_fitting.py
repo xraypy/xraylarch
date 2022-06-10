@@ -14,12 +14,10 @@ from glob import glob
 
 import numpy as np
 from numpy.random import randint
-
 import lmfit
-
 from .. import Group
-from .utils import interp, index_of
-from ..xafs import etok
+from .utils import interp, index_of, etok
+
 
 def get_arrays(group, arrayname, xname='energy'):
     y = None
