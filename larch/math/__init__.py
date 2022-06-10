@@ -1,6 +1,7 @@
 __DOC__ = """Mathematical functions for Larch"""
 
 import numpy as np
+
 from .utils import (linregress, realimag, as_ndarray,
                     complex_phase, deriv, interp, interp1d,
                     remove_dups, remove_nans2, index_of,
@@ -12,7 +13,6 @@ from .lineshapes import (gaussian, lorentzian, voigt, pvoigt, hypermet,
                          expgaussian, doniach, skewed_voigt,
                          students_t, logistic, erf, erfc, wofz)
 
-
 from .fitpeak import fit_peak
 from .convolution1D import glinbroad
 from .lincombo_fitting import lincombo_fit, lincombo_fitall, groups2matrix
@@ -21,9 +21,6 @@ from .learn_regress import pls_train, pls_predict, lasso_train, lasso_predict
 from .gridxyz import gridxyz
 from .spline import spline_rep, spline_eval
 from . import transformations as trans
-
-from .tomography import (tomo_reconstruction, reshape_sinogram,
-                         trim_sinogram, TOMOPY_ALG, TOMOPY_FILT)
 
 _larch_builtins = {'_math': dict(linregress=linregress, polyfit=np.polyfit,
                                  realimag=realimag, as_ndarray=as_ndarray,

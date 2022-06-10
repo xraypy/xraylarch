@@ -5,6 +5,7 @@ __DOC__ = '''
 Functions for Input/Output, especially reading specific types
 of scientific data files.
 '''
+
 from .fileutils import (increment_filename, new_filename, new_dirname,
                         fix_filename, fix_varname, pathOf, unixpath,
                         winpath, nativepath, strip_quotes, get_timestamp,
@@ -15,33 +16,32 @@ from .columnfile import (read_ascii, write_ascii, write_group, set_array_labels,
 from .xdi import read_xdi, XDIFile, XDIFileException
 from .mda import read_mda
 from .hdf5group import h5file, h5group, netcdf_file, netcdf_group
-
 from .xsp3_hdf5 import read_xsp3_hdf5
 from .xrf_netcdf import read_xrf_netcdf
 from .xrd_netcdf import read_xrd_netcdf
 from .xrd_hdf5 import read_xrd_hdf5
-
 from .xdi import read_xdi
-
 from .gse_escan import gsescan_group, gsescan_deadtime_correct
 from .gse_xdiscan import read_gsexdi, gsexdi_deadtime_correct, is_GSEXDI
 from .gse_mcafile import gsemca_group, GSEMCA_File
 from .save_restore import (save_session, load_session, read_session,
                            is_larch_session_file, save_groups, read_groups)
+from . import tifffile
 from .tifffile import TIFFfile
+
 from .athena_project import (is_athena_project, read_athena, AthenaProject, create_athena,
                              extract_athenagroup, make_hashkey)
 
 from .xafs_beamlines import guess_beamline
-
 from .csvfiles import groups2csv, read_csv
 from .export_modelresult import export_modelresult
 from .mergegroups import merge_groups
+
 from .specfile_reader import (str2rng_larch, read_specfile, open_specfile,
                               is_specfile)
-
 from .stepscan_file import read_stepscan
-from . import tifffile
+
+
 def read_tiff(fname, _larch=None, *args, **kws):
     """read image data from a TIFF file as an array"""
     return tifffile.imread(fname, *args, **kws)
