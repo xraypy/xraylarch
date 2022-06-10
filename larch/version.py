@@ -1,18 +1,23 @@
 #!/usr/bin/env python
-__date__    = '2022-May-26'
-__release_version__ = '0.9.61'
+"""Version information"""
+__date__    = '2022-Jun-12'
+__release_version__ = '0.9.63'
 __authors__ = "M. Newville, M. Koker, M. Rovezzi, B. Ravel, and others"
 
 import sys
+from collections import OrderedDict, namedtuple
+from packaging.version import parse as ver_parse
+
+import urllib3
+import requests
 import numpy
 import scipy
 import matplotlib
 import lmfit
-from collections import OrderedDict, namedtuple
-from packaging.version import parse as ver_parse
+
 try:
     from importlib.metadata import version, PackageNotFoundError
-except:
+except (ImportError, PackageNotFoundError):
     from importlib_metadata import version, PackageNotFoundError
 try:
     __version__ = version("xraylarch")
@@ -20,23 +25,23 @@ except PackageNotFoundError:
     # package is not installed
     __version__ = __release_version__
 
-import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def version_data(mods=None):
+    "get version data"
     sysvers = sys.version
     if '\n' in sysvers:
-        sysvers = sysvers.split('\n')[0]
+        sysvers = sysvers.split('\n', maxsplit=1)[0]
 
     vdat = OrderedDict()
     vdat['larch'] = f'{__release_version__} ({__date__}) {__authors__}'
-    vdat['python'] = "%s" % (sysvers)
+    vdat['python'] = sysvers
 
     allmods = [numpy, scipy, matplotlib, lmfit]
     if mods is not None:
-        for m in mods:
-            if m not in allmods:
-                allmods.append(m)
+        for mod in mods:
+            if mod not in allmods:
+                allmods.append(mod)
 
     for mod in allmods:
         if mod is not None:
@@ -49,14 +54,15 @@ def version_data(mods=None):
     return vdat
 
 def make_banner(mods=None):
+    "return startup banner"
     vdat = version_data(mods=mods)
-
-    lines = ['Larch %s' % vdat.pop('larch'),
-             'Python %s' % vdat.pop('python')]
+    _lvers = vdat.pop('larch')
+    _pvers = vdat.pop('python')
+    lines = [f'Larch {_lvers}', f'Python {_pvers}']
 
     reqs = []
     for name, vstr in vdat.items():
-        reqs.append('%s %s' % (name, vstr))
+        reqs.append(f'{name} {vstr}')
     lines.append(', '.join(reqs))
     if __version__ != __release_version__:
         lines.append(f'Devel Version: {__version__:s}')
@@ -89,9 +95,9 @@ from a Command Window or Terminal.
 LATEST_MESSAGE = """Larch version {local_version:s} is up to date."""
 
 def check_larchversion():
+    "check version, return VersionStatus tuple"
     local_version = __release_version__
 
-    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
     try:
         req = requests.get(VERSION_URL, verify=False, timeout=3.10)
     except:
