@@ -1,24 +1,19 @@
 #!/usr/bin/env python
 """ Builtins for larch"""
 
-import os
-import imp
 import sys
 import time
-import re
-import traceback
-import io
-import asteval
-from .helper import Helper
-from . import inputText
-from . import site_config
+
 from . import utils
 from .utils.show import _larch_builtins as show_builtins
 
-from .larchlib import parse_group_args, LarchExceptionHolder, Journal
+from .helper import Helper
+from .larchlib import parse_group_args, Journal
 from .symboltable import isgroup as sym_isgroup
-
+from lmfit import Parameters, Minimizer
+import xraydb
 from . import math
+
 from . import io
 from . import fitting
 from . import xray
@@ -26,9 +21,11 @@ from . import xrf
 from . import xafs
 from . import xrd
 from . import xrmmap
+from . import wxlib
+
 from .utils import physical_constants
 
-__core_modules = [math, fitting, io, xray, xrf, xafs, xrd, xrmmap]
+__core_modules = [math, fitting, io, xray, xrf, xafs, xrd, xrmmap, wxlib]
 
 try:
     from . import epics
@@ -36,16 +33,7 @@ try:
 except ImportError:
     pass
 
-
-try:
-    import wx
-    HAS_WXPYTHON = True
-except (ImportError, AttributeError):
-    HAS_WXPYTHON = False
-
-from . import wxlib
-__core_modules.extend([wxlib])
-if HAS_WXPYTHON:
+if wxlib.HAS_WXPYTHON:
     try:
         from .wxlib import plotter
         from . import wxmap, wxxas, wxxrd
@@ -154,7 +142,8 @@ for pconst_name in ('PLANCK_HC', 'AVOGADRO', 'AMU',
                     'R_ELECTRON_ANG','DEG2RAD', 'RAD2DEG'):
     constants[pconst_name] = getattr(physical_constants, pconst_name)
 
-##
+
+
 ## More builtin commands, to set up the larch language:
 
 def _group(_larch=None, **kws):
@@ -215,7 +204,7 @@ def _help(*args, _larch=None):
         for a in args:
             helper.help(a)
     if helper._larch is not None:
-        helper._larch.writer.write("%s\n" % helper.getbuffer())
+        helper._larch.writer.write(f"helper.getbuffer()\n")
     else:
         return helper.getbuffer()
 
@@ -236,8 +225,7 @@ def _subgroups(obj, _larch=None):
         raise Warning("cannot run subgroups() -- larch broken?")
     if sym_isgroup(obj):
         return obj._subgroups()
-    else:
-        raise Warning("subgroups() argument must be a group")
+    raise Warning("subgroups() argument must be a group")
 
 def _groupitems(obj, _larch=None):
     "returns group items as if items() method of a dict"
@@ -245,8 +233,7 @@ def _groupitems(obj, _larch=None):
         raise Warning("cannot run subgroups() -- larch broken?")
     if sym_isgroup(obj):
         return obj._members().items()
-    else:
-        raise Warning("group_items() argument must be a group")
+    raise Warning("group_items() argument must be a group")
 
 def _which(sym, _larch=None):
     "return full path of object, or None if object cannot be found"
@@ -263,7 +250,7 @@ def _which(sym, _larch=None):
 
 def _exists(sym, _larch=None):
     "return True if a named symbol exists and can be found, False otherwise"
-    return which(sym, _larch=_larch) is not None
+    return _which(sym, _larch=_larch) is not None
 
 def _isgroup(obj, _larch=None):
     """return whether argument is a group or the name of a group
@@ -298,13 +285,16 @@ def _pause(msg='Hit return to continue', _larch=None):
         raise Warning("cannot pause() -- larch broken?")
     return input(msg)
 
-def _sleep(t=0):  return time.sleep(t)
+def _sleep(t=0):
+    return time.sleep(t)
 _sleep.__doc__ = time.sleep.__doc__
 
-def _time():  return time.time()
+def _time():
+    return time.time()
 _time.__doc__ = time.time.__doc__
 
-def _strftime(format, *args):  return time.strftime(format, *args)
+def _strftime(format, *args):
+    return time.strftime(format, *args)
 _strftime.__doc__ = time.strftime.__doc__
 
 
@@ -321,16 +311,16 @@ def show_history(max_lines=10000, _larch=None):
 def init_display_group(_larch):
     symtab = _larch.symtable
     if not symtab.has_group('_sys.display'):
-            symtab.new_group('_sys.display')
-            colors = {}
-            colors['text'] = {'color': None}
-            colors['text2'] = {'color': 'cyan'}
-            colors['comment'] = {'color': 'green'}
-            colors['error'] = {'color': 'red',  'attrs': ['bold']}
-            display = symtab._sys.display
-            display.colors = colors
-            display.use_color = True
-            display.terminal = 'xterm'
+        symtab.new_group('_sys.display')
+        colors = {}
+        colors['text'] = {'color': None}
+        colors['text2'] = {'color': 'cyan'}
+        colors['comment'] = {'color': 'green'}
+        colors['error'] = {'color': 'red',  'attrs': ['bold']}
+        display = symtab._sys.display
+        display.colors = colors
+        display.use_color = True
+        display.terminal = 'xterm'
 
 
 _main_builtins = dict(group=_group, dir=_dir, which=_which, exists=_exists,
