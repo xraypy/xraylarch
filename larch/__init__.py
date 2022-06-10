@@ -6,19 +6,20 @@
 import os
 import sys
 import logging
+import time
+import warnings
+warnings.simplefilter('ignore')
 
 # note: may need to set CONDA env *before* loading numpy!
 if os.name == 'nt':
     os.environ['CONDA_DLL_SEARCH_MODIFICATION_ENABLE'] = '1'
 
-import numpy
-import time
-
-import warnings
-warnings.simplefilter('ignore')
-
 if (sys.version_info.major < 3 or sys.version_info.minor < 5):
     raise EnvironmentError('larch requires python 3.6 or higher')
+
+import numpy
+import matplotlib
+import lmfit
 
 logger = logging.getLogger()
 logger.level = logging.ERROR + 1
@@ -37,11 +38,9 @@ try:
     with warnings.catch_warnings():
         warnings.filterwarnings('error')
         matplotlib.use("WXAgg")
-except:
+except ImportError:
     pass
 
-import matplotlib
-import lmfit
 
 ## be careful here: it is easy to have cicrular imports!
 
@@ -50,20 +49,21 @@ from .symboltable import Group, isgroup
 from .larchlib import Make_CallArgs, parse_group_args, isNamedClass, Journal, Entry
 from .fitting import Parameter, isParameter, param_value, ParameterGroup
 
-from .site_config import show_site_config
-from . import builtins
+# from . import builtins
 from .inputText import InputText
 from .interpreter import Interpreter
-from . import larchlib, utils, site_config
-from . import fitting, math, io
+from . import larchlib
+from . import utils
+from . import site_config
+from .site_config import show_site_config
+# # from . import fitting, math, io
 
-try:
-    from . import apps
-    from . import shell
-except ImportError as e:
-    logger.warning(
-        "Larchs apps and shell are not supported due to missing dependencies: {}".format(e)
-    )
+
+# try:
+#     from . import apps
+#     from . import shell
+# except ImportError as e:
+#     logger.warning(f"Larchs apps and shell are missing some dependencies: {e}")
 
 logger.level = logging.INFO
 
