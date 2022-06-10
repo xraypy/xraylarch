@@ -245,9 +245,9 @@ class XASFrame(wx.Frame):
         wx.Frame.__init__(self, parent, -1, size=XASVIEW_SIZE, style=FRAMESTYLE)
 
         if check_version:
-            def check_version():
+            def version_checker():
                 self.vinfo = check_larchversion()
-            version_thread = Thread(target=check_version)
+            version_thread = Thread(target=version_checker)
             version_thread.start()
 
         self.last_array_sel_col = {}
