@@ -24,7 +24,6 @@ from lmfit import minimize, Parameters
 from .. import Group
 from .utils import interp, index_of
 from larch.utils import is_gzip, str2bytes, bytes2str
-from larch.utils.jsonutils import encode4js, decode4js
 
 from .lincombo_fitting import get_arrays, get_label, groups2matrix
 
@@ -169,6 +168,7 @@ def pca_train(groups, arrayname='norm', xmin=-np.inf, xmax=np.inf):
 
 def save_pca_model(pca_model, filename):
     """save a PCA model to a file"""
+    from larch.utils.jsonutils import encode4js
     buff = ['##Larch PCA Model: 1.0 : %s' % time.strftime('%Y-%m-%d %H:%M:%S')]
     buff.append('%s' % json.dumps(encode4js(pca_model)))
 
@@ -178,6 +178,7 @@ def save_pca_model(pca_model, filename):
 
 def read_pca_model(filename):
     """read a PCA model from a file"""
+    from larch.utils.jsonutils import decode4js
     fopen = GzipFile if is_gzip(filename) else open
     with fopen(filename, 'rb') as fh:
         text = fh.read().decode('utf-8')
@@ -256,7 +257,7 @@ def pca_fit(group, pca_model, ncomps=None, rescale=True):
     xshape = xdat.shape
     if len(xshape) == 2:
         xdat = xdat[0]
-    
+
     ydat = ydat[0]
     ydat = interp(xdat, ydat, pca_model.x, kind='cubic')
 
