@@ -13,7 +13,6 @@ import ast
 import math
 import numpy
 
-from . import builtins
 from . import site_config
 from .symboltable import SymbolTable, Group, isgroup
 from .inputText import InputText, BLANK_TEXT
@@ -120,6 +119,8 @@ class Interpreter:
 
         # system-specific settings
         site_config.system_settings()
+        from larch import builtins
+
         for sym in builtins.from_math:
             setattr(mathgroup, sym, getattr(math, sym))
 
