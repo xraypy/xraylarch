@@ -1,4 +1,3 @@
-
 import time
 import numpy as np
 from scipy.special import erfc
@@ -8,12 +7,6 @@ from larch.math import interp
 from larch.utils.show import show
 
 from .mback import mback
-
-try:
-    from larch.wxlib   import _newplot, _plot
-    HASPLOT = True
-except:
-    HASPLOT = False
 
 pi = np.pi
 
