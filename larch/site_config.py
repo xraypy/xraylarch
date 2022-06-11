@@ -10,12 +10,10 @@ from __future__ import print_function
 
 import sys
 import os
-from os.path import exists, abspath, join
 from .utils import uname, get_homedir, nativepath, unixpath
-from .version import __version__ as larch_version
-from .version import __release_version__ as release_version
+from .version import __version__, __release_version__
 
-
+larch_version = __version__
 # lists of recommended packages that are not installed by default
 # but may be installed if several of the larch apps are run.
 extras_wxgraph = set(['wxutils', 'wxmplot'])
@@ -25,7 +23,8 @@ extras_doc   = set(['pytest', 'sphinx', 'numpydoc',
 extras_qtgraph = set(['pyqt5', 'pyqtwebengine', 'pyqtgraph'])
 
 def pjoin(*args):
-    return nativepath(join(*args))
+    "simple join"
+    return nativepath(os.path.join(*args))
 
 ##
 # set system-wide and local larch folders
@@ -75,7 +74,7 @@ if 'LARCHPATH' in os.environ:
 
 for pth in _path:
     mdir = pjoin(pth, 'modules')
-    if exists(mdir) and mdir not in modules_path:
+    if os.path.exists(mdir) and mdir not in modules_path:
         modules_path.append(mdir)
 
 # initialization larch files to be run on startup
@@ -83,7 +82,7 @@ init_files = [pjoin(user_larchdir, 'init.lar')]
 
 if 'LARCHSTARTUP' in os.environ:
     startup = os.environ['LARCHSTARTUP']
-    if exists(startup):
+    if os.path.exists(startup):
         init_files = [nativepath(startup)]
 
 # history file:
@@ -101,20 +100,21 @@ def make_user_larchdirs():
                'modules':    'put custom larch or python modules here'}
 
     def make_dir(dname):
-        if not exists(dname):
+        "create directory"
+        if not os.path.exists(dname):
             try:
                 os.mkdir(dname)
             except PermissionError:
-                print("no permission to create directory ", dname)
+                print(f'no permission to create directory {dname}')
             except (OSError, TypeError):
                 print(sys.exc_info()[1])
 
     def write_file(fname, text):
-        if not exists(fname):
+        "write wrapper"
+        if not os.path.exists(fname):
             try:
-                f = open(fname, 'w')
-                f.write('# %s\n' % text)
-                f.close()
+                with open(fname, 'w') as fh:
+                    fh.write(f'# {text}\n')
             except:
                 print(sys.exc_info()[1])
 
@@ -129,21 +129,16 @@ def make_user_larchdirs():
 
 
 def show_site_config():
+    "print config"
     print( """===  Larch Configuration
-  larch release:        %s
-  larch version:        %s
-  sys executable:       %s
-  sys is frozen:        %s
-  users larch dir:      %s
-  users history_file:   %s
-  users startup files:  %s
-  modules search path:  %s
+  larch release:        {__release_version__}
+  larch version:        {__version__}
+  sys executable:       {sys.executable}
+  sys is frozen:        repr(getattr(sys, 'frozen', False))
+  users larch dir:      {user_larchdir}
+  users history_file:   {history_file}
 ========================
-""" % (release_version, larch_version, sys.executable,
-       repr(getattr(sys, 'frozen', False)),
-       user_larchdir,
-       history_file, init_files,
-       modules_path))
+""")
 
 def system_settings():
     """set system-specific Environmental Variables, and make sure

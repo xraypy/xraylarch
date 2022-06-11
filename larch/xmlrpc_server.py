@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+"""
+XML RPC
+"""
 from __future__ import print_function
 
 import os
@@ -14,9 +17,8 @@ from xmlrpc.server import SimpleXMLRPCServer
 from xmlrpc.client import ServerProxy
 
 from .interpreter import Interpreter
-from .site_config import uname
-from .utils.jsonutils import encode4js
 from .utils import uname, get_cwd
+from .utils.jsonutils import encode4js
 
 try:
     import psutil
@@ -50,7 +52,7 @@ def test_server(host='localhost', port=4966):
           1    Connected, valid Larch server
           2    In use, but not a valid Larch server
     """
-    server = ServerProxy('http://%s:%d' % (host, port))
+    server = ServerProxy(f'http://{host:s}:{port:d}')
     try:
         methods = server.system.listMethods()
     except socket.error:
@@ -121,6 +123,7 @@ def get_next_port(host='localhost', port=4966, nmax=100):
     return None
 
 class LarchServer(SimpleXMLRPCServer):
+    "xml-rpc server"
     def __init__(self, host='localhost', port=4966,
                  logRequests=False, allow_none=True,
                  keepalive_time=3*24*3600):
@@ -162,7 +165,7 @@ class LarchServer(SimpleXMLRPCServer):
         signal.signal(signal.SIGINT, self.signal_handler)
         self.activity_thread = Thread(target=self.check_activity)
 
-    def write(self, text, **kws):
+    def write(self, text):
         if text is None:
             text = ''
         self.out_buffer.append(str(text))
@@ -301,15 +304,15 @@ def spawn_server(port=4966, wait=True, timeout=30):
     pyexe = os.path.join(topdir, 'bin', 'python')
     bindir = 'bin'
     if uname.startswith('win'):
-            bindir = 'Scripts'
-            pyexe = pyexe + '.exe'
+        bindir = 'Scripts'
+        pyexe = pyexe + '.exe'
 
     args = [pyexe, os.path.join(topdir, bindir, 'larch'),
             '-r', '-p', '%d' % port]
     pipe = Popen(args)
     if wait:
-        t0 = time()
-        while time() - t0 < timeout:
+        time0 = time()
+        while time() - time0 < timeout:
             sleep(POLL_TIME)
             if CONNECTED == test_server(port=port):
                 break
@@ -375,7 +378,7 @@ command must be one of the following:
 
     elif command == 'stop':
         if server_state == CONNECTED:
-            ServerProxy('http://localhost:%d' % (port)).shutdown()
+            ServerProxy(f'http://localhost:{port:d}').shutdown()
             smsg(port, 'stopped')
 
     elif command == 'next':
@@ -385,7 +388,7 @@ command must be one of the following:
 
     elif command == 'restart':
         if server_state == CONNECTED:
-            ServerProxy('http://localhost:%d' % (port)).shutdown()
+            ServerProxy(f'http://localhost:{port:d}').shutdown()
             sleep(POLL_TIME)
         spawn_server(port=port)
 
@@ -400,7 +403,7 @@ command must be one of the following:
             smsg(port, 'port is in use by non-larch server')
     elif command == 'report':
         if server_state == CONNECTED:
-            s = ServerProxy('http://localhost:%d' % (port))
+            s = ServerProxy(f'http://localhost:{port:d}')
             info = s.get_client_info()
             last_event = info.get('last_event', 0)
             last_used = ctime(last_event)
@@ -420,17 +423,16 @@ command must be one of the following:
                 keepalive_time = round(keepalive_time/60.0)
                 keepalive_units = 'hours'
 
-            print('larch_server report:')
-            print('   Server Port Number  = %s' % serverport)
-            print('   Server Process ID   = %s' % serverid)
-            print('   Server Last Used    = %s' % last_used)
-            print('   Server will expire in %d %s if not used.' % (keepalive_time,
-                                                                 keepalive_units))
-            print('   Client Machine Name = %s' % machname)
-            print('   Client Process ID   = %s' % str(procid))
-            print('   Client Application  = %s' % appname)
-            print('   Client User Name    = %s' % username)
-
+            print(f"""larch_server report:
+   Server Port Number  = {serverport}
+   Server Process ID   = {serverid}
+   Server Last Used    = {last_used}
+   Server will expire in {keepalive_time} {keepalive_units} if not used.
+   Client Machine Name = {machname}
+   Client Process ID   = {procid:d}
+   Client Application  = {appname}
+   Client User Name    = {username}
+""")
         elif server_state == NOT_IN_USE:
             smsg(port, 'not running')
             sys.exit(1)
@@ -438,7 +440,7 @@ command must be one of the following:
             smsg(port, 'port is in use by non-larch server')
 
     else:
-        print("larch_server: unknown command '%s'. Try -h" % command)
+        print(f"larch_server: unknown command '{command}'. Try -h")
 
 
 if __name__ == '__main__':
