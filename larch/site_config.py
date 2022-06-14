@@ -3,7 +3,6 @@
 site configuration for larch:
 
    init_files:  list of larch files run (in order) on startup
-   module_path: list of directories to search for larch code
    history_file:
 """
 from __future__ import print_function
@@ -66,16 +65,6 @@ if hasattr(sys, 'frozen'):
         toplevel, bindir = os.path.split(tdir)
         larchdir = pjoin(toplevel, 'Resources', 'larch')
 
-modules_path = []
-_path = [user_larchdir]
-
-if 'LARCHPATH' in os.environ:
-    _path.extend([nativepath(s) for s in os.environ['LARCHPATH'].split(':')])
-
-for pth in _path:
-    mdir = pjoin(pth, 'modules')
-    if os.path.exists(mdir) and mdir not in modules_path:
-        modules_path.append(mdir)
 
 # initialization larch files to be run on startup
 init_files = [pjoin(user_larchdir, 'init.lar')]
@@ -96,8 +85,7 @@ def make_user_larchdirs():
              }
     subdirs = {'matplotlib': 'matplotlib may put files here',
                'dlls':       'put dlls here',
-               'feff':       'Feff files and folders here',
-               'modules':    'put custom larch or python modules here'}
+               'feff':       'Feff files and folders here'}
 
     def make_dir(dname):
         "create directory"
@@ -113,7 +101,7 @@ def make_user_larchdirs():
         "write wrapper"
         if not os.path.exists(fname):
             try:
-                with open(fname, 'w') as fh:
+                with open(fname, 'w', encoding='utf-8') as fh:
                     fh.write(f'# {text}\n')
             except:
                 print(sys.exc_info()[1])

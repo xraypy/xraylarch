@@ -339,9 +339,6 @@ class Procedure(object):
         del lgroup
         return retval
 
-def enable_plugins():
-    """plugins no longer supported"""
-    return False
 
 def add2path(envvar='PATH', dirname='.'):
     """add specified dir to begninng of PATH and

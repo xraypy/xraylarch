@@ -2,18 +2,18 @@
 '''
 SymbolTable for Larch interpreter
 '''
-from __future__ import print_function
 import os
 import sys
-import types
-import numpy
 import copy
+
+import numpy
+
 from . import site_config
 from .closure import Closure
 from .utils import fixName, isValidName
 
 
-class Group(object):
+class Group():
     """
     Generic Group: a container for variables, modules, and subgroups.
     """
@@ -32,21 +32,21 @@ class Group(object):
 
     def __repr__(self):
         if self.__name__ is not None:
-            return '<Group %s>' % self.__name__
+            return f'<Group {self.__name__}>'
         return '<Group>'
 
     def __copy__(self):
         out = Group()
-        for k, v in self.__dict__.items():
-            if k != '__name__':
-                setattr(out, k,  copy.copy(v))
+        for key, val in self.__dict__.items():
+            if key != '__name__':
+                setattr(out, key,  copy.copy(val))
         return out
 
     def __deepcopy__(self, memo):
         out = Group()
-        for k, v in self.__dict__.items():
-            if k != '__name__':
-                setattr(out, k,  copy.deepcopy(v, memo))
+        for key, val in self.__dict__.items():
+            if key != '__name__':
+                setattr(out, key,  copy.deepcopy(val, memo))
         return out
 
     def __id__(self):
@@ -64,7 +64,7 @@ class Group(object):
         return [key for key in cls_members + dict_keys
                 if (not key.startswith('_SymbolTable_') and
                     not key.startswith('_Group_') and
-                    not key.startswith('_%s_' % cname) and
+                    not key.startswith(f'_{cname}_') and
                     not (key.startswith('__') and key.endswith('__')) and
                     key not in self.__private)]
 
@@ -74,11 +74,11 @@ class Group(object):
 
     def _members(self):
         "return members"
-        r = {}
+        out = {}
         for key in self.__dir__():
             if key in self.__dict__:
-                r[key] = self.__dict__[key]
-        return r
+                out[key] = self.__dict__[key]
+        return out
 
     def _repr_html_(self):
         """HTML representation for Jupyter notebook"""
@@ -88,7 +88,9 @@ class Group(object):
         html.append("<tr><td><b>Attribute</b></td><td><b>Type</b></td></tr>")
         attrs = self.__dir__()
         atypes = [type(getattr(self, attr)).__name__ for attr in attrs]
-        html.append(''.join([f"<tr><td>{attr}</td><td><i>{atp}</i></td></tr>" for attr, atp in zip(attrs, atypes)]))
+        hwords = [f"<tr><td>{attr}</td><td><i>{atp}</i></td></tr>" \
+                  for attr, atp in zip(attrs, atypes)]
+        html.append(''.join(hwords))
         html.append("</table>")
         return ''.join(html)
 
@@ -113,7 +115,7 @@ def isgroup(grp, *args):
 class InvalidName:
     """ used to create a value that will NEVER be a useful symbol.
     symboltable._lookup() uses this to check for invalid names"""
-    pass
+
 
 GroupDocs = {}
 GroupDocs['_sys'] = """
@@ -153,7 +155,6 @@ class SymbolTable(Group):
             thisgroup = Group(name=gname)
             if gname in GroupDocs:
                 thisgroup.__doc__ = GroupDocs[gname]
-
             setattr(self, gname, thisgroup)
 
         self._sys.frames      = []
@@ -169,19 +170,6 @@ class SymbolTable(Group):
         self._sys.core_groups = tuple(self._sys.searchGroups[:])
 
         self.__callbacks = {}
-        orig_sys_path = sys.path[:]
-
-        if site_config.modules_path is not None:
-            for idir in site_config.modules_path:
-                idirfull = os.path.abspath(idir)
-                if idirfull not in self._sys.path and os.path.exists(idirfull):
-                    self._sys.path.append(idirfull)
-
-        sys.path = self._sys.path[:]
-        for idir in orig_sys_path:
-            idirfull = os.path.abspath(idir)
-            if idirfull not in sys.path:
-                sys.path.append(idirfull)
 
         self._sys.modules = {'_main':self}
         for gname in self.core_groups:
@@ -196,8 +184,7 @@ class SymbolTable(Group):
 
     def save_frame(self):
         " save current local/module group"
-        self._sys.frames.append((self._sys.localGroup,
-                                 self._sys.moduleGroup))
+        self._sys.frames.append((self._sys.localGroup, self._sys.moduleGroup))
 
     def restore_frame(self):
         "restore last saved local/module group"
@@ -473,9 +460,6 @@ class SymbolTable(Group):
         if len(tnam) > 0:
             sym = self._lookup('.'.join(tnam))
         return sym, child
-
-    def add_plugin(self, plugin, on_error, **kws):
-        raise ValueError("plugins not supported")
 
     def show_group(self, groupname):
         """display group members --- simple version for tests"""
