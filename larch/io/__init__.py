@@ -24,13 +24,16 @@ from .xdi import read_xdi
 from .gse_escan import gsescan_group, gsescan_deadtime_correct
 from .gse_xdiscan import read_gsexdi, gsexdi_deadtime_correct, is_GSEXDI
 from .gse_mcafile import gsemca_group, GSEMCA_File
+
 from .save_restore import (save_session, load_session, read_session,
-                           is_larch_session_file, save_groups, read_groups)
+                           clear_session, is_larch_session_file,
+                           save_groups, read_groups)
+
 from . import tifffile
 from .tifffile import TIFFfile
-
-from .athena_project import (is_athena_project, read_athena, AthenaProject, create_athena,
-                             extract_athenagroup, make_hashkey)
+from .athena_project import (is_athena_project, read_athena, AthenaProject,
+                             create_athena, extract_athenagroup,
+                             make_hashkey)
 
 from .xafs_beamlines import guess_beamline
 from .csvfiles import groups2csv, read_csv
@@ -82,6 +85,7 @@ __exports__ = dict(increment_filename=increment_filename,
                    read_tiff=read_tiff,
                    merge_groups=merge_groups,
                    save_session=save_session,
+                   clear_session=clear_session,
                    load_session=load_session,
                    read_session=read_session,
                    save_groups=save_groups,

@@ -143,6 +143,17 @@ def save_session(fname=None, _larch=None):
     fh.write(str2bytes("\n".join(buff)))
     fh.close()
 
+def clear_session(_larch=None):
+    """ clear user-definded data in a session"""
+    if _larch is None:
+        raise ValueError('_larch not defined')
+
+    core_groups = _larch.symtable._sys.core_groups
+    for attr in _larch.symtable.__dir__():
+        if attr not in core_groups:
+            delattr(_larch.symtable, attr)
+
+
 def read_session(fname):
     """read Larch Save File, returning data
 
