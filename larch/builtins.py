@@ -10,10 +10,8 @@ from .utils.show import _larch_builtins as show_builtins
 from .helper import Helper
 from .larchlib import parse_group_args, Journal
 from .symboltable import isgroup as sym_isgroup
-from lmfit import Parameters, Minimizer
-import xraydb
-from . import math
 
+from . import math
 from . import io
 from . import fitting
 from . import xray
