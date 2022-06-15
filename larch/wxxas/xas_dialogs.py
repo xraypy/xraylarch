@@ -591,7 +591,7 @@ class RebinDataDialog(wx.Dialog):
         xmin = min(self.dgroup.energy)
         xmax = max(self.dgroup.energy)
         e0val = getattr(self.dgroup, 'e0', xmin)
-
+        xanes_step = 0.05 * max(1, int(e0val / 1250.0))  # E0/25000, round down to 0.05
         self.data = [self.dgroup.energy[:], self.dgroup.mu[:],
                      self.dgroup.mu*0, e0val]
 
@@ -609,8 +609,7 @@ class RebinDataDialog(wx.Dialog):
 
         opts  = dict(size=(90, -1), precision=3, act_on_losefocus=True)
 
-        wids['e0'] = FloatCtrl(panel, value=e0val, minval=xmin, maxval=xmax,
-                             **opts)
+        wids['e0'] = FloatCtrl(panel, value=e0val, minval=xmin, maxval=xmax, **opts)
         pre1 = 10.0*(1+int((xmin-e0val)/10.0))
         wids['pre1'] = FloatCtrl(panel, value=pre1,  **opts)
         wids['pre2'] = FloatCtrl(panel, value=-15, **opts)
@@ -620,7 +619,7 @@ class RebinDataDialog(wx.Dialog):
         wids['exafs2'] = FloatCtrl(panel, value=etok(xmax-e0val), **opts)
 
         wids['pre_step'] = FloatCtrl(panel, value=2.0,  **opts)
-        wids['xanes_step'] = FloatCtrl(panel, value=0.1,  **opts)
+        wids['xanes_step'] = FloatCtrl(panel, value=xanes_step,  **opts)
         wids['exafs_step'] = FloatCtrl(panel, value=0.05,  **opts)
 
         for wname, wid in wids.items():

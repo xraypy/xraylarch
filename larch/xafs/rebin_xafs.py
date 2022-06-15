@@ -83,8 +83,9 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
      1 If the first argument is a Group, it must contain 'energy' and 'mu'.
        See First Argrument Group in Documentation
 
-     2 If xanes_step is None, it will be found from the data.  If it is
-       given, it may be increased to better fit the input energy array.
+     2 If xanes_step is None, it will be found from the data as E0/25000, 
+       truncated down to the nearest 0.05: xanes_step = 0.05*max(1, int(e0/1250.0))
+
 
      3 The EXAFS region will be spaced in k-space
 
@@ -119,11 +120,8 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
     nx1 = index_of(energy, e0-10)
     nx2 = index_of(energy, e0+10)
     de_mean = np.diff(energy[nx1:nx1]).mean()
-    xanes_step_def = max(0.05, de_mean/2.0)
     if xanes_step is None:
-        xanes_step = xanes_step_def
-    else:
-        xanes_step = max(xanes_step, xanes_step_def)
+        xanes_step = 0.05 * max(1, int(e0 / 1250.0))  # E0/25000, round down to 0.05
 
     # create new energy array from the 3 segments (pre, xanes, exafs)
     en = []
