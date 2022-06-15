@@ -12,7 +12,7 @@ from pyshortcuts import make_shortcut, ico_ext, get_desktop
 from .site_config import icondir, home_dir, uname
 from .site_config import (extras_wxgraph, extras_qtgraph,
                           extras_epics, extras_doc)
-from .shell import shell
+from .shell import Shell
 
 from .version import __date__, make_banner, check_larchversion
 
@@ -317,7 +317,7 @@ def run_larch():
         if vinfo.update_available:
             print(vinfo.message)
 
-        cli = shell(quiet=args.quiet, with_wx=with_wx)
+        cli = Shell(quiet=args.quiet, with_wx=with_wx)
         # execute scripts listed on command-line
         if args.scripts is not None:
             for script in args.scripts:
