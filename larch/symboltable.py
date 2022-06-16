@@ -2,16 +2,12 @@
 '''
 SymbolTable for Larch interpreter
 '''
-import os
-import sys
 import copy
 
 import numpy
 
 from . import site_config
-from .closure import Closure
 from .utils import fixName, isValidName
-
 
 class Group():
     """
@@ -165,8 +161,8 @@ class SymbolTable(Group):
         self._sys.moduleGroup = self
         self._sys.__cache__  = [None]*4
         self._sys.saverestore_groups = []
-        for g in self.core_groups:
-            self._sys.searchGroups.append(g)
+        for grp in self.core_groups:
+            self._sys.searchGroups.append(grp)
         self._sys.core_groups = tuple(self._sys.searchGroups[:])
 
         self.__callbacks = {}
@@ -233,7 +229,7 @@ class SymbolTable(Group):
         if sys.moduleGroup is None:
             sys.moduleGroup = self.top_group
         if sys.localGroup is None:
-            sys.localGroup = self.moduleGroup
+            sys.localGroup = sys.moduleGroup
 
         cache[0] = sys.localGroup
         cache[1] = sys.moduleGroup
@@ -292,7 +288,8 @@ class SymbolTable(Group):
         returns symbol given symbol name,
         creating symbol if needed (and create=True)"""
         debug = False # not ('force'in name)
-        if debug:  print( '====\nLOOKUP ', name)
+        if debug:
+            print( '====\nLOOKUP ', name)
         searchGroups = self._fix_searchGroups()
         self.__parents = []
         if self not in searchGroups:
@@ -311,8 +308,8 @@ class SymbolTable(Group):
 
         # more complex case: not immediately found in Local or Module Group
         parts.reverse()
-        top   = parts.pop()
-        out   = self.__invalid_name
+        top = parts.pop()
+        out = self.__invalid_name
         if top == self.top_group:
             out = self
         else:
@@ -321,7 +318,7 @@ class SymbolTable(Group):
                     self.__parents.append(grp)
                     out = getattr(grp, top)
         if out is self.__invalid_name:
-            raise NameError("'%s' is not defined" % name)
+            raise NameError(f"'{name}' is not defined")
 
         if len(parts) == 0:
             return out
@@ -338,19 +335,19 @@ class SymbolTable(Group):
                 out = getattr(out, prt)
             else:
                 raise LookupError(
-                    "cannot locate member '%s' of '%s'" % (prt,out))
+                    f"cannot locate member '{prt}' of '{out}'")
         return out
 
     def has_symbol(self, symname):
         try:
-            g = self.get_symbol(symname)
+            _ = self.get_symbol(symname)
             return True
         except (LookupError, NameError, ValueError):
             return False
 
     def has_group(self, gname):
         try:
-            g = self.get_group(gname)
+            _ = self.get_group(gname)
             return True
         except (NameError, LookupError):
             return False
@@ -364,9 +361,7 @@ class SymbolTable(Group):
         sym = self._lookup(gname, create=False)
         if isgroup(sym):
             return sym
-        else:
-            raise LookupError(
-                "symbol '%s' found, but not a group" % (gname))
+        raise LookupError(f"symbol '{gname}' found, but not a group")
 
     def create_group(self, **kw):
         "create a new Group, not placed anywhere in symbol table"
@@ -391,7 +386,7 @@ class SymbolTable(Group):
 
         for n in name.split('.'):
             if not isValidName(n):
-                raise SyntaxError("invalid symbol name '%s'" % n)
+                raise SyntaxError(f"invalid symbol name '{n}'")
             names.append(n)
 
         child = names.pop()
@@ -400,7 +395,7 @@ class SymbolTable(Group):
                 grp = getattr(grp, nam)
                 if not isgroup(grp):
                     raise ValueError(
-                "cannot create subgroup of non-group '%s'" % grp)
+                        f"cannot create subgroup of non-group '{grp}'")
             else:
                 setattr(grp, nam, Group())
 
@@ -414,7 +409,6 @@ class SymbolTable(Group):
 
     def del_symbol(self, name):
         "delete a symbol"
-        sym = self._lookup(name, create=False)
         parent, child = self.get_parent(name)
         self.clear_callbacks(name)
         delattr(parent, child)
@@ -435,16 +429,17 @@ class SymbolTable(Group):
         for a named variable
         """
         try:
-            var = self.get_symbol(name)
+            _ = self.get_symbol(name)
         except NameError:
             raise NameError(
                 "cannot locate symbol '%s' for callback" % (name))
         key = self.get_parent(name)
         if key not in self.__callbacks:
             self.__callbacks[key] = []
-        if args is None: args = ()
-        if kws is None: kws = {}
-
+        if args is None:
+            args = ()
+        if kws is None:
+            kws = {}
         self.__callbacks[key].append((func, args, kws))
 
     def get_parent(self, name):
@@ -469,9 +464,8 @@ class SymbolTable(Group):
         except (NameError, LookupError):
             return 'Group %s not found' % groupname
 
-        title = group.__name__
         members = dir(group)
-        out = ['== %s: %i symbols ==' % (title, len(members))]
+        out = ['f== {group.__name__}: {len(members)} symbols ==']
         for item in members:
             obj = getattr(group, item)
             dval = None
@@ -481,5 +475,6 @@ class SymbolTable(Group):
                                                          repr(obj.dtype))
             if dval is None:
                 dval = repr(obj)
-            out.append('  %s: %s' % (item, dval))
-        self._larch.writer.write("%s\n" % '\n'.join(out))
+            out.append(f'  {item}: {dval}')
+        out.append('\n')
+        self._larch.writer.write('\n'.join(out))
