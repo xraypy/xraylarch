@@ -299,17 +299,18 @@ class FeffitDataSet(Group):
             self.estimate_noise(chi=self.__chi, rmin=15.0, rmax=30.0)
             # uncertainty in chi(k) from autobk or other source
             if hasattr(self.data, 'delta_chi'):
-                if isinstance(self.epsilon_k, (list, tuple)):
+                cur_eps_k = getattr(self, 'epsilon_k', 0)
+                if isinstance(cur_eps_k, (list, tuple)):
                     eps_ave = 0.
-                    for eps in self.epsilon_k:
+                    for eps in cur_eps_k:
                         eps_ave += eps
-                    self.epsilon_k = eps_ave/len(self.epsilon_k)
+                    cu_eps_k = eps_ave/len(cur_eps_k)
                 _dchi = interp(self.model.k, self.data.k, self.data.delta_chi)
-                eps_k = np.sqrt(_dchi**2 + self.epsilon_k**2)
-                self.set_epsilon_k(eps_k)
+                self.set_epsilon_k(np.sqrt(_dchi**2 + cur_eps_k**2))
 
         # for each path in the list of paths, setup the Path Parameters
         # to use the current Parameters namespace
+        params = group2params(params)
         for label, path in self.paths.items():
             path.create_path_params(params=params)
             if path.spline_coefs is None:
@@ -393,7 +394,7 @@ class FeffitDataSet(Group):
         if not isNamedClass(self.transform, TransformGroup):
             return
         if not self.__prepared:
-            self.prepare_fit()
+            self.prepare_fit(paramgroup)
 
         ff2chi(self.paths, paramgroup=paramgroup, k=self.model.k,
                 _larch=self._larch, group=self.model)
@@ -700,6 +701,8 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
     else:
         out.append(header % 'Datasets (%i)' % len(datasets))
     for i, ds in enumerate(datasets):
+        if not hasattr(ds, 'epsilon_k'):
+            ds.prepare_fit(params)
         tr = ds.transform
         if len(datasets) > 1:
             out.append(' dataset %i:' % (i+1))
