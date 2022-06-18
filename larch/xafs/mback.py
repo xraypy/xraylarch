@@ -15,8 +15,7 @@ from larch import Group, isgroup, parse_group_args, Make_CallArgs
 from larch.math import index_of, index_nearest, remove_dups, remove_nans2
 
 from .xafsutils import set_xafsGroup
-from .pre_edge import find_e0, preedge
-
+from .pre_edge import find_e0, preedge, pre_edge
 
 MAXORDER = 6
 
@@ -273,7 +272,7 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
         atsym = atomic_symbol(z)
 
     if getattr(group, 'pre_edge_details', None) is None:  # pre_edge never run
-        preedge(energy, mu, pre1=pre1, pre2=pre2, nvict=nvict,
+        pre_edge(group, pre1=pre1, pre2=pre2, nvict=nvict,
                 norm1=norm1, norm2=norm2, e0=e0, nnorm=nnorm)
 
     mu_pre = mu - group.pre_edge
