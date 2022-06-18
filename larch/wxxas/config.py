@@ -39,6 +39,9 @@ ARRAYS = {'mu':      'Raw \u03BC(E)',
 
 # wavelet = 'EXAFS wavelet'
 
+FT_WINDOWS_AUTO = ['<Auto>']
+FT_WINDOWS_AUTO.extend(FT_WINDOWS)
+
 
 def make_array_choice(opts):
     """make (ordered) dict of {Array Description: varname}"""
@@ -142,16 +145,16 @@ plot = [CVar('theme', 'light', 'choice', choices=list(wxmplot.config.Themes.keys
 
 exafs = [CVar('rbkg', 1.0, 'float', min=0, step=0.1, max=10, desc='R value separating background from EXAFS signal'),
          CVar('bkg_kmin', 0.0, 'float', min=0, step=0.1, max=10, desc='k min for background subtraction'),
-         CVar('bkg_kmax', -1, 'float', min=-1, step=0.1, desc='k max for background subtraction (use -1 for "auto")'),
+         CVar('bkg_kmax', -1, 'float', min=-1, step=0.1, desc='k max for background subtraction\n(use -1 for "auto")'),
          CVar('bkg_kweight', 1, 'float', min=0, step=1, max=10, desc='k weight for background subtraction'),
          CVar('bkg_clamplo', 1, 'float', min=0, step=5, desc='low-k clamp for background subtraction'),
          CVar('bkg_clamphi', 20, 'float', min=0, step=5, desc='high-k clamp for background subtraction'),
          CVar('fft_kmin',  2.0, 'float', min=0, step=0.1, max=50, desc='k min for EXAFS Fourier transform'),
-         CVar('fft_kmax',  -1, 'float', min=-1, step=0.1, desc='k max for EXAFS Fourier transform (use -1 for "auto")'),
+         CVar('fft_kmax',  -1, 'float', min=-1, step=0.1, desc='k max for EXAFS Fourier transform\n(use -1 for "auto")'),
          CVar('fft_kweight', 2, 'float', min=0, step=1, max=10, desc='k weight for EXAFS Fourier transform'),
          CVar('fft_dk',      4, 'float', min=0, step=0.1, desc='window parameter for k->R EXAFS Fourier transform'),
          CVar('fft_kwindow', 'Kaiser-Bessel', 'choice', choices=FT_WINDOWS, desc='window type for k->R EXAFS Fourier transform'),
-         CVar('fft_rmin',  -1, 'float', min=-1, step=0.1, max=50, desc='R min for EXAFS Back Fourier transform\n(use -1 for "auto")'),
+         CVar('fft_rmin',  -1, 'float', min=-1, step=0.1, max=50, desc='R min for EXAFS Back Fourier transform\n(use -1 for "use rbkg")'),
          CVar('fft_rmax',  5.0, 'float', min=0, step=0.1, desc='k max for EXAFS Back Fourier transform'),
          CVar('fft_dr',    0.25, 'float', min=0, step=0.05, desc='window parameter for EXAFS Back Fourier transform'),
          CVar('fft_rwindow', 'Hanning', 'choice', choices=FT_WINDOWS, desc='window type for EXAFS Back Fourier transform'),
@@ -159,13 +162,22 @@ exafs = [CVar('rbkg', 1.0, 'float', min=0, step=0.1, max=10, desc='R value separ
          CVar('plot_rmax',     8.0, 'float', min=0, step=0.5, desc='maximum R value for EXAFS chi(R) plots')]
 
 
-feffit  = [CVar('kwstring', '2', 'choice', choices=list(Feffit_KWChoices.keys()),
+feffit  = [CVar('ffit_kwstring', '2', 'choice', choices=list(Feffit_KWChoices.keys()),
                 desc='k weight to use for Feff fitting'),
            CVar('fitspace', 'R', 'choice', choices=list(Feffit_SpaceChoices.keys()),
                 desc='Fourier space to use for Feff fitting'),
            CVar('fit_plot', 'R space only', 'choice', choices=list(Feffit_PlotChoices.keys()),
                 desc='How to plot results for Feff fitting'),
-           CVar('plot_paths', True, 'bool',   desc='Whether to plot individual paths in results for Feff fitting')]
+           CVar('plot_paths', True, 'bool',   desc='Whether to plot individual paths in results for Feff fitting'),
+           CVar('ffit_kmin',    -1, 'float', min=-1, step=0.1, max=20, desc='k min for EXAFS Fourier transform\n(use -1 for "same as EXAFS")'),
+           CVar('ffit_kmax',    -1, 'float', min=-1, step=0.1, desc='k max for EXAFS Fourier transform\n(use -1 for "same as EXAFS")'),
+           CVar('ffit_dk',      -1, 'float', min=-1, step=0.1, desc='window parameter for k->R EXAFS Fourier transform\n(use -1 for "same as EXAFS")'),
+           CVar('ffit_kwindow', 'Kaiser-Bessel', 'choice', choices=FT_WINDOWS_AUTO, desc='window type for k->R EXAFS Fourier transform\n(use "Auto" for "same as EXAFS")'),
+           CVar('ffit_rmin',    -1, 'float', min=-1, step=0.1, max=20, desc='R min for EXAFS Back Fourier transform\n(use -1 for "use Rbkg")'),
+           CVar('ffit_rmax',    -1, 'float', min=-1, step=0.1, desc='k max for EXAFS Back Fourier transform\n(use -1 for "same as EXAFS")'),
+           CVar('ffit_dr',      -1, 'float', min=-1, step=0.05, desc='window parameter for EXAFS Back Fourier transform\n(use -1 for "same as EXAFS")'),
+           CVar('ffit_rwindow', 'Hanning', 'choice', choices=FT_WINDOWS_AUTO, desc='window type for EXAFS Back Fourier transform\n(use "Auto" for "same as EXAFS")'),
+           ]
 
 
 lincombo = [CVar('all_combos', True, 'bool', desc='whether to fit all combinations'),
@@ -182,7 +194,7 @@ pca = [CVar('elo_rel', -40, 'float',  desc='low-energy fit range, relative to E0
        CVar('ehi_rel', 100, 'float',  desc='high-energy fit range, relative to E0'),
        CVar('fitspace', 'Normalized μ(E)', 'choice', choices=list(Linear_ArrayChoices.keys()),
             desc='Array to use for Linear Combinations'),
-       CVar('weight_min',  -1, 'float', min=-1, step=0.0001, desc='minimum component weight to use \n(use -1 for "auto")'),
+       CVar('weight_min',  -1, 'float', min=-1, step=0.0001, desc='minimum component weight to use\n(use -1 for "auto")'),
        CVar('max_components',  20, 'int', min=0, desc='maximum number of components use')
        ]
 
@@ -202,7 +214,7 @@ regression = [CVar('elo_rel', -40, 'float',  desc='low-energy fit range, relativ
               CVar('method',  'LassoLars', 'choice', choices=Regress_Choices,
                    desc='which Regression method to use'),
               CVar('alpha',  -1, 'float', min=0, step=0.01,
-                   desc='alpha regularization parameter for LassoLars (use -1 for "auto")'),
+                   desc='alpha regularization parameter for LassoLars\n(use -1 for "auto")'),
               CVar('cv_folds',  -1, 'int', min=-1,
                    desc='number of Cross-Validation folds to use (set to -1 for "auto")'),
               CVar('cv_repeats',  -1, 'int', min=-1,
