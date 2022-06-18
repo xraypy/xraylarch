@@ -705,7 +705,7 @@ def _plot_axvline(x, ymin=0, ymax=1, win=1, wxparent=None, xrf=False,
     if not delay_draw:
         plotter.panel.canvas.draw()
 
-def _getcursor(win=1, timeout=30, _larch=None, wxparent=None, size=None,
+def _getcursor(win=1, timeout=15, _larch=None, wxparent=None, size=None,
                xrf=False, stacked=False, **kws):
     """get_cursor(win=1, timeout=30)
 
@@ -725,26 +725,24 @@ def _getcursor(win=1, timeout=30, _larch=None, wxparent=None, size=None,
     if plotter is None:
         return
     symtable = ensuremod(_larch, _larch_name)
-    sentinal = '%s.plot%i_cursorflag' % (_larch_name, win)
     xsym = '%s.plot%i_x' % (_larch_name, win)
     ysym = '%s.plot%i_y' % (_larch_name, win)
 
     xval = symtable.get_symbol(xsym, create=True)
     yval = symtable.get_symbol(ysym, create=True)
-    symtable.set_symbol(sentinal, False)
-
-    def onChange(symbolname=None, **kws):
-        symtable.set_symbol(kws['sentinal'], True)
-
-    symtable.add_callback(xsym, onChange, kws={'sentinal': sentinal})
+    symtable.set_symbol(xsym, None)
 
     t0 = time.time()
     while time.time() - t0 < timeout:
         wx_update(_larch=_larch)
-        if symtable.get_symbol(sentinal):
+        time.sleep(0.05)
+        if symtable.get_symbol(xsym) is not None:
             break
-    symtable.del_symbol(sentinal)
-    symtable.clear_callbacks(xsym)
+
+    # restore value on timeout
+    if symtable.get_symbol(xsym, create=False) is None:
+        symtable.set_symbol(xsym, xval)
+
     return (symtable.get_symbol(xsym), symtable.get_symbol(ysym))
 
 def last_cursor_pos(win=None, _larch=None):
