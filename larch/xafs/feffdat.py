@@ -584,6 +584,7 @@ def ff2chi(paths, group=None, paramgroup=None, k=None, kmax=None,
     `paths` and writes the resulting arrays to group.k and group.chi.
 
     """
+
     params = group2params(paramgroup)
 
     if isinstance(paths, (list, tuple)):
@@ -592,6 +593,10 @@ def ff2chi(paths, group=None, paramgroup=None, k=None, kmax=None,
         pathlist = list(paths.values())
     else:
         raise ValueErrror('paths must be list, tuple, or dict')
+
+    if len(pathlist) == 0:
+        return Group(k=np.linspace(0, 20, 401),
+                     chi=np.zeros(401, dtype='float64'))
 
     for path in pathlist:
         if not isNamedClass(path, FeffPathGroup):
