@@ -323,13 +323,16 @@ class EXAFSPanel(TaskPanel):
         kmax = etok(max(dgroup.energy) - e0)
 
         bkg_kmax = conf.get('bkg_kmax', -1)
-        fft_kmax = conf.get('fft_kmax', -1)
-
         if bkg_kmax < 0 or bkg_kmax > kmax:
             conf['bkg_kmax'] = 0.25*int(kmax*4.0 + 1.0)
 
+        fft_kmax = conf.get('fft_kmax', -1)
         if fft_kmax < 0 or fft_kmax > kmax:
             conf['fft_kmax'] = 0.25*int(kmax*4.0 - 1.0)
+
+        fft_rmin = conf.get('fft_rmin', -1)
+        if fft_rmin:
+            conf['fft_rmin'] = conf['rbkg']
 
         setattr(dgroup.config, self.configname, conf)
         return conf
