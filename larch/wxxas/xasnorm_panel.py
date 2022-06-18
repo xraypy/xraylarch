@@ -404,7 +404,8 @@ class XASNormPanel(TaskPanel):
 
     def onNormMethod(self, evt=None):
         method = self.wids['norm_method'].GetStringSelection().lower()
-        self.update_config({'norm_method': method})
+        nnorm  = NNORM_CHOICES.get(self.wids['nnorm'].GetStringSelection(), None)
+        self.update_config({'norm_method': method, 'nnorm': nnorm})
         if method.startswith('mback'):
             dgroup = self.controller.get_group()
             cur_elem = self.wids['atsym'].GetStringSelection()
