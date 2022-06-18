@@ -165,7 +165,7 @@ class SymbolTable(Group):
             self._sys.searchGroups.append(grp)
         self._sys.core_groups = tuple(self._sys.searchGroups[:])
 
-        self.__callbacks = {}
+        # self.__callbacks = {}
 
         self._sys.modules = {'_main':self}
         for gname in self.core_groups:
@@ -400,47 +400,26 @@ class SymbolTable(Group):
                 setattr(grp, nam, Group())
 
         setattr(grp, child, value)
-        if (grp, child) in self.__callbacks:
-            for func, args, kws in self.__callbacks[(grp, child)]:
-                kws.update({'group': grp, 'value': value,
-                            'symbolname': child})
-                func(*args, **kws)
-        return getattr(grp, child)
+        return value
 
     def del_symbol(self, name):
         "delete a symbol"
+        sym = self._lookup(name, create=False)
         parent, child = self.get_parent(name)
-        self.clear_callbacks(name)
         delattr(parent, child)
 
     def clear_callbacks(self, name, index=None):
         """clear 1 or all callbacks for a symbol
         """
-        parent, child = self.get_parent(name)
-        if child is not None and (parent, child) in self.__callbacks:
-            if index is not None and index <= len(self.__callbacks[(parent, child)]):
-                self.__callbacks[(parent, child)].pop(index)
-            else:
-                while self.__callbacks[(parent, child)]:
-                    self.__callbacks[(parent, child)].pop()
+        pass
 
     def add_callback(self, name, func, args=None, kws=None):
-        """set a callback to be called when set_symbol() is called
+        """disabled:
+        set a callback to be called when set_symbol() is called
         for a named variable
         """
-        try:
-            _ = self.get_symbol(name)
-        except NameError:
-            raise NameError(
-                "cannot locate symbol '%s' for callback" % (name))
-        key = self.get_parent(name)
-        if key not in self.__callbacks:
-            self.__callbacks[key] = []
-        if args is None:
-            args = ()
-        if kws is None:
-            kws = {}
-        self.__callbacks[key].append((func, args, kws))
+        print("adding callback on symbol disabled")
+
 
     def get_parent(self, name):
         """return parent group, child name for an absolute symbol name
