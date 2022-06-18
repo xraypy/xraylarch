@@ -287,6 +287,7 @@ class FeffitDataSet(Group):
 
         # ikmax = index_of(trans.k_, max(self.data.k))
         self.model.k = trans.k_[:ikmax]
+        self.model.chi = np.zeros(len(self.model.k), dtype='float64')
         self.__chi = interp(self.model.k, self.data.k, self.data.chi)
         self.n_idp = 1 + 2*(trans.rmax-trans.rmin)*(trans.kmax-trans.kmin)/pi
 
@@ -299,13 +300,14 @@ class FeffitDataSet(Group):
             self.estimate_noise(chi=self.__chi, rmin=15.0, rmax=30.0)
             # uncertainty in chi(k) from autobk or other source
             if hasattr(self.data, 'delta_chi'):
-                cur_eps_k = getattr(self, 'epsilon_k', 0)
+                cur_eps_k = getattr(self, 'epsilon_k', 0.0)
                 if isinstance(cur_eps_k, (list, tuple)):
                     eps_ave = 0.
                     for eps in cur_eps_k:
                         eps_ave += eps
-                    cu_eps_k = eps_ave/len(cur_eps_k)
+                    cur_eps_k = eps_ave/len(cur_eps_k)
                 _dchi = interp(self.model.k, self.data.k, self.data.delta_chi)
+                # print("SET EPSK ", type(cur_eps_k), type(_dchi))
                 self.set_epsilon_k(np.sqrt(_dchi**2 + cur_eps_k**2))
 
         # for each path in the list of paths, setup the Path Parameters
