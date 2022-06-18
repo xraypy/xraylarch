@@ -209,27 +209,17 @@ class XASController():
 
         ogroup = self.get_group(groupname)
         ngroup = larch.Group(datatype=ogroup.datatype, copied_from=groupname)
+
         for attr in dir(ogroup):
-            do_copy = True
-            if attr in ('xdat', 'ydat', 'i0', 'data' 'yerr',
-                        'energy', 'mu'):
-                val = getattr(ogroup, attr)*1.0
-            elif attr in ('norm', 'flat', 'deriv', 'deconv',
-                          'post_edge', 'pre_edge', 'norm_mback',
-                          'norm_vict', 'norm_poly'):
-                do_copy = False
-            else:
-                try:
-                    val = copy.deepcopy(getattr(ogroup, attr))
-                except ValueError:
-                    do_copy = False
-            if do_copy:
-                setattr(ngroup, attr, val)
+            val = getattr(ogroup, attr, None)
+            if val is not None:
+                setattr(ngroup, attr, copy.deepcopy(val))
 
         if new_filename is None:
             new_filename = filename + '_1'
         ngroup.filename = unique_name(new_filename, self.file_groups.keys())
         ngroup.groupname = unique_name(groupname, self.file_groups.values())
+        ngroup.journal.add('source_desc', f"copied from '{filename:s}'")
         setattr(self.larch.symtable, ngroup.groupname, ngroup)
         return ngroup
 
