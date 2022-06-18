@@ -94,8 +94,8 @@ _feffit_params = param_group(s02=param(1.0, min=0, max=1000, vary=True),
 """
 
 COMMANDS['feffit_trans'] = """# define Fourier transform and fitting space
-_feffit_trans = feffit_transform(kmin={kmin:.3f}, kmax={kmax:.3f}, dk={dk:.4f}, kw={kwstring:s},
-                      window='{kwindow:s}', fitspace='{fitspace:s}', rmin={rmin:.3f}, rmax={rmax:.3f})
+_feffit_trans = feffit_transform(kmin={ffit_kmin:.3f}, kmax={ffit_kmax:.3f}, dk={ffit_dk:.4f}, kw={ffit_kwstring:s},
+                      window='{ffit_kwindow:s}', fitspace='{ffit_fitspace:s}', rmin={ffit_rmin:.3f}, rmax={ffit_rmax:.3f})
 """
 
 COMMANDS['paths_init'] = """# make sure dictionary for Feff Paths exists
@@ -104,6 +104,12 @@ try:
 except:
     _feffcache = {'paths':{}, 'runs':{}}  # group of all paths, info about Feff runs
     _feffpaths = {}    # dict of paths currently in use, copied from _feffcache.paths
+#endtry
+"""
+
+COMMANDS['paths_reset'] = """# clear existing paths
+npaths = 0
+_feffpaths = {}
 #endtry
 """
 
@@ -663,10 +669,14 @@ class FeffPathPanel(wx.Panel):
         dlg = wx.MessageDialog(self, msg, 'Warning', wx.YES | wx.NO )
         if (wx.ID_YES == dlg.ShowModal()):
             self.feffit_panel.paths_data.pop(self.title)
+            self.feffit_panel.model_needs_build = True
             path_nb = self.feffit_panel.paths_nb
             for i in range(path_nb.GetPageCount()):
                 if self.title == path_nb.GetPageText(i).strip():
                     path_nb.DeletePage(i)
+            self.feffit_panel.fix_unused_params()
+
+
         dlg.Destroy()
 
     def update_values(self):
@@ -689,6 +699,8 @@ class FeffitPanel(TaskPanel):
         TaskPanel.__init__(self, parent, controller, panel='feffit', **kws)
         self.paths_data = {}
         self.resetting = False
+        self.model_needs_rebuild = False
+        self.config_saved = self.get_defaultconfig()
 
     def onPanelExposed(self, **kws):
         # called when notebook is selected
@@ -733,9 +745,9 @@ class FeffitPanel(TaskPanel):
         ffit_rmin = self.add_floatspin('ffit_rmin',  value=1, **fsopts)
         ffit_rmax = self.add_floatspin('ffit_rmax',  value=5, **fsopts)
 
-        wids['ffit_kweight'] = Choice(pan, size=(125, -1),
+        wids['ffit_kwstring'] = Choice(pan, size=(125, -1),
                                      choices=list(Feffit_KWChoices.keys()))
-        wids['ffit_kweight'].SetSelection(1)
+        wids['ffit_kwstring'].SetSelection(1)
 
         wids['ffit_kwindow'] = Choice(pan, choices=list(FT_WINDOWS), size=(125, -1))
 
@@ -793,7 +805,7 @@ class FeffitPanel(TaskPanel):
         pan.Add(wids['ffit_fitspace'])
 
         add_text('k weightings: ', newrow=False)
-        pan.Add(wids['ffit_kweight'])
+        pan.Add(wids['ffit_kwstring'])
 
         add_text('k min: ')
         pan.Add(ffit_kmin)
@@ -847,52 +859,67 @@ class FeffitPanel(TaskPanel):
             conf = None
         if not hasattr(dgroup, 'chi'):
             self.xasmain.process_exafs(dgroup)
+
         dconf = self.get_defaultconfig()
+        if not hasattr(dgroup, 'config'):
+            dgroup.config = Group()
+
         conf = getattr(dgroup.config, self.configname, dconf)
-        econf = getattr(dgroup.config, 'exafs', {})
-        for key in ('fft_kmin', 'fft_kmax', 'fft_dk', 'fft_kwindow',
-                    'fft_rmin', 'fft_rmax','fft_kweight'):
-            val = econf.get(key, None)
-            if key == 'fft_kweight':
-                val = str(int(val))
-                key = 'kwstring'
-            if key not in conf and val is not None:
-                conf[key] = val
         for k, v in dconf.items():
             if k not in conf:
                 conf[k] = v
+
+        econf = getattr(dgroup.config, 'exafs', {})
+        for key in ('ffit_kmin', 'ffit_kmax', 'ffit_dk',
+                    'ffit_rmin', 'ffit_rmax', 'ffit_dr'
+                    'ffit_kwindow', 'ffit_rwindow'):
+            alt = key.replace('ffit', 'fft')
+            val = conf.get(key, -1)
+            if val in (None, -1, 'Auto') and alt in econf:
+                conf[key] = econf[alt]
+
         setattr(dgroup.config, self.configname, conf)
+        self.config_saved = conf
         return conf
 
 
     def process(self, dgroup=None, **kws):
-        if dgroup is not None:
-            self.dgroup = dgroup
         if dgroup is None:
-            return
+            dgroup = self.controller.get_group()
 
         conf = self.get_config(dgroup=dgroup)
         conf.update(kws)
-        conf = self.read_form()
+        if dgroup is None:
+            return conf
 
+        self.dgroup = dgroup
+        opts = self.read_form(dgroup=dgroup)
+
+        for attr in ('ffit_kmin', 'ffit_kmax', 'ffit_dk', 'ffit_rmin',
+                     'ffit_rmax', 'ffit_kwindow', 'ffit_rwindow',
+                     'ffit_dr', 'ffit_kwstring', 'ffit_fitspace', 'fit_plot',
+                     'plot_paths'):
+            conf[attr] = opts.get(attr, None)
+
+        if not hasattr(dgroup, 'config'):
+            dgroup.config = Group()
+        setattr(dgroup.config, self.configname, conf)
 
     def fill_form(self, dat):
         dgroup = self.controller.get_group()
         conf = self.get_config(dat)
-        self.wids['ffit_kmin'].SetValue(conf['fft_kmin'])
-        self.wids['ffit_kmax'].SetValue(conf['fft_kmax'])
-        self.wids['ffit_rmin'].SetValue(conf['fft_rmin'])
-        self.wids['ffit_rmax'].SetValue(conf['fft_rmax'])
-        self.wids['ffit_dk'].SetValue(conf['fft_dk'])
-        self.wids['ffit_kwindow'].SetStringSelection(conf['fft_kwindow'])
+        for attr in ('ffit_kmin', 'ffit_kmax', 'ffit_rmin', 'ffit_rmax', 'ffit_dk'):
+            self.wids[attr].SetValue(conf[attr])
+
+        self.wids['ffit_kwindow'].SetStringSelection(conf['ffit_kwindow'])
 
         for key, val in Feffit_SpaceChoices.items():
-            if conf['fitspace'] == val:
+            if conf['ffit_fitspace'] == val:
                 self.wids['ffit_fitspace'].SetStringSelection(key)
 
         for key, val in Feffit_KWChoices.items():
-            if conf['kwstring'] == val:
-                self.wids['ffit_kweight'].SetStringSelection(key)
+            if conf['ffit_kwstring'] == val:
+                self.wids['ffit_kwstring'].SetStringSelection(key)
 
     def read_form(self, dgroup=None):
         "read form, returning dict of values"
@@ -910,15 +937,23 @@ class FeffitPanel(TaskPanel):
 
         form_opts = {'datagroup': dgroup, 'groupname': gname, 'filename': fname}
         wids = self.wids
-        form_opts['kmin'] = wids['ffit_kmin'].GetValue()
-        form_opts['kmax'] = wids['ffit_kmax'].GetValue()
-        form_opts['dk']   = wids['ffit_dk'].GetValue()
-        form_opts['rmin'] = wids['ffit_rmin'].GetValue()
-        form_opts['rmax'] = wids['ffit_rmax'].GetValue()
-        form_opts['kwstring'] = Feffit_KWChoices[wids['ffit_kweight'].GetStringSelection()]
-        form_opts['fitspace'] = Feffit_SpaceChoices[wids['ffit_fitspace'].GetStringSelection()]
 
-        form_opts['kwindow']    = wids['ffit_kwindow'].GetStringSelection()
+        for attr in ('ffit_kmin', 'ffit_kmax', 'ffit_rmin', 'ffit_rmax', 'ffit_dk'):
+            form_opts[attr] = wids[attr].GetValue()
+        form_opts['ffit_kwstring'] = Feffit_KWChoices[wids['ffit_kwstring'].GetStringSelection()]
+        if len(form_opts['ffit_kwstring']) == 1:
+            d = form_opts['ffit_kwstring']
+        else:
+            d = form_opts['ffit_kwstring'].replace('[', '').strip(',').split()[0]
+        try:
+            form_opts['ffit_kweight'] = int(d)
+        except:
+            form_opts['ffit_kweight'] = 2
+
+
+        form_opts['ffit_fitspace'] = Feffit_SpaceChoices[wids['ffit_fitspace'].GetStringSelection()]
+
+        form_opts['ffit_kwindow'] = wids['ffit_kwindow'].GetStringSelection()
         form_opts['plot_ftwindows'] = wids['plot_ftwindows'].IsChecked()
         form_opts['plot_paths'] = wids['plot_paths'].IsChecked()
         form_opts['plotone_op'] = PlotOne_Choices[wids['plotone_op'].GetStringSelection()]
@@ -951,14 +986,16 @@ class FeffitPanel(TaskPanel):
                paths_name='_feffpaths', pathsum_name='_pathsum', title=None,
                build_fitmodel=True, **kws):
 
-        opts = self.read_form(dgroup)
+        self.process(dgroup)
+        opts = self.read_form(dgroup=dgroup)
         opts.update(**kws)
         fname = opts['filename']
         if title is None:
             title = fname
 
         gname = opts['groupname']
-        dgroup = opts['datagroup']
+        if dgroup is None:
+            dgroup = opts['datagroup']
 
         exafs_conf = self.xasmain.get_nbpage('exafs')[1].read_form()
         plot_rmax = exafs_conf['plot_rmax']
@@ -979,15 +1016,13 @@ class FeffitPanel(TaskPanel):
         plot1 = opts['plotone_op']
         plot2 = opts['plotalt_op']
         cmds = []
-        if ',' in opts['kwstring']:
-            kw = int(opts['kwstring'].replace('[','').replace(']','').split(',')[0])
-        else:
-            kw = int(opts['kwstring'])
 
-        ftargs = dict(kmin=opts['kmin'], kmax=opts['kmax'], dk=opts['dk'],
-                      kwindow=opts['kwindow'], kweight=kw,
-                      rmin=opts['rmin'], rmax=opts['rmax'],
-                      dr=opts.get('dr', 0.1), rwindow='hanning')
+        kw = opts['ffit_kweight']
+
+        ftargs = dict(kmin=opts['ffit_kmin'], kmax=opts['ffit_kmax'], dk=opts['ffit_dk'],
+                      kwindow=opts['ffit_kwindow'], kweight=opts['ffit_kweight'],
+                      rmin=opts['ffit_rmin'], rmax=opts['ffit_rmax'],
+                      dr=opts.get('ffit_dr', 0.1), rwindow='hanning')
 
         if pathsum is not None:
             cmds.append(COMMANDS['xft'].format(groupname=pathsum_name, **ftargs))
@@ -1199,7 +1234,7 @@ class FeffitPanel(TaskPanel):
             result = True
         except:
             result = False
-
+        self.fix_unused_params()
         self.params_panel.update()
         return result
 
@@ -1216,7 +1251,8 @@ class FeffitPanel(TaskPanel):
 
 
     def get_xranges(self, x):
-        opts = self.read_form()
+        self.process(self.dgroup)
+        opts = self.read_form(self.dgroup)
         dgroup = self.controller.get_group()
         en_eps = min(np.diff(dgroup.energy)) / 5.
 
@@ -1239,7 +1275,9 @@ class FeffitPanel(TaskPanel):
         pargroup = self.get_paramgroup()
         cmds.extend(self.params_panel.generate_script())
 
-        opts = self.read_form()
+        self.process(self.dgroup)
+        opts = self.read_form(self.dgroup)
+
         cmds.append(COMMANDS['feffit_trans'].format(**opts))
 
         path_pages = {}
@@ -1250,6 +1288,8 @@ class FeffitPanel(TaskPanel):
         _feffpaths = getattr(self.larch.symtable, '_feffpaths', None)
         if _feffpaths is None:
             cmds.append(COMMANDS['paths_init'])
+        else:
+            cmds.append(COMMANDS['paths_reset'])
 
         paths_list = []
         opts['paths'] = []
@@ -1270,7 +1310,7 @@ class FeffitPanel(TaskPanel):
         return opts
 
 
-    def get_used_params(self, action='fix'):
+    def get_used_params(self):
         used_syms = []
         path_pages = {}
         for i in range(self.paths_nb.GetPageCount()):
@@ -1288,8 +1328,20 @@ class FeffitPanel(TaskPanel):
                         sym = node.id
                         if sym not in used_syms:
                             used_syms.append(sym)
-
         return used_syms
+
+
+    def fix_unused_params(self):
+        # find unused symbols, set to "fixed"
+        curr_syms = self.get_used_params()
+        pargroup = self.get_paramgroup()
+        parpanel = self.params_panel
+        for pname, par in group2params(pargroup).items():
+            if pname not in curr_syms and par.vary:
+                par.vary = parpanel.parwids[pname].param.vary = False
+                parpanel.parwids[pname].vary.SetStringSelection('fix')
+                parpanel.parwids[pname].onVaryChoice()
+            parpanel.update()
 
 
     def onFitModel(self, event=None, dgroup=None):
@@ -1299,7 +1351,7 @@ class FeffitPanel(TaskPanel):
         script = [COMMANDS['feffit_top'].format(ctime=time.ctime())]
 
         opts = self.build_fitmodel(dgroup)
-        dgroup = opts['datagroup']
+        # dgroup = opts['datagroup']
         fopts = dict(groupname=opts['groupname'],
                      trans='_feffit_trans',
                      paths='_feffpaths',
@@ -1307,6 +1359,8 @@ class FeffitPanel(TaskPanel):
 
         groupname = opts['groupname']
         filename = opts['filename']
+        if dgroup is None:
+            dgroup = opts['datagroup']
 
         script.append("######################################")
         script.append(COMMANDS['data_source'].format(groupname=groupname, filename=filename))
@@ -1344,13 +1398,13 @@ class FeffitPanel(TaskPanel):
         script.extend(self.get_session_history()[nstart:])
         script.extend(["print(feffit_report(_feffit_result))",
                        "#end of autosaved feffit script" , ""])
-        dgroup.feffit_history[0].commands = script
 
+        dgroup.feffit_history[0].commands = script
         sname = self.autosave_script('\n'.join(script))
         self.write_message("wrote feffit script to '%s'" % sname)
 
         self.show_subframe('feffit_result', FeffitResultFrame,
-                           datagroup=dgroup, feffit_panel=self)
+                           datagroup=opts['datagroup'], feffit_panel=self)
         self.subframes['feffit_result'].add_results(dgroup, form=opts)
 
     def onShowResults(self, event=None):
@@ -1675,6 +1729,8 @@ class FeffitResultFrame(wx.Frame):
 
     def onShowPathParams(self, event=None):
         result = self.get_fitresult()
+        if result is None:
+            return
         text = f'# Feffit Report for {self.datagroup.filename} fit "{result.label}"\n'
         text = text + feffit_report(result)
         title = f'Report for {self.datagroup.filename} fit "{result.label}"'
@@ -1683,6 +1739,8 @@ class FeffitResultFrame(wx.Frame):
 
     def onShowScript(self, event=None):
         result = self.get_fitresult()
+        if result is None:
+            return
         text = [f'# Feffit Script for {self.datagroup.filename} fit "{result.label}"']
         text.extend(result.commands)
         text = '\n'.join(text)
@@ -1693,17 +1751,20 @@ class FeffitResultFrame(wx.Frame):
 
     def onUpdateLabel(self, event=None):
         result = self.get_fitresult()
+        if result is None:
+            return
         item = self.wids['stats'].GetSelectedRow()
         result.label = self.wids['fit_label'].GetValue()
         self.show_results()
 
     def onRemoveFromHistory(self, event=None):
         result = self.get_fitresult()
+        if result is None:
+            return
         if wx.ID_YES != Popup(self,
                               f"Remove fit '{result.label}' from history?\nThis cannot be undone.",
                               "Remove fit?", style=wx.YES_NO):
                 return
-
         self.datagroup.feffit_history.pop(self.nfit)
         self.nfit = 0
         self.show_results()
@@ -1723,7 +1784,8 @@ class FeffitResultFrame(wx.Frame):
         opts['plot_win'] = int(opts['plot_win'])
 
         result = self.get_fitresult()
-
+        if result is None:
+            return
         dset   = result.datasets[0]
         dgroup = dset.data
         trans  = dset.transform
@@ -1740,7 +1802,7 @@ class FeffitResultFrame(wx.Frame):
 
         for attr in ('kmin', 'kmax', 'dk', 'rmin', 'rmax', 'fitspace'):
             opts[attr] = getattr(trans, attr)
-        opts['kwstring'] = "%s" % getattr(trans, 'kweight')
+        opts['ffit_kwstring'] = "%s" % getattr(trans, 'kweight')
         opts['kwindow']  = getattr(trans, 'window')
 
         self.feffit_panel.onPlot(**opts)
@@ -1749,6 +1811,8 @@ class FeffitResultFrame(wx.Frame):
     def onSaveFitCommand(self, event=None):
         wildcard = 'Larch/Python Script (*.lar)|*.lar|All files (*.*)|*.*'
         result = self.get_fitresult()
+        if result is None:
+            return
         fname = fix_filename(f'{self.datagroup.filename}_{result.label:s}.lar')
 
         path = FileSave(self, message='Save text to file',
@@ -1763,6 +1827,8 @@ class FeffitResultFrame(wx.Frame):
     def onSaveFit(self, evt=None, form='chikw'):
         "Save arrays to text file"
         result = self.get_fitresult()
+        if result is None:
+            return
 
         fname = fix_filename(f'{self.datagroup.filename}_{result.label:s}_{form}')
         fname = fname.replace('.', '_')
@@ -1775,7 +1841,6 @@ class FeffitResultFrame(wx.Frame):
         if savefile is None:
             return
 
-        result = self.get_fitresult()
         text = feffit_report(result)
         desc = self.outforms[form]
         buff = [f'# Results for {self.datagroup.filename} "{result.label}": {desc}']
@@ -1821,13 +1886,15 @@ class FeffitResultFrame(wx.Frame):
         with open(savefile, 'w') as fh:
             fh.write('\n'.join(buff))
 
-
     def get_fitresult(self, nfit=None):
         if nfit is None:
             nfit = self.nfit
         self.feffit_history = getattr(self.datagroup, 'feffit_history', [])
         self.nfit = max(0, nfit)
-        if self.nfit > len(self.feffit_history):
+        n_hist = len(self.feffit_history)
+        if n_hist == 0:
+            return None
+        if self.nfit > n_hist:
             self.nfit = 0
         return self.feffit_history[self.nfit]
 
@@ -1851,6 +1918,8 @@ class FeffitResultFrame(wx.Frame):
         self.wids['correl'].DeleteAllItems()
 
         result = self.get_fitresult()
+        if result is None:
+            return
         this = result.params[pname]
         if this.correl is not None:
             sort_correl = sorted(this.correl.items(), key=lambda it: abs(it[1]))
@@ -1860,6 +1929,8 @@ class FeffitResultFrame(wx.Frame):
 
     def onAllCorrel(self, evt=None):
         result = self.get_fitresult()
+        if result is None:
+            return
         params = result.params
         parnames = list(params.keys())
 
@@ -1886,6 +1957,8 @@ class FeffitResultFrame(wx.Frame):
 
     def onCopyParams(self, evt=None):
         result = self.get_fitresult()
+        if result is None:
+            return
         self.feffit_panel.update_start_values(result.params)
 
     def ShowDataSet(self, evt=None):
@@ -1912,6 +1985,8 @@ class FeffitResultFrame(wx.Frame):
         self.feffit_history = getattr(self.datagroup, 'feffit_history', [])
 
         cur = self.get_fitresult()
+        if cur is None:
+            return
         wids = self.wids
         wids['stats'].DeleteAllItems()
         for i, res in enumerate(self.feffit_history):
@@ -1934,6 +2009,8 @@ class FeffitResultFrame(wx.Frame):
             self.datagroup = datagroup
 
         result = self.get_fitresult(nfit=nfit)
+        if result is None:
+            return
 
         path_hashkeys = []
         for ds in result.datasets:
