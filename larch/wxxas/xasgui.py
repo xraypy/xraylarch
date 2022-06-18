@@ -816,7 +816,6 @@ class XASFrame(wx.Frame):
         ogroup = self.controller.get_group(fname)
         ngroup = self.controller.copy_group(fname)
         self.onNewGroup(ngroup, journal=ogroup.journal)
-        ngroup.journal.add('source_desc', f"copied from '{fname:s}'")
 
     def onGroupJournal(self, event=None):
         dgroup = self.controller.get_group()
@@ -1426,7 +1425,10 @@ class XASFrame(wx.Frame):
         elif isinstance(journal, (list, Journal)):
             jopts = repr(journal)
 
-        cmds.append(f"{groupname:s}.config = group(__name__='xas_viewer config')")
+        needs_config = not hasattr(thisgroup, 'config')
+        if needs_config:
+            cmds.append(f"{groupname:s}.config = group(__name__='xas_viewer config')")
+
         cmds.append(f"{groupname:s}.journal = journal({jopts:s})")
         if datatype == 'xas':
             cmds.append(f"{groupname:s}.energy_orig = {groupname:s}.energy[:]")
@@ -1438,7 +1440,8 @@ class XASFrame(wx.Frame):
 
         self.larch.eval(cmds)
 
-        self.controller.init_group_config(thisgroup)
+        if needs_config:
+            self.controller.init_group_config(thisgroup)
         self.controller.filelist.Append(filename.strip())
         self.controller.file_groups[filename] = groupname
         self.controller.sync_xasgroups()
