@@ -72,8 +72,6 @@ if sys.platform == 'win32':
     clock = time.monotonic
     def ignore_CtrlC():
         pass
-elif sys.platform == 'darwin':
-    from .allow_idle_macosx import allow_idle
 
 
 class EnteredModalDialogHook(wx.ModalDialogHook):
@@ -171,6 +169,26 @@ def inputhook_wx():
             ON_INTERRUPT()
     return 0
 
+def ping(timeout=0.001):
+    "ping wx"
+    try:
+        t0 = clock()
+        app = wx.GetApp()
+        if app is not None:
+            assert wx.IsMainThread()
+            # Make a temporary event loop and process system events until
+            # there are no more waiting, then allow idle events (which
+            # will also deal with pending or posted wx events.)
+            evtloop = wx_EventLoop()
+            ea = wx.EventLoopActivator(evtloop)
+            t0 = clock()
+            while clock()-t0 < timeout:
+                evtloop.Dispatch()
+            app.ProcessIdle()
+            del ea
+    except:
+        pass
+
 def inputhook_darwin():
     """Run the wx event loop, polling for stdin.
 
@@ -207,6 +225,8 @@ if sys.platform == 'darwin':
     # any events pending. As such we can't use implementations 1 or 3 of the
     # inputhook as those depend on a pending/dispatch loop.
     inputhook_wx = inputhook_darwin
+    def ping(timeout=0.001):
+        inputhook_darwin()
 
 try:
     capture_CtrlC()
@@ -217,24 +237,6 @@ py_inphook = c_void_p.in_dll(pythonapi, 'PyOS_InputHook')
 py_inphook.value = cast(cback, c_void_p).value
 
 # import for Darwin!
-allow_idle()
-
-def ping(timeout=0.001):
-    "ping wx"
-    try:
-        t0 = clock()
-        app = wx.GetApp()
-        if app is not None:
-            assert wx.IsMainThread()
-            # Make a temporary event loop and process system events until
-            # there are no more waiting, then allow idle events (which
-            # will also deal with pending or posted wx events.)
-            evtloop = wx_EventLoop()
-            ea = wx.EventLoopActivator(evtloop)
-            t0 = clock()
-            while clock()-t0 < timeout:
-                evtloop.Dispatch()
-            app.ProcessIdle()
-            del ea
-    except:
-        pass
+if sys.platform == 'darwin':
+    from .allow_idle_macosx import allow_idle
+    allow_idle()
