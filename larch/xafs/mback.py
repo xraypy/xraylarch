@@ -274,6 +274,18 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
     if getattr(group, 'pre_edge_details', None) is None:  # pre_edge never run
         pre_edge(group, pre1=pre1, pre2=pre2, nvict=nvict,
                 norm1=norm1, norm2=norm2, e0=e0, nnorm=nnorm)
+    if pre1 is None:
+        pre1 = group.pre_edge_details.pre1
+    if pre2 is None:
+        pre2 = group.pre_edge_details.pre2
+    if nvict is None:
+        nvict = group.pre_edge_details.nvict
+    if norm1 is None:
+        norm1 = group.pre_edge_details.norm1
+    if norm2 is None:
+        norm2 = group.pre_edge_details.norm2
+    if nnorm is None:
+        nnorm = group.pre_edge_details.nnorm
 
     mu_pre = mu - group.pre_edge
     f2 = f2_chantler(z, energy)
