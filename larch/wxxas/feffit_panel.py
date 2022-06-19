@@ -701,6 +701,7 @@ class FeffitPanel(TaskPanel):
         self.resetting = False
         self.model_needs_rebuild = False
         self.config_saved = self.get_defaultconfig()
+        self.dgroup = None
 
     def onPanelExposed(self, **kws):
         # called when notebook is selected
@@ -716,7 +717,7 @@ class FeffitPanel(TaskPanel):
             self.fill_form(dgroup)
         except:
             pass # print(" Cannot Fill prepeak panel from group ")
-
+        self.dgroup = dgroup
         feffpaths = getattr(self.larch.symtable, '_feffpaths', None)
         if feffpath is not None:
             self.reset_paths()
@@ -1253,6 +1254,8 @@ class FeffitPanel(TaskPanel):
 
 
     def get_xranges(self, x):
+        if self.dgroup is None:
+            self.dgroup = self.controller.get_group()
         self.process(self.dgroup)
         opts = self.read_form(self.dgroup)
         dgroup = self.controller.get_group()
@@ -1275,7 +1278,11 @@ class FeffitPanel(TaskPanel):
         paths = []
         cmds = ["### set up feffit "]
         pargroup = self.get_paramgroup()
+        if self.dgroup is None:
+            self.dgroup = self.controller.get_group()
+
         cmds.extend(self.params_panel.generate_script())
+
 
         self.process(self.dgroup)
         opts = self.read_form(self.dgroup)
@@ -1602,20 +1609,21 @@ class FeffitResultFrame(wx.Frame):
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.SetFont(self.font_fixedwidth)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
-        sview.AppendTextColumn(' Label', width=120)
-        sview.AppendTextColumn('N_paths', width=75)
-        sview.AppendTextColumn('N_vary', width=70)
-        sview.AppendTextColumn('N_idp',  width=70)
-        sview.AppendTextColumn('\u03c7\u00B2', width=80)
-        sview.AppendTextColumn('reduced \u03c7\u00B2', width=90)
-        sview.AppendTextColumn('R Factor', width=90)
-        sview.AppendTextColumn('Akaike Info', width=95)
+        sview.AppendTextColumn('Index', width=50)
+        sview.AppendTextColumn('Label', width=150)
+        sview.AppendTextColumn('N_paths', width=60)
+        sview.AppendTextColumn('N_vary', width=60)
+        sview.AppendTextColumn('N_idp',  width=60)
+        sview.AppendTextColumn('\u03c7\u00B2', width=75)
+        sview.AppendTextColumn('reduced \u03c7\u00B2', width=75)
+        sview.AppendTextColumn('R Factor', width=80)
+        sview.AppendTextColumn('Akaike Info', width=90)
 
 
         for col in range(sview.ColumnCount):
             this = sview.Columns[col]
             this.Sortable = True
-            this.Alignment = wx.ALIGN_RIGHT if col > 0 else wx.ALIGN_LEFT
+            this.Alignment = wx.ALIGN_RIGHT if col > 1 else wx.ALIGN_LEFT
             this.Renderer.Alignment = this.Alignment
 
         sview.SetMinSize((700, 125))
@@ -1992,14 +2000,17 @@ class FeffitResultFrame(wx.Frame):
         wids = self.wids
         wids['stats'].DeleteAllItems()
         for i, res in enumerate(self.feffit_history):
-            args = [res.label, "%.d" % (len(res.datasets[0].paths))]
+            args = ["%d" % (i+1), res.label, "%.d" % (len(res.datasets[0].paths))]
             for attr in ('nvarys', 'n_independent', 'chi_square',
                          'chi2_reduced', 'rfactor', 'aic'):
                 val = getattr(res, attr)
                 if isinstance(val, int):
                     val = '%d' % val
+                elif attr == 'n_independent':
+                    val = "%.2f" % val
                 else:
-                    val = gformat(val, 9)
+                    val = "%.4f" % val
+                    # val = gformat(val, 9)
                 args.append(val)
             wids['stats'].AppendItem(tuple(args))
         wids['data_title'].SetLabel(self.datagroup.filename)
