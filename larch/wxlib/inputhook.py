@@ -220,13 +220,16 @@ def inputhook_darwin():
             ON_INTERRUPT()
     return 0
 
+
+def ping_darwin(timeout=0.001):
+    inputhook_darwin()
+
 if sys.platform == 'darwin':
     # On OSX, evtloop.Pending() always returns True, regardless of there being
     # any events pending. As such we can't use implementations 1 or 3 of the
     # inputhook as those depend on a pending/dispatch loop.
     inputhook_wx = inputhook_darwin
-    def ping(timeout=0.001):
-        inputhook_darwin()
+    ping = ping_darwin
 
 try:
     capture_CtrlC()
