@@ -211,7 +211,6 @@ class RegressionPanel(TaskPanel):
         self.update_config(dict(fitspace=fitspace))
         arrname = Linear_ArrayChoices.get(fitspace, 'norm')
         self.update_fit_xspace(arrname)
-        self.plot()
 
 
     def fill_form(self, dgroup=None, opts=None):
@@ -594,6 +593,7 @@ class RegressionPanel(TaskPanel):
         ppanel.conf.auto_margins = False
         ppanel.conf.set_margins(left=0.35, right=0.05, bottom=0.15, top=0.1)
         ppanel.canvas.draw()
+        self.controller.set_focus()
 
 
     def onCopyParam(self, name=None, evt=None):

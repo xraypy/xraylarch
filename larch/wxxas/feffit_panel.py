@@ -984,7 +984,7 @@ class FeffitPanel(TaskPanel):
 
     def onPlot(self, evt=None, dgroup=None, pargroup_name='_feffit_params',
                paths_name='_feffpaths', pathsum_name='_pathsum', title=None,
-               build_fitmodel=True, **kws):
+               build_fitmodel=True, topwin=None, **kws):
 
         self.process(dgroup)
         opts = self.read_form(dgroup=dgroup)
@@ -1076,6 +1076,8 @@ class FeffitPanel(TaskPanel):
                     cmds.append(f"{pcmd}({objname}, label='{label:s}'{pextra}, offset={(i+1)*voff}{overplot})")
 
         self.larch_eval('\n'.join(cmds))
+        self.controller.set_focus(topwin=topwin)
+
 
     def reset_paths(self, event=None):
         "reset paths from _feffpaths"
@@ -1495,9 +1497,9 @@ class FeffitResultFrame(wx.Frame):
         splitter = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
         splitter.SetMinimumPaneSize(200)
 
-        self.datalistbox = EditableListBox(splitter, self.ShowDataSet,
+        self.filelist = EditableListBox(splitter, self.ShowDataSet,
                                            size=(250, -1))
-        set_color(self.datalistbox, 'list_fg', bg='list_bg')
+        set_color(self.filelist, 'list_fg', bg='list_bg')
 
         self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
 
@@ -1702,7 +1704,7 @@ class FeffitResultFrame(wx.Frame):
         pack(panel, sizer)
         panel.SetupScrolling()
 
-        splitter.SplitVertically(self.datalistbox, panel, 1)
+        splitter.SplitVertically(self.filelist, panel, 1)
 
         mainsizer = wx.BoxSizer(wx.VERTICAL)
         mainsizer.Add(splitter, 1, wx.GROW|wx.ALL, 5)
@@ -1804,7 +1806,7 @@ class FeffitResultFrame(wx.Frame):
             opts[attr] = getattr(trans, attr)
         opts['ffit_kwstring'] = "%s" % getattr(trans, 'kweight')
         opts['kwindow']  = getattr(trans, 'window')
-
+        opts['topwin'] = self
         self.feffit_panel.onPlot(**opts)
 
 
@@ -1969,8 +1971,8 @@ class FeffitResultFrame(wx.Frame):
 
     def add_results(self, dgroup, form=None, larch_eval=None, show=True):
         name = dgroup.filename
-        if name not in self.datalistbox.GetItems():
-            self.datalistbox.Append(name)
+        if name not in self.filelist.GetItems():
+            self.filelist.Append(name)
         self.datasets[name] = dgroup
         if show:
             self.show_results(datagroup=dgroup, form=form, larch_eval=larch_eval)

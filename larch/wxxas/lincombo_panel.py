@@ -148,9 +148,9 @@ class LinComboResultFrame(wx.Frame):
         splitter = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
         splitter.SetMinimumPaneSize(200)
 
-        dl = self.datalistbox = EditableListBox(splitter, self.ShowDataSet,
+        dl = self.filelist = EditableListBox(splitter, self.ShowDataSet,
                                            size=(250, -1))
-        set_color(self.datalistbox, 'list_fg', bg='list_bg')
+        set_color(self.filelist, 'list_fg', bg='list_bg')
 
 
         panel = scrolled.ScrolledPanel(splitter)
@@ -288,7 +288,7 @@ class LinComboResultFrame(wx.Frame):
         pack(panel, sizer)
         panel.SetupScrolling()
 
-        splitter.SplitVertically(self.datalistbox, panel, 1)
+        splitter.SplitVertically(self.filelist, panel, 1)
 
         mainsizer = wx.BoxSizer(wx.VERTICAL)
         mainsizer.Add(splitter, 1, wx.GROW|wx.ALL, 5)
@@ -306,8 +306,8 @@ class LinComboResultFrame(wx.Frame):
 
     def add_results(self, dgroup, form=None, larch_eval=None, show=True):
         name = dgroup.filename
-        if name not in self.datalistbox.GetItems():
-            self.datalistbox.Append(name)
+        if name not in self.filelist.GetItems():
+            self.filelist.Append(name)
         self.datasets[name] = dgroup
         if show:
             self.show_results(datagroup=dgroup, form=form, larch_eval=larch_eval)
@@ -429,6 +429,7 @@ class LinComboResultFrame(wx.Frame):
         self.form['win'] = int(self.wids['plot_win'].GetStringSelection())
         self.larch_eval(make_lcfplot(self.datagroup,
                                      self.form, nfit=self.current_fit))
+        self.parent.controller.set_focus(topwin=self)
 
     def onPlotSel(self, evt=None):
         if self.form is None or self.larch_eval is None:
@@ -465,6 +466,7 @@ class LinComboResultFrame(wx.Frame):
 
         script = "\n".join(cmds)
         self.larch_eval(script.format(**form))
+        self.parent.controller.set_focus(topwin=self)
 
     def onSaveGroupFit(self, evt=None):
         "Save Fit and Compoents for current fit to Data File"
@@ -987,3 +989,4 @@ lcf_result = {func:s}({gname:s}, [{comps:s}],
         form = self.read_form(dgroup=dgroup)
         script = make_lcfplot(dgroup, form, with_fit=with_fit, nfit=0)
         self.larch_eval(script)
+        self.controller.set_focus()

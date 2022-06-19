@@ -448,6 +448,7 @@ class XASNormPanel(TaskPanel):
     def onPlotOne(self, evt=None):
         self.last_plot_type = 'one'
         self.plot(self.controller.get_group())
+        wx.CallAfter(self.controller.set_focus)
 
     def onVoffset(self, evt=None):
         time.sleep(0.01)
@@ -514,6 +515,7 @@ class XASNormPanel(TaskPanel):
         ppanel = self.controller.get_display(stacked=False).panel
         ppanel.plot_many(plot_traces, xlabel='Energy (eV)', ylabel=ylabel, show_legend=True)
         ppanel.unzoom_all()
+        wx.CallAfter(self.controller.set_focus)
 
     def onAutoNorm(self, evt=None):
         dgroup = self.controller.get_group()

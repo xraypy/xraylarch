@@ -184,9 +184,9 @@ class PrePeakFitResultFrame(wx.Frame):
         splitter = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
         splitter.SetMinimumPaneSize(200)
 
-        self.datalistbox = EditableListBox(splitter, self.ShowDataSet,
+        self.filelist = EditableListBox(splitter, self.ShowDataSet,
                                            size=(250, -1))
-        set_color(self.datalistbox, 'list_fg', bg='list_bg')
+        set_color(self.filelist, 'list_fg', bg='list_bg')
 
         panel = scrolled.ScrolledPanel(splitter)
 
@@ -207,7 +207,8 @@ class PrePeakFitResultFrame(wx.Frame):
         ppanel = wx.Panel(panel)
         wids['plot_bline'] = Check(ppanel, label='Plot baseline-subtracted?', **opts)
         wids['plot_resid'] = Check(ppanel, label='Plot with residual?', **opts)
-        wids['plot_win']   = Choice(ppanel, size=(60, -1), choices=PlotWindowChoices, action=self.onPlot)
+        wids['plot_win']   = Choice(ppanel, size=(60, -1), choices=PlotWindowChoices,
+                                    action=self.onPlot)
         wids['plot_win'].SetStringSelection('1')
 
         psizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -364,7 +365,7 @@ class PrePeakFitResultFrame(wx.Frame):
         pack(panel, sizer)
         panel.SetupScrolling()
 
-        splitter.SplitVertically(self.datalistbox, panel, 1)
+        splitter.SplitVertically(self.filelist, panel, 1)
 
         mainsizer = wx.BoxSizer(wx.VERTICAL)
         mainsizer.Add(splitter, 1, wx.GROW|wx.ALL, 5)
@@ -394,7 +395,7 @@ class PrePeakFitResultFrame(wx.Frame):
     def onSaveAllStats(self, evt=None):
         "Save Parameters and Statistics to CSV"
         # get first dataset to extract fit parameter names
-        fnames = self.datalistbox.GetItems()
+        fnames = self.filelist.GetItems()
         if len(fnames) == 0:
             return
 
@@ -507,7 +508,7 @@ class PrePeakFitResultFrame(wx.Frame):
         cmd = "plot_prepeaks_fit(%s, nfit=%i, show_residual=%s, subtract_baseline=%s, win=%d)"
         cmd = cmd % (self.datagroup.groupname, self.nfit, show_resid, sub_bline, win)
         self.peakframe.larch_eval(cmd)
-        self.Raise()
+        self.peakframe.controller.set_focus(topwin=self)
 
     def onSelectFit(self, evt=None):
         if self.wids['stats'] is None:
@@ -574,11 +575,10 @@ class PrePeakFitResultFrame(wx.Frame):
         if group is not None:
             self.show_results(datagroup=group, show_plot=True)
 
-
     def add_results(self, dgroup, form=None, larch_eval=None, show=True):
         name = dgroup.filename
-        if name not in self.datalistbox.GetItems():
-            self.datalistbox.Append(name)
+        if name not in self.filelist.GetItems():
+            self.filelist.Append(name)
         self.datasets[name] = dgroup
         if show:
             self.show_results(datagroup=dgroup, form=form, larch_eval=larch_eval)
@@ -615,8 +615,7 @@ class PrePeakFitResultFrame(wx.Frame):
             cmd = cmd % (datagroup.groupname, show_resid, sub_bline)
 
             self.peakframe.larch_eval(cmd)
-            self.Raise()
-
+            self.peakframe.controller.set_focus(topwin=self)
 
     def get_model_desc(self, model):
         model_repr = model._reprstring(long=True)
@@ -1023,7 +1022,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             args.append("show_init=%s" % (show_init))
         cmd = "%s(%s)" % (cmd, ', '.join(args))
         self.larch_eval(cmd.format(**opts))
-        self.Raise()
+        self.controller.set_focus()
 
     def addModel(self, event=None, model=None, prefix=None, isbkg=False):
         if model is None and event is not None:
