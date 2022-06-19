@@ -97,6 +97,8 @@ class EnteredModalDialogHook(wx.ModalDialogHook):
 class EventLoopRunner(object):
     def __init__(self, parent):
         self.parent = parent
+        self.timer = wx.Timer()
+        self.evtloop = wx.GUIEventLoop()
 
     def run(self, poll_time=None):
         if poll_time is None:
@@ -215,7 +217,6 @@ def inputhook_darwin():
                 ptime /= 10
             eloop.run(poll_time=int(ptime+1))
     except KeyboardInterrupt:
-        print(" See KeyboardInterrupt from darwin hook")
         if callable(ON_INTERRUPT):
             ON_INTERRUPT()
     return 0
@@ -229,7 +230,6 @@ if sys.platform == 'darwin':
     # any events pending. As such we can't use implementations 1 or 3 of the
     # inputhook as those depend on a pending/dispatch loop.
     inputhook_wx = inputhook_darwin
-    ping = ping_darwin
 
 try:
     capture_CtrlC()

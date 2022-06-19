@@ -68,7 +68,10 @@ class Shell(cmd.Cmd):
 
             from .wxlib import inputhook
             symtable.set_symbol('_sys.wx.inputhook', inputhook)
-            symtable.set_symbol('_sys.wx.ping',   inputhook.ping)
+            if uname == 'darwin':
+                symtable.set_symbol('_sys.wx.ping',   inputhook.ping_darwin)
+            else:
+                symtable.set_symbol('_sys.wx.ping',   inputhook.ping)
             inputhook.ON_INTERRUPT = on_ctrl_c
             inputhook.WXLARCH_SYM = symtable
 
