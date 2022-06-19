@@ -4,6 +4,8 @@ import time
 import numpy as np
 from copy import deepcopy
 
+import wx
+
 import larch
 from larch.larchlib import read_config, save_config
 from larch.utils import group2dict, unique_name, fix_varname, get_cwd, asfloat
@@ -144,6 +146,19 @@ class XASController():
         opts.update(conf)
         return self.symtable._plotter.get_display(**opts)
 
+    def set_focus(self, topwin=None):
+        """
+        set wx focus to main window or selected Window,
+        even after plot
+        """
+        if topwin is None:
+            topwin = wx.GetApp().GetTopWindow()
+            flist = self.filelist
+        else:
+            flist = getattr(topwin, 'filelist', topwin)
+        time.sleep(0.025)
+        topwin.Raise()
+        flist.SetFocus()
 
     def get_group(self, groupname=None):
         if groupname is None:
@@ -306,3 +321,4 @@ class XASController():
                     popts.update(opts)
                     axes.axvline(x, **popts)
         ppanel.canvas.draw()
+        self.set_focus()
