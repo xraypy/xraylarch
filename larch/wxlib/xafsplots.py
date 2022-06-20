@@ -514,7 +514,10 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
     ylabel = plotlabels.chirlab(kweight, show_mag=show_mag,
                                 show_real=show_real, show_imag=show_imag)
     opts['ylabel'] = ylabel
-
+    if not hasattr(dgroup, 'r'):
+        print("group does not have chi(R) data")
+        return
+    #endif
     if label is None:
         label = 'chir'
     #endif
