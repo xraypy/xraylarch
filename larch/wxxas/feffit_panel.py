@@ -1000,6 +1000,8 @@ class FeffitPanel(TaskPanel):
         fname = opts['filename']
         if title is None:
             title = fname
+        if "'" in title:
+            title = title.replace("'", "\\'")
 
         gname = opts['groupname']
         if dataset_name is None:
@@ -1642,7 +1644,7 @@ class FeffitResultFrame(wx.Frame):
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.SetFont(self.font_fixedwidth)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
-        sview.AppendTextColumn('I', width=35)
+        sview.AppendTextColumn(' # ', width=35)
         sview.AppendTextColumn('Label', width=140)
         sview.AppendTextColumn('N_paths', width=65)
         sview.AppendTextColumn('N_vary', width=60)
@@ -1659,7 +1661,7 @@ class FeffitResultFrame(wx.Frame):
             this.Alignment = wx.ALIGN_RIGHT if col > 1 else wx.ALIGN_LEFT
             this.Renderer.Alignment = this.Alignment
 
-        sview.SetMinSize((725, 125))
+        sview.SetMinSize((725, 150))
 
         irow += 1
         sizer.Add(sview, (irow, 0), (1, 5), LEFT)
@@ -1737,7 +1739,7 @@ class FeffitResultFrame(wx.Frame):
             if col == 2:
                 align = wx.ALIGN_RIGHT
             this.Alignment = this.Renderer.Alignment = align
-        cview.SetMinSize((475, 175))
+        cview.SetMinSize((475, 150))
 
         irow += 1
         sizer.Add(cview, (irow, 0), (1, 5), LEFT)

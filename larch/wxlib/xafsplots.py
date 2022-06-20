@@ -94,10 +94,15 @@ plotlabels = Group(k       = r'$k \rm\,(\AA^{-1})$',
                    e0color = '#B2B282',
                    chirlab = chirlab)
 
+def safetitle(t):
+    if "'" in t:
+        t = t.replace("'", "\\'")
+    return t
+
 def _get_title(dgroup, title=None):
     """get best title for group"""
     if title is not None:
-        return title
+        return safetitle(title)
     data_group = getattr(dgroup, 'data', None)
 
     for attr in ('title', 'plot_title', 'filename', 'name', '__name__'):
@@ -110,12 +115,12 @@ def _get_title(dgroup, title=None):
                 else:
                     top, folder = os.path.split(folder)
                     t = '/'.join((folder, file))
-            return t
+            return safetitle(t)
         if data_group is not None:
             t = getattr(data_group, attr, None)
             if t is not None:
                 return t
-    return repr(dgroup)
+    return safetitle(repr(dgroup))
 
 
 def _get_kweight(dgroup, kweight=None):
@@ -294,7 +299,7 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
      emax       max energy to show, absolute or relative to E0 [None, end of data]
      show_e0     bool whether to show E0 [False]
      label       string for label [``None``: 'mu']
-     title       string for plot title [None, may use filename if available]
+     title       string for plot titlte [None, may use filename if available]
      new         bool whether to start a new plot [True]
      delay_draw  bool whether to delay draw until more traces are added [False]
      offset      vertical offset to use for y-array [0]

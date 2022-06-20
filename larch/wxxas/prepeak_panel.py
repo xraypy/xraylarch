@@ -284,7 +284,7 @@ class PrePeakFitResultFrame(wx.Frame):
             this.Alignment = wx.ALIGN_RIGHT if col > 0 else wx.ALIGN_LEFT
             this.Renderer.Alignment = this.Alignment
 
-        sview.SetMinSize((725, 125))
+        sview.SetMinSize((725, 150))
 
         irow += 1
         sizer.Add(sview, (irow, 0), (1, 5), LEFT)
@@ -357,7 +357,7 @@ class PrePeakFitResultFrame(wx.Frame):
             if col == 2:
                 align = wx.ALIGN_RIGHT
             this.Alignment = this.Renderer.Alignment = align
-        cview.SetMinSize((475, 175))
+        cview.SetMinSize((475, 150))
 
         irow += 1
         sizer.Add(cview, (irow, 0), (1, 5), LEFT)
