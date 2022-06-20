@@ -133,6 +133,10 @@ class TransformGroup(Group):
         group.chir_pha =  complex_phase(out[:irmax])
         group.chir_re  =  out.real[:irmax]
         group.chir_im  =  out.imag[:irmax]
+        if self.rwin is None:
+            self.rwin = ftwindow(self.r_, xmin=self.rmin, xmax=self.rmax,
+                                 dx=self.dr, dx2=self.dr2, window=self.rwindow)
+        group.rwin = self.rwin[:irmax]
 
     def get_kweight(self):
         "if kweight is a list/tuple, use only the first one here"
@@ -160,7 +164,6 @@ class TransformGroup(Group):
         if self.rwin is None:
             self.rwin = ftwindow(self.r_, xmin=self.rmin, xmax=self.rmax,
                                  dx=self.dr, dx2=self.dr2, window=self.rwindow)
-
         cx = chir * self.rwin[:len(chir)]
         return xftr_fast(cx, kstep=self.kstep, nfft=self.nfft)
 
@@ -325,7 +328,8 @@ class FeffitDataSet(Group):
         """estimage noise in a chi spectrum from its high r components"""
         trans = self.transform
         trans.make_karrays()
-        if chi is None: chi = self.__chi
+        if chi is None:
+            chi = self.__chi
 
         save = trans.rmin, trans.rmax, trans.fitspace
 
