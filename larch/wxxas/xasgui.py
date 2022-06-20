@@ -77,7 +77,7 @@ CEN |=  wx.ALL
 FILE_WILDCARDS = "Data Files|*.0*;*.dat;*.DAT;*.xdi;*.prj;*.sp*c;*.h*5;*.larix|All files (*.*)|*.*"
 
 ICON_FILE = 'onecone.ico'
-XASVIEW_SIZE = (990, 750)
+XASVIEW_SIZE = (1010, 810)
 PLOTWIN_SIZE = (550, 550)
 
 NB_PANELS = {'Normalization': XASNormPanel,
