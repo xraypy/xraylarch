@@ -130,7 +130,7 @@ class PrePeakFitResultFrame(wx.Frame):
     config_sect = 'prepeak'
     def __init__(self, parent=None, peakframe=None, datagroup=None, **kws):
         wx.Frame.__init__(self, None, -1, title='Pre-edge Peak Fit Results',
-                          style=FRAMESTYLE, size=(900, 700), **kws)
+                          style=FRAMESTYLE, size=(950, 700), **kws)
         self.peakframe = peakframe
 
         if datagroup is not None:
@@ -284,7 +284,7 @@ class PrePeakFitResultFrame(wx.Frame):
             this.Alignment = wx.ALIGN_RIGHT if col > 0 else wx.ALIGN_LEFT
             this.Renderer.Alignment = this.Alignment
 
-        sview.SetMinSize((700, 125))
+        sview.SetMinSize((725, 125))
 
         irow += 1
         sizer.Add(sview, (irow, 0), (1, 5), LEFT)
@@ -316,7 +316,7 @@ class PrePeakFitResultFrame(wx.Frame):
             this.Alignment = wx.ALIGN_RIGHT if col in (1, 2) else wx.ALIGN_LEFT
             this.Renderer.Alignment = this.Alignment
 
-        pview.SetMinSize((700, 200))
+        pview.SetMinSize((725, 200))
         pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
 
         irow += 1
@@ -357,7 +357,7 @@ class PrePeakFitResultFrame(wx.Frame):
             if col == 2:
                 align = wx.ALIGN_RIGHT
             this.Alignment = this.Renderer.Alignment = align
-        cview.SetMinSize((475, 200))
+        cview.SetMinSize((475, 175))
 
         irow += 1
         sizer.Add(cview, (irow, 0), (1, 5), LEFT)
