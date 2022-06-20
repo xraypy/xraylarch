@@ -675,8 +675,6 @@ class FeffPathPanel(wx.Panel):
                 if self.title == path_nb.GetPageText(i).strip():
                     path_nb.DeletePage(i)
             self.feffit_panel.fix_unused_params()
-
-
         dlg.Destroy()
 
     def update_values(self):
@@ -898,8 +896,9 @@ class FeffitPanel(TaskPanel):
 
         for attr in ('ffit_kmin', 'ffit_kmax', 'ffit_dk', 'ffit_rmin',
                      'ffit_rmax', 'ffit_kwindow', 'ffit_rwindow',
-                     'ffit_dr', 'ffit_kwstring', 'ffit_fitspace', 'fit_plot',
-                     'plot_paths'):
+                     'ffit_dr', 'ffit_kwstring', 'ffit_fitspace',
+                     'fit_plot', 'plot_paths'):
+
             conf[attr] = opts.get(attr, None)
 
         if not hasattr(dgroup, 'config'):
@@ -985,7 +984,7 @@ class FeffitPanel(TaskPanel):
 
     def onPlot(self, evt=None, dgroup=None, pargroup_name='_feffit_params',
                paths_name='_feffpaths', pathsum_name='_pathsum', title=None,
-               build_fitmodel=True, topwin=None, **kws):
+               dataset_name=None,  build_fitmodel=True, topwin=None, **kws):
 
         self.process(dgroup)
         opts = self.read_form(dgroup=dgroup)
@@ -995,6 +994,9 @@ class FeffitPanel(TaskPanel):
             title = fname
 
         gname = opts['groupname']
+        if dataset_name is None:
+            dataset_name = gname
+
         if dgroup is None:
             dgroup = opts['datagroup']
 
@@ -1064,7 +1066,7 @@ class FeffitPanel(TaskPanel):
             newplot = f', show_window={with_win}, new=True'
             overplot = f', show_window=False, new=False'
             if dgroup is not None:
-                cmds.append(f"{pcmd}({gname}, label='data'{pextra}, title='{title}'{newplot})")
+                cmds.append(f"{pcmd}({dataset_name:s}, label='data'{pextra}, title='{title}'{newplot})")
                 if pathsum is not None:
                     cmds.append(f"{pcmd}({pathsum_name:s}, label='model'{pextra}{overplot})")
             elif pathsum is not None:
@@ -1452,7 +1454,7 @@ class FeffitPanel(TaskPanel):
 class FeffitResultFrame(wx.Frame):
     def __init__(self, parent=None, feffit_panel=None, datagroup=None, **kws):
         wx.Frame.__init__(self, None, -1, title='Feffit Results',
-                          style=FRAMESTYLE, size=(900, 700), **kws)
+                          style=FRAMESTYLE, size=(925, 700), **kws)
 
         self.outforms = {'chik': 'chi(k), no k-weight',
                          'chikw': 'chi(k), k-weighted',
@@ -1610,7 +1612,7 @@ class FeffitResultFrame(wx.Frame):
         sview.SetFont(self.font_fixedwidth)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
         sview.AppendTextColumn('Index', width=50)
-        sview.AppendTextColumn('Label', width=150)
+        sview.AppendTextColumn('Label', width=140)
         sview.AppendTextColumn('N_paths', width=60)
         sview.AppendTextColumn('N_vary', width=60)
         sview.AppendTextColumn('N_idp',  width=60)
@@ -1626,7 +1628,7 @@ class FeffitResultFrame(wx.Frame):
             this.Alignment = wx.ALIGN_RIGHT if col > 1 else wx.ALIGN_LEFT
             this.Renderer.Alignment = this.Alignment
 
-        sview.SetMinSize((700, 125))
+        sview.SetMinSize((725, 125))
 
         irow += 1
         sizer.Add(sview, (irow, 0), (1, 5), LEFT)
@@ -1647,10 +1649,10 @@ class FeffitResultFrame(wx.Frame):
         pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         pview.SetFont(self.font_fixedwidth)
         self.wids['paramsdata'] = []
-        pview.AppendTextColumn('Parameter',         width=150)
+        pview.AppendTextColumn('Parameter',         width=175)
         pview.AppendTextColumn('Best-Fit Value',    width=125)
         pview.AppendTextColumn('Standard Error',    width=125)
-        pview.AppendTextColumn('Info ',             width=300)
+        pview.AppendTextColumn('Info ',             width=225)
 
         for col in range(4):
             this = pview.Columns[col]
@@ -1658,7 +1660,7 @@ class FeffitResultFrame(wx.Frame):
             this.Alignment = wx.ALIGN_RIGHT if col in (1, 2) else wx.ALIGN_LEFT
             this.Renderer.Alignment = this.Alignment
 
-        pview.SetMinSize((700, 200))
+        pview.SetMinSize((725, 200))
         pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
 
         irow += 1
@@ -1798,6 +1800,9 @@ class FeffitResultFrame(wx.Frame):
             return
         dset   = result.datasets[0]
         dgroup = dset.data
+        if not hasattr(dset.data, 'rwin'):
+            dset._residual(result.params)
+            dset.save_ffts()
         trans  = dset.transform
         dset.prepare_fit(group2params(result.paramgroup))
         dset._residual(result.paramgroup)
@@ -1807,6 +1812,7 @@ class FeffitResultFrame(wx.Frame):
         opts['pargroup_name'] = f'{result_name}.paramgroup'
         opts['paths_name']    = f'{result_name}.datasets[0].paths'
         opts['pathsum_name']  = f'{result_name}.datasets[0].model'
+        opts['dataset_name']  = f'{result_name}.datasets[0].data'
         opts['dgroup']  = dgroup
         opts['title'] = f'{self.datagroup.filename}: {result.label}'
 
