@@ -2,6 +2,8 @@
 """
   XAFS pre-edge subtraction, normalization algorithms
 """
+import time
+from string import printable
 from copy import deepcopy
 import numpy as np
 from lmfit import Parameters, Minimizer, Model
@@ -342,5 +344,20 @@ def prepeaks_fit(group, peakmodel, params, user_options=None, _larch=None):
 
     pkfit.ycomps = peakmodel.eval_components(params=pkfit.result.params, x=prepeaks.energy)
     pkfit.label = 'Fit %i' % (1+len(prepeaks.fit_history))
+
+    label = now  = time.strftime("%b-%d %H:%M")
+    pkfit.timestamp = time.strftime("%Y-%b-%d %H:%M")
+    pkfit.label = label
+    
+
+    fitlabels = [fhist.label for fhist in prepeaks.fit_history]
+    if label in fitlabels:
+        count = 1
+        while label in fitlabels:
+            label = f'{now:s}_{printable[count]:s}'
+            count +=1
+        pkfit.label = label
+        
+    
     prepeaks.fit_history.insert(0, pkfit)
     return pkfit

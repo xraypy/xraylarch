@@ -3,13 +3,16 @@ import os
 import ast
 import shutil
 import string
+import json
+
 from copy import deepcopy
 from sys import exc_info
+from string import printable
+from functools import partial
+
 import numpy as np
 np.seterr(all='ignore')
 
-from functools import partial
-import json
 
 import wx
 import wx.lib.scrolledpanel as scrolled
@@ -1421,21 +1424,20 @@ class FeffitPanel(TaskPanel):
         if not hasattr(dgroup, 'feffit_history'):
             dgroup.feffit_history = []
 
-        now_full = time.strftime("%Y-%b-%d %H:%M")
-        now  = time.strftime("%b-%d %H:%M")
-        
-        dgroup.feffit_history[0].timestamp = now_full
+
+        label = now  = time.strftime("%b-%d %H:%M")
         dgroup.feffit_history[0].commands = script
-        dgroup.feffit_history[0].label = label = f'Fit {now:s}'
+        dgroup.feffit_history[0].timestamp = time.strftime("%Y-%b-%d %H:%M")
+        dgroup.feffit_history[0].label = label
         
         fitlabels = [fhist.label for fhist in dgroup.feffit_history[1:]]
         if label in fitlabels:
             count = 1
             while label in fitlabels:
-                label = f'Fit {now:s}_{count:02d}'
+                label = f'{now:s}_{printable[count]:s}'
                 count +=1
             dgroup.feffit_history[0].label = label
-
+            
         sname = self.autosave_script('\n'.join(script))
         self.write_message("wrote feffit script to '%s'" % sname)
 
