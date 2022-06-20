@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """Version information"""
-__date__    = '2022-Jun-12'
+__date__    = '2022-Jun-20'
 __release_version__ = '0.9.63'
 __authors__ = "M. Newville, M. Koker, M. Rovezzi, B. Ravel, and others"
 
