@@ -530,7 +530,7 @@ class FeffPathPanel(wx.Panel):
     """Feff Path """
     def __init__(self, parent=None, feffdat_file=None, dirname=None,
                  fullpath=None, absorber=None, shell=None, reff=None,
-                 degen=None, geom=None, npath=1, title='', user_label='',
+                 degen=None, geom=None, nleg=1, npath=1, title='', user_label='',
                  _larch=None, feffit_panel=None, **kws):
 
         self.parent = parent
@@ -548,7 +548,7 @@ class FeffPathPanel(wx.Panel):
         self.reff = reff = float(reff)
         degen = float(degen)
         self.geom = geom
-
+        self.nleg = nleg
         self.wids = wids = {}
         def SLabel(label, size=(80, -1), **kws):
             return  SimpleText(panel, label, size=size, style=LEFT, **kws)
@@ -576,15 +576,18 @@ class FeffPathPanel(wx.Panel):
         wids['plot_feffdat'] = Button(panel, 'Plot F(k)', size=(150, -1),
                              action=self.onPlotFeffDat)
 
+        scatt = {2: 'Single', 3: 'Double', 4: 'Triple', 5: 'Quadruple'}.get(nleg, f'{nleg-1:d}-atom')
+        scatt = scatt + ' Scattering'
+
 
         title1 = f'{dirname:s}: {feffdat_file:s}  {absorber:s} {shell:s} edge'
-        title2 = f'Reff={reff:.4f},  Degen={degen:.1f}   {geom:s}'
+        title2 = f'Reff={reff:.4f},  Degen={degen:.1f}, {scatt:s}:  {geom:s}'
 
         panel.Add(SLabel(title1, size=(375, -1), colour='#0000AA'),
                   dcol=2,  style=wx.ALIGN_LEFT, newrow=True)
         panel.Add(wids['use'])
         panel.Add(wids['del'])
-        panel.Add(SLabel(title2, size=(375, -1)),
+        panel.Add(SLabel(title2, size=(425, -1)),
                   dcol=3, style=wx.ALIGN_LEFT, newrow=True)
         panel.Add(wids['plot_feffdat'])
 
@@ -916,7 +919,7 @@ class FeffitPanel(TaskPanel):
         self.wids['fit_kwindow'].SetStringSelection(conf['fit_kwindow'])
 
         fit_space = conf.get('fit_space', 'r')
-            
+
         for key, val in Feffit_SpaceChoices.items():
             if fit_space in (key, val):
                 self.wids['fit_space'].SetStringSelection(key)
@@ -1177,6 +1180,7 @@ class FeffitPanel(TaskPanel):
                                   shell=pathinfo.shell,
                                   reff=pathinfo.reff,
                                   degen=pathinfo.degen,
+                                  nleg=pathinfo.nleg,
                                   geom=pathinfo.geom,
                                   feffit_panel=self)
 
@@ -1244,7 +1248,7 @@ class FeffitPanel(TaskPanel):
             result = True
         except:
             result = False
- 
+
         self.params_panel.update()
         wx.CallAfter(self.fix_unused_params)
         return result
@@ -1370,7 +1374,7 @@ class FeffitPanel(TaskPanel):
         if dgroup is None:
            dgroup = self.controller.get_group()
         opts = self.build_fitmodel(dgroup)
-        
+
         # dgroup = opts['datagroup']
         fopts = dict(groupname=opts['groupname'],
                      trans='_feffit_trans',
@@ -1410,7 +1414,7 @@ class FeffitPanel(TaskPanel):
         script.append("######################################")
         self.larch_eval(COMMANDS['do_feffit'].format(**fopts))
 
-       
+
         self.wids['show_results'].Enable()
         self.onPlot(dgroup=opts['datagroup'], build_fitmodel=False,
                     pargroup_name='_feffit_result.paramgroup',
@@ -1429,7 +1433,7 @@ class FeffitPanel(TaskPanel):
         dgroup.feffit_history[0].commands = script
         dgroup.feffit_history[0].timestamp = time.strftime("%Y-%b-%d %H:%M")
         dgroup.feffit_history[0].label = label
-        
+
         fitlabels = [fhist.label for fhist in dgroup.feffit_history[1:]]
         if label in fitlabels:
             count = 1
@@ -1437,7 +1441,7 @@ class FeffitPanel(TaskPanel):
                 label = f'{now:s}_{printable[count]:s}'
                 count +=1
             dgroup.feffit_history[0].label = label
-            
+
         sname = self.autosave_script('\n'.join(script))
         self.write_message("wrote feffit script to '%s'" % sname)
 
