@@ -94,8 +94,8 @@ _feffit_params = param_group(s02=param(1.0, min=0, max=1000, vary=True),
 """
 
 COMMANDS['feffit_trans'] = """# define Fourier transform and fitting space
-_feffit_trans = feffit_transform(kmin={ffit_kmin:.3f}, kmax={ffit_kmax:.3f}, dk={ffit_dk:.4f}, kw={ffit_kwstring:s},
-                      window='{ffit_kwindow:s}', fitspace='{ffit_fitspace:s}', rmin={ffit_rmin:.3f}, rmax={ffit_rmax:.3f})
+_feffit_trans = feffit_transform(kmin={fit_kmin:.3f}, kmax={fit_kmax:.3f}, dk={fit_dk:.4f}, kw={fit_kwstring:s},
+                      window='{fit_kwindow:s}', fitspace='{fit_space:s}', rmin={fit_rmin:.3f}, rmax={fit_rmax:.3f})
 """
 
 COMMANDS['paths_init'] = """# make sure dictionary for Feff Paths exists
@@ -133,7 +133,6 @@ COMMANDS['do_feffit'] = """# build feffit dataset, run feffit
 _feffit_dataset = feffit_dataset(data={groupname:s}, transform={trans:s}, paths={paths:s})
 _feffit_result = feffit({params}, _feffit_dataset)
 if not hasattr({groupname:s}, 'feffit_history'): {groupname}.feffit_history = []
-_feffit_result.label = 'Fit %i' % (1+len({groupname}.feffit_history))
 {groupname:s}.feffit_history.insert(0, _feffit_result)
 """
 
@@ -738,20 +737,20 @@ class FeffitPanel(TaskPanel):
 
         fsopts = dict(digits=2, increment=0.1, with_pin=True)
 
-        ffit_kmin = self.add_floatspin('ffit_kmin',  value=2, **fsopts)
-        ffit_kmax = self.add_floatspin('ffit_kmax',  value=17, **fsopts)
-        ffit_dk   = self.add_floatspin('ffit_dk',    value=4, **fsopts)
-        ffit_rmin = self.add_floatspin('ffit_rmin',  value=1, **fsopts)
-        ffit_rmax = self.add_floatspin('ffit_rmax',  value=5, **fsopts)
+        fit_kmin = self.add_floatspin('fit_kmin',  value=2, **fsopts)
+        fit_kmax = self.add_floatspin('fit_kmax',  value=17, **fsopts)
+        fit_dk   = self.add_floatspin('fit_dk',    value=4, **fsopts)
+        fit_rmin = self.add_floatspin('fit_rmin',  value=1, **fsopts)
+        fit_rmax = self.add_floatspin('fit_rmax',  value=5, **fsopts)
 
-        wids['ffit_kwstring'] = Choice(pan, size=(125, -1),
+        wids['fit_kwstring'] = Choice(pan, size=(125, -1),
                                      choices=list(Feffit_KWChoices.keys()))
-        wids['ffit_kwstring'].SetSelection(1)
+        wids['fit_kwstring'].SetSelection(1)
 
-        wids['ffit_kwindow'] = Choice(pan, choices=list(FT_WINDOWS), size=(125, -1))
+        wids['fit_kwindow'] = Choice(pan, choices=list(FT_WINDOWS), size=(125, -1))
 
-        wids['ffit_fitspace'] = Choice(pan, choices=list(Feffit_SpaceChoices.keys()),
-                                       size=(125, -1))
+        wids['fit_space'] = Choice(pan, choices=list(Feffit_SpaceChoices.keys()),
+                                   size=(125, -1))
 
         wids['plotone_op'] = Choice(pan, choices=list(PlotOne_Choices.keys()),
                                     action=self.onPlot, size=(125, -1))
@@ -801,25 +800,25 @@ class FeffitPanel(TaskPanel):
                            size=(350, -1)), style=LEFT, dcol=3)
 
         add_text('Fitting Space: ')
-        pan.Add(wids['ffit_fitspace'])
+        pan.Add(wids['fit_space'])
 
         add_text('k weightings: ', newrow=False)
-        pan.Add(wids['ffit_kwstring'])
+        pan.Add(wids['fit_kwstring'])
 
         add_text('k min: ')
-        pan.Add(ffit_kmin)
+        pan.Add(fit_kmin)
         add_text(' k max: ', newrow=False)
-        pan.Add(ffit_kmax)
+        pan.Add(fit_kmax)
 
         add_text('k Window: ')
-        pan.Add(wids['ffit_kwindow'])
+        pan.Add(wids['fit_kwindow'])
         add_text('dk: ', newrow=False)
-        pan.Add(ffit_dk)
+        pan.Add(fit_dk)
 
         add_text('R min: ')
-        pan.Add(ffit_rmin)
+        pan.Add(fit_rmin)
         add_text('R max: ', newrow=False)
-        pan.Add(ffit_rmax)
+        pan.Add(fit_rmax)
 
         pan.Add(HLine(pan, size=(600, 2)), dcol=6, newrow=True)
 
@@ -869,10 +868,10 @@ class FeffitPanel(TaskPanel):
                 conf[k] = v
 
         econf = getattr(dgroup.config, 'exafs', {})
-        for key in ('ffit_kmin', 'ffit_kmax', 'ffit_dk',
-                    'ffit_rmin', 'ffit_rmax', 'ffit_dr'
-                    'ffit_kwindow', 'ffit_rwindow'):
-            alt = key.replace('ffit', 'fft')
+        for key in ('fit_kmin', 'fit_kmax', 'fit_dk',
+                    'fit_rmin', 'fit_rmax', 'fit_dr'
+                    'fit_kwindow', 'fit_rwindow'):
+            alt = key.replace('fit', 'fft')
             val = conf.get(key, -1)
             if val in (None, -1, 'Auto') and alt in econf:
                 conf[key] = econf[alt]
@@ -894,9 +893,9 @@ class FeffitPanel(TaskPanel):
         self.dgroup = dgroup
         opts = self.read_form(dgroup=dgroup)
 
-        for attr in ('ffit_kmin', 'ffit_kmax', 'ffit_dk', 'ffit_rmin',
-                     'ffit_rmax', 'ffit_kwindow', 'ffit_rwindow',
-                     'ffit_dr', 'ffit_kwstring', 'ffit_fitspace',
+        for attr in ('fit_kmin', 'fit_kmax', 'fit_dk', 'fit_rmin',
+                     'fit_rmax', 'fit_kwindow', 'fit_rwindow',
+                     'fit_dr', 'fit_kwstring', 'fit_space',
                      'fit_plot', 'plot_paths'):
 
             conf[attr] = opts.get(attr, None)
@@ -908,18 +907,20 @@ class FeffitPanel(TaskPanel):
     def fill_form(self, dat):
         dgroup = self.controller.get_group()
         conf = self.get_config(dat)
-        for attr in ('ffit_kmin', 'ffit_kmax', 'ffit_rmin', 'ffit_rmax', 'ffit_dk'):
+        for attr in ('fit_kmin', 'fit_kmax', 'fit_rmin', 'fit_rmax', 'fit_dk'):
             self.wids[attr].SetValue(conf[attr])
 
-        self.wids['ffit_kwindow'].SetStringSelection(conf['ffit_kwindow'])
+        self.wids['fit_kwindow'].SetStringSelection(conf['fit_kwindow'])
 
+        fit_space = conf.get('fit_space', 'r')
+            
         for key, val in Feffit_SpaceChoices.items():
-            if conf['ffit_fitspace'] == val:
-                self.wids['ffit_fitspace'].SetStringSelection(key)
+            if fit_space in (key, val):
+                self.wids['fit_space'].SetStringSelection(key)
 
         for key, val in Feffit_KWChoices.items():
-            if conf['ffit_kwstring'] == val:
-                self.wids['ffit_kwstring'].SetStringSelection(key)
+            if conf['fit_kwstring'] == val:
+                self.wids['fit_kwstring'].SetStringSelection(key)
 
     def read_form(self, dgroup=None):
         "read form, returning dict of values"
@@ -939,22 +940,22 @@ class FeffitPanel(TaskPanel):
         form_opts = {'datagroup': dgroup, 'groupname': gname, 'filename': fname}
         wids = self.wids
 
-        for attr in ('ffit_kmin', 'ffit_kmax', 'ffit_rmin', 'ffit_rmax', 'ffit_dk'):
+        for attr in ('fit_kmin', 'fit_kmax', 'fit_rmin', 'fit_rmax', 'fit_dk'):
             form_opts[attr] = wids[attr].GetValue()
-        form_opts['ffit_kwstring'] = Feffit_KWChoices[wids['ffit_kwstring'].GetStringSelection()]
-        if len(form_opts['ffit_kwstring']) == 1:
-            d = form_opts['ffit_kwstring']
+        form_opts['fit_kwstring'] = Feffit_KWChoices[wids['fit_kwstring'].GetStringSelection()]
+        if len(form_opts['fit_kwstring']) == 1:
+            d = form_opts['fit_kwstring']
         else:
-            d = form_opts['ffit_kwstring'].replace('[', '').strip(',').split()[0]
+            d = form_opts['fit_kwstring'].replace('[', '').strip(',').split()[0]
         try:
-            form_opts['ffit_kweight'] = int(d)
+            form_opts['fit_kweight'] = int(d)
         except:
-            form_opts['ffit_kweight'] = 2
+            form_opts['fit_kweight'] = 2
 
 
-        form_opts['ffit_fitspace'] = Feffit_SpaceChoices[wids['ffit_fitspace'].GetStringSelection()]
+        form_opts['fit_space'] = Feffit_SpaceChoices[wids['fit_space'].GetStringSelection()]
 
-        form_opts['ffit_kwindow'] = wids['ffit_kwindow'].GetStringSelection()
+        form_opts['fit_kwindow'] = wids['fit_kwindow'].GetStringSelection()
         form_opts['plot_ftwindows'] = wids['plot_ftwindows'].IsChecked()
         form_opts['plot_paths'] = wids['plot_paths'].IsChecked()
         form_opts['plotone_op'] = PlotOne_Choices[wids['plotone_op'].GetStringSelection()]
@@ -1021,12 +1022,12 @@ class FeffitPanel(TaskPanel):
         plot2 = opts['plotalt_op']
         cmds = []
 
-        kw = opts['ffit_kweight']
+        kw = opts['fit_kweight']
 
-        ftargs = dict(kmin=opts['ffit_kmin'], kmax=opts['ffit_kmax'], dk=opts['ffit_dk'],
-                      kwindow=opts['ffit_kwindow'], kweight=opts['ffit_kweight'],
-                      rmin=opts['ffit_rmin'], rmax=opts['ffit_rmax'],
-                      dr=opts.get('ffit_dr', 0.1), rwindow='hanning')
+        ftargs = dict(kmin=opts['fit_kmin'], kmax=opts['fit_kmax'], dk=opts['fit_dk'],
+                      kwindow=opts['fit_kwindow'], kweight=opts['fit_kweight'],
+                      rmin=opts['fit_rmin'], rmax=opts['fit_rmax'],
+                      dr=opts.get('fit_dr', 0.1), rwindow='hanning')
 
         if pathsum is not None:
             cmds.append(COMMANDS['xft'].format(groupname=pathsum_name, **ftargs))
@@ -1240,8 +1241,9 @@ class FeffitPanel(TaskPanel):
             result = True
         except:
             result = False
-        self.fix_unused_params()
+ 
         self.params_panel.update()
+        wx.CallAfter(self.fix_unused_params)
         return result
 
     def onLoadFitResult(self, event=None):
@@ -1362,7 +1364,10 @@ class FeffitPanel(TaskPanel):
 
         script = [COMMANDS['feffit_top'].format(ctime=time.ctime())]
 
+        if dgroup is None:
+           dgroup = self.controller.get_group()
         opts = self.build_fitmodel(dgroup)
+        
         # dgroup = opts['datagroup']
         fopts = dict(groupname=opts['groupname'],
                      trans='_feffit_trans',
@@ -1373,6 +1378,7 @@ class FeffitPanel(TaskPanel):
         filename = opts['filename']
         if dgroup is None:
             dgroup = opts['datagroup']
+
 
         script.append("######################################")
         script.append(COMMANDS['data_source'].format(groupname=groupname, filename=filename))
@@ -1401,6 +1407,7 @@ class FeffitPanel(TaskPanel):
         script.append("######################################")
         self.larch_eval(COMMANDS['do_feffit'].format(**fopts))
 
+       
         self.wids['show_results'].Enable()
         self.onPlot(dgroup=opts['datagroup'], build_fitmodel=False,
                     pargroup_name='_feffit_result.paramgroup',
@@ -1414,7 +1421,21 @@ class FeffitPanel(TaskPanel):
         if not hasattr(dgroup, 'feffit_history'):
             dgroup.feffit_history = []
 
+        now_full = time.strftime("%Y-%b-%d %H:%M")
+        now  = time.strftime("%b-%d %H:%M")
+        
+        dgroup.feffit_history[0].timestamp = now_full
         dgroup.feffit_history[0].commands = script
+        dgroup.feffit_history[0].label = label = f'Fit {now:s}'
+        
+        fitlabels = [fhist.label for fhist in dgroup.feffit_history[1:]]
+        if label in fitlabels:
+            count = 1
+            while label in fitlabels:
+                label = f'Fit {now:s}_{count:02d}'
+                count +=1
+            dgroup.feffit_history[0].label = label
+
         sname = self.autosave_script('\n'.join(script))
         self.write_message("wrote feffit script to '%s'" % sname)
 
@@ -1458,7 +1479,7 @@ class FeffitPanel(TaskPanel):
 class FeffitResultFrame(wx.Frame):
     def __init__(self, parent=None, feffit_panel=None, datagroup=None, **kws):
         wx.Frame.__init__(self, None, -1, title='Feffit Results',
-                          style=FRAMESTYLE, size=(925, 700), **kws)
+                          style=FRAMESTYLE, size=(950, 700), **kws)
 
         self.outforms = {'chik': 'chi(k), no k-weight',
                          'chikw': 'chi(k), k-weighted',
@@ -1615,15 +1636,15 @@ class FeffitResultFrame(wx.Frame):
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.SetFont(self.font_fixedwidth)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
-        sview.AppendTextColumn('Index', width=50)
+        sview.AppendTextColumn('I', width=35)
         sview.AppendTextColumn('Label', width=140)
-        sview.AppendTextColumn('N_paths', width=60)
+        sview.AppendTextColumn('N_paths', width=65)
         sview.AppendTextColumn('N_vary', width=60)
         sview.AppendTextColumn('N_idp',  width=60)
         sview.AppendTextColumn('\u03c7\u00B2', width=75)
-        sview.AppendTextColumn('reduced \u03c7\u00B2', width=75)
+        sview.AppendTextColumn('reduced \u03c7\u00B2', width=85)
         sview.AppendTextColumn('R Factor', width=80)
-        sview.AppendTextColumn('Akaike Info', width=90)
+        sview.AppendTextColumn('Akaike Info', width=85)
 
 
         for col in range(sview.ColumnCount):
@@ -1710,7 +1731,7 @@ class FeffitResultFrame(wx.Frame):
             if col == 2:
                 align = wx.ALIGN_RIGHT
             this.Alignment = this.Renderer.Alignment = align
-        cview.SetMinSize((475, 200))
+        cview.SetMinSize((475, 175))
 
         irow += 1
         sizer.Add(cview, (irow, 0), (1, 5), LEFT)
@@ -1822,7 +1843,7 @@ class FeffitResultFrame(wx.Frame):
 
         for attr in ('kmin', 'kmax', 'dk', 'rmin', 'rmax', 'fitspace'):
             opts[attr] = getattr(trans, attr)
-        opts['ffit_kwstring'] = "%s" % getattr(trans, 'kweight')
+        opts['fit_kwstring'] = "%s" % getattr(trans, 'kweight')
         opts['kwindow']  = getattr(trans, 'window')
         opts['topwin'] = self
         self.feffit_panel.onPlot(**opts)
