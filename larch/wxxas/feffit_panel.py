@@ -932,6 +932,7 @@ class FeffitPanel(TaskPanel):
             except:
                 gname  = fname = dgroup = None
         else:
+
             gname = dgroup.groupname
             fname = dgroup.filename
 
@@ -1409,6 +1410,9 @@ class FeffitPanel(TaskPanel):
         script.extend(self.get_session_history()[nstart:])
         script.extend(["print(feffit_report(_feffit_result))",
                        "#end of autosaved feffit script" , ""])
+
+        if not hasattr(dgroup, 'feffit_history'):
+            dgroup.feffit_history = []
 
         dgroup.feffit_history[0].commands = script
         sname = self.autosave_script('\n'.join(script))
