@@ -1139,7 +1139,7 @@ def plot_pca_weights(result, min_weight=0, ncomps=None, win=1, _larch=None, **kw
 
     popts.update(kws)
 
-    ncomps = int(result.nsig)
+    ncomps = max(1, int(result.nsig))
     x = 1 + arange(ncomps)
     y = result.variances[:ncomps]
     _plot(x, y, label='significant', **popts)
