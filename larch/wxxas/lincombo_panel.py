@@ -687,7 +687,7 @@ class LinearComboPanel(TaskPanel):
         wids['vary_e0'] = Check(panel, label='Allow energy shift in fit?', default=False)
         wids['sum_to_one'] = Check(panel, label='Weights Must Sum to 1?', default=False)
         wids['all_combos'] = Check(panel, label='Fit All Combinations?', default=True)
-        max_ncomps = self.add_floatspin('max_ncomps', value=10, digits=0, increment=1,
+        max_ncomps = self.add_floatspin('max_ncomps', value=5, digits=0, increment=1,
                                         min_val=0, max_val=20, size=(60, -1),
                                         with_pin=False)
 
