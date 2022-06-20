@@ -263,9 +263,7 @@ class EXAFSPanel(TaskPanel):
         panel.Add((10, 10), dcol=2)
         panel.Add(CopyBtn('fft_rmaxout'), style=RIGHT)
 
-        panel.Add((10, 10), newrow=True)
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
-        panel.Add((10, 10), newrow=True)
 
         panel.Add(SimpleText(panel, ' Back Fourier transform (R->q) ', size=(275, -1),
                              **self.titleopts), dcol=2, style=LEFT, newrow=True)
@@ -285,13 +283,8 @@ class EXAFSPanel(TaskPanel):
         panel.Add(wids['fft_dr'])
 
         panel.Add(CopyBtn('fft_rwindow'), style=RIGHT)
-
-
         panel.Add((10, 10), newrow=True)
         panel.Add(self.wids['is_frozen'], dcol=1, newrow=True)
-        # panel.Add(saveconf, dcol=4)
-        panel.Add((10, 10), newrow=True)
-        panel.Add(HLine(panel, size=(500, 3)), dcol=8, newrow=True)
 
         panel.pack()
 
