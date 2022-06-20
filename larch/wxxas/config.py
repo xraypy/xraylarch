@@ -162,21 +162,21 @@ exafs = [CVar('rbkg', 1.0, 'float', min=0, step=0.1, max=10, desc='R value separ
          CVar('plot_rmax',     8.0, 'float', min=0, step=0.5, desc='maximum R value for EXAFS chi(R) plots')]
 
 
-feffit  = [CVar('ffit_kwstring', '2', 'choice', choices=list(Feffit_KWChoices.keys()),
+feffit  = [CVar('fit_kwstring', '2', 'choice', choices=list(Feffit_KWChoices.keys()),
                 desc='k weight to use for Feff fitting'),
-           CVar('fitspace', 'R', 'choice', choices=list(Feffit_SpaceChoices.keys()),
+           CVar('fit_space', 'R', 'choice', choices=list(Feffit_SpaceChoices.keys()),
                 desc='Fourier space to use for Feff fitting'),
            CVar('fit_plot', 'R space only', 'choice', choices=list(Feffit_PlotChoices.keys()),
                 desc='How to plot results for Feff fitting'),
            CVar('plot_paths', True, 'bool',   desc='Whether to plot individual paths in results for Feff fitting'),
-           CVar('ffit_kmin',    -1, 'float', min=-1, step=0.1, max=20, desc='k min for EXAFS Fourier transform\n(use -1 for "same as EXAFS")'),
-           CVar('ffit_kmax',    -1, 'float', min=-1, step=0.1, desc='k max for EXAFS Fourier transform\n(use -1 for "same as EXAFS")'),
-           CVar('ffit_dk',      -1, 'float', min=-1, step=0.1, desc='window parameter for k->R EXAFS Fourier transform\n(use -1 for "same as EXAFS")'),
-           CVar('ffit_kwindow', 'Kaiser-Bessel', 'choice', choices=FT_WINDOWS_AUTO, desc='window type for k->R EXAFS Fourier transform\n(use "Auto" for "same as EXAFS")'),
-           CVar('ffit_rmin',    -1, 'float', min=-1, step=0.1, max=20, desc='R min for EXAFS Back Fourier transform\n(use -1 for "use Rbkg")'),
-           CVar('ffit_rmax',    -1, 'float', min=-1, step=0.1, desc='k max for EXAFS Back Fourier transform\n(use -1 for "same as EXAFS")'),
-           CVar('ffit_dr',      -1, 'float', min=-1, step=0.05, desc='window parameter for EXAFS Back Fourier transform\n(use -1 for "same as EXAFS")'),
-           CVar('ffit_rwindow', 'Hanning', 'choice', choices=FT_WINDOWS_AUTO, desc='window type for EXAFS Back Fourier transform\n(use "Auto" for "same as EXAFS")'),
+           CVar('fit_kmin',    -1, 'float', min=-1, step=0.1, max=20, desc='k min for EXAFS Fourier transform\n(use -1 for "same as EXAFS")'),
+           CVar('fit_kmax',    -1, 'float', min=-1, step=0.1, desc='k max for EXAFS Fourier transform\n(use -1 for "same as EXAFS")'),
+           CVar('fit_dk',      -1, 'float', min=-1, step=0.1, desc='window parameter for k->R EXAFS Fourier transform\n(use -1 for "same as EXAFS")'),
+           CVar('fit_kwindow', 'Kaiser-Bessel', 'choice', choices=FT_WINDOWS_AUTO, desc='window type for k->R EXAFS Fourier transform\n(use "Auto" for "same as EXAFS")'),
+           CVar('fit_rmin',    -1, 'float', min=-1, step=0.1, max=20, desc='R min for EXAFS Back Fourier transform\n(use -1 for "use Rbkg")'),
+           CVar('fit_rmax',    -1, 'float', min=-1, step=0.1, desc='k max for EXAFS Back Fourier transform\n(use -1 for "same as EXAFS")'),
+           CVar('fit_dr',      -1, 'float', min=-1, step=0.05, desc='window parameter for EXAFS Back Fourier transform\n(use -1 for "same as EXAFS")'),
+           CVar('fit_rwindow', 'Hanning', 'choice', choices=FT_WINDOWS_AUTO, desc='window type for EXAFS Back Fourier transform\n(use "Auto" for "same as EXAFS")'),
            ]
 
 
