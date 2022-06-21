@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>1. Downloading and Installation &#8212; xraylarch 0.9.61 documentation</title>
+    <title>1. Downloading and Installation &#8212; xraylarch 0.9.63 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
@@ -82,7 +82,7 @@
 </li>
 <li><a class="reference internal" href="#installing-with-the-getlarch-sh-and-getlarch-bat-scripts">1.2. Installing with the <cite>GetLarch.sh</cite> and <cite>GetLarch.bat</cite> scripts</a></li>
 <li><a class="reference internal" href="#installing-into-an-existing-anaconda-python-environment">1.3. Installing into an existing Anaconda Python environment</a><ul>
-<li><a class="reference internal" href="#notes-on-anaconda">1.3.1. Notes on Anaconda</a></li>
+<li><a class="reference internal" href="#notes-on-anaconda-and-on-python-versions">1.3.1. Notes on Anaconda and on Python Versions</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#updating-a-previous-installation">1.4. Updating a previous installation</a></li>
@@ -140,7 +140,7 @@
             
   <section id="downloading-and-installation">
 <span id="install-chapter"></span><h1><span class="section-number">1. </span>Downloading and Installation<a class="headerlink" href="#downloading-and-installation" title="Permalink to this headline">¶</a></h1>
-<p>The latest release version of Larch is 0.9.61.</p>
+<p>The latest release version of Larch is 0.9.63.</p>
 <p>Larch is in active and continuing development.  The goal is to release
 versions every six months, but we don’t use a strict schedule, and
 typically release more often than that.</p>
@@ -202,7 +202,10 @@ installation will create a folder called <cite>xraylarch</cite> in your home fol
 see platform-specific notes below.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>There can be no spaces in your username or the path in which Larch is installed.</p>
+<p>There can be no spaces in your username or the path in which Larch is
+installed.</p>
+<p>If you have a space in your Windows username, you can probably install
+to <cite>C:UsersPublic</cite> - that has worked for some people!</p>
 </div>
 <p>Installing with these installers should write to files only to folders
 owned by the user account. It should not require administrative privilege and
@@ -345,7 +348,7 @@ conda update -y conda python pip
 <ol class="arabic simple" start="2">
 <li><p><strong>(optional/expert)</strong> create a dedicated environment for Larch and activate it:</p></li>
 </ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create -y --name xraylarch <span class="nv">python</span><span class="o">==</span><span class="m">3</span>.9.12
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create -y --name xraylarch <span class="nv">python</span><span class="o">=</span>&gt;3.9.10
 conda activate xraylarch
 </pre></div>
 </div>
@@ -366,7 +369,7 @@ conda install -y -c conda-forge wxpython pymatgen tomopy pycifrw
 <li><p>if anything of the above fails, report it to the <a class="reference external" href="https://github.com/xraypy/xraylarch/issues">Larch Github Issues</a></p></li>
 </ol>
 <p>Putting that all together:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create -y --name xraylarch <span class="nv">python</span><span class="o">==</span><span class="m">3</span>.9.12
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create -y --name xraylarch <span class="nv">python</span><span class="o">=</span>&gt;3.9.10
 conda activate xraylarch
 conda install -y <span class="s2">&quot;numpy=&gt;1.20&quot;</span> <span class="s2">&quot;scipy=&gt;1.6&quot;</span> <span class="s2">&quot;matplotlib=&gt;3.0&quot;</span> scikit-learn pandas
 conda install -y -c conda-forge wxpython pymatgen tomopy pycifrw
@@ -374,29 +377,32 @@ pip install xraylarch
 larch -m
 </pre></div>
 </div>
-<section id="notes-on-anaconda">
-<h3><span class="section-number">1.3.1. </span>Notes on Anaconda<a class="headerlink" href="#notes-on-anaconda" title="Permalink to this headline">¶</a></h3>
-<p>By default, Anaconda Python installs into your own home folder (on Windows, this
-will be the <cite>APPDATA</cite> location, which is typically something like
+<section id="notes-on-anaconda-and-on-python-versions">
+<h3><span class="section-number">1.3.1. </span>Notes on Anaconda and on Python Versions<a class="headerlink" href="#notes-on-anaconda-and-on-python-versions" title="Permalink to this headline">¶</a></h3>
+<p>By default, Anaconda Python installs into your own home folder (on Windows,
+this will be the <cite>APPDATA</cite> location, which is typically something like
 <code class="docutils literal notranslate"><span class="pre">C:\\Users\&lt;YourName&gt;\Anaconda3</span></code> or
 <code class="docutils literal notranslate"><span class="pre">C:\\Users\&lt;YourName&gt;\AppData\Local\Anaconda3</span></code>).  As with the single-file
-installers below, installing Anaconda Python does not require extra permissions
-to install, upgrade, or remove components.  Anaconda includes a robust package
-manager called <em>conda</em> that makes it easy to update the packages it manages,
-including Larch.</p>
-<p>Start by installing the latest version of Anaconda Python from the
-<a class="reference external" href="https://www.continuum.io/downloads">Anaconda Downloads</a> site.  Python 3.8 or Python 3.9 is recommended.  As
-of this writing, some testing has been done with Python 3.10: this requires
-a “bleeding edge” versions of wxPython, which we hope is resolved soon.  We
-no longer test with Python 3.7 or earlier: Python 3.7 might work, Python
-3.6 and earlier will not.  You can also download and install Miniconda from
-<cite>Miniconda Downloads</cite> as a starting distribution.</p>
+installers below, installing Anaconda Python does not require extra
+permissions to install, upgrade, or remove components.  Anaconda includes a
+robust package manager called <em>conda</em> that makes it easy to update the
+packages it manages, including Larch. You can start by installing the
+latest version of Anaconda Python from the <a class="reference external" href="https://www.continuum.io/downloads">Anaconda Downloads</a> site, or
+by downloading and installing Miniconda from <cite>Miniconda Downloads</cite> as a
+starting distribution.</p>
+<p>Python 3.9 is recommended, and using Python 3.8 is also supported.  Testing
+of basic functionality with Python 3.10 does work, but at this writing
+(June, 2022) only “bleeding edge” versions of wxPython support Python 3.10
+and we cannot recommend using Python 3.10 for most users (such as those who
+would expect GUIs to work).  We no longer test with Python 3.7 or earlier:
+Python 3.7 should still work, Python 3.6 and earlier will probably not
+work.</p>
 </section>
 </section>
 <section id="updating-a-previous-installation">
 <h2><span class="section-number">1.4. </span>Updating a previous installation<a class="headerlink" href="#updating-a-previous-installation" title="Permalink to this headline">¶</a></h2>
-<p>Updating  with <cite>conda</cite> is no longer supported. The best i to use <cite>pip</cite> to
-update, even when using Anaconda Python:</p>
+<p>Updating xraylarch with <cite>conda</cite> is no longer supported.  to update
+xraylarch, use <cite>pip</cite>, even when using Anaconda Python:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">xraylarch</span>
 </pre></div>
 </div>
@@ -407,6 +413,9 @@ update, even when using Anaconda Python:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python -m pip install https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-latest-py3-none-any.whl
 </pre></div>
 </div>
+<p>We try hard to keep this “working”, but as this is an automated snapshot it
+might catch the development in the middle of trying to fix something
+tricky.</p>
 </section>
 <section id="making-desktop-shortcuts-to-link-to-the-applications">
 <h2><span class="section-number">1.6. </span>Making Desktop shortcuts to Link to the Applications<a class="headerlink" href="#making-desktop-shortcuts-to-link-to-the-applications" title="Permalink to this headline">¶</a></h2>
@@ -432,8 +441,9 @@ give the path to Python and/or Larch:</p>
 happening at the <a class="reference external" href="https://github.com/xraypy/xraylarch">Larch Repository (github.com)</a>.  There, you will find
 the latest source code and pages for submit bug reports.</p>
 <p>To get started, we recommend following the installation instructions for or
-ref:<cite>install-binary</cite>, ref:<cite>install-script</cite>, or ref:<cite>install-conda</cite>.  Then
-to install <cite>Larch</cite> from source, you can clone the source repository with:</p>
+ref:<cite>install-binary</cite>, ref:<cite>install-script</cite>, or ref:<cite>install-conda</cite>.  That
+gives you a base starting Python environment that we can all be pretty sure
+is working.  With that in place, to install <cite>Larch</cite> from source, you can clone the source repository with:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">xraypy</span><span class="o">/</span><span class="n">xraylarch</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>

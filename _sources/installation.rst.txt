@@ -81,7 +81,12 @@ see platform-specific notes below.
 
 .. note::
 
-   There can be no spaces in your username or the path in which Larch is installed.
+   There can be no spaces in your username or the path in which Larch is
+   installed.
+
+   If you have a space in your Windows username, you can probably install
+   to `C:\Users\Public` - that has worked for some people!
+
 
 Installing with these installers should write to files only to folders
 owned by the user account. It should not require administrative privilege and
@@ -266,7 +271,7 @@ Within a shell:
 
 .. code:: bash
 
-   conda create -y --name xraylarch python==3.9.12
+   conda create -y --name xraylarch python=>3.9.10
    conda activate xraylarch
 
 3. install main dependencies:
@@ -288,7 +293,7 @@ Putting that all together:
 
 .. code:: bash
 
-   conda create -y --name xraylarch python==3.9.12
+   conda create -y --name xraylarch python=>3.9.10
    conda activate xraylarch
    conda install -y "numpy=>1.20" "scipy=>1.6" "matplotlib=>3.0" scikit-learn pandas
    conda install -y -c conda-forge wxpython pymatgen tomopy pycifrw
@@ -296,32 +301,35 @@ Putting that all together:
    larch -m
 
 
-Notes on Anaconda
-~~~~~~~~~~~~~~~~~~
+Notes on Anaconda and on Python Versions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-By default, Anaconda Python installs into your own home folder (on Windows, this
-will be the `APPDATA` location, which is typically something like
+By default, Anaconda Python installs into your own home folder (on Windows,
+this will be the `APPDATA` location, which is typically something like
 ``C:\\Users\<YourName>\Anaconda3`` or
 ``C:\\Users\<YourName>\AppData\Local\Anaconda3``).  As with the single-file
-installers below, installing Anaconda Python does not require extra permissions
-to install, upgrade, or remove components.  Anaconda includes a robust package
-manager called *conda* that makes it easy to update the packages it manages,
-including Larch.
+installers below, installing Anaconda Python does not require extra
+permissions to install, upgrade, or remove components.  Anaconda includes a
+robust package manager called *conda* that makes it easy to update the
+packages it manages, including Larch. You can start by installing the
+latest version of Anaconda Python from the `Anaconda Downloads`_ site, or
+by downloading and installing Miniconda from `Miniconda Downloads` as a
+starting distribution.
 
-Start by installing the latest version of Anaconda Python from the
-`Anaconda Downloads`_ site.  Python 3.8 or Python 3.9 is recommended.  As
-of this writing, some testing has been done with Python 3.10: this requires
-a "bleeding edge" versions of wxPython, which we hope is resolved soon.  We
-no longer test with Python 3.7 or earlier: Python 3.7 might work, Python
-3.6 and earlier will not.  You can also download and install Miniconda from
-`Miniconda Downloads` as a starting distribution.
+Python 3.9 is recommended, and using Python 3.8 is also supported.  Testing
+of basic functionality with Python 3.10 does work, but at this writing
+(June, 2022) only "bleeding edge" versions of wxPython support Python 3.10
+and we cannot recommend using Python 3.10 for most users (such as those who
+would expect GUIs to work).  We no longer test with Python 3.7 or earlier:
+Python 3.7 should still work, Python 3.6 and earlier will probably not
+work.
 
 
 Updating a previous installation
 ==================================
 
-Updating  with `conda` is no longer supported. The best i to use `pip` to
-update, even when using Anaconda Python::
+Updating xraylarch with `conda` is no longer supported.  to update
+xraylarch, use `pip`, even when using Anaconda Python::
 
     pip install --upgrade xraylarch
 
@@ -335,6 +343,10 @@ For the brave, a nightly build of the latest development version can be download
 
    python -m pip install https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-latest-py3-none-any.whl
 
+
+We try hard to keep this "working", but as this is an automated snapshot it
+might catch the development in the middle of trying to fix something
+tricky.
 
 Making Desktop shortcuts to Link to the Applications
 =======================================================
@@ -366,8 +378,9 @@ happening at the `Larch Repository (github.com)`_.  There, you will find
 the latest source code and pages for submit bug reports.
 
 To get started, we recommend following the installation instructions for or
-ref:`install-binary`, ref:`install-script`, or ref:`install-conda`.  Then
-to install `Larch` from source, you can clone the source repository with::
+ref:`install-binary`, ref:`install-script`, or ref:`install-conda`.  That
+gives you a base starting Python environment that we can all be pretty sure
+is working.  With that in place, to install `Larch` from source, you can clone the source repository with::
 
    git clone https://github.com/xraypy/xraylarch.git
 
