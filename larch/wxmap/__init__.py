@@ -1,5 +1,7 @@
 from ..wxlib import (gui_utils, ParameterPanel, PeriodicTablePanel,
-                     _newplot, _plot, XRFDisplayFrame)
+                     _newplot, _plot)
+
+from ..wxlib.xrfdisplay import XRFDisplayFrame
 
 from .gse_dtcorrect import DTViewer, dtcorrect
 from .mapviewer import MapViewer, mapviewer
