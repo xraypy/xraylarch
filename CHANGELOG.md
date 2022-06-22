@@ -4,6 +4,96 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.9.64 - 2022-06-22]
+
+### Fixed
+
+- Fix launching of gse_mapviewer (#386)
+
+## [0.9.63 - 2022-06-21]
+
+### Fixed
+
+- Many bug fixes and improvements (#383, #382, #381, #379, #357, plus others)
+
+## [0.9.62 - 2022-06-08]
+
+### Fixed
+
+  - XAS_Viewer: Feff-fitting paths (and so also parameters) are refreshed for
+    each fit (#377, #374)
+  - XAS_Viewer: most main windows are now resizable (#372)
+  - Better checking and auto-pip-installing of wxutls and wxmplot (#376)
+
+## [0.9.61 - 2022-05-26]
+
+### Added
+
+  - XAS Viewer: Entries for the fit histories of pre-edge peak fitting and Feff
+    fitting can now be erased.
+
+### Fixed
+
+  - XAS Viewer: the merging of groups now works ;). 
+  - XAS Viewer: setting and energy shift for a group will copy that shift to
+    other groups with the same energy reference. There is a preference setting
+    to turn off this automated copying of energy shifts.
+  - XAS Viewer: fixed very slow plotting -- now just back to normal "not fast".
+  - XAS Viewer: dialogs have generally better sizes.
+  - XAS Viewer: fixes for plotting of Pre-edge peak fits.
+  - XAS Viewer: improvements in Journal entries for some processed groups.
+  - XAS Viewer: fixes for combining default and per-group configuration.
+
+## [0.9.60 - 2022-05-23]
+
+### Added
+
+  - each Group of XAFS data will have a Journal - a list of entries with (label,
+    value, timestamp) that will be used to record processing steps. The XAFS
+    processing functions will write the parameters they were called with to this
+    Journal. Users can add notes as Journal entries too.
+
+  - XAS Viewer allows editing of program-wide Preferences, that set the default
+    values and settings for the various analysis steps and program behavior.
+
+  - In many windows showing analysis results, XAS Viewer supports setting the
+    plot window number (1 through 9) so that more than one or two plot windows
+    can be shown at a time.
+
+  - Session-wide Project files (.larix extension) can now be saved and reloaded.
+    These files contain essentially all the arrays for each Group of data,
+    including Journals, processing results, and fit histories. The "processing
+    workspaces" for pre-edge peak fitting, PCA, Linear Combinations,
+    Regressions, and Feff fitting. These Session files can be saved/loaded by
+    plain Python commands. When loading these into XAS Viewer, the fit histories
+    and workspaces will be available. To allow better debugging and tracking of
+    provenance, these Session Files include "configuration" data about the
+    Session (python, larch version, etc) and a complete set of Larch commands
+    for the session, though session commands are not "restored". The files are
+    compressed and use a customized JSON encoding.
+
+  - These Session files are now auto-saved by XAS Viewer periodically (every 15
+    minutes of activity, by default, and rotated so that a small number (3, by
+    default) of the most recent auto-saved files are kept. On startup, "restore
+    the last session" is available (Ctrl-I).
+
+### Fixed
+
+  - XAS Viewer PCA fixed.
+  - XAS Viewer now displays how each Group was created, for example
+    "-log(i1/i0)".
+  - XAS Viewer panels have more uniform energy range settings, relative to E0,
+    per group.
+  - XAS Viewer has more consistent coloring and font sizes.
+  - XAS Viewer Quit dialog now lists the last saved Session file.
+  - XAS Viewer now works even harder to keep _xasgroups correct.
+  - pycifrw added as a dependency from conda-forge
+  - copying parameters from one group to another is much improved.
+  - rebinning of EXAFS data better avoids duplicate energies.
+  - a few bugs with the handling of some CIFs were improved
+  - Feff calculations now default to L3 edge for Z>= 60.
+  - Python 3.10 is better supported, Python 3.7 seems to still work.
+
 ## [0.9.59 - 2022-04-01]
 
 [Release announcement]()
