@@ -37,7 +37,7 @@ Plot_Choices = ['Data + Sum', 'Data + Sum + Components']
 
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
-MAX_COMPONENTS = 20
+MAX_COMPONENTS = 12
 
 def make_lcfplot(dgroup, form, with_fit=True, nfit=0):
     """make larch plot commands to plot LCF fit from form"""
@@ -688,7 +688,7 @@ class LinearComboPanel(TaskPanel):
         wids['sum_to_one'] = Check(panel, label='Weights Must Sum to 1?', default=False)
         wids['all_combos'] = Check(panel, label='Fit All Combinations?', default=True)
         max_ncomps = self.add_floatspin('max_ncomps', value=5, digits=0, increment=1,
-                                        min_val=0, max_val=20, size=(60, -1),
+                                        min_val=0, max_val=MAX_COMPONENTS, size=(60, -1),
                                         with_pin=False)
 
         panel.Add(SimpleText(panel, 'Linear Combination Analysis',
@@ -710,7 +710,7 @@ class LinearComboPanel(TaskPanel):
         panel.Add(wids['add_selected'], dcol=4)
 
         collabels = [' File /Group Name   ', 'weight', 'min', 'max']
-        colsizes = [300, 80, 80, 80]
+        colsizes = [325, 100, 100, 100]
         coltypes = ['str', 'float:12,4', 'float:12,4', 'float:12,4']
         coldefs  = ['', 1.0/MAX_COMPONENTS, 0.0, 1.0]
 

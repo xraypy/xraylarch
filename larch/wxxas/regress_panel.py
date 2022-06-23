@@ -120,9 +120,9 @@ class RegressionPanel(TaskPanel):
         wids['stat2'] =  SimpleText(panel, ' - - - ')
 
 
-        collabels = [' File /Group Name ', 'External Value',
+        collabels = [' File Group Name ', 'External Value',
                      'Predicted Value', 'Training?']
-        colsizes = [250, 100, 100, 100]
+        colsizes = [325, 100, 100, 100]
         coltypes = ['str', 'float:12,4', 'float:12,4', 'str']
         coldefs  = ['', 0.0, 0.0, '']
 
