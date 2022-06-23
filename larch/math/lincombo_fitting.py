@@ -107,7 +107,7 @@ def groups2matrix(groups, yname='norm', xname='energy', xmin=-np.inf, xmax=np.in
 
 def lincombo_fit(group, components, weights=None, minvals=None,
                  maxvals=None, arrayname='norm', xmin=-np.inf, xmax=np.inf,
-                 sum_to_one=True, vary_e0=False):
+                 sum_to_one=True, vary_e0=False, max_ncomps=None):
 
     """perform linear combination fitting for a group
 
@@ -215,7 +215,8 @@ def lincombo_fit(group, components, weights=None, minvals=None,
 
 def lincombo_fitall(group, components, weights=None, minvals=None, maxvals=None,
                     arrayname='norm', xmin=-np.inf, xmax=np.inf,
-                    max_ncomps=None, sum_to_one=True, vary_e0=False):
+                    max_ncomps=None, sum_to_one=True, vary_e0=False,
+                    min_weight=0.0005, max_output=16):
     """perform linear combination fittings for a group with all combinations
     of 2 or more of the components given
 
@@ -232,7 +233,8 @@ def lincombo_fitall(group, components, weights=None, minvals=None, maxvals=None,
       sum_to_one  bool, whether to force weights to sum to 1.0 [True]
       max_ncomps  int or None: max number of components to use [None -> all]
       vary_e0     bool, whether to vary e0 for data in fit [False]
-
+      min_weight  float, minimum weight for each component to save result [0.0005]
+      max_output  int, max number of outputs, sorted by reduced chi-square [16]
     Returns
     -------
      list of groups with resulting weights and fit statistics, ordered by
@@ -264,18 +266,33 @@ def lincombo_fitall(group, components, weights=None, minvals=None, maxvals=None,
     if max_ncomps is None:
         max_ncomps = ncomps
     elif max_ncomps > 0:
-        max_ncomps = min(max_ncomps, ncomps)
-    all = []
-    for nx in range(int(max_ncomps), 1, -1):
+        max_ncomps = int(min(max_ncomps, ncomps))
+    out = []
+    nrejected = 0
+    comps_kept = []
+    for nx in range(2, int(max_ncomps)+1):
         for comps in combinations(components, nx):
             labs = [get_label(c) for c in comps]
             _wts = [1.0/nx for lab in labs]
             _min = [_save[lab][1] for lab in labs]
             _max = [_save[lab][2] for lab in labs]
 
-            o = lincombo_fit(group, comps, weights=_wts, arrayname=arrayname,
-                             minvals=_min, maxvals=_max, xmin=xmin, xmax=xmax,
-                             sum_to_one=sum_to_one, vary_e0=vary_e0)
-            all.append(o)
+            ret = lincombo_fit(group, comps, weights=_wts,
+                               arrayname=arrayname, minvals=_min,
+                               maxvals=_max, xmin=xmin, xmax=xmax,
+                               sum_to_one=sum_to_one, vary_e0=vary_e0)
+
+            _sig_comps = []
+            for key, wt in ret.weights.items():
+                if wt > min_weight:
+                    _sig_comps.append(key)
+            _sig_comps.sort()
+            if _sig_comps not in comps_kept:
+                comps_kept.append(_sig_comps)
+                out.append(ret)
+            else:
+                nrejected += 1
+
     # sort outputs by reduced chi-square
-    return sorted(all, key=lambda x: x.redchi)
+    # print("lin combo : ", len(out), nrejected, max_output)
+    return sorted(out, key=lambda x: x.redchi)[:max_output]
