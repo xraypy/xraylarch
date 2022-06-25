@@ -21,17 +21,21 @@ class XASController():
     """
     def __init__(self, wxparent=None, _larch=None):
         self.wxparent = wxparent
-        self.larch = _larch
-        if self.larch is None:
-            self.larch = larch.Interpreter()
-        self.symtable = self.larch.symtable
-        self.file_groups = self.symtable._xasgroups = {}
-
         self.filelist = None
         self.group = None
         self.groupname = None
         self.plot_erange = None
         self.report_frame = None
+
+        self.larch = _larch
+        if _larch is None:
+            self.larch = larch.Interpreter()
+        self.init_larch_session()
+        self.init_workdir()
+
+    def init_larch_session(self):
+        self.symtable = self.larch.symtable
+        self.file_groups = self.symtable._xasgroups = {}
 
         config = {}
         config.update(XASCONF)
@@ -60,8 +64,6 @@ class XASController():
 
         self.config = self.larch.symtable._sys.xasviewer_config = config
         self.larch.symtable._sys.wx.plotopts = config['plot']
-
-        self.init_workdir()
 
     def sync_xasgroups(self):
         "make sure `_xasgroups` is identical to file_groups"
@@ -129,6 +131,10 @@ class XASController():
         except:
             pass
 
+    def clear_session(self):
+        self.larch.eval("clear_session()")
+        self.filelist.Clear()
+        self.init_larch_session()
 
     def write_message(self, msg, panel=0):
         """write a message to the Status Bar"""

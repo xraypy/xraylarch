@@ -40,7 +40,7 @@ from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
                          Choice, Check, MenuItem, HyperText, set_color, COLORS,
                          CEN, LEFT, FRAMESTYLE, Font, FONTSIZE,
                          flatnotebook, LarchUpdaterDialog, GridPanel,
-                         CIFFrame, FeffResultsFrame, LarchWxApp)
+                         CIFFrame, FeffResultsFrame, LarchWxApp, OkCancel)
 
 from larch.wxlib.plotter import _getDisplay
 
@@ -63,7 +63,8 @@ from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
                           DeglitchDialog, ExportCSVDialog, RebinDataDialog,
                           EnergyCalibrateDialog, SmoothDataDialog,
                           OverAbsorptionDialog, DeconvolutionDialog,
-                          SpectraCalcDialog,  QuitDialog, LoadSessionDialog)
+                          SpectraCalcDialog,  QuitDialog, LoadSessionDialog,
+                          fit_dialog_window)
 
 from larch.io import (read_ascii, read_xdi, read_gsexdi, gsescan_group,
                       fix_varname, groups2csv, is_athena_project,
@@ -470,6 +471,9 @@ class XASFrame(wx.Frame):
         MenuItem(self, fmenu, "&Save Larch Session\tCtrl+S",
                  "Save Session to a File",  self.onSaveSession)
 
+        MenuItem(self, fmenu, "Clear Larch Session",
+                 "Clear all data from this Session",  self.onClearSession)
+
         # autosaved session
         conf = self.controller.get_config('autosave',
                                           {'fileroot': 'session_autosave'})
@@ -795,6 +799,39 @@ class XASFrame(wx.Frame):
         stime = time.strftime("%H:%M")
         self.last_save_message = ("Session last saved", f"'{fname}'", f"{stime}")
         self.write_message(f"Saved session to '{fname}' at {stime}")
+
+    def onClearSession(self, evt=None):
+
+
+        conf = self.controller.get_config('autosave',
+                                          {'fileroot': 'session_autosave'})
+        afile = os.path.join(user_larchdir, 'xas_viewer',
+                             conf['fileroot']+'.larix')
+
+        msg = f"""Session will be saved to
+         '{afile:s}'
+before clearing"""
+
+        dlg = wx.Dialog(None, -1, title="Clear all Session data?", size=(550, 300))
+        dlg.SetFont(Font(FONTSIZE))
+        panel = GridPanel(dlg, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
+
+        panel.Add(wx.StaticText(panel, label="Clear all Session Data?"), dcol=2)
+        panel.Add(wx.StaticText(panel, label=msg), dcol=4, newrow=True)
+
+        panel.Add((5, 5) ,  newrow=True)
+        panel.Add((5, 5), newrow=True)
+        panel.Add(OkCancel(panel), dcol=2, newrow=True)
+        panel.pack()
+
+        fit_dialog_window(dlg, panel)
+
+
+        if wx.ID_OK == dlg.ShowModal():
+            self.autosave_session()
+            self.controller.clear_session()
+        dlg.Destroy()
+
 
     def onConfigDataProcessing(self, event=None):
         pass
