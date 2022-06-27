@@ -486,7 +486,6 @@ class XASNormPanel(TaskPanel):
                 yarray_name = 'norm_area'
                 ylabel = "%s (Area)" % ylabel
         voff = self.wids['plot_voff'].GetValue()
-
         plot_traces = []
         newplot = True
         plotopts = self.controller.get_plot_conf()
@@ -497,7 +496,6 @@ class XASNormPanel(TaskPanel):
         popts['fullbox'] = plotopts.pop('show_fullbox')
 
         for ix, checked in enumerate(group_ids):
-            yoff = ix * voff
             groupname = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(groupname)
             if dgroup is None:
@@ -506,7 +504,8 @@ class XASNormPanel(TaskPanel):
                 popts['xmin'] = dgroup.e0 + erange[0]
                 popts['xmax'] = dgroup.e0 + erange[1]
 
-            trace = {'xdata': dgroup.xdat, 'ydata': getattr(dgroup, yarray_name),
+            trace = {'xdata': dgroup.xdat,
+                     'ydata': getattr(dgroup, yarray_name) + ix*voff,
                      'label': dgroup.filename, 'new': newplot}
             trace.update(popts)
             plot_traces.append(trace)
