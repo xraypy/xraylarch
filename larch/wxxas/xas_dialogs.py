@@ -2021,24 +2021,25 @@ class LoadSessionDialog(wx.Frame):
 
         last_fname = None
         for sym in selected:
+            install_sym = sym
             install = True
             if sym in _xasgroups.values():
                 install = sym in selected
                 if install and sym in conflicts and policy.startswith('import'):
                     newsym = unique_name(sym, fgroups.values(), max=1000)
-                    _xasgroups[newsym] = _xasgroups.pop(sym)
-                    sym = newsym
+                    _xasfiles[newsym] = _xasfiles.pop(sym)
+                    install_sym = newsym
             if install:
                 dat = self.session.symbols[sym]
-                setattr(symtab, sym, dat)
+                setattr(symtab, install_sym, dat)
                 if sym in _xasgroups.values():
-                    fname = _xasfiles[sym]
+                    fname = _xasfiles[install_sym]
                     if fname in fgroups:
                         newfname = unique_name(fname, fgroups.keys(), max=1000)
                         fname = newfname
-                    fgroups[fname] = sym
+                    fgroups[fname] = install_sym
                     dat.filename = fname
-                    dat.groupname = sym
+                    dat.groupname = install_sym
                     last_fname = fname
                     self.controller.filelist.Append(fname)
         cmds = ["##########", "# Loaded Larch Session with",
