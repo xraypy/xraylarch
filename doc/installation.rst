@@ -85,13 +85,13 @@ see platform-specific notes below.
    installed.
 
    If you have a space in your Windows username, you can probably install
-   to `C:\Users\Public` - that has worked for some people!
+   to ``C:\Users\Public`` - that has worked for some people!
 
 
-Installing with these installers should write to files only to folders
-owned by the user account. It should not require administrative privilege and
-should not interfere with any thing else on your system (such as system
-Python).
+Installing with these installer programs should write to files only to
+folders owned by the user account. It should not require administrative
+privilege and should not interfere with any thing else on your system (such
+as system Python).
 
 These installers will also create a folder called `Larch` on your desktop
 that contains links (or shortcuts or Apps) to many of the Larch GUI
@@ -104,14 +104,18 @@ X-ray fluorescence spectroscopy, and working with X-ray diffraction images.
 Windows Notes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For Windows, download the `Larch for Windows`_ binary installer above and run it to
-install Larch.  This will be installed to ``C:\Users\<YourName>\xraylarch`` for most
-individual Windows installations or to
-``C:\Users\<YourName>\AppData\Local\xraylarch`` if your machine is part of a
-Windows Workgroup or Domain.
+For Windows, download the `Larch for Windows`_ binary installer above and
+run it to install Larch.  This will be installed to
+``C:\Users\<YourName>\xraylarch`` for most individual Windows installations
+or to ``C:\Users\<YourName>\AppData\Local\xraylarch`` if your machine is
+part of a Windows Workgroup or Domain. As mentioned above, if your user
+name has a space in it, you will probably need to install to
+``C:\Users\Public``.
 
-.. note:   If you get prompted for an administrative password during the installation process, you
-   should make sure you are installing to a folder that is writable by the user.
+
+.. note: If you get prompted for an administrative password during the
+   installation process, you should make sure you are installing to a
+   folder that is writable by the user.
 
 
 Alternatively you can download the `GetLarch.bat`_ script, and run that by double-clicking
