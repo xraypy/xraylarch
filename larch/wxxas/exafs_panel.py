@@ -412,6 +412,7 @@ class EXAFSPanel(TaskPanel):
             conf = copy.deepcopy(conf)
         if dgroup is not None:
             setattr(dgroup.config, self.configname, conf)
+        print("EXAFS READ Form ", conf['e0'], conf['rbkg'])
         return conf
 
     def onSaveConfigBtn(self, evt=None):
@@ -423,8 +424,13 @@ class EXAFSPanel(TaskPanel):
         def copy_attrs(*args):
             return {a: conf[a] for a in args}
         name = str(name)
+        set_e0 = set_rbkg = False
         if name in ('e0', 'rbkg', 'bkg_kweight', 'fft_kweight'):
             opts = copy_attrs(name)
+            if name == 'e0':
+                set_e0 = True
+            elif name == 'rbkg':
+                set_rbkg = True
         elif name == 'bkg_krange':
             opts = copy_attrs('bkg_kmin', 'bkg_kmax')
         elif name == 'bkg_clamp':
@@ -445,7 +451,10 @@ class EXAFSPanel(TaskPanel):
             grp = self.controller.get_group(groupname)
             if grp != self.controller.group and not grp.is_frozen:
                 self.update_config(opts, dgroup=grp)
-
+                if set_e0:
+                    grp.e0 = opts['e0']
+                if set_rbkg:
+                    grp.rbkg = opts['rbkg']
 
     def _set_frozen(self, frozen):
         try:
