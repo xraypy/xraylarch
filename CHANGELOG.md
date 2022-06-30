@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.9.65 - 2022-MM-DD]
+
+### Changed
+
+- LCF: eliminate combinations with very low weight (#387)
+
+### Fixed
+
+- XAS_Viewer/normalization: fix Y offset (#389)
+
 ## [0.9.64 - 2022-06-22]
 
 ### Fixed
