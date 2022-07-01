@@ -9,28 +9,11 @@ CURDIR = os.path.abspath(os.path.dirname(__file__))
 
 sys.path.insert(0, os.path.abspath(os.path.join('sphinx', 'ext')))
 sys.path.insert(0, CURDIR)
+sys.path.append(os.path.abspath(os.path.join('.')))
+
+from extensions import extensions
 
 import authorlist_format
-
-# from sphinxtr
-# import html_mods
-# import latex_mods
-
-# -- General configuration -----------------------------------------------------
-
-# Add any Sphinx extension module names here, as strings. They can be extensions
-# coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc',
-              'sphinx.ext.extlinks',
-              'sphinx.ext.mathjax',
-              'sphinx.ext.ifconfig',
-              'sphinx.ext.intersphinx',
-              'sphinx.ext.napoleon',
-              'sphinxcontrib.bibtex',
-              'sphinxcontrib.argdoc', 'subfig']
-
-# extensions.extend(['fix_equation_ref', 'subfig', 'figtable', 'numsec',
-#                    'singlehtml_toc', 'singletext'])
 
 intersphinx_mapping = {'py':    ('https://docs.python.org/3', None),
                        'numpy': ('https://numpy.org/doc/stable/', None),
@@ -43,8 +26,6 @@ extlinks = {
     'lmfitdoc' : ('https://lmfit.github.io/lmfit-py/%s.html', 'lmfit.'),
     'lmfitx' : ('https://lmfit.github.io/lmfit-py/%s', ' '),
     }
-
-
 
 # List of patterns, relative to source directory, that match files and
 # Add any paths that contain templates here, relative to this directory.
@@ -61,8 +42,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'xraylarch'
-author = 'Matthew Newville'
-copyright = 'Matthew Newville, The University of Chicago, 2020'
+author = 'Matthewsdoc Newville'
+copyright = 'Matthew Newville, The University of Chicago, 2022'
 
 numfig = True
 numfig_secnum_depth = 3
