@@ -249,8 +249,42 @@ class XDIFile(object):
                 self.irefer = self.itrans * exp(-self.murefer)
 
 
-def read_xdi(filename, labels=None, _larch=None):
-    """simple mapping of XDI file to larch groups"""
+def read_xdi(filename, labels=None):
+    """read an XDI File into a Group
+
+    Arguments:
+       filename (str): name of file to read
+       labels (str or None):  string to use for setting array names [None]
+
+    Returns:
+      Group
+
+      A data group containing data read from file, with XDI attributes and
+      conventions.
+
+    Notes:
+       1. See https://github.com/XraySpectrscopy/XAS-Data-Interchange
+
+       2. if `labels` is `None` (default), the names of the output arrays
+          will be determined from the XDI column label in the XDI header.
+          To override these array names, use a string with space or comma
+          separating names for the arrays.
+
+
+    Example:
+       >>> from larch.io import xdi
+       >>> fe3_data = read_xdi('FeXAFS_Fe2O3.001')
+       >>> print(fe3_data.array_labels)
+       ['energy', 'mutrans', 'i0']
+
+       >>> fec3 = read_xdi('fe3c_rt.xdi', labels='e, x, y')
+       >>> print(fec3.array_labels)
+       ['e', 'x', 'y']
+
+    See Also:
+        read_ascii
+
+    """
     xdif = XDIFile(filename, labels=labels)
     group = Group()
     for key, val in xdif.__dict__.items():
