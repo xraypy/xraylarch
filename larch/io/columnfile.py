@@ -27,18 +27,21 @@ COMMENTCHARS = '#;%*!$'
 
 def look_for_nans(path):
     """
-    look for Nans and Infs in an ascii data file
+    look for Nans and Infs in an ASCII data file
 
-    Returns
-    -------
-    NanResult with 'file_ok', 'message', 'nan_rows', 'nan_cols',
-    'inf_rows', and 'inf_cols':
+    Arguments:
+         path (string):  full path to ASCII column file
 
-    'file_ok' : True if data is read and contains no Nans or Infs
-    'file_ok' : False if path cannot be read or data contaings Nans / Infs
-    'message' : exception message if file cannot be read at all or
-                'has nans', 'has infs' or 'has nans and infs'
-    nan_rows, etc:  list of rows, columns containing Nans or Infs
+    Returns:
+       NanResult, named tuple with elements
+
+        'file_ok' : bool, whether data is read and contains no Nans or Infs
+        'message' : exception message if file cannot be read at all or
+                   'has nans', 'has infs' or 'has nans and infs'
+        `nan_rows`: list of rows containing Nans
+        `nan_cols`: list of columns containing Nans
+        `inf_rows`: list of rows containing Infs
+        `inf_cols`: list of columns containing Infs
     """
 
     nan_rows, nan_cols, inf_rows, inf_cols = [], [], [], []
@@ -85,12 +88,12 @@ def getfloats(txt, allow_times=True):
 
     Arguments
     ---------
-      txt           str, line of text to parse
-      allow_times   bool, whether to support time stamps [True]
+      txt   (str) : line of text to parse
+      allow_times  (bool): whether to support time stamps [True]
 
     Returns
     -------
-      list, each entry either a float or None
+      list with each entry either a float or None
 
     Notes
     -----
@@ -128,8 +131,7 @@ def lformat(val, length=12):
     The precision will typically be length-7, but may be better than
     that for values with absolute value between 1.e-5 and 1.e8.
 
-    Arguments
-    ---------
+    Arguments:
     val       value to be formatted
     length    length of output string
 
@@ -172,33 +174,35 @@ def parse_labelline(labelline, header):
 
 
 def read_ascii(filename, labels=None, simple_labels=False,
-               sort=False, sort_column=0, delimeter=None):
-    """read a column ascii column file, returning a group containing the data
-    extracted from the file.
+               sort=False, sort_column=0):
+    """read a column ascii column file, returning a group
+    containing the data extracted from the file.
 
-    read_ascii(filename, labels=None, simple_labels=False, sort=False, sort_column=0)
+    Arguments:
+      filename (str):        name of file to read
+      labels (ist or None) : list of labels to use for array labels [None]
+      simple_labels (bool) : whether to force simple column labels (note 1) [False]
+      sort (bool) :          whether to sort row data (note 2) [False]
+      sort_column (int) :    column to use for sorting (note 2) [0]
 
-    Arguments
-    ---------
-     filename (str)        name of file to read
-     labels (list or None) list of labels to use for array labels [None]
-     simple_labels (bool)  whether to force simple column labels (note 1) [False]
-     delimeter (str)       string to use to split label line
-     sort (bool)           whether to sort row data (note 2) [False]
-     sort_column (int)     column to use for sorting (note 2) [0]
+    Returns:
+      Group
 
-    Returns
-    --------
-      group containing data read from file
+      A data group containing data read from file, with several attributes:
 
-    Notes
-    -----
-      1. array labels.  If `labels` is `None` (he default value), column labels
-         (and so, names of 1d arrays) will be tried to be determined from the
-         file header.  This often means parsing the final header line, but
-         tagged column files from several XAFS beamlines will be tried and used
-         if matching.  Column labels may be like 'col1', 'col2', etc if suitable
-         column labels cannot be guessed.
+         | filename     : text name of the file.
+         | array_labels : array labels, names of 1-D arrays.
+         | data         : 2-dimensional data (ncolumns, nrows) with all data.
+         | header       : array of text lines of the header.
+         | footer       : array of text lines of the footer (text after the numerical data)
+         | attrs        : group of attributes parsed from header lines.
+
+    Notes:
+      1. array labels.  If `labels` is `None` (the default), column labels
+         and names of 1d arrays will be guessed from the file header.  This often
+         means parsing the final header line, but tagged column files from several XAFS
+         beamlines will be tried and used if matching.  Column labels may be like 'col1',
+         'col2', etc if suitable column labels cannot be guessed.
          These labels will be used as names for the 1-d arrays from each column.
          If `simple_labels` is  `True`, the names 'col1', 'col2' etc will be used
          regardless of the column labels found in the file.
@@ -207,19 +211,29 @@ def read_ascii(filename, labels=None, simple_labels=False,
          by giving the column index (starting from 0).
 
       3. header parsing. If header lines are of the forms of
-            KEY : VAL
-            KEY = VAL
+
+           | KEY : VAL
+           | KEY = VAL
+
          these will be parsed into a 'attrs' dictionary in the returned group.
 
+    Examples:
 
-    The returned group will have a number of members:
+        >>> feo_data = read_ascii('feo_rt1.dat')
+        >>> show(g)a
+        == Group ascii_file feo_rt1.dat: 0 methods, 8 attributes ==
+        array_labels: ['energy', 'xmu', 'i0']
+        attrs: <Group header attributes from feo_rt1.dat>
+        data: array<shape=(3, 412), type=dtype('float64')>
+        energy: array<shape=(412,), type=dtype('float64')>
+        filename: 'feo_rt1.dat'
+        header: ['# room temperature FeO', '# data from 20-BM, 2001, as part of NXS school', ... ]
+        i0: array<shape=(412,), type=dtype('float64')>
+        xmu: array<shape=(412,), type=dtype('float64')>
 
-       GROUP.filename: text name of the file
-       GROUP.array_labels: array labels, names of 1-D arrays
-       GROUP.data:     2-dimensional data (ncolumns, nrows)
-       GROUP.header:   array of text lines of the header.
-       GROUP.footer:   array of text lines of the footer (text after the block of numerical data)
-       GROUP.attrs :   group of attributes parsed from header lines
+    See Also:
+        read_xdi, write_ascii
+
     """
     if not os.path.isfile(filename):
         raise OSError("File not found: '%s'" % filename)
@@ -431,17 +445,21 @@ def set_array_labels(group, labels=None, simple_labels=False,
     return group
 
 
-def write_ascii(filename, *args, commentchar='#', label=None, header=None,
-                _larch=None, **kws):
-    """write a list of items to an ASCII column file
+def write_ascii(filename, *args, commentchar='#', label=None, header=None,  _larch=None):
+    """
+    write a list of items to an ASCII column file
 
-    write_ascii(filename, arg1, arg2, arg3, ... **args)
+    Arguments:
+      args (list of groups):     list of groups to write.
+      commentchar (str) :        character for comment ('#')
+      label (str on None):       array label line (autogenerated)
+      header (list of strings):  array of strings for header
 
-    arguments
-    ---------
-    commentchar: character for comment ('#')
-    label:       array label line (autogenerated)
-    header:      array of strings for header
+    Returns:
+      None
+
+    Examples:
+       >>> write_ascii('myfile',  group.energy, group.norm, header=['comment1', 'comment2']
 
     """
     ARRAY_MINLEN = 2
@@ -506,12 +524,13 @@ def write_ascii(filename, *args, commentchar='#', label=None, header=None,
 
 def write_group(filename, group, scalars=None, arrays=None,
                 arrays_like=None, commentchar='#', _larch=None):
-    """write components of a group to an ASCII column file
+    """(deprecated) write components of a group to an ASCII column file
 
-    write_group(filename, group, commentchar='#')
 
-    Warning: This is pretty minimal and may work poorly
-    for large groups of complex data.
+    Warning:
+       This is pretty minimal and may work poorly for large groups of complex data.
+       Use `save_session` instead.
+
     """
 
     items = dir(group)
