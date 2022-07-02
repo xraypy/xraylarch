@@ -235,13 +235,16 @@ def load_session(fname, overwrite=True, merge_dicts=True, _larch=None):
     Arguments:
        fname  (str):       name of save file
        overwrite (bool):   whether to overwrite most existing symbols [True]
-       merge_dicts (bool): whether to merge existing dictionaries ls [True]
+       merge_dicts (bool): whether to merge existing dictionaries [True]
 
     Returns:
         None
 
     Notes:
-        this will install the data from the saved sesssion into current session.
+        1. this will install the data from the saved sesssion into current session.
+        2. `merge_dicts` allows session data such as 'dicts of groups' to preserve
+            existing data and include newly installed data - this is necessary for
+            XAS Viewer, but may not always be needed in all use cases.
 
     """
     if _larch is None:
