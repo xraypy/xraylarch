@@ -141,6 +141,7 @@ and can also write :math:`\mu(E)` data to Athena Project files.
 
 Larch does not read or support Artemis projects.
 
+.. _read_athena_function:
 
 Reading Athena Project Files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -439,6 +440,8 @@ order to shift the energy scale to absolute values, according to the `E_edge`
 variable. The parsed variables are stored in the `group.header_dict` dictionary.
 
 
+.. _larch_session_files:
+
 Saving and Loading Larch Session Files: `.larix` Files
 =========================================================
 
@@ -464,7 +467,6 @@ The :func:`load_session` function will restore data from a Session file into the
 session.  On the other hand, :func:`read_session` will read the data but not install it
 analysis session. Instead, it will return a new set of data that you might have to
 unpack or extract the groups and arrays of interest.
-
 
 .. autofunction:: save_session
 
