@@ -2014,11 +2014,37 @@ class LoadSessionDialog(wx.Frame):
         for fname, sym in _xasgroups.items():
             _xasfiles[sym] = fname.strip()
 
-        selected = [self.allgroups[n] for n in self.grouplist.GetCheckedStrings()]
+        ignore, selected = ['_xasgroups'], []
+        sel_groups = self.grouplist.GetCheckedStrings()
+        for fname, gname in self.allgroups.items():
+            if fname not in sel_groups:
+                ignore.append(gname)
+
+        # avoid importing empty feffpaths and caches
+        if '_feffpaths' in self.session.symbols:
+            used = False
+            try:
+                used = len(self.session.symbols['_feffpaths']) > 0
+            except:
+                pass
+            if not used:
+                ignore.extend(('_feffpaths', '_feffit_params'))
+
+        if '_feffcache' in self.session.symbols:
+            used = False
+            try:
+                used  = (len(self.session.symbols['_feffcache']['runs']) > 0 or
+                         len(self.session.symbols['_feffcache']['paths']) > 0)
+            except:
+                pass
+            if not used:
+                ignore.append('_feffcache')
+
         for i in self.session.symbols.keys():
-            if i not in _xasgroups and i not in selected:
+            if i not in ignore:
                 selected.append(i)
 
+        mergeable_dicts = ('_feffcache')
         last_fname = None
         for sym in selected:
             install_sym = sym
@@ -2031,6 +2057,15 @@ class LoadSessionDialog(wx.Frame):
                     install_sym = newsym
             if install:
                 dat = self.session.symbols[sym]
+                if install_sym in mergeable_dicts and isinstance(dat, dict):
+                    cur = getattr(symtab, install_sym, None)
+                    if isinstance(cur, dict):
+                        for key, val in cur.items():
+                            if isinstance(cur[key], dict) and key in dat:
+                                cur[key].update(dat[key])
+                            else:
+                                cur[key] = dat[key]
+                        dat = cur
                 setattr(symtab, install_sym, dat)
                 if sym in _xasgroups.values():
                     fname = _xasfiles[install_sym]
@@ -2047,6 +2082,7 @@ class LoadSessionDialog(wx.Frame):
         cmds.append("# _xasgroups = %s" % repr(symtab._xasgroups))
         cmds.append("##########")
         self.controller.larch.eval('\n'.join(cmds))
+        self.controller.sync_xasgroups()
 
         wx.CallAfter(self.Destroy)
         if last_fname is not None:
