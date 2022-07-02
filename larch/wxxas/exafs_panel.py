@@ -412,7 +412,6 @@ class EXAFSPanel(TaskPanel):
             conf = copy.deepcopy(conf)
         if dgroup is not None:
             setattr(dgroup.config, self.configname, conf)
-        print("EXAFS READ Form ", conf['e0'], conf['rbkg'])
         return conf
 
     def onSaveConfigBtn(self, evt=None):
@@ -455,6 +454,8 @@ class EXAFSPanel(TaskPanel):
                     grp.e0 = opts['e0']
                 if set_rbkg:
                     grp.rbkg = opts['rbkg']
+                self.process(dgroup=grp, read_form=False)
+
 
     def _set_frozen(self, frozen):
         try:
