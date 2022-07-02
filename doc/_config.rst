@@ -6,7 +6,7 @@
 .. _Dioptas: https://github.com/Dioptas/Dioptas
 .. _Feff Project: https://feff.phys.washington.edu/
 
-.. _pyepics: https://pyepics.github.com/pyepics/
+
 .. _XDI:   https://github.com/XraySpectroscopy/XAS-Data-Interchange/
 .. _XDI metadata dictionary:   https://github.com/XraySpectroscopy/XAS-Data-Interchange/blob/master/specification/dictionary.md
 
@@ -14,11 +14,21 @@
 .. _bliss:   https://bliss.gitlab-pages.esrf.fr/bliss/master/
 .. _silx:    https://www.silx.org/
 
-.. _xraydb:   https://xraypy.github.io/xraydb/
+.. _pyepics:  https://pyepics.github.com/pyepics/
+.. _xraydb:   https://xraypy.github.io/XrayDB/
 .. _lmfit:    https://lmfit.github.io/lmfit-py/
 .. _asteval:  https://newville.github.io/asteval/
 .. _wxmplot:  https://newville.github.io/wxmplot/
 .. _pyshortcuts:  https://newville.github.io/pyshortcuts/
+
+
+.. _Wavelet transforms: https://en.wikipedia.org/wiki/Wavelet_transform
+
+
+.. |pin| image:: _images/pin_icon.png
+    :width: 18pt
+    :height: 18pt
+
 
 .. only:: html
 
