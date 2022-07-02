@@ -70,15 +70,15 @@ def read_groups(fname):
 
 def save_session(fname=None, _larch=None):
     """save all groups and data into a Larch Save File (.larix)
-    A portable json file, that can be loaded with
+    A portable compressed json file, that can be loaded with `read_session()`
 
-    load_session(fname)
 
-    Parameters
-    ----------
-    fname   name of output save file.
+    Arguments:
+        fname (str):   name of output save file.
 
-    See Also:  restore_session()
+    See Also:
+        read_session, load_session, clear_session
+
     """
     if fname is None:
         fname = time.strftime('%Y%b%d_%H%M')
@@ -144,7 +144,14 @@ def save_session(fname=None, _larch=None):
     fh.close()
 
 def clear_session(_larch=None):
-    """ clear user-definded data in a session"""
+    """clear user-definded data in a session
+
+    Example:
+         >>> save_session('foo.larix')
+         >>> clear_session()
+
+     will effectively save and then reset the existing session.
+    """
     if _larch is None:
         raise ValueError('_larch not defined')
 
@@ -155,15 +162,23 @@ def clear_session(_larch=None):
 
 
 def read_session(fname):
-    """read Larch Save File, returning data
+    """read Larch Session File, returning data into new data in the
+    current session
 
-    Arguments
-    ---------
-    fname    name of save file
+    Arguments:
+         fname (str):  name of save file
 
-    Returns
-    -------
-    symbols (dict), configuration (dict), command history (list)
+    Returns:
+       Tuple
+       A tuple wih entries:
+
+           | configuration  - a dict of configuration for the saved session.
+           | command_history  - a list of commands in the saved session.
+           | symbols         - a dict of Larch/Python symbols, groups, etc
+
+    See Also:
+       load_session
+
 
     """
     fopen = GzipFile if is_gzip(fname) else open
@@ -215,16 +230,18 @@ def read_session(fname):
 
 
 def load_session(fname, overwrite=True, merge_dicts=True, _larch=None):
-    """load all data from a Larch Save File into current larch session
+    """load all data from a Larch Session File into current larch session
 
-    Arguments
-    ---------
-    fname  (str)     name of save file
-    overwrite (bool) whether to overwrite existing symbols [True]
+    Arguments:
+       fname  (str):       name of save file
+       overwrite (bool):   whether to overwrite most existing symbols [True]
+       merge_dicts (bool): whether to merge existing dictionaries ls [True]
 
-    Returns
-    -------
-    None, puts data into current session
+    Returns:
+        None
+
+    Notes:
+        this will install the data from the saved sesssion into current session.
 
     """
     if _larch is None:
