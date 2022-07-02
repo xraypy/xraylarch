@@ -229,22 +229,23 @@ def read_session(fname):
     return SessionStore(config, cmd_history, symbols)
 
 
-def load_session(fname, overwrite=True, merge_dicts=True, _larch=None):
+def load_session(fname, overwrite=True, merge_dicts=('_xasgroups', '_feffcache'),
+                 _larch=None):
     """load all data from a Larch Session File into current larch session
 
     Arguments:
        fname  (str):       name of save file
        overwrite (bool):   whether to overwrite most existing symbols [True]
-       merge_dicts (bool): whether to merge existing dictionaries [True]
+       merge_dicts (list): list of groups to merge into existing dicts
+                           ('_xasgroups', '_feffcache')
 
     Returns:
         None
 
     Notes:
         1. this will install the data from the saved sesssion into current session.
-        2. `merge_dicts` allows session data such as 'dicts of groups' to preserve
-            existing data and include newly installed data - this is necessary for
-            XAS Viewer, but may not always be needed in all use cases.
+        2. `merge_dicts` allows session data in certain  'dictionaries' to be merged
+            into existing data, updating the values but erasing other entries.
 
     """
     if _larch is None:
@@ -263,7 +264,7 @@ def load_session(fname, overwrite=True, merge_dicts=True, _larch=None):
 
     for sym, val in session.symbols.items():
         cur = getattr(symtab, sym, None)
-        if isinstance(cur, dict) and merge_dicts:
+        if isinstance(cur, dict) and sym in merge_dicts:
             cur.update(val)
             setattr(symtab, sym, cur)
         elif overwrite or cur is None:
