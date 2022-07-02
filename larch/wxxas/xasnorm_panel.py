@@ -512,6 +512,15 @@ class XASNormPanel(TaskPanel):
             newplot = False
 
         ppanel = self.controller.get_display(stacked=False).panel
+
+        nplot_traces = len(ppanel.conf.traces)
+        nplot_request = len(plot_traces)
+        if nplot_request > nplot_traces:
+            linecolors = ppanel.conf.linecolors
+            ncols = len(linecolors)
+            for i in range(nplot_traces, nplot_request+5):
+                ppanel.conf.init_trace(i,  linecolors[i%ncols], 'dashed')
+
         ppanel.plot_many(plot_traces, xlabel='Energy (eV)', ylabel=ylabel, show_legend=True)
         ppanel.unzoom_all()
         wx.CallAfter(self.controller.set_focus)
