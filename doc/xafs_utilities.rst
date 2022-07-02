@@ -1,3 +1,5 @@
+.. include:: _config.rst
+
 =========================================================
 XAFS Functions: Overview and Naming Conventions
 =========================================================
@@ -417,7 +419,7 @@ Listed here are some general purpose functions for XAFS.
 
 ..  function:: ktoe(wavenumbers)
 
-    Convert photo-electron wavenumber in :math:`\AA^{-1}` ot energy in eV.
+    Convert photo-electron wavenumber in :math:`\AA^{-1}` to energy in eV.
     wavenumber can be a single number or array of numbers.
 
 An example use would be to print out a table of energies and :math:`k` values::

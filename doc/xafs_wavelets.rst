@@ -1,10 +1,10 @@
+.. include:: _config.rst
+
 .. _xafs-wavelet_sec:
 
 ==============================================
 XAFS: Wavelet Transforms for XAFS
 ==============================================
-
-.. _Wavelet transforms: https://en.wikipedia.org/wiki/Wavelet_transform
 
 `Wavelet transforms`_ extend Fourier transforms, effectively separating
 contributions of a waveform into both time and frequency (or, for EXAFS,
@@ -40,10 +40,10 @@ is implemented as the function :func:`cauchy_wavelet`:
     Group, the following data arrays are put into it:
 
        ================= ===============================================================
-        array name         meaning
+	array name         meaning
        ================= ===============================================================
 	r                  uniform array of :math:`R`, out to ``rmax_out``.
- 	wcauchy            complex array cauchy transform of :math:`R` and :math:`k`
+	wcauchy            complex array cauchy transform of :math:`R` and :math:`k`
 	wcaychy_mag        magnitude of cauchy transform
 	wcauchy_re         real part of cauchy transform
 	wcauchy_im         imaginary part of cauchy transform
@@ -113,4 +113,3 @@ The projection of the wavelets to :math:`k` and :math:`R` space looks like:
     The Cauchy Wavelet transform projected to :math:`k` and :math:`R`
     space.  In the left hand panel, the original EXAFS :math:`k^2\chi(k)`
     is shown for comparison.
-
