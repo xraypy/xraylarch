@@ -820,7 +820,10 @@ class PrePeakPanel(TaskPanel):
         pan.pack()
 
         self.mod_nb = flatnotebook(self, {}, on_change=self.onModelPanelExposed)
+        self.mod_nb_init = True
+        dummy_panel = wx.Panel(self.mod_nb)
 
+        self.mod_nb.AddPage(dummy_panel, 'Empty Model', True)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add((10, 10), 0, LEFT, 3)
         sizer.Add(pan, 0, LEFT, 3)
@@ -1156,6 +1159,9 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
 
         self.fit_components[prefix] = fgroup
         panel.pack()
+        if self.mod_nb_init:
+            self.mod_nb.DeletePage(0)
+            self.mod_nb_init = False
 
         self.mod_nb.AddPage(panel, title, True)
         sx,sy = self.GetSize()
