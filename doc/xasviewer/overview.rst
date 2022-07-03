@@ -1,36 +1,49 @@
+.. include:: ../_config.rst
+
+.. |pin| image:: ../_images/pin_icon.png
+    :width: 18pt
+    :height: 18pt
+
 .. _xasviewer_overview:
 
 XAS Viewer Overview
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The main featues of XAS Viewer can be broken into a few categories:
+The main features of XAS Viewer can be broken into a few categories.  Here
+we give a brief overview, and then expand on these topics in later sections.
 
-**Data Input and Outpu**:  XAS Viewer can import XAS data in the following formats
 
-   * XDI data files - the standard data format for XAS data.
-   * plain text data data files with data arrays in column format.
-   * Athena Project Files.
-   * ESRF Spec/BLISS HDF5 files.
-   * Larch Session files (:ref:`xasviewer_sessionfiles`).x
+===================================
+Data Input and Output
+===================================
 
-When reading data from plaintext column files (which is how most beamlines
-and instruments will save data), it is possible to add, multiply, and
-divide various columns, and to convert from monochromator angle to X-ray
-energy. Reference channels and uncertainties can also be read from the
-column files as well.
+XAS Viewer can import XAS data in the following formats
+
+   * XDI data files - the standard data format for XAS data (:ref:`xasviewer_plaintext`).
+   * plain text data data files with data arrays in column format (:ref:`xasviewer_plaintext`).
+   * Athena Project Files (:ref:`xasviewer_athena`).
+   * ESRF Spec/BLISS HDF5 files (:ref:`xasviewer_blisshdf5`).
+   * Larch Session files (:ref:`xasviewer_sessionfiles`).
 
 For exporting or saving data, XAS Viewer can save multiple XAS spectra as:
 
-   * Athena Project files.
-   * CSV files.
+   * Athena Project files (:ref:`xasviewer_athena`).
+   * CSV files, from selected groups or for fitting and analysis results.
    * Larch Session files (:ref:`xasviewer_sessionfiles`).
 
-**XAS Data Processing and Management**: Each XAS spectra in XAS Viewer is
-contained in a *Group* of data. All of the processing and analysis arrays
-and settings for this spectra will be contained within this Group.   Each
-Group will be shown by its "File Name" (assigned even if created and not
-read from an external file) and also have a "Group Name" -- the name in the
-Larch interpreter from which this Group of data can be accessed.
+See :ref:`xasviewer_io` for details
+
+
+===================================
+XAS Data Processing and Management
+===================================
+
+Each XAS spectra in XAS Viewer is contained in a *Group* of data. All of
+the processing and analysis arrays and settings for this spectra will be
+contained within this Group.  Each Group will be shown by its "File Name"
+(assigned even if created and not read from an external file) and also have
+a "Group Name" -- the name in the Larch interpreter from which this Group
+of data can be accessed.
 
 From XAS Viewer, the following processing operations can be done on any
 Group or any set of Groups of XAS Data:
@@ -50,21 +63,32 @@ All of these processing steps can be done interactively, with users able to adju
 a small set of curated parameters and then visualize the results of these adjustments.
 
 
-**XANES Analysis**:
+===================================
+XANES Analysis
+===================================
 
    * linear combination analysis of spectra.
    * principal component analysis.
    * regression of XANES spectra with a predicting external variable.
    * pre-edge peak fitting.
 
+===================================
+EXAFS Processing
+===================================
 
-     * EXAFS background spline removal.
-   * Fourier transforms from :math:`k` to :math:`R` and :math:`R` to filtered-:math:`k` space, and wavelet transforms.
+   * EXAFS background spline removal.
+   * forward Fourier transforms from :math:`k` to :math:`R`
+   * back Fourier transforms from :math:`R` to filtered-:math:`k` space
+   * Cauchy wavelet transforms.
+
+===================================
+EXAFS Modeling with FEFF
+===================================
+
    * Browser for CIF files from American Mineralogist Crystal Structure Database.
    * Convert CIF files (from AMCSDB or external file) to feff.inp for Feff6/Feff8l.
    * Run Feff6 or Feff8, saving and browsing EXAFS Paths from these Feff runs.
    * Feff Fitting of single EXAFS spectra for a sum of Feff paths.
-
 
 XAS Viewer presents a "Normalization" form for basic pre-edge subtraction,
 and normalization of XAFS spectra. :numref:`fig_xasviewer_1` shows the main
@@ -78,8 +102,8 @@ detailed selecting of data sets.
 
 .. _fig_xasviewer_1:
 
-.. figure:: _images/XASViewer_Main.png
-    :target: _images/XASViewer_Main.png
+.. figure:: ../_images/XASViewer_Main.png
+    :target: ./_images/XASViewer_Main.png
     :width: 75%
     :align: center
 

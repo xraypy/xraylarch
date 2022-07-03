@@ -1,30 +1,29 @@
+.. include:: _config.rst
+
 .. _guis-chapter:
 
 =====================
-Larch GUIs
+Other Larch GUIs
 =====================
-
-.. _wxmplot:  https://newville.github.io/wxmplot
-.. _matplotlib: https://matplotlib.org/
-.. _lmfit:    https://lmfit.github.io/lmfit-py
-.. _scipy: https://scipy.org/
-.. _numpy: https://numpy.scipy.org/
-.. _h5py: https://code.google.com/p/h5py/
-.. _Dioptas: https://github.com/Dioptas/Dioptas
 
 
 .. module:: guis
    :synopsis: Graphical User Interfaces
 
-Larch provides several Graphical User Interfaces for manipulating, viewing,
-and processing of X-ray spectroscopy, scattering, and imaging data.  Many
-of the GUI displays are interrelated, so that they can bring up the other
-windows for displaying, interacting, and processing data.  The main GUIs
-for Larch are
+In addition to :ref:`XAS Viewer <xasviewer_app>`, Larch provides a few
+other Graphical User Interfaces for manipulating, viewing, and processing
+of X-ray spectroscopy, scattering, and imaging data.  Many of the GUI
+displays are interrelated, so that they can bring up the other windows for
+displaying, interacting, and processing data.  These include
 
-  * :ref:`XAS Viewer <xasviewer_app>`: Visualization and Analysis of  XAS data.
+
+  * :ref:`larch_gui <larchgui_app>`: simple command-line + data browser for
+    Larch.  This is used by other Larch GUIs as **the command-line
+    buffer**, and can be used to interact with all the raw data within the
+    application.
+
+
   * :ref:`GSE_Mapviewer <mapviewer_app>`: visualization and Analysis of XRF and XRD maps.
-  * :ref:`larch_gui <larchgui_app>`: simple command-line + data browser for Larch.
 
 .. _larchcli_app:
 

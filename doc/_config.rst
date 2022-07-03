@@ -24,10 +24,6 @@
 
 .. _Wavelet transforms: https://en.wikipedia.org/wiki/Wavelet_transform
 
-.. |pin| image:: _images/pin_icon.png
-    :width: 18pt
-    :height: 18pt
-
 
 .. only:: html
 
