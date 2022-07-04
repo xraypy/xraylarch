@@ -72,6 +72,20 @@ def SafeWxCall(fcn):
     wrapper.__dict__.update(fcn.__dict__)
     return wrapper
 
+def show_wxsizes(obj):
+    """recursively show sizes of wxPython objects --
+    useful for avoiding size<1 errors"""
+    for child in obj.GetChildren():
+        try:
+            csize = child.GetSize()
+            if csize[0] < 1 or csize[1] < 1:
+                print(child, csize)
+        except:
+            pass
+        try:
+            show_wxsizes(child)
+        except:
+            pass
 
 def wx_update(_larch=None, **kws):
     """force an update of wxPython windows"""
