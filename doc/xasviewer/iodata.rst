@@ -83,7 +83,7 @@ parameters saved in the project for each Group will be read and used by XAS
 Viewer.
 
 
-.. _fig_xasviewer_athenaimport:
+.. _fig_xasviewer_athenaimporter:
 
 .. figure:: ../_images/AthenaImporter.png
     :target: ../_images/AthenaImporter.png
@@ -99,9 +99,23 @@ Viewer.
 Reading Spec/Bliss HDF5 Data
 ===================================
 
+HDF5 and ASCII data files from Spec/Bliss format used at ESRF can be read.
+These files support multiple "scans", some of which may be XAS scans, and
+are typically ordered by the time at which they were collected.
 
-In addition, ASCII or HDF5 data files from Spec/Bliss format can also be
-read in, selecting multiple scans from a single data file.
+For each scan, the operations and arrays to construct :math:`\mu(E)` can be
+selected.  As for all XAS data, the energy is expected to be in eV: for
+data with energy units of keV, be sure to specfiy the energy units!
+
+.. _fig_xasviewer_h5specimporter:
+
+.. figure:: ../_images/XASViewer_H5SpecImporter.png
+    :target: ../_images/XASViewer_H5SpecImporter.png
+    :width: 75%
+    :align: center
+
+    Larch Session Importer for HDF5 Spec data files from the Bliss data
+    collection at ESRF.
 
 .. _xasviewer_sessionfiles:
 
@@ -142,7 +156,6 @@ some will be overwritten.  When loading a Session file, you can also view
 the configuration of the saved session (including computer name, operating
 system, versions), and the command history from that session.  Those will
 not be merged into the current session, but can be useful to inspect.
-
 
 .. _fig_xasviewer_larix1:
 
