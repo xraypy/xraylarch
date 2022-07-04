@@ -1,3 +1,5 @@
+.. include:: ../_config.rst
+
 .. _xasviewer_io:
 
 Reading and Saving Data into XAS Viewer
@@ -29,7 +31,6 @@ For exporting or saving data, XAS Viewer can save multiple XAS spectra as:
 ===============================================
 Reading Plaintext data files, including XDI
 ===============================================
-
 
 XAS Viewer can read data from XDI files or from other plaintext (ASCII)
 data files using a GUI form shown in :numref:`fig_xasviewer_dataimport`. This data
@@ -91,7 +92,6 @@ Viewer.
     :align: center
 
     Athena Project importer.
-
 
 .. _xasviewer_blisshdf5:
 

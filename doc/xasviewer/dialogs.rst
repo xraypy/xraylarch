@@ -1,25 +1,92 @@
-..include:: ../_config.rst
+.. include:: ../_config.rst
+
+.. |pin| image:: ../_images/pin_icon.png
+    :width: 18pt
+    :height: 18pt
+
+.. _xasviewer_preedge:
+
+Pre-edge subtraction and Normalization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As shown above in :numref:`fig_xasviewer_1`, the main analysis panel for
+the XAS Viewer program is the "XAS Normalization" Panel.  This panel helps
+you do pre-edge subtraction and normalization of XAFS data using the
+:func:`find_e0`, :func:`pre_edge`, or :func:`mback_norm` functions.  This
+processing step is important for getting normalized XAFS spectra that is
+used for further analysis of both XANES and EXAFS.  In general, the idea is
+to get the main step of each XAS spectrum to go from 0 below the main edge
+to 1 above the edge, so that the normalized spectrum represents the average
+absorption of each absorbing element in the sample.
+
+The first step in the process is to identify :math:`E_0`, the absorption
+threshold energy.  This is typically (and by default) chosen as the energy
+point where the first derivative :math:`d\mu(E)/dE` has a maximum.  This
+may not necessarily reflect the onset of absorption or the Fermi level, but
+it is easy to identify reliably for any spectrum.  At this point, the value
+does not have to be highly accurate, so that predictability and
+reproducibility are favored.  You can set the value of :math:`E_0` or allow
+it to be determined automatically.
+
+
+The next step is to measure how large the jump in absorption is. This
+process can be somewhat trickier, so that there are some heuristics built
+in to XAS Viewer (and :func:`pre_edge`) to help make this more robust.
+You can explicitly set the the value of the edge step, or allow it to be
+calculated from the spectra in one of two ways.
+
+The classic way for determining the edge step is encapsulated in the
+:func:`pre_edge` function.  Default values for ranges for the fitted
+pre-edge line and post-edge normalization curve can be set, or you can rely
+on the default settings for these values.  In general, the default settings
+give pretty good results, but the value for the edge step or the fitting
+ranges and curve forms can be altered here.
+
+Consult with :func:`pre_edge` and :func:`mback_norm` function for more
+details on these parameters.  Note that you can copy processing parameters
+from one group to other groups with the set of "copy" buttons that will
+copy the corresponding parameters to all the selected groups.
+
+Finally, from the normalization panel, you can plot the data for the one
+currently selected group or for all selected groups in a few different
+ways: Raw :math:`\mu(E)`, normalized :math:`\mu(E)`, the derivative
+:math:`d\mu(E)/dE`, flattened :math:`\mu(E)`.  For the current group there
+are even mor options, including the raw :math:`\mu(E)` with the pre-edge
+line and post-edge normalization curve, or compare with the
+MBACK-calculation for normalization.
+
 
 .. _xasviewer_dialogs:
 
 Common XAS Processing Dialogs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-There are several dialogs for interacting with data groups and for doing
-data corrections.  These include speciality dialogs for:
+When importing and normalizing XAS data, it is sometimes necessary to make some
+corrections of manipulate the data in a few well-defined ways.  These
+can include:
 
   * copying, removing, and renaming data groups.
-  * merging of data groups -- summing spectra.
+  * merging of data groups -- summing similar or repeated spectra.
   * de-glitching spectra.
-  * recalibrating spectra.
+  * recalibrating or aligning spectra.
   * smoothing of noisy spectra.
   * re-binning of spectra onto a "normal" XAFS energy grid.
   * de-convolving spectra.
   * correcting over-absorption in fluorescence XANES spectra.
 
-Screenshots of some of these dialogs are shown in the images below.
+There are several dialogs available in XAS Viewere, each designed to guide
+through the steps needs for these corrections or manipulations.  Each of
+these is described in more detail below.
 
-.. subfigstart::
+.. _xasviewer_energy_calib:
+
+===============================================
+Energy Calibration and alignment
+===============================================
+
+Each XAS spectra Group has
+
+
 
 .. _fig_xasviewer_dialog_cal:
 
@@ -30,6 +97,13 @@ Screenshots of some of these dialogs are shown in the images below.
 
     Energy calibration dialog.
 
+
+.. _xasviewer_deglitch:
+
+===============================================
+Deglitching and Truncating Data
+===============================================
+
 .. _fig_xasviewer_dialog_deglitch:
 
 .. figure:: ../_images/XASViewer_deglitch_dialog.png
@@ -38,6 +112,13 @@ Screenshots of some of these dialogs are shown in the images below.
     :align: center
 
     De-glitching dialog
+
+.. _xasviewer_smooth:
+
+===============================================
+Smoothing Data
+===============================================
+
 
 .. _fig_xasviewer_dialog_smooth:
 
@@ -48,6 +129,13 @@ Screenshots of some of these dialogs are shown in the images below.
 
     Energy smoothing dialog.
 
+
+.. _xasviewer_deconv:
+
+===============================================
+De-convolving XAS  Data
+===============================================
+
 .. _fig_xasviewer_dialog_deconv:
 
 .. figure:: ../_images/XASViewer_deconvolve_dialog.png
@@ -56,6 +144,14 @@ Screenshots of some of these dialogs are shown in the images below.
     :align: center
 
     Deconvolution dialog.
+
+
+.. _xasviewer_rebin:
+
+===============================================
+Re-binning XAS  Data
+===============================================
+
 
 .. _fig_xasviewer_dialog_rebin:
 
@@ -66,6 +162,14 @@ Screenshots of some of these dialogs are shown in the images below.
 
     Energy re-binning dialog.
 
+
+
+.. _xasviewer_overabsorb:
+
+===============================================
+Correcting for Over-Absorption in XAS Data
+===============================================
+
 .. _fig_xasviewer_dialog_overabs:
 
 .. figure:: ../_images/XASViewer_overabsorption_dialog.png
@@ -74,7 +178,3 @@ Screenshots of some of these dialogs are shown in the images below.
     :align: center
 
     Over-absorption correction dialog
-
-.. subfigend::
-    :width: 0.32
-    :label: fig-xasviewer-dialogs
