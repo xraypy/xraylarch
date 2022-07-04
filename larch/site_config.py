@@ -121,6 +121,7 @@ def show_site_config():
     print( """===  Larch Configuration
   larch release:        {__release_version__}
   larch version:        {__version__}
+  release version:        {__release_version__}
   sys executable:       {sys.executable}
   sys is frozen:        repr(getattr(sys, 'frozen', False))
   users larch dir:      {user_larchdir}

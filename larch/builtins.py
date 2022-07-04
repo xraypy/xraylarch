@@ -165,13 +165,13 @@ def _eval(text, filename=None, _larch=None):
 def _run(filename=None, new_module=None, _larch=None):
     "execute the larch text in a file as larch code."
     if _larch is None:
-        raise Warning("cannot run file '%s' -- larch broken?" % filename)
+        raise Warning(f"cannot run file '{filename:s}' -- larch broken?")
     return _larch.runfile(filename, new_module=new_module)
 
 def _reload(mod, _larch=None):
     """reload a module, either larch or python"""
     if _larch is None:
-        raise Warning("cannot reload module '%s' -- larch broken?" % mod)
+        raise Warning(f"cannot reload module '{mod:s}' -- larch broken?")
 
     modname = None
     if mod in _larch.symtable._sys.modules.values():
@@ -343,24 +343,24 @@ init_funcs = [init_display_group]
 # group/classes to register for save-restore
 init_moddocs = {}
 
-for mod in __core_modules:
-    if mod is None:
+for cmod in __core_modules:
+    if cmod is None:
         continue
-    modname  = getattr(mod, '_larch_name', mod.__name__)
-    if modname.startswith('larch.'):
-        modname = modname.replace('larch.', '_')
+    cmodname  = getattr(cmod, '_larch_name', cmod.__name__)
+    if cmodname.startswith('larch.'):
+        cmodname = cmodname.replace('larch.', '_')
 
-    doc = getattr(mod, '__DOC__', None)
+    doc = getattr(cmod, '__DOC__', None)
     if doc is not None:
-        init_moddocs[modname] = doc
-    builtins = getattr(mod, '_larch_builtins', {})
-    init_fcn = getattr(mod, '_larch_init', None)
+        init_moddocs[cmodname] = doc
+    builtins = getattr(cmod, '_larch_builtins', {})
+    init_fcn = getattr(cmod, '_larch_init', None)
 
-    for key, val in builtins.items():
-        if key not in init_builtins:
-            init_builtins[key] = val
+    for bkey, bval in builtins.items():
+        if bkey not in init_builtins:
+            init_builtins[bkey] = bval
         else:
-            init_builtins[key].update(val)
+            init_builtins[bkey].update(bval)
 
     if init_fcn is not None:
         init_funcs.append(init_fcn)
