@@ -5,8 +5,8 @@ import wx.lib.agw.flatnotebook as flat_nb
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_NO_NAV_BUTTONS|flat_nb.FNB_NODRAG
 
 def flatnotebook(parent, paneldict, panelkws={},
-                 on_change=None, selection=0):
-    nb = flat_nb.FlatNotebook(parent, agwStyle=FNB_STYLE)
+                 on_change=None, selection=0, **kws):
+    nb = flat_nb.FlatNotebook(parent, agwStyle=FNB_STYLE, **kws)
     nb.SetTabAreaColour(wx.Colour(250, 250, 250))
     nb.SetActiveTabColour(wx.Colour(254, 254, 195))
     nb.SetNonActiveTabTextColour(wx.Colour(10, 10, 128))
