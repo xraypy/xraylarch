@@ -66,7 +66,6 @@ class CIFFrame(wx.Frame):
         self.cifdb = get_amscifdb()
         self.all_minerals = self.cifdb.all_minerals()
         self.subframes = {}
-        self.plotframe = None
         self.has_xrd1d = False
         self.current_cif = None
         self.SetTitle(title)
@@ -268,6 +267,7 @@ class CIFFrame(wx.Frame):
             pass
 
         self.plotpanel.SetMinSize((250, 250))
+        self.plotpanel.SetMaxSize((600, 450))
         self.plotpanel.onPanelExposed = self.showXRD1D
 
         cif_panel = wx.Panel(rightpanel)
