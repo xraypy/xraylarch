@@ -250,14 +250,7 @@ class PCAPanel(TaskPanel):
 
     def onPlot(self, event=None):
         form = self.read_form()
-        if self.skip_plotting:
-            return
-        pchoice = form['plotchoice'].lower()
-        if pchoice.startswith('pca'):
-            self.plot_pca_components()
-        elif pchoice.startswith('component w'):
-            self.plot_pca_weights()
-        else:
+        if not self.skip_plotting:
             self.plot_pca_fit()
 
     def onFitSpace(self, evt=None):
@@ -265,7 +258,7 @@ class PCAPanel(TaskPanel):
         self.update_config(dict(fitspace=fitspace))
         arrname = Linear_ArrayChoices.get(fitspace, 'norm')
         self.update_fit_xspace(arrname)
-        self.onPlot()
+
 
     def onFitSelected(self, event=None):
         form = self.read_form()
@@ -325,7 +318,6 @@ class PCAPanel(TaskPanel):
 
         self.wids['fit_table'].table.data = grid_data
         self.wids['fit_table'].table.View.Refresh()
-
         self.plot_pca_fit()
 
     def onBuildPCAModel(self, event=None):
