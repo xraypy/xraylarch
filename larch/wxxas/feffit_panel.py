@@ -401,7 +401,8 @@ class FeffitParamsPanel(wx.Panel):
         self.parwids = {}
         self.SetFont(Font(FONTSIZE))
         spanel = scrolled.ScrolledPanel(self)
-
+        spanel.SetSize((250, 250))
+        spanel.SetMinSize((50, 50))
         panel = self.panel = GridPanel(spanel, ncols=8, nrows=30, pad=1, itemstyle=LEFT)
         panel.SetFont(Font(FONTSIZE))
 
@@ -736,7 +737,6 @@ class FeffitPanel(TaskPanel):
         self.params_panel = FeffitParamsPanel(parent=self.paths_nb,
                                               feffit_panel=self)
         self.paths_nb.AddPage(self.params_panel, ' Parameters ', True)
-
         pan = self.panel # = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LEFT)
 
         self.wids = wids = {}
@@ -769,22 +769,22 @@ class FeffitPanel(TaskPanel):
         wids['plot_win'].SetStringSelection('2')
 
         ppanel = wx.Panel(pan)
+        ppanel.SetMinSize((450, 20))
 
         wids['plot_paths'] = Check(ppanel, default=False, label='Plot Each Path',
                                    action=self.onPlot)
         wids['plot_ftwindows'] = Check(ppanel, default=False, label='Plot FT Windows',
                                        action=self.onPlot)
 
-        wids['plot_voffset'] = FloatSpin(ppanel, value=0, digits=2, increment=0.25,
-                                         action=self.onPlot)
+        wids['plot_voffset'] =  FloatSpin(ppanel, value=0, digits=2, increment=0.25,
+                                          size=(100, -1), action=self.onPlot)
 
         psizer = wx.BoxSizer(wx.HORIZONTAL)
-        psizer.Add( wids['plot_paths'], 0, 2)
-        psizer.Add( wids['plot_ftwindows'], 0, 2)
-        psizer.Add(SimpleText(ppanel, '  Offset'), 0, 5)
-        psizer.Add( wids['plot_voffset'], 0, 5)
+        psizer.Add(wids['plot_paths'],  0, LEFT, 2)
+        psizer.Add(wids['plot_ftwindows'], 0, LEFT, 2)
+        psizer.Add(SimpleText(ppanel, '  Offset ', size=(100, -1) ), 0, LEFT, 2)
+        psizer.Add(wids['plot_voffset'], 0, LEFT, 2)
         pack(ppanel, psizer)
-
         wids['plot_current']  = Button(pan,'Plot Current Model',
                                      action=self.onPlot,  size=(150, -1))
         wids['do_fit']        = Button(pan, 'Fit Data to Model',
@@ -796,7 +796,6 @@ class FeffitPanel(TaskPanel):
 #         wids['do_fit_sel']= Button(pan, 'Fit Selected Groups',
 #                                    action=self.onFitSelected,  size=(125, -1))
 #         wids['do_fit_sel'].Disable()
-
         def add_text(text, dcol=1, newrow=True):
             pan.Add(SimpleText(pan, text), dcol=dcol, newrow=newrow)
 
@@ -1570,14 +1569,14 @@ class FeffitResultFrame(wx.Frame):
         wids['plot_win'].SetStringSelection('2')
 
         ppanel = wx.Panel(panel)
-
+        ppanel.SetMinSize((450, 20))
         wids['plot_paths'] = Check(ppanel, default=False, label='Plot Each Path',
                                    action=self.onPlot)
         wids['plot_ftwindows'] = Check(ppanel, default=False, label='Plot FT Windows',
                                        action=self.onPlot)
 
         wids['plot_voffset'] = FloatSpin(ppanel, value=0, digits=2, increment=0.25,
-                                         action=self.onPlot)
+                                         action=self.onPlot, size=(100, -1))
 
         psizer = wx.BoxSizer(wx.HORIZONTAL)
         psizer.Add( wids['plot_paths'], 0, 2)
@@ -1707,7 +1706,7 @@ class FeffitResultFrame(wx.Frame):
                            colour=COLORS['title'], style=LEFT)
 
         ppanel = wx.Panel(panel)
-
+        ppanel.SetMinSize((450, 20))
         self.wids['all_correl'] = Button(ppanel, 'Show All',
                                           size=(100, -1), action=self.onAllCorrel)
 
