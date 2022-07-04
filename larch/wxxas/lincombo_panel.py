@@ -714,13 +714,14 @@ class LinearComboPanel(TaskPanel):
         coltypes = ['str', 'float:12,4', 'float:12,4', 'float:12,4']
         coldefs  = ['', 1.0/MAX_COMPONENTS, 0.0, 1.0]
 
-
+        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
         wids['table'] = DataTableGrid(panel, nrows=MAX_COMPONENTS,
                                       collabels=collabels,
                                       datatypes=coltypes, defaults=coldefs,
                                       colsizes=colsizes)
 
-        wids['table'].SetMinSize((675, 250))
+        wids['table'].SetMinSize((700, 250))
+        wids['table'].SetFont(self.font_fixedwidth)
         panel.Add(wids['table'], newrow=True, dcol=6)
 
         panel.Add(HLine(panel, size=(625, 3)), dcol=5, newrow=True)

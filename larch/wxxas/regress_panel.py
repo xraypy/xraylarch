@@ -18,7 +18,7 @@ from larch.math import index_of
 from larch.wxlib import (BitmapButton, TextCtrl, FloatCtrl, get_icon,
                          SimpleText, pack, Button, HLine, Choice, Check,
                          NumericCombo, CEN, LEFT, Font, FileSave, FileOpen,
-                         DataTableGrid, Popup)
+                         DataTableGrid, Popup, FONTSIZE_FW)
 from larch.io import save_groups, read_groups, read_csv
 from larch.utils.strutils import fix_varname
 from larch.utils import get_cwd
@@ -122,17 +122,19 @@ class RegressionPanel(TaskPanel):
 
         collabels = [' File Group Name ', 'External Value',
                      'Predicted Value', 'Training?']
-        colsizes = [325, 100, 100, 100]
+        colsizes = [325, 110, 110, 90]
         coltypes = ['str', 'float:12,4', 'float:12,4', 'str']
         coldefs  = ['', 0.0, 0.0, '']
+
+        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
 
         wids['table'] = DataTableGrid(panel, nrows=MAX_ROWS,
                                       collabels=collabels,
                                       datatypes=coltypes,
                                       defaults=coldefs,
                                       colsizes=colsizes)
-
-        wids['table'].SetMinSize((675, 225))
+        wids['table'].SetMinSize((700, 225))
+        wids['table'].SetFont(self.font_fixedwidth)
 
         wids['use_selected'] = Button(panel, 'Use Selected Groups',
                                       size=(150, -1),  action=self.onFillTable)
