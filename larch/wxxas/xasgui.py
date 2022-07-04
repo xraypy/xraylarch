@@ -305,11 +305,13 @@ class XASFrame(wx.Frame):
         if self.current_filename is not None:
             wx.CallAfter(self.onRead, self.current_filename)
 
+        # show_wxsizes(self)
         if check_version:
             version_thread.join()
             if self.vinfo is not None:
                 if self.vinfo.update_available:
                     self.onCheckforUpdates()
+
 
     def createMainPanel(self):
         display0 = wx.Display(0)
@@ -319,7 +321,8 @@ class XASFrame(wx.Frame):
         ypos = int((ymax-ymin)*0.04) + ymin
         self.SetPosition((xpos, ypos))
 
-        splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
+        splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE,
+                                      size=(700, 700))
         splitter.SetMinimumPaneSize(250)
 
         leftpanel = wx.Panel(splitter)
@@ -357,8 +360,9 @@ class XASFrame(wx.Frame):
 
         # right hand side
         panel = scrolled.ScrolledPanel(splitter)
+        panel.SetSize((650, 650))
+        panel.SetMinSize((450, 550))
         sizer = wx.BoxSizer(wx.VERTICAL)
-
         self.title = SimpleText(panel, ' ', size=(500, 25),
                                 font=Font(FONTSIZE+3), style=LEFT,
                                 colour=COLORS['nb_text'])
@@ -368,10 +372,12 @@ class XASFrame(wx.Frame):
         self.nb = flatnotebook(panel, NB_PANELS,
                                panelkws=dict(xasmain=self,
                                              controller=self.controller),
-                               on_change=self.onNBChanged)
+                               on_change=self.onNBChanged,
+                               size=(700, 700))
 
         sizer.Add(self.nb, 1, LEFT|wx.EXPAND, 2)
         panel.SetupScrolling()
+
         pack(panel, sizer)
         splitter.SplitVertically(leftpanel, panel, 1)
 
@@ -431,7 +437,11 @@ class XASFrame(wx.Frame):
             filename = dgroup.filename
         self.current_filename = filename
         journal = getattr(dgroup, 'journal', Journal(source_desc=filename))
-        sdesc = journal.get('source_desc', latest=True)
+        if isinstance(journal, Journal):
+            sdesc = journal.get('source_desc', latest=True)
+        else:
+            sdesc = journal.get('source_desc', '?')
+
         if isinstance(sdesc, Entry):
             sdesc = sdesc.value
         if not isinstance(sdesc, str):
