@@ -2011,6 +2011,7 @@ class LoadSessionDialog(wx.Frame):
         _xasgroups = self.session.symbols.get('_xasgroups', {})
 
         _xasfiles = {}
+
         for fname, sym in _xasgroups.items():
             _xasfiles[sym] = fname.strip()
 
@@ -2040,8 +2041,12 @@ class LoadSessionDialog(wx.Frame):
             if not used:
                 ignore.append('_feffcache')
 
-        for i in self.session.symbols.keys():
+        for i in _xasgroups.values():
             if i not in ignore:
+                selected.append(i)
+
+        for i in self.session.symbols.keys():
+            if i not in ignore and i not in selected:
                 selected.append(i)
 
         mergeable_dicts = ('_feffcache')
@@ -2077,6 +2082,7 @@ class LoadSessionDialog(wx.Frame):
                     dat.groupname = install_sym
                     last_fname = fname
                     self.controller.filelist.Append(fname)
+
         cmds = ["##########", "# Loaded Larch Session with",
                 f"# load_session('{self.filename}')"]
         cmds.append("# _xasgroups = %s" % repr(symtab._xasgroups))
