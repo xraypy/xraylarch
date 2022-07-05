@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Version information"""
-__date__    = '2022-Jun-21'
-__release_version__ = '0.9.64'
+__date__    = '2022-Jul-05'
+__release_version__ = '0.9.65'
 __authors__ = "M. Newville, M. Koker, M. Rovezzi, B. Ravel, and others"
 
 import sys
