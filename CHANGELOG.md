@@ -4,15 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [0.9.65 - 2022-MM-DD]
+## [0.9.65 - 2022-07-05]
 
 ### Changed
 
 - LCF: eliminate combinations with very low weight (#387)
+- XAS Viewer:  Add "Clear Session" menu item
 
 ### Fixed
 
 - XAS_Viewer/normalization: fix Y offset (#389)
+- XAS_Viewer/normalization: avoid plotting errors for "Plot Selected" with >100 Spectra selected.
+- XAS_Viewer/exafs: Make sure that E0 and Rbkg are correctly copied to other group
+- XAS_Viewer/exafs: "copy to selected" now forces re-processing of selected groups.
+- XAS_VIewer/session file: Importing of only selected groups from Session file now works properly.
+- XAS_VIewer/session file: better merging of top-level data, especially feff cache on import.
+- XAS_Viewer/Linux: better checks to avoid initialiing wx objects with 0 size.
+- better docstrings for some data/io functions, starting to use `autodoc` in docs.
+- doc: fix Angstrom rendering in HTML
+- doc: work toward better XAS Viewer doc.
+
+
 
 ## [0.9.64 - 2022-06-22]
 
@@ -31,7 +43,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
   - XAS_Viewer: Feff-fitting paths (and so also parameters) are refreshed for
-    each fit (#377, #374)
+	each fit (#377, #374)
   - XAS_Viewer: most main windows are now resizable (#372)
   - Better checking and auto-pip-installing of wxutls and wxmplot (#376)
 
@@ -40,14 +52,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
   - XAS Viewer: Entries for the fit histories of pre-edge peak fitting and Feff
-    fitting can now be erased.
+	fitting can now be erased.
 
 ### Fixed
 
-  - XAS Viewer: the merging of groups now works ;). 
+  - XAS Viewer: the merging of groups now works ;).
   - XAS Viewer: setting and energy shift for a group will copy that shift to
-    other groups with the same energy reference. There is a preference setting
-    to turn off this automated copying of energy shifts.
+	other groups with the same energy reference. There is a preference setting
+	to turn off this automated copying of energy shifts.
   - XAS Viewer: fixed very slow plotting -- now just back to normal "not fast".
   - XAS Viewer: dialogs have generally better sizes.
   - XAS Viewer: fixes for plotting of Pre-edge peak fits.
@@ -59,41 +71,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
   - each Group of XAFS data will have a Journal - a list of entries with (label,
-    value, timestamp) that will be used to record processing steps. The XAFS
-    processing functions will write the parameters they were called with to this
-    Journal. Users can add notes as Journal entries too.
+	value, timestamp) that will be used to record processing steps. The XAFS
+	processing functions will write the parameters they were called with to this
+	Journal. Users can add notes as Journal entries too.
 
   - XAS Viewer allows editing of program-wide Preferences, that set the default
-    values and settings for the various analysis steps and program behavior.
+	values and settings for the various analysis steps and program behavior.
 
   - In many windows showing analysis results, XAS Viewer supports setting the
-    plot window number (1 through 9) so that more than one or two plot windows
-    can be shown at a time.
+	plot window number (1 through 9) so that more than one or two plot windows
+	can be shown at a time.
 
   - Session-wide Project files (.larix extension) can now be saved and reloaded.
-    These files contain essentially all the arrays for each Group of data,
-    including Journals, processing results, and fit histories. The "processing
-    workspaces" for pre-edge peak fitting, PCA, Linear Combinations,
-    Regressions, and Feff fitting. These Session files can be saved/loaded by
-    plain Python commands. When loading these into XAS Viewer, the fit histories
-    and workspaces will be available. To allow better debugging and tracking of
-    provenance, these Session Files include "configuration" data about the
-    Session (python, larch version, etc) and a complete set of Larch commands
-    for the session, though session commands are not "restored". The files are
-    compressed and use a customized JSON encoding.
+	These files contain essentially all the arrays for each Group of data,
+	including Journals, processing results, and fit histories. The "processing
+	workspaces" for pre-edge peak fitting, PCA, Linear Combinations,
+	Regressions, and Feff fitting. These Session files can be saved/loaded by
+	plain Python commands. When loading these into XAS Viewer, the fit histories
+	and workspaces will be available. To allow better debugging and tracking of
+	provenance, these Session Files include "configuration" data about the
+	Session (python, larch version, etc) and a complete set of Larch commands
+	for the session, though session commands are not "restored". The files are
+	compressed and use a customized JSON encoding.
 
   - These Session files are now auto-saved by XAS Viewer periodically (every 15
-    minutes of activity, by default, and rotated so that a small number (3, by
-    default) of the most recent auto-saved files are kept. On startup, "restore
-    the last session" is available (Ctrl-I).
+	minutes of activity, by default, and rotated so that a small number (3, by
+	default) of the most recent auto-saved files are kept. On startup, "restore
+	the last session" is available (Ctrl-I).
 
 ### Fixed
 
   - XAS Viewer PCA fixed.
   - XAS Viewer now displays how each Group was created, for example
-    "-log(i1/i0)".
+	"-log(i1/i0)".
   - XAS Viewer panels have more uniform energy range settings, relative to E0,
-    per group.
+	per group.
   - XAS Viewer has more consistent coloring and font sizes.
   - XAS Viewer Quit dialog now lists the last saved Session file.
   - XAS Viewer now works even harder to keep _xasgroups correct.
