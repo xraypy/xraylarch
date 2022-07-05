@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>12.6. Fit Examples &#8212; xraylarch 0.9.64 documentation</title>
+    <title>12.6. Fit Examples &#8212; xraylarch 0.9.65 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
@@ -878,28 +878,28 @@ four component fit favors <em>s3</em> and <em>s6</em>.  You might further notice
 four component fit with <em>s3</em> and <em>s5</em> has reduced chi-square of 14.7, only
 slightly worse than the best value.  For completeness, the parameters for
 that are:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">ret6</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">resid</span><span class="p">,</span> <span class="n">pars</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">data</span><span class="p">,))</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">ret6</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; ret6 = minimize(resid, pars[6], args=(data,))</span>
+<span class="go">larch&gt; print fit_report(ret6)</span>
 
-<span class="p">[[</span><span class="n">Fit</span> <span class="n">Statistics</span><span class="p">]]</span>
-    <span class="c1"># function evals   = 7</span>
-    <span class="c1"># data points      = 160</span>
-    <span class="c1"># variables        = 3</span>
-    <span class="n">chi</span><span class="o">-</span><span class="n">square</span>         <span class="o">=</span> <span class="mf">2312.1</span>
-    <span class="n">reduced</span> <span class="n">chi</span><span class="o">-</span><span class="n">square</span> <span class="o">=</span> <span class="mf">14.727</span>
-    <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="mf">433.32</span>
-    <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="mf">442.55</span>
-<span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-    <span class="n">amp1</span><span class="p">:</span>   <span class="mf">0.30304286</span> <span class="o">+/-</span> <span class="mf">0.011667</span> <span class="p">(</span><span class="mf">3.85</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.3030429</span><span class="p">)</span>
-    <span class="n">amp2</span><span class="p">:</span>   <span class="mf">0.45835749</span> <span class="o">+/-</span> <span class="mf">0.005874</span> <span class="p">(</span><span class="mf">1.28</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.4583575</span><span class="p">)</span>
-    <span class="n">amp3</span><span class="p">:</span>   <span class="mf">0.05429199</span> <span class="o">+/-</span> <span class="mf">0.003961</span> <span class="p">(</span><span class="mf">7.30</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.05429198</span><span class="p">)</span>
-    <span class="n">amp4</span><span class="p">:</span>   <span class="mi">0</span> <span class="p">(</span><span class="n">fixed</span><span class="p">)</span>
-    <span class="n">amp5</span><span class="p">:</span>   <span class="mf">0.18430763</span> <span class="o">+/-</span> <span class="mf">0.011132</span> <span class="p">(</span><span class="mf">6.04</span><span class="o">%</span><span class="p">)</span>  <span class="o">==</span> <span class="s1">&#39;1 - amp1 - amp2 - amp3&#39;</span>
-    <span class="n">amp6</span><span class="p">:</span>   <span class="mi">0</span> <span class="p">(</span><span class="n">fixed</span><span class="p">)</span>
-<span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span> <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.100</span><span class="p">)</span>
-    <span class="n">C</span><span class="p">(</span><span class="n">amp2</span><span class="p">,</span> <span class="n">amp3</span><span class="p">)</span>                <span class="o">=</span> <span class="o">-</span><span class="mf">0.916</span>
-    <span class="n">C</span><span class="p">(</span><span class="n">amp1</span><span class="p">,</span> <span class="n">amp2</span><span class="p">)</span>                <span class="o">=</span> <span class="o">-</span><span class="mf">0.247</span>
-    <span class="n">C</span><span class="p">(</span><span class="n">amp1</span><span class="p">,</span> <span class="n">amp3</span><span class="p">)</span>                <span class="o">=</span>  <span class="mf">0.152</span>
+<span class="go">[[Fit Statistics]]</span>
+<span class="go">    # function evals   = 7</span>
+<span class="go">    # data points      = 160</span>
+<span class="go">    # variables        = 3</span>
+<span class="go">    chi-square         = 2312.1</span>
+<span class="go">    reduced chi-square = 14.727</span>
+<span class="go">    Akaike info crit   = 433.32</span>
+<span class="go">    Bayesian info crit = 442.55</span>
+<span class="go">[[Variables]]</span>
+<span class="go">    amp1:   0.30304286 +/- 0.011667 (3.85%) (init= 0.3030429)</span>
+<span class="go">    amp2:   0.45835749 +/- 0.005874 (1.28%) (init= 0.4583575)</span>
+<span class="go">    amp3:   0.05429199 +/- 0.003961 (7.30%) (init= 0.05429198)</span>
+<span class="go">    amp4:   0 (fixed)</span>
+<span class="go">    amp5:   0.18430763 +/- 0.011132 (6.04%)  == &#39;1 - amp1 - amp2 - amp3&#39;</span>
+<span class="go">    amp6:   0 (fixed)</span>
+<span class="go">[[Correlations]] (unreported correlations are &lt;  0.100)</span>
+<span class="go">    C(amp2, amp3)                = -0.916</span>
+<span class="go">    C(amp1, amp2)                = -0.247</span>
+<span class="go">    C(amp1, amp3)                =  0.152</span>
 </pre></div>
 </div>
 <p>The plots resulting from both sets of Parameters are shown:</p>
@@ -978,7 +978,7 @@ found here.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>

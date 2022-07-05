@@ -1,0 +1,280 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>5.3. Pre-edge subtraction and Normalization &#8212; xraylarch 0.9.65 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5.5. Pre-edge peak fitting" href="preedge.html" />
+    <link rel="prev" title="5.2. Reading and Saving Data into XAS Viewer" href="iodata.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
+
+  </head><body>
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<table border=0>
+  <tr>
+    <td width=20%>
+	<a href="../index.html">
+	 <img src="../_static/larchcones.png" height=50px alt="larchcones"/></a>
+    </td>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="../index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
+    </td>
+   </tr></table>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="preedge.html" title="5.5. Pre-edge peak fitting"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="iodata.html" title="5.2. Reading and Saving Data into XAS Viewer"
+             accesskey="P">previous</a> |</li>
+   <li>[<a href="../index.html"> Larch</a>|</li>
+   <li><a href="../getting_started.html"> Getting Started</a>|</li>
+   <li><a href="../xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray.html">X-ray Databases</a>|</li>
+   <li><a href="../xrf.html">XRF Analysis</a>|</li>
+
+          <li class="nav-item nav-item-1"><a href="../xasviewer.html" accesskey="U"><span class="section-number">5. </span>XASViewer</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.3. </span>Pre-edge subtraction and Normalization</a></li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">5.3. Pre-edge subtraction and Normalization</a></li>
+<li><a class="reference internal" href="#common-xas-processing-dialogs">5.4. Common XAS Processing Dialogs</a><ul>
+<li><a class="reference internal" href="#energy-calibration-and-alignment">5.4.1. Energy Calibration and alignment</a></li>
+<li><a class="reference internal" href="#deglitching-and-truncating-data">5.4.2. Deglitching and Truncating Data</a></li>
+<li><a class="reference internal" href="#smoothing-data">5.4.3. Smoothing Data</a></li>
+<li><a class="reference internal" href="#de-convolving-xas-data">5.4.4. De-convolving XAS  Data</a></li>
+<li><a class="reference internal" href="#re-binning-xas-data">5.4.5. Re-binning XAS  Data</a></li>
+<li><a class="reference internal" href="#correcting-for-over-absorption-in-xas-data">5.4.6. Correcting for Over-Absorption in XAS Data</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="iodata.html"
+                          title="previous chapter"><span class="section-number">5.2. </span>Reading and Saving Data into XAS Viewer</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="preedge.html"
+                          title="next chapter"><span class="section-number">5.5. </span>Pre-edge peak fitting</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/xasviewer/dialogs.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
+<section id="pre-edge-subtraction-and-normalization">
+<span id="xasviewer-preedge"></span><h1><span class="section-number">5.3. </span>Pre-edge subtraction and Normalization<a class="headerlink" href="#pre-edge-subtraction-and-normalization" title="Permalink to this headline">¶</a></h1>
+<p>As shown above in <a class="reference internal" href="overview.html#fig-xasviewer-1"><span class="std std-numref">Figure 5.1.5.1</span></a>, the main analysis panel for
+the XAS Viewer program is the “XAS Normalization” Panel.  This panel helps
+you do pre-edge subtraction and normalization of XAFS data using the
+<code class="xref py py-func docutils literal notranslate"><span class="pre">find_e0()</span></code>, <a class="reference internal" href="../xafs_preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a>, or <a class="reference internal" href="../xafs_preedge.html#mback_norm" title="mback_norm"><code class="xref py py-func docutils literal notranslate"><span class="pre">mback_norm()</span></code></a> functions.  This
+processing step is important for getting normalized XAFS spectra that is
+used for further analysis of both XANES and EXAFS.  In general, the idea is
+to get the main step of each XAS spectrum to go from 0 below the main edge
+to 1 above the edge, so that the normalized spectrum represents the average
+absorption of each absorbing element in the sample.</p>
+<p>The first step in the process is to identify <span class="math notranslate nohighlight">\(E_0\)</span>, the absorption
+threshold energy.  This is typically (and by default) chosen as the energy
+point where the first derivative <span class="math notranslate nohighlight">\(d\mu(E)/dE\)</span> has a maximum.  This
+may not necessarily reflect the onset of absorption or the Fermi level, but
+it is easy to identify reliably for any spectrum.  At this point, the value
+does not have to be highly accurate, so that predictability and
+reproducibility are favored.  You can set the value of <span class="math notranslate nohighlight">\(E_0\)</span> or allow
+it to be determined automatically.</p>
+<p>The next step is to measure how large the jump in absorption is. This
+process can be somewhat trickier, so that there are some heuristics built
+in to XAS Viewer (and <a class="reference internal" href="../xafs_preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a>) to help make this more robust.
+You can explicitly set the the value of the edge step, or allow it to be
+calculated from the spectra in one of two ways.</p>
+<p>The classic way for determining the edge step is encapsulated in the
+<a class="reference internal" href="../xafs_preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a> function.  Default values for ranges for the fitted
+pre-edge line and post-edge normalization curve can be set, or you can rely
+on the default settings for these values.  In general, the default settings
+give pretty good results, but the value for the edge step or the fitting
+ranges and curve forms can be altered here.</p>
+<p>Consult with <a class="reference internal" href="../xafs_preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a> and <a class="reference internal" href="../xafs_preedge.html#mback_norm" title="mback_norm"><code class="xref py py-func docutils literal notranslate"><span class="pre">mback_norm()</span></code></a> function for more
+details on these parameters.  Note that you can copy processing parameters
+from one group to other groups with the set of “copy” buttons that will
+copy the corresponding parameters to all the selected groups.</p>
+<p>Finally, from the normalization panel, you can plot the data for the one
+currently selected group or for all selected groups in a few different
+ways: Raw <span class="math notranslate nohighlight">\(\mu(E)\)</span>, normalized <span class="math notranslate nohighlight">\(\mu(E)\)</span>, the derivative
+<span class="math notranslate nohighlight">\(d\mu(E)/dE\)</span>, flattened <span class="math notranslate nohighlight">\(\mu(E)\)</span>.  For the current group there
+are even mor options, including the raw <span class="math notranslate nohighlight">\(\mu(E)\)</span> with the pre-edge
+line and post-edge normalization curve, or compare with the
+MBACK-calculation for normalization.</p>
+</section>
+<section id="common-xas-processing-dialogs">
+<span id="xasviewer-dialogs"></span><h1><span class="section-number">5.4. </span>Common XAS Processing Dialogs<a class="headerlink" href="#common-xas-processing-dialogs" title="Permalink to this headline">¶</a></h1>
+<p>When importing and normalizing XAS data, it is sometimes necessary to make some
+corrections of manipulate the data in a few well-defined ways.  These
+can include:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>copying, removing, and renaming data groups.</p></li>
+<li><p>merging of data groups – summing similar or repeated spectra.</p></li>
+<li><p>de-glitching spectra.</p></li>
+<li><p>recalibrating or aligning spectra.</p></li>
+<li><p>smoothing of noisy spectra.</p></li>
+<li><p>re-binning of spectra onto a “normal” XAFS energy grid.</p></li>
+<li><p>de-convolving spectra.</p></li>
+<li><p>correcting over-absorption in fluorescence XANES spectra.</p></li>
+</ul>
+</div></blockquote>
+<p>There are several dialogs available in XAS Viewere, each designed to guide
+through the steps needs for these corrections or manipulations.  Each of
+these is described in more detail below.</p>
+<section id="energy-calibration-and-alignment">
+<span id="xasviewer-energy-calib"></span><h2><span class="section-number">5.4.1. </span>Energy Calibration and alignment<a class="headerlink" href="#energy-calibration-and-alignment" title="Permalink to this headline">¶</a></h2>
+<p>Each XAS spectra Group has</p>
+<figure class="align-center" id="id1">
+<span id="fig-xasviewer-dialog-cal"></span><a class="reference external image-reference" href="../_images/XASViewer_calibrate_dialog.png"><img alt="../_images/XASViewer_calibrate_dialog.png" src="../_images/XASViewer_calibrate_dialog.png" style="width: 50%;" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.4.1.1 </span><span class="caption-text">Energy calibration dialog.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="deglitching-and-truncating-data">
+<span id="xasviewer-deglitch"></span><h2><span class="section-number">5.4.2. </span>Deglitching and Truncating Data<a class="headerlink" href="#deglitching-and-truncating-data" title="Permalink to this headline">¶</a></h2>
+<figure class="align-center" id="id2">
+<span id="fig-xasviewer-dialog-deglitch"></span><a class="reference external image-reference" href="../_images/XASViewer_deglitch_dialog.png"><img alt="../_images/XASViewer_deglitch_dialog.png" src="../_images/XASViewer_deglitch_dialog.png" style="width: 50%;" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.4.2.1 </span><span class="caption-text">De-glitching dialog</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="smoothing-data">
+<span id="xasviewer-smooth"></span><h2><span class="section-number">5.4.3. </span>Smoothing Data<a class="headerlink" href="#smoothing-data" title="Permalink to this headline">¶</a></h2>
+<figure class="align-center" id="id3">
+<span id="fig-xasviewer-dialog-smooth"></span><a class="reference external image-reference" href="../_images/XASViewer_smooth_dialog.png"><img alt="../_images/XASViewer_smooth_dialog.png" src="../_images/XASViewer_smooth_dialog.png" style="width: 50%;" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.4.3.1 </span><span class="caption-text">Energy smoothing dialog.</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="de-convolving-xas-data">
+<span id="xasviewer-deconv"></span><h2><span class="section-number">5.4.4. </span>De-convolving XAS  Data<a class="headerlink" href="#de-convolving-xas-data" title="Permalink to this headline">¶</a></h2>
+<figure class="align-center" id="id4">
+<span id="fig-xasviewer-dialog-deconv"></span><a class="reference external image-reference" href="../_images/XASViewer_deconvolve_dialog.png"><img alt="../_images/XASViewer_deconvolve_dialog.png" src="../_images/XASViewer_deconvolve_dialog.png" style="width: 50%;" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.4.4.1 </span><span class="caption-text">Deconvolution dialog.</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="re-binning-xas-data">
+<span id="xasviewer-rebin"></span><h2><span class="section-number">5.4.5. </span>Re-binning XAS  Data<a class="headerlink" href="#re-binning-xas-data" title="Permalink to this headline">¶</a></h2>
+<figure class="align-center" id="id5">
+<span id="fig-xasviewer-dialog-rebin"></span><a class="reference external image-reference" href="../_images/XASViewer_rebin_dialog.png"><img alt="../_images/XASViewer_rebin_dialog.png" src="../_images/XASViewer_rebin_dialog.png" style="width: 50%;" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.4.5.1 </span><span class="caption-text">Energy re-binning dialog.</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="correcting-for-over-absorption-in-xas-data">
+<span id="xasviewer-overabsorb"></span><h2><span class="section-number">5.4.6. </span>Correcting for Over-Absorption in XAS Data<a class="headerlink" href="#correcting-for-over-absorption-in-xas-data" title="Permalink to this headline">¶</a></h2>
+<figure class="align-center" id="id6">
+<span id="fig-xasviewer-dialog-overabs"></span><a class="reference external image-reference" href="../_images/XASViewer_overabsorption_dialog.png"><img alt="../_images/XASViewer_overabsorption_dialog.png" src="../_images/XASViewer_overabsorption_dialog.png" style="width: 50%;" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.4.6.1 </span><span class="caption-text">Over-absorption correction dialog</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="preedge.html" title="5.5. Pre-edge peak fitting"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="iodata.html" title="5.2. Reading and Saving Data into XAS Viewer"
+             >previous</a> |</li>
+   <li>[<a href="../index.html"> Larch</a>|</li>
+   <li><a href="../getting_started.html"> Getting Started</a>|</li>
+   <li><a href="../xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray.html">X-ray Databases</a>|</li>
+   <li><a href="../xrf.html">XRF Analysis</a>|</li>
+
+          <li class="nav-item nav-item-1"><a href="../xasviewer.html" ><span class="section-number">5. </span>XASViewer</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.3. </span>Pre-edge subtraction and Normalization</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright Matthew Newville, The University of Chicago, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+    </div>
+  </body>
+</html>

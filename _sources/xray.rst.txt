@@ -1,3 +1,5 @@
+.. include:: _config.rst
+
 .. _xraydb-chapter:
 
 =====================
@@ -226,10 +228,10 @@ line names <xraydb-lines_table>`.  Finally, all energies are in eV.
 
     :param z_or_symbol:  Integer atomic number or symbol for elemen
     :param energy:       energy (single value, list, array) in eV at which
-                         to calculate :math:`\mu`.
+			 to calculate :math:`\mu`.
     :param kind:         one of 'total' (default), 'photo', 'coh', and 'incoh' for
-                         total, photo-absorption, coherent scattering, and
-                         incoherent scattering cross sections, respectively.
+			 total, photo-absorption, coherent scattering, and
+			 incoherent scattering cross sections, respectively.
 
 
 .. function:: coherent_xsec(z_or_symbol, energies)
@@ -337,9 +339,9 @@ and so on are then given.
       :func:`material_add`            add a material to list of known materials
       :func:`material_mu`             calculate :math:`\mu` for a material or chemical formula
       :func:`material_mu_components`  calculate components of :math:`\mu` for a material or
-                                      chemical formula
+				      chemical formula
       :func:`xray_delta_beta`         anomalous index of refraction for a
-                                      material, using data from Chantler.
+				      material, using data from Chantler.
      =============================== =============================================================
 
 
@@ -348,19 +350,19 @@ and so on are then given.
    parse a chemical formula, returning a dictionary with element symbols as
    keys and number for each element as values.  For example, in Larch::
 
-        larch> chemparse("H2O")
-        {'H': 2.0, 'O': 1}
-        larch> chemparse("Mg0.2Fe0.8(SO4)2")
-        {'S': 2.0, 'Mg': 0.2, 'Fe': 0.8, 'O': 8.0}
+	larch> chemparse("H2O")
+	{'H': 2.0, 'O': 1}
+	larch> chemparse("Mg0.2Fe0.8(SO4)2")
+	{'S': 2.0, 'Mg': 0.2, 'Fe': 0.8, 'O': 8.0}
 
    or in Python:
 
-        >>> import larch
+	>>> import larch
 	>>> from larch_plugins.xray import chemparse
-        >>> chemparse("H2O")
-        {'H': 2.0, 'O': 1}
-        >>> chemparse("Mg0.2Fe0.8(SO4)2")
-        {'S': 2.0, 'Mg': 0.2, 'Fe': 0.8, 'O': 8.0}
+	>>> chemparse("H2O")
+	{'H': 2.0, 'O': 1}
+	>>> chemparse("Mg0.2Fe0.8(SO4)2")
+	{'S': 2.0, 'Mg': 0.2, 'Fe': 0.8, 'O': 8.0}
 
 
 
@@ -374,14 +376,14 @@ and so on are then given.
    look up chemical compound by naming returning formula (not parsed!) and
    density.  For example, in Larch::
 
-        larch> material_get('kapton')
-        ('C22H10N2O5', 1.43)
+	larch> material_get('kapton')
+	('C22H10N2O5', 1.43)
 
    in python::
 
 	>>> from larch_plugins.xray import material_get
 	>>> material_get('kapton')
-        ('C22H10N2O5', 1.43)
+	('C22H10N2O5', 1.43)
 
    material names are not case sensitive.
 
@@ -404,11 +406,11 @@ and so on are then given.
 
     :param name:    material name or formula
     :param energy:  energy (single value, list, array) in eV at which
-                    to calculate :math:`\mu`.
+		    to calculate :math:`\mu`.
     :param kind:    one of 'total' (default), 'photo', 'coh', and
-                    'incoh' (see :func:`mu_elam`)
+		    'incoh' (see :func:`mu_elam`)
     :param density: material density (if ``None``, it will be looked up for
-                    known materials)
+		    known materials)
     :return:        :math:`\mu` in 1/cm.
 
     uses :func:`mu_elam`. Example::
@@ -424,11 +426,11 @@ and so on are then given.
 
     :param name:    material name or formula
     :param energy:  energy (single value, list, array) in eV at which
-                    to calculate :math:`\mu`.
+		    to calculate :math:`\mu`.
     :param kind:    one of 'total' (default), 'photo', 'coh', and
-                    'incoh' (see :func:`mu_elam`)
+		    'incoh' (see :func:`mu_elam`)
     :param density: material density (if ``None``, it will be looked up
-                    for known materials)
+		    for known materials)
     :return:        dictionary of data for constructing :math:`\mu` per element.
 
     The returned dictionary will have elements 'mass' (total mass), 'density', and
@@ -449,19 +451,19 @@ and so on are then given.
     :param density:    material density in g/cm^3
     :param energy:     X-ray energy in eV
     :param photo_only: boolean for returning only the photo cross-section component
-                       for beta and t_atten. If ``False`` (the default value), the
-                       total cross-section is returned.
+		       for beta and t_atten. If ``False`` (the default value), the
+		       total cross-section is returned.
     :return:           (delta, beta, t_atten)
 
     The material formula is parsed by :func:`chemparse`.   The returned
     tuple contains the components described in the table below
 
       ============== ================= ===============================================
-         value         symbol            description
+	 value         symbol            description
       ============== ================= ===============================================
-         delta        :math:`\delta`     real part of index of refraction.
-         beta         :math:`\beta`      imaginary part of index of refraction.
-         t_atten      :math:`t_a`        attenuation length, in cm.
+	 delta        :math:`\delta`     real part of index of refraction.
+	 beta         :math:`\beta`      imaginary part of index of refraction.
+	 t_atten      :math:`t_a`        attenuation length, in cm.
       ============== ================= ===============================================
 
     and correspond to the anomalous scattering components of the index of
@@ -473,6 +475,3 @@ and so on are then given.
 
 .. math::
     n = 1 -x \delta - i \beta = 1 - \lambda^2 \frac{r_{0}}{2\pi} \sum_j{ n_j  f_j}
-
-
-    

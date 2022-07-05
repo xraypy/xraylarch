@@ -1,0 +1,311 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>5.2. Reading and Saving Data into XAS Viewer &#8212; xraylarch 0.9.65 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5.3. Pre-edge subtraction and Normalization" href="dialogs.html" />
+    <link rel="prev" title="5.1. XAS Viewer Overview" href="overview.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
+
+  </head><body>
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<table border=0>
+  <tr>
+    <td width=20%>
+	<a href="../index.html">
+	 <img src="../_static/larchcones.png" height=50px alt="larchcones"/></a>
+    </td>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="../index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
+    </td>
+   </tr></table>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="dialogs.html" title="5.3. Pre-edge subtraction and Normalization"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="overview.html" title="5.1. XAS Viewer Overview"
+             accesskey="P">previous</a> |</li>
+   <li>[<a href="../index.html"> Larch</a>|</li>
+   <li><a href="../getting_started.html"> Getting Started</a>|</li>
+   <li><a href="../xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray.html">X-ray Databases</a>|</li>
+   <li><a href="../xrf.html">XRF Analysis</a>|</li>
+
+          <li class="nav-item nav-item-1"><a href="../xasviewer.html" accesskey="U"><span class="section-number">5. </span>XASViewer</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.2. </span>Reading and Saving Data into XAS Viewer</a></li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">5.2. Reading and Saving Data into XAS Viewer</a><ul>
+<li><a class="reference internal" href="#reading-plaintext-data-files-including-xdi">5.2.1. Reading Plaintext data files, including XDI</a></li>
+<li><a class="reference internal" href="#reading-data-from-athena-project-files">5.2.2. Reading Data from Athena Project Files</a></li>
+<li><a class="reference internal" href="#reading-spec-bliss-hdf5-data">5.2.3. Reading Spec/Bliss HDF5 Data</a></li>
+<li><a class="reference internal" href="#larch-session-files-and-xas-viewer">5.2.4. Larch Session Files and XAS Viewer</a></li>
+<li><a class="reference internal" href="#auto-saving-larch-session-files">5.2.5. Auto-saving Larch Session Files</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="overview.html"
+                          title="previous chapter"><span class="section-number">5.1. </span>XAS Viewer Overview</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="dialogs.html"
+                          title="next chapter"><span class="section-number">5.3. </span>Pre-edge subtraction and Normalization</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/xasviewer/iodata.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
+<section id="reading-and-saving-data-into-xas-viewer">
+<span id="xasviewer-io"></span><h1><span class="section-number">5.2. </span>Reading and Saving Data into XAS Viewer<a class="headerlink" href="#reading-and-saving-data-into-xas-viewer" title="Permalink to this headline">¶</a></h1>
+<p>XAS Viewer can import XAS data in the following formats</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>XDI data files - the standard data format for XAS data.</p></li>
+<li><p>plain text data data files with data arrays in column format.</p></li>
+<li><p>Athena Project Files.</p></li>
+<li><p>ESRF Spec/BLISS HDF5 files.</p></li>
+<li><p>Larch Session files (<a class="reference internal" href="#xasviewer-sessionfiles"><span class="std std-ref">Larch Session Files and XAS Viewer</span></a>).</p></li>
+</ul>
+</div></blockquote>
+<p>When reading data from plaintext column files (which is how most beamlines
+and instruments will save data), it is possible to add, multiply, and
+divide various columns, and to convert from monochromator angle to X-ray
+energy. Reference channels and uncertainties can also be read from the
+column files as well.</p>
+<p>For exporting or saving data, XAS Viewer can save multiple XAS spectra as:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Athena Project files. (<a class="reference internal" href="#xasviewer-sessionfiles"><span class="std std-ref">Larch Session Files and XAS Viewer</span></a>).</p></li>
+<li><p>CSV files.</p></li>
+<li><p>Larch Session files (<a class="reference internal" href="#xasviewer-sessionfiles"><span class="std std-ref">Larch Session Files and XAS Viewer</span></a>).</p></li>
+</ul>
+</div></blockquote>
+<section id="reading-plaintext-data-files-including-xdi">
+<span id="xasviewer-plaintext"></span><h2><span class="section-number">5.2.1. </span>Reading Plaintext data files, including XDI<a class="headerlink" href="#reading-plaintext-data-files-including-xdi" title="Permalink to this headline">¶</a></h2>
+<p>XAS Viewer can read data from XDI files or from other plaintext (ASCII)
+data files using a GUI form shown in <a class="reference internal" href="#fig-xasviewer-dataimport"><span class="std std-numref">Figure 5.2.1.1</span></a>. This data
+importer window will help you build XAFS <span class="math notranslate nohighlight">\(\mu(E)\)</span> from the various
+columns in your data file, and wraps some of the routines described in
+Chapter <a class="reference internal" href="../data.html#data-io-chapter"><span class="std std-ref">Reading and Writing Data</span></a>. With this form, the goal is to construct
+<span class="math notranslate nohighlight">\(\mu(E)\)</span> with the energy array <span class="math notranslate nohighlight">\(E\)</span> in units of eV.  From this
+window you can</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>visually inspect the resulting plot</p></li>
+<li><p>inspect the text of the data file</p></li>
+<li><p>specify whether the X axis has units of ‘eV’, ‘keV’, or ‘degrees’</p></li>
+<li><p>for data with X in ‘degrees’, setting the monochromator <cite>d</cite> spacing will
+allow energy to be calculated.</p></li>
+<li><p>select the appropriate operations and arrays to build  <span class="math notranslate nohighlight">\(\mu\)</span> (“-log(I1/I0)”,
+“I2/IO”, etc)</p></li>
+<li><p>select a column or value for uncertainty in <span class="math notranslate nohighlight">\(\mu\)</span></p></li>
+<li><p>select operations and arrays to build a reference <span class="math notranslate nohighlight">\(\mu\)</span> array</p></li>
+<li><p>select columns to add together (say, for multi-channel fluorescence
+data) into a new array.</p></li>
+<li><p>edit the names of the columns that were automatically determined when
+reading the file</p></li>
+<li><p>edit the displayed “file name” (used in the File List on the main XAS Viewer window)</p></li>
+<li><p>edit the “group name” - the name of the group in the Larch programming session.</p></li>
+</ul>
+</div></blockquote>
+<p>Once you have made selections for how to read in data, these will be
+rememberd the next time you read in data.  When reading in multiple files,
+the array choices will be assumed to be the same for all files.</p>
+<figure class="align-center" id="id1">
+<span id="fig-xasviewer-dataimport"></span><a class="reference external image-reference" href="../_images/DataImporter.png"><img alt="../_images/DataImporter.png" src="../_images/DataImporter.png" style="width: 55%;" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.2.1.1 </span><span class="caption-text">Plaintext Data file importer.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="reading-data-from-athena-project-files">
+<span id="xasviewer-athena"></span><h2><span class="section-number">5.2.2. </span>Reading Data from Athena Project Files<a class="headerlink" href="#reading-data-from-athena-project-files" title="Permalink to this headline">¶</a></h2>
+<p>XAS <span class="math notranslate nohighlight">\(\mu(E)\)</span> data can also be read from Athena Project files, as
+shown in <a class="reference internal" href="#fig-xasviewer-athenaimporter"><span class="std std-numref">Figure 5.2.2.1</span></a>. Multiple data groups can be selected
+and read in.  When reading Athena Project files, many of the processing
+parameters saved in the project for each Group will be read and used by XAS
+Viewer.</p>
+<figure class="align-center" id="id2">
+<span id="fig-xasviewer-athenaimporter"></span><a class="reference external image-reference" href="../_images/AthenaImporter.png"><img alt="../_images/AthenaImporter.png" src="../_images/AthenaImporter.png" style="width: 60%;" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.2.2.1 </span><span class="caption-text">Athena Project importer.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="reading-spec-bliss-hdf5-data">
+<span id="xasviewer-blisshdf5"></span><h2><span class="section-number">5.2.3. </span>Reading Spec/Bliss HDF5 Data<a class="headerlink" href="#reading-spec-bliss-hdf5-data" title="Permalink to this headline">¶</a></h2>
+<p>HDF5 and ASCII data files from Spec/Bliss format used at ESRF can be read.
+These files support multiple “scans”, some of which may be XAS scans, and
+are typically ordered by the time at which they were collected.</p>
+<p>For each scan, the operations and arrays to construct <span class="math notranslate nohighlight">\(\mu(E)\)</span> can be
+selected.  As for all XAS data, the energy is expected to be in eV: for
+data with energy units of keV, be sure to specfiy the energy units!</p>
+<figure class="align-center" id="id3">
+<span id="fig-xasviewer-h5specimporter"></span><a class="reference external image-reference" href="../_images/XASViewer_H5SpecImporter.png"><img alt="../_images/XASViewer_H5SpecImporter.png" src="../_images/XASViewer_H5SpecImporter.png" style="width: 75%;" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.2.3.1 </span><span class="caption-text">Larch Session Importer for HDF5 Spec data files from the Bliss data
+collection at ESRF.</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="larch-session-files-and-xas-viewer">
+<span id="xasviewer-sessionfiles"></span><h2><span class="section-number">5.2.4. </span>Larch Session Files and XAS Viewer<a class="headerlink" href="#larch-session-files-and-xas-viewer" title="Permalink to this headline">¶</a></h2>
+<p>Larch Session Files (using the <cite>.larix</cite> extension) save all of the user
+data in to a single file that can be loaded at a later. This includes not
+only the data as read into the session, but all of the processed arrays,
+Journals, and analysis results, including fit histories each Group.  The
+Session files are meant to be completely portable across different
+computers and versions.  This effectively allows you to save your session
+as a “Project” and be able to share it with someone else or come back to it
+later, picking up the analysis where you left it.</p>
+<p>For XAS Viewer, a saved Larch session file will include all of the XAS data
+in the groups shown in the “list of Groups” on the left-hand side of the
+main window.  It will also include all the interim processing data.  All
+the commands issued in the Larch buffer in the existing session will be
+saved, and some configuration information (machine type, versions, etc) for
+the session are also saved.  See <a class="reference internal" href="../data.html#larch-session-files"><span class="std std-ref">Saving and Loading Larch Session Files: .larix Files</span></a> for further
+details.</p>
+<p>From XAS Viewer, you can save a Session file at any time using the File
+Menu or “Ctrl-S” (“Apple-S” on macOS).  You can import data from a Session
+file either with “Ctrl-R” (“Apple-R” on macOS) to browse and load Session
+files, or with a more generic “Ctrl-O” (“Apple-O” on macOS) to load data
+from the several known data formats.</p>
+<p>When importing data from a saved Session, a Window as show below will allow
+you to select which groups to import - you do not have to import every
+group.  If there naming conflicts between the data to be imported and the
+groups already in the current session, you will be able to specify whether
+to overwrite or import with a new name.  Some common “internal working
+groups” (notably, the cache of Feff Paths imported) will be <em>merged</em>, and
+some will be overwritten.  When loading a Session file, you can also view
+the configuration of the saved session (including computer name, operating
+system, versions), and the command history from that session.  Those will
+not be merged into the current session, but can be useful to inspect.</p>
+<figure class="align-center" id="id4">
+<span id="fig-xasviewer-larix1"></span><a class="reference external image-reference" href="../_images/XASViewer_SessionImport.png"><img alt="../_images/XASViewer_SessionImport.png" src="../_images/XASViewer_SessionImport.png" style="width: 75%;" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.2.4.1 </span><span class="caption-text">Larch Session Importer for XAS Viewer, showing XAS groups to be read
+into the existing session.</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="auto-saving-larch-session-files">
+<h2><span class="section-number">5.2.5. </span>Auto-saving Larch Session Files<a class="headerlink" href="#auto-saving-larch-session-files" title="Permalink to this headline">¶</a></h2>
+<p>XAS Viewer will periodically save session files and keep a history of
+session files.  By default, these are saved every 15 minutes while XAS
+Viewer is running and while the program is actually in use and data
+processing is actually happened (an idle session will not continue to save
+data).  The most recent 5 of them will be kept as files named (in order of
+most recent to oldest) of <cite>session_autosave.larix</cite>,
+<cite>session_autosave_1.larix</cite>, <cite>session_autosave_2.larix</cite>, and so on in the
+the <cite>xas_viewer</cite> folder in your Larch user directory (typically
+<cite>C:Users&lt;YourName&gt;larch</cite> on Windows, <cite>/Users/&lt;YourName&gt;/.larch</cite> on
+macOS, and <cite>/home/&lt;YourName&gt;/.larch</cite> on Linux).  Several of these settings
+can be configured as part of the XAS Viewer User Preferences.</p>
+<p>When exiting XAS Viewer, you will be prompted with information about when
+the last Session file was automatically saved, and asked if you want want
+to save the Session before exiting.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="dialogs.html" title="5.3. Pre-edge subtraction and Normalization"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="overview.html" title="5.1. XAS Viewer Overview"
+             >previous</a> |</li>
+   <li>[<a href="../index.html"> Larch</a>|</li>
+   <li><a href="../getting_started.html"> Getting Started</a>|</li>
+   <li><a href="../xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray.html">X-ray Databases</a>|</li>
+   <li><a href="../xrf.html">XRF Analysis</a>|</li>
+
+          <li class="nav-item nav-item-1"><a href="../xasviewer.html" ><span class="section-number">5. </span>XASViewer</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.2. </span>Reading and Saving Data into XAS Viewer</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright Matthew Newville, The University of Chicago, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+    </div>
+  </body>
+</html>

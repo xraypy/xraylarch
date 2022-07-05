@@ -1,3 +1,5 @@
+.. include:: _config.rst
+
 .. _plotting-chapter:
 
 ====================================
@@ -76,7 +78,7 @@ Arguments <plotopt_table>` below.
    This is essentially the same a :func:`plot`, but with the option  `new=True`.
    The rest of the arguments are as
 
-.. method:: plot(x, y,  **kws)
+.. method:: oplot(x, y,  **kws)
 
    :param x:     array of x values
    :param y:     array of y values -- same size as x

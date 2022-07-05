@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>9.1. Getting Started &#8212; xraylarch 0.9.64 documentation</title>
+    <title>9.1. Getting Started &#8212; xraylarch 0.9.65 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css" />
     
@@ -136,24 +136,24 @@ Larch functions.</p>
 <section id="larch-as-a-basic-calculator">
 <h2><span class="section-number">9.1.1. </span>Larch as a Basic Calculator<a class="headerlink" href="#larch-as-a-basic-calculator" title="Permalink to this headline">¶</a></h2>
 <p>To start with, Larch can be used as a simple calculator:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span>
-<span class="mi">3</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">sqrt</span><span class="p">(</span><span class="mf">4.e5</span><span class="p">)</span>
-<span class="mf">632.45553203367592</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">sin</span><span class="p">(</span><span class="n">pi</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
-<span class="mf">0.8660254037844386</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; 1 + 2</span>
+<span class="go">3</span>
+<span class="go">larch&gt; sqrt(4.e5)</span>
+<span class="go">632.45553203367592</span>
+<span class="go">larch&gt; sin(pi/3)</span>
+<span class="go">0.8660254037844386</span>
 </pre></div>
 </div>
 <p>You can create your own variables holding values, by assigning names to
 values, and then use these in calculations:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">hc</span> <span class="o">=</span> <span class="mf">12398.419</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">d</span> <span class="o">=</span> <span class="mf">3.13556</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">energy</span> <span class="o">=</span> <span class="p">(</span><span class="n">hc</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">d</span><span class="p">))</span> <span class="o">/</span> <span class="n">sin</span><span class="p">(</span><span class="mf">10.0</span><span class="o">*</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
-<span class="mf">11385.470119348252</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">angle</span> <span class="o">=</span> <span class="n">asin</span><span class="p">(</span><span class="n">hc</span><span class="o">/</span><span class="p">(</span><span class="mi">10000</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">d</span><span class="p">))</span><span class="o">*</span><span class="mi">180</span><span class="o">/</span><span class="n">pi</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
-<span class="mf">11.402879992850263</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; hc = 12398.419</span>
+<span class="go">larch&gt; d = 3.13556</span>
+<span class="go">larch&gt; energy = (hc/(2*d)) / sin(10.0*pi/180)</span>
+<span class="go">larch&gt; print(energy)</span>
+<span class="go">11385.470119348252</span>
+<span class="go">larch&gt; angle = asin(hc/(10000*2*d))*180/pi</span>
+<span class="go">larch&gt; print(angle)</span>
+<span class="go">11.402879992850263</span>
 </pre></div>
 </div>
 <p>Note that parentheses are used to group multiplication and division, and
@@ -167,7 +167,7 @@ Larch (owing to its Python origins) is that variables are created
 <em>dynamically</em>, they are not pre-defined to have some particular data type.
 In fact, the a variable name (say, ‘angle’ above) can hold any type of
 data, and its type can be changed easily:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">angle</span> <span class="o">=</span> <span class="s1">&#39;now I am a string&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; angle = &#39;now I am a string&#39;</span>
 </pre></div>
 </div>
 <p>Although the types of values for a variable can be changed dynamically,
@@ -175,7 +175,7 @@ values in Larch (Python) do have a definite and clear type, and conversion
 between types is rigidly defined – you can add an integer and a real
 number to give a real number, but you cannot add a string and a real
 number.   In fact, writing:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">angle</span> <span class="o">=</span> <span class="n">asin</span><span class="p">(</span><span class="n">hc</span><span class="o">/</span><span class="p">(</span><span class="mi">10000</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">d</span><span class="p">))</span><span class="o">*</span><span class="mi">180</span><span class="o">/</span><span class="n">pi</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; angle = asin(hc/(10000*2*d))*180/pi</span>
 </pre></div>
 </div>
 <p>is usually described as “create a variable ‘angle’ and set its value to the
@@ -220,7 +220,7 @@ values.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>

@@ -1,3 +1,5 @@
+.. include:: _config.rst
+
 .. _xafs-ft_sec:
 
 ==============================================
@@ -22,7 +24,7 @@ The standard Fourier transform of a signal :math:`f(t)` can be written as
    :nowrap:
 
    \begin{eqnarray*}
-         {\tilde{f}}(\omega) &=& \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty}
+	 {\tilde{f}}(\omega) &=& \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty}
        f(t) e^{-i{\omega}t} dt \\
        f(t) &=& \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty}
        {\tilde{f}}(\omega) e^{i{\omega}t} d{\omega} \\
@@ -81,11 +83,11 @@ points :math:`R_m = m \, \delta R`, the definitions become:
 
    \begin{eqnarray*}
    \tilde\chi(R_m) &=& \frac{i \delta k}{\sqrt{\pi N_{\rm fft}}} \,
-   		       \sum_{n=1}^{N_{\rm fft}} \chi(k_n) \,
-                       \Omega(k_n) \, k_n^w e^{2i\pi n m/N_{\rm fft}} \\
+		       \sum_{n=1}^{N_{\rm fft}} \chi(k_n) \,
+		       \Omega(k_n) \, k_n^w e^{2i\pi n m/N_{\rm fft}} \\
    \tilde\chi(k_n) &=& \frac{2 i \delta R}{\sqrt{\pi N_{\rm fft}}} \,
-                       \sum_{m=1}^{N_{\rm fft}} \tilde\chi(R_m) \,
-                       \Omega(R_m) \, e^{-2i\pi n m/N_{\rm fft}} \\
+		       \sum_{m=1}^{N_{\rm fft}} \tilde\chi(R_m) \,
+		       \Omega(R_m) \, e^{-2i\pi n m/N_{\rm fft}} \\
    \end{eqnarray*}
 
 
@@ -142,9 +144,9 @@ encapsulated in the :func:`xftf` function.
     The following data is put into the output group:
 
        ================= ===============================================================
-        array name         meaning
+	array name         meaning
        ================= ===============================================================
-        kwin               window :math:`\Omega(k)` (length of input chi(k)).
+	kwin               window :math:`\Omega(k)` (length of input chi(k)).
 	r                  uniform array of :math:`R`, out to ``rmax_out``.
 	chir               complex array of :math:`\tilde\chi(R)`.
 	chir_mag           magnitude of :math:`\tilde\chi(R)`.
@@ -209,9 +211,9 @@ the explicitly real :math:`\chi(k)`.
     The following data is put into the output group:
 
        ================= ===============================================================
-        array name         meaning
+	array name         meaning
        ================= ===============================================================
-        rwin               window :math:`\Omega(R)` (length of input chi(R)).
+	rwin               window :math:`\Omega(R)` (length of input chi(R)).
 	q                  uniform array of :math:`k`, out to ``qmax_out``.
 	chiq               complex array of :math:`\tilde\chi(k)`.
 	chiq_mag           magnitude of :math:`\tilde\chi(k)`.
@@ -281,11 +283,11 @@ available for constructing windows.  A sampling of windows is shown below.
     Table of Fourier Transform Window Types.
 
        =================== =========================================================
-        window name          description
+	window name          description
        =================== =========================================================
-        hanning              cosine-squared taper
-        parzen               linear taper
-        welch                quadratic taper
+	hanning              cosine-squared taper
+	parzen               linear taper
+	welch                quadratic taper
 	gaussian             Gaussian (normal) function window
 	sine                 sine function window
 	kaiser               Kaiser-Bessel function-derived window
@@ -438,11 +440,11 @@ We start with a comparison of a small value of ``dk`` and a larger value.
 A script that runs :func:`xftf`, changing on ``dk`` would look like::
 
     xftf(dat1.k, dat1.chi, kmin=3, kmax=13, dk=1, window='hanning',
-         kweight=kweight, group=dat1)
+	 kweight=kweight, group=dat1)
 
     dat2 = group(k=dat1.k, chi=dat1.chi) # make a copy of the group
     xftf(dat2.k, dat2.chi, kmin=3, kmax=13, dk=5, window='hanning',
-         kweight=kweight, group=dat2)
+	 kweight=kweight, group=dat2)
 
 would result in the following results:
 
@@ -473,23 +475,23 @@ A script that runs :func:`xftf` with consistent parameters, but different
 window types::
 
     xftf(dat1.k, dat1.chi, kmin=3, kmax=13, dk=4, window='hanning',
-         kweight=kweight, group=dat1)
+	 kweight=kweight, group=dat1)
 
     dat2 = group(k=dat1.k, chi=dat1.chi) # make a copy of the group
     xftf(dat2.k, dat2.chi, kmin=3, kmax=13, dk=4, window='parzen',
-         kweight=kweight, group=dat2)
+	 kweight=kweight, group=dat2)
 
     dat3 = group(k=dat1.k, chi=dat1.chi) #
     xftf(dat3.k, dat3.chi, kmin=3, kmax=13, dk=4, window='welch',
-         kweight=kweight, group=dat3)
+	 kweight=kweight, group=dat3)
 
     dat4 = group(k=dat1.k, chi=dat1.chi) #
     xftf(dat4.k, dat4.chi, kmin=3, kmax=13, dk=4, window='kaiser',
-         kweight=kweight, group=dat4)
+	 kweight=kweight, group=dat4)
 
     dat5 = group(k=dat1.k, chi=dat1.chi) #
     xftf(dat5.k, dat5.chi, kmin=3, kmax=13, dk=4, window='gaussian',
-         kweight=kweight, group=dat5)
+	 kweight=kweight, group=dat5)
 
 would result in the following results:
 
@@ -521,8 +523,8 @@ can be instructive to plot the real and imaginary components, as shown
 below::
 
     newplot(dat1.r, dat1.chir_mag, xmax=8, label='chir_mag',
-            show_legend=True, legend_loc='ur', color='black',
-            xlabel=r'$R \rm\, (\AA)$', ylabel=r'$\chi(R)\rm\,(\AA^{-3})$' )
+	    show_legend=True, legend_loc='ur', color='black',
+	    xlabel=r'$R \rm\, (\AA)$', ylabel=r'$\chi(R)\rm\,(\AA^{-3})$' )
 
     plot(dat1.r, dat1.chir_re, color='red', label='chir_re')
     plot(dat1.r, dat1.chir_im, color='blue', label='chir_im')

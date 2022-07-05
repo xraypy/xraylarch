@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>13.8. XAFS: Fitting XAFS to Feff Paths &#8212; xraylarch 0.9.64 documentation</title>
+    <title>13.8. XAFS: Fitting XAFS to Feff Paths &#8212; xraylarch 0.9.65 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
@@ -129,7 +129,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="xafs-fitting-xafs-to-feff-paths">
+  <p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
+<section id="xafs-fitting-xafs-to-feff-paths">
 <h1><span class="section-number">13.8. </span>XAFS: Fitting XAFS to Feff Paths<a class="headerlink" href="#xafs-fitting-xafs-to-feff-paths" title="Permalink to this headline">¶</a></h1>
 <p>Fitting XAFS data with structural models based on Feff calculations is a
 primary motivation for Larch.  In this section, we describe how to set up a
@@ -1239,11 +1240,11 @@ Such derived uncertainties do reflect the uncertainties and correlations
 between variables.  For example, a simplistic evaluation for the standard
 error in one of the <code class="docutils literal notranslate"><span class="pre">sigma2</span></code> parameters using the estimated variance in
 the <code class="docutils literal notranslate"><span class="pre">theta</span></code> might be done as follows:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">_ave</span> <span class="o">=</span> <span class="n">sigma2_eins</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">_dlo</span> <span class="o">=</span> <span class="n">sigma2_eins</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">theta</span><span class="o">-</span><span class="n">pars</span><span class="o">.</span><span class="n">theta</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span> <span class="o">-</span> <span class="n">_ave</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">_dhi</span> <span class="o">=</span> <span class="n">sigma2_eins</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">theta</span><span class="o">+</span><span class="n">pars</span><span class="o">.</span><span class="n">theta</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span> <span class="o">-</span> <span class="n">_ave</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="s2">&quot;sigma2(T=10) = </span><span class="si">%.5f</span><span class="s2">  (</span><span class="si">%+.5f</span><span class="s2">, </span><span class="si">%+.5f</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">_ave</span><span class="p">,</span> <span class="n">_dlo</span><span class="p">,</span> <span class="n">_dhi</span><span class="p">)</span>
-<span class="n">sigma2</span><span class="p">(</span><span class="n">T</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="o">=</span> <span class="mf">0.00328</span>  <span class="p">(</span><span class="o">+</span><span class="mf">0.00011</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.00011</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; _ave = sigma2_eins(10, pars.theta)</span>
+<span class="go">larch&gt; _dlo = sigma2_eins(10, pars.theta-pars.theta.stderr) - _ave</span>
+<span class="go">larch&gt; _dhi = sigma2_eins(10, pars.theta+pars.theta.stderr) - _ave</span>
+<span class="go">larch&gt; print &quot;sigma2(T=10) = %.5f  (%+.5f, %+.5f)&quot; % (_ave, _dlo, _dhi)</span>
+<span class="go">sigma2(T=10) = 0.00328  (+0.00011, -0.00011)</span>
 </pre></div>
 </div>
 <p>This gives an estimate about 3 times larger than the estimate automatically
@@ -1469,20 +1470,20 @@ previous example.</p>
 parameter groups and dataset groups, make a few changes, and re-run the
 fits.  For example, we can change the fitting space with (see
 examples/feffit/doc_feffit5.lar):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">pars2</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">pars</span><span class="p">)</span>   <span class="c1"># copy parameters</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">dset2</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">dset</span><span class="p">)</span>   <span class="c1"># copy dataset</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">dset2</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">fitspace</span> <span class="o">=</span> <span class="s1">&#39;q&#39;</span>  <span class="c1"># fit in backtransformed k-space</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; pars2 = copy(pars)   # copy parameters</span>
+<span class="go">larch&gt; dset2 = copy(dset)   # copy dataset</span>
+<span class="go">larch&gt; dset2.transform.fitspace = &#39;q&#39;  # fit in backtransformed k-space</span>
 </pre></div>
 </div>
 <p>Now we can run <a class="reference internal" href="#id0" title="feffit"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a> with the new parameter group and Dataset
 group, and compare the results either by plotting models from the different
 copies of the dataset or by viewing the parameter values and fit statistics
 with:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">out2</span>  <span class="o">=</span> <span class="n">feffit</span><span class="p">(</span><span class="n">pars2</span><span class="p">,</span> <span class="n">dset2</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="s1">&#39;*** R Space ***&#39;</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">feffit_report</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">with_paths</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">min_correl</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="s1">&#39;*** Q Space ***&#39;</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">feffit_report</span><span class="p">(</span><span class="n">out2</span><span class="p">,</span> <span class="n">with_paths</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">min_correl</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; out2  = feffit(pars2, dset2)</span>
+<span class="go">larch&gt; print &#39;*** R Space ***&#39;</span>
+<span class="go">larch&gt; print feffit_report(out, with_paths=False, min_correl=0.5)</span>
+<span class="go">larch&gt; print &#39;*** Q Space ***&#39;</span>
+<span class="go">larch&gt; print feffit_report(out2, with_paths=False, min_correl=0.5)</span>
 </pre></div>
 </div>
 <p>which gives</p>
@@ -1568,12 +1569,12 @@ with:</p>
 and uncertainties for the varied parameters are quite close for the fit in
 ‘R’ space and ‘Q’ space.</p>
 <p>Now, we can try the fit in unfiltered ‘K’ space:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">pars3</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">pars</span><span class="p">)</span>   <span class="c1"># copy parameters</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">dset3</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">dset</span><span class="p">)</span>   <span class="c1"># copy dataset</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">dset3</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">kweight</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">dset3</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">fitspace</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">out3</span> <span class="o">=</span> <span class="n">feffit</span><span class="p">(</span><span class="n">pars3</span><span class="p">,</span> <span class="n">dset3</span><span class="p">)</span>
-<span class="n">larch</span>  <span class="nb">print</span> <span class="n">feffit_report</span><span class="p">(</span><span class="n">out3</span><span class="p">,</span> <span class="n">with_paths</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">min_correl</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; pars3 = copy(pars)   # copy parameters</span>
+<span class="go">larch&gt; dset3 = copy(dset)   # copy dataset</span>
+<span class="go">larch&gt; dset3.transform.kweight = 2</span>
+<span class="go">larch&gt; dset3.transform.fitspace = &#39;k&#39;</span>
+<span class="go">larch&gt; out3 = feffit(pars3, dset3)</span>
+<span class="go">larch  print feffit_report(out3, with_paths=False, min_correl=0.5)</span>
 </pre></div>
 </div>
 <p>(we need to specify only one k-weight for a k-space fit) which gives:</p>
@@ -2103,7 +2104,7 @@ powerful, and give increased confidence in the refined structure.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>

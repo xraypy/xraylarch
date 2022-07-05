@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>9.4. Conditional Execution and Flow Control &#8212; xraylarch 0.9.64 documentation</title>
+    <title>9.4. Conditional Execution and Flow Control &#8212; xraylarch 0.9.65 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css" />
     
@@ -134,25 +134,25 @@ So far we’ve seen three types of statements:</p>
 <blockquote>
 <div><ol class="arabic">
 <li><p>simple statements or expressions, such as:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="mi">1</span><span class="o">+</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; 1+sqrt(3)</span>
 </pre></div>
 </div>
 <p>or:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">atomic_weight</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; atomic_weight.keys()</span>
 </pre></div>
 </div>
 <p>where we have an expression evaluated.  At the command line, these
 values are printed – in a script they would not be printed.</p>
 </li>
 <li><p>print statements, such as:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; print(sqrt(3))</span>
 </pre></div>
 </div>
 <p>where we explicitly command larch to print the evaluated
 expression – this would print if run from a script.</p>
 </li>
 <li><p>assignment statements, such as:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; x = sqrt(3)</span>
 </pre></div>
 </div>
 <p>where we assign the name ‘x’ to hold the evaluated expression.</p>
@@ -168,7 +168,7 @@ of test.</p>
 <p>A fundamental need is to be able to execute some statement(s) when some
 condition is met.  This is done with the <strong>if</strong> statement, an example of
 which is:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;x is 0!&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; if x == 0: print(&#39;x is 0!&#39;)</span>
 </pre></div>
 </div>
 <p>Which will print ‘x is 0!’ if the value of <em>x</em> is equal to 0.  The <cite>x == 0</cite>
@@ -387,30 +387,30 @@ pairs match):</p>
 <p>The builtin <a class="reference internal" href="builtins.html#zip" title="zip"><code class="xref py py-func docutils literal notranslate"><span class="pre">zip()</span></code></a> function is similarly useful, turning a sequence of
 lists or arrays into a sequence of tuples of the corresponding elements of
 the lists or arrays.  Thus:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">a</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">b</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">c</span> <span class="o">=</span> <span class="n">cos</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">))</span>
-<span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.8414709848078965</span><span class="p">,</span> <span class="mf">0.54030230586813977</span><span class="p">),</span>
- <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mf">0.90929742682568171</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.41614683654714241</span><span class="p">),</span> <span class="o">....</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; a = range(10)</span>
+<span class="go">larch&gt; b = sin(a)</span>
+<span class="go">larch&gt; c = cos(a)</span>
+<span class="go">larch&gt; print(zip(a, b, c))</span>
+<span class="go">[(0, 0.0, 1.0), (1, 0.8414709848078965, 0.54030230586813977),</span>
+<span class="go"> (2, 0.90929742682568171, -0.41614683654714241), ....]</span>
 </pre></div>
 </div>
 <p>(Note that for arrays or lists of unequal length, <a class="reference internal" href="builtins.html#zip" title="zip"><code class="xref py py-func docutils literal notranslate"><span class="pre">zip()</span></code></a> will return
 tuples until any of its arguments runs out of elements).   Thus a for loop
 can make use of the <a class="reference internal" href="builtins.html#zip" title="zip"><code class="xref py py-func docutils literal notranslate"><span class="pre">zip()</span></code></a> function to iterate over multiple arrays:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">a</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="mi">101</span><span class="p">)</span><span class="o">/</span><span class="mf">10.0</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;X   SIN(X)  SIN(Y)</span><span class="se">\n</span><span class="s1">================</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">sval</span><span class="p">,</span> <span class="n">cval</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">sin</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="n">cos</span><span class="p">(</span><span class="n">a</span><span class="p">)):</span>
-<span class="o">.....&gt;</span>     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%.3f</span><span class="s1">, </span><span class="si">%.5f</span><span class="s1">, </span><span class="si">%.5f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">sval</span><span class="p">,</span> <span class="n">cval</span><span class="p">))</span>
-<span class="o">.....&gt;</span> <span class="c1">#endfor</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; a = arange(101)/10.0</span>
+<span class="go">larch&gt; print(&#39;X   SIN(X)  SIN(Y)\n================\n&#39;)</span>
+<span class="go">larch&gt; for a, sval, cval in zip(a, sin(a), cos(a)):</span>
+<span class="go">.....&gt;     print(&#39;%.3f, %.5f, %.5f&#39; % (a, sval, cval))</span>
+<span class="go">.....&gt; #endfor</span>
 </pre></div>
 </div>
 <p>will print a table of sine and cosine values.</p>
 <p>A final utility of note for loops is <a class="reference internal" href="builtins.html#enumerate" title="enumerate"><code class="xref py py-func docutils literal notranslate"><span class="pre">enumerate()</span></code></a> which will return a
 tuple of (index, value) for a sequence.   That is:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="sa">b</span><span class="s1">&#39;, &#39;</span><span class="n">c</span><span class="s1">&#39;):</span>
-<span class="o">.....&gt;</span>     <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
-<span class="o">.....&gt;</span> <span class="c1">#endfor</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; for i, a in enumerate(&#39;a&#39;, b&#39;, &#39;c&#39;):</span>
+<span class="go">.....&gt;     print(i, a)</span>
+<span class="go">.....&gt; #endfor</span>
 </pre></div>
 </div>
 <p>will print:</p>
@@ -531,7 +531,7 @@ while loop:</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>

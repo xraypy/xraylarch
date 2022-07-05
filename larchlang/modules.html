@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>9.7. Running Larch Scripts, and Modules &#8212; xraylarch 0.9.64 documentation</title>
+    <title>9.7. Running Larch Scripts, and Modules &#8212; xraylarch 0.9.65 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css" />
     
@@ -146,13 +146,13 @@ function:</p>
 </pre></div>
 </div>
 <p>To run this, you simply type:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>larch&gt; run(&#39;myscript.lar&#39;)
-hello from myscript.lar!
-0 0.0
-1 1.0
-2 1.41421356237
-3 1.73205080757
-4 2.0
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; run(&#39;myscript.lar&#39;)</span>
+<span class="go">hello from myscript.lar!</span>
+<span class="go">0 0.0</span>
+<span class="go">1 1.0</span>
+<span class="go">2 1.41421356237</span>
+<span class="go">3 1.73205080757</span>
+<span class="go">4 2.0</span>
 </pre></div>
 </div>
 <p>Again, the script can contain any Larch code, including procedure
@@ -160,8 +160,8 @@ definitions.  After running the script, any variables assigned in the
 script will exist in your larch session.  For example, running the above
 script, there will be variables <code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">phi</span></code>, and <code class="docutils literal notranslate"><span class="pre">i</span></code> (and <code class="docutils literal notranslate"><span class="pre">i</span></code>
 will hold the value 4), and you can access these:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">phi</span><span class="p">)</span>
-<span class="mi">4</span> <span class="n">Fred</span> <span class="mf">1.61803398875</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; print(i, name, phi)</span>
+<span class="go">4 Fred 1.61803398875</span>
 </pre></div>
 </div>
 <p>These variables are held in the “top-level namespace”, <code class="docutils literal notranslate"><span class="pre">_main</span></code>, about which
@@ -171,12 +171,12 @@ we’ll see more below.</p>
 <h2><span class="section-number">9.7.2. </span>Importing a Larch Script as a Module<a class="headerlink" href="#importing-a-larch-script-as-a-module" title="Permalink to this headline">¶</a></h2>
 <p>The alternative method for using the script above is to <strong>import</strong> it,
 using the <code class="docutils literal notranslate"><span class="pre">import</span></code> statement:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="kn">import</span> <span class="nn">myscript</span>
-<span class="mi">0</span> <span class="mf">0.0</span>
-<span class="mi">1</span> <span class="mf">1.0</span>
-<span class="mi">2</span> <span class="mf">1.41421356237</span>
-<span class="mi">3</span> <span class="mf">1.73205080757</span>
-<span class="mi">4</span> <span class="mf">2.0</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; import myscript</span>
+<span class="go">0 0.0</span>
+<span class="go">1 1.0</span>
+<span class="go">2 1.41421356237</span>
+<span class="go">3 1.73205080757</span>
+<span class="go">4 2.0</span>
 </pre></div>
 </div>
 <p>Notice a few differences: First, the ‘.lar’ suffix was removed.  Second,
@@ -252,7 +252,7 @@ used.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>

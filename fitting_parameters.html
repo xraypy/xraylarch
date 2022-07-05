@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>12.2. Parameters &#8212; xraylarch 0.9.64 documentation</title>
+    <title>12.2. Parameters &#8212; xraylarch 0.9.65 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
@@ -138,11 +138,11 @@ course – this is what will happen during a fit – but other attributes can
 be set to help determine its value too.  In most cases, a Parameter can be
 used as a floating point number, and its value attribute will be used.
 Thus:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">x</span>
-<span class="n">param</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">x</span><span class="o">+</span><span class="mi">2</span>
-<span class="mi">12</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; x = param(10)</span>
+<span class="go">larch&gt; print x</span>
+<span class="go">param(10, vary=False)</span>
+<span class="go">larch&gt; print x+2</span>
+<span class="go">12</span>
 </pre></div>
 </div>
 <p>To create a Parameter, use the <a class="reference internal" href="#param" title="param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a> function, which takes a value
@@ -327,10 +327,10 @@ and array methods. Some additional details are discussed below
 <p>While the examples of constraint expressions above will work during a fit,
 the constraint values will not be updated immediately in the main Larch
 interpreter.  That is, doing:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">amp1</span><span class="o">=</span><span class="n">guess</span><span class="p">(</span><span class="mf">0.6</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-                      <span class="n">amp2</span><span class="o">=</span><span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s1">&#39;1 - amp1&#39;</span><span class="p">))</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">amp1</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">amp2</span><span class="p">)</span>
-<span class="p">(</span><span class="o">&lt;</span><span class="n">Parameter</span> <span class="mf">0.6</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">Parameter</span> <span class="o">-</span><span class="n">inf</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="n">inf</span><span class="p">:</span><span class="n">inf</span><span class="p">],</span> <span class="n">expr</span><span class="o">=</span><span class="s1">&#39;1-amp1&#39;</span><span class="o">&gt;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; params = group(amp1=guess(0.6, min=0, max=1),</span>
+<span class="go">                      amp2=param(expr=&#39;1 - amp1&#39;))</span>
+<span class="go">larch&gt; print(params.amp1, params.amp2)</span>
+<span class="go">(&lt;Parameter 0.6, bounds=[0:1]&gt;, &lt;Parameter -inf, bounds=[-inf:inf], expr=&#39;1-amp1&#39;&gt;)</span>
 </pre></div>
 </div>
 <p>That is, the value of constrained parameter <cite>amp2</cite> is not properly set yet.
@@ -338,10 +338,10 @@ To be clear, a fit with this group of parameters will work, but it’s
 sometimes useful to see the values for the constrained parameters.</p>
 <p>The function <a class="reference internal" href="#param_group" title="param_group"><code class="xref py py-func docutils literal notranslate"><span class="pre">param_group()</span></code></a> will create a “live, working” group of
 parameters:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">params</span> <span class="o">=</span> <span class="n">param_group</span><span class="p">(</span><span class="n">amp1</span><span class="o">=</span><span class="n">guess</span><span class="p">(</span><span class="mf">0.6</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-                            <span class="n">amp2</span><span class="o">=</span><span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s1">&#39;1 - amp1&#39;</span><span class="p">))</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">amp1</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">amp2</span><span class="p">)</span>
-<span class="p">(</span><span class="o">&lt;</span><span class="n">Parameter</span> <span class="s1">&#39;amp1&#39;</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">Parameter</span> <span class="s1">&#39;amp2&#39;</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="n">inf</span><span class="p">:</span><span class="n">inf</span><span class="p">],</span> <span class="n">expr</span><span class="o">=</span><span class="s1">&#39;1-amp1&#39;</span><span class="o">&gt;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; params = param_group(amp1=guess(0.6, min=0, max=1),</span>
+<span class="go">                            amp2=param(expr=&#39;1 - amp1&#39;))</span>
+<span class="go">larch&gt; print(params.amp1, params.amp2)</span>
+<span class="go">(&lt;Parameter &#39;amp1&#39;, 0.6, bounds=[0:1]&gt;, &lt;Parameter &#39;amp2&#39;, 0.4, bounds=[-inf:inf], expr=&#39;1-amp1&#39;&gt;)</span>
 </pre></div>
 </div>
 <p>In addition, you can change the value of <cite>params.amp1</cite>, with the value of
@@ -393,17 +393,17 @@ values will be put back into the</p>
 <cite>_sys.fiteval</cite> and uses that for evaluating constraint expressions.  That
 is, following the above example, one can see the current values for
 <cite>params.amp1</cite> and <cite>params.amp2</cite> within the <cite>_sys.fiteval</cite> symbol table:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">params</span> <span class="o">=</span> <span class="n">param_group</span><span class="p">(</span><span class="n">amp1</span><span class="o">=</span><span class="n">guess</span><span class="p">(</span><span class="mf">0.6</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-                            <span class="n">amp2</span><span class="o">=</span><span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s1">&#39;1 - amp1&#39;</span><span class="p">))</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">amp1</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">amp2</span><span class="p">)</span>
-<span class="p">(</span><span class="o">&lt;</span><span class="n">Parameter</span> <span class="s1">&#39;amp1&#39;</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">Parameter</span> <span class="s1">&#39;amp2&#39;</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="n">inf</span><span class="p">:</span><span class="n">inf</span><span class="p">],</span> <span class="n">expr</span><span class="o">=</span><span class="s1">&#39;1-amp1&#39;</span><span class="o">&gt;</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">_sys</span><span class="o">.</span><span class="n">fiteval</span><span class="o">.</span><span class="n">symtable</span><span class="o">.</span><span class="n">amp2</span><span class="p">)</span>
-<span class="mf">0.4</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">params1</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mf">0.1</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">amp1</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">amp2</span><span class="p">)</span>
-<span class="p">(</span><span class="o">&lt;</span><span class="n">Parameter</span> <span class="s1">&#39;amp1&#39;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">Parameter</span> <span class="s1">&#39;amp2&#39;</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="n">inf</span><span class="p">:</span><span class="n">inf</span><span class="p">],</span> <span class="n">expr</span><span class="o">=</span><span class="s1">&#39;1-amp1&#39;</span><span class="o">&gt;</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">_sys</span><span class="o">.</span><span class="n">fiteval</span><span class="o">.</span><span class="n">symtable</span><span class="o">.</span><span class="n">amp2</span><span class="p">)</span>
-<span class="mf">0.9</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; params = param_group(amp1=guess(0.6, min=0, max=1),</span>
+<span class="go">                            amp2=param(expr=&#39;1 - amp1&#39;))</span>
+<span class="go">larch&gt; print(params.amp1, params.amp2)</span>
+<span class="go">(&lt;Parameter &#39;amp1&#39;, 0.6, bounds=[0:1]&gt;, &lt;Parameter &#39;amp2&#39;, 0.4, bounds=[-inf:inf], expr=&#39;1-amp1&#39;&gt;)</span>
+<span class="go">larch&gt; print(_sys.fiteval.symtable.amp2)</span>
+<span class="go">0.4</span>
+<span class="go">larch&gt; params1.amp.value = 0.1</span>
+<span class="go">larch&gt; print(params.amp1, params.amp2)</span>
+<span class="go">(&lt;Parameter &#39;amp1&#39;, 0.1, bounds=[0:1]&gt;, &lt;Parameter &#39;amp2&#39;, 0.9, bounds=[-inf:inf], expr=&#39;1-amp1&#39;&gt;)</span>
+<span class="go">larch&gt; print(_sys.fiteval.symtable.amp2)</span>
+<span class="go">0.9</span>
 </pre></div>
 </div>
 <p>Because <cite>_sys.fiteval</cite> is used for all fits with <a class="reference internal" href="fitting_minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> (and for
@@ -474,7 +474,7 @@ to the result (ignoring correlations).</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>

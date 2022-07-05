@@ -1,3 +1,6 @@
+.. include:: _config.rst
+
+
 .. _data-io_chapter:
 
 ============================
@@ -11,27 +14,22 @@ from Larch, many types of standard data and image types can be used by
 importing the appropriate Python module.  This chapter describes the Larch
 functions for data handling.
 
-.. module:: _io
-   :synopsis: Basic Input/Output Functions
 
-.. _scipy:   https://scipy.org/
-.. _h5py:    https://code.google.com/p/h5py/
-.. _pyepics: https://pyepics.github.com/pyepics/
-.. _xdi:     https://github.com/XraySpectroscopy/XAS-Data-Interchange
-.. _spec:    https://www.certif.com/content/spec
-.. _bliss:   https://bliss.gitlab-pages.esrf.fr/bliss/master/
-.. _silx:    https://www.silx.org/
+.. module:: larch.io
 
-Simple ASCII Column Files
-============================
+.. _read_ascii_function:
 
-A simple way to store small amounts of numerical data, and one that is
-widely used in the XAFS community, is to store data in plaintext (ASCII
-encoded) data files, with whitespace delimited numbers layed out as a
-table, with a fix number of columns and rows indicated by newlines.
-Typically a comment character such as "#" is used to signify header
-information.  For instance::
+Simple Plaintext (ASCII or UTF-8) Column Files
+====================================================
 
+A simple way to store small amounts of numerical data - and one that is widely used in
+the XAFS community - is to store data in plaintext data files, with whitespaces
+separating numbers layed out as a table, with a fix number of columns and rows indicated
+by newlines. By "plaintext", we mean files that are not binary.  Many of these will
+contain only "ASCII" characters (for basic English text without accents or non-Latin
+characters), but they can also contain some characters representing non-English
+language, as represented by "Latin-1" or "UTF-8" encodings.  Typically a comment
+character such as "#" is used to signify header information.  For instance::
 
     # room temperature FeO
     # data from 20-BM, 2001, as part of NXS school
@@ -39,109 +37,111 @@ information.  For instance::
     # 2001-08-10T11:10:00
     # Si(111), d_spacing: 3.13553
     #------------------------
-    #   energy        xmu               i0
-      6911.7671      -0.35992590E-01    280101.00
-      6916.8730      -0.39081634E-01    278863.00
-      6921.7030      -0.42193483E-01    278149.00
-      6926.8344  -0.45165576E-01  277292.00
-      6931.7399  -0.47365589E-01  265707.00
+    #  energy       xmu             i0
+      6911.7671   -0.35992590E-01  280101.00
+      6916.8730   -0.39081634E-01  278863.00
+      6921.7030   -0.42193483E-01  278149.00
+      6926.8344   -0.45165576E-01  277292.00
+      6931.7399   -0.47365589E-01  265707.00
 
-This file and others like it can be read with the builtin
-:func:`read_ascii` function.
+This file has some lines of text which give human readable information about the data
+collected, and then data for different arrays or channels arranged in columns, with each
+line or row representing a new data point. While not a very specific description of a
+data file (see, XDI below), such files are very common in the XAFS community.  Such files
+can usually be read with the builtin :func:`read_ascii` function.   Which will turn each
+column into an array, usually named by the column heading.  That often means that as you
+read these files in, you also need to know and tell the program how to use those arrays.
 
-.. function:: read_ascii(filename, commentchar='#;*%', labels=None)
+.. autofunction:: read_ascii
 
-   opens and read an plaintext data file, returning a new group containing
-   the data.
+.. autofunction:: write_ascii
 
-
-   :param filename:  name of file to read.
-   :type  filename:  string
-   :param commentchar:  string of valid comment characters
-   :type  commentchar:  string
-   :param labels:  string to split for column labels
-   :type labels:  string, ``None``, or ``False``
-   :type ilabels: boolean, column labels 'col1', 'col2', etc if True
-
-    The commentchar argument (#;% by default) sets the valid comment characters:
-    if the first character in a line matches one of these, the line is marked
-    as a  header lines.
-
-    Header lines continue until a line with '#----' (that is, any
-    commentchar followed by 4 '-' The line immediately following that is
-    read as column labels (space delimited)
-
-    If the header is of the form::
-
-       # KEY : VAL   (ie commentchar key ':' value)
-
-    these key-value pairs (all as strings) will be parsed into an 'attributes' sub-group.
-
-    If labels has the default value ``None``, column labels from the line
-    following the line of '#----' (if available) will be used.
-
-    If labels is ``False``, the group will have a *data* variable contain
-    the 2-dimensional data.
-
-    If ilabels is ``True``, the column labels will be 'col1', 'col2', etc, regardless
-    of the column labels in the data file.
-
-Some examples of :func:`read_ascii`::
-
-    larch> g = read_ascii('feo_rt1.dat')
-    larch> show(g)
-    == Group ascii_file feo_rt1.dat: 0 methods, 8 attributes ==
-      array_labels: ['energy', 'xmu', 'i0']
-      attrs: <Group header attributes from feo_rt1.dat>
-      data: array<shape=(3, 412), type=dtype('float64')>
-      energy: array<shape=(412,), type=dtype('float64')>
-      filename: 'feo_rt1.dat'
-      header: ['# room temperature FeO', '# data from 20-BM, 2001, as part of NXS school', ... '#------------------------', '#   energy        xmu               i0']
-      i0: array<shape=(412,), type=dtype('float64')>
-      xmu: array<shape=(412,), type=dtype('float64')>
+.. autofunction:: write_group
 
 
-which reads the data file and sets array names according to the column
-labels in the file.   You can be explicit::
-
-    larch> g = read_ascii('feo_rt1.dat', labels='a b c')
-    larch> show(g)
-       == Group ascii_file feo_rt1.dat: 0 methods, 8 attributes ==
-      a: array<shape=(412,), type=dtype('float64')>
-      array_labels: ['a', 'b', 'c']
-      attrs: <Group header attributes from feo_rt1.dat>
-      b: array<shape=(412,), type=dtype('float64')>
-      c: array<shape=(412,), type=dtype('float64')>
-      data: array<shape=(3, 412), type=dtype('float64')>
-      filename: 'feo_rt1.dat'
-      header: ['# room temperature FeO', '# data from 20-BM, 2001, as part of NXS school', ... '#------------------------', '#   energy        xmu               i0']
 
 
-Note that the `data` attribute holds the raw 2D array of numbers read
-in from the file, which can also be useful to rename arrays.
+.. _read_xdi_function:
 
-.. function:: write_ascii(filename, *args, commentchar='#', label=None, header=None)
+Reading XAFS Data Interchange (XDI) Files
+=================================================
 
-   opens and writes arrays, scalars, and text to an ASCII file.
+The X-ray Data Interchange Format has been developed as part of an effort to standardize
+the format of plaintext XAFS data files: see `XDI`_.  This eliminates some of the
+challenges with plaintext files and allows consistent naming of arrays.  XDI files often
+use the `.xdi` extension but are also identified by having a first line that includes
+`XDI`.  These files should be considered to be "the normal way" to read X-ray Absorption
+Spectroscopy Data into Larch. To read an XDI file with Larch, use :func:`read_xdi()`.
+This will create a Group with several consistently named arrays and values that are
+useful for processing XAS data. A more detailed description is given at `XDI metadata
+dictionary`_.  The most important components read from an XDI file are give in the
+:ref:`Table of XDI Attributes <xdi_attr_table>` below.
 
-   :param commentchar: character for comment ('#')
-   :param  label:      array label line (autogenerated)
-   :param   header:    array of strings for header
+
+.. autofunction:: read_xdi
 
 
-.. function::  write_group(filename, group, scalars=None, arrays=None, arrays_like=None,  commentchar='#')
+.. _xdi_attr_table:
 
-   write data from a specified group to an ASCII data file.
-   This is pretty minimal and may work poorly for large groups of complex
-   data.
+**Table of XDI attributes** These are the standard names and meanings for arrays and
+scalars values taken from XDI files.
+
+
+  +---------------+------------+-------------------------------------------------------------------+
+  | name          | type       |   meaning                                                         |
+  +===============+============+===================================================================+
+  | energy        | 1-D array  | X-ray energy in eV                                                |
+  +---------------+------------+-------------------------------------------------------------------+
+  | angle         | 1-D array  | rotation angle (degrees) for doube crystal monochromator          |
+  +---------------+------------+-------------------------------------------------------------------+
+  | i0            | 1-D array  | :math:`I_0`: measurement (arbitrary units) of incident flux       |
+  +---------------+------------+-------------------------------------------------------------------+
+  | mutrans       | 1-D array  | :math:`\mu` (unitless) for Transmission XAS data                  |
+  +---------------+------------+-------------------------------------------------------------------+
+  | itrans        | 1-D array  | :math:`I_1`: measurement (arbitrary units) of transmitted flux    |
+  +---------------+------------+-------------------------------------------------------------------+
+  | mufluor       | 1-D array  | :math:`\mu` (unitless) for Fluorescence XAS data                  |
+  +---------------+------------+-------------------------------------------------------------------+
+  | ifluor        | 1-D array  | :math:`I_f`: measurement (arbitrary units) of fluoresced flux     |
+  +---------------+------------+-------------------------------------------------------------------+
+  | data          | 2-D array  | raw data from data columns, shape=(narrays, npts)                 |
+  +---------------+------------+-------------------------------------------------------------------+
+  | narrays       | integer    | number of 1-D arrays                                              |
+  +---------------+------------+-------------------------------------------------------------------+
+  | npts          | integer    | number of points in each 1-D array                                |
+  +---------------+------------+-------------------------------------------------------------------+
+  | dspacing      | float      | :math:`d` spacing (in :math:`\unicode{x212B}`) of monoochromator  |
+  +---------------+------------+-------------------------------------------------------------------+
+  | dspacing      | float      | :math:`d` spacing (in :math:`{\AA}`) of monoochromator            |
+  +---------------+------------+-------------------------------------------------------------------+
+  | element       | string     | atomic symbol for absorbing element                               |
+  +---------------+------------+-------------------------------------------------------------------+
+  | edge          | string     | symbol for absorbing edge                                         |
+  +---------------+------------+-------------------------------------------------------------------+
+  | array_labels  | list       | list of strings holding labels for `narray` arrays                |
+  +---------------+------------+-------------------------------------------------------------------+
+  | array_units   | list       | list of strings describing units for `narray` arrays              |
+  +---------------+------------+-------------------------------------------------------------------+
+  | attrs         | dict       | dictionary of metadata, using XDI namespaces to nest values       |
+  +---------------+------------+-------------------------------------------------------------------+
+  | comments      | string     | additional user-supplied comments from XDI file                   |
+  +---------------+------------+-------------------------------------------------------------------+
+  | xdi_version   | string     | XDI version                                                       |
+  +---------------+------------+-------------------------------------------------------------------+
+
 
 Athena Project Files
 ============================
 
 The popular Athena program for XAFS Analysis uses an "Athena Project File"
-to store many XAFS spectra and processing parameters.  Larch can read and
-extract the data from these project files, and can also write Athena
-Project files from existing groups of data.
+to store many XAFS spectra and some processing parameters as used in
+Athena.  Larch can read and extract the :math:`\mu(E)` data from these
+project files - it does not read :math:`\chi(k)` from these files.  Larch
+and can also write :math:`\mu(E)` data to Athena Project files.
+
+Larch does not read or support Artemis projects.
+
+.. _read_athena_function:
 
 Reading Athena Project Files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -161,14 +161,14 @@ Reading Athena Project Files
 
 Notes:
      1. To limit the imported groups, use the pattern in `match`,
-        using '*' to match 'all', '?' to match any single character,
-        or [sequence] to match any of a sequence of letters.  The match
-        will always be insensitive to case.
+	using '*' to match 'all', '?' to match any single character,
+	or [sequence] to match any of a sequence of letters.  The match
+	will always be insensitive to case.
      2. `do_preedge`, `do_bkg`, and `do_fft` will attempt to reproduce the
-        pre-edge, background subtraction, and FFT from Athena by using
-        the parameters saved in the project file.
+	pre-edge, background subtraction, and FFT from Athena by using
+	the parameters saved in the project file.
      3. `use_hashkey=True` will name groups from the internal 5 character
-        string used by Athena, instead of the group label.
+	string used by Athena, instead of the group label.
 
 A simple example of reading an Athena Project file::
 
@@ -309,14 +309,14 @@ data heirarchy of the HDF5 file, and pick out the needed data::
     larch> show(g)
     == Group test.h5: 3 symbols ==
       attrs: {u'Collection Time': ': Sat Feb 4 13:29:00 2012', u'Version': '1.0.0',
-              u'Beamline': 'GSECARS, 13-IDC / APS', u'Title': 'Epics Scan Data'}
+	      u'Beamline': 'GSECARS, 13-IDC / APS', u'Title': 'Epics Scan Data'}
       data: <Group test.h5/data>
       h5_file: <HDF5 file "test.h5" (mode r)>
     larch>show(g.data)
     == Group test.h5/data: 5 symbols ==
       attrs: {u'scan_prefix': '13IDC:', u'start_time': ': Sat Feb 4 13:29:00 2012',
-            u'correct_deadtime': 'True', u'dimension': 2,
-            u'stop_time': ': Sat Feb 4 13:44:52 2009'}
+	    u'correct_deadtime': 'True', u'dimension': 2,
+	    u'stop_time': ': Sat Feb 4 13:44:52 2009'}
       environ: <Group test.h5/data/environ>
       full_xrf: <Group test.h5/data/full_xrf>
       merged_xrf: <Group test.h5/data/merged_xrf>
@@ -414,18 +414,8 @@ facilities and beamlines.
    read a GSECARS StepScan data file into a group.
 
 
-Reading XAFS Data Interchange (XDI) Files
-=============================================
-
-The X-ray Data Interchange Format has been developed as part of an effort
-to standardize the format of XAFS data files (see `xdi`_.)
-
-.. function:: read_xdi(filename)
-
-   read an XDI data file into a Larch group.
 
 
- 
 Reading Spec/BLISS files via `silx.io.open`
 ============================================
 
@@ -434,8 +424,8 @@ the `silx.io.open` module (see `silx`_).
 
 .. function:: read_specfile(filename, scan=None)
 
-   Get a Larch group for a given scan number. If `scan=None` the first scan is returned. 
-    
+   Get a Larch group for a given scan number. If `scan=None` the first scan is returned.
+
 Reading FDMNES output files
 ============================
 
@@ -448,32 +438,40 @@ ASCII files from the [FDMNES](http://fdmnes.neel.cnrs.fr/) are read via
 This function is a simple wrapper on top of `read_ascii`, parsing the header in
 order to shift the energy scale to absolute values, according to the `E_edge`
 variable. The parsed variables are stored in the `group.header_dict` dictionary.
-   
-Saving and Restoring Larch Groups
-=========================================
-
-WARNNG: these routines will often not save everything and use is
-deprecated.  Save data a scripts to reproduce analysis steps!
-
-It can be often useful to save groups of data and be able to open them again
-later.  The :func:`save` / :func:`restore` mechanism here allows you to
-save the state of a number of Larch groups and use them in another session.
-
-Some precautions should be kept in mind, as not all Larch data is easily
-transferrable.  Most importantly, Python functions cannot be saved to any
-sort of data that can be recovered in a meaningful way.  This is actually
-not as big of a problem as you might expect: you want to save **data**, and
-the functions will be present in the later session.  All the built-in Larch
-groups and data structures can be saved and restored.
-
-.. function:: save(filename, list_of_groups)
-
-    save a set of Larch groups and data into an HDF5 file.
 
 
-.. function:: restore(filename, group=None)
+.. _larch_session_files:
 
-    recover groups from a Larch 'save' file.  If ``group`` is None, the
-    groups in the save file will be returned (in the order in which they
-    were saved).  If ``group`` is an existing Larch group, the groups in
-    the save file will be put inside that group, and will not be returned.
+Saving and Loading Larch Session Files: `.larix` Files
+=========================================================
+
+A *Larch Session File*, with a `.larix` extension, contains all of the user-generated
+data within a Larch session.  All of the data -- input data arrays, processed arrays,
+dictionaries, Journals, etc -- from all of Groups, and all of processing parameters,
+analysis results and fit histories will be included.  The Session file will also include
+a list of all Larch commands executed in the current Larch session (GUI or Command-Line
+Application), and also include configuration about the session (including versions of
+Larch and Python, operating system, and so on).  Session Files effectively allows you to
+save your session as a "Project" and be able to share it with someone else or come back
+to it later, picking up the analysis where you left it. The Session files are meant to
+be completely portable across different computers and versions.
+
+For portability, Larch Session file is a simple gzipped set of plaintext.  JSON is to
+use to serialize all of the data, including complex and nested Python data structures.
+While all the data are stored using portable formats and well-supported libraries, it
+would not necessarily be easy to open and use these files without the Python code in
+Larch to read these files.
+
+The :func:`save_session` function will simply save all the data in the current session.
+The :func:`load_session` function will restore data from a Session file into the current
+session.  On the other hand, :func:`read_session` will read the data but not install it
+analysis session. Instead, it will return a new set of data that you might have to
+unpack or extract the groups and arrays of interest.
+
+.. autofunction:: save_session
+
+.. autofunction:: read_session
+
+.. autofunction:: load_session
+
+.. autofunction:: clear_session

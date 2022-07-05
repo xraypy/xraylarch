@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>12.4. Fit Results and Outputs &#8212; xraylarch 0.9.64 documentation</title>
+    <title>12.4. Fit Results and Outputs &#8212; xraylarch 0.9.65 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
@@ -225,24 +225,24 @@ directly from <a class="reference external" href="https://lmfit.github.io/lmfit-
 </dd></dl>
 
 <p>A typical result from <a class="reference internal" href="#fit_report" title="fit_report"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_report()</span></code></a> would look like this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-<span class="p">[[</span><span class="n">Fit</span> <span class="n">Statistics</span><span class="p">]]</span>
-    <span class="c1"># function evals   = 28</span>
-    <span class="c1"># data points      = 201</span>
-    <span class="c1"># variables        = 4</span>
-    <span class="n">chi</span><span class="o">-</span><span class="n">square</span>         <span class="o">=</span> <span class="mf">0.50471</span>
-    <span class="n">reduced</span> <span class="n">chi</span><span class="o">-</span><span class="n">square</span> <span class="o">=</span> <span class="mf">0.002562</span>
-    <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="o">-</span><span class="mf">1195.4</span>
-    <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1182.2</span>
-<span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-    <span class="n">amp</span><span class="p">:</span>   <span class="mf">12.0312835</span> <span class="o">+/-</span> <span class="mf">0.076725</span> <span class="p">(</span><span class="mf">0.64</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">5</span><span class="p">)</span>
-    <span class="n">wid</span><span class="p">:</span>   <span class="mf">2.01663402</span> <span class="o">+/-</span> <span class="mf">0.011920</span> <span class="p">(</span><span class="mf">0.59</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">off</span><span class="p">:</span>   <span class="mf">0.99188155</span> <span class="o">+/-</span> <span class="mf">0.005226</span> <span class="p">(</span><span class="mf">0.53</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="n">cen</span><span class="p">:</span>   <span class="mf">1.49995279</span> <span class="o">+/-</span> <span class="mf">0.010144</span> <span class="p">(</span><span class="mf">0.68</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">2</span><span class="p">)</span>
-<span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span> <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.100</span><span class="p">)</span>
-    <span class="n">C</span><span class="p">(</span><span class="n">amp</span><span class="p">,</span> <span class="n">off</span><span class="p">)</span>                  <span class="o">=</span> <span class="o">-</span><span class="mf">0.730</span>
-    <span class="n">C</span><span class="p">(</span><span class="n">amp</span><span class="p">,</span> <span class="n">wid</span><span class="p">)</span>                  <span class="o">=</span>  <span class="mf">0.719</span>
-    <span class="n">C</span><span class="p">(</span><span class="n">wid</span><span class="p">,</span> <span class="n">off</span><span class="p">)</span>                  <span class="o">=</span> <span class="o">-</span><span class="mf">0.525</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; print fit_report(result)</span>
+<span class="go">[[Fit Statistics]]</span>
+<span class="go">    # function evals   = 28</span>
+<span class="go">    # data points      = 201</span>
+<span class="go">    # variables        = 4</span>
+<span class="go">    chi-square         = 0.50471</span>
+<span class="go">    reduced chi-square = 0.002562</span>
+<span class="go">    Akaike info crit   = -1195.4</span>
+<span class="go">    Bayesian info crit = -1182.2</span>
+<span class="go">[[Variables]]</span>
+<span class="go">    amp:   12.0312835 +/- 0.076725 (0.64%) (init= 5)</span>
+<span class="go">    wid:   2.01663402 +/- 0.011920 (0.59%) (init= 1)</span>
+<span class="go">    off:   0.99188155 +/- 0.005226 (0.53%) (init= 0)</span>
+<span class="go">    cen:   1.49995279 +/- 0.010144 (0.68%) (init= 2)</span>
+<span class="go">[[Correlations]] (unreported correlations are &lt;  0.100)</span>
+<span class="go">    C(amp, off)                  = -0.730</span>
+<span class="go">    C(amp, wid)                  =  0.719</span>
+<span class="go">    C(wid, off)                  = -0.525</span>
 </pre></div>
 </div>
 </section>
@@ -277,7 +277,7 @@ directly from <a class="reference external" href="https://lmfit.github.io/lmfit-
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>

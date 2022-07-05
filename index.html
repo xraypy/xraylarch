@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Larch &#8212; xraylarch 0.9.64 documentation</title>
+    <title>Larch &#8212; xraylarch 0.9.65 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
@@ -15,6 +15,7 @@
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -65,9 +66,8 @@
     </div>
 
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h3> Get Larch</h3>
-<p>Current version: <b>0.9.64</b></p>
+        <div class="sphinxsidebarwrapper"><h3> Get Larch</h3>
+<p>Current version: <b>0.9.65</b></p>
 
 &nbsp; &nbsp; <a href="installation.html">Install Latest Version</a>  <br>
 &nbsp; &nbsp; <a href="https://github.com/xraypy/xraylarch"> Development Version</a> <br>
@@ -79,7 +79,8 @@
 
 &nbsp; &nbsp; <a href="getting_started.html"> Getting Started</a><br>
 
-&nbsp; &nbsp; <a href="guis.html"> Graphical Interface Programs </a><br>
+&nbsp; &nbsp; <a href="xasviewer.html"> XAS Viewer </a><br>
+&nbsp; &nbsp; <a href="guis.html"> Other GUIs </a><br>
 &nbsp; &nbsp; <a href="data.html"> Reading Data </a><br>
 &nbsp; &nbsp; <a href="plotting.html"> Plotting Data</a><br>
 &nbsp; &nbsp; <a href="fitting.html"> Fitting Data</a><br>
@@ -106,36 +107,56 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="larch">
+  <p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
+<section id="larch">
 <h1>Larch<a class="headerlink" href="#larch" title="Permalink to this headline">¶</a></h1>
 <p>Larch is a open-source library and set of <a class="reference internal" href="#larch-app-table"><span class="std std-ref">applications</span></a> for processing and analyzing X-ray absorption and
 fluorescence spectroscopy data and X-ray fluorescence and diffraction image
-data from synchrotron beamlines.  It aims to be a complete analysis toolkit
-for X-ray absorption fine-structure spectroscopy (XAFS) including X-ray
-absorption near-edge spectroscopy (XANES) and extended X-ray absorption
-fine-structure spectroscopy (EXAFS). It also supports visualization and
-analysis tools for X-ray fluorescence (XRF) spectra and XRF and X-ray
-diffraction (XRD) images as collected at scanning X-ray microprobe
-beamlines.</p>
-<p>Larch is written in Python, making heavy use of the excellent scientific
-python libraries including <a class="reference external" href="https://numpy.scipy.org/">numpy</a>, <a class="reference external" href="https://scipy.org/">scipy</a>, <a class="reference external" href="https://code.google.com/p/h5py/">h5py</a>, <a class="reference external" href="https://matplotlib.org/">matplotlib</a>, and
-provides a Python library for processing and analyzing X-ray spectroscopy
-and imaging data.  There are a few GUI applications written using this
-library for common data visualization and analysis tasks, notably <a class="reference internal" href="wxxas_viewer.html#xasviewer-app"><span class="std std-ref">XAS
+data from synchrotron beamlines.  Larch aims to provide a complete analysis
+toolkit for X-ray absorption fine-structure spectroscopy (XAFS), including
+both X-ray absorption near-edge spectroscopy (XANES) and extended X-ray
+absorption fine-structure spectroscopy (EXAFS).  Larch also provides
+visualization and analysis tools for X-ray fluorescence (XRF) spectra and
+XRF and X-ray diffraction (XRD) images as collected at scanning X-ray
+microprobe beamlines.</p>
+<p>Larch is written in Python and relies on the excellent scientific python
+libraries including <a class="reference external" href="https://numpy.scipy.org/">numpy</a>, <a class="reference external" href="https://scipy.org/">scipy</a>, <a class="reference external" href="https://code.google.com/p/h5py/">h5py</a>, <a class="reference external" href="https://matplotlib.org/">matplotlib</a>. In turn,
+Larch provides a comprehensive Python library for processing and analyzing
+X-ray spectroscopy and imaging data.  Several Python libraries - <a class="reference external" href="https://xraypy.github.io/XrayDB/">xraydb</a>,
+<a class="reference external" href="https://lmfit.github.io/lmfit-py/">lmfit</a>, <a class="reference external" href="https://newville.github.io/asteval/">asteval</a>, <a class="reference external" href="https://newville.github.io/wxmplot/">wxmplot</a>, and <a class="reference external" href="https://newville.github.io/pyshortcuts/">pyshortcuts</a> - were orginally built
+with Larch in mind or as part of Larch and then spun-off as separate
+libraries that can be used by the broader scientific and programming
+communities.</p>
+<p>There are a few GUI applications written using Larch.  These provide
+user-friendly and interactiv data visualization and analysis tasks for many
+common X-ray analysis tasks.  The most notable of these are <a class="reference internal" href="xasviewer.html#xasviewer-app"><span class="std std-ref">XAS
 Viewer</span></a>, <a class="reference internal" href="wxmap_viewer.html#mapviewer-app"><span class="std std-ref">GSE Map Viewer</span></a>, and
 <a class="reference internal" href="xrf_viewer.html#xrfviewer-app"><span class="std std-ref">XRF Viewer</span></a> as described in more detail below.</p>
-<p>While Larch can be used as a Python library, the applications built with
-Larch use a Python-like macro language - the “Larch language” - for
-interactive and batch processing.  This macro language is available from an
-interactive command-line interface through either <a class="reference internal" href="guis.html#larchcli-app"><span class="std std-ref">larch</span></a> or <a class="reference internal" href="guis.html#larchgui-app"><span class="std std-ref">Larch GUI</span></a> and intended to be very
-easy to use for novices while also being complete enough to automate data
-processing and analysis.  Most of the GUIs can generate and save “Larch
-code” for an analysis session to make reproducible analysis sessions, and
-to encourage and facilitate a gentle transition to transition from GUI-only
-analyses to scripted and programmatic analysis of larger data sets.  This
-macro language also allows Larch to be run as a background service that
-other processes can use Larch as the analysis engine.  The popular
-<a class="reference external" href="https://bruceravel.github.io/demeter/">Demeter</a> XAFS application suite can use Larch in this way.</p>
+<p>In addition to being used as a Python library or from the user-friendly GUI
+applications built, Larch also provides a Python-like macro language - the
+“Larch language” - for interactive and batch processing.  This macro
+language is essentially an isolated, restricted “mini-Python” (from
+<a class="reference external" href="https://newville.github.io/asteval/">asteval</a>).  This is intended to be both easy to use and complete enough
+to automate data processing and analysis available as an interactive
+command-line interface.  This command-line interface is available either
+from the <a class="reference internal" href="guis.html#larchcli-app"><span class="std std-ref">larch</span></a> or <a class="reference internal" href="guis.html#larchgui-app"><span class="std std-ref">Larch GUI</span></a>.
+Compared to Python itself, this macro language is not recommended for
+serious programming, but it is an important part of the Larch suite, and
+can be viewed as the bridge between using the GUIs for fully interactive,
+non-coding analysis, and writing batch-processing analysis scripts.</p>
+<p>Most of the GUIs (notably, <a class="reference internal" href="xasviewer.html#xasviewer-app"><span class="std std-ref">XAS Viewer</span></a>) work by
+generating and executing this “Larch code”, with all of their “real work”
+done through this macro language.  This allows for self-documented and
+reproducible analysis sessions, and facilitates transitioning from GUI-only
+analyses to scripting, batch processing, and programmatic analysis of
+larger data sets.  That is, with a few simple changes and added boilerplate
+code, the Larch macro code saved from a GUI session becomes a Python
+program.  This macro language also allows Larch to be run as a background
+service so that other processes can use Larch as the analysis engine.  The
+popular <a class="reference external" href="https://bruceravel.github.io/demeter/">Demeter</a> XAFS application suite can use Larch in this way, though
+the <a class="reference internal" href="xasviewer.html#xasviewer-app"><span class="std std-ref">XAS Viewer</span></a> now contains almost all of the
+features of <a class="reference external" href="https://bruceravel.github.io/demeter/">Demeter</a> and is much more actively being developed and
+maintained.</p>
 <p>Larch is distribute under an open-source license that is nearly identical
 to the BSD license.  It is under active and open development centered at
 the GeoScoilEnviroCARS sector of Center for Advanced Radiation Sources at
@@ -167,7 +188,7 @@ license to redistrubute.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><a class="reference internal" href="wxxas_viewer.html#xasviewer-app"><span class="std std-ref">XAS Viewer</span></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="xasviewer.html#xasviewer-app"><span class="std std-ref">XAS Viewer</span></a></p></td>
 <td><p>GUI</p></td>
 <td><p>XAFS Processing and Analysis: XANES pre-edge peak
 fitting, linear analysis, PCA/LASSO, EXAFS extraction</p></td>
@@ -246,22 +267,23 @@ downloading and installing that for working with XRD image data.</p>
 <li class="toctree-l2"><a class="reference internal" href="overview.html#capabilities">3.2. Capabilities</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="guis.html">4. Larch GUIs</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="guis.html">4. Other Larch GUIs</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="guis.html#larch-command-line-application">4.1. Larch Command-Line Application</a></li>
 <li class="toctree-l2"><a class="reference internal" href="guis.html#basic-larch-gui">4.2. Basic Larch GUI</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="wxxas_viewer.html">5. XASViewer</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="wxxas_viewer.html#reading-data-into-xas-viewer">5.1. Reading Data into XAS Viewer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="wxxas_viewer.html#common-xas-processing-dialogs">5.2. Common XAS Processing Dialogs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="wxxas_viewer.html#pre-edge-subtraction-and-normalization">5.3. Pre-edge subtraction and Normalization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="wxxas_viewer.html#pre-edge-peak-fitting">5.4. Pre-edge peak fitting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="wxxas_viewer.html#linear-combination-analysis">5.5. Linear Combination Analysis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="wxxas_viewer.html#principal-component-and-non-negative-factor-analysis">5.6. Principal Component and Non-negative Factor Analysis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="wxxas_viewer.html#linear-regression-with-lasso-and-pls-to-predict-external-variable">5.7. Linear Regression with LASSO and PLS to predict external variable</a></li>
-<li class="toctree-l2"><a class="reference internal" href="wxxas_viewer.html#exafs-processing-background-subtraction">5.8. EXAFS Processing: Background Subtraction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="wxxas_viewer.html#exafs-processing-fourier-transforms">5.9. EXAFS Processing:  Fourier Transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="wxxas_viewer.html#fitting-exafs-data-to-feff-paths">5.10. Fitting EXAFS data to Feff Paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xasviewer.html">5. XASViewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/overview.html">5.1. XAS Viewer Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/iodata.html">5.2. Reading and Saving Data into XAS Viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/dialogs.html">5.3. Pre-edge subtraction and Normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/dialogs.html#common-xas-processing-dialogs">5.4. Common XAS Processing Dialogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/preedge.html">5.5. Pre-edge peak fitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/preedge.html#linear-combination-analysis">5.6. Linear Combination Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/preedge.html#principal-component-and-non-negative-factor-analysis">5.7. Principal Component and Non-negative Factor Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/preedge.html#linear-regression-with-lasso-and-pls-to-predict-external-variable">5.8. Linear Regression with LASSO and PLS to predict external variable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/preedge.html#exafs-processing-background-subtraction">5.9. EXAFS Processing: Background Subtraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/preedge.html#exafs-processing-fourier-transforms">5.10. EXAFS Processing:  Fourier Transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/preedge.html#fitting-exafs-data-to-feff-paths">5.11. Fitting EXAFS data to Feff Paths</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="wxmap_viewer.html">6. GSECARS Mapviewr</a></li>
@@ -291,17 +313,17 @@ downloading and installing that for working with XRD image data.</p>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="data.html">10. Reading and Writing Data</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="data.html#simple-ascii-column-files">10.1. Simple ASCII Column Files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data.html#athena-project-files">10.2. Athena Project Files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data.html#reading-hdf5-files">10.3. Reading HDF5 Files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data.html#reading-netcdf-files">10.4. Reading NetCDF Files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data.html#reading-tiff-images">10.5. Reading TIFF Images</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data.html#working-with-epics-channel-access">10.6. Working with Epics Channel Access</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data.html#reading-scan-data-from-aps-beamlines">10.7. Reading Scan Data from APS Beamlines</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data.html#reading-xafs-data-interchange-xdi-files">10.8. Reading XAFS Data Interchange (XDI) Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html#simple-plaintext-ascii-or-utf-8-column-files">10.1. Simple Plaintext (ASCII or UTF-8) Column Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html#reading-xafs-data-interchange-xdi-files">10.2. Reading XAFS Data Interchange (XDI) Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html#athena-project-files">10.3. Athena Project Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html#reading-hdf5-files">10.4. Reading HDF5 Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html#reading-netcdf-files">10.5. Reading NetCDF Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html#reading-tiff-images">10.6. Reading TIFF Images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html#working-with-epics-channel-access">10.7. Working with Epics Channel Access</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html#reading-scan-data-from-aps-beamlines">10.8. Reading Scan Data from APS Beamlines</a></li>
 <li class="toctree-l2"><a class="reference internal" href="data.html#reading-spec-bliss-files-via-silx-io-open">10.9. Reading Spec/BLISS files via <cite>silx.io.open</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="data.html#reading-fdmnes-output-files">10.10. Reading FDMNES output files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data.html#saving-and-restoring-larch-groups">10.11. Saving and Restoring Larch Groups</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html#saving-and-loading-larch-session-files-larix-files">10.11. Saving and Loading Larch Session Files: <cite>.larix</cite> Files</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="plotting.html">11. Plotting and Displaying Data</a><ul>
@@ -376,7 +398,7 @@ downloading and installing that for working with XRD image data.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>

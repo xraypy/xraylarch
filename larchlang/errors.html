@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>9.5. Dealing With Errors &#8212; xraylarch 0.9.64 documentation</title>
+    <title>9.5. Dealing With Errors &#8212; xraylarch 0.9.65 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css" />
     
@@ -128,11 +128,11 @@ execution of your script is stopped.</p>
 <h2><span class="section-number">9.5.1. </span>Syntax Errors<a class="headerlink" href="#syntax-errors" title="Permalink to this headline">¶</a></h2>
 <p>Syntax errors result from incomplete or ill-formed larch syntax.  For
 example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">+</span>
-<span class="ne">SyntaxError</span><span class="p">:</span> <span class="n">invalid</span> <span class="n">syntax</span>
-<span class="n">x</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">+</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; x = 3 +</span>
+<span class="go">SyntaxError: invalid syntax</span>
+<span class="go">x = 3 +</span>
 
-    <span class="n">x</span> <span class="o">=</span> <span class="mi">3</span>  <span class="o">+</span>
+<span class="go">    x = 3  +</span>
 </pre></div>
 </div>
 <p>This indicates that the Larch interpreter could not understand the meaning
@@ -150,12 +150,12 @@ referred to as a parsing errors.</p>
 <p>Even if the syntax of your script is correct, the logic might not be.  In addition,
 even if the logic is correct for most cases, it might not be correct for
 all.  For example, certain values might cause an error run time:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="mf">4.0</span> <span class="o">/</span> <span class="p">(</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
-<span class="ne">ZeroDivisionError</span><span class="p">(</span><span class="s1">&#39;float division&#39;</span><span class="p">)</span>
-<span class="o">&lt;</span><span class="n">StdInput</span><span class="o">&gt;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="mf">4.0</span><span class="o">/</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-          <span class="o">^^^</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; n = 1</span>
+<span class="go">larch&gt; print(4.0 / ( n - 1))</span>
+<span class="go">ZeroDivisionError(&#39;float division&#39;)</span>
+<span class="go">&lt;StdInput&gt;</span>
+<span class="go">    print(4.0/(n-1))</span>
+<span class="go">          ^^^</span>
 </pre></div>
 </div>
 <p>which is saying that you can’t divide by 0.  This is known as a <strong>Runtime
@@ -164,19 +164,19 @@ didn’t test if the denominator was 0 before doing the division.</p>
 <p>Larch (as inherited from Python) has many different types of exceptions, so
 that dividing by zero, as above, is detected as a different exception from,
 say, trying to open a file that doesn’t exist:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
-<span class="n">Error</span> <span class="n">running</span> <span class="o">&lt;</span><span class="n">built</span><span class="o">-</span><span class="ow">in</span> <span class="n">function</span> <span class="nb">open</span><span class="o">&gt;</span>
-<span class="ne">IOError</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;No such file or directory&#39;</span><span class="p">)</span>
-<span class="o">&lt;</span><span class="n">StdInput</span><span class="o">&gt;</span>
-    <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
-         <span class="o">^^^</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; fh = open(&#39;foo&#39;, &#39;r&#39;)</span>
+<span class="go">Error running &lt;built-in function open&gt;</span>
+<span class="go">IOError(2, &#39;No such file or directory&#39;)</span>
+<span class="go">&lt;StdInput&gt;</span>
+<span class="go">    fh = open(&#39;foo&#39;, &#39;r&#39;)</span>
+<span class="go">         ^^^</span>
 </pre></div>
 </div>
 <p>or trying to add an integer and a string together:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="mi">4</span> <span class="o">+</span> <span class="s1">&#39;a&#39;</span>
-<span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;unsupported operand type(s) for +: &#39;int&#39; and &#39;str&#39;&quot;</span><span class="p">)</span>
-<span class="o">&lt;</span><span class="n">StdInput</span><span class="o">&gt;</span>
-    <span class="mi">4</span> <span class="o">+</span> <span class="s1">&#39;a&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; 4 + &#39;a&#39;</span>
+<span class="go">TypeError(&quot;unsupported operand type(s) for +: &#39;int&#39; and &#39;str&#39;&quot;)</span>
+<span class="go">&lt;StdInput&gt;</span>
+<span class="go">    4 + &#39;a&#39;</span>
 </pre></div>
 </div>
 <p>Though they are called exceptions, such problems are fairly common when
@@ -247,7 +247,7 @@ most likely to happen when writing your own procedures, and want to ensure
 that the input arguments can be handled correctly.</p>
 <p>To cause an exception, you use the <strong>raise</strong> statement, and you are said to
 be “raising an exception”:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;wrong data type&quot;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; raise TypeError(&quot;wrong data type&quot;)</span>
 </pre></div>
 </div>
 </section>
@@ -283,7 +283,7 @@ be “raising an exception”:</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>

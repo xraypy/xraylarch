@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>13.1. XAFS Functions: Overview and Naming Conventions &#8212; xraylarch 0.9.64 documentation</title>
+    <title>13.1. XAFS Functions: Overview and Naming Conventions &#8212; xraylarch 0.9.65 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
@@ -140,7 +140,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="xafs-functions-overview-and-naming-conventions">
+  <p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
+<section id="xafs-functions-overview-and-naming-conventions">
 <h1><span class="section-number">13.1. </span>XAFS Functions: Overview and Naming Conventions<a class="headerlink" href="#xafs-functions-overview-and-naming-conventions" title="Permalink to this headline">¶</a></h1>
 <p>As with most Larch functions, each of the XAFS functions is designed to be
 able to act on arbitrary arrays of data to allow maximum flexibility in
@@ -679,42 +680,42 @@ energies can be a single number or array of numbers.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="ktoe">
 <span class="sig-name descname"><span class="pre">ktoe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wavenumbers</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ktoe" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert photo-electron wavenumber in <span class="math notranslate nohighlight">\(\AA^{-1}\)</span> ot energy in eV.
+<dd><p>Convert photo-electron wavenumber in <span class="math notranslate nohighlight">\(\AA^{-1}\)</span> to energy in eV.
 wavenumber can be a single number or array of numbers.</p>
 </dd></dl>
 
 <p>An example use would be to print out a table of energies and <span class="math notranslate nohighlight">\(k\)</span> values:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">kvals</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">26</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">evals</span> <span class="o">=</span> <span class="n">ktoe</span><span class="p">(</span><span class="n">kvals</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">e</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">kvals</span><span class="p">,</span> <span class="n">evals</span><span class="p">)):</span>
-<span class="n">larch</span><span class="o">&gt;</span>      <span class="nb">print</span> <span class="s2">&quot; </span><span class="si">%5.1f</span><span class="s2"> 1/Ang -&gt;  </span><span class="si">%8.2f</span><span class="s2"> eV&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">k</span> <span class="p">,</span> <span class="n">e</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">endfor</span>
-   <span class="mf">0.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>      <span class="mf">0.00</span> <span class="n">eV</span>
-   <span class="mf">1.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>      <span class="mf">3.81</span> <span class="n">eV</span>
-   <span class="mf">2.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>     <span class="mf">15.24</span> <span class="n">eV</span>
-   <span class="mf">3.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>     <span class="mf">34.29</span> <span class="n">eV</span>
-   <span class="mf">4.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>     <span class="mf">60.96</span> <span class="n">eV</span>
-   <span class="mf">5.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>     <span class="mf">95.25</span> <span class="n">eV</span>
-   <span class="mf">6.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>    <span class="mf">137.16</span> <span class="n">eV</span>
-   <span class="mf">7.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>    <span class="mf">186.69</span> <span class="n">eV</span>
-   <span class="mf">8.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>    <span class="mf">243.84</span> <span class="n">eV</span>
-   <span class="mf">9.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>    <span class="mf">308.61</span> <span class="n">eV</span>
-  <span class="mf">10.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>    <span class="mf">381.00</span> <span class="n">eV</span>
-  <span class="mf">11.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>    <span class="mf">461.01</span> <span class="n">eV</span>
-  <span class="mf">12.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>    <span class="mf">548.64</span> <span class="n">eV</span>
-  <span class="mf">13.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>    <span class="mf">643.89</span> <span class="n">eV</span>
-  <span class="mf">14.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>    <span class="mf">746.76</span> <span class="n">eV</span>
-  <span class="mf">15.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>    <span class="mf">857.25</span> <span class="n">eV</span>
-  <span class="mf">16.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>    <span class="mf">975.36</span> <span class="n">eV</span>
-  <span class="mf">17.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>   <span class="mf">1101.08</span> <span class="n">eV</span>
-  <span class="mf">18.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>   <span class="mf">1234.43</span> <span class="n">eV</span>
-  <span class="mf">19.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>   <span class="mf">1375.40</span> <span class="n">eV</span>
-  <span class="mf">20.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>   <span class="mf">1523.99</span> <span class="n">eV</span>
-  <span class="mf">21.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>   <span class="mf">1680.20</span> <span class="n">eV</span>
-  <span class="mf">22.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>   <span class="mf">1844.03</span> <span class="n">eV</span>
-  <span class="mf">23.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>   <span class="mf">2015.48</span> <span class="n">eV</span>
-  <span class="mf">24.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>   <span class="mf">2194.55</span> <span class="n">eV</span>
-  <span class="mf">25.0</span> <span class="mi">1</span><span class="o">/</span><span class="n">Ang</span> <span class="o">-&gt;</span>   <span class="mf">2381.24</span> <span class="n">eV</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; kvals = linspace(0, 25, 26)</span>
+<span class="go">larch&gt; evals = ktoe(kvals)</span>
+<span class="go">larch&gt; for k,e in zip(kvals, evals)):</span>
+<span class="go">larch&gt;      print &quot; %5.1f 1/Ang -&gt;  %8.2f eV&quot; %(k , e)</span>
+<span class="go">larch&gt; endfor</span>
+<span class="go">   0.0 1/Ang -&gt;      0.00 eV</span>
+<span class="go">   1.0 1/Ang -&gt;      3.81 eV</span>
+<span class="go">   2.0 1/Ang -&gt;     15.24 eV</span>
+<span class="go">   3.0 1/Ang -&gt;     34.29 eV</span>
+<span class="go">   4.0 1/Ang -&gt;     60.96 eV</span>
+<span class="go">   5.0 1/Ang -&gt;     95.25 eV</span>
+<span class="go">   6.0 1/Ang -&gt;    137.16 eV</span>
+<span class="go">   7.0 1/Ang -&gt;    186.69 eV</span>
+<span class="go">   8.0 1/Ang -&gt;    243.84 eV</span>
+<span class="go">   9.0 1/Ang -&gt;    308.61 eV</span>
+<span class="go">  10.0 1/Ang -&gt;    381.00 eV</span>
+<span class="go">  11.0 1/Ang -&gt;    461.01 eV</span>
+<span class="go">  12.0 1/Ang -&gt;    548.64 eV</span>
+<span class="go">  13.0 1/Ang -&gt;    643.89 eV</span>
+<span class="go">  14.0 1/Ang -&gt;    746.76 eV</span>
+<span class="go">  15.0 1/Ang -&gt;    857.25 eV</span>
+<span class="go">  16.0 1/Ang -&gt;    975.36 eV</span>
+<span class="go">  17.0 1/Ang -&gt;   1101.08 eV</span>
+<span class="go">  18.0 1/Ang -&gt;   1234.43 eV</span>
+<span class="go">  19.0 1/Ang -&gt;   1375.40 eV</span>
+<span class="go">  20.0 1/Ang -&gt;   1523.99 eV</span>
+<span class="go">  21.0 1/Ang -&gt;   1680.20 eV</span>
+<span class="go">  22.0 1/Ang -&gt;   1844.03 eV</span>
+<span class="go">  23.0 1/Ang -&gt;   2015.48 eV</span>
+<span class="go">  24.0 1/Ang -&gt;   2194.55 eV</span>
+<span class="go">  25.0 1/Ang -&gt;   2381.24 eV</span>
 </pre></div>
 </div>
 </section>
@@ -825,7 +826,7 @@ small, the estimate may not be that bad.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>
