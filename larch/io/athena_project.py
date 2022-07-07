@@ -661,7 +661,7 @@ class AthenaProject(object):
         group.args = make_athena_args(group, hashkey)
 
         # fix parameters that are incompatible with athena
-        group.args['bkg_nnorm'] = max(1, min(3, int(group.args['bkg_nnorm'])))
+        group.args['bkg_nnorm'] = max(0, min(3, int(group.args['bkg_nnorm'])))
 
         _elem, _edge = guess_edge(group.e0)
         group.args['bkg_z'] = _elem
