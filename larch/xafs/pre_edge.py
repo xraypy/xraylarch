@@ -146,9 +146,13 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
         norm2 = max(energy) - e0 - norm2
     norm2 = min(norm2, (max(energy) - e0))
     if norm1 is None:
-        norm1 = min(150, 5.0*round(norm2/15.0))
-    if norm1 > norm2:
+        norm1 = min(25, 5.0*round(norm2/15.0))
+
+    if norm1 > norm2+5:
         norm1, norm2 = norm2, norm1
+
+    norm1 = min(norm1, norm2 - 10)
+
     if nnorm is None:
         nnorm = 2
         if norm2-norm1 < 350: nnorm = 1
@@ -163,6 +167,7 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
 
     omu  = mu*energy**nvict
     ex, mx = remove_nans2(energy[p1:p2], omu[p1:p2])
+
     precoefs = np.polyfit(ex, mx, 1)
     pre_edge = (precoefs[0] * energy + precoefs[1]) * energy**(-nvict)
 
@@ -171,6 +176,8 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
     p2 = index_nearest(energy, norm2+e0)
     if p2-p1 < 2:
         p2 = min(len(energy), p1 + 2)
+    if p2-p1 < 2:
+        p1 = p1-2
 
     presub = (mu-pre_edge)[p1:p2]
     coefs = np.polyfit(energy[p1:p2], presub, nnorm)
@@ -261,7 +268,6 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
         energy = energy.squeeze()
     if len(mu.shape) > 1:
         mu = mu.squeeze()
-
     pre_dat = preedge(energy, mu, e0=e0, step=step, nnorm=nnorm,
                       nvict=nvict, pre1=pre1, pre2=pre2, norm1=norm1,
                       norm2=norm2)
