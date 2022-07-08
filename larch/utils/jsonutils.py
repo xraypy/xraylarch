@@ -8,6 +8,7 @@ import numpy as np
 import h5py
 from datetime import datetime
 from collections import namedtuple
+import logging
 
 HAS_STATE = {}
 try:
@@ -28,8 +29,10 @@ from lmfit.parameter import SCIPY_FUNCTIONS
 from larch import Group, isgroup, Journal, ParameterGroup
 
 from larch.xafs import FeffitDataSet, FeffDatFile, FeffPathGroup, TransformGroup
-from larch.utils.strutils import bytes2str, str2bytes, fix_varname
 from larch.xafs.feffutils import FeffCalcResults
+from larch.utils.strutils import bytes2str, str2bytes, fix_varname
+from larch.utils.logging  import getLogger
+from larch.utils.logging  import _levels as LoggingLevels
 
 HAS_STATE['FeffCalcResults'] = FeffCalcResults
 HAS_STATE['FeffDatFile'] = FeffDatFile
@@ -81,7 +84,7 @@ def encode4js(obj):
     elif isinstance(obj,(complex, np.complex128)):
         return {'__class__': 'Complex', 'value': (obj.real, obj.imag)}
     elif isinstance(obj, io.IOBase):
-        return {'__class__':  'IOBasee', 'class': obj.__class__.__name__,
+        return {'__class__':  'IOBase', 'class': obj.__class__.__name__,
                 'name': obj.name, 'closed': obj.closed,
                 'readable': obj.readable()}
     elif isinstance(obj, h5py.File):
@@ -109,7 +112,13 @@ def encode4js(obj):
         for key, val in obj.items():
             out[encode4js(key)] = encode4js(val)
         return out
+    elif isinstance(obj, logging.Logger):
 
+        level = 'DEBUG'
+        for key, val in LoggingLevels.items():
+            if obj.level == val:
+                level = key
+        return {'__class__':  'Logger', 'name': obj.name, 'level': level}
     elif isinstance(obj, MinimizerResult):
         out = {'__class__': 'MinimizerResult'}
         for attr in ('aborted', 'aic', 'bic', 'call_kws', 'chisqr',
@@ -171,6 +180,7 @@ def encode4js(obj):
                 continue
             thing = getattr(obj, attr)
             if not callable(thing):
+                # print("will try to encode thing ", thing, type(thing))
                 out[attr] = encode4js(thing)
         return out
 
@@ -243,6 +253,9 @@ def decode4js(obj):
         res = ModelResult(Model(lambda x: x, None), params)
         out = res.loads(decode4js(obj['value']))
 
+    elif classname == 'Logger':
+        out = getLogger(obj['name'], level=obj['level'])
+
     elif classname == 'StatefulObject':
         dtype = obj.get('__type__')
         if dtype in HAS_STATE:
@@ -268,5 +281,5 @@ def decode4js(obj):
         out = SCIPY_FUNCTIONS.get(mname, None)
 
     else:
-        print("cannot decode ", classname)
+        print("cannot decode ", classname, obj)
     return out
