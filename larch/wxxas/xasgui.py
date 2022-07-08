@@ -1204,7 +1204,8 @@ before clearing"""
             yname = self.last_array_sel_spec['yarr1']
             if first_group is None:
                 first_group = gname
-            self.larch.eval(script.format(group=gname, path=path, scan=scan))
+            self.larch.eval(script.format(group=gname, specfile='_specfile',
+                                          path=path, scan=scan))
 
             displayname = f"{fname:s} scan{scan:s} {yname:s}"
             jrnl = {'source_desc': f"{fname:s}: scan{scan:s} {yname:s}"}
@@ -1217,6 +1218,7 @@ before clearing"""
         if first_group is not None:
             self.ShowFile(groupname=first_group, process=True, plot=True)
         self.write_message("read %d datasets from %s" % (len(scanlist), path))
+        self.larch.eval('del _specfile')
 
 
     def onReadAthenaProject_OK(self, path, namelist, extra_sums=None):
