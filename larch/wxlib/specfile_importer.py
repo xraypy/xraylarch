@@ -747,8 +747,8 @@ class SpecfileImporter(wx.Frame) :
         self.expressions['yerr'] = yerr_expr
 
         # generate script to pass back to calling program:
-        read_cmd = "_specfile.get_scan(scan='{scan}')"
-        buff = ["{group} = %s" % read_cmd,
+        # read_cmd = "_specfile.get_scan(scan='{scan}')"
+        buff = ["{group} = {specfile}.get_scan(scan='{scan}')",
                 "{group}.path = '{path}'",
                 "{group}.is_frozen = False"]
 
