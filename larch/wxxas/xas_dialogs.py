@@ -1688,11 +1688,15 @@ class ExportCSVDialog(wx.Dialog):
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
+        self.save_individual_files = Check(panel, default=False, label='Save individual files', action=self.onSaveIndividualFiles)
         self.master_group = Choice(panel, choices=groupnames, size=(200, -1))
-        self.xarray_name  = Choice(panel, choices=list(self.xchoices.keys()), size=(200, -1))
+        self.xarray_name  = Choice(panel, choices=list(self.xchoices.keys()),size=(200, -1))
         self.yarray_name  = Choice(panel, choices=list(self.ychoices.keys()), size=(200, -1))
         self.del_name     = Choice(panel, choices=list(self.delchoices.keys()), size=(200, -1))
 
+
+        panel.Add(self.save_individual_files, newrow=True)
+        
         panel.Add(SimpleText(panel, 'Group for Energy Array: '), newrow=True)
         panel.Add(self.master_group)
 
@@ -1708,19 +1712,23 @@ class ExportCSVDialog(wx.Dialog):
         panel.pack()
         fit_dialog_window(self, panel)
 
+    def onSaveIndividualFiles(self, event=None):
+        save_individual = self.save_individual_files.IsChecked()
+        self.master_group.Enable(not save_individual)
 
     def GetResponse(self, master=None, gname=None, ynorm=True):
         self.Raise()
         response = namedtuple('ExportCSVResponse',
-                              ('ok', 'master', 'yarray', 'delim'))
+                              ('ok', 'individual', 'master', 'xarray', 'yarray', 'delim'))
         ok = False
         if self.ShowModal() == wx.ID_OK:
+            individual = self.save_individual_files.IsChecked()
             master = self.master_group.GetStringSelection()
             xarray = self.xchoices[self.xarray_name.GetStringSelection()]
             yarray = self.ychoices[self.yarray_name.GetStringSelection()]
             delim  = self.delchoices[self.del_name.GetStringSelection()]
             ok = True
-        return response(ok, master, yarray, delim)
+        return response(ok, individual, master, xarray, yarray, delim)
 
 class QuitDialog(wx.Dialog):
     """dialog for quitting, prompting to save project"""
