@@ -657,7 +657,7 @@ class XASFrame(wx.Frame):
             if dgroup not in savegroups:
                 savegroups.append(dgroup)
 
-
+        try:
             groups2csv(savegroups, outfile, x='energy', y=res.yarray,
                     delim=res.delim, _larch=self.larch)
             self.write_message(f"Exported CSV file {outfile:s}")
