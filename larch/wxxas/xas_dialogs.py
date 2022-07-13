@@ -1666,10 +1666,20 @@ class ExportCSVDialog(wx.Dialog):
         title = "Export Selected Groups"
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
         self.SetFont(Font(FONTSIZE))
+        self.xchoices = {'Energy': 'energy',
+                         'k': 'k',
+                         'R': 'r',
+                         'q': 'q'}
+
         self.ychoices = {'normalized mu(E)': 'norm',
                          'raw mu(E)': 'mu',
                          'flattened mu(E)': 'flat',
-                         'd mu(E) / dE': 'dmude'}
+                         'd mu(E) / dE': 'dmude',
+                         'chi(k)': 'chi',
+                         'chi(E)': 'chie',
+                         'chi(q)': 'chiq',
+                         '|chi(R)|': 'chir_mag',
+                         'Re[chi(R)]': 'chir_re'}
 
         self.delchoices = {'comma': ',',
                            'space': ' ',
@@ -1679,13 +1689,17 @@ class ExportCSVDialog(wx.Dialog):
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
         self.master_group = Choice(panel, choices=groupnames, size=(200, -1))
+        self.xarray_name  = Choice(panel, choices=list(self.xchoices.keys()), size=(200, -1))
         self.yarray_name  = Choice(panel, choices=list(self.ychoices.keys()), size=(200, -1))
         self.del_name     = Choice(panel, choices=list(self.delchoices.keys()), size=(200, -1))
 
         panel.Add(SimpleText(panel, 'Group for Energy Array: '), newrow=True)
         panel.Add(self.master_group)
 
-        panel.Add(SimpleText(panel, 'Array to Export: '), newrow=True)
+        panel.Add(SimpleText(panel, 'X Array to Export: '), newrow=True)
+        panel.Add(self.xarray_name)
+
+        panel.Add(SimpleText(panel, 'Y Array to Export: '), newrow=True)
         panel.Add(self.yarray_name)
 
         panel.Add(SimpleText(panel, 'Delimeter for File: '), newrow=True)
@@ -1702,6 +1716,7 @@ class ExportCSVDialog(wx.Dialog):
         ok = False
         if self.ShowModal() == wx.ID_OK:
             master = self.master_group.GetStringSelection()
+            xarray = self.xchoices[self.xarray_name.GetStringSelection()]
             yarray = self.ychoices[self.yarray_name.GetStringSelection()]
             delim  = self.delchoices[self.del_name.GetStringSelection()]
             ok = True
