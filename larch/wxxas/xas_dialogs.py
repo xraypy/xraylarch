@@ -246,7 +246,7 @@ class OverAbsorptionDialog(wx.Dialog):
         ppanel.conf.draw_legend(show=True)
 
     def GetResponse(self):
-        raise AttributError("use as non-modal dialog!")
+        raise AttributeError("use as non-modal dialog!")
 
 
 class EnergyCalibrateDialog(wx.Dialog):
@@ -577,7 +577,7 @@ overwriting current arrays''')
         ppanel.canvas.draw()
 
     def GetResponse(self):
-        raise AttributError("use as non-modal dialog!")
+        raise AttributeError("use as non-modal dialog!")
 
 class RebinDataDialog(wx.Dialog):
     """dialog for rebinning data to standard XAFS grid"""
@@ -785,7 +785,7 @@ class RebinDataDialog(wx.Dialog):
         ppanel.canvas.draw()
 
     def GetResponse(self):
-        raise AttributError("use as non-modal dialog!")
+        raise AttributeError("use as non-modal dialog!")
 
 class SmoothDataDialog(wx.Dialog):
     """dialog for smoothing data"""
@@ -930,7 +930,7 @@ class SmoothDataDialog(wx.Dialog):
         dgroup = self.dgroup
         dgroup.energy = xdat
         dgroup.mu     = ydat
-        ngroup.journal.add('smooth_command', self.cmd)
+        dgroup.journal.add('smooth_command', self.cmd)
         self.parent.process_normalization(dgroup)
         self.plot_results()
 
@@ -978,7 +978,7 @@ class SmoothDataDialog(wx.Dialog):
         ppanel.canvas.draw()
 
     def GetResponse(self):
-        raise AttributError("use as non-modal dialog!")
+        raise AttributeError("use as non-modal dialog!")
 
 class DeconvolutionDialog(wx.Dialog):
     """dialog for energy deconvolution"""
@@ -1118,7 +1118,7 @@ class DeconvolutionDialog(wx.Dialog):
         ppanel.canvas.draw()
 
     def GetResponse(self):
-        raise AttributError("use as non-modal dialog!")
+        raise AttributeError("use as non-modal dialog!")
 
 class DeglitchDialog(wx.Dialog):
     """dialog for deglitching or removing unsightly data points"""
@@ -1392,7 +1392,7 @@ clear undo history''')
         self.history_message.SetLabel('%i items in history' % (len(self.xmasks)-1))
 
     def GetResponse(self):
-        raise AttributError("use as non-modal dialog!")
+        raise AttributeError("use as non-modal dialog!")
 
 
 SPECCALC_SETUP = """#From SpectraCalc dialog:
@@ -1550,7 +1550,7 @@ class SpectraCalcDialog(wx.Dialog):
             self.parent.ShowFile(groupname=ngroup.groupname)
 
     def GetResponse(self):
-        raise AttributError("use as non-modal dialog!")
+        raise AttributeError("use as non-modal dialog!")
 
 class EnergyUnitsDialog(wx.Dialog):
     """dialog for selecting, changing energy units, forcing data to eV"""
