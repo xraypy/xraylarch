@@ -104,7 +104,7 @@ def get_rixs_id26(
         }
     """
     _writer = "get_rixs_id26"
-    _writer_version = "2022.1"  #: used for reading back in RixsData.load_from_h5()
+    _writer_version = "1.5.2"  #: used for reading back in RixsData.load_from_h5()
     _writer_timestamp = "{0:04d}-{1:02d}-{2:02d}_{3:02d}{4:02d}".format(
         *time.localtime()
     )
