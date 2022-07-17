@@ -173,6 +173,8 @@ class EXAFSPanel(TaskPanel):
         def CopyBtn(name):
             return Button(panel, 'Copy', size=(60, -1),
                           action=partial(self.onCopyParam, name))
+        copy_all = Button(panel, 'Copy All Parameters', size=(150, -1),
+                          action=partial(self.onCopyParam, 'all'))
 
 
         panel.Add(SimpleText(panel, 'EXAFS Data Reduction and Fourier Transforms',
@@ -285,6 +287,7 @@ class EXAFSPanel(TaskPanel):
         panel.Add(CopyBtn('fft_rwindow'), style=RIGHT)
         panel.Add((10, 10), newrow=True)
         panel.Add(self.wids['is_frozen'], dcol=1, newrow=True)
+        panel.Add(copy_all, dcol=5, style=RIGHT)
 
         panel.pack()
 
@@ -424,7 +427,17 @@ class EXAFSPanel(TaskPanel):
             return {a: conf[a] for a in args}
         name = str(name)
         set_e0 = set_rbkg = False
-        if name in ('e0', 'rbkg', 'bkg_kweight', 'fft_kweight'):
+        if name == 'all':
+            opts = copy_attrs( 'e0', 'rbkg', 'bkg_kweight', 'fft_kweight',
+                               'bkg_kmin', 'bkg_kmax', 'bkg_clamplo',
+                               'bkg_clamphi', 'fft_kmin', 'fft_kmax',
+                               'fft_kwindow', 'fft_dk', 'fft_rmin',
+                               'fft_rmax', 'fft_rmaxout', 'fft_rwindow',
+                               'fft_dr')
+            set_e0 = True
+            set_rbkg = True
+
+        elif name in ('e0', 'rbkg', 'bkg_kweight', 'fft_kweight'):
             opts = copy_attrs(name)
             if name == 'e0':
                 set_e0 = True
