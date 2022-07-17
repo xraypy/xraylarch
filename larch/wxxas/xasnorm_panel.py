@@ -85,17 +85,17 @@ class XASNormPanel(TaskPanel):
         e0panel = wx.Panel(panel)
         self.wids['auto_e0'] = Check(e0panel, default=True, label='auto?',
                                     action=self.onSet_XASE0)
-        self.wids['showe0'] = Check(e0panel, default=True, label='show?',
-                                    action=self.onSet_XASE0)
+        self.wids['show_e0'] = Check(e0panel, default=True, label='show?',
+                                     action=self.onSet_XASE0)
 
         sx = wx.BoxSizer(wx.HORIZONTAL)
         sx.Add(self.wids['auto_e0'], 0, LEFT, 4)
-        sx.Add(self.wids['showe0'], 0, LEFT, 4)
+        sx.Add(self.wids['show_e0'], 0, LEFT, 4)
         pack(e0panel, sx)
 
 
         self.wids['energy_ref'] = Choice(panel, choices=['None'],
-                                         action=self.onEnergyRef, size=(275, -1))
+                                         action=self.onEnergyRef, size=(325, -1))
 
         self.wids['auto_step'] = Check(panel, default=True, label='auto?',
                                       action=self.onNormMethod)
@@ -162,6 +162,9 @@ class XASNormPanel(TaskPanel):
             return Button(panel, 'Copy', size=(60, -1),
                           action=partial(self.onCopyParam, name))
 
+        copy_all = Button(panel, 'Copy All Parameters', size=(150, -1),
+                          action=partial(self.onCopyParam, 'all'))
+
         add_text = self.add_text
         HLINEWID = 650
         panel.Add(SimpleText(panel, 'XAS Pre-edge subtraction and Normalization',
@@ -170,7 +173,7 @@ class XASNormPanel(TaskPanel):
 
         panel.Add(plot_sel, newrow=True)
         panel.Add(self.plotsel_op, dcol=3)
-        panel.Add(SimpleText(panel, 'Y Offset:'), style=RIGHT)
+        panel.Add(SimpleText(panel, 'Y Offset:'), dcol=1, style=RIGHT)
         panel.Add(plot_voff, style=RIGHT)
 
         panel.Add(plot_one, newrow=True)
@@ -179,9 +182,9 @@ class XASNormPanel(TaskPanel):
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=7, newrow=True)
         add_text('Non-XAS Data Scale:')
-        panel.Add(scale, dcol=2)
+        panel.Add(scale, dcol=3)
         panel.Add(SimpleText(panel, 'Copy to Selected Groups:'),
-                  style=RIGHT, dcol=3)
+                  style=RIGHT, dcol=2)
 
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=7, newrow=True)
@@ -243,6 +246,8 @@ class XASNormPanel(TaskPanel):
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=7, newrow=True)
         panel.Add((5, 5), newrow=True)
         panel.Add(self.wids['is_frozen'], newrow=True)
+        panel.Add(copy_all, dcol=5, style=RIGHT)
+
         # panel.Add(saveconf, dcol=5)
 
         panel.Add((5, 5), newrow=True)
@@ -338,7 +343,7 @@ class XASNormPanel(TaskPanel):
 
             self.wids['energy_shift'].SetValue(opts['energy_shift'])
             self.wids['nvict'].SetSelection(int(opts['nvict']))
-            self.wids['showe0'].SetValue(opts['show_e0'])
+            self.wids['show_e0'].SetValue(opts['show_e0'])
             self.wids['auto_e0'].SetValue(opts['auto_e0'])
             self.wids['auto_step'].SetValue(opts['auto_step'])
             self.wids['edge'].SetStringSelection(opts['edge'].title())
@@ -347,6 +352,9 @@ class XASNormPanel(TaskPanel):
             for attr in ('pre1', 'pre2', 'norm1', 'norm2', 'nnorm', 'edge',
                          'atsym', 'step', 'norm_method'):
                 self.wids[attr].Enable()
+            self.wids['show_pre'].SetValue(opts['show_pre'])
+            self.wids['show_norm'].SetValue(opts['show_norm'])
+
             self.wids['scale'].Disable()
 
         else:
@@ -400,9 +408,8 @@ class XASNormPanel(TaskPanel):
         form_opts['plotone_op'] = self.plotone_op.GetStringSelection()
         form_opts['plotsel_op'] = self.plotsel_op.GetStringSelection()
         form_opts['plot_voff'] = self.wids['plot_voff'].GetValue()
-        form_opts['show_e0'] = self.wids['showe0'].IsChecked()
-        form_opts['auto_e0'] = self.wids['auto_e0'].IsChecked()
-        form_opts['auto_step'] = self.wids['auto_step'].IsChecked()
+        for ch in ('show_e0', 'show_pre', 'show_norm', 'auto_e0', 'auto_step'):
+            form_opts[ch] = self.wids[ch].IsChecked()
 
         form_opts['norm_method'] = self.wids['norm_method'].GetStringSelection().lower()
         form_opts['edge'] = self.wids['edge'].GetStringSelection().title()
@@ -433,8 +440,8 @@ class XASNormPanel(TaskPanel):
         except:
             pass
         for wattr in ('e0', 'step', 'pre1', 'pre2', 'norm1', 'norm2',
-                      'nvict', 'nnorm', 'showe0', 'auto_e0', 'auto_step',
-                      'norm_method', 'edge', 'atsym'):
+                      'nvict', 'nnorm', 'show_e0', 'auto_e0', 'auto_step',
+                      'norm_method', 'edge', 'atsym', 'show_pre', 'show_norm'):
             self.wids[wattr].Enable(not frozen)
 
     def onFreezeGroup(self, evt=None):
@@ -586,7 +593,12 @@ class XASNormPanel(TaskPanel):
         def copy_attrs(*args):
             for a in args:
                 opts[a] = conf[a]
-        if name == 'xas_e0':
+        if name == 'all':
+            copy_attrs('e0', 'show_e0', 'auto_e0', 'edge_step',
+                       'auto_step', 'energy_shift', 'pre1', 'pre2',
+                       'nvict', 'atsym', 'edge', 'norm_method', 'nnorm',
+                       'norm1', 'norm2', 'energy_ref')
+        elif name == 'xas_e0':
             copy_attrs('e0', 'show_e0', 'auto_e0')
         elif name == 'xas_step':
             copy_attrs('edge_step', 'auto_step')
@@ -962,21 +974,24 @@ class XASNormPanel(TaskPanel):
         y4e0 = dgroup.ydat = getattr(dgroup, dgroup.plot_yarrays[0][0], dgroup.mu)
         dgroup.plot_extras = []
 
-        if self.wids['showe0'].IsChecked():
+        popts = {'marker': 'o', 'markersize': 5,
+                 'label': '_nolegend_',
+                 'markerfacecolor': '#888',
+                 'markeredgecolor': '#A00'}
+
+        if self.wids['show_e0'].IsChecked():
             ie0 = index_of(dgroup.energy, dgroup.e0)
-            dgroup.plot_extras.append(('marker', dgroup.e0, y4e0[ie0], {}))
+            dgroup.plot_extras.append(('marker', dgroup.e0, y4e0[ie0], popts))
 
         if self.wids['show_pre'].IsChecked() or self.wids['show_norm'].IsChecked():
-            xpopts = {'marker': 'o', 'markersize': 4,
-                      'markerfacecolor': '#AAA',
-                      'markeredgecolor': '#722'}
+            popts['markersize'] = 4
             wids = []
             if self.wids['show_pre'].IsChecked():  wids.extend(['pre1', 'pre2'])
             if self.wids['show_norm'].IsChecked():  wids.extend(['norm1', 'norm2'])
             for wid in wids:
                 val = self.wids[wid].GetValue()
                 ival = index_of(dgroup.energy, dgroup.e0 + val)
-                dgroup.plot_extras.append(('marker', dgroup.e0+val, y4e0[ival], xpopts))
+                dgroup.plot_extras.append(('marker', dgroup.e0+val, y4e0[ival], popts))
 
 
     def plot(self, dgroup, title=None, plot_yarrays=None, yoff=0,
