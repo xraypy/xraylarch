@@ -87,6 +87,7 @@ class XASNormPanel(TaskPanel):
                                     action=self.onSet_XASE0)
         self.wids['showe0'] = Check(e0panel, default=True, label='show?',
                                     action=self.onSet_XASE0)
+
         sx = wx.BoxSizer(wx.HORIZONTAL)
         sx.Add(self.wids['auto_e0'], 0, LEFT, 4)
         sx.Add(self.wids['showe0'], 0, LEFT, 4)
@@ -115,6 +116,12 @@ class XASNormPanel(TaskPanel):
         xas_pre2 = self.add_floatspin('pre2', value=defaults['pre2'], **opts)
         xas_norm1 = self.add_floatspin('norm1', value=defaults['norm1'], **opts)
         xas_norm2 = self.add_floatspin('norm2', value=defaults['norm2'], **opts)
+
+        self.wids['show_pre'] = Check(panel, default=False, label='show?',
+                                      action=self.onSet_XASE0)
+        self.wids['show_norm'] = Check(panel, default=False, label='show?',
+                                       action=self.onSet_XASE0)
+
 
         opts = {'digits': 3, 'increment': 0.05, 'value': 0}
         plot_voff = self.add_floatspin('plot_voff',  with_pin=False,
@@ -156,7 +163,7 @@ class XASNormPanel(TaskPanel):
                           action=partial(self.onCopyParam, name))
 
         add_text = self.add_text
-        HLINEWID = 575
+        HLINEWID = 650
         panel.Add(SimpleText(panel, 'XAS Pre-edge subtraction and Normalization',
                              size=(350, -1), **self.titleopts), style=LEFT, dcol=4)
 
@@ -170,14 +177,14 @@ class XASNormPanel(TaskPanel):
         panel.Add(self.plotone_op, dcol=3)
         panel.Add(self.plot_erange, dcol=2, style=RIGHT)
 
-        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
+        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=7, newrow=True)
         add_text('Non-XAS Data Scale:')
         panel.Add(scale, dcol=2)
         panel.Add(SimpleText(panel, 'Copy to Selected Groups:'),
                   style=RIGHT, dcol=3)
 
 
-        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
+        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=7, newrow=True)
         add_text('XAS Data:')
         panel.Add(use_auto, dcol=4)
         panel.Add(copy_auto, dcol=1, style=RIGHT)
@@ -206,19 +213,20 @@ class XASNormPanel(TaskPanel):
         panel.Add(CopyBtn('xas_step'), dcol=1, style=RIGHT)
 
         panel.Add((5, 5), newrow=True)
-        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
+        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=7, newrow=True)
 
         add_text('Pre-edge range: ')
         panel.Add(xas_pre1)
         add_text(' : ', newrow=False)
-        panel.Add(xas_pre2, dcol=2)
+        panel.Add(xas_pre2)
+        panel.Add(self.wids['show_pre'])
         panel.Add(CopyBtn('xas_pre'), dcol=1, style=RIGHT)
 
         panel.Add(SimpleText(panel, 'Victoreen order:'), newrow=True)
         panel.Add(self.wids['nvict'], dcol=4)
 
         panel.Add((5, 5), newrow=True)
-        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
+        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=7, newrow=True)
 
         add_text('Normalization method: ')
         panel.Add(self.wids['norm_method'], dcol=4)
@@ -227,17 +235,18 @@ class XASNormPanel(TaskPanel):
         add_text('Normalization range: ')
         panel.Add(xas_norm1)
         add_text(' : ', newrow=False)
-        panel.Add(xas_norm2, dcol=2)
+        panel.Add(xas_norm2)
+        panel.Add(self.wids['show_norm'])
         panel.Add(SimpleText(panel, 'Polynomial Type:'), newrow=True)
         panel.Add(self.wids['nnorm'], dcol=4)
 
-        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
+        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=7, newrow=True)
         panel.Add((5, 5), newrow=True)
         panel.Add(self.wids['is_frozen'], newrow=True)
         # panel.Add(saveconf, dcol=5)
 
         panel.Add((5, 5), newrow=True)
-        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
+        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=7, newrow=True)
         panel.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -957,6 +966,19 @@ class XASNormPanel(TaskPanel):
             ie0 = index_of(dgroup.energy, dgroup.e0)
             dgroup.plot_extras.append(('marker', dgroup.e0, y4e0[ie0], {}))
 
+        if self.wids['show_pre'].IsChecked() or self.wids['show_norm'].IsChecked():
+            xpopts = {'marker': 'o', 'markersize': 4,
+                      'markerfacecolor': '#AAA',
+                      'markeredgecolor': '#722'}
+            wids = []
+            if self.wids['show_pre'].IsChecked():  wids.extend(['pre1', 'pre2'])
+            if self.wids['show_norm'].IsChecked():  wids.extend(['norm1', 'norm2'])
+            for wid in wids:
+                val = self.wids[wid].GetValue()
+                ival = index_of(dgroup.energy, dgroup.e0 + val)
+                dgroup.plot_extras.append(('marker', dgroup.e0+val, y4e0[ival], xpopts))
+
+
     def plot(self, dgroup, title=None, plot_yarrays=None, yoff=0,
              delay_draw=False, multi=False, new=True, zoom_out=True,
              with_extras=True, **kws):
@@ -1066,7 +1088,7 @@ class XASNormPanel(TaskPanel):
             axes = ppanel.axes
             for etype, x, y, opts in plot_extras:
                 if etype == 'marker':
-                    xpopts = {'marker': 'o', 'markersize': 6,
+                    xpopts = {'marker': 'o', 'markersize': 5,
                               'label': '_nolegend_',
                               'markerfacecolor': 'red',
                               'markeredgecolor': '#884444'}
