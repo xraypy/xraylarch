@@ -198,7 +198,7 @@ PATH_PARS = ('degen', 's02', 'e0', 'ei', 'deltar', 'sigma2', 'third', 'fourth')
 class FeffPathGroup(Group):
     def __init__(self, filename='', label='', feffrun='', s02=None, degen=None,
                  e0=None, ei=None, deltar=None, sigma2=None, third=None,
-                 fourth=None, **kws):
+                 fourth=None, use=True, **kws):
 
         kwargs = dict(filename=filename)
         kwargs.update(kws)
@@ -207,6 +207,7 @@ class FeffPathGroup(Group):
         self.filename = filename
         self.feffrun = feffrun
         self.label = label
+        self.use = use
         self.params = None
         self.spline_coefs = None
         self.geom  = []
@@ -265,15 +266,21 @@ class FeffPathGroup(Group):
         _feffdat_state = self._feffdat.__getstate__()
         return (self.filename, self.label, self.feffrun, self.degen,
                 self.s02, self.e0, self.ei, self.deltar, self.sigma2,
-                self.third, self.fourth, _feffdat_state)
+                self.third, self.fourth, self.use, _feffdat_state)
 
 
     def __setstate__(self, state):
         self.params = self.spline_coefs = self.k = self.chi = None
+        self.use = True
+        if len(state) == 12:  # "use" was added after paths states were being saved
+            (self.filename, self.label, self.feffrun, self.degen,
+             self.s02, self.e0, self.ei, self.deltar, self.sigma2,
+             self.third, self.fourth, _feffdat_state) = state
+        elif len(state) == 13:
+            (self.filename, self.label, self.feffrun, self.degen,
+             self.s02, self.e0, self.ei, self.deltar, self.sigma2,
+             self.third, self.fourth, self.use, _feffdat_state) = state
 
-        (self.filename, self.label, self.feffrun, self.degen,
-         self.s02, self.e0, self.ei, self.deltar, self.sigma2,
-         self.third, self.fourth, _feffdat_state) = state
 
         self._feffdat = FeffDatFile()
         self._feffdat.__setstate__(_feffdat_state)
@@ -335,7 +342,7 @@ class FeffPathGroup(Group):
     def rmass(self, val):  pass
 
     def __repr__(self):
-        return f'<FeffPath Group label={self.label:s}, filename={self.filename:s}>'
+        return f'<FeffPath Group label={self.label:s}, filename={self.filename:s}, use={self.use}>'
 
     def create_path_params(self, params=None):
         """
@@ -485,7 +492,12 @@ class FeffPathGroup(Group):
             kmax = min(max(fdat.k), kmax)
             if kstep is None: kstep = 0.05
             k = kstep * np.arange(int(1.01 + kmax/kstep), dtype='float64')
-
+        if not self.use:
+            self.k = k
+            self.p = k
+            self.chi = 0.0 * k
+            self.chi_imag = 0.0 * k
+            return
         reff = fdat.reff
         # get values for all the path parameters
         (degen, s02, e0, ei, deltar, sigma2, third, fourth)  = \
@@ -617,7 +629,7 @@ def ff2chi(paths, group=None, paramgroup=None, k=None, kmax=None,
 
 def feffpath(filename='', label='', feffrun='', s02=None, degen=None,
              e0=None,ei=None, deltar=None, sigma2=None, third=None,
-             fourth=None,  **kws):
+             fourth=None, use=True, **kws):
     """create a Feff Path Group from a *feffNNNN.dat* file.
 
     Parameters:
@@ -633,6 +645,7 @@ def feffpath(filename='', label='', feffrun='', s02=None, degen=None,
       fourth:    c_4      value or parameter [0.0]
       ei:        E_i      value or parameter [0.0]
       feffrun:   label for Feff run          [parent folder of Feff.dat file]
+      use :      use in sum of paths         [True]
 
     For all the options described as **value or parameter** either a
     numerical value or a Parameter (as created by param()) can be given.
@@ -643,10 +656,10 @@ def feffpath(filename='', label='', feffrun='', s02=None, degen=None,
     """
     return FeffPathGroup(filename=filename, label=label, feffrun=feffrun,
                          s02=s02, degen=degen, e0=e0, ei=ei, deltar=deltar,
-                         sigma2=sigma2, third=third, fourth=fourth)
+                         sigma2=sigma2, third=third, fourth=fourth, use=use)
 
 def use_feffpath(pathcache, label, degen=None, s02=None,  e0=None,ei=None,
-                 deltar=None, sigma2=None, third=None, fourth=None):
+                 deltar=None, sigma2=None, third=None, fourth=None, use=True):
     """use a copy of a Feff Path from a cache of feff paths - a simply dictionary
     keyed by the path label, and to support in-memory paths, not read from feff.dat files
 
@@ -662,9 +675,10 @@ def use_feffpath(pathcache, label, degen=None, s02=None,  e0=None,ei=None,
       third:     c_3      value or parameter [0.0]
       fourth:    c_4      value or parameter [0.0]
       ei:        E_i      value or parameter [0.0]
+      use:       whether to use path in sum [True]
       """
     path = deepcopy(pathcache[label])
-
+    path.use = use
     path.init_path_params(s02=s02, degen=degen, e0=e0, ei=ei,
                          deltar=deltar, sigma2=sigma2, third=third,
                          fourth=fourth)
