@@ -229,14 +229,17 @@ xasnorm = [CVar('auto_e0',  True, 'bool', desc='whether to automatically set E0'
            CVar('energy_shift',  0., 'float', desc='value of Energy shift from original data'),
            CVar('auto_energy_shift',  True, 'bool', desc='when changing energy_shift for a Group, also shift \nall other Groups sharing that reference'),
            CVar('edge',      'K', 'choice',  choices=EDGES, desc='symbol of absorption edge'),
-           CVar('nnorm',     'auto', 'choice', choices=list(NNORM_CHOICES.keys()),
-                desc='type of polynomial for normalization'),
-           CVar('norm_method',  'polynomial', 'choice', choices=NORM_METHODS,  desc='normalization method'),
            CVar('pre1', -200, 'float',  step=5, desc='low-energy fit range for pre-edge line,\nrelative to E0'),
            CVar('pre2',  -30, 'float',  step=5, desc='high-energy fit range for pre-edge line,\nrelative to E0'),
+           CVar('nvict',   0, 'int',     min=0, max=3,  desc='Victoreen order for pre-edge fitting\n(Energy^(-nvict))'),
+           CVar('show_pre',  False, 'bool', desc='whether to show pre-edge energy range (pre1, pre2)'),
+           CVar('norm_method',  'polynomial', 'choice', choices=NORM_METHODS,  desc='normalization method'),
+           CVar('nnorm',     'auto', 'choice', choices=list(NNORM_CHOICES.keys()),
+                desc='type of polynomial for normalization'),
            CVar('norm1', 200, 'float',  step=5, desc='low-energy fit range for normalization curve,\nrelative to E0'),
            CVar('norm2',  -1, 'float',  step=5, desc='high-energy fit range for normalization curve,\nelative to E0 (set to -1 for "auto")'),
-           CVar('nvict',   0, 'int',     min=0, max=3,  desc='Victoreen order for pre-edge fitting\n(Energy^(-nvict))'),
+           CVar('show_norm',  False, 'bool', desc='whether to show normalization energy range (norm1, norm2)'),
+
            CVar('scale',  1.0, 'float', step=0.1, desc='scale to use to "normalize" non-XAS data'),
            ]
 
