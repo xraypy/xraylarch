@@ -125,7 +125,7 @@ COMMANDS['use_path'] = """
 _feffpaths['{title:s}'] = use_feffpath(_feffcache['paths'], '{title:s}',
                                        s02='{amp:s}',  e0='{e0:s}',
                                        deltar='{delr:s}', sigma2='{sigma2:s}',
-                                       third='{third:s}', ei='{ei:s}')
+                                       third='{third:s}', ei='{ei:s}', use={use})
 """
 
 COMMANDS['ff2chi']   = """# sum paths using a list of paths and a group of parameters
@@ -1084,8 +1084,9 @@ class FeffitPanel(TaskPanel):
                 voff = opts['plot_voffset']
 
                 for i, label in enumerate(paths.keys()):
-                    objname = f"{paths_name}['{label:s}']"
-                    cmds.append(f"{pcmd}({objname}, label='{label:s}'{pextra}, offset={(i+1)*voff}{overplot})")
+                    if paths[label].use:
+                        objname = f"{paths_name}['{label:s}']"
+                        cmds.append(f"{pcmd}({objname}, label='{label:s}'{pextra}, offset={(i+1)*voff}{overplot})")
 
         self.larch_eval('\n'.join(cmds))
         self.controller.set_focus(topwin=topwin)
@@ -1321,9 +1322,10 @@ class FeffitPanel(TaskPanel):
             pdat = {'title': title, 'fullpath': pathdata[0],
                     'feffrun': pathdata[1], 'use':True}
             pdat.update(path_pages[title].get_expressions())
-            if pdat['use']:
-                cmds.append(COMMANDS['use_path'].format(**pdat))
-                paths_list.append(f"_feffpaths['{title:s}']")
+
+            #if pdat['use']:
+            cmds.append(COMMANDS['use_path'].format(**pdat))
+            paths_list.append(f"_feffpaths['{title:s}']")
             opts['paths'].append(pdat)
 
         paths_string = '[%s]' % (', '.join(paths_list))
@@ -1342,14 +1344,15 @@ class FeffitPanel(TaskPanel):
             if title not in path_pages:
                 continue
             exprs = path_pages[title].get_expressions()
-            for ename, expr in exprs.items():
-                if ename in ('label', 'use'):
-                    continue
-                for node in ast.walk(ast.parse(expr)):
-                    if isinstance(node, ast.Name):
-                        sym = node.id
-                        if sym not in used_syms:
-                            used_syms.append(sym)
+            if exprs['use']:
+                for ename, expr in exprs.items():
+                    if ename in ('label', 'use'):
+                        continue
+                    for node in ast.walk(ast.parse(expr)):
+                        if isinstance(node, ast.Name):
+                            sym = node.id
+                            if sym not in used_syms:
+                                used_syms.append(sym)
         return used_syms
 
 
