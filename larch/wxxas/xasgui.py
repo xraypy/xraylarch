@@ -1599,6 +1599,7 @@ before clearing"""
         """
         if win is None:
             win = 1
+
         display = _getDisplay(win=win, _larch=self.larch)
         display.Raise()
         msg = 'Select Point from Plot #%d' % win
@@ -1615,10 +1616,10 @@ before clearing"""
                                nhist=len(cursor_hist))
 
         pin_config = self.controller.get_config('pin',
-                                                {'style': 'pin_first',
+                                                {'style': 'pin first',
                                                  'max_time':15.0,
                                                  'min_time': 2.0})
-        if pin_config['style'] == 'plot_first':
+        if pin_config['style'].startswith('plot'):
             if len(cursor_hist) > 0:
                 x, y, t = cursor_hist[0]
                 if now < (t + 60.0):
