@@ -119,7 +119,7 @@ class FeffDatFile(Group):
         iline = 0
         for line in lines:
             iline += 1
-            line = line[:-1]
+            line = line[:-1].strip()
             if line.startswith('#'): line = line[1:]
             line = line.strip()
             if iline == 1:
@@ -151,7 +151,7 @@ class FeffDatFile(Group):
                 self.gam_ch = float(words[1])
                 self.exch   = words[2]
             elif mode == 'header' and line.startswith('Mu'):
-                words  = line.replace('=', ' ').split()
+                words  = line.replace('=', ' ').replace('eV', ' ').split()
                 self.mu = float(words[1])
                 self.kf = float(words[3])
                 self.vint = float(words[5])
