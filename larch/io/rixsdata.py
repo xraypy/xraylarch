@@ -17,7 +17,7 @@ _logger = getLogger(__name__)  #: module logger
 def _tostr(arr):
     """Numpy array to string"""
     try:
-        return arr.tostring().decode()
+        return np.array_str(arr)
     except Exception:
         return arr
 
