@@ -36,6 +36,9 @@ class RixsData(object):
     #: setted by self.crop()
     ene_in_crop, ene_out_crop, rixs_map_crop = None, None, None
 
+    #: line cuts
+    lcuts = []
+
     grid_method = 'nearest'
     grid_lib = 'scipy'
 
@@ -48,13 +51,13 @@ class RixsData(object):
         self._logger = logger or _logger
 
     def _init_axis_labels(self, unit=None):
-        try:
-            unit.decode()
-        except AttributeError:
-            pass
-        self.ene_in_label = 'Incoming energy ({0})'.format(unit)
-        self.ene_out_label = 'Emitted energy ({0})'.format(unit)
-        self.ene_et_label = 'Energy transfer ({0})'.format(unit)
+        if unit is None:
+            self._logger.error("missing energy unit")
+            return
+        self.ene_unit = _tostr(unit)
+        self.ene_in_label = 'Incoming energy ({0})'.format(self.ene_unit)
+        self.ene_out_label = 'Emitted energy ({0})'.format(self.ene_unit)
+        self.ene_et_label = 'Energy transfer ({0})'.format(self.ene_unit)
 
     def load_from_dict(self, rxdict):
         """Load RIXS data from a dictionary
@@ -76,7 +79,7 @@ class RixsData(object):
         None, set attributes: self.*
         """
         self.__dict__.update(rxdict)
-        self._init_axis_labels(unit=_tostr(self.ene_unit))
+        self._init_axis_labels(unit=self.ene_unit)
         self.grid_rixs_from_col()
 
     def load_from_h5(self, fname):
@@ -110,9 +113,9 @@ class RixsData(object):
         self._y = self.dat[:, 1]
         self._z = self.dat[:, 2]
 
-    def save_to_h5(self, fname):
+    def save_to_h5(self, fname, **dicttoh5_kws):
         """Dump dictionary representation to HDF5 file"""
-        dicttoh5(self.__dict__)
+        dicttoh5(self.__dict__, fname, **dicttoh5_kws)
         self._logger.info("RixsData saved to {0}".format(fname))
 
     def crop(self, crop_area, yet=False):
@@ -178,6 +181,56 @@ class RixsData(object):
                                                    xystep=_xystep,
                                                    lib=_lib,
                                                    method=_method)
+
+    def cut(self, energy=None, mode='CEE'):
+        """cut the RIXS plane at a given energy
+
+        Parameters
+        ----------
+        energy : float
+            energy of the cut
+
+        mode : str
+            defines the way to cut the plane:
+                - "CEE" (constant emission energy)
+                - "CIE" (constant incident energy)
+                - "CET" (constant energy transfer)
+       
+        Return
+        ------
+            None -> adds (xc:array, yc:array, info:dict) to self.lcuts:list, where
+
+            info = {label: str,     #: 'mode@encut'
+                    mode: str,      #: as input
+                    enecut: float,  #: energy cut given from the initial interpolation
+                    }
+        """
+        assert energy is not None, "The energy of the cut must be given"
+
+        mode = mode.upper()
+
+        if mode == "CEE":
+            x = self.ene_in
+            iy = np.abs(self.ene_out - energy).argmin()
+            enecut = self.ene_out[iy]
+            y = self.rixs_map[iy,:]
+        elif mode == "CIE":
+            x = self.ene_out
+            iy = np.abs(self.ene_in - energy).argmin()
+            enecut = self.ene_in[iy]
+            y = self.rixs_map[:,iy]
+        elif mode == "CET":
+            x = self.ene_in
+            iy = np.abs(self.ene_et - energy).argmin()
+            enecut = self.ene_et[iy]
+            y = self.rixs_et_map[iy, :]
+
+        label = f"{mode}@{enecut:.1f}"
+
+        self._logger.info(label)
+        info = dict(label=label, mode=mode, enecut=enecut)
+
+        self.lcuts.append((x, y, info))
 
     def norm(self):
         """Simple map normalization to max-min"""
