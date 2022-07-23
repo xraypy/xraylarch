@@ -176,38 +176,33 @@ def remove_dups(arr, tiny=1.e-7, frac=1.e-6):
     Example
     -------
     >>> x = np.array([0, 1.1, 2.2, 2.2, 3.3])
-    >>> print remove_dups(x)
+    >>> print(remove_dups(x))
     >>> array([ 0.   ,  1.1  ,  2.2,  2.2000001,  3.3  ])
     """
-    if not isinstance(arr, np.ndarray):
-        try:
-            arr = np.array(arr)
-        except:
-            print( 'remove_dups: argument is not an array')
-
-    shape = arr.shape
-    arr   = arr.flatten()
-    npts  = len(arr)
-    dups = []
     try:
-        reps = np.where(abs(arr[1:-1] - arr[:-2]) < tiny)[0].tolist()
-        dups.extend([i+1 for i in reps])
-    except ValueError:
-        pass
-    if abs(arr[-1] - arr[-2]) < tiny:
-        dups.append(npts-1)
-    arr = arr.tolist()
+        arr = np.asarray(arr)
+    except Exception:
+        print('remove_dups: argument is not an array')
+
+    if arr.size <= 1:
+        return arr
+    shape = arr.shape
+    arr = arr.flatten()
+    previous_value = np.nan
+    previous_add = 0
+
+    add = np.zeros(arr.size)
     for i in range(1, len(arr)):
-        t = tiny
-        if i > 0:
-            t = max(tiny, frac*abs(arr[i]-arr[i-1]))
-        if arr[i] - arr[i-1] < tiny:
-            arr[i] = arr[i-1] + t
-    if abs(arr[-1] - arr[-2]) < tiny:
-        arr[-1] = arr[-2] + tiny
-    arr = np.array(arr)
-    arr.shape = shape
-    return arr
+        if not np.isnan(arr[i-1]):
+            previous_value = arr[i-1]
+            previous_add = add[i-1]
+        value = arr[i]
+        if np.isnan(value) or np.isnan(previous_value):
+            continue
+        diff = abs(value - previous_value)
+        if diff < tiny:
+            add[i] = previous_add + max(tiny, frac*diff)
+    return (arr+add).reshape(shape)
 
 
 def remove_nans2(a, b):

@@ -121,6 +121,8 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
          norm1 = roughly min(150, norm2/3.0), rounded to 5 eV
     """
     energy = remove_dups(energy)
+    if energy.size <= 1:
+        raise ValueError("energy array must have at least 2 points")
     if e0 is None or e0 < energy[1] or e0 > energy[-2]:
         e0 = _finde0(energy, mu)
 
