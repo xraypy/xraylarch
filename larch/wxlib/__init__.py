@@ -125,6 +125,7 @@ if HAS_WXPYTHON:
                                        redraw_plot=_redraw_plot)
 
     _larch_builtins['_xafs'] = dict(redraw=xafsplots.redraw,
+                                    plotlabels=xafsplots.plotlabels,
                                     plot_mu=xafsplots.plot_mu,
                                     plot_bkg=xafsplots.plot_bkg,
                                     plot_chie=xafsplots.plot_chie,
