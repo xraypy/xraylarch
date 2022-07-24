@@ -150,8 +150,11 @@ class Interpreter:
                 group = self.symtable.set_symbol(groupname,
                                                  value=Group(__name__=groupname))
             for fname, fcn in list(entries.items()):
-                setattr(group, fname,
-                        Closure(func=fcn, _larch=self, _name=fname))
+                if callable(fcn):
+                    setattr(group, fname,
+                            Closure(func=fcn, _larch=self, _name=fname))
+                else:
+                    setattr(group, fname, fcn)
 
         self.symtable._sys.core_groups = core_groups
         self.symtable._fix_searchGroups(force=True)
