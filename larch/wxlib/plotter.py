@@ -331,7 +331,7 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
             if parent is not None:
                 xpos, ypos = parent.GetPosition()
                 xsiz, ysiz = parent.GetSize()
-                display.SetPosition((xpos+xsiz+15*win, ypos+25*win))
+                display.SetPosition((xpos+(xsiz//4)*win, ypos+(ysiz//8)*win))
 
         ddict[win] = display
         return display, new_display
