@@ -31,15 +31,14 @@ def plot_rixs(
     ylabel=None,
     xnticks=0,
     ynticks=0,
-    znticks=0,
     xmin=None,
     xmax=None,
     ymin=None,
     ymax=None,
-    cbar_show=False,
+    cbar_show=True,
     cbar_pos="vertical",
     cbar_nticks=0,
-    cbar_label="Counts/s",
+    cbar_label="Signal intensity",
     cbar_norm0=False,
     cont_levels=50,
     cont_imshow=True,
@@ -51,6 +50,8 @@ def plot_rixs(
     cont_labels=None,
     cont_labelformat="%.3f",
     origin="lower",
+    show_line_cuts=True,
+    show_et=True,
     **kws
 ):
     """RIXS map plotter
@@ -74,25 +75,24 @@ def plot_rixs(
         _logger.error('only "RixsData" objects can be plotted!')
         return
 
-    try:
-        x = rd.ene_in
-        x0 = rd.ene_in
-    except Exception:
-        _logger.error("`ene_in` array missing")
-        return
-    try:
-        y = rd.ene_et
-        y0 = rd.ene_out
-    except Exception:
-        _logger.error("`ene_out/ene_et` arrays missing")
-        return
-    try:
-        zz = rd.rixs_et_map
-        zz0 = rd.rixs_map
-    except Exception:
-        _logger.error("`rixs_map/rixs_et_map` arrays missing")
-        return
+    if show_et:
+        try:
+            x = rd.ene_in
+            y = rd.ene_et
+            zz = rd.rixs_et_map
+        except Exception:
+            _logger.error("`ene_in/ene_et/rixs_et_map` arrays missing")
+            return
+    else:
+        try:
+            x = rd.ene_in
+            y = rd.ene_out
+            zz = rd.rixs_map
+        except Exception:
+            _logger.error("`ene_in/ene_out/rixs_map` arrays missing")
+            return
 
+    plt.close(figname)
     fig = plt.figure(num=figname, figsize=figsize, dpi=figdpi)
 
     # NOTE: np.nanmin/np.nanmax fails with masked arrays! better
@@ -164,6 +164,7 @@ def plot_rixs(
             cbar.set_ticks(AutoLocator())
         cbar.set_label(cbar_label)
 
+    fig.subplots_adjust()
     return fig
 
 
