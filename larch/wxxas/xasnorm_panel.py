@@ -19,6 +19,7 @@ from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, get_icon,
                          SimpleText, pack, Button, HLine, Choice, Check,
                          GridPanel, CEN, RIGHT, LEFT, plotlabels)
 
+from larch.utils.physical_constants import ATOM_NAMES
 from larch.wxlib.plotter import last_cursor_pos
 from .xas_dialogs import EnergyUnitsDialog
 from .taskpanel import TaskPanel, autoset_fs_increment
@@ -141,7 +142,6 @@ class XASNormPanel(TaskPanel):
         self.wids['norm_method'].SetSelection(0)
         self.wids['energy_shift'] = FloatSpin(panel, value=0, digits=3, increment=0.05,
                                               action=self.onSet_EnergyShift)
-
 
         self.wids['atsym']  = Choice(panel, choices=ATSYMS, size=(100, -1))
         self.wids['edge']   = Choice(panel, choices=EDGES, size=(100, -1))
@@ -279,7 +279,28 @@ class XASNormPanel(TaskPanel):
         if conf.get('edge_step', None) is None:
             conf['edge_step'] = getattr(dgroup, 'edge_step', 1)
 
-        conf['atsym'] = getattr(dgroup, 'atsym', '?')
+        atsym = '?'
+        if hasattr(dgroup, 'element'):
+            elem = getattr(dgroup, 'element', '?')
+            try:
+                z = int(elem)
+                atsym = ATSYMS[z]
+            except:
+                pass
+            if elem in ATSYMS[1:]:
+                atsym = elem
+            else:
+                try:
+                    if elem.lower() in ATOM_NAMES:
+                        z = 1 + ATOM_NAMES.index(eleme.lower())
+                        atsym = ATSYMS[z]
+                except:
+                    pass
+
+        conf['atsym'] = atsym
+        if atsym == '?':
+            conf['atsym'] = getattr(dgroup, 'atsym', atsym)
+
         conf['edge'] = getattr(dgroup,'edge', conf['edge'])
 
         xeref = getattr(dgroup, 'energy_ref', '')
@@ -726,7 +747,6 @@ class XASNormPanel(TaskPanel):
 
         form = self.read_form()
         form['group'] = dgroup.groupname
-
         groupnames = list(self.controller.file_groups.keys())
         self.wids['energy_ref'].SetChoices(groupnames)
         eref_sel = self.wids['energy_ref'].GetStringSelection()
@@ -758,6 +778,8 @@ class XASNormPanel(TaskPanel):
                 dgroup.mono_dspace = res.dspace
                 dgroup.xdat = dgroup.energy = res.energy
         dgroup.energy_units = en_units
+        dgroup.atsym = form['atsym']
+        dgroup.edge = form['edge']
 
         cmds = []
         # test whether the energy shift is 0 or is different from the current energy shift:
