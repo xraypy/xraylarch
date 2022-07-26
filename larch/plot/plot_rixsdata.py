@@ -22,25 +22,26 @@ _logger = getLogger(__name__)  #: module logger, used as self._logger if not giv
 
 def plot_rixs(
     rd,
+    et=True,
     replace=True,
-    figname="plot_rixs_fig",
-    figsize=(10, 10),
-    figdpi=75,
-    figtitle=None,
-    xlabel=None,
-    ylabel=None,
-    xnticks=0,
-    ynticks=0,
-    xmin=None,
-    xmax=None,
-    ymin=None,
-    ymax=None,
+    fig_name="plot_rixs_fig",
+    fig_size=(10, 10),
+    fig_dpi=75,
+    fig_title=None,
+    x_label=None,
+    y_label=None,
+    x_nticks=0,
+    y_nticks=0,
+    x_min=None,
+    x_max=None,
+    y_min=None,
+    y_max=None,
     cbar_show=True,
     cbar_pos="vertical",
     cbar_nticks=0,
     cbar_label="Signal intensity",
     cbar_norm0=False,
-    cont_levels=50,
+    cont_nlevels=50,
     cont_imshow=True,
     cmap=cm.gist_heat_r,
     cmap2=cm.RdBu,
@@ -50,8 +51,7 @@ def plot_rixs(
     cont_labels=None,
     cont_labelformat="%.3f",
     origin="lower",
-    show_lcuts=False,
-    show_et=True,
+    lcuts_show=False,
     **kws
 ):
     """RIXS map plotter
@@ -75,19 +75,19 @@ def plot_rixs(
         _logger.error('only "RixsData" objects can be plotted!')
         return
     
-    if figtitle is None:
-        figtitle = rd.label
+    if fig_title is None:
+        fig_title = rd.label
 
-    if xlabel is None:
-        xlabel = "Incoming energy (eV)"
+    if x_label is None:
+        x_label = "Incoming energy (eV)"
 
-    if show_et:
+    if et:
         try:
             x = rd.ene_in
             y = rd.ene_et
             zz = rd.rixs_et_map
-            if ylabel is None:
-                ylabel = "Energy transfer (eV)"
+            if y_label is None:
+                y_label = "Energy transfer (eV)"
         except Exception:
             _logger.error("`ene_in/ene_et/rixs_et_map` arrays missing")
             return
@@ -96,14 +96,14 @@ def plot_rixs(
             x = rd.ene_in
             y = rd.ene_out
             zz = rd.rixs_map
-            if ylabel is None:
-                ylabel = "Emitted energy (eV)"
+            if y_label is None:
+                y_label = "Emitted energy (eV)"
         except Exception:
             _logger.error("`ene_in/ene_out/rixs_map` arrays missing")
             return
 
-    plt.close(figname)
-    fig = plt.figure(num=figname, figsize=figsize, dpi=figdpi)
+    plt.close(fig_name)
+    fig = plt.figure(num=fig_name, figsize=fig_size, dpi=fig_dpi)
 
     # NOTE: np.nanmin/np.nanmax fails with masked arrays! better
     #       to work with MaskedArray for zz
@@ -132,17 +132,17 @@ def plot_rixs(
         norm = cm.colors.Normalize(vmin=zzmin, vmax=zzmax)
 
     extent = (x.min(), x.max(), y.min(), y.max())
-    levels = np.linspace(zzmin, zzmax, cont_levels)
+    levels = np.linspace(zzmin, zzmax, cont_nlevels)
 
     ### FIGURE LAYOUT ###
     plane = fig.add_subplot(111)
-    plane.set_title(figtitle)
-    plane.set_xlabel(xlabel)
-    plane.set_ylabel(ylabel)
-    if xmin and xmax:
-        plane.set_xlim(xmin, xmax)
-    if ymin and ymax:
-        plane.set_ylim(ymin, ymax)
+    plane.set_title(fig_title)
+    plane.set_xlabel(x_label)
+    plane.set_ylabel(y_label)
+    if x_min and x_max:
+        plane.set_xlim(x_min, x_max)
+    if y_min and y_max:
+        plane.set_ylim(y_min, y_max)
 
     # contour mode: 'contf' or 'imshow'
     if cont_imshow:
@@ -156,12 +156,12 @@ def plot_rixs(
         cont = plane.contour(
             x, y, zz, levels, colors="k", hold="on", linewidths=cont_lwidths
         )
-    if xnticks:
-        plane.xaxis.set_major_locator(MaxNLocator(int(xnticks)))
+    if x_nticks:
+        plane.xaxis.set_major_locator(MaxNLocator(int(x_nticks)))
     else:
         plane.xaxis.set_major_locator(AutoLocator())
-    if ynticks:
-        plane.yaxis.set_major_locator(MaxNLocator(int(ynticks)))
+    if y_nticks:
+        plane.yaxis.set_major_locator(MaxNLocator(int(y_nticks)))
     else:
         plane.yaxis.set_major_locator(AutoLocator())
 
@@ -181,11 +181,16 @@ def plot_rixs(
             cbar.set_ticks(AutoLocator())
         cbar.set_label(cbar_label)
 
-    if show_lcuts:
+    if lcuts_show:
         assert len(rd.lcuts) >= 1, "no line cuts are present"
 
     fig.subplots_adjust()
     return fig
+
+def plot_rixs_cuts(rd):
+    """plot RIXS line cuts"""
+
+
 
 
 class RixsDataPlotter(object):
