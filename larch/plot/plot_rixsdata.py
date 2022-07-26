@@ -50,7 +50,7 @@ def plot_rixs(
     cont_labels=None,
     cont_labelformat="%.3f",
     origin="lower",
-    show_line_cuts=True,
+    show_lcuts=False,
     show_et=True,
     **kws
 ):
@@ -163,6 +163,10 @@ def plot_rixs(
         else:
             cbar.set_ticks(AutoLocator())
         cbar.set_label(cbar_label)
+
+    if show_lcuts:
+        assert len(rd.lcuts) >= 1, "no line cuts are present"
+
 
     fig.subplots_adjust()
     return fig
