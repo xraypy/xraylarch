@@ -26,7 +26,7 @@ def plot_rixs(
     figname="plot_rixs_fig",
     figsize=(10, 10),
     figdpi=75,
-    figtitle="",
+    figtitle=None,
     xlabel=None,
     ylabel=None,
     xnticks=0,
@@ -74,6 +74,9 @@ def plot_rixs(
     if not "RixsData" in str(type(rd)):
         _logger.error('only "RixsData" objects can be plotted!')
         return
+    
+    if figtitle is None:
+        figtitle = rd.label
 
     if xlabel is None:
         xlabel = "Incoming energy (eV)"

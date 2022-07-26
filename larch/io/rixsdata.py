@@ -45,7 +45,9 @@ class RixsData(object):
     def __init__(self, name=None, logger=None):
         """Constructor"""
 
-        self.__name__ = name or "RixsData_{0}".format(hex(id(self)))
+        self.__name__ = "RixsData_{0}".format(hex(id(self)))
+        self.name = name or self.__name__
+        self.label = self.name
         self._logger = logger or _logger
 
     def set_energy_unit(self, unit=None):
@@ -177,11 +179,13 @@ class RixsData(object):
         self.ene_et = _etcrop
         self.rixs_map = _zzcrop
         self.rixs_et_map = _ezzcrop
+        self.label = f"{self.name} [{self._crop_area}]"
 
     def reset(self):
         """resets to initial data"""
         self.grid_rixs_from_col()
         self.lcuts = []
+        self.label = self.name
 
     def grid_rixs_from_col(self):
         """Grid RIXS map from XYZ columns"""
