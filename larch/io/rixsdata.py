@@ -76,6 +76,8 @@ class RixsData(object):
     grid_method = "nearest"
     grid_lib = "scipy"
 
+    datatype = 'rixs'
+
     _palette = CycleColors()
     _no_save = ("_logger", "_palette")
 
@@ -228,6 +230,8 @@ class RixsData(object):
         self.grid_rixs_from_col()
         self.lcuts = []
         self.label = self.name
+        self._palette = None
+        self._palette = CycleColors()
 
     def grid_rixs_from_col(self):
         """Grid RIXS map from XYZ columns"""
