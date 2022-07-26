@@ -6,6 +6,8 @@ RIXS data object
 """
 import numpy as np
 import copy
+import time
+from itertools import cycle
 from scipy.interpolate import griddata
 from silx.io.dictdump import dicttoh5, h5todict
 
@@ -22,6 +24,39 @@ def _tostr(arr):
         return np.array_str(arr)
     except Exception:
         return arr
+
+
+class CycleColors:
+    """Utility for setting the line colors of the RIXS map cuts"""
+
+    DEFAULT_PALETTE = (
+        "#1F77B4",
+        "#AEC7E8",
+        "#FF7F0E",
+        "#FFBB78",
+        "#2CA02C",
+        "#98DF8A",
+        "#D62728",
+        "#FF9896",
+        "#9467BD",
+        "#C5B0D5",
+        "#8C564B",
+        "#C49C94",
+        "#E377C2",
+        "#F7B6D2",
+        "#7F7F7F",
+        "#C7C7C7",
+        "#BCBD22",
+        "#DBDB8D",
+        "#17BECF",
+        "#9EDAE5",
+    )
+
+    def __init__(self) -> None:
+        self.colors = cycle(self.DEFAULT_PALETTE)
+
+    def get_color(self) -> None:
+        return next(self.colors)
 
 
 class RixsData(object):
@@ -41,7 +76,8 @@ class RixsData(object):
     grid_method = "nearest"
     grid_lib = "scipy"
 
-    _plotter = None
+    _palette = CycleColors()
+    _no_save = ("_logger", "_palette")
 
     def __init__(self, name=None, logger=None):
         """Constructor"""
@@ -127,7 +163,8 @@ class RixsData(object):
     def save_to_h5(self, fname, **dicttoh5_kws):
         """Dump dictionary representation to HDF5 file"""
         save_dict = copy.deepcopy(self.__dict__)
-        del save_dict["_logger"]
+        for dkey in self._no_save:
+            del save_dict[dkey]
         dicttoh5(save_dict, fname, **dicttoh5_kws)
         self._logger.info(f"{self.name} saved to {fname}")
 
@@ -251,8 +288,16 @@ class RixsData(object):
 
         label = f"{mode}@{enecut:.1f}"
 
-        self._logger.info(label)
-        info = dict(label=label, mode=mode, enecut=enecut)
+        self._logger.info(f"added RIXS cut: {label}")
+        info = dict(
+            label=label,
+            mode=mode,
+            enecut=enecut,
+            color=self._palette.get_color(),
+            timestamp="{0:04d}-{1:02d}-{2:02d}_{3:02d}{4:02d}".format(
+                *time.localtime()
+            ),
+        )
 
         self.lcuts.append((x, y, info))
 
