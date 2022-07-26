@@ -243,7 +243,7 @@ class RixsData(object):
         )
         self.ene_grid = _xystep
 
-    def cut(self, energy=None, mode="CEE"):
+    def cut(self, energy=None, mode="CEE", label=None):
         """cut the RIXS plane at a given energy
 
         Parameters
@@ -256,6 +256,9 @@ class RixsData(object):
                 - "CEE" (constant emission energy)
                 - "CIE" (constant incident energy)
                 - "CET" (constant energy transfer)
+
+        label : str, optional [None]
+            custom label, if None: label = 'mode@ecut'
 
         Return
         ------
@@ -286,7 +289,8 @@ class RixsData(object):
             enecut = self.ene_et[iy]
             y = self.rixs_et_map[iy, :]
 
-        label = f"{mode}@{enecut:.1f}"
+        if label is None:
+            label = f"{mode}@{enecut:.1f}"
 
         self._logger.info(f"added RIXS cut: {label}")
         info = dict(
