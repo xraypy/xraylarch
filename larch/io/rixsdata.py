@@ -5,6 +5,7 @@ RIXS data object
 ================
 """
 import numpy as np
+import copy
 from scipy.interpolate import griddata
 from silx.io.dictdump import dicttoh5, h5todict
 
@@ -62,7 +63,9 @@ class RixsData(object):
             self.ene_grid = 0.1
             self.reset()
             self.ene_unit = "eV"
-        assert self.ene_unit == "eV", f"energy unit is {self.set_energy_unit} -> must be eV"
+        assert (
+            self.ene_unit == "eV"
+        ), f"energy unit is {self.set_energy_unit} -> must be eV"
 
     def load_from_dict(self, rxdict):
         """Load RIXS data from a dictionary
@@ -72,11 +75,11 @@ class RixsData(object):
         rxdict : dict
             Minimal required structure
             {
-             'writer_version': '1.5.x',
+             'writer_version': '1.5.0',
              'sample_name': str,
-             '_x': 1D array,
-             '_y': 1D array,
-             '_z': 1D array,
+             '_x': 1D array,  #: energy in
+             '_y': 1D array,  #: energy out
+             '_z': 1D array,  #: signal
             }
 
         Return
@@ -123,8 +126,10 @@ class RixsData(object):
 
     def save_to_h5(self, fname, **dicttoh5_kws):
         """Dump dictionary representation to HDF5 file"""
-        dicttoh5(self.__dict__, fname, **dicttoh5_kws)
-        self._logger.info("RixsData saved to {0}".format(fname))
+        save_dict = copy.deepcopy(self.__dict__)
+        del save_dict["_logger"]
+        dicttoh5(save_dict, fname, **dicttoh5_kws)
+        self._logger.info(f"{self.name} saved to {fname}")
 
     def crop(self, crop_area, yet=False):
         """Crop the plane in a given range
@@ -136,10 +141,10 @@ class RixsData(object):
             (x1, y1, x2, y2) : floats
             x1 < x2 (ene_in)
             y1 < y2 (if yet=False: ene_out, else: ene_et)
-        
+
         yet: bool, optional [False]
             if True: y1, y2 are given in energy transfer
-        
+
         """
         self._crop_area = crop_area
         x1, y1, x2, y2 = crop_area
