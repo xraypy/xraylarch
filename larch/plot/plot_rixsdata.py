@@ -23,7 +23,6 @@ _logger = getLogger(__name__)  #: module logger, used as self._logger if not giv
 def plot_rixs(
     rd,
     et=True,
-    replace=True,
     fig_name="plot_rixs_fig",
     fig_size=(10, 10),
     fig_dpi=75,
@@ -51,8 +50,6 @@ def plot_rixs(
     cont_labels=None,
     cont_labelformat="%.3f",
     origin="lower",
-    lcuts_show=False,
-    **kws
 ):
     """RIXS map plotter
 
@@ -179,17 +176,26 @@ def plot_rixs(
             cbar.set_ticks(MaxNLocator(int(y_nticks)))
         else:
             cbar.set_ticks(AutoLocator())
-        cbar.set_label(cbar_label)
-
-    if lcuts_show:
-        assert len(rd.lcuts) >= 1, "no line cuts are present"
+        cbar.set_label(cbar_label)        
 
     fig.subplots_adjust()
     return fig
 
 def plot_rixs_cuts(rd):
     """plot RIXS line cuts"""
-
+    assert len(rd.lcuts) >= 1, "no line cuts are present"
+    fig, axs = plt.subplots(nrows=3)
+    for (x, y, i) in rd.lcuts:
+        mode = i['mode']
+        if mode == "CEE":
+            ax = axs[0]
+        elif mode == "CIE":
+            ax = axs[1]
+        elif mode == "CET":
+            ax = axs[2]
+        ax.set_title(mode)
+        ax.plot(x, y, label=i['label'], color=i['color'])
+        ax.legend()
 
 
 
