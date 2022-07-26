@@ -75,11 +75,16 @@ def plot_rixs(
         _logger.error('only "RixsData" objects can be plotted!')
         return
 
+    if xlabel is None:
+        xlabel = "Incoming energy (eV)"
+
     if show_et:
         try:
             x = rd.ene_in
             y = rd.ene_et
             zz = rd.rixs_et_map
+            if ylabel is None:
+                ylabel = "Energy transfer (eV)"
         except Exception:
             _logger.error("`ene_in/ene_et/rixs_et_map` arrays missing")
             return
@@ -88,6 +93,8 @@ def plot_rixs(
             x = rd.ene_in
             y = rd.ene_out
             zz = rd.rixs_map
+            if ylabel is None:
+                ylabel = "Emitted energy (eV)"
         except Exception:
             _logger.error("`ene_in/ene_out/rixs_map` arrays missing")
             return
@@ -157,7 +164,14 @@ def plot_rixs(
 
     # colorbar
     if cbar_show:
-        cbar = fig.colorbar(contf, use_gridspec=True, orientation=cbar_pos)
+        xyratio = y.shape[0] / x.shape[0]
+        cbar = fig.colorbar(
+            contf,
+            use_gridspec=True,
+            orientation=cbar_pos,
+            fraction=0.046 * xyratio,
+            pad=0.04,
+        )
         if cbar_nticks:
             cbar.set_ticks(MaxNLocator(int(y_nticks)))
         else:
@@ -166,7 +180,6 @@ def plot_rixs(
 
     if show_lcuts:
         assert len(rd.lcuts) >= 1, "no line cuts are present"
-
 
     fig.subplots_adjust()
     return fig
