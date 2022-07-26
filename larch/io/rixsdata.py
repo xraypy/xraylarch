@@ -57,6 +57,7 @@ class RixsData(object):
             self._logger.info(f"Energy unit is {self.ene_unit} -> converting to eV")
             self._x *= 1000
             self._y *= 1000
+            self.ene_grid = 0.1
             self.reset()
             self.ene_unit = "eV"
         assert self.ene_unit == "eV", f"energy unit is {self.set_energy_unit} -> must be eV"
@@ -140,6 +141,8 @@ class RixsData(object):
         """
         self._crop_area = crop_area
         x1, y1, x2, y2 = crop_area
+        assert x1 < x2, "wrong crop area, x1 >= x2"
+        assert y1 < y2, "wrong crop area, y1 >= y2"
         _xystep = self.ene_grid or 0.1
         _method = self.grid_method or "nearest"
 
@@ -192,6 +195,7 @@ class RixsData(object):
         _, self.ene_et, self.rixs_et_map = gridxyz(
             self._x, self._et, self._z, xystep=_xystep, lib=_lib, method=_method
         )
+        self.ene_grid = _xystep
 
     def cut(self, energy=None, mode="CEE"):
         """cut the RIXS plane at a given energy
