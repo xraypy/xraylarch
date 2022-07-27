@@ -71,7 +71,7 @@ class RixsData(object):
     ene_grid, ene_unit = None, None
 
     #: line cuts
-    lcuts = []
+    line_cuts = {}
 
     grid_method = "nearest"
     grid_lib = "scipy"
@@ -138,9 +138,7 @@ class RixsData(object):
             self._logger.warning("Data format not understood")
             return
         rxdict["sample_name"] = _tostr(rxdict["sample_name"])
-        import pdb; pdb.set_trace()
         self.load_from_dict(rxdict)
-
         self._logger.info("RIXS map loaded from file: {0}".format(filename))
 
     def load_from_ascii(self, filename, **kws):
@@ -322,7 +320,8 @@ class RixsData(object):
             ),
         )
 
-        self.lcuts.append((xc, yc, info))
+        cut_key = f"{mode}_{enecut*10:.0f}"
+        self.line_cuts[cut_key] = dict(x=xc, y=yc, info=info)
         self._logger.info(f"added RIXS {mode} cut: '{label}'")
 
     def norm(self):
