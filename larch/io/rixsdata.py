@@ -76,7 +76,7 @@ class RixsData(object):
     grid_method = "nearest"
     grid_lib = "scipy"
 
-    datatype = 'rixs'
+    datatype = "rixs"
 
     _palette = CycleColors()
     _no_save = ("_logger", "_palette")
@@ -128,9 +128,9 @@ class RixsData(object):
         self.set_energy_unit()
         self.grid_rixs_from_col()
 
-    def load_from_h5(self, fname):
+    def load_from_h5(self, filename):
         """Load RIXS from HDF5 file"""
-        rxdict = h5todict(fname)
+        rxdict = h5todict(filename)
         if not ("writer_version" in rxdict.keys()):
             self._logger.error("Key 'writer_version' not found")
             return
@@ -138,10 +138,12 @@ class RixsData(object):
             self._logger.warning("Data format not understood")
             return
         rxdict["sample_name"] = _tostr(rxdict["sample_name"])
+        import pdb; pdb.set_trace()
         self.load_from_dict(rxdict)
-        self._logger.info("RIXS map loaded from file: {0}".format(fname))
 
-    def load_from_ascii(self, fname, **kws):
+        self._logger.info("RIXS map loaded from file: {0}".format(filename))
+
+    def load_from_ascii(self, filename, **kws):
         """load data from a 3 columns ASCII file assuming the format:
 
         e_in(eV), e_out(eV), signal
@@ -149,26 +151,32 @@ class RixsData(object):
         """
 
         try:
-            self.dat = np.loadtxt(fname)
-            self._logger.info("Loaded {0}".format(fname))
+            dat = np.loadtxt(filename)
+            self.filename = filename
+            self._logger.info("Loaded {0}".format(filename))
         except Exception:
-            self._logger.error("Cannot load from {0}".format(fname))
+            self._logger.error("Cannot load from {0}".format(filename))
             return
 
-        self._x = self.dat[:, 0]
-        self._y = self.dat[:, 1]
-        self._z = self.dat[:, 2]
+        self._x = dat[:, 0]
+        self._y = dat[:, 1]
+        self._z = dat[:, 2]
 
         self.set_energy_unit()
         self.reset()
 
-    def save_to_h5(self, fname, **dicttoh5_kws):
+    def save_to_h5(self, filename=None, **dicttoh5_kws):
         """Dump dictionary representation to HDF5 file"""
+        if filename is None:
+            filename = f"{self.filename.split('.')[0]}.h5"
         save_dict = copy.deepcopy(self.__dict__)
         for dkey in self._no_save:
-            del save_dict[dkey]
-        dicttoh5(save_dict, fname, **dicttoh5_kws)
-        self._logger.info(f"{self.name} saved to {fname}")
+            try:
+                del save_dict[dkey]
+            except KeyError:
+                continue
+        dicttoh5(save_dict, filename, **dicttoh5_kws)
+        self._logger.info(f"{self.name} saved to {filename}")
 
     def crop(self, crop_area, yet=False):
         """Crop the plane in a given range
@@ -227,6 +235,7 @@ class RixsData(object):
 
     def reset(self):
         """resets to initial data"""
+        self._logger.info("resetting RIXS plane")
         self.grid_rixs_from_col()
         self.lcuts = []
         self.label = self.name
@@ -262,13 +271,13 @@ class RixsData(object):
                 - "CET" (constant energy transfer)
 
         label : str, optional [None]
-            custom label, if None: label = 'mode@ecut'
+            custom label, if None: label = 'mode_enecut'
 
         Return
         ------
             None -> adds (xc:array, yc:array, info:dict) to self.lcuts:list, where
 
-            info = {label: str,     #: 'mode@encut'
+            info = {label: str,     #: 'mode_enecut'
                     mode: str,      #: as input
                     enecut: float,  #: energy cut given from the initial interpolation
                     }
@@ -278,36 +287,43 @@ class RixsData(object):
         mode = mode.upper()
 
         if mode == "CEE":
-            x = self.ene_in
+            xc = self.ene_in
             iy = np.abs(self.ene_out - energy).argmin()
             enecut = self.ene_out[iy]
-            y = self.rixs_map[iy, :]
+            yc = self.rixs_map[iy, :]
+            datatype = "xas"
         elif mode == "CIE":
-            x = self.ene_out
+            xc = self.ene_out
             iy = np.abs(self.ene_in - energy).argmin()
             enecut = self.ene_in[iy]
-            y = self.rixs_map[:, iy]
+            yc = self.rixs_map[:, iy]
+            datatype = "xes"
         elif mode == "CET":
-            x = self.ene_in
+            xc = self.ene_in
             iy = np.abs(self.ene_et - energy).argmin()
             enecut = self.ene_et[iy]
-            y = self.rixs_et_map[iy, :]
+            yc = self.rixs_et_map[iy, :]
+            datatype = "xas"
+        else:
+            self._logger.error(f"wrong mode: {mode}")
+            return
 
         if label is None:
-            label = f"{mode}@{enecut:.1f}"
+            label = f"{mode}_{enecut:.1f}"
 
-        self._logger.info(f"added RIXS cut: {label}")
         info = dict(
             label=label,
             mode=mode,
             enecut=enecut,
+            datatype=datatype,
             color=self._palette.get_color(),
             timestamp="{0:04d}-{1:02d}-{2:02d}_{3:02d}{4:02d}".format(
                 *time.localtime()
             ),
         )
 
-        self.lcuts.append((x, y, info))
+        self.lcuts.append((xc, yc, info))
+        self._logger.info(f"added RIXS {mode} cut: '{label}'")
 
     def norm(self):
         """Simple map normalization to max-min"""

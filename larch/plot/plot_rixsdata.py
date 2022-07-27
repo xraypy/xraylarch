@@ -71,7 +71,7 @@ def plot_rixs(
     if not "RixsData" in str(type(rd)):
         _logger.error('only "RixsData" objects can be plotted!')
         return
-    
+
     if fig_title is None:
         fig_title = rd.label
 
@@ -176,27 +176,38 @@ def plot_rixs(
             cbar.set_ticks(MaxNLocator(int(y_nticks)))
         else:
             cbar.set_ticks(AutoLocator())
-        cbar.set_label(cbar_label)        
+        cbar.set_label(cbar_label)
 
     fig.subplots_adjust()
     return fig
 
-def plot_rixs_cuts(rd):
+
+def plot_rixs_cuts(
+    rd,
+    fig_name="plot_rixs_cuts",
+    fig_size=(15, 5),
+    fig_dpi=75
+):
     """plot RIXS line cuts"""
     assert len(rd.lcuts) >= 1, "no line cuts are present"
-    fig, axs = plt.subplots(nrows=3)
-    for (x, y, i) in rd.lcuts:
-        mode = i['mode']
+    fig, axs = plt.subplots(nrows=3, num=fig_name, figsize=fig_size, dpi=fig_dpi)
+
+    for (xc, yc, info) in rd.lcuts:
+        mode = info["mode"]
+        label = info["label"]
+        color = info["color"]
         if mode == "CEE":
             ax = axs[0]
         elif mode == "CIE":
             ax = axs[1]
         elif mode == "CET":
             ax = axs[2]
+        else:
+            _logger.error(f"wrong mode: {mode}")
+            continue
         ax.set_title(mode)
-        ax.plot(x, y, label=i['label'], color=i['color'])
+        ax.plot(xc, yc, label=label, color=color)
         ax.legend()
-
 
 
 class RixsDataPlotter(object):
