@@ -86,7 +86,8 @@ class RixsData(object):
 
     def set_energy_unit(self, unit=None):
         """set the energy unit to eV"""
-        self.ene_unit = unit
+        if unit is not None:
+            self.ene_unit = unit
         if self.ene_unit is None:
             self.ene_unit = guess_energy_units(self._x)
         if self.ene_unit == "keV":
