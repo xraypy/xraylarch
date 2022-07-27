@@ -62,25 +62,6 @@ class CycleColors:
 class RixsData(object):
     """RIXS plane object"""
 
-    #: loaded from dictionary/HDF5 -> self.load_from_h5()
-    sample_name = "Unknown"
-    counter_all, counter_signal, counter_norm = None, None, None
-    _x, _y, _z = None, None, None
-    ene_in, ene_out, rixs_map = None, None, None
-    ene_et, rixs_et_map = None, None
-    ene_grid, ene_unit = None, None
-
-    #: line cuts
-    line_cuts = {}
-
-    grid_method = "nearest"
-    grid_lib = "scipy"
-
-    datatype = "rixs"
-
-    _palette = CycleColors()
-    _no_save = ("_logger", "_palette")
-
     def __init__(self, name=None, logger=None):
         """Constructor"""
 
@@ -88,6 +69,20 @@ class RixsData(object):
         self.name = name or self.__name__
         self.label = self.name
         self._logger = logger or _logger
+
+        self.sample_name = "Unknown"
+        self.counter_all, self.counter_signal, self.counter_norm = None, None, None
+        self._x, self._y, self._z = None, None, None
+        self.ene_in, self.ene_out, self.rixs_map = None, None, None
+        self.ene_et, self.rixs_et_map = None, None
+        self.ene_grid, self.ene_unit = None, None
+        self.line_cuts = {}
+        self.grid_method = "nearest"
+        self.grid_lib = "scipy"
+        self.datatype = "rixs"
+
+        self._palette = CycleColors()
+        self._no_save = ("_logger", "_palette")
 
     def set_energy_unit(self, unit=None):
         """set the energy unit to eV"""
@@ -163,7 +158,7 @@ class RixsData(object):
         self.set_energy_unit()
         self.reset()
 
-    def save_to_h5(self, filename=None, **dicttoh5_kws):
+    def save_to_h5(self, filename=None):
         """Dump dictionary representation to HDF5 file"""
         if filename is None:
             filename = f"{self.filename.split('.')[0]}.h5"
@@ -173,7 +168,7 @@ class RixsData(object):
                 del save_dict[dkey]
             except KeyError:
                 continue
-        dicttoh5(save_dict, filename, **dicttoh5_kws)
+        dicttoh5(save_dict, filename, update_mode="replace")
         self._logger.info(f"{self.name} saved to {filename}")
 
     def crop(self, crop_area, yet=False):
