@@ -178,36 +178,52 @@ def plot_rixs(
             cbar.set_ticks(AutoLocator())
         cbar.set_label(cbar_label)
 
-    fig.subplots_adjust()
+    fig.tight_layout()
     return fig
 
 
-def plot_rixs_cuts(
-    rd,
-    fig_name="plot_rixs_cuts",
-    fig_size=(15, 5),
-    fig_dpi=75
-):
+def plot_rixs_cuts(rd, et=True, fig_name="plot_rixs_cuts", fig_size=(8, 10), fig_dpi=75):
     """plot RIXS line cuts"""
-    assert len(rd.lcuts) >= 1, "no line cuts are present"
+    assert len(rd.line_cuts.keys()) >= 1, "no line cuts are present"
+    plt.close(fig_name)
     fig, axs = plt.subplots(nrows=3, num=fig_name, figsize=fig_size, dpi=fig_dpi)
 
-    for (xc, yc, info) in rd.lcuts:
+    for ax in axs:
+        ax.set_axis_off()
+
+    y_label = "Signal intensity"
+
+    for key, val in rd.line_cuts.items():
+        x, y, info = val["x"], val["y"], val["info"]
         mode = info["mode"]
         label = info["label"]
         color = info["color"]
         if mode == "CEE":
             ax = axs[0]
+            ax.set_axis_on()
+            x_label = "Incoming energy (eV)"
         elif mode == "CIE":
             ax = axs[1]
+            ax.set_axis_on()
+            if et:
+                x = info['enecut'] - x
+                x_label = "Energy transfer (eV)"
+            else:
+                x_label = "Emitted energy (eV)"
         elif mode == "CET":
             ax = axs[2]
+            ax.set_axis_on()
+            x_label = "Incoming energy (eV)"
         else:
             _logger.error(f"wrong mode: {mode}")
             continue
         ax.set_title(mode)
-        ax.plot(xc, yc, label=label, color=color)
+        ax.set_xlabel(x_label)
+        ax.set_ylabel(y_label)
+        ax.plot(x, y, label=label, color=color)
         ax.legend()
+    fig.tight_layout()
+    return fig
 
 
 class RixsDataPlotter(object):
