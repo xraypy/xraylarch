@@ -23,6 +23,17 @@ def test_apsxsd_new(fname='APS9BM_2019.dat'):
     assert(labels[4].startswith('i0'))
 
 
+def test_apsxsd20id_newer(fname='APS20ID_2022.dat'):
+    bldat, labels = _tester(fname)
+    assert('aps xsd' in bldat.name.lower())
+    assert(1 == bldat.energy_column)
+    assert('eV' == bldat.energy_units)
+    assert(labels[0].startswith('mono_energy'))
+    assert(labels[1].startswith('scaler_pre'))
+    assert(labels[-1] == "xsp3_4_total")
+    assert('it' in labels)
+
+
 def test_apsxsd20id_new(fname='APS20ID_2018.dat'):
     bldat, labels = _tester(fname)
     assert('aps xsd' in bldat.name.lower())
