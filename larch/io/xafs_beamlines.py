@@ -28,6 +28,8 @@ By default, that header will defined all the text before the data table.
 
 """
 
+import re
+
 import numpy as np
 from .fileutils import fix_varname
 
@@ -293,35 +295,31 @@ class APSXSD_BeamlineData(GenericBeamlineData):
         # here we try two different ways for "older" and "newer" 20BM/9BM fles
         labels = []
         mode = 'search'
-        _tmplabels = {}
         lablines = []
+        labline_re = re.compile(
+            # The "1) " part
+            r"\s+(\d+)\)\s+"
+            # The actual captured header name
+            r"(.*?)"
+            # Trailing white-space and an optional '*'
+            r"\s*\*?\s*"
+            # Look ahead to stop if we get to the next " 2) " part (or end of line, $)
+            r"(?=(?:\s\d+\)\s|$))"
+        )
+        # Sift through the header and look for column names
         for line in self.headerlines:
-            line = line[1:].strip()
+            line = line[1:]# .strip()
             if mode == 'search' and 'is a readable list of column' in line:
                 mode = 'found legend'
             elif mode == 'found legend':
                 if len(line) < 2:
                     break
-                if ')' in line:
-                    if line.startswith('#'):
-                        line = line[1:].strip()
-                    if '*' in line:
-                        lablines.extend(line.split('*'))
-                    elif line.count(')') > 1:
-                        words = line.split()
-                        lablines.append('%s %s' % (words[0], words[1]))
-                        if len(words) == 4:
-                            lablines.append('%s %s' % (words[2], words[3]))
-                    else:
-                        lablines.append(line)
-
-        if len(lablines) > 1:
-            labels = ['']*len(lablines)
-            for line in lablines:
-                words = line.strip().split(' ', 1)
-                if ')' in words[0]:
-                    key = int(words[0].replace(')', ''))
-                    labels[key-1] = words[1]
+                match = labline_re.findall(line)
+                if len(match) > 0:
+                    lablines.extend(match)
+        # Convert the matched column names into an ordered list based on column number
+        lablines = sorted(lablines, key=lambda x: int(x[0]))
+        labels = [name for idx, name in lablines]
 
         # older version: no explicit legend, parse last header line, uses '*'
         if len(labels) == 0:
@@ -331,7 +329,6 @@ class APSXSD_BeamlineData(GenericBeamlineData):
                 lastword = words.pop()
                 words.extend(lastword.split())
             labels = words
-
         return self._set_labels(labels, ncolumns=ncolumns)
 
 
