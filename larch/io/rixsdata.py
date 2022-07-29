@@ -68,9 +68,12 @@ class RixsData(object):
         self.__name__ = "RixsData_{0}".format(hex(id(self)))
         self.name = name or self.__name__
         self.label = self.name
-        self._logger = logger or _logger
 
-        self.sample_name = "Unknown"
+        self._logger = logger or _logger
+        self._palette = CycleColors()
+        self._no_save = ("_logger", "_palette")
+
+        self.sample_name = "UnknownSample"
         self.counter_all, self.counter_signal, self.counter_norm = None, None, None
         self._x, self._y, self._z = None, None, None
         self.ene_in, self.ene_out, self.rixs_map = None, None, None
@@ -81,8 +84,6 @@ class RixsData(object):
         self.grid_lib = "scipy"
         self.datatype = "rixs"
 
-        self._palette = CycleColors()
-        self._no_save = ("_logger", "_palette")
 
     def set_energy_unit(self, unit=None):
         """set the energy unit to eV"""
@@ -227,20 +228,26 @@ class RixsData(object):
         self.rixs_et_map = _ezzcrop
         self.label = f"{self.name} [{self._crop_area}]"
 
-    def reset(self):
+    def reset(self, **grid_kws):
         """resets to initial data"""
-        self._logger.info("resetting RIXS plane")
-        self.grid_rixs_from_col()
-        self.lcuts = []
+        self._logger.info("resetting to initial data (grid RIXS plane and line cuts)")
+        self.grid_rixs_from_col(**grid_kws)
+        self.line_cuts = {}
         self.label = self.name
         self._palette = None
         self._palette = CycleColors()
 
-    def grid_rixs_from_col(self):
+    def grid_rixs_from_col(self, ene_grid=None, grid_lib=None, grid_method=None):
         """Grid RIXS map from XYZ columns"""
-        _lib = self.grid_lib or "scipy"
-        _method = self.grid_method or "nearest"
-        _xystep = self.ene_grid or 0.1
+        if ene_grid is not None:
+            self.ene_grid = ene_grid
+        if grid_lib is not None:
+            self.grid_lib = grid_lib
+        if grid_method is not None:
+            self.grid_method = grid_method
+        _xystep = self.grid_method or 0.1
+        _lib = self.grid_lib or 'scipy'
+        _method = self.grid_method or 'nearest'
         self.ene_in, self.ene_out, self.rixs_map = gridxyz(
             self._x, self._y, self._z, xystep=_xystep, lib=_lib, method=_method
         )
@@ -322,9 +329,10 @@ class RixsData(object):
 
     def norm(self):
         """Simple map normalization to max-min"""
-        self.rixs_map_norm = self.rixs_map / (
+        self.rixs_map = self.rixs_map / (
             np.nanmax(self.rixs_map) - np.nanmin(self.rixs_map)
         )
+        self._logger.info("rixs map normalized to max-min")
 
 
 if __name__ == "__main__":
