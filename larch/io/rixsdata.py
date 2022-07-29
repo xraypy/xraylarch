@@ -78,12 +78,9 @@ class RixsData(object):
         self._x, self._y, self._z = None, None, None
         self.ene_in, self.ene_out, self.rixs_map = None, None, None
         self.ene_et, self.rixs_et_map = None, None
-        self.ene_grid, self.ene_unit = None, None
+        self.ene_grid, self.ene_unit, self.grid_method = None, None, None
         self.line_cuts = {}
-        self.grid_method = "nearest"
-        self.grid_lib = "scipy"
         self.datatype = "rixs"
-
 
     def set_energy_unit(self, unit=None):
         """set the energy unit to eV"""
@@ -128,6 +125,9 @@ class RixsData(object):
     def load_from_h5(self, filename):
         """Load RIXS from HDF5 file"""
         rxdict = h5todict(filename)
+        for k, v in rxdict.items():
+            if isinstance(v[()], np.str):
+                rxdict[k] = np.array_str(v)
         if not ("writer_version" in rxdict.keys()):
             self._logger.error("Key 'writer_version' not found")
             return
@@ -193,7 +193,7 @@ class RixsData(object):
         assert x1 < x2, "wrong crop area, x1 >= x2"
         assert y1 < y2, "wrong crop area, y1 >= y2"
         _xystep = self.ene_grid or 0.1
-        _method = self.grid_method or "nearest"
+        _method = self.grid_method or "linear"
 
         _nxpts = int((x2 - x1) / _xystep)
         _xcrop = np.linspace(x1, x2, num=_nxpts)
@@ -237,23 +237,20 @@ class RixsData(object):
         self._palette = None
         self._palette = CycleColors()
 
-    def grid_rixs_from_col(self, ene_grid=None, grid_lib=None, grid_method=None):
+    def grid_rixs_from_col(self, ene_grid=None, grid_method=None):
         """Grid RIXS map from XYZ columns"""
         if ene_grid is not None:
             self.ene_grid = ene_grid
-        if grid_lib is not None:
-            self.grid_lib = grid_lib
         if grid_method is not None:
             self.grid_method = grid_method
-        _xystep = self.grid_method or 0.1
-        _lib = self.grid_lib or 'scipy'
-        _method = self.grid_method or 'nearest'
+        _xystep = self.ene_grid or 0.1
+        _method = self.grid_method or "linear"
         self.ene_in, self.ene_out, self.rixs_map = gridxyz(
-            self._x, self._y, self._z, xystep=_xystep, lib=_lib, method=_method
+            self._x, self._y, self._z, xystep=_xystep, method=_method
         )
         self._et = self._x - self._y
         _, self.ene_et, self.rixs_et_map = gridxyz(
-            self._x, self._et, self._z, xystep=_xystep, lib=_lib, method=_method
+            self._x, self._et, self._z, xystep=_xystep, method=_method
         )
         self.ene_grid = _xystep
 
