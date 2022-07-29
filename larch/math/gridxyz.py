@@ -68,19 +68,9 @@ def gridxyz(xcol, ycol, zcol, xystep=None, lib="scipy", method="linear"):
     ygrid = np.linspace(ycol.min(), ycol.max(), num=nypoints)
     xx, yy = np.meshgrid(xgrid, ygrid)
     if "matplotlib" in lib.lower():
-        try:
-            from matplotlib.mlab import griddata
-        except ImportError:
-            _logger.error("Cannot load griddata from Matplotlib")
-            return
-        if not (method == "nn" or method == "linear"):
-            _logger.warning(
-                "Interpolation method {0} not supported by {1}".format(method, lib)
-            )
-        _logger.info("Gridding data with {0}...".format(lib))
-        zz = griddata(xcol, ycol, zcol, xx, yy)
-        return xgrid, ygrid, zz
-    elif "scipy" in lib.lower():
+        _logger.warning("matplotlib deprecated -> using scipy")
+        lib = "scipy"
+    if "scipy" in lib.lower():
         try:
             from scipy.interpolate import griddata
         except ImportError:
@@ -95,7 +85,9 @@ def gridxyz(xcol, ycol, zcol, xystep=None, lib="scipy", method="linear"):
             fill_value=0,
         )
         return xgrid, ygrid, zz
-
+    else:
+        _logger.error("lib should be scipy")
+        return np.nan, np.nan, np.nan
 
 if __name__ == "__main__":
     pass
