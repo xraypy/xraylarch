@@ -26,6 +26,21 @@ def _tostr(arr):
         return arr
 
 
+def _restore_from_array(dictin):
+    """restore str/float from a nested dictionary of numpy.ndarray (when using silx.io.dictdump.h5todict)
+
+    Note: discussed here https://github.com/silx-kit/silx/issues/3633
+    """
+    for k, v in dictin.items():
+        if isinstance(v, dict):
+            _restore_from_array(v)
+        else:
+            if isinstance(v[()], np.str):
+                dictin[k] = np.array_str(v)
+            if isinstance(v[()], np.float):
+                dictin[k] = copy.deepcopy(v.item())
+
+
 class CycleColors:
     """Utility for setting the line colors of the RIXS map cuts"""
 
@@ -125,14 +140,7 @@ class RixsData(object):
     def load_from_h5(self, filename):
         """Load RIXS from HDF5 file"""
         rxdict = h5todict(filename)
-        for k, v in rxdict.items():
-            try:
-                if isinstance(v[()], np.str):
-                    rxdict[k] = np.array_str(v)
-                if isinstance(v[()], np.float):
-                    rxdict[k] = copy.deepcopy(v.item())
-            except KeyError:
-                pass
+        _restore_from_array(rxdict)
         if not ("writer_version" in rxdict.keys()):
             self._logger.error("Key 'writer_version' not found")
             return
