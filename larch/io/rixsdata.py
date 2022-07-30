@@ -126,15 +126,19 @@ class RixsData(object):
         """Load RIXS from HDF5 file"""
         rxdict = h5todict(filename)
         for k, v in rxdict.items():
-            if isinstance(v[()], np.str):
-                rxdict[k] = np.array_str(v)
+            try:
+                if isinstance(v[()], np.str):
+                    rxdict[k] = np.array_str(v)
+                if isinstance(v[()], np.float):
+                    rxdict[k] = copy.deepcopy(v.item())
+            except KeyError:
+                pass
         if not ("writer_version" in rxdict.keys()):
             self._logger.error("Key 'writer_version' not found")
             return
         if not ("1.5" in _tostr(rxdict["writer_version"])):
             self._logger.warning("Data format not understood")
             return
-        rxdict["sample_name"] = _tostr(rxdict["sample_name"])
         self.load_from_dict(rxdict)
         self._logger.info("RIXS map loaded from file: {0}".format(filename))
 
