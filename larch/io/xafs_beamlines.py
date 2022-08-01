@@ -295,31 +295,55 @@ class APSXSD_BeamlineData(GenericBeamlineData):
         # here we try two different ways for "older" and "newer" 20BM/9BM fles
         labels = []
         mode = 'search'
-        lablines = []
-        labline_re = re.compile(
-            # The "1) " part
-            r"\s+(\d+)\)\s+"
-            # The actual captured header name
-            r"(.*?)"
-            # Trailing white-space and an optional '*'
-            r"\s*\*?\s*"
-            # Look ahead to stop if we get to the next " 2) " part (or end of line, $)
-            r"(?=(?:\s\d+\)\s|$))"
-        )
-        # Sift through the header and look for column names
+        tmplabels = {}
+        maxkey = -1
         for line in self.headerlines:
-            line = line[1:]# .strip()
+            line = line[1:].strip()
             if mode == 'search' and 'is a readable list of column' in line:
                 mode = 'found legend'
             elif mode == 'found legend':
                 if len(line) < 2:
                     break
-                match = labline_re.findall(line)
-                if len(match) > 0:
-                    lablines.extend(match)
-        # Convert the matched column names into an ordered list based on column number
-        lablines = sorted(lablines, key=lambda x: int(x[0]))
-        labels = [name for idx, name in lablines]
+                if ')' in line:
+                    if line.startswith('#'):
+                        line = line[1:].strip()
+
+                    pars  = []
+                    for k in range(len(line)):
+                        if line[k] == ')':
+                            pars.append(k)
+
+                    pars.append(len(line))
+                    for k in range(len(pars)-1):
+                        j = pars[k]
+                        i = max(0, j-2)
+                        key = line[i:j]
+                        z = pars[k+1]
+                        if z < len(line)-3:
+                            for o in range(1, 4):
+                                try:
+                                    _ = int(line[z-o])
+                                except:
+                                    break
+                            z = z-o+1
+                        val = line[j+1:z].strip()
+                        if val.endswith('*'):
+                            val = val[:-1].strip()
+
+                        try:
+                            key = int(key)
+                            maxkey = max(maxkey, key)
+                        except:
+                            break
+                        tmplabels[key] = val
+
+
+        if len(tmplabels) > 1:
+            maxkey = max(maxkey, len(tmplabels))
+            labels = ['']* (maxkey+5)
+            for k, v in tmplabels.items():
+                labels[k] = v
+            labels = [o for o in labels if len(o) > 0]
 
         # older version: no explicit legend, parse last header line, uses '*'
         if len(labels) == 0:
@@ -329,6 +353,7 @@ class APSXSD_BeamlineData(GenericBeamlineData):
                 lastword = words.pop()
                 words.extend(lastword.split())
             labels = words
+
         return self._set_labels(labels, ncolumns=ncolumns)
 
 
