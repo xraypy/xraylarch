@@ -550,7 +550,7 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
 
 def plot_chiq(dgroup, kweight=None, kmax=None, show_chik=False, label=None,
               title=None, new=True, delay_draw=False, offset=0, win=1,
-              _larch=None):
+              show_window=False, scale_window=True, _larch=None):
     """
     plot_chiq(dgroup, kweight=None, kmax=None, show_chik=False, label=None,
               new=True, win=1)
@@ -563,6 +563,8 @@ def plot_chiq(dgroup, kweight=None, kmax=None, show_chik=False, label=None,
      kweight      k-weighting for plot [read from last xftf(), or 0]
      kmax         max k to show [None, end of data]
      show_chik    bool whether to also plot k-weighted chi(k) [False]
+     show_window  bool whether to also plot FT k-window [False]
+     scale_window bool whether to scale FT k-window to max |chi(q)| [True]
      label        string for label [``None`` to use 'chi']
      title        string for plot title [None, may use filename if available]
      new          bool whether to start a new plot [True]
@@ -593,6 +595,13 @@ def plot_chiq(dgroup, kweight=None, kmax=None, show_chik=False, label=None,
         chik = dgroup.chi * dgroup.k ** kweight
         _plot(dgroup.k, chik+offset, zorder=16, label='chi(k)',  **opts)
     #endif
+    if show_window and hasattr(dgroup, 'kwin'):
+        kwin = dgroup.kwin
+        if scale_window:
+            kwin = kwin*max(abs(chiq))
+        _plot(dgroup.k, kwin+offset, zorder=12, label='window',  **opts)
+    #endif
+
     redraw(win=win, xmax=kmax, _larch=_larch)
 #enddef
 
