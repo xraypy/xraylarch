@@ -34,6 +34,7 @@ ARRAYS = {'mu':      'Raw \u03BC(E)',
           'chir_re':  'Re[\u03c7(R)]',
           'chir_mag+chir_re': '|\u03c7(R)| + Re[\u03c7(R)]',
           'chir_re_chir_im':  'Re[\u03c7(R)] + Im[\u03c7(R)]',
+          'chiq':  'Filtered \u03c7(k)',
           'noplot': '<no plot>',
           }
 
