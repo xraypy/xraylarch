@@ -55,7 +55,7 @@ DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
 # PlotOne_Choices = [chik, chirmag, chirre, chirmr]
 
-PlotOne_Choices = make_array_choice(['chi','chir_mag', 'chir_re', 'chir_mag+chir_re'])
+PlotOne_Choices = make_array_choice(['chi','chir_mag', 'chir_re', 'chir_mag+chir_re', 'chiq'])
 PlotAlt_Choices = make_array_choice(['noplot', 'chi','chir_mag', 'chir_re', 'chir_mag+chir_re'])
 
 # PlotAlt_Choices = [noplot] + PlotOne_Choices
@@ -723,17 +723,18 @@ class FeffitPanel(TaskPanel):
             pass # print(" Cannot Fill prepeak panel from group ")
         self.dgroup = dgroup
         feffpaths = getattr(self.larch.symtable, '_feffpaths', None)
-        if feffpath is not None:
-            self.reset_paths()
+
 
         fitset = getattr(self.larch.symtable, '_feffit_dataset', None)
         if fitset is not None:
             self.wids['show_results'].Enable()
-
-
+        if feffpath is not None:
+            self.reset_paths()
 
     def build_display(self):
-        self.paths_nb = flatnotebook(self, {}, on_change=self.onPathsNBChanged)
+        self.paths_nb = flatnotebook(self, {}, on_change=self.onPathsNBChanged,
+                                     with_dropdown=True)
+
         self.params_panel = FeffitParamsPanel(parent=self.paths_nb,
                                               feffit_panel=self)
         self.paths_nb.AddPage(self.params_panel, ' Parameters ', True)
@@ -1038,6 +1039,8 @@ class FeffitPanel(TaskPanel):
 
         if pathsum is not None:
             cmds.append(COMMANDS['xft'].format(groupname=pathsum_name, **ftargs))
+        if dataset_name  is not None:
+            cmds.append(COMMANDS['xft'].format(groupname=dataset_name, **ftargs))
         if dgroup is not None:
             cmds.append(COMMANDS['xft'].format(groupname=gname, **ftargs))
         if opts['plot_paths']:
@@ -1046,7 +1049,7 @@ class FeffitPanel(TaskPanel):
                                                     **ftargs))
 
         self.larch_eval('\n'.join(cmds))
-        with_win = opts['plot_ftwindows']
+        needs_qspace = False
         cmds = []
         for i, plot in enumerate((plot1, plot2)):
             if plot in PlotAlt_Choices:
@@ -1069,9 +1072,14 @@ class FeffitPanel(TaskPanel):
                 pextra += f', show_mag=False, show_real=True, rmax={plot_rmax}'
             elif plot == 'chir_mag+chir_re':
                 pextra += f', show_mag=True, show_real=True, rmax={plot_rmax}'
+            elif plot == 'chiq':
+                pcmd = 'plot_chiq'
+                pextra += f', show_chik=False'
+                needs_qspace = True
             else:
                 print(" do not know how to plot ", plot)
                 continue
+
             newplot = f', show_window={with_win}, new=True'
             overplot = f', show_window=False, new=False'
             if dgroup is not None:
@@ -1085,7 +1093,13 @@ class FeffitPanel(TaskPanel):
 
                 for i, label in enumerate(paths.keys()):
                     if paths[label].use:
+
                         objname = f"{paths_name}['{label:s}']"
+                        if needs_qspace:
+                            xpath = paths.get(label)
+                            if not hasattr(xpath, 'chiq_re'):
+                                cmds.append(COMMANDS['xft'].format(groupname=objname, **ftargs))
+
                         cmds.append(f"{pcmd}({objname}, label='{label:s}'{pextra}, offset={(i+1)*voff}{overplot})")
 
         self.larch_eval('\n'.join(cmds))
@@ -1102,6 +1116,8 @@ class FeffitPanel(TaskPanel):
             return allpages
 
         allpages = get_pagenames()
+        t0 = time.time()
+
         while 'FeffPathPanel' in allpages:
             for i in range(self.paths_nb.GetPageCount()):
                 nbpage = self.paths_nb.GetPage(i)
@@ -1119,7 +1135,6 @@ class FeffitPanel(TaskPanel):
             feffrun = path.feffrun
             self.add_path(path.filename, feffrun=feffrun)
         self.get_pathpage('parameters').Rebuild()
-
 
     def add_path(self, feffdat_file, feffresult=None, feffrun=None):
         """ add path to cache"""
@@ -1494,7 +1509,9 @@ class FeffitResultFrame(wx.Frame):
         self.outforms = {'chik': 'chi(k), no k-weight',
                          'chikw': 'chi(k), k-weighted',
                          'chir_mag': '|chi(R)|',
-                         'chir_re': 'Real[chi(R)]'}
+                         'chir_re': 'Real[chi(R)]',
+                         'chiq': 'Filtered \u03c7(k)'
+                         }
 
         self.feffit_panel = feffit_panel
         self.datagroup = datagroup
@@ -1817,6 +1834,7 @@ class FeffitResultFrame(wx.Frame):
         self.show_results()
 
     def onPlot(self, event=None):
+
         opts = {'build_fitmodel': False}
         for key, meth in (('plot_ftwindows', 'IsChecked'),
                           ('plot_paths', 'IsChecked'),
