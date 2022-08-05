@@ -89,5 +89,6 @@ def gridxyz(xcol, ycol, zcol, xystep=None, lib="scipy", method="linear"):
         _logger.error("lib should be scipy")
         return np.nan, np.nan, np.nan
 
+
 if __name__ == "__main__":
     pass
