@@ -301,7 +301,7 @@ class FeffitDataSet(Group):
                 eps_k = interp(self.model.k, self.data.k, self.data.epsilon_k)
             self.set_epsilon_k(eps_k)
         else:
-            self.estimate_noise(chi=self.__chi, rmin=15.0, rmaxax=30.0)
+            self.estimate_noise(chi=self.__chi, rmin=15.0, rmax=30.0)
             # if delta_chi (uncertainty in chi(k) from autobk or other source)
             # exists, add it in quadrature to high-k noise estimate, and
             # update epsilon_k to be this combination.
@@ -313,7 +313,7 @@ class FeffitDataSet(Group):
                         eps_ave += eps
                     cur_eps_k = eps_ave/len(cur_eps_k)
 
-                _dchi = self.data_delta_chi
+                _dchi = self.data.delta_chi
                 if isinstance(_dchi, np.ndarray):
                     _dchi = interp(self.model.k, self.data.k, _dchi)
                 self.set_epsilon_k(np.sqrt(_dchi**2 + cur_eps_k**2))
