@@ -17,6 +17,7 @@ import sys
 import wx
 from copy import deepcopy
 from wxmplot import PlotFrame, ImageFrame, StackedPlotFrame
+from wxmplot.interactive import get_wxapp
 
 import larch
 from ..xrf import isLarchMCAGroup
@@ -256,7 +257,7 @@ class ImageDisplay(ImageFrame):
         if iy is not None:  set('%s_iy' % self.symname, iy)
         if val is not None: set('%s_val' % self.symname, val)
 
-def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
+def get_display(win=1, _larch=None, wxparent=None, size=None,
                 wintitle=None, xrf=False, image=False, stacked=False,
                 theme=None, linewidth=None, markersize=None,
                 show_grid=None, show_fullbox=None, height=None,
@@ -299,6 +300,7 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
         title = wintitle
 
     def _get_disp(symname, creator, win, ddict, wxparent, size, height, width, _larch):
+        wxapp = get_wxapp()
         display = None
         new_display = False
         if win in ddict:
@@ -336,6 +338,7 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
         ddict[win] = display
         return display, new_display
 
+
     display, isnew  = _get_disp(symname, creator, win, display_dict, wxparent,
                                 size, height, width, _larch)
     if isnew and creator in (PlotDisplay, StackedPlotDisplay):
@@ -371,6 +374,9 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
         _larch.symtable.set_symbol(symname, display)
     return display
 
+
+_getDisplay = get_display # back compatibility
+
 def _xrf_plot(x=None, y=None, mca=None, win=1, new=True, as_mca2=False, _larch=None,
               wxparent=None, size=None, side='left', force_draw=True, wintitle=None,
               **kws):
@@ -395,7 +401,7 @@ def _xrf_plot(x=None, y=None, mca=None, win=1, new=True, as_mca2=False, _larch=N
 
     See Also: xrf_oplot, plot
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, size=size,
+    plotter = get_display(wxparent=wxparent, win=win, size=size,
                           _larch=_larch, wintitle=wintitle, xrf=True)
     if plotter is None:
         return
@@ -483,7 +489,7 @@ def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
 
     See Also: oplot, newplot
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, size=size,
+    plotter = get_display(wxparent=wxparent, win=win, size=size,
                           xrf=xrf, stacked=stacked,
                           wintitle=wintitle,  _larch=_larch)
     if plotter is None:
@@ -504,7 +510,7 @@ def _redraw_plot(win=1, xrf=False, stacked=False, size=None, wintitle=None,
     multiple plot()s with delay_draw=True
     """
 
-    plotter = _getDisplay(wxparent=wxparent, win=win, size=size,
+    plotter = get_display(wxparent=wxparent, win=win, size=size,
                           xrf=xrf, stacked=stacked,
                           wintitle=wintitle,  _larch=_larch)
     plotter.panel.unzoom_all()
@@ -513,7 +519,7 @@ def _redraw_plot(win=1, xrf=False, stacked=False, size=None, wintitle=None,
 def _update_trace(x, y, trace=1, win=1, _larch=None, wxparent=None,
                  side='left', redraw=False, **kws):
     """update a plot trace with new data, avoiding complete redraw"""
-    plotter = _getDisplay(wxparent=wxparent, win=win, _larch=_larch)
+    plotter = get_display(wxparent=wxparent, win=win, _larch=_larch)
     if plotter is None:
         return
     plotter.Raise()
@@ -533,7 +539,7 @@ def wx_update(_larch=None, **kws):
 def _plot_setlimits(xmin=None, xmax=None, ymin=None, ymax=None, win=1, wxparent=None,
                     _larch=None):
     """set plot view limits for plot in window `win`"""
-    plotter = _getDisplay(wxparent=wxparent, win=win, _larch=_larch)
+    plotter = get_display(wxparent=wxparent, win=win, _larch=_larch)
     if plotter is None:
         return
     plotter.panel.set_xylims((xmin, xmax, ymin, ymax))
@@ -589,7 +595,7 @@ def _plot_text(text, x, y, win=1, side='left', size=None,
 
     See Also: plot, oplot, plot_arrow
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, xrf=xrf,
+    plotter = get_display(wxparent=wxparent, win=win, size=size, xrf=xrf,
                           stacked=stacked, _larch=_larch)
     if plotter is None:
         return
@@ -625,7 +631,7 @@ def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
 
     See Also: plot, oplot, plot_text
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, xrf=xrf,
+    plotter = get_display(wxparent=wxparent, win=win, size=size, xrf=xrf,
                           stacked=stacked, _larch=_larch)
     if plotter is None:
         return
@@ -651,7 +657,7 @@ def _plot_marker(x, y, marker='o', size=4, color='black', label='_nolegend_',
 
     See Also: plot, oplot, plot_text
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, size=None, xrf=xrf,
+    plotter = get_display(wxparent=wxparent, win=win, size=None, xrf=xrf,
                           stacked=stacked, _larch=_larch)
     if plotter is None:
         return
@@ -671,7 +677,7 @@ def _plot_axhline(y, xmin=0, xmax=1, win=1, wxparent=None, xrf=False,
         xmax:   ending x fraction (window units -- not user units!)
     See Also: plot, oplot, plot_arrow
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, xrf=xrf,
+    plotter = get_display(wxparent=wxparent, win=win, size=size, xrf=xrf,
                           stacked=stacked, _larch=_larch)
     if plotter is None:
         return
@@ -694,7 +700,7 @@ def _plot_axvline(x, ymin=0, ymax=1, win=1, wxparent=None, xrf=False,
         ymax:   ending y fraction (window units -- not user units!)
     See Also: plot, oplot, plot_arrow
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, xrf=xrf,
+    plotter = get_display(wxparent=wxparent, win=win, size=size, xrf=xrf,
                           stacked=stacked, _larch=_larch)
     if plotter is None:
         return
@@ -720,7 +726,7 @@ def _getcursor(win=1, timeout=15, _larch=None, wxparent=None, size=None,
     For a more consistent programmatic approach, this routine can be called
     with timeout <= 0 to read the most recently clicked cursor position.
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, xrf=xrf,
+    plotter = get_display(wxparent=wxparent, win=win, size=size, xrf=xrf,
                           stacked=stacked, _larch=_larch)
     if plotter is None:
         return
@@ -791,7 +797,7 @@ def _scatterplot(x,y, win=1, _larch=None, wxparent=None, size=None,
 
     See Also: plot, newplot
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch)
+    plotter = get_display(wxparent=wxparent, win=win, size=size, _larch=_larch)
     if plotter is None:
         return
     plotter.Raise()
@@ -814,7 +820,7 @@ def _fitplot(x, y, y2=None, panel='top', label=None, label2=None, win=1,
 
     See Also: plot, newplot
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, size=size,
+    plotter = get_display(wxparent=wxparent, win=win, size=size,
                           stacked=True, _larch=_larch)
     if plotter is None:
         return
@@ -835,7 +841,7 @@ def _fitplot(x, y, y2=None, panel='top', label=None, label2=None, win=1,
 def _hist(x, bins=10, win=1, new=False,
            _larch=None, wxparent=None, size=None, force_draw=True,  *args, **kws):
 
-    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch)
+    plotter = get_display(wxparent=wxparent, win=win, size=size, _larch=_larch)
     if plotter is None:
         return
     plotter.Raise()
@@ -864,7 +870,7 @@ def _imshow(map, x=None, y=None, colormap=None, win=1, _larch=None,
 
     map: 2-dimensional array for map
     """
-    img = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch, image=True)
+    img = get_display(wxparent=wxparent, win=win, size=size, _larch=_larch, image=True)
     if img is not None:
         img.display(map, x=x, y=y, colormap=colormap, **kws)
 
@@ -891,7 +897,7 @@ def _saveplot(fname, dpi=300, format=None, win=1, _larch=None, wxparent=None,
             format = suffix
     if format is None: format = 'png'
     format = format.lower()
-    canvas = _getDisplay(wxparent=wxparent, win=win, size=size,
+    canvas = get_display(wxparent=wxparent, win=win, size=size,
                          _larch=_larch, image=image).panel.canvas
     if canvas is None:
         return

@@ -94,7 +94,7 @@ if HAS_WXPYTHON:
                           _plot_marker, _plot_arrow, _plot_setlimits,
                           _plot_axvline, _plot_axhline, _scatterplot,
                           _hist, _update_trace, _saveplot, _saveimg,
-                          _getDisplay, _closeDisplays, _getcursor,
+                          get_display, _closeDisplays, _getcursor,
                           last_cursor_pos, _imshow, _contour, _xrf_plot,
                           _xrf_oplot, _fitplot, _redraw_plot)
 
@@ -114,7 +114,7 @@ if HAS_WXPYTHON:
                                        update_trace=_update_trace,
                                        save_plot=_saveplot,
                                        save_image=_saveimg,
-                                       get_display=_getDisplay,
+                                       get_display=get_display,
                                        close_all_displays=_closeDisplays,
                                        get_cursor=_getcursor,
                                        last_cursor_pos=last_cursor_pos,

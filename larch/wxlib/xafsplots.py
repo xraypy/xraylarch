@@ -33,13 +33,13 @@ except ImportError:
     HAS_WXPYTHON = False
 
 if HAS_WXPYTHON:
-    from .plotter import (_getDisplay, _plot, _oplot, _newplot, _fitplot,
+    from .plotter import (get_display, _plot, _oplot, _newplot, _fitplot,
                           _plot_text, _plot_marker, _plot_arrow,
                           _plot_axvline, _plot_axhline, _imshow)
 else:
     def nullfunc(*args, **kws): pass
 
-    _getDisplay = _plot = _oplot = _newplot = nullfunc
+    get_display = _plot = _oplot = _newplot = nullfunc
     _fitplot = _plot_text = _plot_marker = nullfunc
     _plot_arrow = _plot_axvline = _plot_axhline = nullfunc
 
@@ -151,7 +151,7 @@ def _get_erange(dgroup, emin=None, emax=None):
 def redraw(win=1, xmin=None, xmax=None, ymin=None, ymax=None,
            dymin=None, dymax=None,
            show_legend=True, stacked=False, _larch=None):
-    disp = _getDisplay(win=win, stacked=stacked, _larch=_larch)
+    disp = get_display(win=win, stacked=stacked, _larch=_larch)
     if disp is None:
         return
     panel = disp.panel
@@ -277,7 +277,7 @@ def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
         _plot_axvline(dgroup.e0, zorder=2, size=3,
                       label='E0', color=plotlabels.e0color, win=win,
                       _larch=_larch)
-        disp = _getDisplay(win=win, _larch=_larch)
+        disp = get_display(win=win, _larch=_larch)
         if disp is not None:
             disp.panel.conf.draw_legend()
     redraw(win=win, xmin=emin, xmax=emax, _larch=_larch)
@@ -337,7 +337,7 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
          title=title, label=label, zorder=20, new=new, xmin=emin, xmax=emax,
          **opts)
     ymin, ymax = None, None
-    disp = _getDisplay(win=win, _larch=_larch)
+    disp = get_display(win=win, _larch=_larch)
     if disp is not  None:
         xylims = disp.panel.get_viewlimits()
         ymin, ymax = xylims[2], xylims[3]
@@ -418,7 +418,7 @@ def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
           linewidth=3, _larch=_larch)
 
     if show_k:
-        disp = _getDisplay(win=win, _larch=_larch)
+        disp = get_display(win=win, _larch=_larch)
         axes = disp.panel.axes
         axes.xaxis.set_major_formatter(FuncFormatter(ek_formatter))
 
@@ -1187,7 +1187,7 @@ def plot_pca_fit(dgroup, win=1, with_components=False, _larch=None, **kws):
     _fitplot(result.x, result.ydat, result.yfit,
              label='data', label2='PCA fit', **popts)
 
-    disp = _getDisplay(win=win, stacked=True, _larch=_larch)
+    disp = get_display(win=win, stacked=True, _larch=_larch)
     if with_components and disp is not None:
         disp.panel.oplot(result.x, model.mean, label='mean')
         for n in range(len(result.weights)):
