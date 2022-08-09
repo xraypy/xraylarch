@@ -5,7 +5,15 @@
 import numpy as np
 from numpy import (pi, arange, zeros, ones, sin, cos,
                    exp, log, sqrt, where, interp, linspace)
+
+# notes on FFT method choice: (August 2022)
+#   benchmarking (and tossing out the first few runs)
+#   for complex128 arrays of size 1024, 2048, 4192
+#   still shows a slight performance win for
+#   fftpack over pocketfft from numpy/scipy
+#   but all are in the range of 20 microsec.
 # from numpy.fft import fft, ifft
+# from scipy.fft import fft, ifft
 from scipy.fftpack import fft, ifft
 from scipy.special import i0 as bessel_i0
 
