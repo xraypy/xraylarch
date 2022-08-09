@@ -100,6 +100,7 @@ class Shell(cmd.Cmd):
             self.larch.input.history.save(trim_last=trim_last)
         except PermissionError:
             print("Warning: could not save session history -- permission denied")
+        self.larch.symtable._plotter.close_all_displays()
         sys.exit()
 
     def do_exit(self, text):
