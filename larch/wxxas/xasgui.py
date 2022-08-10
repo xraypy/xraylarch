@@ -42,7 +42,7 @@ from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
                          flatnotebook, LarchUpdaterDialog, GridPanel,
                          CIFFrame, FeffResultsFrame, LarchWxApp, OkCancel)
 
-from larch.wxlib.plotter import _getDisplay
+from larch.wxlib.plotter import get_display
 
 from larch.fitting import fit_report
 from larch.site_config import icondir, home_dir, user_larchdir
@@ -1600,7 +1600,7 @@ before clearing"""
         if win is None:
             win = 1
 
-        display = _getDisplay(win=win, _larch=self.larch)
+        display = get_display(win=win, _larch=self.larch)
         display.Raise()
         msg = 'Select Point from Plot #%d' % win
         self.write_message(msg)
