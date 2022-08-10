@@ -80,9 +80,12 @@ class ParameterGroup(Group):
                     pass
                 if nval is not None:
                     val.value = nval
+            skip = getattr(val, 'skip', None)
             self.__params__.add(name, value=val.value, vary=val.vary, min=val.min,
                               max=val.max, expr=val.expr, brute_step=val.brute_step)
             val = self.__params__[name]
+
+            val.skip = skip
         elif hasattr(self, '__params__') and not name.startswith('__'):
             self.__params__._asteval.symtable[name] = val
         self.__dict__[name] = val
@@ -93,7 +96,7 @@ class ParameterGroup(Group):
             self.__params__.pop(name)
 
     def __add(self, name, value=None, vary=True, min=-np.inf, max=np.inf,
-              expr=None, stderr=None, correl=None, brute_step=None):
+              expr=None, stderr=None, correl=None, brute_step=None, skip=None):
         if expr is None and isinstance(value, str):
             expr = value
             value = None
@@ -102,6 +105,7 @@ class ParameterGroup(Group):
                               expr=expr, brute_step=brute_step)
             self.__params__[name].stderr = stderr
             self.__params__[name].correl = correl
+            self.__params__[name].skip = skip
             self.__dict__[name] = self.__params__[name]
 
 
@@ -115,7 +119,7 @@ def randstr(n):
 class Parameter(lmfitParameter):
     """A Parameter that can be nameless"""
     def __init__(self, name=None, value=None, vary=True, min=-np.inf, max=np.inf,
-                 expr=None, brute_step=None, user_data=None):
+                 expr=None, brute_step=None, user_data=None, skip=None):
         if name is None:
             name = randstr(8)
         self.name = name
@@ -125,6 +129,7 @@ class Parameter(lmfitParameter):
         self.max = max
         self.brute_step = brute_step
         self.vary = vary
+        self.skip = skip
         self._expr = expr
         self._expr_ast = None
         self._expr_eval = None
@@ -192,11 +197,12 @@ def group2params(paramgroup):
     if paramgroup is not None:
         for name in dir(paramgroup):
             par = getattr(paramgroup, name)
+            if getattr(par, 'skip', None) not in (False, None):
+                continue
             if isParameter(par):
                 params.add(name, value=par.value, vary=par.vary,
                            min=par.min, max=par.max,
                            brute_step=par.brute_step)
-
             else:
                 params._asteval.symtable[name] = par
 

@@ -553,6 +553,11 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
     """
 
     work_paramgroup = deepcopy(paramgroup)
+    for pname in dir(paramgroup):  # explicitly copy 'skip'!
+        wpar = getattr(work_paramgroup, pname)
+        opar = getattr(paramgroup, pname)
+        setattr(wpar, 'skip', getattr(opar, 'skip', False))
+
     params = group2params(work_paramgroup)
 
     def _resid(params, datasets=None, pargroup=None, **kwargs):
