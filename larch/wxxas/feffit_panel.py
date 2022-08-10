@@ -92,8 +92,7 @@ xftr({groupname:s}, rmin={rmin:.3f}, rmax={rmax:.3f}, dr={dr:.3f}, window='{rwin
 """
 
 COMMANDS['feffit_params_init'] = """# create feffit Parameter Group to hold fit parameters
-_feffit_params = param_group(s02=param(1.0, min=0, max=1000, vary=True),
-                             e0=param(0.1, min=-30, max=30, vary=True))
+_feffit_params = param_group()
 """
 
 COMMANDS['feffit_trans'] = """# define Fourier transform and fitting space
@@ -148,8 +147,6 @@ for label, path in {paths_name:s}.items():
 """
 
 
-
-
 class ParametersModel(dv.DataViewIndexListModel):
     def __init__(self, paramgroup, selected=None, pathkeys=None):
         dv.DataViewIndexListModel.__init__(self, 0)
@@ -181,7 +178,12 @@ class ParametersModel(dv.DataViewIndexListModel):
             for pname, par in group2params(self.paramgroup).items():
                 if any([pname.endswith('_%s' % phash) for phash in self.pathkeys]):
                     continue
-                ptype = 'vary' if par.vary else 'fixed'
+                ptype = 'vary'
+                if not par.vary:
+                    pytype = 'fixed'
+                if getattr(par, 'skip', None) not in (False, None):
+                    ptype = 'skip'
+                par.skip = ptype == 'skip'
                 try:
                     value = str(par.value)
                 except:
@@ -223,11 +225,13 @@ class ParametersModel(dv.DataViewIndexListModel):
         """set row/col attributes (color, etc)"""
         ptype = self.data[row][2]
         if ptype == 'vary':
-            attr.SetColour('#000')
+            attr.SetColour('#000000')
         elif ptype == 'fixed':
-            attr.SetColour('#A11')
+            attr.SetColour('#AA2020')
+        elif ptype == 'skip':
+            attr.SetColour('#50AA50')
         else:
-            attr.SetColour('#11A')
+            attr.SetColour('#2010BB')
         return True
 
 class EditParamsFrame(wx.Frame):
@@ -267,7 +271,7 @@ class EditParamsFrame(wx.Frame):
         toppan.Add(Button(toppan, "Select None",             action=self.onSelNone, size=(175, -1)))
         toppan.Add(Button(toppan, "Select Unused Variables", action=self.onSelUnused, size=(200, -1)))
         toppan.Add(Button(toppan, "Remove Selected",   action=self.onRemove, size=(175,-1)), newrow=True)
-        toppan.Add(Button(toppan, "'Fix' Selected",    action=self.onFix, size=(175, -1)))
+        toppan.Add(Button(toppan, "'Skip' Selected",    action=self.onSkip, size=(175, -1)))
         toppan.Add(Button(toppan, "Force Refresh",     action=self.onRefresh, size=(200, -1)))
         npan = wx.Panel(toppan)
         nsiz = wx.BoxSizer(wx.HORIZONTAL)
@@ -327,7 +331,7 @@ class EditParamsFrame(wx.Frame):
         curr_syms = self.feffit_panel.get_used_params()
         unused = []
         for pname, par in group2params(self.paramgroup).items():
-            if pname not in curr_syms and par.vary:
+            if pname not in curr_syms: #  and par.vary:
                 unused.append(pname)
         self.model.set_data(self.paramgroup, selected=unused,
                             pathkeys=self.feffit_panel.get_pathkeys())
@@ -354,12 +358,12 @@ class EditParamsFrame(wx.Frame):
             self.feffit_panel.get_pathpage('parameters').Rebuild()
         dlg.Destroy()
 
-    def onFix(self, event=None):
+    def onSkip(self, event=None):
         for pname, sel, ptype, val in self.model.data:
-            if sel and ptype == 'vary':
+            if sel:
                 par = getattr(self.paramgroup, pname, None)
-                if par is not None and par.vary:
-                    par.vary = False
+                if par is not None:
+                    par.skip = True
         self.model.read_data()
         self.feffit_panel.get_pathpage('parameters').Rebuild()
 
@@ -452,24 +456,15 @@ class FeffitParamsPanel(wx.Panel):
         for pname, par in params.items():
             if any([pname.endswith('_%s' % phash) for phash in hashkeys]):
                 continue
-            if pname in self.parwids:
-                pwids = self.parwids[pname]
-                varstr = 'vary' if par.vary else 'fix'
-                if par.expr is not None:
-                    varstr = 'constrain'
-                    pwids.expr.SetValue(par.expr)
-                pwids.vary.SetStringSelection(varstr)
-                pwids.value.SetValue(par.value)
-                pwids.minval.SetValue(par.min)
-                pwids.maxval.SetValue(par.max)
-            else:
-                if not hasattr(par, '_is_pathparam'):
+
+            if pname not in self.parwids and not hasattr(par, '_is_pathparam'):
                     pwids = ParameterWidgets(self.panel, par,
                                              name_size=100,
                                              expr_size=150,
                                              float_size=70,
-                                             widgets=('name',
-                                                      'value', 'minval', 'maxval',
+                                             with_skip=True,
+                                             widgets=('name', 'value',
+                                                      'minval', 'maxval',
                                                       'vary', 'expr'))
 
                     self.parwids[pname] = pwids
@@ -477,6 +472,21 @@ class FeffitParamsPanel(wx.Panel):
                     self.panel.AddMany((pwids.value, pwids.vary, pwids.bounds,
                                     pwids.minval, pwids.maxval, pwids.expr))
                     self.panel.pack()
+
+            pwids = self.parwids[pname]
+            varstr = 'vary' if par.vary else 'fix'
+            if par.expr is not None:
+                varstr = 'constrain'
+                pwids.expr.SetValue(par.expr)
+            if getattr(par, 'skip', None) not in (False, None):
+                varstr = 'skip'
+            pwids.vary.SetStringSelection(varstr)
+            if varstr != 'skip':
+                pwids.value.SetValue(par.value)
+                pwids.minval.SetValue(par.min)
+                pwids.maxval.SetValue(par.max)
+            pwids.onVaryChoice()
+
         self.panel.Update()
 
     def onEditParams(self, event=None):
@@ -503,7 +513,7 @@ class FeffitParamsPanel(wx.Panel):
             pwids.expr.Destroy()
             pwids.remover.Destroy()
 
-    def generate_script(self, event=None):
+    def generate_params(self, event=None):
         s = []
         s.append(COMMANDS['feffit_params_init'])
         for name, pwids in self.parwids.items():
@@ -515,9 +525,13 @@ class FeffitParamsPanel(wx.Panel):
             maxval = pwids.maxval.GetValue()
             if np.isfinite(maxval):
                 args.append(f'max={maxval}')
-            if param.expr is not None:
+
+            varstr = pwids.vary.GetStringSelection()
+            if varstr == 'skip':
+                args.append('skip=True, vary=False')
+            elif param.expr is not None and varstr == 'constrain':
                 args.append(f"expr='{param.expr}'")
-            elif param.vary:
+            elif varstr == 'vary':
                 args.append(f'vary=True')
             else:
                 args.append(f'vary=False')
@@ -680,7 +694,7 @@ class FeffPathPanel(wx.Panel):
             for i in range(path_nb.GetPageCount()):
                 if self.title == path_nb.GetPageText(i).strip():
                     path_nb.DeletePage(i)
-            self.feffit_panel.fix_unused_params()
+            self.feffit_panel.skip_unused_params()
         dlg.Destroy()
 
     def update_values(self):
@@ -1049,6 +1063,7 @@ class FeffitPanel(TaskPanel):
                                                     **ftargs))
 
         self.larch_eval('\n'.join(cmds))
+        with_win = opts['plot_ftwindows']
         needs_qspace = False
         cmds = []
         for i, plot in enumerate((plot1, plot2)):
@@ -1267,7 +1282,7 @@ class FeffitPanel(TaskPanel):
             result = False
 
         self.params_panel.update()
-        wx.CallAfter(self.fix_unused_params)
+        wx.CallAfter(self.skip_unused_params)
         return result
 
     def onLoadFitResult(self, event=None):
@@ -1310,8 +1325,7 @@ class FeffitPanel(TaskPanel):
         if self.dgroup is None:
             self.dgroup = self.controller.get_group()
 
-        cmds.extend(self.params_panel.generate_script())
-
+        cmds.extend(self.params_panel.generate_params())
 
         self.process(self.dgroup)
         opts = self.read_form(self.dgroup)
@@ -1371,15 +1385,17 @@ class FeffitPanel(TaskPanel):
         return used_syms
 
 
-    def fix_unused_params(self):
-        # find unused symbols, set to "fixed"
+    def skip_unused_params(self):
+        # find unused symbols, set to "skip"
         curr_syms = self.get_used_params()
         pargroup = self.get_paramgroup()
         parpanel = self.params_panel
+        # print("Skip Unused ", curr_syms)
+        # print(group2params(pargroup).keys())
         for pname, par in group2params(pargroup).items():
-            if pname not in curr_syms and par.vary:
-                par.vary = parpanel.parwids[pname].param.vary = False
-                parpanel.parwids[pname].vary.SetStringSelection('fix')
+            if pname not in curr_syms and pname in parpanel.parwids:
+                par.skip = parpanel.parwids[pname].param.skip = True
+                parpanel.parwids[pname].vary.SetStringSelection('skip')
                 parpanel.parwids[pname].onVaryChoice()
             parpanel.update()
 
@@ -2096,6 +2112,8 @@ class FeffitResultFrame(wx.Frame):
         for param in reversed(result.params.values()):
             pname = param.name
             if any([pname.endswith('_%s' % phash) for phash in path_hashkeys]):
+                continue
+            if getattr(param, 'skip', None) not in (False, None):
                 continue
 
             try:
