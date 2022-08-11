@@ -25,7 +25,7 @@ from larch import Group, isNamedClass
 from larch.utils.strutils import fix_varname, b32hash
 from larch.fitting import group2params, isParameter, param_value
 
-from .xafsutils import ETOK, set_xafsGroup
+from .xafsutils import ETOK, ktoe, set_xafsGroup
 from .sigma2_models import add_sigma2funcs
 
 SMALL_ENERGY = 1.e-6
@@ -77,7 +77,7 @@ class FeffDatFile(Group):
     def __setstate__(self, state):
         (self.filename, self.title, self.version, self.shell,
          self.absorber, self.degen, self.__reff__, self.__nleg__,
-         self.rnorman, self.edge, self.gam_ch, self.exch, self.mu, self.kf,
+         self.rnorman, self.edge, self.gam_ch, self.exch, self.vmu, self.vfermi,
          self.vint, self.rs_int, self.potentials, self.geom, self.__rmass,
          self.k, self.real_phc, self.mag_feff, self.pha_feff,
          self.red_fact, self.lam, self.rep, self.pha, self.amp) = state
@@ -95,8 +95,8 @@ class FeffDatFile(Group):
     def __getstate__(self):
         return (self.filename, self.title, self.version, self.shell,
                 self.absorber, self.degen, self.__reff__, self.__nleg__,
-                self.rnorman, self.edge, self.gam_ch, self.exch, self.mu,
-                self.kf, self.vint, self.rs_int, self.potentials,
+                self.rnorman, self.edge, self.gam_ch, self.exch, self.vmu,
+                self.vfermi, self.vint, self.rs_int, self.potentials,
                 self.geom, self.__rmass, self.k.tolist(),
                 self.real_phc.tolist(), self.mag_feff.tolist(),
                 self.pha_feff.tolist(), self.red_fact.tolist(),
@@ -152,8 +152,8 @@ class FeffDatFile(Group):
                 self.exch   = words[2]
             elif mode == 'header' and line.startswith('Mu'):
                 words  = line.replace('=', ' ').replace('eV', ' ').split()
-                self.mu = float(words[1])
-                self.kf = float(words[3])
+                self.vmu = float(words[1])
+                self.vfermi = ktoe(float(words[3]))
                 self.vint = float(words[5])
                 self.rs_int= float(words[7])
             elif mode == 'path':
@@ -220,7 +220,9 @@ class FeffPathGroup(Group):
         self.chi = None
 
         self.__def_degen = 1
-        if filename not in ('', None) and os.path.exists(filename):
+        if filename not in ('', None):
+            if not os.path.exists(filename):
+                raise ValueError(f"Feff Path file '{filename:s}' not found")
             self._feffdat = FeffDatFile(filename=filename)
             self.create_spline_coefs()
 
@@ -352,6 +354,7 @@ class FeffPathGroup(Group):
            self.params = params
         if self.params is None:
             self.params = Parameters()
+
         if self.params._asteval.symtable.get('sigma2_debye', None) is None:
             add_sigma2funcs(self.params)
         if self.label is None:
@@ -382,7 +385,11 @@ class FeffPathGroup(Group):
         """
         symtab = self.params._asteval.symtable
         symtab['feffpath'] = self._feffdat
-        symtab['reff']  = self._feffdat.reff
+        symtab['reff'] = self._feffdat.reff
+        symtab['vint'] = self._feffdat.vint
+        symtab['vmu']  = self._feffdat.vmu
+        symtab['vfermi'] = self._feffdat.vfermi
+
 
     def __path_params(self, **kws):
         """evaluate path parameter value.  Returns
@@ -596,8 +603,11 @@ def ff2chi(paths, group=None, paramgroup=None, k=None, kmax=None,
     `paths` and writes the resulting arrays to group.k and group.chi.
 
     """
+    if isinstance(paramgroup, Parameters):
+        params = paramgroup
+    else:
+        params = group2params(paramgroup)
 
-    params = group2params(paramgroup)
 
     if isinstance(paths, (list, tuple)):
         pathlist = paths
