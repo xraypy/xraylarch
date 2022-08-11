@@ -21,7 +21,8 @@ from silx.io.dictdump import dicttoh5
 from larch.utils.logging import getLogger
 
 _logger = getLogger("io_rixs_id26")
-_logger.setLevel("DEBUG")
+_logger.setLevel("INFO")
+
 
 def _parse_header(fname):
     """Get parsed header
@@ -32,11 +33,12 @@ def _parse_header(fname):
     """
     raise NotImplementedError
 
+
 def get_rixs_id26(
     fname,
     scans=None,
     sample_name=None,
-    mode='rixs',
+    mode="rixs",
     mot_axis2="Spec.Energy",
     counter_signal="zap_det_dtc",
     counter_mon="arr_I02sum",
@@ -89,18 +91,21 @@ def get_rixs_id26(
         '_x': array, energy in
         '_y': array, energy out
         '_z': array, signal
+        'mode': str
+        'scans': list, scans
         'writer_name': str,
         'writer_version': str,
         'writer_timestamp': str,
-        'filename_all' : list,
-        'filename_root': str,
-        'name_sample': str,
-        'name_scan': str,
-        'counter_all': str,
-        'counter_signal': str,
-        'counter_mon': str,
-        'ene_grid': float,
-        'ene_unit': str,
+        'counter_signal': str, counter_signal,
+        'counter_mon': str, counter_mon,
+        'mon_axis2': str, mot_axis2,
+        'sample_name': str, sample_name,
+        'ene_unit': "eV",
+        'rixs_header': None,
+        'data_dir': str, data_dir,
+        'out_dir': str, out_dir,
+        'fname_ine': str, full path raw data
+        'fname_out': str, full path
         }
     """
     _writer = "get_rixs_id26"
@@ -109,7 +114,7 @@ def get_rixs_id26(
         *time.localtime()
     )
     if sample_name is None:
-        sample_name = "UNKNOWN_SAMPLE"
+        sample_name = "SAMPLE_UNKNOWN"
 
     data_dir = os.path.join(os.sep, *fname.split(os.sep)[1:-1])
     _logger.debug(f"data_dir: {data_dir}")
@@ -120,7 +125,7 @@ def get_rixs_id26(
     if isinstance(scans, str):
         scans = _str2rng(scans)
     assert isinstance(scans, list), "scans should be a list"
-    
+
     mode = mode.lower()
     assert mode in ("rixs", "rixs_et"), "RIXS mode not valid"
 
@@ -132,11 +137,11 @@ def get_rixs_id26(
         except Exception:
             _logger.error(f"cannot load scan {scan}!")
             continue
-         #keV -> eV
-        escan = xscan * 1000 
+        # keV -> eV
+        escan = xscan * 1000
         estep = ds.get_motor_position(mot_axis2) * 1000
         if mode == "rixs":
-            x = escan  
+            x = escan
             y = _mot2array(estep, escan)
         if mode == "rixs_et":
             x = _mot2array(estep, escan)
@@ -156,6 +161,8 @@ def get_rixs_id26(
         "_x": xcol,
         "_y": ycol,
         "_z": zcol,
+        "mode": mode,
+        "scans": scans,
         "writer_name": _writer,
         "writer_version": _writer_version,
         "writer_timestamp": _writer_timestamp,
@@ -172,7 +179,10 @@ def get_rixs_id26(
     if save_rixs:
         fnstr = fname.split("/")[-1].split(".")[0]
         fnout = "{0}_rixs.h5".format(fnstr)
-        dicttoh5(outdict, os.path.join(out_dir, fnout))
+        fname_out = os.path.join(out_dir, fnout)
+        dicttoh5(outdict, fname_out)
+        outdict["fname_in"] = fname
+        outdict["fname_out"] = fname_out
         _logger.info("RIXS saved to {0}".format(fnout))
 
     return outdict
