@@ -70,24 +70,27 @@ def gridxyz(xcol, ycol, zcol, xystep=None, lib="scipy", method="linear"):
     if "matplotlib" in lib.lower():
         _logger.warning("matplotlib deprecated -> using scipy")
         lib = "scipy"
-    if "scipy" in lib.lower():
-        try:
-            from scipy.interpolate import griddata
-        except ImportError:
-            _logger.error("Cannot load griddata from Scipy")
-            return
-        _logger.info("Gridding data with {0}/{1}...".format(lib, method))
-        zz = griddata(
-            (xcol, ycol),
-            zcol,
-            (xgrid[None, :], ygrid[:, None]),
-            method=method,
-            fill_value=0,
-        )
-        return xgrid, ygrid, zz
-    else:
+    if not "scipy" in lib.lower():
         _logger.error("lib should be scipy")
         return np.nan, np.nan, np.nan
+
+    try:
+        from scipy.interpolate import griddata
+    except ImportError:
+        _logger.error("Cannot load griddata from Scipy")
+        return np.nan, np.nan, np.nan
+
+    _logger.info("Gridding data with {0}/{1}...".format(lib, method))
+    zz = griddata(
+        (xcol, ycol),
+        zcol,
+        (xgrid[None, :], ygrid[:, None]),
+        method=method,
+        fill_value=np.nan,
+    )
+
+
+    return xgrid, ygrid, zz
 
 
 if __name__ == "__main__":
