@@ -20,7 +20,7 @@ from larch.utils.strutils import bytes2str, fix_varname
 maketrans = str.maketrans
 
 def groups2csv(grouplist, filename, delim=',',
-               x='energy', y='norm', _larch=None):
+               x='energy', y='norm', individual=False, _larch=None):
     """save data from a list of groups to a CSV file
 
     Arguments
@@ -29,6 +29,7 @@ def groups2csv(grouplist, filename, delim=',',
     filname    name of output file
     x          name of group member to use for `x`
     y          name of group member to use for `y`
+    individual toggle saving individual x/y in separate files
 
     """
     def get_label(grp):
@@ -38,6 +39,20 @@ def groups2csv(grouplist, filename, delim=',',
             if o is not None:
                 return o
         return repr(o)
+    
+    if individual is True:
+        for g in grouplist:
+            label = get_label(g)
+            _x = getattr(g, x)
+            _y = getattr(g, y)
+            outarr = np.array([_x, _y])
+            fnout = f"{filename.split('.csv')[0]}_{label}.csv"
+            header = "\n".join([f"saved {time.ctime()}",
+                                f"saving x array={x}, y array={y}",
+                                f"{label}: {g.filename}"])
+            np.savetxt(fnout, outarr.T, delimiter=delim, header=header)
+            print(f"Wrote group to {fnout}")
+        return
 
     ngroups = len(grouplist)
     x0 = getattr(grouplist[0], x)
@@ -49,6 +64,7 @@ def groups2csv(grouplist, filename, delim=',',
     buff = ["# %d files saved %s" % (len(grouplist), time.ctime()),
             "# saving x array='%s', y array='%s'" % (x, y),
             "# %s: %s" % (labels[1], grouplist[0].filename)]
+    
     for g in grouplist[1:]:
         label = get_label(g)
         buff.append("# %s: %s" % (label, g.filename))

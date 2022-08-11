@@ -246,7 +246,7 @@ class OverAbsorptionDialog(wx.Dialog):
         ppanel.conf.draw_legend(show=True)
 
     def GetResponse(self):
-        raise AttributError("use as non-modal dialog!")
+        raise AttributeError("use as non-modal dialog!")
 
 
 class EnergyCalibrateDialog(wx.Dialog):
@@ -577,7 +577,7 @@ overwriting current arrays''')
         ppanel.canvas.draw()
 
     def GetResponse(self):
-        raise AttributError("use as non-modal dialog!")
+        raise AttributeError("use as non-modal dialog!")
 
 class RebinDataDialog(wx.Dialog):
     """dialog for rebinning data to standard XAFS grid"""
@@ -785,7 +785,7 @@ class RebinDataDialog(wx.Dialog):
         ppanel.canvas.draw()
 
     def GetResponse(self):
-        raise AttributError("use as non-modal dialog!")
+        raise AttributeError("use as non-modal dialog!")
 
 class SmoothDataDialog(wx.Dialog):
     """dialog for smoothing data"""
@@ -930,7 +930,7 @@ class SmoothDataDialog(wx.Dialog):
         dgroup = self.dgroup
         dgroup.energy = xdat
         dgroup.mu     = ydat
-        ngroup.journal.add('smooth_command', self.cmd)
+        dgroup.journal.add('smooth_command', self.cmd)
         self.parent.process_normalization(dgroup)
         self.plot_results()
 
@@ -978,7 +978,7 @@ class SmoothDataDialog(wx.Dialog):
         ppanel.canvas.draw()
 
     def GetResponse(self):
-        raise AttributError("use as non-modal dialog!")
+        raise AttributeError("use as non-modal dialog!")
 
 class DeconvolutionDialog(wx.Dialog):
     """dialog for energy deconvolution"""
@@ -1118,7 +1118,7 @@ class DeconvolutionDialog(wx.Dialog):
         ppanel.canvas.draw()
 
     def GetResponse(self):
-        raise AttributError("use as non-modal dialog!")
+        raise AttributeError("use as non-modal dialog!")
 
 class DeglitchDialog(wx.Dialog):
     """dialog for deglitching or removing unsightly data points"""
@@ -1392,7 +1392,7 @@ clear undo history''')
         self.history_message.SetLabel('%i items in history' % (len(self.xmasks)-1))
 
     def GetResponse(self):
-        raise AttributError("use as non-modal dialog!")
+        raise AttributeError("use as non-modal dialog!")
 
 
 SPECCALC_SETUP = """#From SpectraCalc dialog:
@@ -1550,7 +1550,7 @@ class SpectraCalcDialog(wx.Dialog):
             self.parent.ShowFile(groupname=ngroup.groupname)
 
     def GetResponse(self):
-        raise AttributError("use as non-modal dialog!")
+        raise AttributeError("use as non-modal dialog!")
 
 class EnergyUnitsDialog(wx.Dialog):
     """dialog for selecting, changing energy units, forcing data to eV"""
@@ -1666,10 +1666,20 @@ class ExportCSVDialog(wx.Dialog):
         title = "Export Selected Groups"
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
         self.SetFont(Font(FONTSIZE))
+        self.xchoices = {'Energy': 'energy',
+                         'k': 'k',
+                         'R': 'r',
+                         'q': 'q'}
+
         self.ychoices = {'normalized mu(E)': 'norm',
                          'raw mu(E)': 'mu',
                          'flattened mu(E)': 'flat',
-                         'd mu(E) / dE': 'dmude'}
+                         'd mu(E) / dE': 'dmude',
+                         'chi(k)': 'chi',
+                         'chi(E)': 'chie',
+                         'chi(q)': 'chiq',
+                         '|chi(R)|': 'chir_mag',
+                         'Re[chi(R)]': 'chir_re'}
 
         self.delchoices = {'comma': ',',
                            'space': ' ',
@@ -1678,14 +1688,22 @@ class ExportCSVDialog(wx.Dialog):
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
+        self.save_individual_files = Check(panel, default=False, label='Save individual files', action=self.onSaveIndividualFiles)
         self.master_group = Choice(panel, choices=groupnames, size=(200, -1))
+        self.xarray_name  = Choice(panel, choices=list(self.xchoices.keys()),size=(200, -1))
         self.yarray_name  = Choice(panel, choices=list(self.ychoices.keys()), size=(200, -1))
         self.del_name     = Choice(panel, choices=list(self.delchoices.keys()), size=(200, -1))
 
+
+        panel.Add(self.save_individual_files, newrow=True)
+        
         panel.Add(SimpleText(panel, 'Group for Energy Array: '), newrow=True)
         panel.Add(self.master_group)
 
-        panel.Add(SimpleText(panel, 'Array to Export: '), newrow=True)
+        panel.Add(SimpleText(panel, 'X Array to Export: '), newrow=True)
+        panel.Add(self.xarray_name)
+
+        panel.Add(SimpleText(panel, 'Y Array to Export: '), newrow=True)
         panel.Add(self.yarray_name)
 
         panel.Add(SimpleText(panel, 'Delimeter for File: '), newrow=True)
@@ -1694,18 +1712,23 @@ class ExportCSVDialog(wx.Dialog):
         panel.pack()
         fit_dialog_window(self, panel)
 
+    def onSaveIndividualFiles(self, event=None):
+        save_individual = self.save_individual_files.IsChecked()
+        self.master_group.Enable(not save_individual)
 
     def GetResponse(self, master=None, gname=None, ynorm=True):
         self.Raise()
         response = namedtuple('ExportCSVResponse',
-                              ('ok', 'master', 'yarray', 'delim'))
+                              ('ok', 'individual', 'master', 'xarray', 'yarray', 'delim'))
         ok = False
         if self.ShowModal() == wx.ID_OK:
+            individual = self.save_individual_files.IsChecked()
             master = self.master_group.GetStringSelection()
+            xarray = self.xchoices[self.xarray_name.GetStringSelection()]
             yarray = self.ychoices[self.yarray_name.GetStringSelection()]
             delim  = self.delchoices[self.del_name.GetStringSelection()]
             ok = True
-        return response(ok, master, yarray, delim)
+        return response(ok, individual, master, xarray, yarray, delim)
 
 class QuitDialog(wx.Dialog):
     """dialog for quitting, prompting to save project"""
