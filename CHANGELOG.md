@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.9.66 - not released]
+
+### Added
+
+  - examples/Jupyter: notebook showing a simple reading and visualization of RIXS data
+  - XAS_Viewer/CSV export: add EXAFS arrays and the possiblity to save individual files (#393)
+
+### Changed
+
+  - 
+
+### Fixed
+
 ## [0.9.65 - 2022-07-05]
 
 ### Changed
