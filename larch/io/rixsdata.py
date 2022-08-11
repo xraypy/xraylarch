@@ -16,7 +16,8 @@ from larch.xafs.xafsutils import guess_energy_units
 from larch.utils.logging import getLogger
 
 _logger = getLogger(__name__)  #: module logger
-_logger.setLevel("DEBUG")
+_logger.setLevel("INFO")
+
 
 def _tostr(arr):
     """Numpy array to string"""
@@ -210,6 +211,7 @@ class RixsData(object):
                 self._logger.debug("crop in energy transfer")
                 et = True
             else:
+                self._logger.debug("crop in emission energy")
                 et = False
 
         _xystep = self.ene_grid or 0.1
@@ -219,19 +221,23 @@ class RixsData(object):
         _xcrop = np.linspace(x1, x2, num=_nxpts)
 
         if et:
-            _netpts = int((y2 - y1) / _xystep)
-            _ymin = x2 - y2
-            _ymax = x1 - y1
-            _nypts = int((_ymax - _ymin) / _xystep)
-            _etcrop = np.linspace(y1, y2, num=_netpts)
-            _ycrop = np.linspace(_ymin, _ymax, num=_nypts)
+            _etmin = y1
+            _etmax = y2
+            _ymin = x1 - _etmax
+            _ymax = x2 - _etmin
+            self._logger.debug(f"-> emission range: {_ymin:.2f}:{_ymax:.2f}")
         else:
-            _nypts = int((y2 - y1) / _xystep)
-            _etmin = x1 - y2
-            _etmax = x2 - y1
-            _netpts = int((_etmax - _etmin) / _xystep)
-            _etcrop = np.linspace(_etmin, _etmax, num=_netpts)
-            _ycrop = np.linspace(y1, y2, num=_nypts)
+            _ymin = y1
+            _ymax = y2
+            _etmin = x2 - _ymax
+            _etmax = x1 - _ymin
+            self._logger.debug(f"-> et range: {_etmin:.2f}:{_etmax:.2f}")
+
+        _netpts = int((_etmax - _etmin) / _xystep)
+        _nypts = int((_ymax - _ymin) / _xystep)
+        _etcrop = np.linspace(_etmin, _etmax, num=_netpts)
+        _ycrop = np.linspace(_ymin, _ymax, num=_nypts)
+
 
         _xx, _yy = np.meshgrid(_xcrop, _ycrop)
         _exx, _et = np.meshgrid(_xcrop, _etcrop)
@@ -293,11 +299,14 @@ class RixsData(object):
 
         Return
         ------
-            None -> adds (xc:array, yc:array, info:dict) to self.lcuts:list, where
+            None -> adds dict(x:array, y:array, info:dict) to self.lcuts[cut_key]:dict, where
 
             info = {label: str,     #: 'mode_enecut'
                     mode: str,      #: as input
                     enecut: float,  #: energy cut given from the initial interpolation
+                    datatype: str,  #: 'xas' or 'xes'
+                    color: str,     #: color from a common palette
+                    timestamp: str, #: time stamp
                     }
         """
         assert energy is not None, "The energy of the cut must be given"
