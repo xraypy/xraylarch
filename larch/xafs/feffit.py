@@ -24,7 +24,6 @@ from ..fitting import (correlated_values, eval_stderr, ParameterGroup,
 
 from .xafsutils import set_xafsGroup
 from .xafsft import xftf_fast, xftr_fast, ftwindow
-from .sigma2_models import sigma2_correldebye, sigma2_debye
 from .feffdat import FeffPathGroup, ff2chi
 
 
@@ -320,7 +319,8 @@ class FeffitDataSet(Group):
 
         # for each path in the list of paths, setup the Path Parameters
         # to use the current Parameters namespace
-        params = group2params(params)
+        if isinstance(params, Group):
+            params = group2params(params)
         for label, path in self.paths.items():
             path.create_path_params(params=params)
             if path.spline_coefs is None:
@@ -551,6 +551,12 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
         chir_re      real part of chi(R).
         chir_im      imaginary part of chi(R).
     """
+    fit_kws = dict(gtol=1.e-6, ftol=1.e-6, xtol=1.e-6)
+    if 'tol' in kws:
+        tol = kws.pop('tol')
+        fit_kws['gtol'] = fit_kws['ftol'] = fit_kws['xtol'] = tol
+
+    fit_kws.update(kws)
 
     work_paramgroup = deepcopy(paramgroup)
     for pname in dir(paramgroup):  # explicitly copy 'skip'!
@@ -562,8 +568,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
 
     def _resid(params, datasets=None, pargroup=None, **kwargs):
         """ this is the residual function"""
-        params2group(params, pargroup)
-        return concatenate([d._residual(pargroup) for d in datasets])
+        return concatenate([d._residual(params) for d in datasets])
 
     if isNamedClass(datasets, FeffitDataSet):
         datasets = [datasets]
@@ -576,7 +581,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
 
     fit = Minimizer(_resid, params,
                     fcn_kws=dict(datasets=datasets, pargroup=work_paramgroup),
-                    scale_covar=True, **kws)
+                    scale_covar=True, **fit_kws)
 
     result = fit.leastsq()
     params2group(result.params, work_paramgroup)
@@ -605,7 +610,6 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
     # so we rescale uncertainties here.
 
     covar = getattr(result, 'covar', None)
-    # print("COVAR " , covar)
     if covar is not None:
         err_scale = (result.nfree / (n_idp - result.nvarys))
         for name in result.var_names:
