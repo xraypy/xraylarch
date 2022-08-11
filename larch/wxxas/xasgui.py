@@ -657,11 +657,12 @@ class XASFrame(wx.Frame):
             if dgroup not in savegroups:
                 savegroups.append(dgroup)
 
-
-        groups2csv(savegroups, outfile, x='energy', y=res.yarray,
-                   delim=res.delim, _larch=self.larch)
-        self.write_message(f"Exported CSV file {outfile:s}")
-
+        try:
+            groups2csv(savegroups, outfile, x=res.xarray, y=res.yarray,
+                    delim=res.delim, individual=res.individual, _larch=self.larch)
+            self.write_message(f"Exported CSV file {outfile:s}")
+        except Exception as err:
+            self.write_message(f"/!\ Failed exporting CSV file /!\: {err}")
     # Athena
     def onExportAthenaProject(self, evt=None):
         groups = []
