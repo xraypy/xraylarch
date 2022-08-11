@@ -16,7 +16,7 @@ from larch.xafs.xafsutils import guess_energy_units
 from larch.utils.logging import getLogger
 
 _logger = getLogger(__name__)  #: module logger
-
+_logger.setLevel("DEBUG")
 
 def _tostr(arr):
     """Numpy array to string"""
@@ -185,7 +185,7 @@ class RixsData(object):
         dicttoh5(save_dict, filename, update_mode="replace")
         self._logger.info(f"{self.name} saved to {filename}")
 
-    def crop(self, crop_area, yet=False):
+    def crop(self, crop_area, et=None):
         """Crop the plane in a given range
 
         Parameters
@@ -196,7 +196,7 @@ class RixsData(object):
             x1 < x2 (ene_in)
             y1 < y2 (if yet=False: ene_out, else: ene_et)
 
-        yet: bool, optional [False]
+        et: bool,
             if True: y1, y2 are given in energy transfer
 
         """
@@ -204,13 +204,21 @@ class RixsData(object):
         x1, y1, x2, y2 = crop_area
         assert x1 < x2, "wrong crop area, x1 >= x2"
         assert y1 < y2, "wrong crop area, y1 >= y2"
+
+        if et is None:
+            if y2 < np.max(self.ene_et):
+                self._logger.debug("crop in energy transfer")
+                et = True
+            else:
+                et = False
+
         _xystep = self.ene_grid or 0.1
         _method = self.grid_method or "linear"
 
         _nxpts = int((x2 - x1) / _xystep)
         _xcrop = np.linspace(x1, x2, num=_nxpts)
 
-        if yet:
+        if et:
             _netpts = int((y2 - y1) / _xystep)
             _ymin = x2 - y2
             _ymax = x1 - y1
@@ -227,7 +235,7 @@ class RixsData(object):
 
         _xx, _yy = np.meshgrid(_xcrop, _ycrop)
         _exx, _et = np.meshgrid(_xcrop, _etcrop)
-        _logger.info("Gridding data...")
+        self._logger.info("Gridding data...")
         _zzcrop = griddata((self._x, self._y), self._z, (_xx, _yy), method=_method)
         _ezzcrop = griddata(
             (self._x, self._x - self._y), self._z, (_exx, _et), method=_method
