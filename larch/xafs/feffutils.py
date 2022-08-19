@@ -4,7 +4,7 @@ from collections import namedtuple
 
 FPathInfo = namedtuple('FeffPathInfo',
                        ('filename', 'absorber', 'shell', 'reff', 'nleg',
-                        'degen', 'cwratio', 'geom'))
+                        'degen', 'cwratio', 'atoms', 'geom'))
 class FeffCalcResults:
     def __init__(self, folder=None, header=None, ipots=None,
                  paths=None, datetime=None, absorber=None,
@@ -52,7 +52,9 @@ def get_feff_pathinfo(folder):
     with open(pdat, 'r') as fh:
         pathslines = fh.readlines()
 
+    xpaths = {}
     paths = {}
+    geoms = {}
     header = []
     shell = 'K'
     waiting_for_dashes = True
@@ -72,6 +74,7 @@ def get_feff_pathinfo(folder):
             w = xline.split()
             index = int(w[0].replace('feff', '').replace('.dat', ''))
             paths[index] = [w[0], w[5], w[4], w[3], w[2]]
+            geoms[index] = []
 
     ipots = ['']*12
     waiting_for_dashes = True
@@ -86,18 +89,24 @@ def get_feff_pathinfo(folder):
             index = int(words[0])
             nleg  = int(words[1])
             elems = []
+            xgeom = []
             for j in range(nleg+1):
                 xline = pathslines[j+i+1].strip().replace("'", '')
                 if xline.startswith('x   '):
                     continue
-                words = xline.split()[:-3]
+                words = xline.split()
+                atname = words[4].strip()
                 ipot = int(words[3])
-
                 if ipot not in ipots:
-                    ipots[ipot] = ' '.join(words[4:])
+                    ipots[ipot] = atname
                 elems.append(ipot)
+                r, x, y, z, beta, eta = [float(words[i]) for i in (5, 0, 1, 2, 6, 7)]
+                xgeom.append((atname, ipot, r, x, y, z, beta, eta))
+                if j == nleg:
+                    xgeom.insert(0, (atname, ipot, r, x, y, z, beta, eta))
             if index in paths:
                 paths[index].append(elems)
+                geoms[index] = xgeom
 
     ipots = [i for i in ipots if len(i) > 0]
     absorber = ipots[0]
@@ -105,7 +114,7 @@ def get_feff_pathinfo(folder):
     opaths = []
     for pindex, pinfo in paths.items():
         pots = [0] + pinfo[5]
-        geom =  ' > '.join([ipots[i] for i in pots])
+        atoms =  ' > '.join([ipots[i] for i in pots])
         opaths.append(FPathInfo(filename=pinfo[0],
                                 absorber=absorber,
                                 shell=shell,
@@ -113,7 +122,8 @@ def get_feff_pathinfo(folder):
                                 nleg=int(float(pinfo[2])),
                                 degen=float(pinfo[3]),
                                 cwratio=float(pinfo[4]),
-                                geom=geom))
+                                atoms=atoms,  geom=geoms[pindex]))
+
 
     # read absorbing shell
     for line in header:
