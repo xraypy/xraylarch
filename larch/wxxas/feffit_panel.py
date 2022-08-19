@@ -545,8 +545,8 @@ class FeffPathPanel(wx.Panel):
     """Feff Path """
     def __init__(self, parent=None, feffdat_file=None, dirname=None,
                  fullpath=None, absorber=None, shell=None, reff=None,
-                 degen=None, geom=None, nleg=1, npath=1, title='', user_label='',
-                 _larch=None, feffit_panel=None, **kws):
+                 degen=None, geom=None, atoms=None, nleg=1, npath=1, title='',
+                 user_label='', _larch=None, feffit_panel=None, **kws):
 
         self.parent = parent
         self.title = title
@@ -563,6 +563,8 @@ class FeffPathPanel(wx.Panel):
         self.reff = reff = float(reff)
         degen = float(degen)
         self.geom = geom
+        self.atoms = atoms
+        print("FEFF PAth ", feffdat_file, atoms, geom)
         self.nleg = nleg
         self.wids = wids = {}
         def SLabel(label, size=(80, -1), **kws):
@@ -596,7 +598,7 @@ class FeffPathPanel(wx.Panel):
 
 
         title1 = f'{dirname:s}: {feffdat_file:s}  {absorber:s} {shell:s} edge'
-        title2 = f'Reff={reff:.4f},  Degen={degen:.1f}, {scatt:s}:  {geom:s}'
+        title2 = f'Reff={reff:.4f},  Degen={degen:.1f}, {scatt:s}:  {atoms:s}'
 
         panel.Add(SLabel(title1, size=(375, -1), colour='#0000AA'),
                   dcol=2,  style=wx.ALIGN_LEFT, newrow=True)
@@ -1187,7 +1189,7 @@ class FeffitPanel(TaskPanel):
         if pathinfo is None:
             pathinfo = feffpath(feffdat_file)
 
-        atoms = [s.strip() for s in pathinfo.geom.split('>')]
+        atoms = [s.strip() for s in pathinfo.atoms.split('>')]
         atoms.pop()
         title = '_'.join(atoms) + "%d" % (round(100*pathinfo.reff))
         for c in ',.[](){}<>+=-?/\\&%$#@!|:;"\'':
@@ -1213,6 +1215,7 @@ class FeffitPanel(TaskPanel):
                                   reff=pathinfo.reff,
                                   degen=pathinfo.degen,
                                   nleg=pathinfo.nleg,
+                                  atoms=pathinfo.atoms,
                                   geom=pathinfo.geom,
                                   feffit_panel=self)
 

@@ -58,7 +58,7 @@ class FeffPathsModel(dv.DataViewIndexListModel):
                     if fp.filename in self.paths:
                         use = self.paths[fp.filename]
                     row.append(use)
-                row.append(fp.geom)
+                row.append(fp.atoms)
                 self.data.append(row)
                 self.paths[fp.filename] = use
         self.Reset(len(self.data))
@@ -167,13 +167,14 @@ class FeffResultsPanel(wx.Panel):
         bkws = dict(size=(175, -1))
         btn_header = Button(panel, "Show Full Header", action=self.onShowHeader, **bkws)
         btn_feffinp = Button(panel, "Show Feff.inp",   action=self.onShowFeffInp, **bkws)
+        btn_geom = Button(panel, "Show Path Geometries", action=self.onShowGeom, **bkws)
 
         if callable(self.path_importer):
             btn_import = Button(panel, "Import Paths",     action=self.onImportPath, **bkws)
             btn_above  = Button(panel, "Select All Above Current", action=self.onSelAbove,  **bkws)
             btn_none   = Button(panel, "Select None",      action=self.onSelNone, **bkws)
 
-        opts = dict(size=(400, -1), style=LEFT)
+        opts = dict(size=(475, -1), style=LEFT)
         self.feff_folder = SimpleText(panel, '',  **opts)
         self.feff_datetime = SimpleText(panel, '',**opts)
         self.feff_header = [SimpleText(panel, '', **opts),
@@ -213,6 +214,7 @@ class FeffResultsPanel(wx.Panel):
         ir += 1
         sizer.Add(btn_header,      (ir, 0), (1, 2),  LEFT, 2)
         sizer.Add(btn_feffinp,     (ir, 2), (1, 2),  LEFT, 2)
+        sizer.Add(btn_geom,        (ir, 4), (1, 2),  LEFT, 2)
 
         if callable(self.path_importer):
             ir += 1
@@ -274,6 +276,32 @@ class FeffResultsPanel(wx.Panel):
                              title=f'Header for {self.feffresult.folder:s}',
                              default_filename=f'{self.feffresult.folder:s}_header.txt')
 
+    def onShowGeom(self, event=None):
+        if self.feffresult is None:
+            return
+        show = False
+        out = []
+        for data in self.model.data:
+            if data[5]:
+                show = True
+                out.append(f'### {self.feffresult.folder:s}/{data[0]:s} ###')
+                out.append('#Atom IPOT     X         Y         Z         Beta      Eta      Length')
+                fname = data[0]
+
+                for fp in self.feffresult.paths:
+                    if fname == fp.filename:
+                        for i, px in enumerate(fp.geom):
+                            at, ipot, r, x, y, z, beta, eta = px
+                            if i == 0: r = 0
+                            t = f'{at:4s}  {ipot:3d}  {x:9.4f} {y:9.4f} {z:9.4f} {beta:9.4f} {eta:9.4f} {r:9.4f}'
+                            out.append(t)
+        if show:
+            out = '\n'.join(out)
+            self.show_report(out, title=f'Path Geometries for {self.feffresult.folder:s}',
+                             default_filename=f'{self.feffresult.folder:s}_paths.dat')
+
+
+
     def onShowFeffInp(self, event=None):
         if self.feffresult is not None:
             text = None
@@ -330,6 +358,8 @@ class FeffResultsPanel(wx.Panel):
         for i, text in enumerate(feffresult.header.split('\n')[:nhead]):
             self.feff_header[i].SetLabel(text)
         self.model.set_data(feffresult.paths)
+        self.dvc.EnsureVisible(self.model.GetItem(0))
+        self.dvc.SetCurrentItem(self.dvc.GetTopItem())
 
 
 class FeffResultsFrame(wx.Frame):
@@ -393,7 +423,7 @@ class FeffResultsFrame(wx.Frame):
         pack(lpanel, lsizer)
 
         # right hand side
-        panel = scrolled.ScrolledPanel(splitter)
+        panel = wx.Panel(splitter) ## scrolled.ScrolledPanel(splitter)
         wids = self.wids = {}
         toprow = wx.Panel(panel)
 
@@ -416,7 +446,7 @@ class FeffResultsFrame(wx.Frame):
         sizer.Add(HLine(panel, size=(550, 2)), 0,  LEFT|wx.GROW|wx.ALL, 2)
         sizer.Add(self.feff_panel, 1, LEFT|wx.GROW|wx.ALL, 2)
         pack(panel, sizer)
-        panel.SetupScrolling()
+        # panel.SetupScrolling()
         splitter.SplitVertically(lpanel, panel, 1)
         self.Show()
         wx.CallAfter(self.onSearch)
@@ -425,6 +455,7 @@ class FeffResultsFrame(wx.Frame):
         fr = self.feffruns.get(self.fefflist.GetStringSelection(), None)
         if fr is not None:
             self.feff_panel.set_feffresult(fr)
+
 
     def onSearch(self, event=None):
         catom = self.wids['central_atom'].GetStringSelection()
