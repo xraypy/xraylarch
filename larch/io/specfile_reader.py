@@ -159,6 +159,36 @@ def update_nested(d, u):
             d[k] = v
     return d
 
+def _atoi(text):
+    return int(text) if text.isdigit() else text
+
+def natural_keys(text):
+    """
+    FROM: https://stackoverflow.com/questions/5967500/how-to-correctly-sort-a-string-with-a-number-inside
+
+    alist.sort(key=natural_keys) sorts in human order
+    http://nedbatchelder.com/blog/200712/human_sorting.html
+    (See Toothy's implementation in the comments)
+
+    Usage
+    -----
+
+    alist=[
+        "something1",
+        "something12",
+        "something17",
+        "something2",
+        "something25",
+        "something29"]
+
+    alist.sort(key=natural_keys)
+    print(alist)
+
+    """
+    import re
+
+    return [_atoi(c) for c in re.split(r"(\d+)", text)]
+
 
 # ==================================================================
 # CLASS BASED ON SPECH5 (CURRENT/RECOMMENDED)
@@ -447,6 +477,10 @@ class DataSourceSpecH5(object):
                 except Exception:
                     self._logger.error(f"{scname} does not have standard title/time URLs")
                     allscans.append([None, None, None])
+        
+        #sort scan in natural/human order
+        allscans.sort(key = lambda row: natural_keys(row[0]))
+
         return allscans
 
     def get_motors(self):
