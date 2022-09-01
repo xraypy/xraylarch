@@ -213,7 +213,9 @@ class DataSourceSpecH5(object):
             'silx' : default
             'spec2nexus' : as converted by spec2nexus
         verbose : bool [False]
-            if True it lowers the logger level to INFO, othewise WARNING by default
+            if True it lowers the logger level to INFO
+            if 'debug', it lowers the logger level to DEBUG (for testing)
+            othewise WARNING by default
         """
         if logger is None:
             from larch.utils.logging import getLogger
@@ -225,6 +227,9 @@ class DataSourceSpecH5(object):
 
         if verbose:
             self._logger.setLevel("INFO")
+
+        if verbose.lower() == 'debug':
+            self._logger.setLevel("DEBUG")
 
         self._fname = fname
         self._sourcefile = None
