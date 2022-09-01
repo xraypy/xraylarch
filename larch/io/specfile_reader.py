@@ -228,7 +228,7 @@ class DataSourceSpecH5(object):
         if verbose:
             self._logger.setLevel("INFO")
 
-        if verbose.lower() == 'debug':
+        if (isinstance(verbose, str) and verbose.lower() == 'debug'):
             self._logger.setLevel("DEBUG")
 
         self._fname = fname
