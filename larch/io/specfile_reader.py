@@ -372,8 +372,9 @@ class DataSourceSpecH5(object):
             for slist in self._scans:
                 sl0 = slist[0]
                 if scn in sl0.lower():
-                    self._logger.debug(f"scan '{scn}' -> '{sl0}'")
+                    self._logger.debug(f"scan '{scan}' -> '{sl0}'")
                     scan = sl0
+                    break
 
         if scan in self._scans_names:
             self._scan_str = scan
