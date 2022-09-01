@@ -159,8 +159,10 @@ def update_nested(d, u):
             d[k] = v
     return d
 
+
 def _atoi(text):
     return int(text) if text.isdigit() else text
+
 
 def natural_keys(text):
     """
@@ -228,7 +230,7 @@ class DataSourceSpecH5(object):
         if verbose:
             self._logger.setLevel("INFO")
 
-        if (isinstance(verbose, str) and verbose.lower() == 'debug'):
+        if isinstance(verbose, str) and verbose.lower() == "debug":
             self._logger.setLevel("DEBUG")
 
         self._fname = fname
@@ -287,7 +289,9 @@ class DataSourceSpecH5(object):
                 _iscn = 0
                 self.set_scan(self._scans[_iscn][0])  # set the first scan at init
                 while len(self.get_counters()) == 1:
-                    self._logger.warning(f"not enough data in scan {_iscn+1} '{self.get_title()}'")
+                    self._logger.warning(
+                        f"not enough data in scan {_iscn+1} '{self.get_title()}'"
+                    )
                     _iscn += 1
                     self.set_scan(self._scans[_iscn][0])
             except Exception as e:
@@ -418,7 +422,6 @@ class DataSourceSpecH5(object):
             self._scan_title = None
             self._logger.error(f"'{self._scan_url}' is not valid")
 
-
     def _list_from_url(self, url_str):
         """Utility method to get a list from a scan url
 
@@ -476,7 +479,7 @@ class DataSourceSpecH5(object):
                 )
             except KeyError:
                 self._logger.error(f"'{sn}' is a datagroup!")
-                #go one level below and try take first dataset only
+                # go one level below and try take first dataset only
                 dt0 = list(sg.keys())[0]
                 sgg = sg[dt0]
                 try:
@@ -489,11 +492,13 @@ class DataSourceSpecH5(object):
                         ]
                     )
                 except Exception:
-                    self._logger.error(f"{scname} does not have standard title/time URLs")
+                    self._logger.error(
+                        f"{scname} does not have standard title/time URLs"
+                    )
                     allscans.append([None, None, None])
-        
-        #sort scan in natural/human order
-        allscans.sort(key = lambda row: natural_keys(row[0]))
+
+        # sort scan in natural/human order
+        allscans.sort(key=lambda row: natural_keys(row[0]))
 
         return allscans
 
@@ -783,11 +788,13 @@ class DataSourceSpecH5(object):
             try:
                 from sloth.utils.bragg import ang2kev
             except ImportError:
+
                 def ang2kev(theta, d):
                     from larch.utils.physical_constants import PLANCK_HC
+
                     theta = np.deg2rad(theta)
                     wlen = 2 * d * np.sin(theta)
-                    return (PLANCK_HC / wlen) / 1000.
+                    return (PLANCK_HC / wlen) / 1000.0
 
             bragg_ax = to_energy["bragg_ax"]
             bragg_ax_type = to_energy["bragg_ax_type"]
