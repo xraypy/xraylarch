@@ -13,7 +13,7 @@ Requirements
 """
 
 __author__ = ["Mauro Rovezzi", "Matt Newville"]
-__version__ = "larch_0.9.57"
+__version__ = "larch_0.9.66"
 
 import os
 import copy
@@ -357,6 +357,15 @@ class DataSourceSpecH5(object):
         """
         if scan_kws is not None:
             self._scan_kws = update_nested(self._scan_kws, scan_kws)
+
+        if isinstance(scan, int):
+            scn = f"{scan}_"
+            for slist in self._scans:
+                sl0 = slist[0]
+                if scn in sl0.lower():
+                    self._logger.debug(f"scan '{scn}' -> '{sl0}'")
+                    scan = sl0
+
         if scan in self._scans_names:
             self._scan_str = scan
             self._scan_n = self._scans_names.index(scan)
