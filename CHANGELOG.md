@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.9.66 - not released]
+
+### Added
+
+  - XAS_Viewer/CSV export: add EXAFS arrays and the possiblity to save individual files (#393)
+  - examples/Jupyter: notebook showing a simple reading and visualization of RIXS data
+  - `larch.io.rixs_esrf_id26` to read RIXS data from ESRF/ID26 beamline (old Spec format)
+  - `larch.plot.plot_rixsdata` to visualize RIXS planes and cuts in pure Matplotlib
+
+### Changed
+
+  - improved `larch.io.rixsdata.RixsData` for taking line cuts and crop the RIXS plane
+
+### Fixed
+
 ## [0.9.65 - 2022-07-05]
 
 ### Changed
