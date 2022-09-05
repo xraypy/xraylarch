@@ -6,7 +6,7 @@ import numpy as np
 from scipy.stats import f
 
 import lmfit
-from lmfit import Parameter as lmfitParameter
+from lmfit import Parameter
 from lmfit import (Parameters, Minimizer, conf_interval,
                    ci_report, conf_interval2d)
 
@@ -18,13 +18,14 @@ from uncertainties import ufloat, correlated_values
 
 from ..symboltable import Group, isgroup
 
+
 def isParameter(x):
-    return (isinstance(x, Parameter) or isinstance(x, lmfitParameter) or
+    return (isinstance(x, Parameter) or
             x.__class__.__name__ == 'Parameter')
 
 def param_value(val):
     "get param value -- useful for 3rd party code"
-    while isinstance(val, lmfitParameter):
+    while isinstance(val, Parameter):
         val = val.value
     return val
 
@@ -116,7 +117,7 @@ def param_group(**kws):
 def randstr(n):
     return ''.join([chr(random.randint(97, 122)) for i in range(n)])
 
-class Parameter(lmfitParameter):
+class unnamedParameter(Parameter):
     """A Parameter that can be nameless"""
     def __init__(self, name=None, value=None, vary=True, min=-np.inf, max=np.inf,
                  expr=None, brute_step=None, user_data=None, skip=None):
@@ -140,10 +141,10 @@ class Parameter(lmfitParameter):
         self.from_internal = lambda val: val
         self._val = value
         self._init_bounds()
-        lmfitParameter.__init__(self, name, value=value, vary=vary,
-                                min=min, max=max, expr=expr,
-                                brute_step=brute_step,
-                                user_data=user_data)
+        Parameter.__init__(self, name, value=value, vary=vary,
+                           min=min, max=max, expr=expr,
+                           brute_step=brute_step,
+                           user_data=user_data)
 
 def param(*args, **kws):
     "create a fitting Parameter as a Variable"
@@ -161,7 +162,7 @@ def param(*args, **kws):
     if 'vary' not in kws:
         kws['vary'] = False
 
-    return Parameter(*args, **kws)
+    return unnamedParameter(*args, **kws)
 
 def guess(value,  **kws):
     """create a fitting Parameter as a Variable.
@@ -176,6 +177,17 @@ def is_param(obj):
     """return whether an object is a Parameter"""
     return isParameter(obj)
 
+def dict2params(pars):
+    """sometimes we get a plain dict of Parameters,
+    with vals that are Parameter objects"""
+    if isinstance(pars, Parameters):
+        return pars
+    out = Parameters()
+    for key, val in pars.items():
+        if isinstance(val, Parameter):
+            out[key] = val
+    return out
+
 def group2params(paramgroup):
     """take a Group of Parameter objects (and maybe other things)
     and put them into a lmfit.Parameters, ready for use in fitting
@@ -185,7 +197,7 @@ def group2params(paramgroup):
     if isinstance(paramgroup, dict):
         params = Parameters()
         for key, val in paramgroup.items():
-            if isinstance(val, (Parameter, lmfitParameter)):
+            if isinstance(val, Parameter):
                 params[key] = val
         return params
 
@@ -384,10 +396,6 @@ def chi2_map(fit_result, xname, yname, nx=11, ny=11, sigma=3, **kws):
                            prob_func=scaled_chisqr,
                            nx=nx, ny=ny, **kws)
 
-def _Parameters(*arg, **kws):
-    return Parameters(*arg, **kws)
-
-
 _larch_name = '_math'
 exports = {'param': param,
            'guess': guess,
@@ -400,7 +408,7 @@ exports = {'param': param,
            'minimize': minimize,
            'ufloat': ufloat,
            'fit_report': fit_report,
-           'Parameters': _Parameters,
+           'Parameters': Parameters,
            'Parameter': Parameter,
            'lm_minimize': minimize,
            'lm_save_model': save_model,
