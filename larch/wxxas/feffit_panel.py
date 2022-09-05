@@ -115,7 +115,7 @@ _feffpaths = {}
 #endtry
 """
 
-COMMANDS['add_path'] = """
+COMMANDS['cache_path'] = """
 _feffcache['paths']['{title:s}'] = feffpath('{fullpath:s}',
                                              label='{title:s}',feffrun='{feffrun:s}', degen=1)
 """
@@ -543,46 +543,44 @@ class FeffitParamsPanel(wx.Panel):
 
 class FeffPathPanel(wx.Panel):
     """Feff Path """
-    def __init__(self, parent=None, feffdat_file=None, dirname=None,
-                 fullpath=None, absorber=None, shell=None, reff=None,
-                 degen=None, geom=None, atoms=None, nleg=1, npath=1, title='',
-                 user_label='', _larch=None, feffit_panel=None, **kws):
+    def __init__(self, parent, feffit_panel, filename, title, user_label,
+                 geomstr, absorber, shell, reff, nleg, degen,
+                 par_amp, par_e0, par_delr, par_sigma2, par_third, par_ei):
+
+        print('FeffPathPanel ', title, filename)
 
         self.parent = parent
         self.title = title
-        self.user_label = user_label
+        self.user_label = fix_varname(f'{title:s}')
         self.feffit_panel = feffit_panel
         self.editing_enabled = False
+
         wx.Panel.__init__(self, parent, -1, size=(550, 250))
         self.SetFont(Font(FONTSIZE))
         panel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LEFT)
 
-        self.feffdat_file = feffdat_file
-        self.fullpath = fullpath
+        self.fullpath = filename
+        par, feffdat_file = os.path.split(filename)
+        parent_folder, dirname = os.path.split(par)
 
-        self.reff = reff = float(reff)
-        degen = float(degen)
-        self.geom = geom
-        self.atoms = atoms
-        print("FEFF PAth ", feffdat_file, atoms, geom)
+        self.user_label = user_label
+
         self.nleg = nleg
-        self.wids = wids = {}
+        self.reff = reff
+        self.geomstr = geomstr
+        # self.geometry = geometry
+
         def SLabel(label, size=(80, -1), **kws):
             return  SimpleText(panel, label, size=size, style=LEFT, **kws)
 
-        ptitle = title
-        if ptitle.startswith(absorber):
-            ptitle = ptitle[len(absorber):]
-        if ptitle.startswith('_'):
-            ptitle = ptitle[1:]
-
+        self.wids = wids = {}
         for name, expr in (('label', user_label),
-                           ('amp',  f'{degen:.1f} * s02'),
-                           ('e0',  'e0'),
-                           ('delr',   f'delr_{ptitle}'),
-                           ('sigma2', f'sigma2_{ptitle}'),
-                           ('third',  ''),
-                           ('ei',  '')):
+                           ('amp',  par_amp),
+                           ('e0',  par_e0),
+                           ('delr',   par_delr),
+                           ('sigma2', par_sigma2),
+                           ('third',  par_third),
+                           ('ei',  par_ei)):
             self.wids[name] = wx.TextCtrl(panel, -1, size=(250, -1),
                                           value=expr, style=wx.TE_PROCESS_ENTER)
             wids[name+'_val'] = SimpleText(panel, '', size=(150, -1), style=LEFT)
@@ -593,12 +591,13 @@ class FeffPathPanel(wx.Panel):
         wids['plot_feffdat'] = Button(panel, 'Plot F(k)', size=(150, -1),
                              action=self.onPlotFeffDat)
 
-        scatt = {2: 'Single', 3: 'Double', 4: 'Triple', 5: 'Quadruple'}.get(nleg, f'{nleg-1:d}-atom')
+        scatt = {2: 'Single', 3: 'Double', 4: 'Triple',
+                 5: 'Quadruple'}.get(nleg, f'{nleg-1:d}-atom')
         scatt = scatt + ' Scattering'
 
 
         title1 = f'{dirname:s}: {feffdat_file:s}  {absorber:s} {shell:s} edge'
-        title2 = f'Reff={reff:.4f},  Degen={degen:.1f}, {scatt:s}:  {atoms:s}'
+        title2 = f'Reff={reff:.4f},  Degen={degen:.1f}, {scatt:s}: {geomstr:s}'
 
         panel.Add(SLabel(title1, size=(375, -1), colour='#0000AA'),
                   dcol=2,  style=wx.ALIGN_LEFT, newrow=True)
@@ -608,17 +607,18 @@ class FeffPathPanel(wx.Panel):
                   dcol=3, style=wx.ALIGN_LEFT, newrow=True)
         panel.Add(wids['plot_feffdat'])
 
-        panel.AddMany((SLabel('Label'),     wids['label'], wids['label_val']),  newrow=True)
-        panel.AddMany((SLabel('Amplitude'), wids['amp'],    wids['amp_val']), newrow=True)
-        panel.AddMany((SLabel('E0 '),       wids['e0'],     wids['e0_val']),  newrow=True)
-        panel.AddMany((SLabel('Delta R'),   wids['delr'],   wids['delr_val']), newrow=True)
-        panel.AddMany((SLabel('sigma2'),    wids['sigma2'], wids['sigma2_val']), newrow=True)
-        panel.AddMany((SLabel('third'),     wids['third'],  wids['third_val']),   newrow=True)
-        panel.AddMany((SLabel('Eimag'),     wids['ei'],  wids['ei_val']),   newrow=True)
+        panel.AddMany((SLabel('Label'),     wids['label'],  wids['label_val']), newrow=True)
+        panel.AddMany((SLabel('Amplitude'), wids['amp'],    wids['amp_val']),   newrow=True)
+        panel.AddMany((SLabel('E0 '),       wids['e0'],     wids['e0_val']),    newrow=True)
+        panel.AddMany((SLabel('Delta R'),   wids['delr'],   wids['delr_val']),  newrow=True)
+        panel.AddMany((SLabel('sigma2'),    wids['sigma2'], wids['sigma2_val']),newrow=True)
+        panel.AddMany((SLabel('third'),     wids['third'],  wids['third_val']), newrow=True)
+        panel.AddMany((SLabel('Eimag'),     wids['ei'],     wids['ei_val']),    newrow=True)
         panel.pack()
         sizer= wx.BoxSizer(wx.VERTICAL)
         sizer.Add(panel, 1, LEFT|wx.GROW|wx.ALL, 2)
         pack(self, sizer)
+
 
     def enable_editing(self):
         for name in ('label', 'amp', 'e0', 'delr', 'sigma2', 'third', 'ei'):
@@ -726,6 +726,7 @@ class FeffitPanel(TaskPanel):
     def onPanelExposed(self, **kws):
         # called when notebook is selected
         dgroup = self.controller.get_group()
+        print("Panel Exposed Feffit")
         try:
             pargroup = self.get_paramgroup()
             self.params_panel.update()
@@ -744,6 +745,7 @@ class FeffitPanel(TaskPanel):
         fitset = getattr(self.larch.symtable, '_feffit_dataset', None)
         if fitset is not None:
             self.wids['show_results'].Enable()
+        print("Panel Exposed -> feffpath ", feffpath)
         if feffpath is not None:
             self.reset_paths()
 
@@ -1126,6 +1128,7 @@ class FeffitPanel(TaskPanel):
     def reset_paths(self, event=None):
         "reset paths from _feffpaths"
         self.resetting = True
+        print("RESET PATHS")
         def get_pagenames():
             allpages = []
             for i in range(self.paths_nb.GetPageCount()):
@@ -1148,50 +1151,67 @@ class FeffitPanel(TaskPanel):
         self.resetting = False
         feffpaths = deepcopy(getattr(self.larch.symtable, '_feffpaths', {}))
         self.paths_data = {}
-        for label, path in feffpaths.items():
-            feffrun = path.feffrun
-            self.add_path(path.filename, feffrun=feffrun)
+        for path in feffpaths.values():
+            self.add_path(path.filename, feffpath=path)
         self.get_pathpage('parameters').Rebuild()
 
-    def add_path(self, feffdat_file, feffresult=None, feffrun=None):
-        """ add path to cache"""
-        pathinfo = None
-        parent, fp_file = os.path.split(feffdat_file)
-        parent, dirname = os.path.split(parent)
-        feff_run = 'unknown'
+
+    def add_path(self, filename, pathinfo=None, feffpath=None):
+        """ add new path to cache  """
+
+        if pathinfo is None and feffpath is None:
+            raise ValueError("add_path needs a Feff Path or Path information")
+
+        parent, fname = os.path.split(filename)
+        parent, feffrun = os.path.split(parent)
+
         feffcache = getattr(self.larch.symtable, '_feffcache', None)
         if feffcache is None:
             self.larch_eval(COMMANDS['paths_init'])
             feffcache = getattr(self.larch.symtable, '_feffcache', None)
+        if feffcache is None:
+            raise ValueError("cannot get feff cache ")
 
-        feffruns  = feffcache['runs']
-        feffpaths = feffcache['paths']
+        geomstre = None
+        if pathinfo is not None:
+            absorber = pathinfo.absorber
+            shell = pathinfo.shell
+            reff  = float(pathinfo.reff)
+            nleg  = int(pathinfo.nleg)
+            degen = float(pathinfo.degen)
+            if hasattr(pathinfo, 'atoms'):
+                geom = pathinfo.atoms
+            geomstr = pathinfo.geom      # '[Fe] > O > [Fe]'
+            par_amp = par_e0 = par_delr = par_sigma2 = par_third = par_ei = ''
 
-        if feffresult is not None: # add feff run info
-            folder, feffrun = os.path.split(feffresult.folder)
-            if feffrun not in feffruns:
-                feffruns[feffrun] = feffresult
+        if feffpath is not None:
+            absorber = feffpath.absorber
+            shell = feffpath.shell
+            reff  = feffpath.reff
+            nleg  = feffpath.nleg
+            degen = float(feffpath.degen)
+            geomstr = []
+            for gdat in feffpath.geom: #  ('Fe', 26, 0, 55.845, x, y, z)
+                w = gdat[0]
+                if gdat[2] == 0: # absorber
+                    w = '[%s]' % w
+                geomstr.append(w)
+            geomstr.append(geomstr[0])
+            geomstr = ' > '.join(geomstr)
+            par_amp = feffpath.s02
+            par_e0 = feffpath.e0
+            par_delr = feffpath.deltar
+            par_sigma2 = feffpath.sigma2
+            par_third = feffpath.third
+            par_ei = feffpath.ei
 
-        if feffresult is None and feffrun is not None:
-            feffresult = feffruns.get(feffrun, None)
+        try:
+            atoms = [s.strip() for s in geomstr.split('>')]
+            atoms.pop()
+        except:
+            raise ValueError("could not interpret Path data sent to add_path()")
 
-
-        if feffresult is None and dirname is not None:
-            feffrun = dirname
-
-        if feffresult is None:
-            raise ValueError('need Feff results to import ', feffdat_file)
-
-        for path in feffresult.paths:
-            if path.filename == fp_file:
-                pathinfo = path
-                break
-        if pathinfo is None:
-            pathinfo = feffpath(feffdat_file)
-
-        atoms = [s.strip() for s in pathinfo.atoms.split('>')]
-        atoms.pop()
-        title = '_'.join(atoms) + "%d" % (round(100*pathinfo.reff))
+        title = '_'.join(atoms) + "%d" % (round(100*reff))
         for c in ',.[](){}<>+=-?/\\&%$#@!|:;"\'':
             title = title.replace(c, '')
         if title in self.paths_data:
@@ -1201,23 +1221,29 @@ class FeffitPanel(TaskPanel):
                 i += 1
                 title = btitle + '_%s' % string.ascii_lowercase[i]
 
-        self.paths_data[title] = (feffdat_file, feffrun)
+        user_label = fix_varname(title)
+        self.paths_data[title] = filename
 
-        user_label = fix_varname(f'{title:s}')
-        pathpanel = FeffPathPanel(parent=self.paths_nb, title=title,
-                                  npath=len(self.paths_data),
-                                  user_label=user_label,
-                                  feffdat_file=fp_file,
-                                  dirname=feffrun,
-                                  fullpath=feffdat_file,
-                                  absorber=pathinfo.absorber,
-                                  shell=pathinfo.shell,
-                                  reff=pathinfo.reff,
-                                  degen=pathinfo.degen,
-                                  nleg=pathinfo.nleg,
-                                  atoms=pathinfo.atoms,
-                                  geom=pathinfo.geom,
-                                  feffit_panel=self)
+        ptitle = title
+        if ptitle.startswith(absorber):
+            ptitle = ptitle[len(absorber):]
+        if ptitle.startswith('_'):
+            ptitle = ptitle[1:]
+
+        if len(par_amp) < 1:
+            par_amp = f'{degen:.1f} * s02'
+        if len(par_e0) < 1:
+            par_e0 = 'e0'
+        if len(par_delr) < 1:
+            par_delr = f'delr_{ptitle}'
+        if len(par_sigma2) < 1:
+            par_sigma2 = f'sigma2_{ptitle}'
+
+        pathpanel = FeffPathPanel(self.paths_nb, self, filename, title,
+                                  user_label, geomstr, absorber, shell,
+                                  reff, nleg, degen, par_amp, par_e0,
+                                  par_delr, par_sigma2, par_third, par_ei)
+
 
         self.paths_nb.AddPage(pathpanel, f' {title:s} ', True)
 
@@ -1226,18 +1252,15 @@ class FeffitPanel(TaskPanel):
 
         pathpanel.enable_editing()
 
-        pdat = {'title': title, 'fullpath': feffdat_file,
+        pdat = {'title': title, 'fullpath': filename,
                 'feffrun': feffrun, 'use':True}
         pdat.update(pathpanel.get_expressions())
 
-        feffpaths = deepcopy(getattr(self.larch.symtable, '_feffpaths', {}))
-        feffcache = deepcopy(getattr(self.larch.symtable, '_feffcache', {'paths': {}}))
         if title not in feffcache['paths']:
-            if not os.path.exists(feffdat_file):
-                print(f"cannot file Feff data file '{feffdat_file}'")
+            if os.path.exists(filename):
+                self.larch_eval(COMMANDS['cache_path'].format(**pdat))
             else:
-                # print("read Feff Path from disk ", feffdat_file)
-                self.larch_eval(COMMANDS['add_path'].format(**pdat))
+                print(f"cannot file Feff data file '{filename}'")
 
         self.larch_eval(COMMANDS['use_path'].format(**pdat))
 
