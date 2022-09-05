@@ -1,4 +1,4 @@
-#  note: contents of xafs_plots.lar has moved to plugins/xafs/xafsplots.py
+#  note: contents of xafs_plots.lar has moved to :mod:`larch.wxlib.xafsplots`
 #  this is maintained for backward compatibility
 
 """
