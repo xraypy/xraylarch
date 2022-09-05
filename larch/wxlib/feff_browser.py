@@ -58,7 +58,7 @@ class FeffPathsModel(dv.DataViewIndexListModel):
                     if fp.filename in self.paths:
                         use = self.paths[fp.filename]
                     row.append(use)
-                row.append(fp.atoms)
+                row.append(fp.geom)
                 self.data.append(row)
                 self.paths[fp.filename] = use
         self.Reset(len(self.data))
@@ -290,7 +290,7 @@ class FeffResultsPanel(wx.Panel):
 
                 for fp in self.feffresult.paths:
                     if fname == fp.filename:
-                        for i, px in enumerate(fp.geom):
+                        for i, px in enumerate(fp.geometry):
                             at, ipot, r, x, y, z, beta, eta = px
                             if i == 0: r = 0
                             t = f'{at:4s}  {ipot:3d}  {x:9.4f} {y:9.4f} {z:9.4f} {beta:9.4f} {eta:9.4f} {r:9.4f}'
@@ -337,17 +337,19 @@ class FeffResultsPanel(wx.Panel):
 
 
     def onImportPath(self, event=None):
-        folder  = self.feffresult.folder
+        folder = self.feffresult.folder
         _, fname = os.path.split(folder)
         for data in self.model.data:
             if data[5]:
-                self.path_importer(unixpath(os.path.join(folder, data[0])),
-                                   self.feffresult)
+                fname = data[0]
+                fullpath = unixpath(os.path.join(folder, fname))
+                for pathinfo in self.feffresult.paths:
+                    if pathinfo.filename == fname:
+                        self.path_importer(fullpath, pathinfo)
+                        break
 
         self.onSelNone()
-        # print(' on import xasmain = ', self.xasmain)
-        #if self.xasmain is not None:
-        #    self.xasmain.nb.SetSelection(self.xasmain.get_nbpage('feffit')[0])
+
 
     def set_feffresult(self, feffresult):
         self.feffresult = feffresult
@@ -473,8 +475,6 @@ class FeffResultsFrame(wx.Frame):
             if os.path.isdir(fullpath):
                 try:
                     _feffruns[path] = thisrun = get_feff_pathinfo(fullpath)
-                    # self.larch.eval(f"_sys._feffruns['{path:s}'] = get_feff_pathinfo('{fullpath:s}')")
-                    # thisrun = self.larch.symtable._sys._feffruns[path]
                     if ((len(thisrun.paths) < 1) or
                         (len(thisrun.ipots) < 1) or thisrun.shell is None):
 
