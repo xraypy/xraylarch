@@ -172,7 +172,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     for i in range(order+1):
         knots.append(qlast + 1.e-4*(i+1))
 
-    coefs = [mu[index_nearest(energy, e0 + q**2/ETOK)] for q in knots]
+    # coefs = [mu[index_nearest(energy, e0 + q**2/ETOK)] for q in knots]
     knots, coefs, order = splrep(spl_k, spl_y, k=order)
     coefs[nspl:] = coefs[nspl-1]
 
