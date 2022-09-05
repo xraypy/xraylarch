@@ -22,6 +22,8 @@ from larch import Group, Make_CallArgs, isgroup, parse_group_args
 
 from larch.math import (index_of, index_nearest,
                         remove_dups, remove_nans2)
+
+from larch.fitting import dict2params
 from .xafsutils import set_xafsGroup
 
 @Make_CallArgs(["energy", "norm"])
@@ -315,8 +317,11 @@ def prepeaks_fit(group, peakmodel, params, user_options=None, _larch=None):
     if not isinstance(peakmodel, Model):
         raise ValueError("peakmodel must be an lmfit.Model")
 
+    if isinstance(params, dict):
+        params = dict2params(params)
+
     if not isinstance(params, Parameters):
-        raise ValueError("paramsl must be an lmfit.Parameters")
+        raise ValueError("params must be an lmfit.Parameters")
 
     if not hasattr(prepeaks, 'fit_history'):
         prepeaks.fit_history = []
@@ -348,7 +353,7 @@ def prepeaks_fit(group, peakmodel, params, user_options=None, _larch=None):
     label = now  = time.strftime("%b-%d %H:%M")
     pkfit.timestamp = time.strftime("%Y-%b-%d %H:%M")
     pkfit.label = label
-    
+
 
     fitlabels = [fhist.label for fhist in prepeaks.fit_history]
     if label in fitlabels:
@@ -357,7 +362,7 @@ def prepeaks_fit(group, peakmodel, params, user_options=None, _larch=None):
             label = f'{now:s}_{printable[count]:s}'
             count +=1
         pkfit.label = label
-        
-    
+
+
     prepeaks.fit_history.insert(0, pkfit)
     return pkfit
