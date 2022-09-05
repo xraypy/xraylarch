@@ -23,7 +23,7 @@ from xraydb import atomic_mass, atomic_symbol
 
 from larch import Group, isNamedClass
 from larch.utils.strutils import fix_varname, b32hash
-from larch.fitting import group2params, isParameter, param_value
+from larch.fitting import group2params, dict2params, isParameter, param_value
 
 from .xafsutils import ETOK, ktoe, set_xafsGroup
 from .sigma2_models import add_sigma2funcs
@@ -355,6 +355,10 @@ class FeffPathGroup(Group):
         if self.params is None:
             self.params = Parameters()
 
+        if (not isinstance(self.params, Parameters) and
+            isinstance(self.params, dict)):
+            self.params = dict2params(self.params)
+
         if self.params._asteval.symtable.get('sigma2_debye', None) is None:
             add_sigma2funcs(self.params)
         if self.label is None:
@@ -383,6 +387,10 @@ class FeffPathGroup(Group):
         """stores data about this Feff path in the Parameters
         symbol table for use as `reff` and in sigma2 calcs
         """
+        if (not isinstance(self.params, Parameters) and
+            isinstance(self.params, dict)):
+            self.params = dict2params(self.params)
+
         symtab = self.params._asteval.symtable
         symtab['feffpath'] = self._feffdat
         symtab['reff'] = self._feffdat.reff
