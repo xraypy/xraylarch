@@ -4,7 +4,7 @@ from collections import namedtuple
 
 FPathInfo = namedtuple('FeffPathInfo',
                        ('filename', 'absorber', 'shell', 'reff', 'nleg',
-                        'degen', 'cwratio', 'atoms', 'geom'))
+                        'degen', 'cwratio', 'geom', 'geometry'))
 class FeffCalcResults:
     def __init__(self, folder=None, header=None, ipots=None,
                  paths=None, datetime=None, absorber=None,
@@ -89,7 +89,7 @@ def get_feff_pathinfo(folder):
             index = int(words[0])
             nleg  = int(words[1])
             elems = []
-            xgeom = []
+            pgeom = []
             for j in range(nleg+1):
                 xline = pathslines[j+i+1].strip().replace("'", '')
                 if xline.startswith('x   '):
@@ -101,12 +101,12 @@ def get_feff_pathinfo(folder):
                     ipots[ipot] = atname
                 elems.append(ipot)
                 r, x, y, z, beta, eta = [float(words[i]) for i in (5, 0, 1, 2, 6, 7)]
-                xgeom.append((atname, ipot, r, x, y, z, beta, eta))
+                pgeom.append((atname, ipot, r, x, y, z, beta, eta))
                 if j == nleg:
-                    xgeom.insert(0, (atname, ipot, r, x, y, z, beta, eta))
+                    pgeom.insert(0, (atname, ipot, r, x, y, z, beta, eta))
             if index in paths:
                 paths[index].append(elems)
-                geoms[index] = xgeom
+                geoms[index] = pgeom
 
     ipots = [i for i in ipots if len(i) > 0]
     absorber = ipots[0]
@@ -114,7 +114,7 @@ def get_feff_pathinfo(folder):
     opaths = []
     for pindex, pinfo in paths.items():
         pots = [0] + pinfo[5]
-        atoms =  ' > '.join([ipots[i] for i in pots])
+        geom =  ' > '.join([ipots[i] for i in pots])
         opaths.append(FPathInfo(filename=pinfo[0],
                                 absorber=absorber,
                                 shell=shell,
@@ -122,7 +122,8 @@ def get_feff_pathinfo(folder):
                                 nleg=int(float(pinfo[2])),
                                 degen=float(pinfo[3]),
                                 cwratio=float(pinfo[4]),
-                                atoms=atoms,  geom=geoms[pindex]))
+                                geom=geom,
+                                geometry=geoms[pindex]))
 
 
     # read absorbing shell
