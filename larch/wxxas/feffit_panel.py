@@ -547,8 +547,6 @@ class FeffPathPanel(wx.Panel):
                  geomstr, absorber, shell, reff, nleg, degen,
                  par_amp, par_e0, par_delr, par_sigma2, par_third, par_ei):
 
-        print('FeffPathPanel ', title, filename)
-
         self.parent = parent
         self.title = title
         self.user_label = fix_varname(f'{title:s}')
@@ -1128,7 +1126,6 @@ class FeffitPanel(TaskPanel):
     def reset_paths(self, event=None):
         "reset paths from _feffpaths"
         self.resetting = True
-        print("RESET PATHS")
         def get_pagenames():
             allpages = []
             for i in range(self.paths_nb.GetPageCount()):
@@ -1230,6 +1227,7 @@ class FeffitPanel(TaskPanel):
         if ptitle.startswith('_'):
             ptitle = ptitle[1:]
 
+        # set default Path parameters if not supplied already
         if len(par_amp) < 1:
             par_amp = f'{degen:.1f} * s02'
         if len(par_e0) < 1:
@@ -1243,7 +1241,6 @@ class FeffitPanel(TaskPanel):
                                   user_label, geomstr, absorber, shell,
                                   reff, nleg, degen, par_amp, par_e0,
                                   par_delr, par_sigma2, par_third, par_ei)
-
 
         self.paths_nb.AddPage(pathpanel, f' {title:s} ', True)
 
