@@ -2,9 +2,12 @@
 import time
 from datetime import datetime
 from collections import OrderedDict
-import numpy as np
+from gzip import GzipFile
+import io
 import copy
 import json
+import chardet
+import numpy as np
 
 from .paths import uname, bindir, nativepath, unixpath, get_homedir, get_cwd
 from .debugtime import debugtime, debugtimer
@@ -21,6 +24,45 @@ def is_gzip(filename):
     with open(filename, 'rb') as fh:
         return fh.read(3) == b'\x1f\x8b\x08'
     return False
+
+def read_textfile(filename, size=None):
+    """read text from a file as string
+
+    Argument
+    --------
+    filename  (str or file): name of file to read or file-like object
+    size  (int or None): number of bytes to read
+
+    Returns
+    -------
+    text of file as string.
+
+    Notes
+    ------
+    1. unicode encoding is detected with chardet and then
+       used to decode bytes read from file.
+    2. line endings are normalized to be '\n', so that
+       splitting on '\n' will give a list of lines.
+    3. if filename is given, it can be a gzip-compressed file
+    """
+
+    def decode(bdat):
+        info = chardet.detect(bdat)
+        return bdat.decode(info.get('encoding', 'utf-8'))
+
+    text = ''
+    if isinstance(filename, io.IOBase):
+        if filename.mode == 'r':
+            text = filename.read(size)
+        elif filename.mode == 'rb':
+            text = decode(filename.read(size))
+    else:
+        fopen = GzipFile if is_gzip(filename) else open
+        with fopen(filename, 'rb') as fh:
+            text = decode(fh.read(size))
+
+    return text.replace('\r\n', '\n').replace('\r', '\n')
+
 
 def group2dict(group, _larch=None):
     "return dictionary of group members"
