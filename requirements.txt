@@ -15,6 +15,7 @@ sqlalchemy>=1.0
 h5py>=2.8
 pillow>=8.3.2
 imageio
+chardet
 peakutils
 requests
 scikit-image

@@ -21,7 +21,7 @@ logfile=GetLarch.log
 cforge_pkgs="numpy=>1.18 scipy=>1.6 matplotlib=>3.3 scikit-image scikit-learn pymatgen pycifrw"
 
 ## set list of pip packages to install from pypi
-pip_pkgs="wxmplot wxutils lmfit asteval pyshortcuts pyfai"
+pip_pkgs="wxmplot wxutils lmfit asteval pyshortcuts pyfai chardet"
 
 unset CONDA_EXE CONDA_PYTHON_EXE CONDA_PREFIX PROJ_LIB
 
@@ -35,13 +35,13 @@ for opt ; do
   option=''
   case "$opt" in
     -*=*)
-         optarg=`echo "$opt" | sed 's/[-_a-zA-Z0-9]*=//'`
-         option=`echo "$opt" | sed 's/=.*//' | sed 's/-*//'`
-         ;;
+	 optarg=`echo "$opt" | sed 's/[-_a-zA-Z0-9]*=//'`
+	 option=`echo "$opt" | sed 's/=.*//' | sed 's/-*//'`
+	 ;;
     *)
-         option=`echo "$opt" | sed 's/^-*//'`
-         optarg=
-         ;;
+	 option=`echo "$opt" | sed 's/^-*//'`
+	 optarg=
+	 ;;
   esac
   case "$option" in
     prefix)        prefix=$optarg ;;
@@ -64,7 +64,7 @@ EOF
    *)
        echo " unknown option "  $opt
        exit 1
-        ;;
+	;;
   esac
 done
 

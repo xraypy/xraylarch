@@ -34,6 +34,7 @@ specs:
     - scikit-image
     - scikit-learn
     - cython
+    - chardet
     - pillow
     - psutil
     - pandas
