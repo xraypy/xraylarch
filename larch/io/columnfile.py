@@ -12,8 +12,8 @@ from dateutil.parser import parse as dateparse
 from math import log10
 from larch import Group
 from larch.symboltable import isgroup
+from ..utils import read_textfile
 from .fileutils import fix_varname
-
 from .xafs_beamlines import guess_beamline
 
 nanresult = namedtuple('NanResult', ('file_ok', 'message', 'nan_rows',
@@ -240,8 +240,7 @@ def read_ascii(filename, labels=None, simple_labels=False,
     if os.stat(filename).st_size > MAX_FILESIZE:
         raise OSError("File '%s' too big for read_ascii()" % filename)
 
-    with open(filename, 'rb') as fh:
-        text = fh.read().decode('utf-8').replace('\r\n', '\n').replace('\r', '\n')
+    text = read_textfile(filename)
     lines = text.split('\n')
 
     ncol = None
@@ -602,9 +601,7 @@ def guess_filereader(path, return_text=False):
     name of function (as a string) to use to read file
     if return_text: text of the read file
     """
-    parent, filename = os.path.split(path)
-    with open(path, 'rb') as fh:
-        text = fh.read().decode('utf-8').replace('\r\n', '\n').replace('\r', '\n')
+    text = read_textfile(path)
     lines = text.split('\n')
     line1 = lines[0].lower()
     reader = 'read_ascii'

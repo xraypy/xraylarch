@@ -9,7 +9,8 @@ import time
 from collections import deque
 from copy import copy
 import io
-FILETYPE = io.IOBase
+
+from .utils import read_textfile
 
 OPENS  = '{(['
 CLOSES = '})]'
@@ -252,19 +253,13 @@ class InputText:
 
         text = None
         try:
-            if isinstance(filename, FILETYPE):
-                if filename.mode == 'r':
-                    text = filename.read()
-                elif filename.mode == 'rb':
-                    text = filename.read().decode('utf-8')
-                filename = filename.name
-            else:
-                with open(filename, 'rb') as fh:
-                    text = fh.read().decode('utf-8')
+            text = read_textfile(filename)
         except:
             errtype, errmsg, errtb = sys.exc_info()
             return (errtype, errmsg)
 
+        if isinstance(filename, io.IOBase):
+            filename = filename.name
 
         if text is None:
             return (IOError, 'cannot read %s' % filename)

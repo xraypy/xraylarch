@@ -13,7 +13,7 @@ from lmfit import Parameter, Parameters
 # from lmfit.minimizer import Minimizer, MinimizerResult
 
 from larch import Group, isgroup, __date__, __version__, __release_version__
-from ..utils import isotime, bytes2str, str2bytes, fix_varname, is_gzip
+from ..utils import isotime, bytes2str, str2bytes, fix_varname, is_gzip, read_textfile
 from ..utils.jsonutils import encode4js, decode4js
 
 SessionStore = namedtuple('SessionStore', ('config', 'command_history', 'symbols'))
@@ -23,11 +23,7 @@ def get_machineid():
     return hex(uuid.getnode())[2:]
 
 def is_larch_session_file(fname):
-    fopen = GzipFile if is_gzip(fname) else open
-    text = 'No'
-    with fopen(fname, 'rb') as fh:
-        text = fh.read(64).decode('utf-8')
-    return text.startswith('##LARIX:')
+    return read_textfile(fname, size=64).startswith('##LARIX:')
 
 def save_groups(fname, grouplist):
     """save a list of groups (and other supported datatypes) to file
@@ -52,10 +48,7 @@ def read_groups(fname):
 
     Returns a list of objects
     """
-    fopen = GzipFile if is_gzip(fname) else open
-    with fopen(fname, 'rb') as fh:
-        text = fh.read().decode('utf-8')
-
+    text = read_textfile(fname)
     lines = text.split('\n')
     line0 = lines.pop(0)
     if not line0.startswith('##LARCH GROUPLIST'):
@@ -181,10 +174,7 @@ def read_session(fname):
 
 
     """
-    fopen = GzipFile if is_gzip(fname) else open
-    with fopen(fname, 'rb') as fh:
-        text = fh.read().decode('utf-8')
-
+    text = read_textfile(fname)
     lines = text.split('\n')
     line0 = lines.pop(0)
     if not line0.startswith('##LARIX:'):

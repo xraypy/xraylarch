@@ -6,7 +6,6 @@ import os
 import sys
 import time
 import json
-from gzip import GzipFile
 from itertools import combinations
 from collections import OrderedDict
 
@@ -23,7 +22,7 @@ from lmfit import minimize, Parameters
 
 from .. import Group
 from .utils import interp, index_of
-from larch.utils import is_gzip, str2bytes, bytes2str
+from larch.utils import str2bytes, bytes2str, read_textfile
 
 from .lincombo_fitting import get_arrays, get_label, groups2matrix
 
@@ -179,10 +178,7 @@ def save_pca_model(pca_model, filename):
 def read_pca_model(filename):
     """read a PCA model from a file"""
     from larch.utils.jsonutils import decode4js
-    fopen = GzipFile if is_gzip(filename) else open
-    with fopen(filename, 'rb') as fh:
-        text = fh.read().decode('utf-8')
-
+    text = read_textfile(filename)
     lines = text.split('\n')
     if not lines[0].startswith('##Larch PCA Model'):
         raise ValueError(f"Invalid Larch PCA Model: '{fname:s}'")

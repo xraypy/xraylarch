@@ -17,7 +17,7 @@ import ctypes.util
 from .symboltable import Group, isgroup
 from .site_config import user_larchdir
 from .closure import Closure
-from .utils import uname, bindir, get_cwd
+from .utils import uname, bindir, get_cwd, read_textfile
 
 HAS_TERMCOLOR = False
 try:
@@ -431,8 +431,7 @@ def read_config(conffile):
     cfile = os.path.join(user_larchdir, conffile)
     out = None
     if os.path.exists(cfile):
-        with open(cfile, 'rb') as fh:
-            data = fh.read().decode('utf-8')
+        data = read_textfile(cfile)
         try:
             out = toml.loads(data)
         except:

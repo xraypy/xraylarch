@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 from collections import namedtuple
+from larch.utils import read_textfile
 
 FPathInfo = namedtuple('FeffPathInfo',
                        ('filename', 'absorber', 'shell', 'reff', 'nleg',
@@ -46,11 +47,8 @@ def get_feff_pathinfo(folder):
 
 
     dtime = datetime.fromtimestamp(os.stat(fdat).st_mtime).isoformat()
-    with open(fdat, 'r') as fh:
-        fdatlines = fh.readlines()
-
-    with open(pdat, 'r') as fh:
-        pathslines = fh.readlines()
+    fdatlines = read_textfile(fdat).split('\n')
+    pathslines = read_textfile(pdat).split('\n')
 
     xpaths = {}
     paths = {}
@@ -132,7 +130,7 @@ def get_feff_pathinfo(folder):
 
     # read input
     try:
-        input_text = open(finp, 'rb').read().decode('utf-8')
+        input_text = read_textfile(fin)
     except:
         input_text = '<not available>'
 

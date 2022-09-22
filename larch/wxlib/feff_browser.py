@@ -10,7 +10,7 @@ import wx.dataview as dv
 
 import larch
 from larch.site_config import user_larchdir
-from larch.utils import unixpath
+from larch.utils import unixpath, read_textfile
 from larch.wxlib import (GridPanel, GUIColors, Button, pack, SimpleText,
                          FileOpen, FileSave, Font, LEFT, FRAMESTYLE,
                          FONTSIZE, MenuItem, EditableListBox, OkCancel,
@@ -307,14 +307,12 @@ class FeffResultsPanel(wx.Panel):
             text = None
             fname = unixpath(os.path.join(self.feffresult.folder, 'feff.inp'))
             if os.path.exists(fname):
-                with open(fname, 'rb') as fh:
-                    text = fh.read().decode('utf-8')
+                text = read_textfile(fname)
             else:
                 fname = unixpath(os.path.join(user_larchdir, 'feff',
                                               self.feffresult.folder, 'feff.inp'))
                 if os.path.exists(fname):
-                    with open(fname, 'rb') as fh:
-                        text = fh.read().decode('utf-8')
+                    text = read_textfile(fname)
             if text is not None:
                 self.show_report(text, title=f'Feff.inp for {self.feffresult.folder:s}',
                                  default_filename=f'{self.feffresult.folder:s}_feff.inp',

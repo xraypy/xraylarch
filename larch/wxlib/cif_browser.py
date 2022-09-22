@@ -25,6 +25,7 @@ import larch
 from larch import Group
 from larch.xafs import feff8l, feff6l
 from larch.xrd.cif2feff import cif_sites
+from larch.utils import read_textfile
 from larch.utils.paths import unixpath
 from larch.utils.strutils import fix_filename, unique_name, strict_ascii
 from larch.site_config import user_larchdir
@@ -607,8 +608,7 @@ class CIFFrame(wx.Frame):
             _, fname = os.path.split(path)
             fname = fname.replace('.inp', '_run')
             fname = unique_name(fix_filename(fname), self.runs_list)
-            with open(path, 'rb') as fh:
-                fefftext = fh.read().decode('utf-8')
+            fefftext = read_textfile(path)
             if fefftext is not None:
                 self.wids['feff_text'].SetValue(fefftext)
                 self.wids['run_folder'].SetValue(fname)
