@@ -254,6 +254,7 @@ class XASFrame(wx.Frame):
         self.last_array_sel_col = {}
         self.last_array_sel_spec = {}
         self.last_session_file = None
+        self.last_session_read = None
         self.last_athena_file = None
         self.paths2read = []
         self.current_filename = filename
@@ -481,6 +482,9 @@ class XASFrame(wx.Frame):
         MenuItem(self, fmenu, "&Save Larch Session\tCtrl+S",
                  "Save Session to a File",  self.onSaveSession)
 
+        MenuItem(self, fmenu, "&Save Larch Session As ...\tCtrl+A",
+                 "Save Session to a File",  self.onSaveSessionAs)
+
         MenuItem(self, fmenu, "Clear Larch Session",
                  "Clear all data from this Session",  self.onClearSession)
 
@@ -501,8 +505,8 @@ class XASFrame(wx.Frame):
         ilast.Enable(os.path.exists(last_fname))
         self.init_lastsession = ilast
 
-        MenuItem(self, fmenu, "&Auto-Save Larch Session\tCtrl+A",
-                 f"Save Session now to {last_fname}",  self.autosave_session)
+        # MenuItem(self, fmenu, "&Auto-Save Larch Session\tCtrl+A",
+        #          f"Save Session now to {last_fname}",  self.autosave_session)
         fmenu.AppendSeparator()
 
         MenuItem(self, fmenu, "Save Selected Groups to Athena Project File",
@@ -737,7 +741,6 @@ class XASFrame(wx.Frame):
                            controller=self.controller)
 
     def onLoadLastSession(self, event=None):
-
         conf = self.controller.get_config('autosave',
                                           {'fileroot': 'session_autosave'})
         froot = conf['fileroot']
@@ -761,7 +764,6 @@ class XASFrame(wx.Frame):
                 self.controller.set_workdir()
 
 
-
     def onLoadSession(self, evt=None, path=None):
         if path is None:
             wildcard = 'Larch Session File (*.larix)|*.larix|All files (*.*)|*.*'
@@ -778,10 +780,18 @@ class XASFrame(wx.Frame):
             return
 
         LoadSessionDialog(self, _session, path, self.controller).Show()
+        self.last_session_read = path
         fdir, fname = os.path.split(path)
         if self.controller.chdir_on_fileopen() and len(fdir) > 0:
             os.chdir(fdir)
             self.controller.set_workdir()
+
+    def onSaveSessionAs(self, evt=None):
+        groups = self.controller.filelist.GetItems()
+        if len(groups) < 1:
+            return
+        self.last_session_file = None
+        self.onSaveSession()
 
 
     def onSaveSession(self, evt=None):
@@ -791,29 +801,31 @@ class XASFrame(wx.Frame):
 
         fname = self.last_session_file
         if fname is None:
-            fname = time.strftime('%Y%b%d_%H%M') + '.larix'
+            fname = self.last_session_read
+            if fname is None:
+                fname = time.strftime('%Y%b%d_%H%M') + '.larix'
 
-        _, fname = os.path.split(fname)
-        wcards  = 'Larch Project Files (*.larix)|*.larix|All files (*.*)|*.*'
-        fname = FileSave(self, 'Save Larch Session File',
-                            default_file=fname, wildcard=wcards)
-        if fname is None:
-            return
-
-        if os.path.exists(fname) and uname != 'darwin':  # darwin prompts in FileSave!
-            if wx.ID_YES != Popup(self, "Overwrite existing Project File?",
-                                  "Overwrite existing file?", style=wx.YES_NO):
+            _, fname = os.path.split(fname)
+            wcards  = 'Larch Project Files (*.larix)|*.larix|All files (*.*)|*.*'
+            fname = FileSave(self, 'Save Larch Session File',
+                             default_file=fname, wildcard=wcards)
+            if fname is None:
                 return
+
+            if os.path.exists(fname) and uname != 'darwin':  # darwin prompts in FileSave!
+                if wx.ID_YES != Popup(self, "Overwrite existing Project File?",
+                                      "Overwrite existing file?", style=wx.YES_NO):
+                    return
+
 
         save_session(fname=fname, _larch=self.larch._larch)
         self.init_lastsession.Enable(False)
         stime = time.strftime("%H:%M")
         self.last_save_message = ("Session last saved", f"'{fname}'", f"{stime}")
         self.write_message(f"Saved session to '{fname}' at {stime}")
+        self.last_session_file = self.last_session_read = fname
 
     def onClearSession(self, evt=None):
-
-
         conf = self.controller.get_config('autosave',
                                           {'fileroot': 'session_autosave'})
         afile = os.path.join(user_larchdir, 'xas_viewer',
