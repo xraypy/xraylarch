@@ -219,6 +219,9 @@ class XASController():
             dfile, vers, mtime = dat.pop(0)
             nremove -= 1
 
+    def get_recentfiles(self, max=10):
+        return sorted(self.recentfiles, key=lambda x: x[0], reverse=True)[:max]
+
     def recent_autosave_sessions(self):
         "return list of (timestamp, name) for most recent autosave session files"
         conf = self.get_config('autosave', {})
