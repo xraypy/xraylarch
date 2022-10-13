@@ -114,7 +114,7 @@ CONF_SECTIONS = {k:v for k, v in PANELS.items()}
 CONF_SECTIONS.update({'main': 'Main program configuration',
                       'pin': 'Pin icon to select points from plots',
                       'plot': 'General Plotting',
-                      'autosave': 'Automatic saving of Project files',
+                      'autosave': 'Automatic saving of Session files',
                       })
 
 main = [CVar('chdir_on_fileopen', True, 'bool', desc='whether to change working directory when opening a file'),
@@ -122,9 +122,10 @@ main = [CVar('chdir_on_fileopen', True, 'bool', desc='whether to change working 
         CVar('use_last_workdir', True, 'bool',  desc='whehter to use the working directory of the last session\nor always start in workdir'),
         ]
 
-autosave = [CVar('savetime', 900, 'int', min=1, step=30, desc='time (in sec) between auto-saving Project files'),
-            CVar('nhistory', 5, 'int', min=0, desc='number of auto-saved Project files to keep'),
-            CVar('fileroot', 'session_autosave', 'string', desc='filename prefix for auto-saved Project files')]
+autosave = [CVar('savetime', 900, 'int', min=1, step=30, desc='time (in sec) between auto-saving Session files'),
+            CVar('nhistory',   5, 'int', min=0, desc='number of auto-saved Session files to keep per session'),
+            CVar('maxfiles',  10, 'int', min=0, desc='maximum number of auto-saved Session files to keep from all sessions'),
+            CVar('fileroot', 'autosave', 'string', desc='filename prefix for auto-saved Session files')]
 
 pin = [CVar('style', 'pin first', 'choice', choices=['pin first', 'plot first'],
            desc='whether to click on pin first, then plot or plot first, then pin'),
