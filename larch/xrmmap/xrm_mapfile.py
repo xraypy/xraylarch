@@ -3291,7 +3291,7 @@ class GSEXRM_MapFile(object):
 
         ''
         roi_names = [i.lower().strip() for i in self.xrmmap['config/rois/name']]
-        if name.lower().strip() in roi_name:
+        if name.lower().strip() in roi_names:
             if overwrite:
                 self.del_roi(name)
             else:
