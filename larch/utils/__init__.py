@@ -14,7 +14,7 @@ from .debugtime import debugtime, debugtimer
 
 from .strutils import (fixName, isValidName, isNumber, bytes2str, str2bytes,
                        fix_varname, isLiteralStr, strip_comments, asfloat,
-                       find_delims, version_ge, unique_name)
+                       find_delims, version_ge, unique_name, get_sessionid)
 
 from .shellutils import (_copy, _deepcopy, _more, _parent,
                          _ls, _cd, _cwd, _mkdir)

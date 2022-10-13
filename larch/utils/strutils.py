@@ -5,8 +5,10 @@ utilities for larch
 from __future__ import print_function
 import re
 import sys
-from base64 import b64encode, b32encode
+import os
+import uuid
 import hashlib
+from base64 import b64encode, b32encode
 import random
 from distutils.version import StrictVersion
 
@@ -245,6 +247,14 @@ def b64hash(s):
     _hash = hashlib.sha256()
     _hash.update(str2bytes(s))
     return bytes2str(b64encode(_hash.digest()))
+
+def get_sessionid():
+    """get 8 character string encoding machine name and process id"""
+    _hash = hashlib.sha256()
+    _hash.update(f"{uuid.getnode():d} {os.getpid():d}".encode('ASCII'))
+    out = b64encode(_hash.digest()).decode('ASCII')[3:11]
+    return out.replace('/', '-').replace('+', '=')
+
 
 def file2groupname(filename, slen=5, symtable=None):
     """create a group name based of filename
