@@ -1,6 +1,8 @@
 import os
 import copy
 import time
+import shutil
+from glob import glob
 import numpy as np
 from copy import deepcopy
 
@@ -8,9 +10,10 @@ import wx
 
 import larch
 from larch.larchlib import read_config, save_config
-from larch.utils import group2dict, unique_name, fix_varname, get_cwd, asfloat
+from larch.utils import (group2dict, unique_name, fix_varname, get_cwd,
+                         asfloat, get_sessionid)
 from larch.wxlib.plotter import last_cursor_pos
-from larch.io import fix_varname
+from larch.io import fix_varname, save_session
 from larch.site_config import home_dir, user_larchdir
 
 from .config import XASCONF, CONF_FILE
@@ -26,7 +29,7 @@ class XASController():
         self.groupname = None
         self.plot_erange = None
         self.report_frame = None
-
+        self.recentfiles = []
         self.larch = _larch
         if _larch is None:
             self.larch = larch.Interpreter()
@@ -64,6 +67,8 @@ class XASController():
 
         self.config = self.larch.symtable._sys.xasviewer_config = config
         self.larch.symtable._sys.wx.plotopts = config['plot']
+        self.clean_autosave_sessions()
+
 
     def sync_xasgroups(self):
         "make sure `_xasgroups` is identical to file_groups"
@@ -106,7 +111,7 @@ class XASController():
         self.config['main']['workdir'] = get_cwd()
 
     def save_workdir(self):
-        """save last workdir"""
+        """save last workdir and recent session files"""
         xasv_folder = os.path.join(user_larchdir, 'xas_viewer')
         if os.path.exists(xasv_folder):
             try:
@@ -115,8 +120,23 @@ class XASController():
             except:
                 pass
 
+            buffer = []
+            rfiles = []
+            for tstamp, fname in sorted(self.recentfiles, key=lambda x: x[0], reverse=True)[:10]:
+                if fname not in rfiles:
+                    buffer.append(f"{tstamp:.1f} {fname:s}")
+                    rfiles.append(fname)
+            buffer.append('')
+            buffer = '\n'.join(buffer)
+
+            try:
+                with open(os.path.join(xasv_folder, 'recent_sessions.txt'), 'w') as fh:
+                    fh.write(buffer)
+            except:
+                pass
+
     def init_workdir(self):
-        """set initial working folder"""
+        """set initial working folder, read recent session files"""
         if self.config['main'].get('use_last_workdir', False):
             wfile = os.path.join(user_larchdir, 'xas_viewer', 'workdir.txt')
             if os.path.exists(wfile):
@@ -126,15 +146,101 @@ class XASController():
                         self.config['main']['workdir'] = workdir
                 except:
                     pass
-        try:
-            os.chdir(self.config['main']['workdir'])
-        except:
-            pass
+            try:
+                os.chdir(self.config['main']['workdir'])
+            except:
+                pass
+
+        rfile = os.path.join(user_larchdir, 'xas_viewer', 'recent_sessions.txt')
+        if os.path.exists(rfile):
+            with open(rfile, 'r') as fh:
+                for line in fh.readlines():
+                    if len(line) < 2 or line.startswith('#'):
+                        continue
+                    try:
+                        w = line[:-1].split(' ', maxsplit=1)
+                        self.recentfiles.insert(0, (float(w[0]), w[1]))
+                    except:
+                        pass
+
+
+    def autosave_session(self):
+        conf = self.get_config('autosave', {})
+        fileroot = conf.get('fileroot', 'autosave')
+        nhistory = max(8, int(conf.get('nhistory', 4)))
+
+        fname =  f"{fileroot:s}_{get_sessionid():s}.larix"
+        savefile = os.path.join(user_larchdir, 'xas_viewer', fname)
+        for i in reversed(range(1, nhistory)):
+            curf = savefile.replace('.larix', f'_{i:d}.larix' )
+            if os.path.exists(curf):
+                newf = savefile.replace('.larix', f'_{i+1:d}.larix' )
+                shutil.move(curf, newf)
+        if os.path.exists(savefile):
+            curf = savefile.replace('.larix', '_1.larix' )
+            shutil.move(savefile, curf)
+        save_session(savefile, _larch=self.larch)
+        return savefile
+
+    def clean_autosave_sessions(self):
+        conf = self.get_config('autosave', {})
+        fileroot = conf.get('fileroot', 'autosave')
+        max_hist = int(conf.get('maxfiles', 10))
+
+        xasv_dir = os.path.join(user_larchdir, 'xas_viewer')
+        def get_autosavefiles():
+            dat = []
+            for afile in os.listdir(xasv_dir):
+                ffile = os.path.join(xasv_dir, afile)
+                if afile.endswith('.larix'):
+                    mtime = os.stat(ffile).st_mtime
+                    words = afile.replace('.larix', '').split('_')
+                    try:
+                        version = int(words[-1])
+                        words.pop()
+                    except:
+                        version = 0
+                    dat.append((ffile, version, mtime))
+            return sorted(dat, key=lambda x: x[2])
+
+        dat = get_autosavefiles()
+        nremove = max(0, len(dat) - max_hist)
+        # first remove oldest "version > 0" files
+        while nremove > 0:
+            dfile, version, mtime = dat.pop(0)
+            if version > 0:
+                os.unlink(dfile)
+                nremove -= 1
+
+        dat = get_autosavefiles()
+        nremove = max(0, len(dat) - max_hist)
+        # then remove the oldest "version 0" files
+        while nremove > 0:
+            dfile, vers, mtime = dat.pop(0)
+            nremove -= 1
+
+    def recent_autosave_sessions(self):
+        "return list of (timestamp, name) for most recent autosave session files"
+        conf = self.get_config('autosave', {})
+        fileroot = conf.get('fileroot', 'autosave')
+        max_hist = int(conf.get('maxfiles', 10))
+        xasv_dir = os.path.join(user_larchdir, 'xas_viewer')
+
+        flist = []
+        for afile in os.listdir(xasv_dir):
+            ffile = os.path.join(xasv_dir, afile)
+            if ffile.endswith('.larix'):
+                mtime = os.stat(ffile).st_mtime
+                flist.append((os.stat(ffile).st_mtime, ffile))
+
+        return sorted(flist, key=lambda x: x[0], reverse=True)[:max_hist]
+
 
     def clear_session(self):
         self.larch.eval("clear_session()")
         self.filelist.Clear()
         self.init_larch_session()
+
 
     def write_message(self, msg, panel=0):
         """write a message to the Status Bar"""
