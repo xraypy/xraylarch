@@ -130,6 +130,37 @@ def isotime(t=None, with_tzone=False, filename=False):
         sout = sout.replace(' ', '_').replace(':', '')
     return sout
 
+def time_ago(timestamp, precision=2):
+    """
+    give a human-readable 'time ago' from the timestamp.
+
+    The output gives day, hours, minutes, seconds:
+       52 days, 1 hour
+
+    the `precision` field gives the number of significant time units to
+    show.  This defaults to 2:
+       'N days, H hours',
+       'N hours, M minutes'
+    """
+    def format(x, unit):
+        return "%d %s%s" % (x, unit, "s" if x > 1 else "")
+
+    tdiff = datetime.now() - datetime.fromtimestamp(timestamp)
+    days = tdiff.days
+    hours = tdiff.seconds//3600
+    minutes = tdiff.seconds%3600//60
+    seconds = tdiff.seconds%3600%60
+
+    out = []
+    if days > 0:
+        out.append(format(days, "day"))
+    if hours > 0:
+        out.append(format(hours, "hour"))
+    if minutes > 0:
+        out.append(format(minutes, "minute"))
+    out.append(format(seconds, "second"))
+    return ", ".join(out[:precision])
+
 def json_dump(data, filename):
     """
     dump object or group to file using json
