@@ -6,7 +6,6 @@ import os
 import sys
 import time
 import copy
-import shutil
 import platform
 from threading import Thread
 import numpy as np
@@ -27,7 +26,7 @@ import larch
 from larch import Group, Journal, Entry
 from larch.io import save_session, read_session
 from larch.math import index_of
-from larch.utils import isotime, get_cwd, is_gzip, uname
+from larch.utils import isotime, time_ago, get_cwd, is_gzip, uname
 from larch.utils.strutils import (file2groupname, unique_name,
                                   common_startstring, asfloat)
 
@@ -490,23 +489,28 @@ class XASFrame(wx.Frame):
 
         # autosaved session
         conf = self.controller.get_config('autosave',
-                                          {'fileroot': 'session_autosave'})
+                                          {'fileroot': 'autosave'})
         froot= conf['fileroot']
-        last_fname = os.path.join(user_larchdir, 'xas_viewer', f"{froot}.larix")
-        last_exists = os.path.exists(last_fname)
-        last_tstamp = 'No file found'
-        if last_exists:
-            ttuple = time.localtime(os.stat(last_fname).st_mtime)
-            last_tstamp = 'saved %s' % time.strftime("%Y-%m-%d %H:%M:%S", ttuple)
-        ilast = MenuItem(self, fmenu, "Restore Last Auto-saved Larch Session\tCtrl+I",
-                         f"Restore Auto-Saved Session ({last_tstamp})",
-                         self.onLoadLastSession)
 
-        ilast.Enable(os.path.exists(last_fname))
-        self.init_lastsession = ilast
+        recent_menu = wx.Menu()
+        for tstamp, fname in self.controller.get_recentfiles():
+            MenuItem(self, recent_menu,
+                     "%s [%s ago]" % (fname, time_ago(tstamp)),
+                     f"file saved {isotime(tstamp)}",
+                     partial(self.onLoadSession, path=fname))
 
-        # MenuItem(self, fmenu, "&Auto-Save Larch Session\tCtrl+A",
-        #          f"Save Session now to {last_fname}",  self.autosave_session)
+        recent_menu.AppendSeparator()
+        for tstamp, fname in self.controller.recent_autosave_sessions():
+            MenuItem(self, recent_menu,
+                     "%s [%s ago]" % (fname, time_ago(tstamp)),
+                     f"file saved {isotime(tstamp)}",
+                     partial(self.onLoadSession, path=fname))
+
+        fmenu.Append(-1, 'Recent Session Files',  recent_menu)
+
+
+        MenuItem(self, fmenu, "&Auto-Save Larch Session",
+                 f"Save Session now",  self.autosave_session)
         fmenu.AppendSeparator()
 
         MenuItem(self, fmenu, "Save Selected Groups to Athena Project File",
@@ -742,7 +746,7 @@ class XASFrame(wx.Frame):
 
     def onLoadLastSession(self, event=None):
         conf = self.controller.get_config('autosave',
-                                          {'fileroot': 'session_autosave'})
+                                          {'fileroot': 'autosave'})
         froot = conf['fileroot']
         path = os.path.join(user_larchdir, 'xas_viewer', f"{froot}.larix")
 
@@ -770,6 +774,12 @@ class XASFrame(wx.Frame):
             path = FileOpen(self, message="Load Larch Session",
                             wildcard=wildcard, default_file='larch.larix')
         if path is None:
+            return
+
+        if is_athena_project(path):
+            self.show_subframe('athena_import', AthenaImporter,
+                               controller=self.controller, filename=path,
+                               read_ok_cb=self.onReadAthenaProject_OK)
             return
 
         try:
@@ -817,9 +827,7 @@ class XASFrame(wx.Frame):
                                       "Overwrite existing file?", style=wx.YES_NO):
                     return
 
-
         save_session(fname=fname, _larch=self.larch._larch)
-        self.init_lastsession.Enable(False)
         stime = time.strftime("%H:%M")
         self.last_save_message = ("Session last saved", f"'{fname}'", f"{stime}")
         self.write_message(f"Saved session to '{fname}' at {stime}")
@@ -827,7 +835,7 @@ class XASFrame(wx.Frame):
 
     def onClearSession(self, evt=None):
         conf = self.controller.get_config('autosave',
-                                          {'fileroot': 'session_autosave'})
+                                          {'fileroot': 'autosave'})
         afile = os.path.join(user_larchdir, 'xas_viewer',
                              conf['fileroot']+'.larix')
 
@@ -1343,6 +1351,7 @@ before clearing"""
         self.write_message("read %d datasets from %s" % (len(namelist), path))
         self.last_athena_file = path
         self.controller.sync_xasgroups()
+        self.controller.recentfiles.append((time.time(), path))
 
     def onRead_OK(self, script, path, groupname=None, filename=None,
                   ref_groupname=None, ref_filename=None,
@@ -1519,40 +1528,23 @@ before clearing"""
         """autosave session periodically, using autosave_config settings
         and avoiding saving sessions while program is inactive.
         """
-        conf = self.controller.get_config('autosave',
-                                          {'savetime': 900,
-                                           'fileroot': 'session_autosave',
-                                           'nhistory': 3})
+        conf = self.controller.get_config('autosave', {})
+        savetime = conf.get('savetime', 600)
         symtab = self.larch.symtable
-        if (time.time() > self.last_autosave + conf['savetime'] and
+        if (time.time() > self.last_autosave + savetime and
             symtab._sys.last_eval_time > (self.last_autosave+60) and
             len(symtab._xasgroups) > 0):
             self.autosave_session()
 
     def autosave_session(self, event=None):
         """autosave session now"""
-        conf = self.controller.get_config('autosave',
-                                          {'savetime': 900,
-                                           'fileroot': 'session_autosave',
-                                           'nhistory': 3})
-
-        savefile = os.path.join(user_larchdir, 'xas_viewer',
-                                conf['fileroot']+'.larix')
-        for i in reversed(range(1, int(conf['nhistory']))):
-            curf = savefile.replace('.larix', f'_{i:d}.larix' )
-            if os.path.exists(curf):
-                newf = savefile.replace('.larix', f'_{i+1:d}.larix' )
-                shutil.move(curf, newf)
-        if os.path.exists(savefile):
-            curf = savefile.replace('.larix', f'_1.larix' )
-            shutil.move(savefile, curf)
-
+        savefile = self.controller.autosave_session()
+        # save_session(savefile, _larch=self.larch._larch)
         self.last_autosave = time.time()
-        save_session(savefile, _larch=self.larch._larch)
         stime = time.strftime("%H:%M")
         self.last_save_message = ("Session last saved", f"'{savefile}'", f"{stime}")
         self.write_message(f"Session saved to '{savefile}' at {stime}")
-        self.init_lastsession.Enable(False)
+
 
     ## float-spin / pin timer events
     def onPinTimer(self, event=None):
