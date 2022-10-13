@@ -1,6 +1,7 @@
 import sys
 import os
 import copy
+import time
 from collections import namedtuple
 from functools import partial
 import numpy as np
@@ -1696,7 +1697,7 @@ class ExportCSVDialog(wx.Dialog):
 
 
         panel.Add(self.save_individual_files, newrow=True)
-        
+
         panel.Add(SimpleText(panel, 'Group for Energy Array: '), newrow=True)
         panel.Add(self.master_group)
 
@@ -2112,6 +2113,8 @@ class LoadSessionDialog(wx.Frame):
         cmds.append("##########")
         self.controller.larch.eval('\n'.join(cmds))
         self.controller.sync_xasgroups()
+        self.controller.recentfiles.append((time.time(), self.filename))
+
 
         wx.CallAfter(self.Destroy)
         if last_fname is not None:
