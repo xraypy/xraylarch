@@ -59,9 +59,9 @@ CifPublication = namedtuple('CifPublication', ('id', 'journalname', 'year',
 
 
 _CIFDB = None
-AMSCIF_FULL = 'amscif_full.db'
-AMSCIF_TRIM = 'amscif_trim.db'
-SOURCE_URLS = ('https://docs.xrayabsorption.org/',
+AMSCIF_FULL = 'amcsd_cif2.db'
+AMSCIF_TRIM = 'amcsd_cif1.db'
+gSOURCE_URLS = ('https://docs.xrayabsorption.org/databases/',
                'https://millenia.cars.aps.anl.gov/xraylarch/downloads/')
 
 def get_nonzero(thing):
@@ -255,6 +255,7 @@ class CifStructure():
             for i, line in enumerate(self.pub_title.split('\n')):
                 titles.append(f'Title{i+1:d}: {line}')
 
+        print(" get feffinp -> " )
         return cif2feffinp(self.ciftext, absorber, edge=edge,
                            cluster_size=cluster_size, with_h=with_h,
                            absorber_site=absorber_site,
@@ -311,10 +312,9 @@ class AMSCIFDB():
         else:
             self.session = sessionmaker(bind=self.engine)()
 
-        self.metadata = MetaData(self.engine)
-        self.metadata.reflect()
+        self.metadata = MetaData()
+        self.metadata.reflect(self.engine)
         self.tables = self.metadata.tables
-        elems = self.tables['elements'].select().execute()
         self.cif_elems = None
 
     def close(self):
@@ -325,6 +325,9 @@ class AMSCIFDB():
     def query(self, *args, **kws):
         "generic query"
         return self.session.query(*args, **kws)
+
+    def execall(self, query):
+        return self.session.execute(query).fetchall()
 
     def get_version(self, long=False, with_history=False):
         """
@@ -338,7 +341,7 @@ class AMSCIFDB():
             string: version information
         """
         out = []
-        rows = self.tables['Version'].select().execute().fetchall()
+        rows = self.execall(self.tables['version'].select())
         if not with_history:
             rows = rows[-1:]
         if long or with_history:
@@ -346,6 +349,8 @@ class AMSCIFDB():
                 out.append(f"AMSCIF DB Version: {row.tag} [{row.date}] '{row.notes}'")
             out.append(f"Python Version: {__version__}")
             out = "\n".join(out)
+        elif row is None:
+            out = f"AMSCIF DB Version: unknown, Python Version: {__version__}"
         else:
             out = f"AMSCIF DB Version: {rows[0].tag}, Python Version: {__version__}"
         return out
@@ -610,6 +615,34 @@ class AMSCIFDB():
             else:
                 cif_id = self.next_cif_id()
 
+        print("Would Add Cif Data !" )
+        print(cif_id, mineral.id, pub.id, sgroup.id,
+              formula)
+        print(compound,
+              dat.get('_amcsd_formula_title', '<missing>'),
+              dat.get('_publ_section_title', '<missing>'),
+              json.dumps(dat['_atom_site_label']))
+        print(put_optarray(dat, '_atom_site_fract_x'),
+              put_optarray(dat, '_atom_site_fract_y'),
+              put_optarray(dat, '_atom_site_fract_z'),
+              put_optarray(dat, '_atom_site_occupancy'),
+              put_optarray(dat, '_atom_site_U_iso_or_equiv'))
+        print( json.dumps(dat.get('_atom_site_aniso_label', '<missing>')))
+        print(put_optarray(dat, '_atom_site_aniso_U_11'),
+              put_optarray(dat, '_atom_site_aniso_U_22'),
+              put_optarray(dat, '_atom_site_aniso_U_33'),
+              put_optarray(dat, '_atom_site_aniso_U_12'),
+              put_optarray(dat, '_atom_site_aniso_U_13'),
+              put_optarray(dat, '_atom_site_aniso_U_23'))
+        print('cell ', dat['_cell_length_a'],
+              dat['_cell_length_b'],
+              dat['_cell_length_c'],
+              dat['_cell_angle_alpha'],
+              dat['_cell_angle_beta'],
+              dat['_cell_angle_gamma'],
+              dat.get('_cell_volume', -1),
+              density,
+              url)
 
         self.add_cifdata(cif_id, mineral.id, pub.id, sgroup.id,
                          formula=formula, compound=compound,

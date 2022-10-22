@@ -82,7 +82,7 @@ QAXIS = np.arange(QMIN, QMAX+QSTEP, QSTEP)
 ENERGY = 19000 ## units eV
 _cifdb = None
 
-def get_cifdb(dbname='amcsd_cif.db', _larch=None):
+def get_cifdb(dbname='amcsd_cif0.db', _larch=None):
     global _cifdb
     if _cifdb is None:
         _cifdb = cifDB(dbname=dbname)
