@@ -43,6 +43,7 @@ from larch.wxlib import (LarchPanel, LarchFrame, EditableListBox, SimpleText,
                          FloatCtrl, Font, pack, Popup, Button, MenuItem,
                          Choice, Check, GridPanel, FileSave, HLine, flatnotebook,
                          HLine, OkCancel, LEFT, LarchUpdaterDialog, LarchWxApp)
+from larch.wxxas.xas_dialogs import fit_dialog_window
 from larch.utils.strutils import bytes2str, version_ge
 from larch.utils import get_cwd
 from larch.io import nativepath
@@ -2309,62 +2310,59 @@ class ROIDialog(wx.Dialog):
     """"""
     #----------------------------------------------------------------------
     def __init__(self, owner, roi_callback=None, **kws):
-
         """Constructor"""
-        dialog = wx.Dialog.__init__(self, None, title='Add and Delete ROIs',
-                                    size=(450, 350))
-
-        panel = wx.Panel(self)
+        print("ROI Dialog owner ", owner)
+        wx.Dialog.__init__(self, owner, wx.ID_ANY, title='Add and Delete ROIs',
+                           size=(450, 350))
 
         self.owner = owner
         self.roi_callback = roi_callback
         self.Bind(wx.EVT_CLOSE,  self.onClose)
 
-        self.gp = GridPanel(panel, nrows=8, ncols=4, itemstyle=LEFT, gap=3, **kws)
+        self.gp = gp = GridPanel(self, nrows=8, ncols=4, itemstyle=LEFT, gap=3, **kws)
 
-        self.roi_name =  wx.TextCtrl(self, -1, 'ROI_001',  size=(120, -1))
+        self.roi_name =  wx.TextCtrl(gp, -1, 'ROI_001',  size=(120, -1))
         fopts = dict(minval=-1, precision=3, size=(120, -1))
-        self.roi_type = Choice(self, size=(120, -1))
-        self.roi_lims = [FloatCtrl(self, value=0,  **fopts),
-                         FloatCtrl(self, value=-1, **fopts)]
-        self.roi_units = Choice(self, size=(120, -1))
+        self.roi_type = Choice(gp, size=(120, -1))
+        self.roi_lims = [FloatCtrl(gp, value=0,  **fopts),
+                         FloatCtrl(gp, value=-1, **fopts)]
+        self.roi_units = Choice(gp, size=(120, -1))
 
-        self.gp.Add(SimpleText(self, ' Add new ROI: '), dcol=2, style=LEFT)
+        gp.Add(SimpleText(gp, ' Add new ROI: '), dcol=2, style=LEFT)
+        gp.Add(SimpleText(gp, ' Name:'),  newrow=True)
+        gp.Add(self.roi_name, dcol=2)
+        gp.Add(SimpleText(gp, ' Type:'), newrow=True)
+        gp.Add(self.roi_type, dcol=2)
 
-        self.gp.Add(SimpleText(self, ' Name:'),  newrow=True)
-        self.gp.Add(self.roi_name, dcol=2)
-        self.gp.Add(SimpleText(self, ' Type:'), newrow=True)
-        self.gp.Add(self.roi_type, dcol=2)
-
-        self.gp.Add(SimpleText(self, ' Limits:'), newrow=True)
-        self.gp.AddMany((self.roi_lims[0], self.roi_lims[1], self.roi_units),
-                        dcol=1, style=LEFT)
-        self.gp.Add(SimpleText(self, ' '), newrow=True)
-        self.gp.Add(Button(self, 'Add ROI', size=(120, -1), action=self.onCreateROI),
+        gp.Add(SimpleText(gp, ' Limits:'), newrow=True)
+        gp.AddMany((self.roi_lims[0], self.roi_lims[1], self.roi_units),
+                   dcol=1, style=LEFT)
+        gp.Add(SimpleText(gp, ' '), newrow=True)
+        gp.Add(Button(gp, 'Add ROI', size=(120, -1), action=self.onCreateROI),
                     dcol=2)
 
         ###############################################################################
 
-        self.rm_roi_name = Choice(self, size=(120, -1))
-        self.rm_roi_det = Choice(self, size=(120, -1))
+        self.rm_roi_name = Choice(gp, size=(120, -1))
+        self.rm_roi_det = Choice(gp, size=(120, -1))
         fopts = dict(minval=-1, precision=3, size=(100, -1))
-        self.gp.Add(SimpleText(self, ''),newrow=True)
-        self.gp.Add(HLine(self, size=(350, 4)), dcol=4, newrow=True)
-        self.gp.Add(SimpleText(self, ''),newrow=True)
+        gp.Add(SimpleText(gp, ''),newrow=True)
+        gp.Add(HLine(gp, size=(350, 4)), dcol=4, newrow=True)
+        gp.Add(SimpleText(gp, ''),newrow=True)
+        gp.Add(SimpleText(gp, 'Delete ROI: '), dcol=2, newrow=True)
 
-        self.gp.Add(SimpleText(self, 'Delete ROI: '), dcol=2, newrow=True)
+        gp.AddMany((SimpleText(gp, 'Detector:'),self.rm_roi_det),  newrow=True)
+        gp.AddMany((SimpleText(gp, 'ROI:'),self.rm_roi_name), newrow=True)
 
-        self.gp.AddMany((SimpleText(self, 'Detector:'),self.rm_roi_det),  newrow=True)
-        self.gp.AddMany((SimpleText(self, 'ROI:'),self.rm_roi_name), newrow=True)
-
-        self.gp.Add(SimpleText(self, ''), newrow=True)
-        self.gp.Add(Button(self, 'Remove This ROI', size=(120, -1), action=self.onRemoveROI),
+        gp.Add(SimpleText(gp, ''), newrow=True)
+        gp.Add(Button(gp, 'Remove This ROI', size=(120, -1), action=self.onRemoveROI),
                     dcol=2)
 
         self.roi_type.Bind(wx.EVT_CHOICE, self.roiUNITS)
         self.rm_roi_name.Bind(wx.EVT_CHOICE, self.roiSELECT)
 
-        self.gp.pack()
+        gp.pack()
+        fit_dialog_window(self, gp)
         self.owner.current_file.reset_flags()
         self.roiTYPE()
 
@@ -2456,8 +2454,8 @@ class OpenMapFolder(wx.Dialog):
         self.folder = folder
         pref, f = os.path.split(folder)
         title = "Read XRM Map Folder: %s" % f
-        dialog = wx.Dialog.__init__(self, None,
-                                    title=title, size=(475, 750))
+        wx.Dialog.__init__(self, None,
+                           title=title, size=(475, 750))
 
 
         panel = wx.Panel(self)
