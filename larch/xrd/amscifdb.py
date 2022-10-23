@@ -59,9 +59,9 @@ CifPublication = namedtuple('CifPublication', ('id', 'journalname', 'year',
 
 
 _CIFDB = None
-AMSCIF_FULL = 'amcsd_cif2.db'
 AMSCIF_TRIM = 'amcsd_cif1.db'
-gSOURCE_URLS = ('https://docs.xrayabsorption.org/databases/',
+AMSCIF_FULL = 'amcsd_cif2.db'
+SOURCE_URLS = ('https://docs.xrayabsorption.org/databases/',
                'https://millenia.cars.aps.anl.gov/xraylarch/downloads/')
 
 def get_nonzero(thing):
@@ -329,6 +329,16 @@ class AMSCIFDB():
     def execall(self, query):
         return self.session.execute(query).fetchall()
 
+    def execone(self, query):
+        results = self.session.execute(query).fetchone()
+        if results is None or len(results) < 1:
+            return None
+        return results
+
+    def get_all(self, tablename):
+        return self.execall(self.tables[tablename].select())
+
+
     def get_version(self, long=False, with_history=False):
         """
         return sqlite3 database and python library version numbers
@@ -341,7 +351,7 @@ class AMSCIFDB():
             string: version information
         """
         out = []
-        rows = self.execall(self.tables['version'].select())
+        rows = self.get_all('version')
         if not with_history:
             rows = rows[-1:]
         if long or with_history:
@@ -359,12 +369,12 @@ class AMSCIFDB():
         tab = self.tables[table]
         if '"' in name:
             name = name.replace('"', '\"')
-        rows = tab.select(tab.c.name==name).execute().fetchall()
+        rows = self.execall(tab.select(tab.c.name==name))
         if len(rows) == 0:
             if not add:
                 return None
             tab.insert().execute(name=name)
-            rows = tab.select(tab.c.name==name).execute().fetchall()
+            rows = self.execall(tab.select(tab.c.name==name))
         return rows[0]
 
 
@@ -372,7 +382,7 @@ class AMSCIFDB():
         """get row from spacegroups table by HM notation.  See add_spacegroup()
         """
         tab = self.tables['spacegroups']
-        rows = tab.select(tab.c.hm_notation==hm_name).execute().fetchall()
+        rows = self.execall(tab.select(tab.c.hm_notation==hm_name))
         if len(rows) >0:
             return rows[0]
         return None
@@ -413,7 +423,7 @@ class AMSCIFDB():
         if id is not None:
             args.append(tab.c.id==id)
 
-        rows = tab.select(and_(*args)).execute().fetchall()
+        rows = self.execall(tab.select(and_(*args)))
         if len(rows) > 0:
             out = []
             authtab = self.tables['authors']
@@ -421,7 +431,7 @@ class AMSCIFDB():
             for row in rows:
                 q = select(authtab.c.name).where(and_(authtab.c.id==patab.c.author_id,
                                                       patab.c.publication_id==row.id))
-                authors = tuple([i[0] for i in self.conn.execute(q).fetchall()])
+                authors = tuple([i[0] for i in self.execall(q)])
                 out.append(CifPublication(row.id, row.journalname, row.year,
                                           row.volume, row.page_first,
                                           row.page_last, authors))
@@ -607,7 +617,7 @@ class AMSCIFDB():
 
         # check again for this cif id (must match CIF AMS id and formula
         tabcif = self.tables['cif']
-        this = select(tabcif.c.id, tabcif.c.formula).where(tabcif.c.id==int(cif_id)).execute().fetchone()
+        this = self.execone(select(tabcif.c.id, tabcif.c.formula).where(tabcif.c.id==int(cif_id)))
         if this is not None:
             _cid, _formula = this
             if formula.replace(' ', '') == _formula.replace(' ', ''):
@@ -675,7 +685,7 @@ class AMSCIFDB():
     def get_cif(self, cif_id, as_strings=False):
         """get Cif Structure object """
         tab = self.tables['cif']
-        cif = tab.select(tab.c.id==cif_id).execute().fetchone()
+        cif = self.execone(tab.select(tab.c.id==cif_id))
         if cif is None:
             return
 
@@ -684,8 +694,8 @@ class AMSCIFDB():
         tab_pa   = self.tables['publication_authors']
         tab_min  = self.tables['minerals']
         tab_sp   = self.tables['spacegroups']
-        mineral  = tab_min.select(tab_min.c.id==cif.mineral_id).execute().fetchone()
-        sgroup   = tab_sp.select(tab_sp.c.id==cif.spacegroup_id).execute().fetchone()
+        mineral  = self.execone(tab_min.select(tab_min.c.id==cif.mineral_id))
+        sgroup   = self.execone(tab_sp.select(tab_sp.c.id==cif.spacegroup_id))
         hm_symbol = sgroup.hm_notation
         if '%var' in hm_symbol:
             hm_symbol = hm_symbol.split('%var')[0]
@@ -753,7 +763,7 @@ class AMSCIFDB():
         """next available CIF ID > 200000 that is not in current table"""
         max_id = 200_000
         tabcif = self.tables['cif']
-        for row in select(tabcif.c.id).where(tabcif.c.id>200000).execute().fetchall():
+        for row in self.execall(select(tabcif.c.id).where(tabcif.c.id>200000)):
             if row[0] > max_id:
                 max_id = row[0]
         return max_id + 1
@@ -761,21 +771,21 @@ class AMSCIFDB():
 
     def all_minerals(self):
         names = []
-        for row in self.tables['minerals'].select().execute().fetchall():
+        for row in self.get_all('minerals'):
             if row.name not in names:
                 names.append(row.name)
         return names
 
     def all_authors(self):
         names = []
-        for row in self.tables['authors'].select().execute().fetchall():
+        for row in self.get_all('authors'):
             if row.name not in names:
                 names.append(row.name)
         return names
 
     def all_journals(self):
         names = []
-        for row in self.tables['publications'].select().execute().fetchall():
+        for row in self.get_all('publications'):
             if row.journalname not in names:
                 names.append(row.journalname)
         return names
@@ -783,7 +793,7 @@ class AMSCIFDB():
     def get_cif_elems(self):
         if self.cif_elems is None:
             out = {}
-            for row in self.tables['cif_elements'].select().execute().fetchall():
+            for row in self.get_all('cif_elements'):
                 cifid = int(row.cif_id)
                 if cifid not in out:
                     out[cifid] = []
@@ -822,10 +832,10 @@ class AMSCIFDB():
                                                '$' in mineral_name):
             pattern = mineral_name.replace('*', '.*').replace('..*', '.*')
             matches = []
-            for row in self.tables['minerals'].select().execute().fetchall():
+            for row in self.get_all('minerals'):
                 if re.search(pattern, row.name, flags=re.IGNORECASE) is not None:
                     query = select(tabcif.c.id).where(tabcif.c.mineral_id==row.id)
-                    for m in [row[0] for row in query.execute().fetchall()]:
+                    for m in [row[0] for row in self.execall(query)]:
                         if m not in matches:
                            matches.append(m)
 
@@ -833,8 +843,8 @@ class AMSCIFDB():
                 pattern = journal_name.replace('*', '.*').replace('..*', '.*')
                 new_matches = []
                 for c in matches:
-                    pub_id = select(tabcif.c.publication_id).where(tabcif.c.id==c).execute().fetchone()[0]
-                    this_journal = select(tabpub.c.journalname).where(tabpub.c.id==pub_id).execute().fetchone()[0]
+                    pub_id = self.execone(select(tabcif.c.publication_id).where(tabcif.c.id==c))
+                    this_journal = self.execone(select(tabpub.c.journalname).where(tabpub.c.id==pub_id))
                     if re.search(pattern,  this_journal, flags=re.IGNORECASE) is not None:
                         new_matches.append[c]
                 matches = new_matches
@@ -858,7 +868,7 @@ class AMSCIFDB():
             query = select(tabcif.c.id)
             if len(args) > 0:
                 query = select(tabcif.c.id).where(and_(*args))
-            matches = [row[0] for row in self.conn.execute(query).fetchall()]
+            matches = [row[0] for row in self.execall(query)]
             matches = list(set(matches))
         #
         cif_elems = self.get_cif_elems()
@@ -888,7 +898,7 @@ class AMSCIFDB():
         if full_occupancy:
             good = []
             for cif_id in matches:
-                cif = tabcif.select(tabcif.c.id==cif_id).execute().fetchone()
+                cif = self.execone(tabcif.select(tabcif.c.id==cif_id))
                 occ = get_optarray(getattr(cif, 'atoms_occupancy'))
                 if occ in ('0', 0, None):
                     good.append(cif_id)
