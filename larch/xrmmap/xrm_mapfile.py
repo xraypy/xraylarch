@@ -445,7 +445,7 @@ class GSEXRM_MapFile(object):
 
         if not os.access(filename, os.W_OK):
             self.write_access = False
-
+        # print("getFileStatus 1 ", filename, self.write_access)
         # see if file is an H5 file
         try:
             fh = h5py.File(filename, 'r')
@@ -466,6 +466,7 @@ class GSEXRM_MapFile(object):
                     self.status = stat
                     self.root, self.version = root, vers
                     break
+        # print("getFileStatus 2 ", self.status)
         fh.close()
         return
 
@@ -507,9 +508,15 @@ class GSEXRM_MapFile(object):
                 raise GSEXRM_Exception(
                     "'%s' is not a valid GSEXRM HDF5 file" % self.filename)
         self.filename = filename
+        # print("OPEN ", filename, self.write_access, self.h5root)
         if self.h5root is None:
             mode = 'a' if self.write_access else 'r'
-            self.h5root = h5py.File(self.filename, mode)
+            try:
+                self.h5root = h5py.File(self.filename, mode)
+            except PermissionError:
+                self.write_access = False
+                self.h5root = h5py.File(self.filename, 'r')
+                print("Warning : file opened as read only")
         self.xrmmap = self.h5root[root]
         if self.folder is None:
             self.folder = bytes2str(self.xrmmap.attrs.get('Map_Folder',''))
@@ -1934,7 +1941,6 @@ class GSEXRM_MapFile(object):
         if desc is None:
             desc = name
         ds.attrs['description'] = desc
-        # ds.attrs['tomograph']   = tomo
         self.h5root.flush()
         return name
 
