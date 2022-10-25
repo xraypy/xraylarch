@@ -1462,9 +1462,26 @@ class MapViewerFrame(wx.Frame):
         if xrmfile is None:
             xrmfile = self.current_file
 
-        aname = xrmfile.add_area(mask)
-        self.sel_mca = xrmfile.get_mca_area(aname, det=det)
-
+        if xrmfile.write_access:
+            aname = xrmfile.add_area(mask)
+            self.sel_mca = xrmfile.get_mca_area(aname, det=det)
+        else:
+            dgroup = xrmfile.get_detname(det)
+            _ay, _ax = np.where(mask)
+            ymin, ymax, xmin, xmax = _ay.min(), _ay.max()+1, _ax.min(), _ax.max()+1
+            opts = {'dtcorrect': None, 'det': det}
+            counts = xrmfile.get_counts_rect(ymin, ymax, xmin, xmax, det=det)
+            ltime, rtime = xrmfile.get_livereal_rect(ymin, ymax, xmin,
+                                                      xmax, det=det)
+            ltime = ltime[mask[ymin:ymax, xmin:xmax]].sum()
+            rtime = rtime[mask[ymin:ymax, xmin:xmax]].sum()
+            counts = counts[mask[ymin:ymax, xmin:xmax]]
+            while(len(counts.shape) > 1):
+                counts = counts.sum(axis=0)
+            self.sel_mca = xrmfile._getmca(dgroup, counts, 'selected area',
+                                           npixels=mask.sum(),
+                                           real_time=rtime, live_time=ltime)
+            
 
     def lassoHandler(self, mask=None, xrmfile=None, xoff=0, yoff=0,
                      det=None, **kws):
@@ -1498,11 +1515,18 @@ class MapViewerFrame(wx.Frame):
         if hasattr(self, 'sel_mca'):
             path, fname = os.path.split(xrmfile.filename)
             aname = self.sel_mca.areaname
-            area  = xrmfile.xrmmap['areas/%s' % aname]
-            npix  = area[()].sum()
+            if self.sel_mca.npixels is None:
+                try:
+                    area  = xrmfile.xrmmap['areas/%s' % aname]
+                    npix  = area[()].sum()
+                    self.sel_mca.npixels = npix                    
+                except:
+                    pass
+                
+            if self.sel_mca.npixels is None:
+                self.sel_mca.npixels = 0
             self.sel_mca.filename = fname
             self.sel_mca.title = aname
-            self.sel_mca.npixels = npix
             self.xrfdisplay.add_mca(self.sel_mca, label='%s:%s'% (fname, aname),
                                     plot=True)
             self.xrfdisplay.roi_callback = self.UpdateROI
