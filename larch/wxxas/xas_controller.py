@@ -206,7 +206,7 @@ class XASController():
         dat = get_autosavefiles()
         nremove = max(0, len(dat) - max_hist)
         # first remove oldest "version > 0" files
-        while nremove > 0:
+        while nremove > 0 and len(dat) > 0:
             dfile, version, mtime = dat.pop(0)
             if version > 0:
                 os.unlink(dfile)
@@ -215,7 +215,7 @@ class XASController():
         dat = get_autosavefiles()
         nremove = max(0, len(dat) - max_hist)
         # then remove the oldest "version 0" files
-        while nremove > 0:
+        while nremove > 0 and len(dat) > 0:
             dfile, vers, mtime = dat.pop(0)
             nremove -= 1
 
