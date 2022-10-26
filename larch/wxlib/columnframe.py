@@ -759,14 +759,12 @@ class ColumnDataFileFrame(wx.Frame) :
             yerr_expr = 'sqrt(%s.ydat)'
         self.expressions['yerr'] = yerr_expr
 
-
         # generate script to pass back to calling program:
         read_cmd = "%s('{path}', labels='%s')" % (self.reader,
                                                   ', '.join(self.orig_labels))
         buff = ["{group} = %s" % read_cmd,
                 "{group}.path = '{path}'",
                 "{group}.is_frozen = False"]
-
 
         for label, selection in self.extra_sums.items():
             buff.append("{group}.array_labels.append('%s')" % label)
@@ -778,7 +776,6 @@ class ColumnDataFileFrame(wx.Frame) :
         for attr in ('datatype', 'plot_xlabel', 'plot_ylabel'):
             val = getattr(self.workgroup, attr)
             buff.append("{group}.%s = '%s'" % (attr, val))
-
 
         expr = self.expressions['xdat'].replace('%s', '{group:s}')
         if en_units.startswith('deg'):
@@ -807,7 +804,6 @@ class ColumnDataFileFrame(wx.Frame) :
         array_desc['ydat'] = self.workgroup.plot_ylabel
         array_desc['yerr'] = self.expressions['yerr'].replace('%s', '{group:s}')
 
-
         ref_filename = None
         ref_groupname = None
         if self.has_yref.IsChecked():
@@ -820,19 +816,21 @@ class ColumnDataFileFrame(wx.Frame) :
 
             ref_filename = self.wid_reffilename.GetValue()
             ref_groupname = fix_varname(self.wid_refgroupname.GetValue())
-
-            buff.append("# reference group")
+            
+            buff.append("# reference group")           
             buff.append("{refgroup} = %s" % read_cmd)
             buff.append("{refgroup}.path = '{path}'")
             buff.append("{refgroup}.is_frozen = False")
             buff.append("{refgroup}.datatype = 'xas'")
             buff.append("{refgroup}.plot_xlabel = 'energy'")
-            buff.append("{refgroup}.plot_ylabel = '%s'" % self.workgroup.yref_label)
+            buff.append("{refgroup}.plot_ylabel = '%s'" % self.workgroup.yrlabel)
             buff.append("{refgroup}.xdat =1.0*{group}.xdat")
             buff.append("{refgroup}.energy = {refgroup}.xdat")
 
-            refexpr = self.expressions['yref'].replace('%s', '{group:s}')
-            array_desc['yref'] = refexpr
+            # refexpr = self.expressions['yref'].replace('%s', '{group:s}')
+            # print("REF EXPR ", self.expressions['yref'], refexpr, self.workgroup.yrlabel)
+            array_desc['yref'] = self.workgroup.yrlabel
+
             buff.append("{group}.energy_ref = '%s'" % (ref_groupname))
             buff.append("{refgroup}.energy_ref = '%s'" % (ref_groupname))
             buff.append("{refgroup}.ydat =  %s" % refexpr)
@@ -1122,7 +1120,7 @@ class ColumnDataFileFrame(wx.Frame) :
             yrsuf, yprop, workgroup.yref = pre_op(self.yrpop, workgroup.yref)
             exprs['yref'] = '%s%s%s' % (yrpop, exprs['yref'], yrsuf)
             yrlabel = '%s%s%s' % (yrpop, yrlabel, yrsuf)
-            workgroup.yref_label = yrlabel
+            workgroup.yrlabel = yrlabel
 
         self.expressions = exprs
         self.array_sel = dict(xarr=xname, ypop=ypop, yop=yop, yarr1=yname1,
