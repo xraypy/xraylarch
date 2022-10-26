@@ -833,7 +833,7 @@ class ColumnDataFileFrame(wx.Frame) :
 
             buff.append("{group}.energy_ref = '%s'" % (ref_groupname))
             buff.append("{refgroup}.energy_ref = '%s'" % (ref_groupname))
-            buff.append("{refgroup}.ydat =  %s" % refexpr)
+            buff.append("{refgroup}.ydat =  %s" % self.workgroup.yrlabel)
             buff.append("{refgroup}.mu = {refgroup}.ydat")
             buff.append("sort_xafs({refgroup}, overwrite=True, fix_repeats=True)")
             buff.append("# end reference group")
