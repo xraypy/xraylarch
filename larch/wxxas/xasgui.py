@@ -1364,7 +1364,7 @@ before clearing"""
             return
         if array_desc is None:
             array_desc = {}
-
+        # print("ON READ OK ", array_desc)
         abort_read = False
         filedir, spath = os.path.split(path)
         if filename is None:
@@ -1403,7 +1403,7 @@ before clearing"""
             self.install_group(ref_groupname, ref_filename,
                                overwrite=overwrite,
                                extra_sums=extra_sums,
-                               source=path, journal=journal)
+                               source=path, journal=refjournal)
 
         # check if rebin is needed
         thisgroup = getattr(self.larch.symtable, groupname)
@@ -1456,9 +1456,9 @@ before clearing"""
                 if 'yref' in array_desc:
                     refjournal['ydat'] = ydx = array_desc['yref'].format(group=ref_gname)
                     refjournal['source_desc'] = f'{spath:s}: {ydx:s}'
-                self.install_group(ref_gname, ref_fname, overwrite=overwrite,
-                               source=path, journal=ref_journal)
 
+                self.install_group(ref_gname, ref_fname, overwrite=overwrite,
+                               source=path, journal=refjournal)
 
         self.write_message("read %s" % (spath))
         if do_rebin:
