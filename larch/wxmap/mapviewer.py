@@ -870,13 +870,13 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         self.report = None
         rep = self.report = dv.DataViewListCtrl(self, style=DVSTY)
-        rep.AppendTextColumn('ROI ',     width=100)
-        rep.AppendTextColumn('Min',      width=75)
-        rep.AppendTextColumn('Max',      width=75)
-        rep.AppendTextColumn('Mean ',    width=75)
-        rep.AppendTextColumn('Sigma',    width=75)
-        rep.AppendTextColumn('Median',   width=75)
-        rep.AppendTextColumn('Mode',     width=75)
+        rep.AppendTextColumn('ROI ',     width=150)
+        rep.AppendTextColumn('Min',      width=90)
+        rep.AppendTextColumn('Max',      width=90)
+        rep.AppendTextColumn('Mean ',    width=90)
+        rep.AppendTextColumn('Sigma',    width=90)
+        rep.AppendTextColumn('Median',   width=90)
+        rep.AppendTextColumn('Mode',     width=90)
         for col in range(7):
             align = wx.ALIGN_RIGHT
             if col == 0: align = wx.ALIGN_LEFT
@@ -884,7 +884,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             rep.Columns[col].Renderer.Alignment = align
             rep.Columns[col].Alignment = align
 
-        rep.SetMinSize((590, 300))
+        rep.SetMinSize((800, 300))
         msizer.Add(rep, 1, wx.ALIGN_LEFT|wx.ALL, 1)
 
         pack(self, msizer)
@@ -950,7 +950,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         if version_ge(version, '2.0.0'):
             d_pref = 'mca'
             d_scas = [d for d in xrmmap['scalars']]
-            detnames = ["%s%i" % (d_pref, i) for i in range(1, xrmfile.nmca+1)]
+            det_list = xrmfile.get_detector_list()
+            detnames = [x for x in det_list if d_pref in x]
             d_rois = xrmfile.get_roi_list(detnames[0])
 
         else:
@@ -958,12 +959,12 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             d_names = [d for d in xrmmap['roimap/det_name']]
             d_pref = 'det'
 
-
-        for i in range(1, xrmfile.nmca+1):
-            tname = '%s%i/realtime' % (d_pref, i)
-            rtime = xrmmap[tname][()]
-            if amask.shape[1] == rtime.shape[1] - 2: # hotcols
-                rtime = rtime[:,1:-1]
+        # MNREAL
+        #for i in range(1, xrmfile.nmca+1):
+        #    tname = '%s%i/realtime' % (d_pref, i)
+        #    rtime = xrmmap[tname][()]
+        #    if amask.shape[1] == rtime.shape[1] - 2: # hotcols
+        #        rtime = rtime[:,1:-1]
 
         if version_ge(version, '2.0.0'):
             for scalar in d_scas:
@@ -1481,7 +1482,7 @@ class MapViewerFrame(wx.Frame):
             self.sel_mca = xrmfile._getmca(dgroup, counts, 'selected area',
                                            npixels=mask.sum(),
                                            real_time=rtime, live_time=ltime)
-            
+
 
     def lassoHandler(self, mask=None, xrmfile=None, xoff=0, yoff=0,
                      det=None, **kws):
@@ -1519,10 +1520,10 @@ class MapViewerFrame(wx.Frame):
                 try:
                     area  = xrmfile.xrmmap['areas/%s' % aname]
                     npix  = area[()].sum()
-                    self.sel_mca.npixels = npix                    
+                    self.sel_mca.npixels = npix
                 except:
                     pass
-                
+
             if self.sel_mca.npixels is None:
                 self.sel_mca.npixels = 0
             self.sel_mca.filename = fname
