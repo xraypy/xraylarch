@@ -5,6 +5,7 @@ general purpose file utilities
 import time
 import os
 import sys
+from math import log10
 from random import seed, randrange
 from string import printable
 from ..utils.strutils import fix_filename, fix_varname, strip_quotes
@@ -82,32 +83,52 @@ def get_homedir():
             pass
     return homedir
 
-def gformat(val, length=11):
-    """format a number with '%g'-like format, except that
-    the return will be length ``length`` (default=12)
-    and have at least length-6 significant digits
+
+def gformat(val, length=12):
+    """Format a number with '%g'-like format.
+
+    Except that:
+        a) the length of the output string will be of the requested length.
+        b) positive numbers will have a leading blank.
+        b) the precision will be as high as possible.
+        c) trailing zeros will not be trimmed.
+
+    The precision will typically be ``length-7``.
+
+    Parameters
+    ----------
+    val : float
+        Value to be formatted.
+    length : int, optional
+        Length of output string (default is 12).
+
+    Returns
+    -------
+    str
+        String of specified length.
+
+    Notes
+    ------
+    Positive values will have leading blank.
+
     """
+    try:
+        expon = int(log10(abs(val)))
+    except (OverflowError, ValueError):
+        expon = 0
     length = max(length, 7)
-    fmt = '{: .%ig}' % (length-6)
-    if isinstance(val, int):
-        out = ('{: .%ig}' % (length-2)).format(val)
-        if len(out) > length:
-            out = fmt.format(val)
-    else:
-        out = fmt.format(val)
-    if len(out) < length:
-        if 'e' in out:
-            ie = out.find('e')
-            if '.' not in out[:ie]:
-                out = out[:ie] + '.' + out[ie:]
-            out = out.replace('e', '0'*(length-len(out))+'e')
-        else:
-            fmt = '{: .%ig}' % (length-1)
-            out = fmt.format(val)[:length]
-            if len(out) < length:
-                pad = '0' if '.' in  out else ' '
-                out += pad*(length-len(out))
-    return out
+    form = 'e'
+    prec = length - 7
+    if abs(expon) > 99:
+        prec -= 1
+    elif ((expon > 0 and expon < (prec+4)) or
+          (expon <= 0 and -expon < (prec-1))):
+        form = 'f'
+        prec += 4
+        if expon > 0:
+            prec -= expon
+    return f'{val:{length}.{prec}{form}}'
+
 
 def increment_filename(inpfile, ndigits=3, delim='.'):
     """
