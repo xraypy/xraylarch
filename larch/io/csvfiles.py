@@ -16,6 +16,7 @@ from dateutil.parser import parse as dateparse
 from larch import Group
 from larch.math import interp
 from larch.utils.strutils import bytes2str, fix_varname
+from .fileutils import gformat
 
 maketrans = str.maketrans
 
@@ -32,6 +33,8 @@ def groups2csv(grouplist, filename, delim=',',
     individual toggle saving individual x/y in separate files
 
     """
+    delim = delim.strip() + ' '
+
     def get_label(grp):
         'get label for group'
         for attr in ('filename', 'label', 'name', 'file', '__name__'):
@@ -39,19 +42,30 @@ def groups2csv(grouplist, filename, delim=',',
             if o is not None:
                 return o
         return repr(o)
-    
+
+    def save_group(g, delim=', ', x='energy', y='norm'):
+        label = get_label(g)
+        _x = getattr(g, x)
+        _y = getattr(g, y)
+        _n = len(_x)
+        labels = [x, label]
+        outarr = np.array([_x, _y])
+        buff = [f"#saved {time.ctime()}",
+                f"#saving x array={x}, y array={y}",
+                f"#{label}: {g.filename}",
+                "#------------------------------------------",
+                "# %s" % delim.join(labels)]
+        for i in range(_n):
+            buff.append(delim.join([gformat(_x[i]), gformat(_y[i])]))
+        buff.append('')
+        fnout = f"{label}.csv"
+        with open(fnout, 'w') as fh:
+            fh.write("\n".join(buff))
+        print(f"Wrote group to {fnout}")
+
     if individual is True:
         for g in grouplist:
-            label = get_label(g)
-            _x = getattr(g, x)
-            _y = getattr(g, y)
-            outarr = np.array([_x, _y])
-            fnout = f"{filename.split('.csv')[0]}_{label}.csv"
-            header = "\n".join([f"saved {time.ctime()}",
-                                f"saving x array={x}, y array={y}",
-                                f"{label}: {g.filename}"])
-            np.savetxt(fnout, outarr.T, delimiter=delim, header=header)
-            print(f"Wrote group to {fnout}")
+            save_group(g, delim=delim, x=x, y=y)
         return
 
     ngroups = len(grouplist)
@@ -60,11 +74,10 @@ def groups2csv(grouplist, filename, delim=',',
     columns = [x0, getattr(grouplist[0], y)]
     labels = [x, get_label(grouplist[0]) ]
 
-    delim = delim.strip() + ' '
     buff = ["# %d files saved %s" % (len(grouplist), time.ctime()),
             "# saving x array='%s', y array='%s'" % (x, y),
             "# %s: %s" % (labels[1], grouplist[0].filename)]
-    
+
     for g in grouplist[1:]:
         label = get_label(g)
         buff.append("# %s: %s" % (label, g.filename))
@@ -80,7 +93,7 @@ def groups2csv(grouplist, filename, delim=',',
     buff.append("#------------------------------------------")
     buff.append("# %s" % delim.join(labels))
     for i in range(npts):
-        buff.append(delim.join(["%.6f" % s[i] for s in columns]))
+        buff.append(delim.join([gformat(s[i]) for s in columns]))
 
     buff.append('')
     with open(filename, 'w') as fh:
