@@ -128,7 +128,7 @@ class XRD1DViewerFrame(wx.Frame):
 
         self.default_cifdb = '%s/.larch/cif_amcsd.db' % expanduser('~')
         if not os.path.exists(self.default_cifdb):
-            self.default_cifdb = 'amcsd_cif.db'
+            self.default_cifdb = 'amcsd_cif0.db'
 
         self.statusbar = self.CreateStatusBar(3,wx.CAPTION)
 
