@@ -197,7 +197,7 @@ class cifDB(object):
     def create_cifdb(self,name=None,verbose=False):
 
         if name is None:
-            self.dbname = 'amcsd%02d.db'
+            self.dbname = 'amcsd_cif0.db'
             counter = 0
             while os.path.exists(self.dbname % counter):
                 counter += 1
