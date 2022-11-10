@@ -1024,14 +1024,12 @@ class XASNormPanel(TaskPanel):
 
 
     def plot(self, dgroup, title=None, plot_yarrays=None, yoff=0,
-             delay_draw=False, multi=False, new=True, zoom_out=True,
-             with_extras=True, **kws):
+             delay_draw=False, multi=False, new=True, with_extras=True, **kws):
 
         if self.skip_plotting:
             return
         ppanel = self.controller.get_display(stacked=False).panel
 
-        viewlims = ppanel.get_viewlimits()
         plotcmd = ppanel.oplot
         if new:
             plotcmd = ppanel.plot
@@ -1068,16 +1066,18 @@ class XASNormPanel(TaskPanel):
         if 'label' not in popts:
             popts['label'] = dgroup.plot_ylabel
 
-        zoom_out = (zoom_out or min(dgroup.xdat) >= viewlims[1] or
-                    max(dgroup.xdat) <= viewlims[0] or
-                    min(dgroup.ydat) >= viewlims[3] or
-                    max(dgroup.ydat) <= viewlims[2])
-
-        if not zoom_out:
-            popts['xmin'] = viewlims[0]
-            popts['xmax'] = viewlims[1]
-            popts['ymin'] = viewlims[2]
-            popts['ymax'] = viewlims[3]
+        view_lims = ppanel.get_viewlimits()
+        zoom_lims = ppanel.conf.zoom_lims
+        cur_zoom_lims = None
+        if len(zoom_lims) > 0:
+            if zoom_lims[-1] is not None:
+                _ax =  list(zoom_lims[0].keys())[-1]
+                if (_ax.get_xlabel() == dgroup.plot_xlabel and
+                    min(dgroup.xdat) <= view_lims[1] and
+                    max(dgroup.xdat) >= view_lims[0] and
+                    min(dgroup.ydat) <= view_lims[3] and
+                    max(dgroup.ydat) >= view_lims[2]):
+                    cur_zoom_lims = (_ax, view_lims)
 
         if erange is not None and hasattr(dgroup, 'e0'):
             popts['xmin'] = dgroup.e0 + erange[0]
@@ -1127,6 +1127,16 @@ class XASNormPanel(TaskPanel):
             plotcmd = ppanel.oplot
             ppanel.conf.set_trace_linewidth(linewidth, trace=i)
 
+        if cur_zoom_lims is not None:
+            ax, vlims = cur_zoom_lims
+            if ax == ppanel.axes:
+                try:
+                    ax.set_xlim((vlims[0], vlims[1]), emit=True)
+                    ax.set_ylim((vlims[2], vlims[3]), emit=True)
+                    if len(ppanel.conf.zoom_lims) == 0 and len(zoom_lims) > 0:
+                        ppanel.conf.zoom_lims = zoom_lims
+                except:
+                    pass
 
         if with_extras and plot_extras is not None:
             axes = ppanel.axes
