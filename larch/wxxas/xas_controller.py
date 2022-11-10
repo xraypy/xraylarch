@@ -358,7 +358,7 @@ class XASController():
         return last_cursor_pos(win=win, _larch=self.larch)
 
     def plot_group(self, groupname=None, title=None, plot_yarrays=None,
-                   new=True, zoom_out=True, **kws):
+                   new=True, **kws):
         ppanel = self.get_display(stacked=False).panel
         newplot = ppanel.plot
         oplot   = ppanel.oplot
@@ -383,18 +383,6 @@ class XASController():
         path, fname = os.path.split(dgroup.filename)
         if not 'label' in popts:
             popts['label'] = dgroup.plot_ylabel
-        zoom_out = (zoom_out or
-                  min(dgroup.xdat) >= viewlims[1] or
-                  max(dgroup.xdat) <= viewlims[0] or
-                  min(dgroup.ydat) >= viewlims[3] or
-                  max(dgroup.ydat) <= viewlims[2])
-
-        if not zoom_out:
-            popts['xmin'] = viewlims[0]
-            popts['xmax'] = viewlims[1]
-            popts['ymin'] = viewlims[2]
-            popts['ymax'] = viewlims[3]
-
 
         popts['xlabel'] = dgroup.plot_xlabel
         popts['ylabel'] = dgroup.plot_ylabel
