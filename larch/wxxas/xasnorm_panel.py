@@ -933,11 +933,13 @@ class XASNormPanel(TaskPanel):
         req_attrs = ['e0', 'norm', 'dmude', 'd2mude', 'pre_edge']
 
         pchoice = PlotOne_Choices[self.plotone_op.GetStringSelection()]
+
         if pchoice in ('mu', 'norm', 'flat', 'dmude', 'd2mude'):
             lab = getattr(plotlabels, pchoice)
             dgroup.plot_yarrays = [(pchoice, PLOTOPTS_1, lab)]
 
         elif pchoice == 'prelines':
+            lab = plotlabels.mu
             dgroup.plot_yarrays = [('mu', PLOTOPTS_1, plotlabels.mu),
                                    ('pre_edge', PLOTOPTS_2, 'pre edge'),
                                    ('post_edge', PLOTOPTS_2, 'post edge')]
@@ -1073,6 +1075,7 @@ class XASNormPanel(TaskPanel):
             if zoom_lims[-1] is not None:
                 _ax =  list(zoom_lims[0].keys())[-1]
                 if (_ax.get_xlabel() == dgroup.plot_xlabel and
+                    _ax.get_ylabel() == dgroup.plot_ylabel and
                     min(dgroup.xdat) <= view_lims[1] and
                     max(dgroup.xdat) >= view_lims[0] and
                     min(dgroup.ydat) <= view_lims[3] and
@@ -1095,6 +1098,7 @@ class XASNormPanel(TaskPanel):
         if multi:
             ylabel = self.plotsel_op.GetStringSelection()
             yarray_name = plot_choices[ylabel]
+
             if is_xasgroup(dgroup):
                 ylabel = getattr(plotlabels, yarray_name, ylabel)
             popts['ylabel'] = ylabel
@@ -1112,6 +1116,7 @@ class XASNormPanel(TaskPanel):
         narr = len(plot_yarrays) - 1
 
         _linewidth = popts['linewidth']
+
         for i, pydat in enumerate(plot_yarrays):
             yaname, yopts, yalabel = pydat
             popts.update(yopts)
