@@ -22,7 +22,12 @@ jobs:
         printenv
         conda config --set always_yes yes --set changeps1 no
         conda config --add channels conda-forge
-        conda install python=${{ matrix.python-version }} numpy scipy matplotlib h5py pip setuptools pyparsing pytest pytest-cov coverage scikit-learn cython pillow>=8.3.2 pandas sqlalchemy psutil pyyaml psycopg2-binary numdifftools emcee pymatgen tomopy wxpython importlib_metadata pycifrw
+        conda install python=${{ matrix.python-version }} numpy=>1.21 scipy=>1.8 matplotlib=>3.3 pillow>=8.3
+        conda install scikit-learn pandas h5py
+        conda install imageio sqlalchemy psutil pyyaml
+        conda install psycopg2-binary numdifftools emcee cython
+        conda install pyparsing pytest pytest-cov coverage
+        conda install pip setuptools pandas sqlalchemy psutil pyyaml pymatgen tomopy wxpython importlib_metadata pycifrw
         conda info -a
         conda list
     - name: Install xraylarch and other dependencies with pip
