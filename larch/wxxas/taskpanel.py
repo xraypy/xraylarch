@@ -227,6 +227,8 @@ class TaskPanel(wx.Panel):
         self.skip_plotting = False
         self.build_display()
         self.skip_process = False
+        self.stale_groups = None
+
         self.fit_xspace = 'e'
         self.fit_last_erange = None
 

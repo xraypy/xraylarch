@@ -667,11 +667,12 @@ class XASNormPanel(TaskPanel):
             dgroup = self.controller.get_group()
             _eref = dgroup.energy_ref
             _gname = dgroup.groupname
+            self.stale_groups = []
             for fname, gname in self.controller.file_groups.items():
                 this = self.controller.get_group(gname)
                 if _gname != gname and this.energy_ref == _eref:
                     this.energy_shift = this.config.xasnorm['energy_shift'] = eshift
-
+                    self.stale_groups.append(this)
 
         wx.CallAfter(self.onReprocess)
 
@@ -731,6 +732,10 @@ class XASNormPanel(TaskPanel):
             return
         form = self.read_form()
         self.process(dgroup=dgroup)
+        if self.stale_groups is not None:
+            for g in self.stale_groups:
+                self.process(dgroup=g, force=True)
+            self.stale_groups = None
         self.onPlotEither()
 
     def process(self, dgroup=None, force_mback=False, force=False, **kws):
@@ -742,6 +747,7 @@ class XASNormPanel(TaskPanel):
             dgroup = self.controller.get_group()
         if dgroup is None:
             return
+
         self.skip_process = True
         conf = self.get_config(dgroup)
 
@@ -798,7 +804,8 @@ class XASNormPanel(TaskPanel):
 
 
         if abs(eshift-ediff) > 1.e-5 or abs(eshift-eshift_current) > 1.e-5:
-            if abs(eshift) > 1e15: eshift = 0.0
+            if abs(eshift) > 1e15: eshif
+            t = 0.0
             cmds.extend(["{group:s}.energy_shift = {eshift:.4f}",
                          "{group:s}.energy = {group:s}.xdat = {group:s}.energy_orig + {group:s}.energy_shift"])
 
