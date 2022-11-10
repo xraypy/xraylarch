@@ -215,8 +215,11 @@ class XASController():
         dat = get_autosavefiles()
         nremove = max(0, len(dat) - max_hist)
         # then remove the oldest "version 0" files
+
         while nremove > 0 and len(dat) > 0:
             dfile, vers, mtime = dat.pop(0)
+            if vers == 0 and abs(mtime - time.time()) > 86400:
+                os.unlink(dfile)
             nremove -= 1
 
     def get_recentfiles(self, max=10):
