@@ -23,7 +23,7 @@ jobs:
         conda config --set always_yes yes --set changeps1 no
         conda config --add channels conda-forge
         conda install python=${{ matrix.python-version }} numpy=>1.21 scipy=>1.8 matplotlib=>3.3 pillow>=8.3
-        conda install scikit-learn pandas h5py
+        conda install scikit-learn pandas h5py==3.6
         conda install imageio sqlalchemy psutil pyyaml
         conda install psycopg2-binary numdifftools emcee cython
         conda install pyparsing pytest pytest-cov coverage
