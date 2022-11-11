@@ -19,9 +19,9 @@ from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl, FloatSpin,
                          set_color, FloatSpinWithPin, get_icon, SimpleText,
                          Choice, SetTip, Check, Button, HLine, OkCancel,
                          LEFT, pack, plotlabels, ReportFrame, DictFrame,
-                         FileCheckList, Font, FONTSIZE)
+                         FileCheckList, Font, FONTSIZE, plotlabels,
+                         get_zoomlimits, set_zoomlimits)
 
-from larch.wxlib.xafsplots import plotlabels
 from larch.xafs.xafsutils  import etok, ktoe
 from larch.utils.physical_constants import PI, DEG2RAD, PLANCK_HC
 
@@ -226,6 +226,7 @@ class OverAbsorptionDialog(wx.Dialog):
         ppanel = self.controller.get_display(stacked=False).panel
         ppanel.oplot
         dgroup = self.dgroup
+        zoom_limits = get_zoomlimits(ppanel, dgroup)
         path, fname = os.path.split(dgroup.filename)
 
         opts = dict(linewidth=3, ylabel=plotlabels.norm,
@@ -242,7 +243,7 @@ class OverAbsorptionDialog(wx.Dialog):
 
         ppanel.oplot(dgroup.energy, dgroup.norm, zorder=10, marker='o',
                      markersize=3, label='original', **opts)
-
+        set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
         ppanel.canvas.draw()
         ppanel.conf.draw_legend(show=True)
 
@@ -527,6 +528,7 @@ overwriting current arrays''')
         ppanel.oplot
         xnew, ynew = self.data
         dgroup = self.dgroup
+        zoom_limits = get_zoomlimits(ppanel, dgroup)
         path, fname = os.path.split(dgroup.filename)
 
         wids = self.wids
@@ -575,6 +577,7 @@ overwriting current arrays''')
         color2 = ppanel.conf.traces[1].color
         ppanel.axes.axvline(e0_new, color=color1, **axv_opts)
         ppanel.axes.axvline(e0_old, color=color2, **axv_opts)
+        set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
         ppanel.canvas.draw()
 
     def GetResponse(self):
@@ -767,6 +770,7 @@ class RebinDataDialog(wx.Dialog):
         ppanel = self.controller.get_display(stacked=False).panel
         xnew, ynew, yerr, e0 = self.data
         dgroup = self.dgroup
+        zoom_limits = get_zoomlimits(ppanel, dgroup)
         path, fname = os.path.split(dgroup.filename)
 
         opts = {}
@@ -783,6 +787,7 @@ class RebinDataDialog(wx.Dialog):
         ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
                      marker='o', markersize=4, linewidth=2.0,
                      label='original', show_legend=True, **opts)
+        set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
         ppanel.canvas.draw()
 
     def GetResponse(self):
@@ -960,6 +965,7 @@ class SmoothDataDialog(wx.Dialog):
         ppanel = self.controller.get_display(stacked=False).panel
         xnew, ynew = self.data
         dgroup = self.dgroup
+        zoom_limits = get_zoomlimits(ppanel, dgroup)
         path, fname = os.path.split(dgroup.filename)
 
         opts = {}
@@ -976,6 +982,7 @@ class SmoothDataDialog(wx.Dialog):
         ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
                      marker='o', markersize=4, linewidth=2.0,
                      label='original', show_legend=True, **opts)
+        set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
         ppanel.canvas.draw()
 
     def GetResponse(self):
@@ -1100,6 +1107,7 @@ class DeconvolutionDialog(wx.Dialog):
         ppanel = self.controller.get_display(stacked=False).panel
         xnew, ynew = self.data
         dgroup = self.dgroup
+        zoom_limits = get_zoomlimits(ppanel, dgroup)
         path, fname = os.path.split(dgroup.filename)
 
         opts = {}
@@ -1116,6 +1124,7 @@ class DeconvolutionDialog(wx.Dialog):
         ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
                      marker='o', markersize=4, linewidth=2.0,
                      label='original', show_legend=True, **opts)
+        set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
         ppanel.canvas.draw()
 
     def GetResponse(self):
@@ -1350,6 +1359,7 @@ clear undo history''')
         ymax = max(ydat) + 0.025*(max(ydat) - min(ydat))
 
         dgroup = self.dgroup
+        zoom_limits = get_zoomlimits(ppanel, dgroup)
         path, fname = os.path.split(dgroup.filename)
 
         plotstr = self.wids['plotopts'].GetStringSelection()
@@ -1386,6 +1396,7 @@ clear undo history''')
             s = '' if ex < 0 else '\n[%.1f]' % (etok(ex))
             return r"%1.4g%s" % (x, s)
 
+        set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
         if plottype in ('chie', 'chiew'):
             ppanel.axes.xaxis.set_major_formatter(FuncFormatter(ek_formatter))
             ppanel.canvas.draw()
