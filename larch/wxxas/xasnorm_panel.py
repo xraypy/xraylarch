@@ -17,7 +17,8 @@ from larch.xafs.xafsutils import guess_energy_units
 
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, get_icon,
                          SimpleText, pack, Button, HLine, Choice, Check,
-                         GridPanel, CEN, RIGHT, LEFT, plotlabels)
+                         GridPanel, CEN, RIGHT, LEFT, plotlabels,
+                         get_zoomlimits, set_zoomlimits)
 
 from larch.utils.physical_constants import ATOM_NAMES
 from larch.wxlib.plotter import last_cursor_pos
@@ -549,6 +550,7 @@ class XASNormPanel(TaskPanel):
             newplot = False
 
         ppanel = self.controller.get_display(stacked=False).panel
+        zoom_limits = get_zoomlimits(ppanel, dgroup)
 
         nplot_traces = len(ppanel.conf.traces)
         nplot_request = len(plot_traces)
@@ -558,8 +560,9 @@ class XASNormPanel(TaskPanel):
             for i in range(nplot_traces, nplot_request+5):
                 ppanel.conf.init_trace(i,  linecolors[i%ncols], 'dashed')
 
-        ppanel.plot_many(plot_traces, xlabel='Energy (eV)', ylabel=ylabel, show_legend=True)
-        ppanel.unzoom_all()
+        ppanel.plot_many(plot_traces, xlabel=plotlabels.energy, ylabel=ylabel, show_legend=True)
+        set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_aall()
+        ppanel.canvas.draw()
         wx.CallAfter(self.controller.set_focus)
 
     def onAutoNorm(self, evt=None):
@@ -1068,19 +1071,7 @@ class XASNormPanel(TaskPanel):
         if 'label' not in popts:
             popts['label'] = dgroup.plot_ylabel
 
-        view_lims = ppanel.get_viewlimits()
-        zoom_lims = ppanel.conf.zoom_lims
-        cur_zoom_lims = None
-        if len(zoom_lims) > 0:
-            if zoom_lims[-1] is not None:
-                _ax =  list(zoom_lims[0].keys())[-1]
-                if (_ax.get_xlabel() == dgroup.plot_xlabel and
-                    _ax.get_ylabel() == dgroup.plot_ylabel and
-                    min(dgroup.xdat) <= view_lims[1] and
-                    max(dgroup.xdat) >= view_lims[0] and
-                    min(dgroup.ydat) <= view_lims[3] and
-                    max(dgroup.ydat) >= view_lims[2]):
-                    cur_zoom_lims = (_ax, view_lims)
+        zoom_limits = get_zoomlimits(ppanel, dgroup)
 
         if erange is not None and hasattr(dgroup, 'e0'):
             popts['xmin'] = dgroup.e0 + erange[0]
@@ -1132,16 +1123,6 @@ class XASNormPanel(TaskPanel):
             plotcmd = ppanel.oplot
             ppanel.conf.set_trace_linewidth(linewidth, trace=i)
 
-        if cur_zoom_lims is not None:
-            ax, vlims = cur_zoom_lims
-            if ax == ppanel.axes:
-                try:
-                    ax.set_xlim((vlims[0], vlims[1]), emit=True)
-                    ax.set_ylim((vlims[2], vlims[3]), emit=True)
-                    if len(ppanel.conf.zoom_lims) == 0 and len(zoom_lims) > 0:
-                        ppanel.conf.zoom_lims = zoom_lims
-                except:
-                    pass
 
         if with_extras and plot_extras is not None:
             axes = ppanel.axes
@@ -1159,5 +1140,6 @@ class XASNormPanel(TaskPanel):
                               'color': '#888888'}
                     xpopts.update(opts)
                     axes.axvline(x, **xpopts)
+        set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
         if not popts['delay_draw']:
             ppanel.canvas.draw()
