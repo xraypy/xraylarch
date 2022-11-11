@@ -922,3 +922,36 @@ def _closeDisplays(_larch=None, **kws):
                     FITPLOT_DISPLAYS, XRF_DISPLAYS):
         for win in display.values():
             win.Destroy()
+
+def get_zoomlimits(plotpanel, dgroup):
+    """save current zoom limits, to be reapplied with set_zoomlimits()"""
+    view_lims = plotpanel.get_viewlimits()
+    zoom_lims = plotpanel.conf.zoom_lims
+    out = None
+    inrange = 3
+    if len(zoom_lims) > 0:
+        if zoom_lims[-1] is not None:
+            _ax =  list(zoom_lims[0].keys())[-1]
+            if all([_ax.get_xlabel() == dgroup.plot_xlabel,
+                    _ax.get_ylabel() == dgroup.plot_ylabel,
+                    min(dgroup.xdat) <= view_lims[1],
+                    max(dgroup.xdat) >= view_lims[0],
+                    min(dgroup.ydat) <= view_lims[3],
+                    max(dgroup.ydat) >= view_lims[2]]):
+                out = (_ax, view_lims, zoom_lims)
+    return out
+
+def set_zoomlimits(plotpanel, limits):
+    """set zoom limits returned from get_zoomlimits()"""
+    if limits is None:
+        return False
+    ax, vlims, zoom_lims = limits
+    if ax == plotpanel.axes:
+        try:
+            ax.set_xlim((vlims[0], vlims[1]), emit=True)
+            ax.set_ylim((vlims[2], vlims[3]), emit=True)
+            if len(plotpanel.conf.zoom_lims) == 0 and len(zoom_lims) > 0:
+                plotpanel.conf.zoom_lims = zoom_lims
+        except:
+            return False
+    return True

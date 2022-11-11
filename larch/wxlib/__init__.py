@@ -96,7 +96,8 @@ if HAS_WXPYTHON:
                           _hist, _update_trace, _saveplot, _saveimg,
                           get_display, _closeDisplays, _getcursor,
                           last_cursor_pos, _imshow, _contour, _xrf_plot,
-                          _xrf_oplot, _fitplot, _redraw_plot)
+                          _xrf_oplot, _fitplot, _redraw_plot,
+                          get_zoomlimits, set_zoomlimits)
 
     # from .xrfdisplay import  XRFDisplayFrame
 
