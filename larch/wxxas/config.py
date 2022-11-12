@@ -238,7 +238,7 @@ xasnorm = [CVar('auto_e0',  True, 'bool', desc='whether to automatically set E0'
            CVar('norm_method',  'polynomial', 'choice', choices=NORM_METHODS,  desc='normalization method'),
            CVar('nnorm',     'auto', 'choice', choices=list(NNORM_CHOICES.keys()),
                 desc='type of polynomial for normalization'),
-           CVar('norm1', 200, 'float',  step=5, desc='low-energy fit range for normalization curve,\nrelative to E0'),
+           CVar('norm1', 150, 'float',  step=5, desc='low-energy fit range for normalization curve,\nrelative to E0'),
            CVar('norm2',  -1, 'float',  step=5, desc='high-energy fit range for normalization curve,\nelative to E0 (set to -1 for "auto")'),
            CVar('show_norm',  False, 'bool', desc='whether to show normalization energy range (norm1, norm2)'),
 

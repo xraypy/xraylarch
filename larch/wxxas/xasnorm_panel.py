@@ -97,7 +97,7 @@ class XASNormPanel(TaskPanel):
 
 
         self.wids['energy_ref'] = Choice(panel, choices=['None'],
-                                         action=self.onEnergyRef, size=(325, -1))
+                                         action=self.onEnergyRef, size=(350, -1))
 
         self.wids['auto_step'] = Check(panel, default=True, label='auto?',
                                       action=self.onNormMethod)
@@ -566,25 +566,20 @@ class XASNormPanel(TaskPanel):
         wx.CallAfter(self.controller.set_focus)
 
     def onAutoNorm(self, evt=None):
-        dgroup = self.controller.get_group()
-        try:
-            norm2 = max(dgroup.energy) - dgroup.e0
-            norm1 = 5.0*int(norm2/15.0)
-            nnorm = 2
-            if (norm2-norm1 < 350): nnorm = 1
-            if (norm2-norm1 < 50): nnorm = 0
-        except:
-            nnorm = None
+        defaults = self.get_defaultconfig()
+        norm1 = defaults['norm1']
+        norm2 = defaults['norm2']
+        nnorm = 2
+        if (norm2-norm1 < 350): nnorm = 1
+        if (norm2-norm1 < 50): nnorm = 0
+
+        self.set_nnorm_widget(nnorm)
+        self.wids['norm_method'].SetSelection(0)
         self.wids['auto_step'].SetValue(1)
         self.wids['auto_e0'].SetValue(1)
         self.wids['nvict'].SetSelection(0)
-        self.wids['pre1'].SetValue(0)
-        self.wids['pre2'].SetValue(0)
-        self.wids['norm1'].SetValue(0)
-        self.wids['norm2'].SetValue(0)
-        if nnorm is not None:
-            self.set_nnorm_widget(nnorm)
-        self.wids['norm_method'].SetSelection(0)
+        for attr in ('pre1', 'pre2', 'norm1', 'norm2'):
+            self.wids[attr].SetValue(defaults[attr])
         self.onReprocess()
 
     def onCopyAuto(self, evt=None):
