@@ -561,7 +561,7 @@ class XASNormPanel(TaskPanel):
                 ppanel.conf.init_trace(i,  linecolors[i%ncols], 'dashed')
 
         ppanel.plot_many(plot_traces, xlabel=plotlabels.energy, ylabel=ylabel, show_legend=True)
-        set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_aall()
+        set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
         ppanel.canvas.draw()
         wx.CallAfter(self.controller.set_focus)
 
@@ -926,7 +926,7 @@ class XASNormPanel(TaskPanel):
                 dgroup.plot_y2label = 'dy/dx'
                 dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, 'y'),
                                        ('dmude', PLOTOPTS_D, 'dy/dx')]
-            elif pchoice == 'norm+d2normde':
+            elif pchoice == 'norm+d2mude':
                 lab = plotlabels.norm
                 dgroup.plot_y2label = 'd2y/dx2'
                 dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, 'y'),
@@ -946,40 +946,23 @@ class XASNormPanel(TaskPanel):
             dgroup.plot_yarrays = [('mu', PLOTOPTS_1, plotlabels.mu),
                                    ('pre_edge', PLOTOPTS_2, 'pre edge'),
                                    ('post_edge', PLOTOPTS_2, 'post edge')]
-        elif pchoice == 'preedge':
-            lab = r'pre-edge subtracted $\mu$'
-            dgroup.pre_edge_sub = dgroup.norm * dgroup.edge_step
-            dgroup.plot_yarrays = [('pre_edge_sub', PLOTOPTS_1, lab)]
 
-        elif pchoice == 'mu+dmude':
-            lab = plotlabels.mu
-            lab2 = plotlabels.dmude
-            dgroup.plot_yarrays = [('mu', PLOTOPTS_1, lab),
-                                   ('dmude', PLOTOPTS_D, lab2)]
-            dgroup.plot_y2label = lab2
-        elif pchoice == 'mu+d2mude':
-            lab = plotlabels.mu
-            lab2 = plotlabels.d2mude
-            dgroup.plot_yarrays = [('mu', PLOTOPTS_1, lab),
+        elif pchoice == 'norm+d2mude':
+            lab = plotlabels.norm
+            dgroup.plot_y2label = lab2 = plotlabels.d2mude
+            dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab),
                                    ('d2mude', PLOTOPTS_D, lab2)]
-            dgroup.plot_y2label = lab2
 
         elif pchoice == 'norm+dmude':
             lab = plotlabels.norm
-            lab2 = plotlabels.dmude + ' (normalized)'
+            dgroup.plot_y2label = lab2 = plotlabels.dmude
             dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab),
                                    ('dmude', PLOTOPTS_D, lab2)]
-            dgroup.plot_y2label = lab2
-        elif pchoice == 'norm+d2normde':
-            lab = plotlabels.norm
-            lab2 = plotlabels.d2mude + ' (normalized)'
-            dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab),
-                                   ('d2normde', PLOTOPTS_D, lab2)]
-            dgroup.plot_y2label = lab2
+
 
         elif pchoice == 'mback_norm':
             req_attrs.append('mback_norm')
-            lab = r'$\mu$'
+            lab = plotlabels.mu
             if not hasattr(dgroup, 'mback_mu'):
                 self.process(dgroup=dgroup, force_mback=True)
             dgroup.plot_yarrays = [('mu', PLOTOPTS_1, lab),
