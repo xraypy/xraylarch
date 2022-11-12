@@ -1236,7 +1236,7 @@ clear undo history''')
         panel.pack()
 
         fit_dialog_window(self, panel)
-        self.plot_results()
+        self.plot_results(use_zoom=False)
 
     def onDone(self, event=None):
         self.Destroy()
@@ -1273,7 +1273,7 @@ clear undo history''')
         self.dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
         self.wids['save_as_name'].SetValue(self.dgroup.filename + '_clean')
         self.reset_data_history()
-        self.plot_results()
+        self.plot_results(use_zoom=True)
 
     def on_rangechoice(self, event=None):
         if self.choice_range.GetStringSelection() == 'between':
@@ -1349,7 +1349,7 @@ clear undo history''')
 
         self.parent.process_normalization(ngroup)
 
-    def plot_results(self):
+    def plot_results(self, use_zoom=True):
         ppanel = self.controller.get_display(stacked=False).panel
 
         xdat, ydat = self.data
@@ -1359,35 +1359,39 @@ clear undo history''')
         ymax = max(ydat) + 0.025*(max(ydat) - min(ydat))
 
         dgroup = self.dgroup
-        zoom_limits = get_zoomlimits(ppanel, dgroup)
+
         path, fname = os.path.split(dgroup.filename)
 
         plotstr = self.wids['plotopts'].GetStringSelection()
         plottype = DEGLITCH_PLOTS[plotstr]
+
         xlabel=plotlabels.energy
         if plottype in ('chie', 'chiew'):
             xmin = self.dgroup.e0
             xlabel = xlabel=plotlabels.ewithk
 
-        opts = dict(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax,
-                    xlabel=xlabel, title='De-glitching:\n %s' % fname)
+        opts = dict(xlabel=xlabel, title='De-glitching:\n %s' % fname)
 
         ylabel =  {'mu': plotlabels.mu,
                    'norm': plotlabels.norm,
                    'chie':  plotlabels.chie,
                    'chiew': plotlabels.chiew.format(1),
-                   }.get(plottype, plotlabels.mu)
+                   }.get(plottype, plotlabels.norm)
 
+        dgroup.plot_xlabel = xlabel
+        dgroup.plot_ylabel = ylabel
 
-        ppanel.plot(xdat, ydat, zorder=10, marker=None,
-                    linewidth=3,
-                    label='original',
-                    ylabel=ylabel, **opts)
+        zoom_limits = None
+        if use_zoom:
+            zoom_limits = get_zoomlimits(ppanel, dgroup)
+
+        ppanel.plot(xdat, ydat, zorder=10, marker=None, linewidth=3,
+                    label='original', ylabel=ylabel, **opts)
 
         if len(self.xmasks) > 1:
             mask = self.xmasks[-1]
-            ppanel.oplot(xdat[mask], ydat[mask], zorder=20,
-                         marker='o', markersize=4, linewidth=2.0,
+            ppanel.oplot(xdat[mask], ydat[mask], zorder=15,
+                         marker='o', markersize=3, linewidth=2.0,
                          label='current', show_legend=True, **opts)
 
 
@@ -1396,10 +1400,10 @@ clear undo history''')
             s = '' if ex < 0 else '\n[%.1f]' % (etok(ex))
             return r"%1.4g%s" % (x, s)
 
-        set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
+        set_zoomlimits(ppanel, zoom_limits, verbose=True) or ppanel.unzoom_all()
         if plottype in ('chie', 'chiew'):
             ppanel.axes.xaxis.set_major_formatter(FuncFormatter(ek_formatter))
-            ppanel.canvas.draw()
+        ppanel.canvas.draw()
 
         self.history_message.SetLabel('%i items in history' % (len(self.xmasks)-1))
 
