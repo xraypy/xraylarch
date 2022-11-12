@@ -941,9 +941,11 @@ def get_zoomlimits(plotpanel, dgroup):
                 out = (_ax, view_lims, zoom_lims)
     return out
 
-def set_zoomlimits(plotpanel, limits):
+def set_zoomlimits(plotpanel, limits, verbose=False):
     """set zoom limits returned from get_zoomlimits()"""
     if limits is None:
+        if verbose:
+            print("set zoom, no limits")
         return False
     ax, vlims, zoom_lims = limits
     if ax == plotpanel.axes:
@@ -952,6 +954,10 @@ def set_zoomlimits(plotpanel, limits):
             ax.set_ylim((vlims[2], vlims[3]), emit=True)
             if len(plotpanel.conf.zoom_lims) == 0 and len(zoom_lims) > 0:
                 plotpanel.conf.zoom_lims = zoom_lims
+                if verbose:
+                    print("set zoom, ", zoom_lims)
         except:
+            if verbose:
+                print("set zoom, exception")
             return False
     return True
