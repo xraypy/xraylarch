@@ -744,30 +744,6 @@ class XASFrame(wx.Frame):
         self.show_subframe('preferences', PreferencesFrame,
                            controller=self.controller)
 
-    def onLoadLastSession(self, event=None):
-        conf = self.controller.get_config('autosave',
-                                          {'fileroot': 'autosave'})
-        froot = conf['fileroot']
-        path = os.path.join(user_larchdir, 'xas_viewer', f"{froot}.larix")
-
-        if os.path.exists(path):
-            try:
-                _session  = read_session(path)
-            except:
-                Popup(self, f"{path} is not a valid Larch Session File",
-                      f"""{path} is not a valid Larch Session File:
-
-                      {sys.exc_info}
-                      """)
-                return
-
-            LoadSessionDialog(self, _session, path, self.controller).Show()
-            fdir, fname = os.path.split(path)
-            if self.controller.chdir_on_fileopen() and len(fdir) > 0:
-                os.chdir(fdir)
-                self.controller.set_workdir()
-
-
     def onLoadSession(self, evt=None, path=None):
         if path is None:
             wildcard = 'Larch Session File (*.larix)|*.larix|All files (*.*)|*.*'
@@ -781,14 +757,12 @@ class XASFrame(wx.Frame):
                                controller=self.controller, filename=path,
                                read_ok_cb=self.onReadAthenaProject_OK)
             return
-
         try:
             _session  = read_session(path)
         except:
             Popup(self, f"{path} is not a valid Larch Session File",
                    f"{path} is not a valid Larch Session File")
             return
-
         LoadSessionDialog(self, _session, path, self.controller).Show()
         self.last_session_read = path
         fdir, fname = os.path.split(path)
