@@ -6,7 +6,7 @@ from gzip import GzipFile
 import io
 import copy
 import json
-import chardet
+import cchardet
 import numpy as np
 
 from .paths import uname, bindir, nativepath, unixpath, get_homedir, get_cwd
@@ -47,7 +47,7 @@ def read_textfile(filename, size=None):
     """
 
     def decode(bdat):
-        info = chardet.detect(bdat)
+        info = cchardet.detect(bdat)
         return bdat.decode(info.get('encoding', 'utf-8'))
 
     text = ''
