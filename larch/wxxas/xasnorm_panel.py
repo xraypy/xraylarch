@@ -362,7 +362,6 @@ class XASNormPanel(TaskPanel):
 
             self.set_nnorm_widget(opts.get('nnorm'))
 
-
             self.wids['energy_shift'].SetValue(opts['energy_shift'])
             self.wids['nvict'].SetSelection(int(opts['nvict']))
             self.wids['show_e0'].SetValue(opts['show_e0'])
@@ -374,6 +373,7 @@ class XASNormPanel(TaskPanel):
             for attr in ('pre1', 'pre2', 'norm1', 'norm2', 'nnorm', 'edge',
                          'atsym', 'step', 'norm_method'):
                 self.wids[attr].Enable()
+            # print("Fill Form OPTS ",  opts['show_pre'], opts['show_norm'])
             self.wids['show_pre'].SetValue(opts['show_pre'])
             self.wids['show_norm'].SetValue(opts['show_norm'])
 
@@ -560,9 +560,18 @@ class XASNormPanel(TaskPanel):
             for i in range(nplot_traces, nplot_request+5):
                 ppanel.conf.init_trace(i,  linecolors[i%ncols], 'dashed')
 
-        ppanel.plot_many(plot_traces, xlabel=plotlabels.energy, ylabel=ylabel, show_legend=True)
+        # 
+        # NOTE: with wxmplot 0.9.53, will be able to use  
+        # ppanel.plot_many(plot_traces, xlabel=plotlabels.energy, ylabel=ylabel,
+        #                 zoom_limits=zoom_limits,
+        #                 show_legend=True)
+        #  
+        
+        ppanel.plot_many(plot_traces, xlabel=plotlabels.energy, ylabel=ylabel,
+                         show_legend=True)
         set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
         ppanel.canvas.draw()
+        
         wx.CallAfter(self.controller.set_focus)
 
     def onAutoNorm(self, evt=None):
@@ -624,11 +633,11 @@ class XASNormPanel(TaskPanel):
         elif name == 'energy_shift':
             copy_attrs('energy_shift')
         elif name == 'xas_pre':
-            copy_attrs('pre1', 'pre2', 'nvict')
+            copy_attrs('pre1', 'pre2', 'nvict', 'show_pre')
         elif name == 'atsym':
             copy_attrs('atsym', 'edge')
         elif name == 'xas_norm':
-            copy_attrs('norm_method', 'nnorm', 'norm1', 'norm2')
+            copy_attrs('norm_method', 'nnorm', 'norm1', 'norm2', 'show_norm')
         elif name == 'energy_ref':
             copy_attrs('energy_ref')
         for checked in self.controller.filelist.GetCheckedStrings():
@@ -1007,7 +1016,7 @@ class XASNormPanel(TaskPanel):
 
 
     def plot(self, dgroup, title=None, plot_yarrays=None, yoff=0,
-             delay_draw=False, multi=False, new=True, with_extras=True, **kws):
+             delay_draw=True, multi=False, new=True, with_extras=True, **kws):
 
         if self.skip_plotting:
             return
@@ -1079,8 +1088,6 @@ class XASNormPanel(TaskPanel):
             plot_extras = getattr(dgroup, 'plot_extras', None)
 
         popts['title'] = title
-        popts['delay_draw'] = delay_draw
-
         popts['show_legend'] = len(plot_yarrays) > 1
         narr = len(plot_yarrays) - 1
 
@@ -1091,16 +1098,14 @@ class XASNormPanel(TaskPanel):
             popts.update(yopts)
             if yalabel is not None:
                 popts['label'] = yalabel
-            linewidth = _linewidth
+            linewidht = _linewidth
             if 'linewidth' in popts:
                 linewidth = popts.pop('linewidth')
-            popts['delay_draw'] = delay_draw or (i != narr)
+            popts['delay_draw'] = delay_draw 
             if yaname == 'norm_mback' and not hasattr(dgroup, yaname):
                 self.process(dgroup=dgroup, force=True, force_mback=True)
             plotcmd(dgroup.xdat, getattr(dgroup, yaname)+yoff, linewidth=linewidth, **popts)
             plotcmd = ppanel.oplot
-            ppanel.conf.set_trace_linewidth(linewidth, trace=i)
-
 
         if with_extras and plot_extras is not None:
             axes = ppanel.axes
@@ -1118,6 +1123,6 @@ class XASNormPanel(TaskPanel):
                               'color': '#888888'}
                     xpopts.update(opts)
                     axes.axvline(x, **xpopts)
-        set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
-        if not popts['delay_draw']:
-            ppanel.canvas.draw()
+
+        set_zoomlimits(ppanel, zoom_limits)
+        ppanel.canvas.draw()
