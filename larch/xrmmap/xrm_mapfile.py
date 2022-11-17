@@ -2071,7 +2071,7 @@ class GSEXRM_MapFile(object):
                 for aname in ('theta', 'phi', 'omega', 'chi'):
                     if aname in pname:
                         omega = self.get_pos(pname, mean=True)
-                        print(f"using positoner '{pname:s}' as rotation axis ")
+                        # print(f"using positoner '{pname:s}' as rotation axis ")
                         break
                 if omega is not None:
                     break
