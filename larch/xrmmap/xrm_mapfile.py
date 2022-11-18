@@ -1715,7 +1715,8 @@ class GSEXRM_MapFile(object):
 
         # add any other groups with 'detector' in the `type` attribute:
         for det, grp in xrmmap.items():
-            if det not in det_list and 'detector' in h5str(grp.attrs.get('type', '')):
+            attrs = getattr(grp, 'attrs', {'type': ''})
+            if det not in det_list and 'detector' in h5str(attrs.get('type', '')):
                 det_list.append(det)
         self.detector_list = det_list
         if len(det_list) < 1:
