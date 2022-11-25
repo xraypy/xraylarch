@@ -79,33 +79,91 @@ def trim_sinogram(sino,x,omega,pixel_trim=None):
 
     return sino,x,omega
 
-def find_tomo_center(sino, omega, center=None, sinogram_order=True):
+def find_tomo_center(sino, omega, center=None, tol=0.25, blur_weight=1.0,
+                     sinogram_order=True):
+    """find rotation axis center for a sinogram,
+    mixing negative entropy (as tomopy uses) and a simple "blur" score
 
+    Arguments
+    ---------
+    sino : ndarray for sinogram
+    omega: ndarray of angles in radians
+    center: initial value for center [mid-point]
+    tol:    fit tolerance for center pixel [0.25]
+    blur_weight: weight to apply to `blur` score relative to negative entropy [1.0]
+    sinogram_order: bool for axis order of sinogram
+
+    Returns
+    -------
+    pixel value for refined center
+
+    Notes
+    ------
+
+    For a reconstructed image `img` with a particular value for center,
+
+       blur = -((img - img.mean())**2).sum()/img.size
+
+    and negative-entropy is calculated as
+       ioff = (img.max() - img.min())/25.0
+       imin = img.min() - ioff
+       imax = img.max() + ioff
+       hist, _ = np.histogram(img, bins=512, range=[imin, imax])
+       hist =  hist/(2*(imax-imin))
+       hist[np.where(hist==0)] = 1.e-20
+       negent = -np.dot(hist, np.log(hist))
+
+    the "cost" to be minimized to set the center is then
+
+       blur_weight*blur + negent
+
+    """
     xmax = sino.shape[0]
     if sinogram_order:
-        xmax = sino.shape[1]
+        xmax = sino.shape[2]
     if center is None:
         center = xmax/2.0
 
-    # init center to scale recon
-    rec = tomopy.recon(sino, omega, center=center, sinogram_order=sinogram_order,
+    img = tomopy.recon(sino, omega, center,
+                       sinogram_order=sinogram_order,
                        algorithm='gridrec', filter_name='shepp')
-    rec = tomopy.circ_mask(rec, axis=0)
+    img = tomopy.circ_mask(img, axis=0)
+    ioff = (img.max() - img.min())/25.0
+    imin = img.min() - ioff
+    imax = img.max() + ioff
 
-    # tomopy score, tweaked slightly
-    rmin, rmax = rec.min(), rec.max()
-    rmin  -= 0.5*(rmax-rmin)
-    rmax  += 0.5*(rmax-rmin)
-    out = minimize(_center_resid_negent, center,
-                   args=(sino, omega, rmin, rmax, sinogram_order),
-                   method='Nelder-Mead', tol=0.5)
-    cen = out.x
-    # if cen > 0  and cen < xmax:
-    #    out = minimize(_center_resid_blur, cen,
-    #                   args=(sino, omega, rmin, rmax, sinogram_order),
-    #                   method='Nelder-Mead', tol=0.5)
-    #    cen = out.x
-    return cen
+    out = minimize(_center_resid, center, method='Nelder-Mead', tol=tol,
+                   args=(sino, omega, blur_weight, sinogram_order, imin, imax))
+    return out.x[0]
+
+def _center_resid(center, sino, omega, blur_weight=1, sinogram_order=True,
+                  imin=None, imax=None, allout=False):
+    """
+    Cost function used for the ``find_center`` routine:
+    combines "blur" and "negative entropy"
+    """
+    ns, nang, nx = sino.shape
+    img = tomopy.recon(sino, omega, center,
+                       sinogram_order=sinogram_order,
+                       algorithm='gridrec', filter_name='shepp')
+    img = tomopy.circ_mask(img, axis=0)
+    blur = -((img - img.mean())**2).sum()/img.size
+
+    if imin is None or imax is None:
+        ioff = (img.max() - img.min())/25.0
+        if imin is None:
+            imin = img.min() - ioff
+        if imax is None:
+            imax = img.max() + ioff
+
+    hist, _ = np.histogram(img, bins=512, range=[imin, imax])
+    hist =  hist/(2*(imax-imin))
+    hist[np.where(hist==0)] = 1.e-20
+    negent = -np.dot(hist, np.log(hist))
+    score = blur_weight*blur + negent
+    if allout: return blur_weight*blur + negent, blur, negent
+    return score
+
 
 def _center_resid_negent(center, sino, omega, rmin, rmax, sinogram_order=True):
     """
@@ -150,10 +208,6 @@ def tomo_reconstruction(sino, omega, algorithm='gridrec',
         center = sino.shape[1]/2.
 
     if refine_center:
-        print(">> Refine Center start>> ", center, sinogram_order)
-        # center = tomopy.find_center(sino, np.radians(omega), init=center,
-        #                            ind=0, tol=0.5, sinogram_order=sinogram_order)
-
         center = find_tomo_center(sino, np.radians(omega), center=center,
                                   sinogram_order=sinogram_order)
         print(">> Refine Center done>> ", center, sinogram_order)
