@@ -7,8 +7,8 @@ Authors/Modifications:
 '''
 
 import logging
-
 logger = logging.getLogger(__name__)
+logger.level = logging.WARNING
 
 import numpy as np
 from scipy.optimize import leastsq, minimize
@@ -123,8 +123,11 @@ def find_tomo_center(sino, omega, center=None, tol=0.25, blur_weight=1.0,
         xmax = sino.shape[2]
     if center is None:
         center = xmax/2.0
+    rad_angles = 1.0*omega
+    if rad_angles[1]-rad_angles[0] > 0.1 or rad_angles.mean() > 10:
+        rad_angles = np.radians(rad_angles)
 
-    img = tomopy.recon(sino, omega, center,
+    img = tomopy.recon(sino, rad_angles, center,
                        sinogram_order=sinogram_order,
                        algorithm='gridrec', filter_name='shepp')
     img = tomopy.circ_mask(img, axis=0)
@@ -133,17 +136,24 @@ def find_tomo_center(sino, omega, center=None, tol=0.25, blur_weight=1.0,
     imax = img.max() + ioff
 
     out = minimize(_center_resid, center, method='Nelder-Mead', tol=tol,
-                   args=(sino, omega, blur_weight, sinogram_order, imin, imax))
+                   args=(sino, rad_angles, blur_weight, sinogram_order, imin, imax))
     return out.x[0]
 
-def _center_resid(center, sino, omega, blur_weight=1, sinogram_order=True,
+def _center_resid(center, sino, omega, blur_weight=2, sinogram_order=True,
                   imin=None, imax=None, allout=False):
     """
     Cost function used for the ``find_center`` routine:
     combines "blur" and "negative entropy"
     """
     ns, nang, nx = sino.shape
-    img = tomopy.recon(sino, omega, center,
+    if isinstance(center, (list, tuple, np.ndarray)):
+        center = center[0]
+
+    rad_angles = 1.0*omega
+    if rad_angles[1]-rad_angles[0] > 0.1 or rad_angles.mean() > 10:
+        rad_angles = np.radians(rad_angles)
+
+    img = tomopy.recon(sino, rad_angles, center,
                        sinogram_order=sinogram_order,
                        algorithm='gridrec', filter_name='shepp')
     img = tomopy.circ_mask(img, axis=0)
@@ -155,12 +165,16 @@ def _center_resid(center, sino, omega, blur_weight=1, sinogram_order=True,
             imin = img.min() - ioff
         if imax is None:
             imax = img.max() + ioff
-
-    hist, _ = np.histogram(img, bins=512, range=[imin, imax])
-    hist =  hist/(2*(imax-imin))
-    hist[np.where(hist==0)] = 1.e-20
-    negent = -np.dot(hist, np.log(hist))
+    try:
+        hist, _ = np.histogram(img, bins=512, range=[imin, imax])
+        hist =  hist/(2*(imax-imin))
+        hist[np.where(hist==0)] = 1.e-20
+        negent = -np.dot(hist, np.log(hist))
+    except:
+        negent = blur
     score = blur_weight*blur + negent
+    # print("centering score %.1f %11.2g / %11.2g %11.2g / %.2f %.2f (%.2f)" % (center, blur_weight*blur + negent,
+    #                                                                   blur, negent, imin, imax, omega.mean()))
     if allout: return blur_weight*blur + negent, blur, negent
     return score
 
@@ -208,7 +222,7 @@ def tomo_reconstruction(sino, omega, algorithm='gridrec',
         center = sino.shape[1]/2.
 
     if refine_center:
-        center = find_tomo_center(sino, np.radians(omega), center=center,
+        center = find_tomo_center(sino, omega, center=center,
                                   sinogram_order=sinogram_order)
         print(">> Refine Center done>> ", center, sinogram_order)
     algorithm = algorithm.lower()
@@ -217,6 +231,11 @@ def tomo_reconstruction(sino, omega, algorithm='gridrec',
         recon_kws['filter_name'] = filter_name
     else:
         recon_kws['num_iter'] = num_iter
-    tomo = tomopy.recon(sino, np.radians(omega), algorithm=algorithm,
+
+    rad_angles = 1.0*omega
+    if rad_angles[1]-rad_angles[0] > 0.1 or rad_angles.mean() > 10:
+        rad_angles = np.radians(rad_angles)
+
+    tomo = tomopy.recon(sino, rad_angles, algorithm=algorithm,
                         center=center, sinogram_order=sinogram_order, **recon_kws)
     return center, tomo
