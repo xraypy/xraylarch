@@ -25,9 +25,6 @@ def FloatSpin(parent, value=0, action=None, tooltip=None,
         fs = wx.SpinCtrlDouble(parent, -1, value=fmt % value,
                                size=(size[0]+25, size[1]),
                                inc=increment, **kws)
-        fs = wx.SpinCtrlDouble(parent, -1, value=fmt % value,
-                               size=(size[0]+25, size[1]),
-                               inc=increment, **kws)
         fs.SetDigits(digits)
         if minval is not None:
             fs.SetMin(minval)
