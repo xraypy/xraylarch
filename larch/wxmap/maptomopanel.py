@@ -33,13 +33,14 @@ except ImportError:
 
 import numpy as np
 import scipy.stats as stats
-
+from wxmplot import PlotFrame
 from  ..wxlib import (EditableListBox, SimpleText,
                        FloatCtrl, Font, pack, Popup, Button, MenuItem,
                        Choice, Check, GridPanel, FileSave, HLine)
+from ..wxlib.plotter import _plot
 from ..utils.strutils import bytes2str, version_ge
 from ..io import nativepath
-from ..math.tomography import TOMOPY_ALG, TOMOPY_FILT
+from ..math.tomography import TOMOPY_ALG, TOMOPY_FILT, _center_resid
 
 from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
 
@@ -50,7 +51,6 @@ RIGHT = wx.ALIGN_RIGHT
 ALL_CEN =  wx.ALL|CEN
 ALL_LEFT =  wx.ALL|LEFT
 ALL_RIGHT =  wx.ALL|RIGHT
-
 
 PLOT_TYPES = ('Single ROI Map', 'Three ROI Map', 'Correlation Plot')
 PLOT_OPERS = ('/', '*', '-', '+')
@@ -125,9 +125,11 @@ class TomographyPanel(GridPanel):
                              label='Scalar "i1" is transmission data')
 
         self.tomo_show = [Button(self, 'Show New Map',     size=(CWID, -1),
-                               action=partial(self.onShowTomograph, new=True)),
+                                 action=partial(self.onShowTomograph, new=True)),
                           Button(self, 'Replace Last Map', size=(CWID, -1),
-                               action=partial(self.onShowTomograph, new=False))]
+                                 action=partial(self.onShowTomograph, new=False)),
+                          Button(self, 'Show Centering Data', size=(CWID, -1),
+                                 action=self.onShowCentering)]
 
         self.tomo_algo = Choice(self, choices=TOMOPY_ALG, size=(CWID, -1),
                                 action=self.onALGchoice)
@@ -192,6 +194,7 @@ class TomographyPanel(GridPanel):
         self.Add((5, 5),                        dcol=1, style=LEFT, newrow=True)
         self.Add(self.tomo_show[0],             dcol=1, style=LEFT)
         self.Add(self.tomo_show[1],             dcol=1, style=LEFT)
+        self.Add(self.tomo_show[2],             dcol=1, style=LEFT)
 
         self.Add(HLine(self, size=(WWID, 5)),    dcol=8, style=LEFT,  newrow=True)
 
@@ -420,9 +423,9 @@ class TomographyPanel(GridPanel):
             label = ''
             if self.i1trans.IsChecked() and roiname.lower().startswith('i1'):
                 xmap = -np.log(xmap)
-                xmrange = xmap.max()-xmap.min()
-                xmap = (xmap - xmap.min() + 1.e-6*xmrange)/xmrange
                 label = '-log'
+            elif isinstance(normmap, np.ndarray):
+                xmap *= normmap.mean()
             return xmap, label
 
         normmap = 1.
@@ -493,6 +496,38 @@ class TomographyPanel(GridPanel):
                                hotcols=xrmfile.hotcols)
         print('Saved.')
 
+    def onShowCentering(self, event=None):
+        xrmfile = self.owner.current_file
+        det = None
+        title, subtitles, info, x, omega, sino_order, sino = self.calculateSinogram()
+        algorithm = self.tomo_algo.GetStringSelection()
+        filter_name = self.tomo_filt.GetStringSelection()
+        niter = self.tomo_niter.GetValue()
+        center = self.center_value.GetValue()
+
+        print('Show Center ', center, sino.shape)
+        
+
+        print(omega.min(), omega.max(), omega.mean())
+
+        img = tomopy.recon(sino, np.radians(omega), center,
+                           sinogram_order=sino_order,
+                           algorithm='gridrec', filter_name='shepp')
+        img = tomopy.circ_mask(img, axis=0)
+        ioff = (img.max() - img.min())/25.0
+        imin = img.min() - ioff
+        imax = img.max() + ioff
+
+        print(imin, imax)
+        centers = int(center) + np.linspace(-8, 8, 65)
+        scores = centers*0.0
+        for i, cen in enumerate(centers):
+            s = _center_resid(cen, sino, omega, blur_weight=2, 
+                              sinogram_order=sino_order,
+                              imin=imin, imax=imax)
+            scores[i] = s
+        _plot(centers, scores, xlabel='Center(pixels)', ylabel='Blurriness', new=True, 
+              markersize=4, marker='o', title='Image Blurriness Score')
 
     def onShowTomograph(self, event=None, new=True):
         xrmfile = self.owner.current_file
@@ -517,13 +552,6 @@ class TomographyPanel(GridPanel):
             t = tomo.sum(axis=2)/tomo.max()
         else:
             t = tomo/tomo.max()
-
-        _mean = ((t-t.mean())**2).mean()
-        hist, _ = np.histogram(t, bins=128, range=[t.min(), t.max()])
-        hist = hist.astype('float64')/t.size
-        hist[np.where(hist<1.e-15)] = 1.e-15
-        _negent = -np.dot(hist, np.log(hist))
-        # print("sharpness center=%f  mean=%g ent=%g" % (center, _mean, _negent))
 
 
         if refine_center:
