@@ -139,7 +139,7 @@ def find_tomo_center(sino, omega, center=None, tol=0.25, blur_weight=2.0,
     imin = img.min() - ioff
     imax = img.max() + ioff
 
-    out = minimize(center_scoreresid, center, method='Nelder-Mead', tol=tol,
+    out = minimize(center_score, center, method='Nelder-Mead', tol=tol,
                    args=(sino, omega, blur_weight, sinogram_order, imin, imax))
     return out.x[0]
 
