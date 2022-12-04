@@ -40,7 +40,7 @@ from  ..wxlib import (EditableListBox, SimpleText,
 from ..wxlib.plotter import _plot
 from ..utils.strutils import bytes2str, version_ge
 from ..io import nativepath
-from ..math.tomography import TOMOPY_ALG, TOMOPY_FILT, _center_resid
+from ..math.tomography import TOMOPY_ALG, TOMOPY_FILT, center_score
 
 from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
 
@@ -505,12 +505,8 @@ class TomographyPanel(GridPanel):
         niter = self.tomo_niter.GetValue()
         center = self.center_value.GetValue()
 
-        print('Show Center ', center, sino.shape)
-        
-
-        print(omega.min(), omega.max(), omega.mean())
-
-        img = tomopy.recon(sino, np.radians(omega), center,
+        omega = np.radians(omega)
+        img = tomopy.recon(sino, omega, center,
                            sinogram_order=sino_order,
                            algorithm='gridrec', filter_name='shepp')
         img = tomopy.circ_mask(img, axis=0)
@@ -518,16 +514,14 @@ class TomographyPanel(GridPanel):
         imin = img.min() - ioff
         imax = img.max() + ioff
 
-        print(imin, imax)
-        centers = int(center) + np.linspace(-8, 8, 65)
-        scores = centers*0.0
+        centers = int(center) + np.linspace(-10, 10, 81)
+        scores = np.zeros(len(centers))
         for i, cen in enumerate(centers):
-            s = _center_resid(cen, sino, omega, blur_weight=2, 
-                              sinogram_order=sino_order,
-                              imin=imin, imax=imax)
-            scores[i] = s
-        _plot(centers, scores, xlabel='Center(pixels)', ylabel='Blurriness', new=True, 
-              markersize=4, marker='o', title='Image Blurriness Score')
+            score = center_score(cen, sino, omega, sinogram_order=sino_order,
+                                 imin=imin, imax=imax)
+            scores[i] = score
+        _plot(centers, scores, xlabel='Center(pixels)', ylabel='Blurriness',
+              new=True, markersize=4, marker='o', title='Image Blurriness Score')
 
     def onShowTomograph(self, event=None, new=True):
         xrmfile = self.owner.current_file
@@ -553,12 +547,9 @@ class TomographyPanel(GridPanel):
         else:
             t = tomo/tomo.max()
 
-
         if refine_center:
             self.set_center(xrmfile.xrmmap['tomo/center'][()])
             self.refine_center.SetValue(False)
-
-
 
         omeoff, xoff = 0, 0
         title = '%s, center=%0.1f' % (title, center)
