@@ -270,6 +270,8 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
         energy = energy.squeeze()
     if len(mu.shape) > 1:
         mu = mu.squeeze()
+
+    energy, mu = remove_nans2(energy, mu)
     pre_dat = preedge(energy, mu, e0=e0, step=step, nnorm=nnorm,
                       nvict=nvict, pre1=pre1, pre2=pre2, norm1=norm1,
                       norm2=norm2)
@@ -298,6 +300,7 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
         fpars.add('c0', value=0, vary=True)
         fpars.add('c1', value=0, vary=(ncoefs>1))
         fpars.add('c2', value=0, vary=(ncoefs>2))
+
         fit = Minimizer(flat_resid, fpars, fcn_args=(enx, mux))
         result = fit.leastsq(xtol=1.e-6, ftol=1.e-6)
 
