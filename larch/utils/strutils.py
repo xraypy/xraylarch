@@ -32,11 +32,13 @@ def strict_ascii(s, replacement='_'):
     t = bytes(s, 'UTF-8')
     return ''.join([chr(a) if a < 128 else replacement for a in t])
 
-RESERVED_WORDS = ['False', 'None', 'True', 'and', 'as', 'assert', 'async',
+RESERVED_WORDS = ('False', 'None', 'True', 'and', 'as', 'assert', 'async',
                   'await', 'break', 'class', 'continue', 'def', 'del', 'elif',
-                  'else', 'except', 'finally', 'for', 'from', 'global', 'if',
-                  'import', 'in', 'is', 'lambda', 'nonlocal', 'not', 'or',
-                  'pass', 'raise', 'return', 'try', 'while', 'with', 'yield']
+                  'else', 'end', 'enddef', 'endfor', 'endif', 'endtry',
+                  'endwhile', 'eval', 'except', 'exec', 'execfile', 'finally',
+                  'for', 'from', 'global', 'group', 'if', 'import', 'in', 'is',
+                  'lambda', 'nonlocal', 'not', 'or', 'pass', 'print', 'raise',
+                  'return', 'try', 'while', 'with', 'yield')
 
 
 NAME_MATCH = re.compile(r"[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*$").match
