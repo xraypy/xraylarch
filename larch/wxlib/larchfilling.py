@@ -16,8 +16,8 @@ import wx
 import numpy
 import wx.html as html
 import types
+import time
 
-from wx.py import dispatcher
 from wx.py import editwindow
 
 import inspect
@@ -101,13 +101,12 @@ class FillingTree(wx.TreeCtrl):
 
     def __init__(self, parent, id=-1, pos=wx.DefaultPosition,
                  size=wx.DefaultSize, style=wx.TR_DEFAULT_STYLE,
-                 rootObject=None, rootLabel=None, rootIsNamespace=False,
-                 static=False):
+                 rootObject=None, rootLabel=None, rootIsNamespace=False):
+
         """Create FillingTree instance."""
         wx.TreeCtrl.__init__(self, parent, id, pos, size, style)
         self.rootIsNamespace = rootIsNamespace
         self.rootLabel = rootLabel
-        self.static = static
         self.item = None
         self.root = None
         self.setRootObject(rootObject)
@@ -120,26 +119,30 @@ class FillingTree(wx.TreeCtrl):
             self.rootLabel = 'Larch Data'
 
         self.item = self.root = self.AddRoot(self.rootLabel, -1, -1,  self.rootObject)
+
         self.SetItemHasChildren(self.root,  self.objHasChildren(self.rootObject))
+        self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSelChanged, id=self.GetId())
+        self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnItemActivated, id=self.GetId())
         self.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.OnItemExpanding, id=self.GetId())
         self.Bind(wx.EVT_TREE_ITEM_COLLAPSED, self.OnItemCollapsed, id=self.GetId())
-        self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSelChanged, id=self.GetId())
-        # self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnItemActivated, id=self.GetId())
         self.Bind(wx.EVT_RIGHT_DOWN, self.OnSelChanged, id=self.GetId() )
-        if not self.static:
-            dispatcher.connect(receiver=self.push, signal='Interpreter.push')
 
-    def push(self, command, more):
+
+    def push(self, command=None, more=None):
         """Receiver for Interpreter.push signal."""
         self.display()
 
-    def OnItemExpanding(self, event):
+    def OnItemExpanding(self, event=None):
         """Add children to the item."""
-        item = event.GetItem()
+        try:
+            item = event.GetItem()
+        except:
+            item = self.item
         if self.IsExpanded(item):
             return
         self.addChildren(item)
         self.SelectItem(item)
+
 
     def OnItemCollapsed(self, event):
         """Remove all children from the item."""
@@ -220,6 +223,7 @@ class FillingTree(wx.TreeCtrl):
         except:
             return
         # keys.sort(lambda x, y: cmp(str(x).lower(), str(y).lower()))
+        # print("add Children ", obj, keys)
         for key in sorted(keys):
             itemtext = str(key)
             # Show string dictionary items with single quotes, except
@@ -342,26 +346,25 @@ class FillingText(editwindow.EditWindow):
     revision = __revision__
 
     def __init__(self, parent, id=-1, pos=wx.DefaultPosition,
-                 size=wx.DefaultSize, style=wx.CLIP_CHILDREN,
-                 static=False):
+                 size=wx.DefaultSize, style=wx.CLIP_CHILDREN, bgcol=None):
         """Create FillingText instance."""
+        if bgcol is not None:
+            editwindow.FACES['backcol'] = bgcol
+
+
         editwindow.EditWindow.__init__(self, parent, id, pos, size, style)
         # Configure various defaults and user preferences.
         self.SetReadOnly(True)
         self.SetWrapMode(True)
         self.SetMarginWidth(1, 0)
-        if not static:
-            dispatcher.connect(receiver=self.push, signal='Interpreter.push')
 
     def push(self, command, more):
         """Receiver for Interpreter.push signal."""
         self.Refresh()
 
     def SetText(self, *args, **kwds):
-        # print("Text Set Text ", args)
         self.SetReadOnly(False)
         editwindow.EditWindow.SetText(self, *args, **kwds)
-        self.SetReadOnly(True)
 
 
 class FillingRST(html.HtmlWindow):
@@ -370,14 +373,10 @@ class FillingRST(html.HtmlWindow):
     name = 'Filling Restructured Text'
 
     def __init__(self, parent, id=-1, pos=wx.DefaultPosition,
-                 size=wx.DefaultSize, style=wx.NO_FULL_REPAINT_ON_RESIZE,
-                 static=False):
+                 size=wx.DefaultSize, style=wx.NO_FULL_REPAINT_ON_RESIZE):
         """Create FillingRST instance."""
         html.HtmlWindow.__init__(self, parent, id, style=wx.NO_FULL_REPAINT_ON_RESIZE)
 
-        # Configure various defaults and user preferences.
-        if not static:
-            dispatcher.connect(receiver=self.push, signal='Interpreter.push')
 
     def push(self, command, more):
         """Receiver for Interpreter.push signal."""
@@ -395,18 +394,21 @@ class Filling(wx.SplitterWindow):
     name = 'Filling'
     revision = __revision__
 
-    def __init__(self, parent, id=-1, pos=wx.DefaultPosition,
+    def __init__(self, parent, pos=wx.DefaultPosition,
                  size=wx.DefaultSize, style=wx.SP_3D|wx.SP_LIVE_UPDATE,
                  name='Filling Window', rootObject=None,
-                 rootLabel=None, rootIsNamespace=False, static=False):
+                 rootLabel=None, rootIsNamespace=False, bgcol=None,
+                 fgcol=None):
         """Create a Filling instance."""
-        wx.SplitterWindow.__init__(self, parent, id, pos, size, style, name)
+
+        wx.SplitterWindow.__init__(self, parent, -1, pos, size, style, name)
         self.tree = FillingTree(parent=self, rootObject=rootObject,
                                 rootLabel=rootLabel,
-                                rootIsNamespace=rootIsNamespace,
-                                static=static)
+                                rootIsNamespace=rootIsNamespace)
+        self.tree.SetBackgroundColour(bgcol)
+        self.tree.SetForegroundColour(fgcol)
+        self.text = FillingText(parent=self, bgcol=bgcol)
 
-        self.text = FillingText(parent=self, static=static)
         self.SplitVertically(self.tree, self.text, 200)
         self.SetMinimumPaneSize(100)
 
@@ -418,18 +420,14 @@ class Filling(wx.SplitterWindow):
             self.tree.SelectItem(self.tree.root)
             self.tree.display()
 
-        # self.Bind(wx.EVT_SPLITTER_SASH_POS_CHANGED, self.OnChanged)
-
     def SetRootObject(self, rootObject=None):
         self.tree.setRootObject(rootObject)
         if self.tree.root is not None:
             self.tree.SelectItem(self.tree.root)
-            wx.CallAfter(self.tree.display)
+            self.tree.display()
+
 
     def OnChanged(self, event):
-        #this is important: do not evaluate this event=>
-        # otherwise, splitterwindow behaves strange
-        #event.Skip()
         pass
 
     def onRefresh(self, evt=None):
@@ -514,7 +512,7 @@ class FillingFrame(wx.Frame):
     def __init__(self, parent=None, id=-1, title='Larch Data Tree',
                  pos=wx.DefaultPosition, size=(600, 400),
                  style=wx.DEFAULT_FRAME_STYLE, rootObject=None,
-                 rootLabel=None, rootIsNamespace=False, static=False):
+                 rootLabel=None, rootIsNamespace=False):
         """Create FillingFrame instance."""
         wx.Frame.__init__(self, parent, id, title, pos, size, style)
         intro = 'Larch Data Tree'
@@ -523,8 +521,7 @@ class FillingFrame(wx.Frame):
         self.filling = Filling(parent=self,
                                rootObject=rootObject,
                                rootLabel=rootLabel,
-                               rootIsNamespace=rootIsNamespace,
-                               static=static)
+                               rootIsNamespace=rootIsNamespace)
+
         # Override so that status messages go to the status bar.
         self.filling.tree.setStatusText = self.SetStatusText
-
