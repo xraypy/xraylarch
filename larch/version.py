@@ -3,11 +3,10 @@
 __date__    = '2022-Jul-05'
 __release_version__ = '0.9.65'
 __authors__ = "M. Newville, M. Koker, M. Rovezzi, B. Ravel, and others"
-
 import sys
-from collections import OrderedDict, namedtuple
+from collections import namedtuple
 from packaging.version import parse as ver_parse
-
+import importlib
 import urllib3
 import requests
 import numpy
@@ -27,52 +26,70 @@ except PackageNotFoundError:
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-def version_data(mods=None):
+def version_data():
     "get version data"
-    sysvers = sys.version
-    if '\n' in sysvers:
-        sysvers = sysvers.split('\n', maxsplit=1)[0]
+    buildinfo = sys.version
+    if '\n' in buildinfo:
+        buildinfo = buildinfo.split('\n', maxsplit=1)[0]
+    builder = buildinfo[:35]
+    if '|' in buildinfo:
+        sects = buildinfo.split('|')
+        if len(sects) > 1:
+            builder = sects[1].strip()
+            
+    vinf  = sys.version_info
+    pyvers = f'{vinf.major:d}.{vinf.minor:d}.{vinf.micro:d}'
+    
+    vdat = {}
+    vdat['larch'] = f'{__release_version__}, released {__date__}'
+    vdat['python'] = f'{pyvers}, {builder:s}'
 
-    vdat = OrderedDict()
-    vdat['larch'] = f'{__release_version__} ({__date__}) {__authors__}'
-    vdat['python'] = sysvers
-
-    allmods = [numpy, scipy, matplotlib, lmfit]
-    if mods is not None:
-        for mod in mods:
-            if mod not in allmods:
-                allmods.append(mod)
-
-    for mod in allmods:
-        if mod is not None:
-            mname = mod.__name__
-            try:
-                vers = mod.__version__
-            except:
-                vers = "unavailable"
-            vdat[mname] = vers
     return vdat
 
 def make_banner(mods=None):
     "return startup banner"
-    vdat = version_data(mods=mods)
-    _lvers = vdat.pop('larch')
-    _pvers = vdat.pop('python')
-    lines = [f'Larch {_lvers}', f'Python {_pvers}']
-
-    reqs = []
-    for name, vstr in vdat.items():
-        reqs.append(f'{name} {vstr}')
-    lines.append(', '.join(reqs))
+    vdat = version_data()
+    lines = [f"Larch {vdat['larch']}"]
     if __version__ != __release_version__:
         lines.append(f'Devel Version: {__version__:s}')
-
+    lines.append(f"Python {vdat['python']}")
+    lines.append('use `print(show_version())` for version details')
     linelen = max([len(line) for line in lines])
-    border = '='*max(linelen, 75)
+    border = '='*min(75, max(linelen, 25))
     lines.insert(0, border)
     lines.append(border)
-
     return '\n'.join(lines)
+
+
+def show_version():
+    vinf  = sys.version_info
+    pyvers = f'{vinf.major:d}.{vinf.minor:d}.{vinf.micro:d}'
+    out = [f'Larch release version {__release_version__}',
+           f'Larch develop version {__version__}',
+           f'Larch release date    {__date__}',
+           f'Larch authors         {__authors__}',
+           f'Python version        {pyvers}',
+           f'Python full version   {sys.version}']
+
+    for modname in ('numpy', 'scipy', 'matplotlib', 'h5py', 'sklearn',
+                    'skimage', 'fabio', 'pyFAI', 'PIL', 'imageio',
+                    'silx', 'tomopy', 'pymatgen.core', 'numdifftools',
+                    'xraydb', 'lmfit', 'asteval', 'wx', 'wxmplot'):
+        
+        vers = "not installed"
+        if modname not in sys.modules:
+            try:
+                importlib.import_module(modname)
+            except:
+                pass
+        if modname in sys.modules:
+            mod = sys.modules[modname]
+            vers = getattr(mod, '__version__', None)
+            if vers is None:
+                vers = getattr(mod, 'version',
+                               'unknown version')
+        out.append(f'{modname:20s}  {vers}')
+    return '\n'.join(out)
 
 
 ########

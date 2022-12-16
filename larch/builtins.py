@@ -10,6 +10,7 @@ from .utils.show import _larch_builtins as show_builtins
 from .helper import Helper
 from .larchlib import parse_group_args, Journal
 from .symboltable import isgroup as sym_isgroup
+from .version import show_version
 
 from . import math
 from . import io
@@ -321,14 +322,16 @@ def init_display_group(_larch):
         display.terminal = 'xterm'
 
 
-_main_builtins = dict(group=_group, dir=_dir, which=_which, exists=_exists,
-                      isgroup=_isgroup, subgroups=_subgroups,
-                      group_items=_groupitems,
+_main_builtins = dict(group=_group, dir=_dir, which=_which,
+                      exists=_exists, isgroup=_isgroup,
+                      subgroups=_subgroups, group_items=_groupitems,
                       parse_group_args=parse_group_args, pause=_pause,
                       sleep=_sleep, systime=_time, clock=_time,
                       strftime=_strftime, reload=_reload, run=_run,
                       eval=_eval, help=_help, journal=_journal,
-                      save_history=save_history, show_history=show_history)
+                      show_version=show_version,
+                      save_history=save_history,
+                      show_history=show_history)
 
 _main_builtins.update(utils._larch_builtins)
 _main_builtins.update(show_builtins)

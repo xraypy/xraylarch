@@ -81,7 +81,12 @@ class LarchWxShell(object):
         if self.output is not None:
             style = self.output.GetDefaultStyle()
             bgcol = style.GetBackgroundColour()
-            sfont = style.GetFont()
+            sfont = style.GetFont()            
+            sfont.Family = wx.MODERN
+            sfont.Weight = wx.BOLD
+            sfont.PointSize = 10
+            style.SetFont(sfont)
+            self.output.SetDefaultStyle(style)            
             self.textstyle = wx.TextAttr('black', bgcol, sfont)
         self.SetPrompt(True)
 
@@ -189,7 +194,7 @@ class LarchPanel(wx.Panel):
     """Larch Input/Output Panel + Data Viewer as a wx.Panel,
     suitable for embedding into apps
     """
-    def __init__(self,  parent=None, _larch=None,
+    def __init__(self,  parent=None, _larch=None, font=None,
                  historyfile='history_larchgui.lar', **kwds):
         self.parent = parent
         if not historyfile.startswith(larch.site_config.user_larchdir):
@@ -209,7 +214,12 @@ class LarchPanel(wx.Panel):
 
         self.output.SetBackgroundColour(BACKGROUND_COLOUR)
         self.output.SetForegroundColour(FOREGROUND_COLOUR)
+        if font is not None:
+            self.SetFont(font)
+            self.objtree.tree.SetFont(font)
+            self.objtree.text.SetFont(font)
 
+        
         self.output.CanCopy()
         self.output.SetInsertionPointEnd()
         splitter.SplitHorizontally(self.objtree, self.output, 0)
@@ -257,7 +267,7 @@ class LarchPanel(wx.Panel):
 
     def write_banner(self):
         self.larchshell.set_textstyle('text2')
-        self.larchshell.write(make_banner([wx]))
+        self.larchshell.write(make_banner())
         self.larchshell.write("\n  \n")
         self.larchshell.set_textstyle('text')
 
@@ -317,11 +327,12 @@ class LarchFrame(wx.Frame):
         self.subframes = {}
         self.last_array_sel = {}
 
-        wx.Frame.__init__(self, parent, -1, size=(750, 725),
+        wx.Frame.__init__(self, parent, -1, size=(900, 725),
                           style= wx.DEFAULT_FRAME_STYLE)
         self.SetTitle('LarchGUI')
 
-        self.font = wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
+        self.font = wx.Font(11, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
+        self.fixfont = wx.Font(11, wx.MODERN, wx.NORMAL, wx.BOLD, 0, "")
         self.SetFont(self.font)
         sbar = self.CreateStatusBar(2, wx.CAPTION)
 
@@ -329,7 +340,8 @@ class LarchFrame(wx.Frame):
         self.SetStatusText("Larch initializing...", 0)
 
         self.mainpanel = LarchPanel(parent=self, _larch=_larch,
-                                    historyfile=historyfile)
+                                    historyfile=historyfile,
+                                    font=self.font)
 
         self.larchshell = self.mainpanel.larchshell
         self._larch = self.larchshell._larch
@@ -414,9 +426,10 @@ class LarchFrame(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK:
             self.font = dlg.GetFontData().GetChosenFont()
             self.SetFont(self.font)
-            self.mainpanel.output.SetFont(self.font)
             self.mainpanel.objtree.SetFont(self.font)
             self.mainpanel.objtree.text.SetFont(self.font)
+            
+            self.mainpanel.output.SetFont(self.fixfont)
         dlg.Destroy()
 
     def onWxInspect(self, event=None):
@@ -568,7 +581,7 @@ class LarchFrame(wx.Frame):
 
     def onAbout(self, event=None):
         about_msg =  """LarchGui:
-        %s""" % (make_banner([wx]))
+        %s""" % (make_banner())
 
         dlg = wx.MessageDialog(self, about_msg,
                                "About LarchGui", wx.OK | wx.ICON_INFORMATION)
