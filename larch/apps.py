@@ -301,7 +301,7 @@ def run_larch():
         install_extras(extras_wxgraph)
         install_extras(extras_epics)
         from larch.wxlib.larchframe import LarchApp
-        LarchApp().MainLoop()
+        LarchApp(with_inspection=True).MainLoop()
 
     # run wx Larch CLI
     else:
