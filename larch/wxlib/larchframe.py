@@ -31,6 +31,9 @@ from larch.utils import get_cwd
 FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (*.*)|*.*"
 
 ICON_FILE = 'larch.ico'
+BACKGROUND_COLOUR = '#FCFCFA'
+FOREGROUND_COLOUR = '#050520'
+
 
 def makeColorPanel(parent, color):
     p = wx.Panel(parent, -1)
@@ -108,10 +111,12 @@ class LarchWxShell(object):
             return
 
         display_colors = self.symtable._sys.display.colors
+
         textattrs = display_colors.get(mode, {'color':'black'})
         color = textattrs['color']
+
         style = self.output.GetDefaultStyle()
-        bgcol = style.GetBackgroundColour()
+        bgcol = BACKGROUND_COLOUR
         sfont = style.GetFont()
         self.textstyle = wx.TextAttr(color, bgcol, sfont)
 
@@ -195,12 +200,15 @@ class LarchPanel(wx.Panel):
 
         self.splitter = splitter = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
         splitter.SetMinimumPaneSize(150)
-        self.SetBackgroundColour('#E9EEE0')
 
-        self.objtree = Filling(splitter,  rootLabel='_main')
+        self.objtree = Filling(splitter,  rootLabel='_main',
+                               fgcol=FOREGROUND_COLOUR, bgcol=BACKGROUND_COLOUR)
 
         self.output = wx.TextCtrl(splitter, -1,  '',
                                   style=wx.TE_MULTILINE|wx.TE_RICH|wx.TE_READONLY)
+
+        self.output.SetBackgroundColour(BACKGROUND_COLOUR)
+        self.output.SetForegroundColour(FOREGROUND_COLOUR)
 
         self.output.CanCopy()
         self.output.SetInsertionPointEnd()
@@ -244,8 +252,8 @@ class LarchPanel(wx.Panel):
                                        input  = self.input)
 
         self.objtree.SetRootObject(self.larchshell.symtable)
-        root = self.objtree.tree.GetRootItem()
-        self.objtree.tree.Expand(root)
+        # root = self.objtree.tree.GetRootItem()
+
 
     def write_banner(self):
         self.larchshell.set_textstyle('text2')
@@ -603,11 +611,12 @@ class LarchFrame(wx.Frame):
 
 class LarchApp(LarchWxApp):
     "simple app to wrap LarchFrame"
-    def __init__(self, **kws):
+    def __init__(self, with_inspection=False, **kws):
+        self.with_inspection = with_inspection
         LarchWxApp.__init__(self, **kws)
 
     def createApp(self):
-        frame = LarchFrame(exit_on_close=True, with_inspection=self.with_inspect)
+        frame = LarchFrame(exit_on_close=True, with_inspection=self.with_inspection)
         frame.Show()
         self.SetTopWindow(frame)
         return True
