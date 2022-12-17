@@ -20,7 +20,7 @@ from .readlinetextctrl import ReadlineTextCtrl
 from .larchfilling import Filling
 from .columnframe import ColumnDataFileFrame
 from .athena_importer import AthenaImporter
-from . import inputhook
+from . import inputhook, FONTSIZE
 
 from larch.io import (read_ascii, read_xdi, read_gsexdi,
                       gsescan_group, fix_varname,
@@ -81,12 +81,12 @@ class LarchWxShell(object):
         if self.output is not None:
             style = self.output.GetDefaultStyle()
             bgcol = style.GetBackgroundColour()
-            sfont = style.GetFont()            
+            sfont = style.GetFont()
             sfont.Family = wx.MODERN
             sfont.Weight = wx.BOLD
-            sfont.PointSize = 10
+            sfont.PointSize = FONTSIZE
             style.SetFont(sfont)
-            self.output.SetDefaultStyle(style)            
+            self.output.SetDefaultStyle(style)
             self.textstyle = wx.TextAttr('black', bgcol, sfont)
         self.SetPrompt(True)
 
@@ -219,7 +219,7 @@ class LarchPanel(wx.Panel):
             self.objtree.tree.SetFont(font)
             self.objtree.text.SetFont(font)
 
-        
+
         self.output.CanCopy()
         self.output.SetInsertionPointEnd()
         splitter.SplitHorizontally(self.objtree, self.output, 0)
@@ -428,7 +428,7 @@ class LarchFrame(wx.Frame):
             self.SetFont(self.font)
             self.mainpanel.objtree.SetFont(self.font)
             self.mainpanel.objtree.text.SetFont(self.font)
-            
+
             self.mainpanel.output.SetFont(self.fixfont)
         dlg.Destroy()
 
