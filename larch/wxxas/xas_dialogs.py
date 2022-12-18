@@ -1888,50 +1888,23 @@ class LoadSessionDialog(wx.Frame):
         panel = GridPanel(rightpanel, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
         self.wids = wids = {}
 
-        over_choices = ('Import with new name', 'Overwrite existing group')
 
-        wids['policy'] = wx.RadioBox(panel, -1, "", wx.DefaultPosition,
-                                     wx.DefaultSize, over_choices, 1,
-                                     wx.RA_SPECIFY_COLS)
-
-        self.conflicts = {}
         top_message = 'Larch Session File: No XAFS Groups'
         symtable = controller.symtable
-        _xasgroups = getattr(controller.symtable, '_xasgroups', None)
+        _xasgroups = getattr(symtable, '_xasgroups', None)
 
         self.allgroups = session.symbols.get('_xasgroups', {})
 
         checked = []
-        if _xasgroups is not None and len(self.allgroups) > 0:
-            for fname, gname in self.allgroups.items():
-                self.grouplist.Append(fname)
-                if fname in _xasgroups:
-                    self.conflicts[gname] = fname
-                else:
-                    checked.append(fname)
+        for fname, gname in self.allgroups.items():
+            self.grouplist.Append(fname)
+            checked.append(fname)
+
         self.grouplist.SetCheckedStrings(checked)
 
-        group_names = list(self.allgroups.values()) + ['_xasgroups']
-        warnings = []
-        for key, dat in session.symbols.items():
-            if key not in group_names:
-                symcur = getattr(symtable, key, None)
-                if symcur is None:
-                    needs_warning = False
-                    continue
-                needs_warning = True
-                if isgroup(symcur) or isinstance(symcur, (dict, tuple, list)):
-                    needs_warnings = (len(symcur) > 0)
+        group_names = list(self.allgroups.values())
+        group_names += ['_xasgroups', '_feffpaths', '_feffcache']
 
-                if needs_warning:
-                    warnings.append(key)
-
-        nall = len(self.allgroups)
-        ncon = len(self.conflicts)
-
-        xafs_message = f'{nall} XAFS Groups: {ncon} conflicting (unselected)'
-
-        wids['policy'].Enable(ncon>0)
 
         wids['view_conf'] = Button(panel, 'Show Session Configuration',
                                      size=(200, 30), action=self.onShowConfig)
@@ -1945,17 +1918,19 @@ class LoadSessionDialog(wx.Frame):
         panel.Add(wids['view_cmds'], dcol=1, newrow=False)
         panel.Add(HLine(panel, size=(450, 2)), dcol=3, newrow=True)
 
-        panel.Add(SimpleText(panel, xafs_message), dcol=3, newrow=True)
-        panel.Add(SimpleText(panel, 'Policy for conflicts:'), newrow=True)
-        panel.Add(wids['policy'], dcol=3, newrow=False)
-        panel.Add((5, 5), newrow=True)
-        panel.Add(HLine(panel, size=(450, 2)), dcol=3, newrow=True)
-        panel.Add(SimpleText(panel, 'Other Working Data Groups (will overwrite existing groups):'),
-                  dcol=2, newrow=True)
+        over_msg = 'Importing these Groups/Data will overwrite values in the current session:'
+        panel.Add(SimpleText(panel, over_msg), dcol=2, newrow=True)
+        panel.Add(SimpleText(panel, "Symbol Name"), dcol=1, newrow=True)
+        panel.Add(SimpleText(panel, "Import/Overwrite?"), dcol=1)
         i = 0
+        self.overwrite_checkboxes = {}
         for g in self.session.symbols:
-            if g not in group_names:
-                panel.Add(SimpleText(panel, g),  dcol=1, newrow=(i%2==0))
+            if g not in group_names and hasattr(symtable, g):
+                chbox = Check(panel, default=True)
+                panel.Add(SimpleText(panel, g),  dcol=1, newrow=True)
+                panel.Add(chbox,  dcol=1)
+                self.overwrite_checkboxes[g] = chbox
+
                 i += 1
 
         panel.Add((5, 5), newrow=True)
@@ -2043,93 +2018,33 @@ class LoadSessionDialog(wx.Frame):
         self.Destroy()
 
     def onImport(self, event=None):
-        policy = self.wids['policy'].GetStringSelection().lower()
-        conflicts = self.conflicts
-        symtab = self.controller.symtable
-        fgroups = self.controller.file_groups
-        _xasgroups = self.session.symbols.get('_xasgroups', {})
 
-        _xasfiles = {}
+        ignore = []
+        for gname, chbox in self.overwrite_checkboxes.items():
+            if not chbox.IsChecked():
+                ignore.append(gname)
 
-        for fname, sym in _xasgroups.items():
-            _xasfiles[sym] = fname.strip()
-
-        ignore, selected = ['_xasgroups'], []
         sel_groups = self.grouplist.GetCheckedStrings()
         for fname, gname in self.allgroups.items():
             if fname not in sel_groups:
                 ignore.append(gname)
 
-        # avoid importing empty feffpaths and caches
-        if '_feffpaths' in self.session.symbols:
-            used = False
-            try:
-                used = len(self.session.symbols['_feffpaths']) > 0
-            except:
-                pass
-            if not used:
-                ignore.extend(('_feffpaths', '_feffit_params'))
+        lcmd = f"load_session('{self.filename}')"
+        if len(ignore) > 0:
+            ignore = repr(ignore)
+            lcmd = f"load_session('{self.filename}', ignore_groups={ignore})"
 
-        if '_feffcache' in self.session.symbols:
-            used = False
-            try:
-                used  = (len(self.session.symbols['_feffcache']['runs']) > 0 or
-                         len(self.session.symbols['_feffcache']['paths']) > 0)
-            except:
-                pass
-            if not used:
-                ignore.append('_feffcache')
+        cmds = ["# Loading Larch Session with ", lcmd, '######']
 
-        for i in _xasgroups.values():
-            if i not in ignore:
-                selected.append(i)
-
-        for i in self.session.symbols.keys():
-            if i not in ignore and i not in selected:
-                selected.append(i)
-
-        mergeable_dicts = ('_feffcache')
-        last_fname = None
-        for sym in selected:
-            install_sym = sym
-            install = True
-            if sym in _xasgroups.values():
-                install = sym in selected
-                if install and sym in conflicts and policy.startswith('import'):
-                    newsym = unique_name(sym, fgroups.values(), max=1000)
-                    _xasfiles[newsym] = _xasfiles.pop(sym)
-                    install_sym = newsym
-            if install:
-                dat = self.session.symbols[sym]
-                if install_sym in mergeable_dicts and isinstance(dat, dict):
-                    cur = getattr(symtab, install_sym, None)
-                    if isinstance(cur, dict):
-                        for key, val in cur.items():
-                            if isinstance(cur[key], dict) and key in dat:
-                                cur[key].update(dat[key])
-                            else:
-                                cur[key] = dat[key]
-                        dat = cur
-                setattr(symtab, install_sym, dat)
-                if sym in _xasgroups.values():
-                    fname = _xasfiles[install_sym]
-                    if fname in fgroups:
-                        newfname = unique_name(fname, fgroups.keys(), max=1000)
-                        fname = newfname
-                    fgroups[fname] = install_sym
-                    dat.filename = fname
-                    dat.groupname = install_sym
-                    last_fname = fname
-                    self.controller.filelist.Append(fname)
-
-        cmds = ["##########", "# Loaded Larch Session with",
-                f"# load_session('{self.filename}')"]
-        cmds.append("# _xasgroups = %s" % repr(symtab._xasgroups))
-        cmds.append("##########")
         self.controller.larch.eval('\n'.join(cmds))
-        self.controller.sync_xasgroups()
-        self.controller.recentfiles.append((time.time(), self.filename))
 
+        last_fname = None
+        for key, val in self.controller.symtable._xasgroups.items():
+            if key not in self.controller.filelist.GetItems():
+                self.controller.filelist.Append(key)
+                last_fname = key
+
+        self.controller.recentfiles.append((time.time(), self.filename))
 
         wx.CallAfter(self.Destroy)
         if last_fname is not None:
