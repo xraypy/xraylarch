@@ -13,10 +13,16 @@ from lmfit import Parameter, Parameters
 # from lmfit.minimizer import Minimizer, MinimizerResult
 
 from larch import Group, isgroup, __date__, __version__, __release_version__
-from ..utils import isotime, bytes2str, str2bytes, fix_varname, is_gzip, read_textfile
+from ..utils import (isotime, bytes2str, str2bytes, fix_varname, is_gzip,
+                     read_textfile, unique_name)
 from ..utils.jsonutils import encode4js, decode4js
 
 SessionStore = namedtuple('SessionStore', ('config', 'command_history', 'symbols'))
+
+
+def invert_dict(d):
+    "invert a dictionary"
+    return {v: k for k, v in d.items()}
 
 def get_machineid():
     "machine id / MAC address, independent of hostname"
@@ -219,23 +225,24 @@ def read_session(fname):
     return SessionStore(config, cmd_history, symbols)
 
 
-def load_session(fname, overwrite=True, merge_dicts=('_xasgroups', '_feffcache'),
-                 _larch=None):
-    """load all data from a Larch Session File into current larch session
+def load_session(fname, ignore_groups=None, _larch=None):
+    """load all data from a Larch Session File into current larch session,
+    merging into existing groups as appropriate (see Notes below)
 
     Arguments:
-       fname  (str):       name of save file
-       overwrite (bool):   whether to overwrite most existing symbols [True]
-       merge_dicts (list): list of groups to merge into existing dicts
-                           ('_xasgroups', '_feffcache')
-
+       fname  (str):  name of session file
+       ignore_groups (lis of strings): list of symbols to not import
     Returns:
         None
 
     Notes:
-        1. this will install the data from the saved sesssion into current session.
-        2. `merge_dicts` allows session data in certain  'dictionaries' to be merged
-            into existing data, updating the values but erasing other entries.
+        1. data in the following groups will be merged into existing session groups:
+           `_feffpaths` : dict of "current feff paths"
+           `_feffcache` : dict with cached feff paths and feff runs
+           `_xasgroups` : dict mapping "File Name" and "Group Name", used in `XAS Viewer`
+
+        2. to avoid name clashes, group and file names in the `_xasgroups` dictionary
+           may be modified on loading
 
     """
     if _larch is None:
@@ -243,19 +250,61 @@ def load_session(fname, overwrite=True, merge_dicts=('_xasgroups', '_feffcache')
 
     session = read_session(fname)
 
+    if ignore_groups is None:
+        ignore_groups = []
+
+    # special groups to merge into existing session:
+    #  _feffpaths, _feffcache, _xasgroups
+    s_symbols = session.symbols
+    s_xasgroups = s_symbols.pop('_xasgroups', {})
+
+    s_xasg_inv = invert_dict(s_xasgroups)
+
+    s_feffpaths = s_symbols.pop('_feffpaths', {})
+    s_feffcache = s_symbols.pop('_feffcache', {'paths': [], 'runs': []})
+
     symtab = _larch.symtable
+    if not hasattr(symtab, '_xasgroups'):
+        symtab._xasgroups = {}
+    if not hasattr(symtab, '_feffpaths'):
+        symtab._feffpaths = {}
+    if not hasattr(symtab, '_feffcache'):
+        symtab._feffcache = {'paths': [], 'runs': []}
+
     if not hasattr(symtab._sys, 'restored_sessions'):
         symtab._sys.restored_sessions = {}
-    this = symtab._sys.restored_sessions[fname] = {}
-    this['date'] = isotime()
-    this['config'] = session.config
-    this['command_history'] = session.command_history
+    restore_data = {'date': isotime(),
+                    'config': session.config,
+                    'command_history': session.command_history}
+    symtab._sys.restored_sessions[fname] = restore_data
 
+    c_xas_gnames = list(symtab._xasgroups.values())
 
-    for sym, val in session.symbols.items():
-        cur = getattr(symtab, sym, None)
-        if isinstance(cur, dict) and sym in merge_dicts:
-            cur.update(val)
-            setattr(symtab, sym, cur)
-        elif overwrite or cur is None:
-            setattr(symtab, sym, val)
+    for sym, val in s_symbols.items():
+        if sym in ignore_groups:
+            if sym in s_xasgroups.values():
+                s_key = s_xasg_inv[sym]
+                s_xasgroups.pop(s_key)
+                s_xasg_inv = invert_dict(s_xasgroups)
+
+            continue
+        if sym in c_xas_gnames:
+            newsym = unique_name(sym, c_xas_gnames)
+            c_xas_gnames.append(newsym)
+            if sym in s_xasgroups.values():
+                s_key = s_xasg_inv[sym]
+                s_xasgroups[s_key] = newsym
+                s_xasg_inv = invert_dict(s_xasgroups)
+            sym = newsym
+
+        if hasattr(symtab, sym):
+            print(f"warning overwriting '{sym}'")
+
+        setattr(symtab, sym, val)
+
+    symtab._xasgroups.update(s_xasgroups)
+    symtab._feffpaths.update(s_feffpaths)
+    for name in ('paths', 'runs'):
+        for dat in s_feffcache[name]:
+            if dat not in symtab._feffcache[name]:
+                symtab._feffcache[name].append(dat)
