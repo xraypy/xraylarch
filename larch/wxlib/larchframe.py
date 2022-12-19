@@ -123,6 +123,13 @@ class LarchWxShell(object):
         style = self.output.GetDefaultStyle()
         bgcol = BACKGROUND_COLOUR
         sfont = style.GetFont()
+        style = self.output.GetDefaultStyle()
+        bgcol = style.GetBackgroundColour()
+        sfont = style.GetFont()
+        sfont.Family = wx.MODERN
+        sfont.Weight = wx.BOLD
+        style.SetFont(sfont)
+        self.output.SetDefaultStyle(style)
         self.textstyle = wx.TextAttr(color, bgcol, sfont)
 
     def write_sys(self, text):
@@ -417,6 +424,9 @@ class LarchFrame(wx.Frame):
             m = MenuItem(self, fsmenu,  "%d" % fsize, "%d" % fsize,
                          self.onSelectFont, kind=wx.ITEM_RADIO)
             self.fontsizes[m.GetId()] = fsize
+            if fsize == FONTSIZE:
+                m.Check()
+
         menuBar.Append(fsmenu, 'Font Size')
 
         hmenu = wx.Menu()
@@ -605,6 +615,8 @@ class LarchFrame(wx.Frame):
             self.mainpanel.update()
 
     def onClose(self, event=None):
+        print("LarchFrame Close ..., just hiding")
+
         try:
             self.Hide()
         except:
