@@ -27,11 +27,11 @@ except (ImportError, AttributeError):
 _larch_name = '_sys.wx'
 _larch_builtins = {}
 
-FONTSIZE = 9
-FONTSIZE_FW = 9
+FONTSIZE = 11
+FONTSIZE_FW = 11
 if platform == 'win':
     FONTSIZE = 10
-    FONTSIZE_FW = 9
+    FONTSIZE_FW = 10
     locale.setlocale(locale.LC_ALL, 'C')
 
 if platform == 'darwin':
