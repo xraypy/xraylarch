@@ -724,7 +724,6 @@ class FeffitPanel(TaskPanel):
     def onPanelExposed(self, **kws):
         # called when notebook is selected
         dgroup = self.controller.get_group()
-        print("Panel Exposed Feffit")
         try:
             pargroup = self.get_paramgroup()
             self.params_panel.update()
@@ -743,7 +742,6 @@ class FeffitPanel(TaskPanel):
         fitset = getattr(self.larch.symtable, '_feffit_dataset', None)
         if fitset is not None:
             self.wids['show_results'].Enable()
-        print("Panel Exposed -> feffpath ", feffpath)
         if feffpath is not None:
             self.reset_paths()
 
