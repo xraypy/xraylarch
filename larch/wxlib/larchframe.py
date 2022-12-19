@@ -122,12 +122,7 @@ class LarchWxShell(object):
 
         style = self.output.GetDefaultStyle()
         bgcol = BACKGROUND_COLOUR
-        sfont = style.GetFont()
-        style = self.output.GetDefaultStyle()
-        bgcol = style.GetBackgroundColour()
-        sfont = style.GetFont()
-        sfont.Family = wx.MODERN
-        sfont.Weight = wx.BOLD
+        sfont = self.output.GetFont()
         style.SetFont(sfont)
         self.output.SetDefaultStyle(style)
         self.textstyle = wx.TextAttr(color, bgcol, sfont)
@@ -223,10 +218,10 @@ class LarchPanel(wx.Panel):
         self.output.SetForegroundColour(FOREGROUND_COLOUR)
         if font is None:
             font = wx.Font(FONTSIZE, wx.MODERN, wx.NORMAL, wx.BOLD, 0, "")
-        self.SetFont(font)
+
+        self.output.SetFont(font)
         self.objtree.tree.SetFont(font)
         self.objtree.text.SetFont(font)
-
 
         self.output.CanCopy()
         self.output.SetInsertionPointEnd()
@@ -444,6 +439,8 @@ class LarchFrame(wx.Frame):
             f1, f2 = fn.PixelSize
             fn.SetPixelSize(wx.Size(int((f1*fsize/f2)), fsize))
             obj.SetFont(fn)
+            # print('SetFont ', fn.Family, fn.FaceName, fn.PixelSize,
+            #       fn.PointSize, fn.Style, fn.Weight, obj)
 
         self.PointSize = fsize
         set_fontsize(self, fsize)

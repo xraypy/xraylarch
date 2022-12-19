@@ -391,16 +391,6 @@ class FillingText(wx.TextCtrl):
     def SetText(self, *args, **kwds):
         # self.SetReadOnly(False)
         self.Clear()
-
-        style = self.GetDefaultStyle()
-        bgcol = style.GetBackgroundColour()
-        sfont = style.GetFont()
-        sfont.Family = wx.MODERN
-        sfont.Weight = wx.NORMAL
-        sfont.PointSize = self.fontsize
-        style.SetFont(sfont)
-        self.SetDefaultStyle(style)
-
         self.SetInsertionPoint(0)
         self.WriteText(*args)
         self.ShowPosition(0)
