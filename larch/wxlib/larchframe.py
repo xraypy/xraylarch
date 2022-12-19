@@ -329,7 +329,6 @@ class LarchFrame(wx.Frame):
         self.historyfile = historyfile
         self.subframes = {}
         self.last_array_sel = {}
-
         wx.Frame.__init__(self, parent, -1, size=(800, 725),
                           style= wx.DEFAULT_FRAME_STYLE)
         self.SetTitle('LarchGUI')
@@ -357,7 +356,7 @@ class LarchFrame(wx.Frame):
         if parent is None and exit_on_close:
             self.Bind(wx.EVT_CLOSE,  self.onExit)
         else:
-             self.Bind(wx.EVT_CLOSE,  self.onClose)
+            self.Bind(wx.EVT_CLOSE,  self.onClose)
         self.Bind(wx.EVT_SHOW, self.onShow)
         self.BuildMenus()
         self.onSelectFont(fsize=FONTSIZE)
@@ -612,14 +611,15 @@ class LarchFrame(wx.Frame):
             self.mainpanel.update()
 
     def onClose(self, event=None):
-        print("LarchFrame Close ..., just hiding")
-
         try:
             self.Hide()
         except:
             pass
 
     def onExit(self, event=None, force=False):
+        if not self.exit_on_close:
+            self.Hide()
+            return
         if force:
             ret = wx.ID_YES
         else:
