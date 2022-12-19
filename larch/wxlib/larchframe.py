@@ -431,7 +431,8 @@ class LarchFrame(wx.Frame):
 
         def set_fontsize(obj, fsize):
             fn = obj.GetFont()
-            xx = fn.SetPixelSize(wx.Size(fsize, fsize))
+            f1, f2 = fn.PixelSize
+            fn.SetPixelSize(wx.Size(int((f1*fsize/f2)), fsize))
             obj.SetFont(fn)
 
         self.PointSize = fsize
@@ -440,16 +441,7 @@ class LarchFrame(wx.Frame):
         set_fontsize(self.mainpanel.objtree.tree, fsize)
         set_fontsize(self.mainpanel.objtree.text, fsize)
         self.mainpanel.objtree.text.fontsize = fsize
-#         otext = self.mainpanel.objtree.text
-#         style = otext.GetDefaultStyle()
-#         bgcol = style.GetBackgroundColour()
-#         sfont = style.GetFont()
-#         sfont.Family = wx.MODERN
-#         sfont.Weight = wx.BOLD
-#         sfont.PointSize = fsize
-#         style.SetFont(sfont)
-#         # otext.SetDefaultStyle(style)
-#         self.mainpanel.textstyle = wx.TextAttr('black', bgcol, sfont)
+
 
 
     def onWxInspect(self, event=None):

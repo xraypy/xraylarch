@@ -374,14 +374,11 @@ class FillingText(wx.TextCtrl):
     revision = __revision__
 
     def __init__(self, parent, id=-1, pos=wx.DefaultPosition,
-                 size=wx.DefaultSize, style=wx.CLIP_CHILDREN, bgcol=None):
+                 size=wx.DefaultSize, bcol=None,
+                 style=wx.TE_MULTILINE|wx.TE_RICH|wx.TE_READONLY):
         """Create FillingText instance."""
-        if bgcol is not None:
-            editwindow.FACES['backcol'] = bgcol
 
-
-        wx.TextCtrl.__init__(self, parent, id,
-                             style=wx.TE_MULTILINE|wx.TE_RICH|wx.TE_READONLY)
+        wx.TextCtrl.__init__(self, parent, id, style=style)
         self.CanCopy()
         self.fontsize = FONTSIZE
         fixfont = wx.Font(FONTSIZE, wx.MODERN, wx.NORMAL, wx.BOLD, 0, "")
@@ -447,9 +444,11 @@ class Filling(wx.SplitterWindow):
         self.tree = FillingTree(parent=self, rootObject=rootObject,
                                 rootLabel=rootLabel,
                                 rootIsNamespace=rootIsNamespace)
+        self.text = FillingText(parent=self)
         self.tree.SetBackgroundColour(bgcol)
         self.tree.SetForegroundColour(fgcol)
-        self.text = FillingText(parent=self, bgcol=bgcol)
+        self.text.SetBackgroundColour(bgcol)
+        self.text.SetForegroundColour(fgcol)
 
         self.SplitVertically(self.tree, self.text, 200)
         self.SetMinimumPaneSize(100)
