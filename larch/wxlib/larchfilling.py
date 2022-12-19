@@ -27,6 +27,7 @@ from wx.py import introspect
 from larch.symboltable import SymbolTable, Group
 from larch.larchlib import Procedure
 from wxutils  import Button, pack
+from . import FONTSIZE
 
 VERSION = '0.9.5(Larch)'
 
@@ -339,7 +340,7 @@ class FillingTree(wx.TreeCtrl):
         print( text)
 
 
-class FillingText(editwindow.EditWindow):
+class FillingTextE(editwindow.EditWindow):
     """FillingText based on StyledTextCtrl."""
 
     name = 'Filling Text'
@@ -354,7 +355,7 @@ class FillingText(editwindow.EditWindow):
 
         editwindow.EditWindow.__init__(self, parent, id, pos, size, style)
         # Configure various defaults and user preferences.
-        self.SetReadOnly(True)
+        self.SetReadOnly(False) # True)
         self.SetWrapMode(True)
         self.SetMarginWidth(1, 0)
 
@@ -366,6 +367,47 @@ class FillingText(editwindow.EditWindow):
         self.SetReadOnly(False)
         editwindow.EditWindow.SetText(self, *args, **kwds)
 
+class FillingText(wx.TextCtrl):
+    """FillingText based on StyledTextCtrl."""
+
+    name = 'Filling Text'
+    revision = __revision__
+
+    def __init__(self, parent, id=-1, pos=wx.DefaultPosition,
+                 size=wx.DefaultSize, style=wx.CLIP_CHILDREN, bgcol=None):
+        """Create FillingText instance."""
+        if bgcol is not None:
+            editwindow.FACES['backcol'] = bgcol
+
+
+        wx.TextCtrl.__init__(self, parent, id,
+                             style=wx.TE_MULTILINE|wx.TE_RICH|wx.TE_READONLY)
+        self.CanCopy()
+        self.fontsize = FONTSIZE
+        fixfont = wx.Font(FONTSIZE, wx.MODERN, wx.NORMAL, wx.BOLD, 0, "")
+        self.SetFont(fixfont)
+
+    def push(self, command, more):
+        """Receiver for Interpreter.push signal."""
+        self.Refresh()
+
+    def SetText(self, *args, **kwds):
+        # self.SetReadOnly(False)
+        self.Clear()
+
+        style = self.GetDefaultStyle()
+        bgcol = style.GetBackgroundColour()
+        sfont = style.GetFont()
+        sfont.Family = wx.MODERN
+        sfont.Weight = wx.NORMAL
+        sfont.PointSize = self.fontsize
+        style.SetFont(sfont)
+        self.SetDefaultStyle(style)
+
+        self.SetInsertionPoint(0)
+        self.WriteText(*args)
+
+
 
 class FillingRST(html.HtmlWindow):
     """FillingText based on Rest doc string!"""
@@ -373,7 +415,7 @@ class FillingRST(html.HtmlWindow):
     name = 'Filling Restructured Text'
 
     def __init__(self, parent, id=-1, pos=wx.DefaultPosition,
-                 size=wx.DefaultSize, style=wx.NO_FULL_REPAINT_ON_RESIZE):
+                 size=wx.DefaultSize, style=wx.NO_FULL_REPAINT_ON_RESIZE, **kws):
         """Create FillingRST instance."""
         html.HtmlWindow.__init__(self, parent, id, style=wx.NO_FULL_REPAINT_ON_RESIZE)
 

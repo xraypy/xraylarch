@@ -327,7 +327,7 @@ class LarchFrame(wx.Frame):
         self.subframes = {}
         self.last_array_sel = {}
 
-        wx.Frame.__init__(self, parent, -1, size=(900, 725),
+        wx.Frame.__init__(self, parent, -1, size=(800, 725),
                           style= wx.DEFAULT_FRAME_STYLE)
         self.SetTitle('LarchGUI')
 
@@ -358,7 +358,7 @@ class LarchFrame(wx.Frame):
              self.Bind(wx.EVT_CLOSE,  self.onClose)
         self.Bind(wx.EVT_SHOW, self.onShow)
         self.BuildMenus()
-
+        self.onSelectFont(fsize=FONTSIZE)
         # larchdir = larch.site_config.larchdir
 
         fico = os.path.join(larch.site_config.icondir, ICON_FILE)
@@ -388,8 +388,6 @@ class LarchFrame(wx.Frame):
                  'Change Directory', self.onChangeDir)
         MenuItem(self, fmenu, 'Clear Input\tCtrl+D',
                  'Clear Input', self.onClearInput)
-        MenuItem(self, fmenu, 'Select Font\tCtrl+F',
-                 'Select Font', self.onSelectFont)
 
         if self.with_inspection:
             MenuItem(self, fmenu, 'Show wxPython Inspector\tCtrl+I',
@@ -413,24 +411,46 @@ class LarchFrame(wx.Frame):
                                  name=appname, creator=creator))
             menuBar.Append(appmenu, 'Applications')
 
+        fsmenu = wx.Menu()
+        self.fontsizes = {}
+        for fsize in (7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24):
+            m = MenuItem(self, fsmenu,  "%d" % fsize, "%d" % fsize,
+                         self.onSelectFont, kind=wx.ITEM_RADIO)
+            self.fontsizes[m.GetId()] = fsize
+        menuBar.Append(fsmenu, 'Font Size')
+
         hmenu = wx.Menu()
         MenuItem(self, hmenu, '&About',
                  'Information about this program',  self.onAbout)
         menuBar.Append(hmenu, '&Help')
         self.SetMenuBar(menuBar)
 
-    def onSelectFont(self, event=None):
-        fdata = wx.FontData()
-        fdata.SetInitialFont(self.font)
-        dlg = wx.FontDialog(self, fdata)
-        if dlg.ShowModal() == wx.ID_OK:
-            self.font = dlg.GetFontData().GetChosenFont()
-            self.SetFont(self.font)
-            self.mainpanel.objtree.SetFont(self.font)
-            self.mainpanel.objtree.text.SetFont(self.font)
+    def onSelectFont(self, event=None, fsize=None):
+        if fsize is None:
+            fsize = self.fontsizes.get(event.GetId(), FONTSIZE)
 
-            self.mainpanel.output.SetFont(self.fixfont)
-        dlg.Destroy()
+        def set_fontsize(obj, fsize):
+            fn = obj.GetFont()
+            xx = fn.SetPixelSize(wx.Size(fsize, fsize))
+            obj.SetFont(fn)
+
+        self.PointSize = fsize
+        set_fontsize(self, fsize)
+        set_fontsize(self.mainpanel.output,  fsize)
+        set_fontsize(self.mainpanel.objtree.tree, fsize)
+        set_fontsize(self.mainpanel.objtree.text, fsize)
+        self.mainpanel.objtree.text.fontsize = fsize
+#         otext = self.mainpanel.objtree.text
+#         style = otext.GetDefaultStyle()
+#         bgcol = style.GetBackgroundColour()
+#         sfont = style.GetFont()
+#         sfont.Family = wx.MODERN
+#         sfont.Weight = wx.BOLD
+#         sfont.PointSize = fsize
+#         style.SetFont(sfont)
+#         # otext.SetDefaultStyle(style)
+#         self.mainpanel.textstyle = wx.TextAttr('black', bgcol, sfont)
+
 
     def onWxInspect(self, event=None):
         wx.GetApp().ShowInspectionTool()
