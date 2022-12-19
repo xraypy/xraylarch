@@ -214,10 +214,11 @@ class LarchPanel(wx.Panel):
 
         self.output.SetBackgroundColour(BACKGROUND_COLOUR)
         self.output.SetForegroundColour(FOREGROUND_COLOUR)
-        if font is not None:
-            self.SetFont(font)
-            self.objtree.tree.SetFont(font)
-            self.objtree.text.SetFont(font)
+        if font is None:
+            font = wx.Font(FONTSIZE, wx.MODERN, wx.NORMAL, wx.BOLD, 0, "")
+        self.SetFont(font)
+        self.objtree.tree.SetFont(font)
+        self.objtree.text.SetFont(font)
 
 
         self.output.CanCopy()
@@ -331,8 +332,7 @@ class LarchFrame(wx.Frame):
                           style= wx.DEFAULT_FRAME_STYLE)
         self.SetTitle('LarchGUI')
 
-        self.font = wx.Font(11, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-        self.fixfont = wx.Font(11, wx.MODERN, wx.NORMAL, wx.BOLD, 0, "")
+        self.font = wx.Font(FONTSIZE, wx.MODERN, wx.NORMAL, wx.BOLD, 0, "")
         self.SetFont(self.font)
         sbar = self.CreateStatusBar(2, wx.CAPTION)
 
