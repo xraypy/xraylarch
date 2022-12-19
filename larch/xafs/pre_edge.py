@@ -191,8 +191,7 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
     edge_step = step
     if edge_step is None:
         edge_step = post_edge[ie0] - pre_edge[ie0]
-    edge_step = abs(float(edge_step))
-
+    edge_step = max(1.e-12, abs(float(edge_step)))
     norm = (mu - pre_edge)/edge_step
     return {'e0': e0, 'edge_step': edge_step, 'norm': norm,
             'pre_edge': pre_edge, 'post_edge': post_edge,
@@ -276,7 +275,7 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
                       nvict=nvict, pre1=pre1, pre2=pre2, norm1=norm1,
                       norm2=norm2)
 
-
+    
     group = set_xafsGroup(group, _larch=_larch)
 
     e0    = pre_dat['e0']
@@ -300,18 +299,18 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
         fpars.add('c0', value=0, vary=True)
         fpars.add('c1', value=0, vary=(ncoefs>1))
         fpars.add('c2', value=0, vary=(ncoefs>2))
+        try:
+            fit = Minimizer(flat_resid, fpars, fcn_args=(enx, mux))
+            result = fit.leastsq(xtol=1.e-6, ftol=1.e-6)
+            fc0 = result.params['c0'].value
+            fc1 = result.params['c1'].value
+            fc2 = result.params['c2'].value
 
-        fit = Minimizer(flat_resid, fpars, fcn_args=(enx, mux))
-        result = fit.leastsq(xtol=1.e-6, ftol=1.e-6)
-
-        fc0 = result.params['c0'].value
-        fc1 = result.params['c1'].value
-        fc2 = result.params['c2'].value
-
-        flat_diff   = fc0 + energy * (fc1 + energy * fc2)
-        flat        = norm - (flat_diff  - flat_diff[ie0])
-        flat[:ie0]  = norm[:ie0]
-
+            flat_diff   = fc0 + energy * (fc1 + energy * fc2)
+            flat        = norm - (flat_diff  - flat_diff[ie0])
+            flat[:ie0]  = norm[:ie0]
+        except:
+            pass
 
     group.e0 = e0
     group.norm = norm
