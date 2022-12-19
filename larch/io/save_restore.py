@@ -225,13 +225,14 @@ def read_session(fname):
     return SessionStore(config, cmd_history, symbols)
 
 
-def load_session(fname, ignore_groups=None, _larch=None):
+def load_session(fname, ignore_groups=None, _larch=None, verbose=False):
     """load all data from a Larch Session File into current larch session,
     merging into existing groups as appropriate (see Notes below)
 
     Arguments:
        fname  (str):  name of session file
-       ignore_groups (lis of strings): list of symbols to not import
+       ignore_groups (list of strings): list of symbols to not import [None]
+       verbose (bool) : whether to warn about overwriting symbols [False]
     Returns:
         None
 
@@ -297,7 +298,7 @@ def load_session(fname, ignore_groups=None, _larch=None):
                 s_xasg_inv = invert_dict(s_xasgroups)
             sym = newsym
 
-        if hasattr(symtab, sym):
+        if hasattr(symtab, sym) and verbose:
             print(f"warning overwriting '{sym}'")
 
         setattr(symtab, sym, val)
