@@ -1338,7 +1338,7 @@ before clearing"""
             return
         if array_desc is None:
             array_desc = {}
-        # print("ON READ OK ", array_desc)
+
         abort_read = False
         filedir, spath = os.path.split(path)
         if filename is None:
@@ -1403,7 +1403,7 @@ before clearing"""
                                        wx.YES | wx.NO )
                 do_rebin = (wx.ID_YES == dlg.ShowModal())
                 dlg.Destroy()
-
+        gname = None
         for path in self.paths2read:
             path = path.replace('\\', '/')
             filedir, spath = os.path.split(path)
@@ -1423,7 +1423,7 @@ before clearing"""
                 journal['yerr'] = array_desc['yerr'].format(group=gname)
 
             self.install_group(gname, spath, overwrite=overwrite,
-                               source=path, journal=journal)
+                               source=path, journal=journal, plot=False)
             if ref_gname is not None:
                 if 'xdat' in array_desc:
                     refjournal['xdat'] = array_desc['xdat'].format(group=ref_gname)
@@ -1432,7 +1432,10 @@ before clearing"""
                     refjournal['source_desc'] = f'{spath:s}: {ydx:s}'
 
                 self.install_group(ref_gname, ref_fname, overwrite=overwrite,
-                               source=path, journal=refjournal)
+                                   source=path, journal=refjournal, plot=False)
+
+        if gname is not None:
+            self.ShowFile(groupname=gname)
 
         self.write_message("read %s" % (spath))
         if do_rebin:
