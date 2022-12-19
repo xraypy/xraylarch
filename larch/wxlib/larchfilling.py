@@ -406,7 +406,7 @@ class FillingText(wx.TextCtrl):
 
         self.SetInsertionPoint(0)
         self.WriteText(*args)
-
+        self.ShowPosition(0)
 
 
 class FillingRST(html.HtmlWindow):
