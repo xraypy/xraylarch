@@ -815,7 +815,7 @@ class XASNormPanel(TaskPanel):
             t = 0.0
             cmds.extend(["{group:s}.energy_shift = {eshift:.4f}",
                          "{group:s}.energy = {group:s}.xdat = {group:s}.energy_orig + {group:s}.energy_shift"])
-
+            
         if len(cmds) > 0:
             self.larch_eval(('\n'.join(cmds)).format(group=dgroup.groupname, eshift=eshift))
 
@@ -838,7 +838,12 @@ class XASNormPanel(TaskPanel):
 
         self.larch_eval("pre_edge(%s)" % (', '.join(copts)))
         self.larch_eval("{group:s}.norm_poly = 1.0*{group:s}.norm".format(**form))
-
+        if not hasattr(dgroup, 'e0'):
+            self.skip_process = False
+            dgroup.mu = dgroup.ydat * 1.0
+            opts = {'group': dgroup.groupname, 'scale': conf.get('scale', 1.0)}
+            return            
+            
         norm_method = form['norm_method'].lower()
         form['normmeth'] = 'poly'
 
@@ -873,9 +878,9 @@ class XASNormPanel(TaskPanel):
             self.larch_eval(expr.format(**form))
 
 
-        if form['auto_e0']:
+        if form['auto_e0'] and hasattr(dgroup, 'e0'):
             self.wids['e0'].SetValue(dgroup.e0)
-        if form['auto_step']:
+        if form['auto_step'] and hasattr(dgroup, 'edge_step'):
             self.wids['step'].SetValue(dgroup.edge_step)
             autoset_fs_increment(self.wids['step'], dgroup.edge_step)
 
