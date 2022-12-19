@@ -262,7 +262,9 @@ class XASFrame(wx.Frame):
 
         self.larch_buffer = parent
         if not isinstance(parent, LarchFrame):
-            self.larch_buffer = LarchFrame(_larch=_larch, is_standalone=False,
+            self.larch_buffer = LarchFrame(_larch=_larch, 
+                                           parent=self,
+                                           is_standalone=False,
                                            with_raise=False,
                                            exit_on_close=False)
 
