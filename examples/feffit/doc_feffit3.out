@@ -2,11 +2,11 @@
 [[Statistics]]
    nvarys, npts       =  5, 390
    n_independent      =  56.476
-   chi_square         =  2945.33216
-   reduced chi_square =  57.2175126
-   r-factor           =  0.01637735
-   Akaike info crit   =  233.315383
-   Bayesian info crit =  243.484467
+   chi_square         =  2971.58732
+   reduced chi_square =  57.7275586
+   r-factor           =  0.01637720
+   Akaike info crit   =  233.816589
+   Bayesian info crit =  243.985673
  
 [[Datasets (3)]]
  dataset 1:
@@ -16,8 +16,8 @@
    k window, dk       = 'kaiser', 4.000
    paths used in fit  = ['feff0001.dat']
    k-weight           = 2
-   epsilon_k          = Array(mean=0.00113249, std=9.5521e-04)
-   epsilon_r          = 0.03806388
+   epsilon_k          = Array(mean=0.00114503, std=9.5319e-04)
+   epsilon_r          = 0.03848548
    n_independent      = 18.825
  dataset 2:
    fit space          = 'r'
@@ -26,8 +26,8 @@
    k window, dk       = 'kaiser', 4.000
    paths used in fit  = ['feff0001.dat']
    k-weight           = 2
-   epsilon_k          = Array(mean=0.00106860, std=0.00104227)
-   epsilon_r          = 0.03591669
+   epsilon_k          = Array(mean=0.00107963, std=0.00104042)
+   epsilon_r          = 0.03628736
    n_independent      = 18.825
  dataset 3:
    fit space          = 'r'
@@ -36,20 +36,20 @@
    k window, dk       = 'kaiser', 4.000
    paths used in fit  = ['feff0001.dat']
    k-weight           = 2
-   epsilon_k          = Array(mean=7.2640e-04, std=0.00131483)
-   epsilon_r          = 0.02441511
+   epsilon_k          = Array(mean=7.3213e-04, std=0.00131372)
+   epsilon_r          = 0.02460739
    n_independent      = 18.825
  
 [[Variables]]
-   alpha          =  5.2723e-06 +/- 6.6662e-06   (init=  0.00000000)
-   amp            =  0.87653483 +/- 0.03032465   (init=  1.00000000)
-   del_e0         =  5.37307867 +/- 0.61379804   (init=  2.00000000)
-   dr_off         = -3.0656e-04 +/- 0.00271944   (init=  0.00000000)
-   theta          =  233.089236 +/- 8.08399932   (init=  250.000000)
+   alpha          =  5.2689e-06 +/- 6.6632e-06   (init=  0.00000000)
+   amp            =  0.88870023 +/- 0.03075408   (init=  1.00000000)
+   del_e0         =  5.37257838 +/- 0.61378676   (init=  2.00000000)
+   dr_off         = -3.0873e-04 +/- 0.00272045   (init=  0.00000000)
+   theta          =  233.135638 +/- 8.08148960   (init=  250.000000)
  
 [[Correlations]]    (unreported correlations are <  0.100)
    amp, theta           = -0.854
-   del_e0, dr_off       =  0.800
+   del_e0, dr_off       =  0.799
    alpha, dr_off        = -0.380
    alpha, del_e0        =  0.106
  
@@ -62,11 +62,11 @@
               Cu       0.0000, -1.8016,  1.8016  1
      reff   =  2.54780000
      degen  =  12.0000000
-     n*s02  =  0.87653483 +/- 0.03032465  := 'amp'
-     e0     =  5.37307867 +/- 0.61379804  := 'del_e0'
-     r      =  2.54762777 +/- 0.00265958  := 'reff + dr_off + 10*alpha*reff'
-     deltar = -1.7223e-04 +/- 0.00265958  := 'dr_off + 10*alpha*reff'
-     sigma2 =  0.00327499 +/- 1.1358e-04  := 'sigma2_eins(10, theta)'
+     n*s02  =  0.88870023 +/- 0.03075408  := 'amp'
+     e0     =  5.37257838 +/- 0.61378676  := 'del_e0'
+     r      =  2.54762552 +/- 0.00266049  := 'reff + dr_off + 10*alpha*reff'
+     deltar = -1.7448e-04 +/- 0.00266049  := 'dr_off + 10*alpha*reff'
+     sigma2 =  0.00327433 +/- 1.1350e-04  := 'sigma2_eins(10, theta)'
 
  dataset 2:
  = Path 'p3tf6mewgr' = Cu K Edge
@@ -76,11 +76,11 @@
               Cu       0.0000, -1.8016,  1.8016  1
      reff   =  2.54780000
      degen  =  12.0000000
-     n*s02  =  0.87653483 +/- 0.03032465  := 'amp'
-     e0     =  5.37307867 +/- 0.61379804  := 'del_e0'
-     r      =  2.54816507 +/- 0.00252239  := 'reff + dr_off + 50*alpha*reff'
-     deltar =  3.6507e-04 +/- 0.00252239  := 'dr_off + 50*alpha*reff'
-     sigma2 =  0.00333747 +/- 1.2595e-04  := 'sigma2_eins(50, theta)'
+     n*s02  =  0.88870023 +/- 0.03075408  := 'amp'
+     e0     =  5.37257838 +/- 0.61378676  := 'del_e0'
+     r      =  2.54816249 +/- 0.00252273  := 'reff + dr_off + 50*alpha*reff'
+     deltar =  3.6249e-04 +/- 0.00252273  := 'dr_off + 50*alpha*reff'
+     sigma2 =  0.00333675 +/- 1.2585e-04  := 'sigma2_eins(50, theta)'
 
  dataset 3:
  = Path 'p3tf6mewgr' = Cu K Edge
@@ -90,10 +90,10 @@
               Cu       0.0000, -1.8016,  1.8016  1
      reff   =  2.54780000
      degen  =  12.0000000
-     n*s02  =  0.87653483 +/- 0.03032465  := 'amp'
-     e0     =  5.37307867 +/- 0.61379804  := 'del_e0'
-     r      =  2.54950834 +/- 0.00293660  := 'reff + dr_off + 150*alpha*reff'
-     deltar =  0.00170834 +/- 0.00293660  := 'dr_off + 150*alpha*reff'
-     sigma2 =  0.00503100 +/- 2.9449e-04  := 'sigma2_eins(150, theta)'
+     n*s02  =  0.88870023 +/- 0.03075408  := 'amp'
+     e0     =  5.37257838 +/- 0.61378676  := 'del_e0'
+     r      =  2.54950491 +/- 0.00293494  := 'reff + dr_off + 150*alpha*reff'
+     deltar =  0.00170491 +/- 0.00293494  := 'dr_off + 150*alpha*reff'
+     sigma2 =  0.00502931 +/- 2.9423e-04  := 'sigma2_eins(150, theta)'
 
 =======================================================

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Version information"""
-__date__    = '2022-Jul-05'
-__release_version__ = '0.9.65'
+__date__    = '2022-Dec-20'
+__release_version__ = '0.9.66'
 __authors__ = "M. Newville, M. Koker, M. Rovezzi, B. Ravel, and others"
 import sys
 from collections import namedtuple
@@ -36,10 +36,10 @@ def version_data():
         sects = buildinfo.split('|')
         if len(sects) > 1:
             builder = sects[1].strip()
-            
+
     vinf  = sys.version_info
     pyvers = f'{vinf.major:d}.{vinf.minor:d}.{vinf.micro:d}'
-    
+
     vdat = {}
     vdat['larch'] = f'{__release_version__}, released {__date__}'
     vdat['python'] = f'{pyvers}, {builder:s}'
@@ -75,7 +75,7 @@ def show_version():
                     'skimage', 'fabio', 'pyFAI', 'PIL', 'imageio',
                     'silx', 'tomopy', 'pymatgen.core', 'numdifftools',
                     'xraydb', 'lmfit', 'asteval', 'wx', 'wxmplot'):
-        
+
         vers = "not installed"
         if modname not in sys.modules:
             try:
