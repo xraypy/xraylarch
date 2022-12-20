@@ -28,17 +28,20 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def version_data():
     "get version data"
+    vinf  = sys.version_info
+    pyvers = f'{vinf.major:d}.{vinf.minor:d}.{vinf.micro:d}'
+
     buildinfo = sys.version
     if '\n' in buildinfo:
-        buildinfo = buildinfo.split('\n', maxsplit=1)[0]
-    builder = buildinfo[:35]
+        buildinfo = buildinfo.split('\n', maxsplit=1)[0].strip()
+    if buildinfo.startswith(pyvers):
+        buildinfo = buildinfo.replace(pyvers, '').strip()
+
+    builder = buildinfo[:40]
     if '|' in buildinfo:
         sects = buildinfo.split('|')
         if len(sects) > 1:
             builder = sects[1].strip()
-
-    vinf  = sys.version_info
-    pyvers = f'{vinf.major:d}.{vinf.minor:d}.{vinf.micro:d}'
 
     vdat = {}
     vdat['larch'] = f'{__release_version__}, released {__date__}'
