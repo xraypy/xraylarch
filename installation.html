@@ -2,19 +2,21 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>1. Downloading and Installation &#8212; xraylarch 0.9.65 documentation</title>
+    <title>1. Downloading and Installation &#8212; xraylarch 0.9.66 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -129,7 +131,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
 
@@ -139,8 +141,8 @@
           <div class="body" role="main">
             
   <section id="downloading-and-installation">
-<span id="install-chapter"></span><h1><span class="section-number">1. </span>Downloading and Installation<a class="headerlink" href="#downloading-and-installation" title="Permalink to this headline">¶</a></h1>
-<p>The latest release version of Larch is 0.9.65.</p>
+<span id="install-chapter"></span><h1><span class="section-number">1. </span>Downloading and Installation<a class="headerlink" href="#downloading-and-installation" title="Permalink to this heading">¶</a></h1>
+<p>The latest release version of Larch is 0.9.66.</p>
 <p>Larch is in active and continuing development.  The goal is to release
 versions every six months, but we don’t use a strict schedule, and
 typically release more often than that.</p>
@@ -163,15 +165,10 @@ preferred”.  In short, use the Binary installer unless you know that you
 want to install into an existing Python environment.  If that doesn’t work,
 try the installation script.</p>
 <section id="installing-from-a-binary-installers">
-<span id="install-binary"></span><h2><span class="section-number">1.1. </span>Installing from a Binary installers<a class="headerlink" href="#installing-from-a-binary-installers" title="Permalink to this headline">¶</a></h2>
+<span id="install-binary"></span><h2><span class="section-number">1.1. </span>Installing from a Binary installers<a class="headerlink" href="#installing-from-a-binary-installers" title="Permalink to this heading">¶</a></h2>
 <p id="installers-table"><strong>Table of Larch binary installers</strong></p>
 <blockquote>
 <div><table class="docutils align-default">
-<colgroup>
-<col style="width: 28%" />
-<col style="width: 32%" />
-<col style="width: 39%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Operating System</p></th>
 <th class="head"><p>Binary Installer File</p></th>
@@ -216,7 +213,7 @@ that contains links (or shortcuts or Apps) to many of the Larch GUI
 applications listed in <a class="reference internal" href="index.html#larch-app-table"><span class="std std-ref">Table of Larch Applications and Programs</span></a>.  This includes tools for X-ray Absorption spectroscopy,
 X-ray fluorescence spectroscopy, and working with X-ray diffraction images.</p>
 <section id="windows-notes">
-<span id="install-win"></span><h3><span class="section-number">1.1.1. </span>Windows Notes<a class="headerlink" href="#windows-notes" title="Permalink to this headline">¶</a></h3>
+<span id="install-win"></span><h3><span class="section-number">1.1.1. </span>Windows Notes<a class="headerlink" href="#windows-notes" title="Permalink to this heading">¶</a></h3>
 <p>For Windows, download the <a class="reference external" href="https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2022-04-Windows-x86_64.exe">Larch for Windows</a> binary installer above and
 run it to install Larch.  This will be installed to
 <code class="docutils literal notranslate"><span class="pre">C:\Users\&lt;YourName&gt;\xraylarch</span></code> for most individual Windows installations
@@ -229,7 +226,7 @@ on it. This will download, install, and configure the Larch package, with a resu
 is nearly identical to the binary installer.</p>
 </section>
 <section id="macos-notes">
-<span id="install-mac"></span><h3><span class="section-number">1.1.2. </span>MacOS Notes<a class="headerlink" href="#macos-notes" title="Permalink to this headline">¶</a></h3>
+<span id="install-mac"></span><h3><span class="section-number">1.1.2. </span>MacOS Notes<a class="headerlink" href="#macos-notes" title="Permalink to this heading">¶</a></h3>
 <p>For Mac OS, download the <a class="reference external" href="https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2022-04-MacOSX-x86_64.pkg">Larch for MacOSX</a> package installer above and click it to
 install Larch.  There are two important notes:</p>
 <div class="admonition note">
@@ -254,7 +251,7 @@ of those issues since your user account will simply be running the commands to w
 to your home directory.</p>
 </section>
 <section id="linux-notes">
-<span id="install-lin"></span><h3><span class="section-number">1.1.3. </span>Linux Notes<a class="headerlink" href="#linux-notes" title="Permalink to this headline">¶</a></h3>
+<span id="install-lin"></span><h3><span class="section-number">1.1.3. </span>Linux Notes<a class="headerlink" href="#linux-notes" title="Permalink to this heading">¶</a></h3>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>There have been reports of the binary installation not working well on
@@ -281,7 +278,7 @@ and patience are greatly appreciated.</p>
 </section>
 </section>
 <section id="installing-with-the-getlarch-sh-and-getlarch-bat-scripts">
-<span id="install-scripts"></span><h2><span class="section-number">1.2. </span>Installing with the <cite>GetLarch.sh</cite> and <cite>GetLarch.bat</cite> scripts<a class="headerlink" href="#installing-with-the-getlarch-sh-and-getlarch-bat-scripts" title="Permalink to this headline">¶</a></h2>
+<span id="install-scripts"></span><h2><span class="section-number">1.2. </span>Installing with the <cite>GetLarch.sh</cite> and <cite>GetLarch.bat</cite> scripts<a class="headerlink" href="#installing-with-the-getlarch-sh-and-getlarch-bat-scripts" title="Permalink to this heading">¶</a></h2>
 <p>This method is recommended for those who are relatively comfortable using a
 command-line, and is helpful for debugging cases where the binary installer
 has failed.  The approach here is basically to run a script that follows
@@ -320,7 +317,7 @@ installation.</p>
 we could maintain that for others to use too).</p>
 </section>
 <section id="installing-into-an-existing-anaconda-python-environment">
-<span id="install-conda"></span><h2><span class="section-number">1.3. </span>Installing into an existing Anaconda Python environment<a class="headerlink" href="#installing-into-an-existing-anaconda-python-environment" title="Permalink to this headline">¶</a></h2>
+<span id="install-conda"></span><h2><span class="section-number">1.3. </span>Installing into an existing Anaconda Python environment<a class="headerlink" href="#installing-into-an-existing-anaconda-python-environment" title="Permalink to this heading">¶</a></h2>
 <p>The following procedure is recommended for those who are familiar with <a class="reference external" href="https://www.continuum.io/">Anaconda
 Python</a> / <a class="reference external" href="https://conda.io">Conda</a> and have already installed it in their system.</p>
 <div class="admonition note">
@@ -380,7 +377,7 @@ larch -m
 </pre></div>
 </div>
 <section id="notes-on-anaconda-and-on-python-versions">
-<h3><span class="section-number">1.3.1. </span>Notes on Anaconda and on Python Versions<a class="headerlink" href="#notes-on-anaconda-and-on-python-versions" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">1.3.1. </span>Notes on Anaconda and on Python Versions<a class="headerlink" href="#notes-on-anaconda-and-on-python-versions" title="Permalink to this heading">¶</a></h3>
 <p>By default, Anaconda Python installs into your own home folder (on Windows,
 this will be the <cite>APPDATA</cite> location, which is typically something like
 <code class="docutils literal notranslate"><span class="pre">C:\\Users\&lt;YourName&gt;\Anaconda3</span></code> or
@@ -402,7 +399,7 @@ work.</p>
 </section>
 </section>
 <section id="updating-a-previous-installation">
-<h2><span class="section-number">1.4. </span>Updating a previous installation<a class="headerlink" href="#updating-a-previous-installation" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">1.4. </span>Updating a previous installation<a class="headerlink" href="#updating-a-previous-installation" title="Permalink to this heading">¶</a></h2>
 <p>Updating xraylarch with <cite>conda</cite> is no longer supported.  to update
 xraylarch, use <cite>pip</cite>, even when using Anaconda Python:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">xraylarch</span>
@@ -410,7 +407,7 @@ xraylarch, use <cite>pip</cite>, even when using Anaconda Python:</p>
 </div>
 </section>
 <section id="installing-the-development-version">
-<h2><span class="section-number">1.5. </span>Installing the development version<a class="headerlink" href="#installing-the-development-version" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">1.5. </span>Installing the development version<a class="headerlink" href="#installing-the-development-version" title="Permalink to this heading">¶</a></h2>
 <p>For the brave, a nightly build of the latest development version can be downloaded and installed with</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python -m pip install https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-latest-py3-none-any.whl
 </pre></div>
@@ -420,7 +417,7 @@ might catch the development in the middle of trying to fix something
 tricky.</p>
 </section>
 <section id="making-desktop-shortcuts-to-link-to-the-applications">
-<h2><span class="section-number">1.6. </span>Making Desktop shortcuts to Link to the Applications<a class="headerlink" href="#making-desktop-shortcuts-to-link-to-the-applications" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">1.6. </span>Making Desktop shortcuts to Link to the Applications<a class="headerlink" href="#making-desktop-shortcuts-to-link-to-the-applications" title="Permalink to this heading">¶</a></h2>
 <p>To make a <cite>Larch</cite> folder on your desktop with shortcuts (Windows or Linux) or
 Applications (MacOS) for the main Larch applications, you can then type:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span> <span class="o">-</span><span class="n">m</span>
@@ -438,7 +435,7 @@ give the path to Python and/or Larch:</p>
 <p>from Windows.</p>
 </section>
 <section id="larch-for-developers-source-installation">
-<h2><span class="section-number">1.7. </span>Larch for developers (source installation)<a class="headerlink" href="#larch-for-developers-source-installation" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">1.7. </span>Larch for developers (source installation)<a class="headerlink" href="#larch-for-developers-source-installation" title="Permalink to this heading">¶</a></h2>
 <p>For developers, Larch is an open-source project, with active development
 happening at the <a class="reference external" href="https://github.com/xraypy/xraylarch">Larch Repository (github.com)</a>.  There, you will find
 the latest source code and pages for submit bug reports.</p>
@@ -458,7 +455,7 @@ should have been installed already when you installed.  Depending on your
 platform and version of Python you are installing to, you may need elevated
 permissions as from <cite>sudo</cite> to install Larch to a system folder.</p>
 <section id="optional-python-packages">
-<h3><span class="section-number">1.7.1. </span>Optional Python Packages<a class="headerlink" href="#optional-python-packages" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">1.7.1. </span>Optional Python Packages<a class="headerlink" href="#optional-python-packages" title="Permalink to this heading">¶</a></h3>
 <p>While most of the packages required for Larch will be installed
 automatically (and are listed in the <cite>requirements.txt</cite> file in the source
 tree), there are a few packages that are useful for some functionality but
@@ -471,12 +468,12 @@ with <cite>conda install xraylarch</cite>, with <cite>pip install xraylarch</cit
 </section>
 </section>
 <section id="getting-help">
-<h2><span class="section-number">1.8. </span>Getting Help<a class="headerlink" href="#getting-help" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">1.8. </span>Getting Help<a class="headerlink" href="#getting-help" title="Permalink to this heading">¶</a></h2>
 <p>For questions about using or installing Larch, please use the <a class="reference external" href="https://millenia.cars.aps.anl.gov/mailman/listinfo/ifeffit/">Ifeffit Mailing List</a>.</p>
 <p>For reporting bugs or working with the development process, please submit an issue at the <a class="reference external" href="https://github.com/xraypy/xraylarch">Larch Github Pages</a>.</p>
 </section>
 <section id="install-exa">
-<span id="id1"></span><h2><span class="section-number">1.9. </span>Docs and Examples<a class="headerlink" href="#install-exa" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2><span class="section-number">1.9. </span>Docs and Examples<a class="headerlink" href="#install-exa" title="Permalink to this heading">¶</a></h2>
 <p>The source kit includes sources for documentation in the <cite>docs</cite> folder
 and several examples (including all those shown in this documentation)
 in the <cite>examples</cite> folder.</p>
@@ -485,7 +482,7 @@ that contains a <cite>doc</cite> folder with this full documentation, and an
 <cite>examples</cite> folder with all of the Larch examples.</p>
 </section>
 <section id="citing-larch">
-<h2><span class="section-number">1.10. </span>Citing Larch<a class="headerlink" href="#citing-larch" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">1.10. </span>Citing Larch<a class="headerlink" href="#citing-larch" title="Permalink to this heading">¶</a></h2>
 <p>Currently, the best citation for Larch is M. Newville, <em>Larch: An Analysis
 Package For XAFS And Related Spectroscopies</em>. Journal of Physics:
 Conference Series, 430:012007 (2013).  <span id="id2">[<a class="reference internal" href="bibliography.html#id2" title="M. Newville. Larch: An Analysis Package For XAFS And Related Spectroscopies. Journal of Physics: Conference Series, 430:012007, 2013. doi:10.1088/1742-6596/430/1/012007.">Newville (2013)</a>]</span></p>
@@ -494,7 +491,7 @@ Conference Series, 430:012007 (2013).  <span id="id2">[<a class="reference inter
       data-style="large_rectangle">
 </span></section>
 <section id="funding-and-support">
-<h2><span class="section-number">1.11. </span>Funding and Support<a class="headerlink" href="#funding-and-support" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">1.11. </span>Funding and Support<a class="headerlink" href="#funding-and-support" title="Permalink to this heading">¶</a></h2>
 <p>Larch development at the GeoScoilEnviroCARS sector of Center for Advanced
 Radiation Sources at the University of Chicago has been supported by the US
 National Science Foundation - Earth Sciences (EAR-1128799), and Department
@@ -503,7 +500,7 @@ specifically for Larch was granted by the National Science Foundation -
 Advanced CyberInfrastructure (ACI-1450468).</p>
 </section>
 <section id="acknowledgements">
-<h2><span class="section-number">1.12. </span>Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">1.12. </span>Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this heading">¶</a></h2>
 <p>Larch was mostly written by and is maintained by Matt Newville
 &lt;<a class="reference external" href="mailto:newville&#37;&#52;&#48;cars&#46;uchicago&#46;edu">newville<span>&#64;</span>cars<span>&#46;</span>uchicago<span>&#46;</span>edu</a>&gt;.  Bruce Ravel has an incalculable influence on
 the design and implementation of this code and has provided countless fixes
@@ -550,7 +547,7 @@ greatly from numerous collaborators and added many features that Larch, in
 turn, has been able to depend on.</p>
 </section>
 <section id="license">
-<h2><span class="section-number">1.13. </span>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">1.13. </span>License<a class="headerlink" href="#license" title="Permalink to this heading">¶</a></h2>
 <p>Except where explicitly noted in the individual files, the code,
 documentation, and all material associated with Larch are distributed under
 the BSD License:</p>
@@ -620,7 +617,7 @@ the BSD License:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>
 </html>

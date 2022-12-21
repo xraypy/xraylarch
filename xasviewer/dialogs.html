@@ -2,19 +2,21 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>5.3. Pre-edge subtraction and Normalization &#8212; xraylarch 0.9.65 documentation</title>
+    <title>5.3. Pre-edge subtraction and Normalization &#8212; xraylarch 0.9.66 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
@@ -114,7 +116,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
 
@@ -125,7 +127,7 @@
             
   <p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
 <section id="pre-edge-subtraction-and-normalization">
-<span id="xasviewer-preedge"></span><h1><span class="section-number">5.3. </span>Pre-edge subtraction and Normalization<a class="headerlink" href="#pre-edge-subtraction-and-normalization" title="Permalink to this headline">¶</a></h1>
+<span id="xasviewer-preedge"></span><h1><span class="section-number">5.3. </span>Pre-edge subtraction and Normalization<a class="headerlink" href="#pre-edge-subtraction-and-normalization" title="Permalink to this heading">¶</a></h1>
 <p>As shown above in <a class="reference internal" href="overview.html#fig-xasviewer-1"><span class="std std-numref">Figure 5.1.5.1</span></a>, the main analysis panel for
 the XAS Viewer program is the “XAS Normalization” Panel.  This panel helps
 you do pre-edge subtraction and normalization of XAFS data using the
@@ -167,7 +169,7 @@ line and post-edge normalization curve, or compare with the
 MBACK-calculation for normalization.</p>
 </section>
 <section id="common-xas-processing-dialogs">
-<span id="xasviewer-dialogs"></span><h1><span class="section-number">5.4. </span>Common XAS Processing Dialogs<a class="headerlink" href="#common-xas-processing-dialogs" title="Permalink to this headline">¶</a></h1>
+<span id="xasviewer-dialogs"></span><h1><span class="section-number">5.4. </span>Common XAS Processing Dialogs<a class="headerlink" href="#common-xas-processing-dialogs" title="Permalink to this heading">¶</a></h1>
 <p>When importing and normalizing XAS data, it is sometimes necessary to make some
 corrections of manipulate the data in a few well-defined ways.  These
 can include:</p>
@@ -187,7 +189,7 @@ can include:</p>
 through the steps needs for these corrections or manipulations.  Each of
 these is described in more detail below.</p>
 <section id="energy-calibration-and-alignment">
-<span id="xasviewer-energy-calib"></span><h2><span class="section-number">5.4.1. </span>Energy Calibration and alignment<a class="headerlink" href="#energy-calibration-and-alignment" title="Permalink to this headline">¶</a></h2>
+<span id="xasviewer-energy-calib"></span><h2><span class="section-number">5.4.1. </span>Energy Calibration and alignment<a class="headerlink" href="#energy-calibration-and-alignment" title="Permalink to this heading">¶</a></h2>
 <p>Each XAS spectra Group has</p>
 <figure class="align-center" id="id1">
 <span id="fig-xasviewer-dialog-cal"></span><a class="reference external image-reference" href="../_images/XASViewer_calibrate_dialog.png"><img alt="../_images/XASViewer_calibrate_dialog.png" src="../_images/XASViewer_calibrate_dialog.png" style="width: 50%;" /></a>
@@ -197,7 +199,7 @@ these is described in more detail below.</p>
 </figure>
 </section>
 <section id="deglitching-and-truncating-data">
-<span id="xasviewer-deglitch"></span><h2><span class="section-number">5.4.2. </span>Deglitching and Truncating Data<a class="headerlink" href="#deglitching-and-truncating-data" title="Permalink to this headline">¶</a></h2>
+<span id="xasviewer-deglitch"></span><h2><span class="section-number">5.4.2. </span>Deglitching and Truncating Data<a class="headerlink" href="#deglitching-and-truncating-data" title="Permalink to this heading">¶</a></h2>
 <figure class="align-center" id="id2">
 <span id="fig-xasviewer-dialog-deglitch"></span><a class="reference external image-reference" href="../_images/XASViewer_deglitch_dialog.png"><img alt="../_images/XASViewer_deglitch_dialog.png" src="../_images/XASViewer_deglitch_dialog.png" style="width: 50%;" /></a>
 <figcaption>
@@ -206,7 +208,7 @@ these is described in more detail below.</p>
 </figure>
 </section>
 <section id="smoothing-data">
-<span id="xasviewer-smooth"></span><h2><span class="section-number">5.4.3. </span>Smoothing Data<a class="headerlink" href="#smoothing-data" title="Permalink to this headline">¶</a></h2>
+<span id="xasviewer-smooth"></span><h2><span class="section-number">5.4.3. </span>Smoothing Data<a class="headerlink" href="#smoothing-data" title="Permalink to this heading">¶</a></h2>
 <figure class="align-center" id="id3">
 <span id="fig-xasviewer-dialog-smooth"></span><a class="reference external image-reference" href="../_images/XASViewer_smooth_dialog.png"><img alt="../_images/XASViewer_smooth_dialog.png" src="../_images/XASViewer_smooth_dialog.png" style="width: 50%;" /></a>
 <figcaption>
@@ -215,7 +217,7 @@ these is described in more detail below.</p>
 </figure>
 </section>
 <section id="de-convolving-xas-data">
-<span id="xasviewer-deconv"></span><h2><span class="section-number">5.4.4. </span>De-convolving XAS  Data<a class="headerlink" href="#de-convolving-xas-data" title="Permalink to this headline">¶</a></h2>
+<span id="xasviewer-deconv"></span><h2><span class="section-number">5.4.4. </span>De-convolving XAS  Data<a class="headerlink" href="#de-convolving-xas-data" title="Permalink to this heading">¶</a></h2>
 <figure class="align-center" id="id4">
 <span id="fig-xasviewer-dialog-deconv"></span><a class="reference external image-reference" href="../_images/XASViewer_deconvolve_dialog.png"><img alt="../_images/XASViewer_deconvolve_dialog.png" src="../_images/XASViewer_deconvolve_dialog.png" style="width: 50%;" /></a>
 <figcaption>
@@ -224,7 +226,7 @@ these is described in more detail below.</p>
 </figure>
 </section>
 <section id="re-binning-xas-data">
-<span id="xasviewer-rebin"></span><h2><span class="section-number">5.4.5. </span>Re-binning XAS  Data<a class="headerlink" href="#re-binning-xas-data" title="Permalink to this headline">¶</a></h2>
+<span id="xasviewer-rebin"></span><h2><span class="section-number">5.4.5. </span>Re-binning XAS  Data<a class="headerlink" href="#re-binning-xas-data" title="Permalink to this heading">¶</a></h2>
 <figure class="align-center" id="id5">
 <span id="fig-xasviewer-dialog-rebin"></span><a class="reference external image-reference" href="../_images/XASViewer_rebin_dialog.png"><img alt="../_images/XASViewer_rebin_dialog.png" src="../_images/XASViewer_rebin_dialog.png" style="width: 50%;" /></a>
 <figcaption>
@@ -233,7 +235,7 @@ these is described in more detail below.</p>
 </figure>
 </section>
 <section id="correcting-for-over-absorption-in-xas-data">
-<span id="xasviewer-overabsorb"></span><h2><span class="section-number">5.4.6. </span>Correcting for Over-Absorption in XAS Data<a class="headerlink" href="#correcting-for-over-absorption-in-xas-data" title="Permalink to this headline">¶</a></h2>
+<span id="xasviewer-overabsorb"></span><h2><span class="section-number">5.4.6. </span>Correcting for Over-Absorption in XAS Data<a class="headerlink" href="#correcting-for-over-absorption-in-xas-data" title="Permalink to this heading">¶</a></h2>
 <figure class="align-center" id="id6">
 <span id="fig-xasviewer-dialog-overabs"></span><a class="reference external image-reference" href="../_images/XASViewer_overabsorption_dialog.png"><img alt="../_images/XASViewer_overabsorption_dialog.png" src="../_images/XASViewer_overabsorption_dialog.png" style="width: 50%;" /></a>
 <figcaption>
@@ -274,7 +276,7 @@ these is described in more detail below.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>
 </html>

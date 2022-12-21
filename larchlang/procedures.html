@@ -2,19 +2,21 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>9.6. Writing Functions or Procedures &#8212; xraylarch 0.9.65 documentation</title>
+    <title>9.6. Writing Functions or Procedures &#8212; xraylarch 0.9.66 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -111,7 +113,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
 
@@ -121,7 +123,7 @@
           <div class="body" role="main">
             
   <section id="writing-functions-or-procedures">
-<h1><span class="section-number">9.6. </span>Writing Functions or Procedures<a class="headerlink" href="#writing-functions-or-procedures" title="Permalink to this headline">¶</a></h1>
+<h1><span class="section-number">9.6. </span>Writing Functions or Procedures<a class="headerlink" href="#writing-functions-or-procedures" title="Permalink to this heading">¶</a></h1>
 <p>Any moderately complex script will eventually include calcluations that
 need to be repeated.  The preferred way to do this is write your own
 function or <strong>procedure</strong>, which can be called exactly as the built-in
@@ -133,7 +135,7 @@ lax about referring to functions written in Larch as functions.</p>
 <p>Once you’re ready to write procedures, you’ll almost certainly want to read
 about running Larch scripts and modules in the next section of this tutorial.</p>
 <section id="def-statement">
-<h2><span class="section-number">9.6.1. </span>Def statement<a class="headerlink" href="#def-statement" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.6.1. </span>Def statement<a class="headerlink" href="#def-statement" title="Permalink to this heading">¶</a></h2>
 <p>To define a procedure, you use the <strong>def</strong> statement, and write a block of
 code.  This looks much like the <strong>if</strong>, <strong>for</strong>, and <strong>while</strong> blocks
 discussed earlier. A simple example would be:</p>
@@ -144,8 +146,8 @@ discussed earlier. A simple example would be:</p>
 </div>
 <p>With this definition, one can then run this procedure as you would run any
 other built-in function, by writing:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; sayhello()</span>
-<span class="go">hello!</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>larch&gt; sayhello()
+hello!
 </pre></div>
 </div>
 <p>Of course, you can write procedures that take input arguments, such as:</p>
@@ -159,10 +161,10 @@ other built-in function, by writing:</p>
 </pre></div>
 </div>
 <p>Here <em>x</em> will hold whatever value is passed to it, so that:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; safe_sqrt(4)</span>
-<span class="go">2.0</span>
-<span class="go">larch&gt; safe_sqrt(-9)</span>
-<span class="go">Did you want sqrt(9.000000) = 3.000000?</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>larch&gt; safe_sqrt(4)
+2.0
+larch&gt; safe_sqrt(-9)
+Did you want sqrt(9.000000) = 3.000000?
 </pre></div>
 </div>
 <p>Of course, you will most often want a procedure to return a value.  This is
@@ -181,20 +183,20 @@ the procedure has fully executed.  An example:</p>
 </pre></div>
 </div>
 <p>which can now be used as:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; print(safe_sqrt(4))</span>
-<span class="go">2.0</span>
-<span class="go">larch&gt; x = safe_sqrt(-10)</span>
-<span class="go">larch&gt; print(x)</span>
-<span class="go">3.16227766017</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">safe_sqrt</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+<span class="mf">2.0</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">safe_sqrt</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="mf">3.16227766017</span>
 </pre></div>
 </div>
 <p><strong>return</strong> can take multiple arguments, separated by a comma, which is to
 say a <strong>tuple</strong>.  As an example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; def sum_diff(x, y):</span>
-<span class="go">.....&gt;    return x + y, x-y</span>
-<span class="go">.....&gt; #enddef</span>
-<span class="go">larch&gt; print(sum_diff(3., 4.))</span>
-<span class="go">(7.0, -1.0)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="k">def</span> <span class="nf">sum_diff</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="o">.....&gt;</span>    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="o">-</span><span class="n">y</span>
+<span class="o">.....&gt;</span> <span class="c1">#enddef</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">sum_diff</span><span class="p">(</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">))</span>
+<span class="p">(</span><span class="mf">7.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>This is discussed in more detail below.</p>
@@ -206,7 +208,7 @@ say a <strong>tuple</strong>.  As an example:</p>
 </div>
 </section>
 <section id="namespace-and-scope-inside-a-procedure">
-<span id="tut-namespaces-label"></span><h2><span class="section-number">9.6.2. </span>Namespace and “Scope” inside a Procedure<a class="headerlink" href="#namespace-and-scope-inside-a-procedure" title="Permalink to this headline">¶</a></h2>
+<span id="tut-namespaces-label"></span><h2><span class="section-number">9.6.2. </span>Namespace and “Scope” inside a Procedure<a class="headerlink" href="#namespace-and-scope-inside-a-procedure" title="Permalink to this heading">¶</a></h2>
 <p>While inside a procedure, and important consideration is “what variables
 does this procedure have access to?”.  In fact, the question can be
 extended beyond procedures and functions to ask “what variables are
@@ -225,10 +227,6 @@ searched for names.  There are several related variables listed in
 up of symbol names.</p>
 <blockquote>
 <div><table class="docutils align-default">
-<colgroup>
-<col style="width: 32%" />
-<col style="width: 68%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p><em>variable</em></p></th>
 <th class="head"><p><em>content</em></p></th>
@@ -273,29 +271,29 @@ in from some plug-in.</p>
 This is a really bad idea, and you should avoid doing it at all costs.</p>
 </section>
 <section id="the-return-statement-and-multiple-return-values">
-<h2><span class="section-number">9.6.3. </span>The return statement, and multiple Return values<a class="headerlink" href="#the-return-statement-and-multiple-return-values" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.6.3. </span>The return statement, and multiple Return values<a class="headerlink" href="#the-return-statement-and-multiple-return-values" title="Permalink to this heading">¶</a></h2>
 <p>As seen above, the <strong>return</strong> statement will exit a procedure, and send
 back a value to the calling code.    The return value can be either a
 single value or a tuple of values, which gives a convenient way to return
 multiple values from a single procedure.  Thus:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; def my_divmod(x, y):</span>
-<span class="go">.....&gt;    return (x // y, x % y)  # note use of // for integer division!</span>
-<span class="go">.....&gt; #enddef</span>
-<span class="go">larch&gt; print(my_divmod(100, 7))</span>
-<span class="go">14, 2</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="k">def</span> <span class="nf">my_divmod</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="o">.....&gt;</span>    <span class="k">return</span> <span class="p">(</span><span class="n">x</span> <span class="o">//</span> <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">%</span> <span class="n">y</span><span class="p">)</span>  <span class="c1"># note use of // for integer division!</span>
+<span class="o">.....&gt;</span> <span class="c1">#enddef</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">my_divmod</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
+<span class="mi">14</span><span class="p">,</span> <span class="mi">2</span>
 </pre></div>
 </div>
 <p>But be careful when assigning the return value to variable(s).  You can
 do:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; xdiv, xmod = my_divmod(100, 7)</span>
-<span class="go">larch&gt; print(xdiv)</span>
-<span class="go">14</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">xdiv</span><span class="p">,</span> <span class="n">xmod</span> <span class="o">=</span> <span class="n">my_divmod</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">xdiv</span><span class="p">)</span>
+<span class="mi">14</span>
 </pre></div>
 </div>
 <p>or:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; result = my_divmod(100, 7)</span>
-<span class="go">larch&gt; print(result[0], result[1])</span>
-<span class="go">14, 2</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">result</span> <span class="o">=</span> <span class="n">my_divmod</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="mi">14</span><span class="p">,</span> <span class="mi">2</span>
 </pre></div>
 </div>
 <p>Because a return value from a procedure can hold many values, it is best to
@@ -304,7 +302,7 @@ is, and when using a procedure that you’re getting the correct number of
 values.</p>
 </section>
 <section id="keyword-arguments">
-<h2><span class="section-number">9.6.4. </span>Keyword arguments<a class="headerlink" href="#keyword-arguments" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.6.4. </span>Keyword arguments<a class="headerlink" href="#keyword-arguments" title="Permalink to this heading">¶</a></h2>
 <p>For the procedures defined so far, the arguments have been both required
 and in a fixed order.  Sometimes, you’ll want to give a procedure optional
 arguments, and perhaps allow some flexibility in the order of the
@@ -325,12 +323,12 @@ In a procedure definition, you add an argument name with a default value,  like 
 </div>
 <p>Unless passed in, the value of <em>base</em> will take the default value of <em>e</em>.
 This can then be used as:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; xlog(16)</span>
-<span class="go">2.7725887222397811</span>
-<span class="go">larch&gt; xlog(16, base=10)</span>
-<span class="go">1.2041199826559246</span>
-<span class="go">larch&gt; xlog(16, base=2)</span>
-<span class="go">4.0</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">xlog</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span>
+<span class="mf">2.7725887222397811</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">xlog</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="mf">1.2041199826559246</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">xlog</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="mf">4.0</span>
 </pre></div>
 </div>
 <p>You can supply many keyword arguments – they can be given in any order,
@@ -355,10 +353,10 @@ any number of positional arguments beyond those explicitly given.  Inside
 the procedure, a tuple named ‘args’ will hold any positional parameters
 included in the call to ‘addall’ past the first two (which will be held by
 ‘a’ and ‘b’).  Thus, this procedure can be used as:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; addall(2, 3)         # args = ()</span>
-<span class="go">5</span>
-<span class="go">larch&gt; addall(2, 3, 5, 7)   # args = (5, 7)</span>
-<span class="go">17</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">addall</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>         <span class="c1"># args = ()</span>
+<span class="mi">5</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">addall</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>   <span class="c1"># args = (5, 7)</span>
+<span class="mi">17</span>
 </pre></div>
 </div>
 <p>To add support for unspecified keyword parameters, one adds a named
@@ -390,19 +388,19 @@ argument to the procedure definition preceded by two asterisks:
 dictionary of keyword names/values passed into it.  With this (perhaps
 contrived) definition, you can call ‘operate’ many ways to change its
 behavior:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; operate(3, 2, op=&#39;add&#39;)</span>
-<span class="go">5</span>
-<span class="go">larch&gt; operate(3, 2, op=&#39;add&#39;, verbose=True)</span>
-<span class="go">op == add</span>
-<span class="go">5</span>
-<span class="go">larch&gt; operate(3, 2, op=&#39;mul&#39;, verbose=True)</span>
-<span class="go">op == mul</span>
-<span class="go">6</span>
-<span class="go">larch&gt; operate(3, 2, op=&#39;xxx&#39;, verbose=True)</span>
-<span class="go">op == xxx</span>
-<span class="go">unsupported operation!</span>
-<span class="go">larch&gt; operate(3, 2, op=&#39;xxx&#39;, debug=False)</span>
-<span class="go">op == xxx</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>larch&gt; operate(3, 2, op=&#39;add&#39;)
+5
+larch&gt; operate(3, 2, op=&#39;add&#39;, verbose=True)
+op == add
+5
+larch&gt; operate(3, 2, op=&#39;mul&#39;, verbose=True)
+op == mul
+6
+larch&gt; operate(3, 2, op=&#39;xxx&#39;, verbose=True)
+op == xxx
+unsupported operation!
+larch&gt; operate(3, 2, op=&#39;xxx&#39;, debug=False)
+op == xxx
 </pre></div>
 </div>
 <p>As with the <strong>‘*args’</strong>, the <strong>‘**options’</strong> in the procedure definition must
@@ -410,7 +408,7 @@ appear after any named keyword parameters, and will not include the named
 keyword parameters.</p>
 </section>
 <section id="documentation-strings">
-<h2><span class="section-number">9.6.5. </span>Documentation Strings<a class="headerlink" href="#documentation-strings" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.6.5. </span>Documentation Strings<a class="headerlink" href="#documentation-strings" title="Permalink to this heading">¶</a></h2>
 <p>It is generally a good idea to document your procedures so that you and
 others can read what it is meant to do and how to use it.  Larch has a
 built-in mechanism for supporting procedure documentaion.  If the first
@@ -428,9 +426,9 @@ mechanism, or when viewing details of the procedure.  For example:</p>
 </pre></div>
 </div>
 <p>With this definition:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; help(safe_sqrt)</span>
-<span class="go">  safe sqrt function:</span>
-<span class="go">     returns sqrt(abs(x))</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">help</span><span class="p">(</span><span class="n">safe_sqrt</span><span class="p">)</span>
+  <span class="n">safe</span> <span class="n">sqrt</span> <span class="n">function</span><span class="p">:</span>
+     <span class="n">returns</span> <span class="n">sqrt</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 </pre></div>
 </div>
 </section>
@@ -467,7 +465,7 @@ mechanism, or when viewing details of the procedure.  For example:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>
 </html>

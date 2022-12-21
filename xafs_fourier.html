@@ -2,19 +2,21 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>13.5. XAFS: Fourier Transforms for XAFS &#8212; xraylarch 0.9.65 documentation</title>
+    <title>13.5. XAFS: Fourier Transforms for XAFS &#8212; xraylarch 0.9.66 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
@@ -77,9 +79,20 @@
     <ul>
 <li><a class="reference internal" href="#">13.5. XAFS: Fourier Transforms for XAFS</a><ul>
 <li><a class="reference internal" href="#overview-of-xafs-fourier-transforms">13.5.1. Overview of XAFS Fourier transforms</a></li>
-<li><a class="reference internal" href="#forward-xafs-fourier-transforms-k-rightarrow-r">13.5.2. Forward XAFS Fourier transforms (<span class="math notranslate nohighlight">\(k{\rightarrow}R\)</span>)</a></li>
-<li><a class="reference internal" href="#reverse-xafs-fourier-transforms-r-rightarrow-q">13.5.3. Reverse XAFS Fourier transforms (<span class="math notranslate nohighlight">\(R{\rightarrow}q\)</span>)</a></li>
-<li><a class="reference internal" href="#ftwindow-generating-fourier-transform-windows">13.5.4. <code class="xref py py-func docutils literal notranslate"><span class="pre">ftwindow()</span></code>: Generating Fourier transform windows</a></li>
+<li><a class="reference internal" href="#forward-xafs-fourier-transforms-k-rightarrow-r">13.5.2. Forward XAFS Fourier transforms (<span class="math notranslate nohighlight">\(k{\rightarrow}R\)</span>)</a><ul>
+<li><a class="reference internal" href="#xftf"><code class="docutils literal notranslate"><span class="pre">xftf()</span></code></a></li>
+<li><a class="reference internal" href="#xftf_fast"><code class="docutils literal notranslate"><span class="pre">xftf_fast()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#reverse-xafs-fourier-transforms-r-rightarrow-q">13.5.3. Reverse XAFS Fourier transforms (<span class="math notranslate nohighlight">\(R{\rightarrow}q\)</span>)</a><ul>
+<li><a class="reference internal" href="#xftr"><code class="docutils literal notranslate"><span class="pre">xftr()</span></code></a></li>
+<li><a class="reference internal" href="#xftr_fast"><code class="docutils literal notranslate"><span class="pre">xftr_fast()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ftwindow-generating-fourier-transform-windows">13.5.4. <code class="xref py py-func docutils literal notranslate"><span class="pre">ftwindow()</span></code>: Generating Fourier transform windows</a><ul>
+<li><a class="reference internal" href="#ftwindow"><code class="docutils literal notranslate"><span class="pre">ftwindow()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#catalog-of-fourier-transform-window">13.5.5. Catalog of Fourier transform window</a></li>
 <li><a class="reference internal" href="#examples-forward-xafs-fourier-transforms">13.5.6. Examples: Forward XAFS Fourier transforms</a></li>
 <li><a class="reference internal" href="#examples-reverse-xafs-fourier-transforms-fourier-filtering">13.5.7. Examples: Reverse XAFS Fourier transforms, Fourier Filtering</a></li>
@@ -114,7 +127,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
 
@@ -125,7 +138,7 @@
             
   <p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
 <section id="xafs-fourier-transforms-for-xafs">
-<span id="xafs-ft-sec"></span><h1><span class="section-number">13.5. </span>XAFS: Fourier Transforms for XAFS<a class="headerlink" href="#xafs-fourier-transforms-for-xafs" title="Permalink to this headline">¶</a></h1>
+<span id="xafs-ft-sec"></span><h1><span class="section-number">13.5. </span>XAFS: Fourier Transforms for XAFS<a class="headerlink" href="#xafs-fourier-transforms-for-xafs" title="Permalink to this heading">¶</a></h1>
 <p>Fourier transforms are central to understanding and using
 XAFS. Consequently, many of the XAFS functions in Larch use XAFS Fourier
 transforms as part of their processing, and many of the functions
@@ -134,7 +147,7 @@ throughout the XAFS functionality of Larch.  For example, both
 <a class="reference internal" href="xafs_autobk.html#autobk" title="autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> and <a class="reference internal" href="xafs_feffit.html#id0" title="feffit"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a> rely on XAFS Fourier transforms, and use
 the XAFS Fourier transform function described here.</p>
 <section id="overview-of-xafs-fourier-transforms">
-<h2><span class="section-number">13.5.1. </span>Overview of XAFS Fourier transforms<a class="headerlink" href="#overview-of-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.5.1. </span>Overview of XAFS Fourier transforms<a class="headerlink" href="#overview-of-xafs-fourier-transforms" title="Permalink to this heading">¶</a></h2>
 <p>The standard Fourier transform of a signal <span class="math notranslate nohighlight">\(f(t)\)</span> can be written as</p>
 <div class="math notranslate nohighlight">
 \begin{eqnarray*}
@@ -212,7 +225,7 @@ concerned about the differences of the real and imaginary parts of
 <span class="math notranslate nohighlight">\(\chi(R)\)</span> and compare the filtered and unfiltered data.</p>
 </section>
 <section id="forward-xafs-fourier-transforms-k-rightarrow-r">
-<h2><span class="section-number">13.5.2. </span>Forward XAFS Fourier transforms (<span class="math notranslate nohighlight">\(k{\rightarrow}R\)</span>)<a class="headerlink" href="#forward-xafs-fourier-transforms-k-rightarrow-r" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.5.2. </span>Forward XAFS Fourier transforms (<span class="math notranslate nohighlight">\(k{\rightarrow}R\)</span>)<a class="headerlink" href="#forward-xafs-fourier-transforms-k-rightarrow-r" title="Permalink to this heading">¶</a></h2>
 <p>The forward Fourier transform converts <span class="math notranslate nohighlight">\(\chi(k)\)</span> to <span class="math notranslate nohighlight">\(\chi(R)\)</span>
 and is of primary importance for XAFS analysis.  In Larch, this is
 encapsulated in the <a class="reference internal" href="#xftf" title="xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a> function.</p>
@@ -222,7 +235,7 @@ encapsulated in the <a class="reference internal" href="#xftf" title="xftf"><cod
 <dd><p>perform a forward XAFS Fourier transform, from <span class="math notranslate nohighlight">\(\chi(k)\)</span> to
 <span class="math notranslate nohighlight">\(\chi(R)\)</span>, using common XAFS conventions.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>k</strong> – 1-d array of photo-electron wavenumber in <span class="math notranslate nohighlight">\(\rm\AA^{-1}\)</span></p></li>
 <li><p><strong>chi</strong> – 1-d array of <span class="math notranslate nohighlight">\(\chi\)</span></p></li>
@@ -238,7 +251,7 @@ encapsulated in the <a class="reference internal" href="#xftf" title="xftf"><cod
 <li><p><strong>kstep</strong> – value to use for <span class="math notranslate nohighlight">\(\delta{k}\)</span> (0.05).</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code> – outputs are written to supplied group.</p>
 </dd>
 </dl>
@@ -246,10 +259,6 @@ encapsulated in the <a class="reference internal" href="#xftf" title="xftf"><cod
 The following data is put into the output group:</p>
 <blockquote>
 <div><table class="docutils align-default">
-<colgroup>
-<col style="width: 21%" />
-<col style="width: 79%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>array name</p></th>
 <th class="head"><p>meaning</p></th>
@@ -296,14 +305,14 @@ and <code class="docutils literal notranslate"><span class="pre">chi</span></cod
 <span class="math notranslate nohighlight">\(\chi(k)k^w\Omega(k)\)</span> on a uniform <span class="math notranslate nohighlight">\(k\)</span> grid. It returns
 the complex array of <span class="math notranslate nohighlight">\(\chi(R)\)</span>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>chi</strong> – 1-d array of <span class="math notranslate nohighlight">\(\chi\)</span> to be transformed</p></li>
 <li><p><strong>nfft</strong> – value to use for <span class="math notranslate nohighlight">\(N_{\rm fft}\)</span> (2048).</p></li>
 <li><p><strong>kstep</strong> – value to use for <span class="math notranslate nohighlight">\(\delta{k}\)</span> (0.05).</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>complex <span class="math notranslate nohighlight">\(\chi(R)\)</span>.</p>
 </dd>
 </dl>
@@ -311,7 +320,7 @@ the complex array of <span class="math notranslate nohighlight">\(\chi(R)\)</spa
 
 </section>
 <section id="reverse-xafs-fourier-transforms-r-rightarrow-q">
-<h2><span class="section-number">13.5.3. </span>Reverse XAFS Fourier transforms (<span class="math notranslate nohighlight">\(R{\rightarrow}q\)</span>)<a class="headerlink" href="#reverse-xafs-fourier-transforms-r-rightarrow-q" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.5.3. </span>Reverse XAFS Fourier transforms (<span class="math notranslate nohighlight">\(R{\rightarrow}q\)</span>)<a class="headerlink" href="#reverse-xafs-fourier-transforms-r-rightarrow-q" title="Permalink to this heading">¶</a></h2>
 <p>Reverse Fourier transforms convert <span class="math notranslate nohighlight">\(\chi(R)\)</span> back to filtered
 <span class="math notranslate nohighlight">\(\chi(k)\)</span>.  We refer to the filtered <span class="math notranslate nohighlight">\(k\)</span> space as <span class="math notranslate nohighlight">\(q\)</span> to
 emphasize the distinction between the two.  The filtered <span class="math notranslate nohighlight">\(\chi(q)\)</span> is
@@ -323,7 +332,7 @@ the explicitly real <span class="math notranslate nohighlight">\(\chi(k)\)</span
 <dd><p>perform a reverse XAFS Fourier transform, from <span class="math notranslate nohighlight">\(\chi(R)\)</span> to
 <span class="math notranslate nohighlight">\(\chi(q)\)</span>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>r</strong> – 1-d array of distance.</p></li>
 <li><p><strong>chir</strong> – 1-d array of <span class="math notranslate nohighlight">\(\chi(R)\)</span></p></li>
@@ -339,7 +348,7 @@ the explicitly real <span class="math notranslate nohighlight">\(\chi(k)\)</span
 <li><p><strong>kstep</strong> – value to use for <span class="math notranslate nohighlight">\(\delta{k}\)</span> (0.05).</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code> – outputs are written to supplied group.</p>
 </dd>
 </dl>
@@ -347,10 +356,6 @@ the explicitly real <span class="math notranslate nohighlight">\(\chi(k)\)</span
 The following data is put into the output group:</p>
 <blockquote>
 <div><table class="docutils align-default">
-<colgroup>
-<col style="width: 21%" />
-<col style="width: 79%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>array name</p></th>
 <th class="head"><p>meaning</p></th>
@@ -400,14 +405,14 @@ imaginary parts of the <span class="math notranslate nohighlight">\(\chi(R)\)</s
 It returns the complex array of <span class="math notranslate nohighlight">\(\chi(q)\)</span> without putting any
 values into a group.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>chir</strong> – 1-d array of <span class="math notranslate nohighlight">\(\chi(R)\)</span> to be transformed</p></li>
 <li><p><strong>nfft</strong> – value to use for <span class="math notranslate nohighlight">\(N_{\rm fft}\)</span> (2048).</p></li>
 <li><p><strong>kstep</strong> – value to use for <span class="math notranslate nohighlight">\(\delta{k}\)</span> (0.05).</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>complex <span class="math notranslate nohighlight">\(\chi(q)\)</span>.</p>
 </dd>
 </dl>
@@ -415,7 +420,7 @@ values into a group.</p>
 
 </section>
 <section id="ftwindow-generating-fourier-transform-windows">
-<h2><span class="section-number">13.5.4. </span><a class="reference internal" href="#ftwindow" title="ftwindow"><code class="xref py py-func docutils literal notranslate"><span class="pre">ftwindow()</span></code></a>: Generating Fourier transform windows<a class="headerlink" href="#ftwindow-generating-fourier-transform-windows" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.5.4. </span><a class="reference internal" href="#ftwindow" title="ftwindow"><code class="xref py py-func docutils literal notranslate"><span class="pre">ftwindow()</span></code></a>: Generating Fourier transform windows<a class="headerlink" href="#ftwindow-generating-fourier-transform-windows" title="Permalink to this heading">¶</a></h2>
 <p>As mentioned above, a Fourier transform window will smooth the resulting
 Fourier transformed spectrum, removing ripple and ringing in it that would
 result from a sudden truncation data at the end of it range.  There is an
@@ -426,7 +431,7 @@ available for constructing windows.  A sampling of windows is shown below.</p>
 <span class="sig-name descname"><span class="pre">ftwindow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmin=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmax=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dk=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ftwindow" title="Permalink to this definition">¶</a></dt>
 <dd><p>create a Fourier transform window array.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> – 1-d array array to build window on.</p></li>
 <li><p><strong>xmin</strong> – starting <em>x</em> for FT Window</p></li>
@@ -436,7 +441,7 @@ available for constructing windows.  A sampling of windows is shown below.</p>
 <li><p><strong>window</strong> – name of window type</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>1-d window array.</p>
 </dd>
 </dl>
@@ -450,10 +455,6 @@ Fourier Transform Window Types</span></a>.</p>
 <span id="index-0"></span><div><p>Table of Fourier Transform Window Types.</p>
 <blockquote>
 <div><table class="docutils align-default">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 75%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>window name</p></th>
 <th class="head"><p>description</p></th>
@@ -510,7 +511,7 @@ The Kaiser-Bessel window is slightly more complicated:</p>
 \end{eqnarray*}</div><p>where <span class="math notranslate nohighlight">\(i_0\)</span> is the modified Bessel function of order 0.</p>
 </section>
 <section id="catalog-of-fourier-transform-window">
-<h2><span class="section-number">13.5.5. </span>Catalog of Fourier transform window<a class="headerlink" href="#catalog-of-fourier-transform-window" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.5.5. </span>Catalog of Fourier transform window<a class="headerlink" href="#catalog-of-fourier-transform-window" title="Permalink to this heading">¶</a></h2>
 <p>Here, we give a series of example windows, to illustrate the different
 window types and the effect of the various parameters.  The meanings of
 <code class="docutils literal notranslate"><span class="pre">xmin</span></code>, <code class="docutils literal notranslate"><span class="pre">xmax</span></code>, <code class="docutils literal notranslate"><span class="pre">dx</span></code> and <code class="docutils literal notranslate"><span class="pre">dx2</span></code> are identical for the Hanning, Parzen and
@@ -561,7 +562,7 @@ right, the effect of <code class="docutils literal notranslate"><span class="pre
 a closer comparison to a Gaussian window is made.</span></p>
 </div></section>
 <section id="examples-forward-xafs-fourier-transforms">
-<span id="fig-xafsft3"></span><h2><span class="section-number">13.5.6. </span>Examples: Forward XAFS Fourier transforms<a class="headerlink" href="#examples-forward-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
+<span id="fig-xafsft3"></span><h2><span class="section-number">13.5.6. </span>Examples: Forward XAFS Fourier transforms<a class="headerlink" href="#examples-forward-xafs-fourier-transforms" title="Permalink to this heading">¶</a></h2>
 <p>Now we show some example Fourier transforms, illustrating the real and
 imaginary parts of the <span class="math notranslate nohighlight">\(\chi(R)\)</span> as well as the magnitude, the effect
 of different windows types, and Fourier filtering to <span class="math notranslate nohighlight">\(\chi(q)\)</span>.  We
@@ -645,7 +646,7 @@ below:</p>
 imaginary components are used, not simply the magnitude.</p>
 </section>
 <section id="examples-reverse-xafs-fourier-transforms-fourier-filtering">
-<h2><span class="section-number">13.5.7. </span>Examples: Reverse XAFS Fourier transforms, Fourier Filtering<a class="headerlink" href="#examples-reverse-xafs-fourier-transforms-fourier-filtering" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.5.7. </span>Examples: Reverse XAFS Fourier transforms, Fourier Filtering<a class="headerlink" href="#examples-reverse-xafs-fourier-transforms-fourier-filtering" title="Permalink to this heading">¶</a></h2>
 <p>A reverse Fourier transform will convert data from <span class="math notranslate nohighlight">\(\chi(R)\)</span> to
 <span class="math notranslate nohighlight">\(\chi(q)\)</span>.  This allows a limited range of frequencies (distances) to
 be isolated and turned back into a <span class="math notranslate nohighlight">\(\chi(k)\)</span> spectrum.  Here, we show
@@ -699,7 +700,7 @@ array.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>
 </html>

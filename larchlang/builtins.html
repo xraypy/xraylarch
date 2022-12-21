@@ -2,19 +2,21 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>9.8. Builtin Functions &#8212; xraylarch 0.9.65 documentation</title>
+    <title>9.8. Builtin Functions &#8212; xraylarch 0.9.66 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -76,8 +78,94 @@
     <ul>
 <li><a class="reference internal" href="#">9.8. Builtin Functions</a><ul>
 <li><a class="reference internal" href="#builtin-data-values">9.8.1. Builtin data values</a></li>
-<li><a class="reference internal" href="#larch-specific-builtin-functions">9.8.2. Larch-Specific Builtin functions</a></li>
-<li><a class="reference internal" href="#builtin-functions-inherited-from-python">9.8.3. Builtin functions inherited from Python</a></li>
+<li><a class="reference internal" href="#larch-specific-builtin-functions">9.8.2. Larch-Specific Builtin functions</a><ul>
+<li><a class="reference internal" href="#add_plugin"><code class="docutils literal notranslate"><span class="pre">add_plugin()</span></code></a></li>
+<li><a class="reference internal" href="#cd"><code class="docutils literal notranslate"><span class="pre">cd()</span></code></a></li>
+<li><a class="reference internal" href="#cwd"><code class="docutils literal notranslate"><span class="pre">cwd()</span></code></a></li>
+<li><a class="reference internal" href="#dict2group"><code class="docutils literal notranslate"><span class="pre">dict2group()</span></code></a></li>
+<li><a class="reference internal" href="#get"><code class="docutils literal notranslate"><span class="pre">get()</span></code></a></li>
+<li><a class="reference internal" href="#group"><code class="docutils literal notranslate"><span class="pre">group()</span></code></a></li>
+<li><a class="reference internal" href="#group_items"><code class="docutils literal notranslate"><span class="pre">group_items()</span></code></a></li>
+<li><a class="reference internal" href="#group2dict"><code class="docutils literal notranslate"><span class="pre">group2dict()</span></code></a></li>
+<li><a class="reference internal" href="#help"><code class="docutils literal notranslate"><span class="pre">help()</span></code></a></li>
+<li><a class="reference internal" href="#isgroup"><code class="docutils literal notranslate"><span class="pre">isgroup()</span></code></a></li>
+<li><a class="reference internal" href="#isparam"><code class="docutils literal notranslate"><span class="pre">isparam()</span></code></a></li>
+<li><a class="reference internal" href="#ls"><code class="docutils literal notranslate"><span class="pre">ls()</span></code></a></li>
+<li><a class="reference internal" href="#mkdir"><code class="docutils literal notranslate"><span class="pre">mkdir()</span></code></a></li>
+<li><a class="reference internal" href="#more"><code class="docutils literal notranslate"><span class="pre">more()</span></code></a></li>
+<li><a class="reference internal" href="#parent"><code class="docutils literal notranslate"><span class="pre">parent()</span></code></a></li>
+<li><a class="reference internal" href="#pause"><code class="docutils literal notranslate"><span class="pre">pause()</span></code></a></li>
+<li><a class="reference internal" href="#run"><code class="docutils literal notranslate"><span class="pre">run()</span></code></a></li>
+<li><a class="reference internal" href="#show"><code class="docutils literal notranslate"><span class="pre">show()</span></code></a></li>
+<li><a class="reference internal" href="#show_tree"><code class="docutils literal notranslate"><span class="pre">show_tree()</span></code></a></li>
+<li><a class="reference internal" href="#sleep"><code class="docutils literal notranslate"><span class="pre">sleep()</span></code></a></li>
+<li><a class="reference internal" href="#subgroups"><code class="docutils literal notranslate"><span class="pre">subgroups()</span></code></a></li>
+<li><a class="reference internal" href="#which"><code class="docutils literal notranslate"><span class="pre">which()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#builtin-functions-inherited-from-python">9.8.3. Builtin functions inherited from Python</a><ul>
+<li><a class="reference internal" href="#abs"><code class="docutils literal notranslate"><span class="pre">abs()</span></code></a></li>
+<li><a class="reference internal" href="#all"><code class="docutils literal notranslate"><span class="pre">all()</span></code></a></li>
+<li><a class="reference internal" href="#any"><code class="docutils literal notranslate"><span class="pre">any()</span></code></a></li>
+<li><a class="reference internal" href="#bin"><code class="docutils literal notranslate"><span class="pre">bin()</span></code></a></li>
+<li><a class="reference internal" href="#bool"><code class="docutils literal notranslate"><span class="pre">bool()</span></code></a></li>
+<li><a class="reference internal" href="#buffer"><code class="docutils literal notranslate"><span class="pre">buffer()</span></code></a></li>
+<li><a class="reference internal" href="#bytearray"><code class="docutils literal notranslate"><span class="pre">bytearray()</span></code></a></li>
+<li><a class="reference internal" href="#bytes"><code class="docutils literal notranslate"><span class="pre">bytes()</span></code></a></li>
+<li><a class="reference internal" href="#callable"><code class="docutils literal notranslate"><span class="pre">callable()</span></code></a></li>
+<li><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">cd()</span></code></a></li>
+<li><a class="reference internal" href="#chr"><code class="docutils literal notranslate"><span class="pre">chr()</span></code></a></li>
+<li><a class="reference internal" href="#cmp"><code class="docutils literal notranslate"><span class="pre">cmp()</span></code></a></li>
+<li><a class="reference internal" href="#coerce"><code class="docutils literal notranslate"><span class="pre">coerce()</span></code></a></li>
+<li><a class="reference internal" href="#complex"><code class="docutils literal notranslate"><span class="pre">complex()</span></code></a></li>
+<li><a class="reference internal" href="#copy"><code class="docutils literal notranslate"><span class="pre">copy()</span></code></a></li>
+<li><a class="reference internal" href="#deepcopy"><code class="docutils literal notranslate"><span class="pre">deepcopy()</span></code></a></li>
+<li><a class="reference internal" href="#delattr"><code class="docutils literal notranslate"><span class="pre">delattr()</span></code></a></li>
+<li><a class="reference internal" href="#dict"><code class="docutils literal notranslate"><span class="pre">dict()</span></code></a></li>
+<li><a class="reference internal" href="#dir"><code class="docutils literal notranslate"><span class="pre">dir()</span></code></a></li>
+<li><a class="reference internal" href="#divmod"><code class="docutils literal notranslate"><span class="pre">divmod()</span></code></a></li>
+<li><a class="reference internal" href="#enumerate"><code class="docutils literal notranslate"><span class="pre">enumerate()</span></code></a></li>
+<li><a class="reference internal" href="#filter"><code class="docutils literal notranslate"><span class="pre">filter()</span></code></a></li>
+<li><a class="reference internal" href="#float"><code class="docutils literal notranslate"><span class="pre">float()</span></code></a></li>
+<li><a class="reference internal" href="#format"><code class="docutils literal notranslate"><span class="pre">format()</span></code></a></li>
+<li><a class="reference internal" href="#frozenset"><code class="docutils literal notranslate"><span class="pre">frozenset()</span></code></a></li>
+<li><a class="reference internal" href="#id1"><code class="docutils literal notranslate"><span class="pre">get()</span></code></a></li>
+<li><a class="reference internal" href="#getattr"><code class="docutils literal notranslate"><span class="pre">getattr()</span></code></a></li>
+<li><a class="reference internal" href="#hasattr"><code class="docutils literal notranslate"><span class="pre">hasattr()</span></code></a></li>
+<li><a class="reference internal" href="#hash"><code class="docutils literal notranslate"><span class="pre">hash()</span></code></a></li>
+<li><a class="reference internal" href="#hex"><code class="docutils literal notranslate"><span class="pre">hex()</span></code></a></li>
+<li><a class="reference internal" href="#id"><code class="docutils literal notranslate"><span class="pre">id()</span></code></a></li>
+<li><a class="reference internal" href="#int"><code class="docutils literal notranslate"><span class="pre">int()</span></code></a></li>
+<li><a class="reference internal" href="#isinstance"><code class="docutils literal notranslate"><span class="pre">isinstance()</span></code></a></li>
+<li><a class="reference internal" href="#len"><code class="docutils literal notranslate"><span class="pre">len()</span></code></a></li>
+<li><a class="reference internal" href="#list"><code class="docutils literal notranslate"><span class="pre">list()</span></code></a></li>
+<li><a class="reference internal" href="#map"><code class="docutils literal notranslate"><span class="pre">map()</span></code></a></li>
+<li><a class="reference internal" href="#max"><code class="docutils literal notranslate"><span class="pre">max()</span></code></a></li>
+<li><a class="reference internal" href="#min"><code class="docutils literal notranslate"><span class="pre">min()</span></code></a></li>
+<li><a class="reference internal" href="#oct"><code class="docutils literal notranslate"><span class="pre">oct()</span></code></a></li>
+<li><a class="reference internal" href="#open"><code class="docutils literal notranslate"><span class="pre">open()</span></code></a></li>
+<li><a class="reference internal" href="#ord"><code class="docutils literal notranslate"><span class="pre">ord()</span></code></a></li>
+<li><a class="reference internal" href="#pow"><code class="docutils literal notranslate"><span class="pre">pow()</span></code></a></li>
+<li><a class="reference internal" href="#range"><code class="docutils literal notranslate"><span class="pre">range()</span></code></a></li>
+<li><a class="reference internal" href="#raw_input"><code class="docutils literal notranslate"><span class="pre">raw_input()</span></code></a></li>
+<li><a class="reference internal" href="#reduce"><code class="docutils literal notranslate"><span class="pre">reduce()</span></code></a></li>
+<li><a class="reference internal" href="#reload"><code class="docutils literal notranslate"><span class="pre">reload()</span></code></a></li>
+<li><a class="reference internal" href="#repr"><code class="docutils literal notranslate"><span class="pre">repr()</span></code></a></li>
+<li><a class="reference internal" href="#reversed"><code class="docutils literal notranslate"><span class="pre">reversed()</span></code></a></li>
+<li><a class="reference internal" href="#round"><code class="docutils literal notranslate"><span class="pre">round()</span></code></a></li>
+<li><a class="reference internal" href="#set"><code class="docutils literal notranslate"><span class="pre">set()</span></code></a></li>
+<li><a class="reference internal" href="#setattr"><code class="docutils literal notranslate"><span class="pre">setattr()</span></code></a></li>
+<li><a class="reference internal" href="#slice"><code class="docutils literal notranslate"><span class="pre">slice()</span></code></a></li>
+<li><a class="reference internal" href="#sorted"><code class="docutils literal notranslate"><span class="pre">sorted()</span></code></a></li>
+<li><a class="reference internal" href="#str"><code class="docutils literal notranslate"><span class="pre">str()</span></code></a></li>
+<li><a class="reference internal" href="#sum"><code class="docutils literal notranslate"><span class="pre">sum()</span></code></a></li>
+<li><a class="reference internal" href="#tuple"><code class="docutils literal notranslate"><span class="pre">tuple()</span></code></a></li>
+<li><a class="reference internal" href="#type"><code class="docutils literal notranslate"><span class="pre">type()</span></code></a></li>
+<li><a class="reference internal" href="#unichr"><code class="docutils literal notranslate"><span class="pre">unichr()</span></code></a></li>
+<li><a class="reference internal" href="#unicode"><code class="docutils literal notranslate"><span class="pre">unicode()</span></code></a></li>
+<li><a class="reference internal" href="#zip"><code class="docutils literal notranslate"><span class="pre">zip()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -109,7 +197,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
 
@@ -119,18 +207,18 @@
           <div class="body" role="main">
             
   <section id="builtin-functions">
-<h1><span class="section-number">9.8. </span>Builtin Functions<a class="headerlink" href="#builtin-functions" title="Permalink to this headline">¶</a></h1>
+<h1><span class="section-number">9.8. </span>Builtin Functions<a class="headerlink" href="#builtin-functions" title="Permalink to this heading">¶</a></h1>
 <p>Larch has several general built-in functions for basic manipulation of data and
 programming needs.  Many of these are copied directly from Python, but
 several are Larch-specifc.   Note that the advanced math and scientific
 functions are not listed here, but elsewhere in the documentation.</p>
 <section id="builtin-data-values">
-<h2><span class="section-number">9.8.1. </span>Builtin data values<a class="headerlink" href="#builtin-data-values" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.8.1. </span>Builtin data values<a class="headerlink" href="#builtin-data-values" title="Permalink to this heading">¶</a></h2>
 <p>The values <code class="docutils literal notranslate"><span class="pre">True</span></code>, <code class="docutils literal notranslate"><span class="pre">False</span></code>  represent the boolean values
 for true and false.  <code class="docutils literal notranslate"><span class="pre">None</span></code> is the null value.</p>
 </section>
 <section id="larch-specific-builtin-functions">
-<h2><span class="section-number">9.8.2. </span>Larch-Specific Builtin functions<a class="headerlink" href="#larch-specific-builtin-functions" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.8.2. </span>Larch-Specific Builtin functions<a class="headerlink" href="#larch-specific-builtin-functions" title="Permalink to this heading">¶</a></h2>
 <p>These built-in functions are specific to Larch (that is, not inherited from
 Python).  Many help you work with Larch groups or otherwise simplify common tasks.</p>
 <dl class="py function">
@@ -163,14 +251,14 @@ to <code class="docutils literal notranslate"><span class="pre">group(**dict)</s
 <dt class="sig sig-object py" id="get">
 <span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#get" title="Permalink to this definition">¶</a></dt>
 <dd><p>get object from symbol table by name.  For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; g = group(a = 1,  b=2.3, z = &#39;a string&#39;)</span>
-<span class="go">larch&gt; print(get(&#39;g.z&#39;))</span>
-<span class="go">&#39;a string&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>  <span class="n">b</span><span class="o">=</span><span class="mf">2.3</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="s1">&#39;a string&#39;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;g.z&#39;</span><span class="p">))</span>
+<span class="s1">&#39;a string&#39;</span>
 </pre></div>
 </div>
 <p>this is can also be accomplished by the similar:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; print( getattr(g, &#39;z&#39;))</span>
-<span class="go">&#39;a string&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">))</span>
+<span class="s1">&#39;a string&#39;</span>
 </pre></div>
 </div>
 <p>but the <a class="reference internal" href="#id1" title="get"><code class="xref py py-func docutils literal notranslate"><span class="pre">get()</span></code></a> version uses only the name of the object.</p>
@@ -220,14 +308,14 @@ way to loop through all items in a group.</p>
 <dd><p>returns a list of files in the current directory.  If a ‘*’ is used in
 the argument, the returned list is limited to files matching that
 pattern.  For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; ls(&#39;.&#39;)</span>
-<span class="go">[&#39;cu.chi&#39;, &#39;cu.xmu&#39;, &#39;cu10k.chi&#39;, &#39;cu_10k.xmu&#39;, &#39;cu_150k.xmu&#39;,</span>
-<span class="go"> &#39;cu_50k.xmu&#39;, &#39;cu_metal_rt.xdi&#39;, &#39;cu_rt01.xmu&#39;, &#39;fe.060&#39;,</span>
-<span class="go"> &#39;fe2o3_rt1.xmu&#39;, &#39;fe3c_rt.xdi&#39;, &#39;feo_exafs_pnccat2001.dat&#39;,</span>
-<span class="go"> &#39;feo_rt1.xmu&#39;, &#39;feo_xafs.dat&#39;, &#39;scorodite_as_xafs.001&#39;, &#39;znse_zn_xafs.001&#39;]</span>
-<span class="go">larch&gt; xdifiles = ls(&#39;*.xdi&#39;)</span>
-<span class="go">larch&gt; print((xdifiles)</span>
-<span class="go">[&#39;cu_metal_rt.xdi&#39;, &#39;fe3c_rt.xdi&#39;]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">ls</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+<span class="p">[</span><span class="s1">&#39;cu.chi&#39;</span><span class="p">,</span> <span class="s1">&#39;cu.xmu&#39;</span><span class="p">,</span> <span class="s1">&#39;cu10k.chi&#39;</span><span class="p">,</span> <span class="s1">&#39;cu_10k.xmu&#39;</span><span class="p">,</span> <span class="s1">&#39;cu_150k.xmu&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;cu_50k.xmu&#39;</span><span class="p">,</span> <span class="s1">&#39;cu_metal_rt.xdi&#39;</span><span class="p">,</span> <span class="s1">&#39;cu_rt01.xmu&#39;</span><span class="p">,</span> <span class="s1">&#39;fe.060&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;fe2o3_rt1.xmu&#39;</span><span class="p">,</span> <span class="s1">&#39;fe3c_rt.xdi&#39;</span><span class="p">,</span> <span class="s1">&#39;feo_exafs_pnccat2001.dat&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;feo_rt1.xmu&#39;</span><span class="p">,</span> <span class="s1">&#39;feo_xafs.dat&#39;</span><span class="p">,</span> <span class="s1">&#39;scorodite_as_xafs.001&#39;</span><span class="p">,</span> <span class="s1">&#39;znse_zn_xafs.001&#39;</span><span class="p">]</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">xdifiles</span> <span class="o">=</span> <span class="n">ls</span><span class="p">(</span><span class="s1">&#39;*.xdi&#39;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">((</span><span class="n">xdifiles</span><span class="p">)</span>
+<span class="p">[</span><span class="s1">&#39;cu_metal_rt.xdi&#39;</span><span class="p">,</span> <span class="s1">&#39;fe3c_rt.xdi&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -245,8 +333,8 @@ for creating directory (default=0777).</p>
 <span class="sig-name descname"><span class="pre">more</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">pagelenghth=32</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#more" title="Permalink to this definition">¶</a></dt>
 <dd><p>list file contents, optionally specifying the number of lines to
 show at a time.  By default, the file is shown 32 lines at a time.:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; more(&#39;file.txt&#39;)</span>
-<span class="go">larch&gt; more(&#39;file.txt&#39;, pagelength=10)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">more</span><span class="p">(</span><span class="s1">&#39;file.txt&#39;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">more</span><span class="p">(</span><span class="s1">&#39;file.txt&#39;</span><span class="p">,</span> <span class="n">pagelength</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -300,15 +388,15 @@ members.</p>
 <dt class="sig sig-object py" id="which">
 <span class="sig-name descname"><span class="pre">which</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">object</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#which" title="Permalink to this definition">¶</a></dt>
 <dd><p>return full path of object in Larch’s symbol table:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; which(which)</span>
-<span class="go">&#39;_builtin.which&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">which</span><span class="p">(</span><span class="n">which</span><span class="p">)</span>
+<span class="s1">&#39;_builtin.which&#39;</span>
 </pre></div>
 </div>
 </dd></dl>
 
 </section>
 <section id="builtin-functions-inherited-from-python">
-<h2><span class="section-number">9.8.3. </span>Builtin functions inherited from Python<a class="headerlink" href="#builtin-functions-inherited-from-python" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.8.3. </span>Builtin functions inherited from Python<a class="headerlink" href="#builtin-functions-inherited-from-python" title="Permalink to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="abs">
 <span class="sig-name descname"><span class="pre">abs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abs" title="Permalink to this definition">¶</a></dt>
@@ -802,7 +890,7 @@ in length to the length of the shortest argument sequence.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>
 </html>

@@ -2,19 +2,21 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>5.2. Reading and Saving Data into XAS Viewer &#8212; xraylarch 0.9.65 documentation</title>
+    <title>5.2. Reading and Saving Data into XAS Viewer &#8212; xraylarch 0.9.66 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
@@ -112,7 +114,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
 
@@ -123,7 +125,7 @@
             
   <p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
 <section id="reading-and-saving-data-into-xas-viewer">
-<span id="xasviewer-io"></span><h1><span class="section-number">5.2. </span>Reading and Saving Data into XAS Viewer<a class="headerlink" href="#reading-and-saving-data-into-xas-viewer" title="Permalink to this headline">¶</a></h1>
+<span id="xasviewer-io"></span><h1><span class="section-number">5.2. </span>Reading and Saving Data into XAS Viewer<a class="headerlink" href="#reading-and-saving-data-into-xas-viewer" title="Permalink to this heading">¶</a></h1>
 <p>XAS Viewer can import XAS data in the following formats</p>
 <blockquote>
 <div><ul class="simple">
@@ -148,7 +150,7 @@ column files as well.</p>
 </ul>
 </div></blockquote>
 <section id="reading-plaintext-data-files-including-xdi">
-<span id="xasviewer-plaintext"></span><h2><span class="section-number">5.2.1. </span>Reading Plaintext data files, including XDI<a class="headerlink" href="#reading-plaintext-data-files-including-xdi" title="Permalink to this headline">¶</a></h2>
+<span id="xasviewer-plaintext"></span><h2><span class="section-number">5.2.1. </span>Reading Plaintext data files, including XDI<a class="headerlink" href="#reading-plaintext-data-files-including-xdi" title="Permalink to this heading">¶</a></h2>
 <p>XAS Viewer can read data from XDI files or from other plaintext (ASCII)
 data files using a GUI form shown in <a class="reference internal" href="#fig-xasviewer-dataimport"><span class="std std-numref">Figure 5.2.1.1</span></a>. This data
 importer window will help you build XAFS <span class="math notranslate nohighlight">\(\mu(E)\)</span> from the various
@@ -186,7 +188,7 @@ the array choices will be assumed to be the same for all files.</p>
 </figure>
 </section>
 <section id="reading-data-from-athena-project-files">
-<span id="xasviewer-athena"></span><h2><span class="section-number">5.2.2. </span>Reading Data from Athena Project Files<a class="headerlink" href="#reading-data-from-athena-project-files" title="Permalink to this headline">¶</a></h2>
+<span id="xasviewer-athena"></span><h2><span class="section-number">5.2.2. </span>Reading Data from Athena Project Files<a class="headerlink" href="#reading-data-from-athena-project-files" title="Permalink to this heading">¶</a></h2>
 <p>XAS <span class="math notranslate nohighlight">\(\mu(E)\)</span> data can also be read from Athena Project files, as
 shown in <a class="reference internal" href="#fig-xasviewer-athenaimporter"><span class="std std-numref">Figure 5.2.2.1</span></a>. Multiple data groups can be selected
 and read in.  When reading Athena Project files, many of the processing
@@ -200,7 +202,7 @@ Viewer.</p>
 </figure>
 </section>
 <section id="reading-spec-bliss-hdf5-data">
-<span id="xasviewer-blisshdf5"></span><h2><span class="section-number">5.2.3. </span>Reading Spec/Bliss HDF5 Data<a class="headerlink" href="#reading-spec-bliss-hdf5-data" title="Permalink to this headline">¶</a></h2>
+<span id="xasviewer-blisshdf5"></span><h2><span class="section-number">5.2.3. </span>Reading Spec/Bliss HDF5 Data<a class="headerlink" href="#reading-spec-bliss-hdf5-data" title="Permalink to this heading">¶</a></h2>
 <p>HDF5 and ASCII data files from Spec/Bliss format used at ESRF can be read.
 These files support multiple “scans”, some of which may be XAS scans, and
 are typically ordered by the time at which they were collected.</p>
@@ -216,7 +218,7 @@ collection at ESRF.</span><a class="headerlink" href="#id3" title="Permalink to 
 </figure>
 </section>
 <section id="larch-session-files-and-xas-viewer">
-<span id="xasviewer-sessionfiles"></span><h2><span class="section-number">5.2.4. </span>Larch Session Files and XAS Viewer<a class="headerlink" href="#larch-session-files-and-xas-viewer" title="Permalink to this headline">¶</a></h2>
+<span id="xasviewer-sessionfiles"></span><h2><span class="section-number">5.2.4. </span>Larch Session Files and XAS Viewer<a class="headerlink" href="#larch-session-files-and-xas-viewer" title="Permalink to this heading">¶</a></h2>
 <p>Larch Session Files (using the <cite>.larix</cite> extension) save all of the user
 data in to a single file that can be loaded at a later. This includes not
 only the data as read into the session, but all of the processed arrays,
@@ -256,7 +258,7 @@ into the existing session.</span><a class="headerlink" href="#id4" title="Permal
 </figure>
 </section>
 <section id="auto-saving-larch-session-files">
-<h2><span class="section-number">5.2.5. </span>Auto-saving Larch Session Files<a class="headerlink" href="#auto-saving-larch-session-files" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">5.2.5. </span>Auto-saving Larch Session Files<a class="headerlink" href="#auto-saving-larch-session-files" title="Permalink to this heading">¶</a></h2>
 <p>XAS Viewer will periodically save session files and keep a history of
 session files.  By default, these are saved every 15 minutes while XAS
 Viewer is running and while the program is actually in use and data
@@ -305,7 +307,7 @@ to save the Session before exiting.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>
 </html>

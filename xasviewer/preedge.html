@@ -2,19 +2,21 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>5.5. Pre-edge peak fitting &#8212; xraylarch 0.9.65 documentation</title>
+    <title>5.5. Pre-edge peak fitting &#8212; xraylarch 0.9.66 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
@@ -111,7 +113,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
 
@@ -122,7 +124,7 @@
             
   <p>..include:: ../_config.rst</p>
 <section id="pre-edge-peak-fitting">
-<span id="xasviewer-peakfit"></span><h1><span class="section-number">5.5. </span>Pre-edge peak fitting<a class="headerlink" href="#pre-edge-peak-fitting" title="Permalink to this headline">¶</a></h1>
+<span id="xasviewer-peakfit"></span><h1><span class="section-number">5.5. </span>Pre-edge peak fitting<a class="headerlink" href="#pre-edge-peak-fitting" title="Permalink to this heading">¶</a></h1>
 <p>The “Pre-edge Peak Fit” tab (show in <a class="reference internal" href="#fig-xasviewer-3a"><span class="std std-numref">Figure 5.5.1</span></a>) provides a
 form for fitting pre-edge peaks to line shapes such as Gaussian, Lorentzian,
 or Voigt functions.  This provides an easy-to-use wrapper around <a href="#id21"><span class="problematic" id="id22">`lmfit`_</span></a>
@@ -328,7 +330,7 @@ the baseline.</span><a class="headerlink" href="#id11" title="Permalink to this 
 </figure>
 </div></section>
 <section id="linear-combination-analysis">
-<span id="xasviewer-lincombo"></span><span id="fig_xasviewer_8"></span><h1><span class="section-number">5.6. </span>Linear Combination Analysis<a class="headerlink" href="#linear-combination-analysis" title="Permalink to this headline">¶</a></h1>
+<span id="xasviewer-lincombo"></span><span id="fig_xasviewer_8"></span><h1><span class="section-number">5.6. </span>Linear Combination Analysis<a class="headerlink" href="#linear-combination-analysis" title="Permalink to this heading">¶</a></h1>
 <p>Linear Combination Analysis is useful for modeling a XANES spectrum as a
 combination of other spectra.  In this approach, one asserts that an
 unknown spectrum should be a linear combination of spectra of
@@ -368,7 +370,7 @@ of standards.</p></li>
 </figure>
 </section>
 <section id="principal-component-and-non-negative-factor-analysis">
-<span id="xasviewer-pca"></span><h1><span class="section-number">5.7. </span>Principal Component and Non-negative Factor Analysis<a class="headerlink" href="#principal-component-and-non-negative-factor-analysis" title="Permalink to this headline">¶</a></h1>
+<span id="xasviewer-pca"></span><h1><span class="section-number">5.7. </span>Principal Component and Non-negative Factor Analysis<a class="headerlink" href="#principal-component-and-non-negative-factor-analysis" title="Permalink to this heading">¶</a></h1>
 <p>Principal Component Analysis (PCA) is one of a family of numerical
 techniques to reduce the number of variable components in a set of data.
 There are many related techniques and procedures, and quite a bit of
@@ -414,16 +416,16 @@ components to best match an unknown spectra.</span><a class="headerlink" href="#
 </figure>
 </section>
 <section id="linear-regression-with-lasso-and-pls-to-predict-external-variable">
-<span id="xasviewer-regression"></span><h1><span class="section-number">5.8. </span>Linear Regression with LASSO and PLS to predict external variable<a class="headerlink" href="#linear-regression-with-lasso-and-pls-to-predict-external-variable" title="Permalink to this headline">¶</a></h1>
+<span id="xasviewer-regression"></span><h1><span class="section-number">5.8. </span>Linear Regression with LASSO and PLS to predict external variable<a class="headerlink" href="#linear-regression-with-lasso-and-pls-to-predict-external-variable" title="Permalink to this heading">¶</a></h1>
 </section>
 <section id="exafs-processing-background-subtraction">
-<span id="xasviewer-exafs-bkg"></span><h1><span class="section-number">5.9. </span>EXAFS Processing: Background Subtraction<a class="headerlink" href="#exafs-processing-background-subtraction" title="Permalink to this headline">¶</a></h1>
+<span id="xasviewer-exafs-bkg"></span><h1><span class="section-number">5.9. </span>EXAFS Processing: Background Subtraction<a class="headerlink" href="#exafs-processing-background-subtraction" title="Permalink to this heading">¶</a></h1>
 </section>
 <section id="exafs-processing-fourier-transforms">
-<span id="xasviewer-exafs-fft"></span><h1><span class="section-number">5.10. </span>EXAFS Processing:  Fourier Transforms<a class="headerlink" href="#exafs-processing-fourier-transforms" title="Permalink to this headline">¶</a></h1>
+<span id="xasviewer-exafs-fft"></span><h1><span class="section-number">5.10. </span>EXAFS Processing:  Fourier Transforms<a class="headerlink" href="#exafs-processing-fourier-transforms" title="Permalink to this heading">¶</a></h1>
 </section>
 <section id="fitting-exafs-data-to-feff-paths">
-<span id="xasviewer-feffit"></span><h1><span class="section-number">5.11. </span>Fitting EXAFS data to Feff Paths<a class="headerlink" href="#fitting-exafs-data-to-feff-paths" title="Permalink to this headline">¶</a></h1>
+<span id="xasviewer-feffit"></span><h1><span class="section-number">5.11. </span>Fitting EXAFS data to Feff Paths<a class="headerlink" href="#fitting-exafs-data-to-feff-paths" title="Permalink to this heading">¶</a></h1>
 </section>
 
 
@@ -457,7 +459,7 @@ components to best match an unknown spectra.</span><a class="headerlink" href="#
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>
 </html>

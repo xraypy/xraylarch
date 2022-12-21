@@ -2,19 +2,21 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>5.1. XAS Viewer Overview &#8212; xraylarch 0.9.65 documentation</title>
+    <title>5.1. XAS Viewer Overview &#8212; xraylarch 0.9.66 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
@@ -112,7 +114,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
 
@@ -123,11 +125,11 @@
             
   <p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
 <section id="xas-viewer-overview">
-<span id="xasviewer-overview"></span><h1><span class="section-number">5.1. </span>XAS Viewer Overview<a class="headerlink" href="#xas-viewer-overview" title="Permalink to this headline">¶</a></h1>
+<span id="xasviewer-overview"></span><h1><span class="section-number">5.1. </span>XAS Viewer Overview<a class="headerlink" href="#xas-viewer-overview" title="Permalink to this heading">¶</a></h1>
 <p>The main features of XAS Viewer can be broken into a few categories.  Here
 we give a brief overview, and then expand on these topics in later sections.</p>
 <section id="data-input-and-output">
-<h2><span class="section-number">5.1.1. </span>Data Input and Output<a class="headerlink" href="#data-input-and-output" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">5.1.1. </span>Data Input and Output<a class="headerlink" href="#data-input-and-output" title="Permalink to this heading">¶</a></h2>
 <p>XAS Viewer can import XAS data in the following formats</p>
 <blockquote>
 <div><ul class="simple">
@@ -149,7 +151,7 @@ we give a brief overview, and then expand on these topics in later sections.</p>
 <p>See <a class="reference internal" href="iodata.html#xasviewer-io"><span class="std std-ref">Reading and Saving Data into XAS Viewer</span></a> for details</p>
 </section>
 <section id="xas-data-processing-and-management">
-<h2><span class="section-number">5.1.2. </span>XAS Data Processing and Management<a class="headerlink" href="#xas-data-processing-and-management" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">5.1.2. </span>XAS Data Processing and Management<a class="headerlink" href="#xas-data-processing-and-management" title="Permalink to this heading">¶</a></h2>
 <p>Each XAS spectra in XAS Viewer is contained in a <em>Group</em> of data. All of
 the processing and analysis arrays and settings for this spectra will be
 contained within this Group.  Each Group will be shown by its “File Name”
@@ -176,7 +178,7 @@ Group or any set of Groups of XAS Data:</p>
 a small set of curated parameters and then visualize the results of these adjustments.</p>
 </section>
 <section id="xanes-analysis">
-<h2><span class="section-number">5.1.3. </span>XANES Analysis<a class="headerlink" href="#xanes-analysis" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">5.1.3. </span>XANES Analysis<a class="headerlink" href="#xanes-analysis" title="Permalink to this heading">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
 <li><p>linear combination analysis of spectra.</p></li>
@@ -187,7 +189,7 @@ a small set of curated parameters and then visualize the results of these adjust
 </div></blockquote>
 </section>
 <section id="exafs-processing">
-<h2><span class="section-number">5.1.4. </span>EXAFS Processing<a class="headerlink" href="#exafs-processing" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">5.1.4. </span>EXAFS Processing<a class="headerlink" href="#exafs-processing" title="Permalink to this heading">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
 <li><p>EXAFS background spline removal.</p></li>
@@ -198,7 +200,7 @@ a small set of curated parameters and then visualize the results of these adjust
 </div></blockquote>
 </section>
 <section id="exafs-modeling-with-feff">
-<h2><span class="section-number">5.1.5. </span>EXAFS Modeling with FEFF<a class="headerlink" href="#exafs-modeling-with-feff" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">5.1.5. </span>EXAFS Modeling with FEFF<a class="headerlink" href="#exafs-modeling-with-feff" title="Permalink to this heading">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
 <li><p>Browser for CIF files from American Mineralogist Crystal Structure Database.</p></li>
@@ -318,7 +320,7 @@ the corresponding field.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>
 </html>

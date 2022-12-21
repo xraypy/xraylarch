@@ -2,19 +2,21 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>12. Fitting and Modeling Data &#8212; xraylarch 0.9.65 documentation</title>
+    <title>12. Fitting and Modeling Data &#8212; xraylarch 0.9.66 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -96,7 +98,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
 
@@ -106,7 +108,7 @@
           <div class="body" role="main">
             
   <section id="fitting-and-modeling-data">
-<span id="fitting-chapter"></span><h1><span class="section-number">12. </span>Fitting and Modeling Data<a class="headerlink" href="#fitting-and-modeling-data" title="Permalink to this headline">¶</a></h1>
+<span id="fitting-chapter"></span><h1><span class="section-number">12. </span>Fitting and Modeling Data<a class="headerlink" href="#fitting-and-modeling-data" title="Permalink to this heading">¶</a></h1>
 <p>A key motivation for Larch is to provide easy and robust ways to model data
 and perform complex fits of data to models.  Data modeling and fitting can
 be messy and challenging tasks, so a major factor in Larch’s design was to
@@ -122,6 +124,8 @@ algorithms) are used for those other functions as well.</p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="fitting_overview.html">12.1. Fitting Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fitting_parameters.html">12.2. Parameters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fitting_parameters.html#param"><code class="docutils literal notranslate"><span class="pre">param()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting_parameters.html#guess"><code class="docutils literal notranslate"><span class="pre">guess()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="fitting_parameters.html#setting-bounds">12.2.1. setting bounds</a></li>
 <li class="toctree-l2"><a class="reference internal" href="fitting_parameters.html#using-algebraic-constraints">12.2.2. using algebraic constraints</a></li>
 <li class="toctree-l2"><a class="reference internal" href="fitting_parameters.html#param-group-creating-a-parameter-group-for-fitting-constraints">12.2.3. <code class="xref py py-func docutils literal notranslate"><span class="pre">param_group()</span></code>: creating a Parameter Group for fitting constraints</a></li>
@@ -129,9 +133,25 @@ algorithms) are used for those other functions as well.</p>
 <li class="toctree-l2"><a class="reference internal" href="fitting_parameters.html#working-with-uncertainties">12.2.5. working with uncertainties</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="fitting_minimize.html">12.3. <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> and objective Functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="fitting_results.html">12.4. Fit Results and Outputs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="fitting_lineshapes.html">12.5. Some Builtin Line-shape Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fitting_minimize.html">12.3. <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> and objective Functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fitting_minimize.html#minimize"><code class="docutils literal notranslate"><span class="pre">minimize()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="fitting_results.html">12.4. Fit Results and Outputs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fitting_results.html#fit_report"><code class="docutils literal notranslate"><span class="pre">fit_report()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="fitting_lineshapes.html">12.5. Some Builtin Line-shape Functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fitting_lineshapes.html#gaussian"><code class="docutils literal notranslate"><span class="pre">gaussian()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting_lineshapes.html#lorentzian"><code class="docutils literal notranslate"><span class="pre">lorentzian()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting_lineshapes.html#voigt"><code class="docutils literal notranslate"><span class="pre">voigt()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting_lineshapes.html#pvoigt"><code class="docutils literal notranslate"><span class="pre">pvoigt()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting_lineshapes.html#pearson7"><code class="docutils literal notranslate"><span class="pre">pearson7()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting_lineshapes.html#students_t"><code class="docutils literal notranslate"><span class="pre">students_t()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting_lineshapes.html#breit_wigner"><code class="docutils literal notranslate"><span class="pre">breit_wigner()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting_lineshapes.html#lognormal"><code class="docutils literal notranslate"><span class="pre">lognormal()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="fitting_examples.html">12.6. Fit Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="fitting_examples.html#example-1-fitting-a-simple-gaussian">12.6.1. Example 1: Fitting a Simple Gaussian</a></li>
 <li class="toctree-l2"><a class="reference internal" href="fitting_examples.html#example-2-fitting-xanes-pre-edge-peaks">12.6.2. Example 2: Fitting XANES Pre-edge Peaks</a></li>
@@ -139,12 +159,16 @@ algorithms) are used for those other functions as well.</p>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="fitting_fitpeaks.html">12.7. Simplified Peak Fitting with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fitting_fitpeaks.html#math.fit_peak"><code class="docutils literal notranslate"><span class="pre">fit_peak()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="fitting_fitpeaks.html#example-fitting-a-gaussian-background-with-fit-peak">12.7.1. Example: Fitting a Gaussian + background with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="fitting_fitpeaks.html#example-fitting-a-rectangular-function-with-fit-peak">12.7.2. Example: Fitting a Rectangular function with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="fitting_fitpeaks.html#using-lmfit-model">12.7.3. Using lmfit.Model</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="fitting_confidence.html">12.8. Advanced Confidence Intervals and Chi-square maps</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fitting_confidence.html#confidence_intervals"><code class="docutils literal notranslate"><span class="pre">confidence_intervals()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting_confidence.html#confidence_report"><code class="docutils literal notranslate"><span class="pre">confidence_report()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting_confidence.html#f_test"><code class="docutils literal notranslate"><span class="pre">f_test()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="fitting_confidence.html#confidence-interval-example-1">12.8.1. Confidence interval, Example 1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="fitting_confidence.html#confidence-interval-example-2">12.8.2. Confidence interval, Example 2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="fitting_confidence.html#chi-square-maps">12.8.3. Chi-square Maps</a></li>
@@ -184,7 +208,7 @@ algorithms) are used for those other functions as well.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>
 </html>

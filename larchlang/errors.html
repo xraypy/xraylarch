@@ -2,19 +2,21 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>9.5. Dealing With Errors &#8212; xraylarch 0.9.65 documentation</title>
+    <title>9.5. Dealing With Errors &#8212; xraylarch 0.9.66 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -110,7 +112,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
 
@@ -120,19 +122,19 @@
           <div class="body" role="main">
             
   <section id="dealing-with-errors">
-<h1><span class="section-number">9.5. </span>Dealing With Errors<a class="headerlink" href="#dealing-with-errors" title="Permalink to this headline">¶</a></h1>
+<h1><span class="section-number">9.5. </span>Dealing With Errors<a class="headerlink" href="#dealing-with-errors" title="Permalink to this heading">¶</a></h1>
 <p>When an error exists in the syntax of your script, or an error happens when
 running your script, an <em>Error</em> or <em>Exception</em> is generated, and the
 execution of your script is stopped.</p>
 <section id="syntax-errors">
-<h2><span class="section-number">9.5.1. </span>Syntax Errors<a class="headerlink" href="#syntax-errors" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.5.1. </span>Syntax Errors<a class="headerlink" href="#syntax-errors" title="Permalink to this heading">¶</a></h2>
 <p>Syntax errors result from incomplete or ill-formed larch syntax.  For
 example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; x = 3 +</span>
-<span class="go">SyntaxError: invalid syntax</span>
-<span class="go">x = 3 +</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">+</span>
+<span class="ne">SyntaxError</span><span class="p">:</span> <span class="n">invalid</span> <span class="n">syntax</span>
+<span class="n">x</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">+</span>
 
-<span class="go">    x = 3  +</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="mi">3</span>  <span class="o">+</span>
 </pre></div>
 </div>
 <p>This indicates that the Larch interpreter could not understand the meaning
@@ -146,16 +148,16 @@ form, then execute that intermediate form), syntax errors are sometimes
 referred to as a parsing errors.</p>
 </section>
 <section id="exceptions">
-<h2><span class="section-number">9.5.2. </span>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.5.2. </span>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this heading">¶</a></h2>
 <p>Even if the syntax of your script is correct, the logic might not be.  In addition,
 even if the logic is correct for most cases, it might not be correct for
 all.  For example, certain values might cause an error run time:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; n = 1</span>
-<span class="go">larch&gt; print(4.0 / ( n - 1))</span>
-<span class="go">ZeroDivisionError(&#39;float division&#39;)</span>
-<span class="go">&lt;StdInput&gt;</span>
-<span class="go">    print(4.0/(n-1))</span>
-<span class="go">          ^^^</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="mf">4.0</span> <span class="o">/</span> <span class="p">(</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+<span class="ne">ZeroDivisionError</span><span class="p">(</span><span class="s1">&#39;float division&#39;</span><span class="p">)</span>
+<span class="o">&lt;</span><span class="n">StdInput</span><span class="o">&gt;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="mf">4.0</span><span class="o">/</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+          <span class="o">^^^</span>
 </pre></div>
 </div>
 <p>which is saying that you can’t divide by 0.  This is known as a <strong>Runtime
@@ -164,19 +166,19 @@ didn’t test if the denominator was 0 before doing the division.</p>
 <p>Larch (as inherited from Python) has many different types of exceptions, so
 that dividing by zero, as above, is detected as a different exception from,
 say, trying to open a file that doesn’t exist:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; fh = open(&#39;foo&#39;, &#39;r&#39;)</span>
-<span class="go">Error running &lt;built-in function open&gt;</span>
-<span class="go">IOError(2, &#39;No such file or directory&#39;)</span>
-<span class="go">&lt;StdInput&gt;</span>
-<span class="go">    fh = open(&#39;foo&#39;, &#39;r&#39;)</span>
-<span class="go">         ^^^</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<span class="n">Error</span> <span class="n">running</span> <span class="o">&lt;</span><span class="n">built</span><span class="o">-</span><span class="ow">in</span> <span class="n">function</span> <span class="nb">open</span><span class="o">&gt;</span>
+<span class="ne">IOError</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;No such file or directory&#39;</span><span class="p">)</span>
+<span class="o">&lt;</span><span class="n">StdInput</span><span class="o">&gt;</span>
+    <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+         <span class="o">^^^</span>
 </pre></div>
 </div>
 <p>or trying to add an integer and a string together:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; 4 + &#39;a&#39;</span>
-<span class="go">TypeError(&quot;unsupported operand type(s) for +: &#39;int&#39; and &#39;str&#39;&quot;)</span>
-<span class="go">&lt;StdInput&gt;</span>
-<span class="go">    4 + &#39;a&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="mi">4</span> <span class="o">+</span> <span class="s1">&#39;a&#39;</span>
+<span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;unsupported operand type(s) for +: &#39;int&#39; and &#39;str&#39;&quot;</span><span class="p">)</span>
+<span class="o">&lt;</span><span class="n">StdInput</span><span class="o">&gt;</span>
+    <span class="mi">4</span> <span class="o">+</span> <span class="s1">&#39;a&#39;</span>
 </pre></div>
 </div>
 <p>Though they are called exceptions, such problems are fairly common when
@@ -186,7 +188,7 @@ modern computer languages, and Larch has this capability with
 its <strong>try</strong> and <strong>except</strong> statements.</p>
 </section>
 <section id="try-and-except">
-<h2><span class="section-number">9.5.3. </span>Try and Except<a class="headerlink" href="#try-and-except" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.5.3. </span>Try and Except<a class="headerlink" href="#try-and-except" title="Permalink to this heading">¶</a></h2>
 <p>The <strong>try</strong> statement will execute a block of code and look for certain
 types of exceptions.  One or more <strong>except</strong> statements can be added to
 specify blocks of code to execute if the specified exception occurs.
@@ -241,13 +243,13 @@ inherited from Python.   See the standard Python documentation for more
 details.</p>
 </section>
 <section id="raising-your-own-exceptions">
-<h2><span class="section-number">9.5.4. </span>Raising your own exceptions<a class="headerlink" href="#raising-your-own-exceptions" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.5.4. </span>Raising your own exceptions<a class="headerlink" href="#raising-your-own-exceptions" title="Permalink to this heading">¶</a></h2>
 <p>In certain cases, you may want to cause an exception to occur.  This need is
 most likely to happen when writing your own procedures, and want to ensure
 that the input arguments can be handled correctly.</p>
 <p>To cause an exception, you use the <strong>raise</strong> statement, and you are said to
 be “raising an exception”:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; raise TypeError(&quot;wrong data type&quot;)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;wrong data type&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -284,7 +286,7 @@ be “raising an exception”:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>
 </html>

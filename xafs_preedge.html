@@ -2,19 +2,21 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>13.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment &#8212; xraylarch 0.9.65 documentation</title>
+    <title>13.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment &#8212; xraylarch 0.9.66 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
@@ -76,15 +78,35 @@
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">13.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment</a><ul>
-<li><a class="reference internal" href="#the-find-e0-function">13.2.1. The <code class="xref py py-func docutils literal notranslate"><span class="pre">find_e0()</span></code> function</a></li>
-<li><a class="reference internal" href="#the-pre-edge-function">13.2.2. The <code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code> function</a></li>
+<li><a class="reference internal" href="#the-find-e0-function">13.2.1. The <code class="xref py py-func docutils literal notranslate"><span class="pre">find_e0()</span></code> function</a><ul>
+<li><a class="reference internal" href="#larch.xafs.find_e0"><code class="docutils literal notranslate"><span class="pre">find_e0()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#the-pre-edge-function">13.2.2. The <code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code> function</a><ul>
+<li><a class="reference internal" href="#pre_edge"><code class="docutils literal notranslate"><span class="pre">pre_edge()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#pre-edge-subtraction-example">13.2.3. Pre-Edge Subtraction Example</a></li>
-<li><a class="reference internal" href="#the-mback-algorithm">13.2.4. The MBACK algorithm</a></li>
-<li><a class="reference internal" href="#pre-edge-baseline-subtraction">13.2.5. Pre-edge baseline subtraction</a></li>
-<li><a class="reference internal" href="#over-absorption-corrections">13.2.6. Over-absorption Corrections</a></li>
+<li><a class="reference internal" href="#the-mback-algorithm">13.2.4. The MBACK algorithm</a><ul>
+<li><a class="reference internal" href="#mback"><code class="docutils literal notranslate"><span class="pre">mback()</span></code></a></li>
+<li><a class="reference internal" href="#mback_norm"><code class="docutils literal notranslate"><span class="pre">mback_norm()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pre-edge-baseline-subtraction">13.2.5. Pre-edge baseline subtraction</a><ul>
+<li><a class="reference internal" href="#larch.xafs.prepeaks_setup"><code class="docutils literal notranslate"><span class="pre">prepeaks_setup()</span></code></a></li>
+<li><a class="reference internal" href="#larch.xafs.pre_edge_baseline"><code class="docutils literal notranslate"><span class="pre">pre_edge_baseline()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#over-absorption-corrections">13.2.6. Over-absorption Corrections</a><ul>
+<li><a class="reference internal" href="#fluo_corr"><code class="docutils literal notranslate"><span class="pre">fluo_corr()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#spectral-deconvolution">13.2.7. Spectral deconvolution</a><ul>
 <li><a class="reference internal" href="#xas-convolve">13.2.7.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code></a></li>
-<li><a class="reference internal" href="#xas-deconvolve">13.2.7.2. <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a></li>
+<li><a class="reference internal" href="#xas-deconvolve">13.2.7.2. <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a><ul>
+<li><a class="reference internal" href="#xas_deconvolve"><code class="docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#examples-using-xas-deconvolve-and-xas-convolve">13.2.7.3. Examples using <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code></a></li>
 </ul>
 </li>
@@ -119,7 +141,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
 
@@ -129,7 +151,7 @@
           <div class="body" role="main">
             
   <section id="xafs-pre-edge-subtraction-normalization-and-data-treatment">
-<h1><span class="section-number">13.2. </span>XAFS: Pre-edge Subtraction, Normalization, and data treatment<a class="headerlink" href="#xafs-pre-edge-subtraction-normalization-and-data-treatment" title="Permalink to this headline">¶</a></h1>
+<h1><span class="section-number">13.2. </span>XAFS: Pre-edge Subtraction, Normalization, and data treatment<a class="headerlink" href="#xafs-pre-edge-subtraction-normalization-and-data-treatment" title="Permalink to this heading">¶</a></h1>
 <p>After reading in data and constructing <span class="math notranslate nohighlight">\(\mu(E)\)</span>, the principle
 pre-processing steps for XAFS analysis are pre-edge subtraction and
 normalization.  Reading data and constructing <span class="math notranslate nohighlight">\(\mu(E)\)</span> are handled by
@@ -140,7 +162,7 @@ XAFS-specific function for pre-edge subtraction and normalization is
 data including corrections for over-absorption (sometimes confusingly
 called <em>self-absorption</em>) and for spectral convolution and de-convolution.</p>
 <section id="the-find-e0-function">
-<h2><span class="section-number">13.2.1. </span>The <code class="xref py py-func docutils literal notranslate"><span class="pre">find_e0()</span></code> function<a class="headerlink" href="#the-find-e0-function" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.2.1. </span>The <code class="xref py py-func docutils literal notranslate"><span class="pre">find_e0()</span></code> function<a class="headerlink" href="#the-find-e0-function" title="Permalink to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.xafs.find_e0">
 <span class="sig-prename descclassname"><span class="pre">larch.xafs.</span></span><span class="sig-name descname"><span class="pre">find_e0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.xafs.find_e0" title="Permalink to this definition">¶</a></dt>
@@ -149,7 +171,7 @@ called <em>self-absorption</em>) and for spectral convolution and de-convolution
 <p><span class="math notranslate nohighlight">\(E_0\)</span> is found as the point with maximum derivative with
 some checks to avoid spurious glitches.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>energy</strong> (<em>ndarray</em><em> or </em><em>group</em>) – array of x-ray energies, in eV, or group</p></li>
 <li><p><strong>mu</strong> (<em>ndaarray</em><em> or </em><em>None</em>) – array of mu(E) values</p></li>
@@ -157,11 +179,11 @@ some checks to avoid spurious glitches.</p>
 <li><p><strong>_larch</strong> (<em>larch instance</em><em> or </em><em>None</em>) – current larch session.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Value of e0. If a group is provided, group.e0 will also be set.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)">float</a></p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
@@ -173,7 +195,7 @@ some checks to avoid spurious glitches.</p>
 
 </section>
 <section id="the-pre-edge-function">
-<h2><span class="section-number">13.2.2. </span>The <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a> function<a class="headerlink" href="#the-pre-edge-function" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.2.2. </span>The <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a> function<a class="headerlink" href="#the-pre-edge-function" title="Permalink to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="pre_edge">
 <span class="sig-name descname"><span class="pre">pre_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nnorm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nvict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pre_edge" title="Permalink to this definition">¶</a></dt>
@@ -187,7 +209,7 @@ some checks to avoid spurious glitches.</p>
 </dd>
 </dl>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>energy</strong> – 1-d array of x-ray energies, in eV</p></li>
 <li><p><strong>mu</strong> – 1-d array of <span class="math notranslate nohighlight">\(\mu(E)\)</span></p></li>
@@ -204,7 +226,7 @@ post-edge normalization curve. See Notes.</p></li>
 <li><p><strong>make_flat</strong> – boolean (Default True) to calculate flattened output.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>None.</p>
 </dd>
 </dl>
@@ -213,10 +235,6 @@ post-edge normalization curve. See Notes.</p></li>
 group:</p>
 <blockquote>
 <div><table class="docutils align-default">
-<colgroup>
-<col style="width: 20%" />
-<col style="width: 80%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>attribute</p></th>
 <th class="head"><p>meaning</p></th>
@@ -295,7 +313,7 @@ matter the value of <cite>nnorm</cite>) to the post-edge normalized <span class=
 subtracts that curve from it.</p>
 </section>
 <section id="pre-edge-subtraction-example">
-<h2><span class="section-number">13.2.3. </span>Pre-Edge Subtraction Example<a class="headerlink" href="#pre-edge-subtraction-example" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.2.3. </span>Pre-Edge Subtraction Example<a class="headerlink" href="#pre-edge-subtraction-example" title="Permalink to this heading">¶</a></h2>
 <p>A simple example of pre-edge subtraction:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Larch</span>
 <span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;fe2o3_rt1.xmu&#39;</span>
@@ -331,7 +349,7 @@ subtracts that curve from it.</p>
 </figure>
 </section>
 <section id="the-mback-algorithm">
-<h2><span class="section-number">13.2.4. </span>The MBACK algorithm<a class="headerlink" href="#the-mback-algorithm" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.2.4. </span>The MBACK algorithm<a class="headerlink" href="#the-mback-algorithm" title="Permalink to this heading">¶</a></h2>
 <p>Larch provides an implementation of the MBACK algorithm of
 Weng <span id="id1">[<a class="reference internal" href="bibliography.html#id28" title="Tsu-Chien Weng, Geoffrey S. Waldo, and James E. Penner-Hahn. A method for normalization of X-ray absorption spectra. Journal of Synchrotron Radiation, 12(4):506–510, Jul 2005. doi:10.1107/S0909049504034193.">Weng, Waldo, and Penner-Hahn (2005)</a>]</span> with an option of using the modification proposed by
 Lee <em>et al</em> <span id="id2">[<a class="reference internal" href="bibliography.html#id29" title="Julia C. Lee, Jingen Xiang, Bruce Ravel, Jeffrey Kortright, and Kathryn Flanagan. Condensed matter astrophysics: a prescription for determining the species-specific composition and quantity of interstellar dust using x-rays. The Astrophysical Journal, 702(2):970, 2009. URL: https://stacks.iop.org/0004-637X/702/i=2/a=970, doi:0004-637X/702/i=2/a=970.">Lee et al. (2009)</a>]</span>.  In MBACK, the data are matched to the tabulated
@@ -368,7 +386,7 @@ the total number of data points.</p>
 <span class="sig-name descname"><span class="pre">mback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Match measured <span class="math notranslate nohighlight">\(\mu(E)\)</span> data to tabulated cross-section data.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>energy</strong> – 1-d array of x-ray energies, in eV</p></li>
 <li><p><strong>mu</strong> – 1-d array of <span class="math notranslate nohighlight">\(\mu(E)\)</span></p></li>
@@ -386,7 +404,7 @@ the total number of data points.</p>
 <li><p><strong>pre_edge_kws</strong> – dictionary containing keyword arguments to pass to <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a>.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>None.</p>
 </dd>
 </dl>
@@ -395,10 +413,6 @@ the total number of data points.</p>
 group:</p>
 <blockquote>
 <div><table class="docutils align-default">
-<colgroup>
-<col style="width: 19%" />
-<col style="width: 81%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>attribute</p></th>
 <th class="head"><p>meaning</p></th>
@@ -496,7 +510,7 @@ group.mback_params:  Group of parameters for the minimization</p>
 </dd>
 </dl>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>energy</strong> – 1-d array of x-ray energies, in eV</p></li>
 <li><p><strong>mu</strong> – 1-d array of <span class="math notranslate nohighlight">\(\mu(E)\)</span></p></li>
@@ -517,10 +531,6 @@ named <code class="docutils literal notranslate"><span class="pre">energy</span>
 group:</p>
 <blockquote>
 <div><table class="docutils align-default">
-<colgroup>
-<col style="width: 19%" />
-<col style="width: 81%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>attribute</p></th>
 <th class="head"><p>meaning</p></th>
@@ -546,7 +556,7 @@ group:</p>
 
 </section>
 <section id="pre-edge-baseline-subtraction">
-<h2><span class="section-number">13.2.5. </span>Pre-edge baseline subtraction<a class="headerlink" href="#pre-edge-baseline-subtraction" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.2.5. </span>Pre-edge baseline subtraction<a class="headerlink" href="#pre-edge-baseline-subtraction" title="Permalink to this heading">¶</a></h2>
 <p>A common application of XAFS is the analysis of “pre-edge peaks” of
 transition metal oxides to determine oxidation state and molecular
 configuration. These peaks sit just below the main absorption edge
@@ -565,14 +575,14 @@ pre-edge peaks.</p>
 <p>This assumes that pre_edge() has been run successfully on the spectra
 and that the spectra has decent pre-edge subtraction and normalization.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>energy</strong> (<em>ndarray</em><em> or </em><em>group</em>) – array of x-ray energies, in eV, or group (see note 1)</p></li>
 <li><p><strong>norm</strong> (<em>ndarray</em><em> or </em><em>None</em>) – array of normalized mu(E) to be fit (deprecated, see note 2)</p></li>
 <li><p><strong>arrayname</strong> (<em>string</em><em> or </em><em>None</em>) – name of array to use as data (see note 2)</p></li>
 <li><p><strong>group</strong> (<em>group</em><em> or </em><em>None</em>) – output group</p></li>
-<li><p><strong>emax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em> or </em><em>None</em>) – max energy (eV) to use for baesline fit [e0-5]</p></li>
-<li><p><strong>emin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em> or </em><em>None</em>) – min energy (eV) to use for baesline fit [e0-40]</p></li>
+<li><p><strong>emax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em> or </em><em>None</em>) – max energy (eV) to use for baesline fit [e0-5]</p></li>
+<li><p><strong>emin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em> or </em><em>None</em>) – min energy (eV) to use for baesline fit [e0-40]</p></li>
 <li><p><strong>elo</strong> – (float or None)       low energy of pre-edge peak region to not fit baseline [e0-20]</p></li>
 <li><p><strong>ehi</strong> – (float or None)       high energy of pre-edge peak region ot not fit baseline [e0-10]</p></li>
 <li><p><strong>_larch</strong> (<em>larch instance</em><em> or </em><em>None</em>) – current larch session.</p></li>
@@ -582,10 +592,6 @@ and that the spectra has decent pre-edge subtraction and normalization.</p>
 <p>A group named <cite>prepeaks</cite> will be created in the output group, containing:</p>
 <blockquote>
 <div><table class="docutils align-default">
-<colgroup>
-<col style="width: 19%" />
-<col style="width: 81%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>attribute</p></th>
 <th class="head"><p>meaning</p></th>
@@ -619,15 +625,15 @@ and ‘aspassed’ meaning that the argument of <cite>norm</cite> will be used, 
 <p>This assumes that pre_edge() has been run successfully on the spectra
 and that the spectra has decent pre-edge subtraction and normalization.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>energy</strong> (<em>ndarray</em><em> or </em><em>group</em>) – array of x-ray energies, in eV, or group (see note 1)</p></li>
 <li><p><strong>norm</strong> (<em>ndarray</em><em> or </em><em>group</em>) – array of normalized mu(E)</p></li>
 <li><p><strong>group</strong> (<em>group</em><em> or </em><em>None</em>) – output group</p></li>
-<li><p><strong>elo</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em> or </em><em>None</em>) – low energy of pre-edge peak region to not fit baseline [e0-20]</p></li>
-<li><p><strong>ehi</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em> or </em><em>None</em>) – high energy of pre-edge peak region ot not fit baseline [e0-10]</p></li>
-<li><p><strong>emax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em> or </em><em>None</em>) – max energy (eV) to use for baesline fit [e0-5]</p></li>
-<li><p><strong>emin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em> or </em><em>None</em>) – min energy (eV) to use for baesline fit [e0-40]</p></li>
+<li><p><strong>elo</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em> or </em><em>None</em>) – low energy of pre-edge peak region to not fit baseline [e0-20]</p></li>
+<li><p><strong>ehi</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em> or </em><em>None</em>) – high energy of pre-edge peak region ot not fit baseline [e0-10]</p></li>
+<li><p><strong>emax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em> or </em><em>None</em>) – max energy (eV) to use for baesline fit [e0-5]</p></li>
+<li><p><strong>emin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em> or </em><em>None</em>) – min energy (eV) to use for baesline fit [e0-40]</p></li>
 <li><p><strong>form</strong> (<em>string</em>) – form used for baseline (see description)  [‘linear+lorentzian’]</p></li>
 <li><p><strong>_larch</strong> (<em>larch instance</em><em> or </em><em>None</em>) – current larch session.</p></li>
 </ul>
@@ -642,10 +648,6 @@ plus one of ‘constant’, ‘linear’, ‘quadratic’, for example, ‘linea
 <p>A group named ‘prepeaks’ will be used or created in the output group, containing</p>
 <blockquote>
 <div><table class="docutils align-default">
-<colgroup>
-<col style="width: 19%" />
-<col style="width: 81%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>attribute</p></th>
 <th class="head"><p>meaning</p></th>
@@ -689,7 +691,7 @@ of the peaks in <cite>prepeaks.peaks</cite> as found by peakutils.</p></li>
 
 </section>
 <section id="over-absorption-corrections">
-<h2><span class="section-number">13.2.6. </span>Over-absorption Corrections<a class="headerlink" href="#over-absorption-corrections" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.2.6. </span>Over-absorption Corrections<a class="headerlink" href="#over-absorption-corrections" title="Permalink to this heading">¶</a></h2>
 <p>For XAFS data measured in fluorescence, a common problem of
 <em>over-absorption</em> in which too much of the total X-ray absorption
 coefficient is from the absorbing element.  In such cases, the implicit
@@ -715,7 +717,7 @@ effect can be corrected for small over-absorption.</p>
 XAFS using the FLUO algorithm (suitable for XANES, but questionable for
 EXAFS).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>energy</strong> – 1-d array of x-ray energies, in eV</p></li>
 <li><p><strong>mu</strong> – 1-d array of <span class="math notranslate nohighlight">\(\mu(E)\)</span></p></li>
@@ -728,7 +730,7 @@ EXAFS).</p>
 <li><p><strong>pre_kws</strong> – additional keywords for <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a>.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
 </dd>
 </dl>
@@ -740,7 +742,7 @@ normalized <span class="math notranslate nohighlight">\(\mu(E)\)</span> correcte
 
 </section>
 <section id="spectral-deconvolution">
-<h2><span class="section-number">13.2.7. </span>Spectral deconvolution<a class="headerlink" href="#spectral-deconvolution" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.2.7. </span>Spectral deconvolution<a class="headerlink" href="#spectral-deconvolution" title="Permalink to this heading">¶</a></h2>
 <p>In order to readily compare XAFS data from different sources, it is
 sometimes necessary to consider the energy resolution used to collect each
 spectum.  To be clear, the resolution of an EXAFS spectrum includes
@@ -781,7 +783,7 @@ is better described by a Lorentzian.   Therefore, to try to reduce the
 influence of the core level in order better mimic high-resolution
 fluorescence data, de-convolving with a Lorentzian is often better.</p>
 <section id="xas-convolve">
-<h3><span class="section-number">13.2.7.1. </span><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code><a class="headerlink" href="#xas-convolve" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">13.2.7.1. </span><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code><a class="headerlink" href="#xas-convolve" title="Permalink to this heading">¶</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">xas_convolve(energy,</span> <span class="pre">norm=None,</span> <span class="pre">group=None,</span> <span class="pre">form='lorentzian',</span> <span class="pre">esigma=1.0,</span> <span class="pre">eshift=0.0):</span></span></dt>
@@ -790,7 +792,7 @@ shape, degrading separation of XANES features.</p>
 <p>This is provided as a complement to xas_deconvolve, and to deliberately
 broaden spectra to compare with spectra measured at lower resolution.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>energy</strong> – 1-d array of <span class="math notranslate nohighlight">\(E\)</span></p></li>
 <li><p><strong>norm</strong> – 1-d array of normalized <span class="math notranslate nohighlight">\(\mu(E)\)</span></p></li>
@@ -808,10 +810,6 @@ broaden spectra to compare with spectra measured at lower resolution.</p>
 group:</p>
 <blockquote>
 <div><table class="docutils align-default">
-<colgroup>
-<col style="width: 21%" />
-<col style="width: 79%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>attribute</p></th>
 <th class="head"><p>meaning</p></th>
@@ -828,7 +826,7 @@ group:</p>
 
 </section>
 <section id="xas-deconvolve">
-<h3><span class="section-number">13.2.7.2. </span><a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a><a class="headerlink" href="#xas-deconvolve" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">13.2.7.2. </span><a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a><a class="headerlink" href="#xas-deconvolve" title="Permalink to this heading">¶</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="xas_deconvolve">
 <span class="sig-name descname"><span class="pre">xas_deconvolve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">form</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lorentzian'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">esigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eshift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sgwindow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sgorder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xas_deconvolve" title="Permalink to this definition">¶</a></dt>
@@ -838,7 +836,7 @@ intensity and separation of peaks of a XANES spectrum.</p>
 <p>The results can be unstable, and noisy, and should be used
 with caution!</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>energy</strong> – 1-d array of <span class="math notranslate nohighlight">\(E\)</span></p></li>
 <li><p><strong>norm</strong> – 1-d array of normalized <span class="math notranslate nohighlight">\(\mu(E)\)</span></p></li>
@@ -863,10 +861,6 @@ the gridded data, approximately the finest energy step in the data.</p>
 <p>The following data is put into the output group:</p>
 <blockquote>
 <div><table class="docutils align-default">
-<colgroup>
-<col style="width: 21%" />
-<col style="width: 79%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>attribute</p></th>
 <th class="head"><p>meaning</p></th>
@@ -883,7 +877,7 @@ the gridded data, approximately the finest energy step in the data.</p>
 
 </section>
 <section id="examples-using-xas-deconvolve-and-xas-convolve">
-<h3><span class="section-number">13.2.7.3. </span>Examples using <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a> and <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code><a class="headerlink" href="#examples-using-xas-deconvolve-and-xas-convolve" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">13.2.7.3. </span>Examples using <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a> and <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code><a class="headerlink" href="#examples-using-xas-deconvolve-and-xas-convolve" title="Permalink to this heading">¶</a></h3>
 <p>An example using <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a> to deconvolve a XAFS spectrum would
 be:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/xafs/doc_deconv1.lar</span>
@@ -1033,7 +1027,7 @@ data and the spectrum deconvolved by the energy of its core level.</span></p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>
 </html>

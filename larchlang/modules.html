@@ -2,19 +2,21 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>9.7. Running Larch Scripts, and Modules &#8212; xraylarch 0.9.65 documentation</title>
+    <title>9.7. Running Larch Scripts, and Modules &#8212; xraylarch 0.9.66 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -108,7 +110,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
 
@@ -118,7 +120,7 @@
           <div class="body" role="main">
             
   <section id="running-larch-scripts-and-modules">
-<span id="tutorial-modules-section"></span><h1><span class="section-number">9.7. </span>Running Larch Scripts, and Modules<a class="headerlink" href="#running-larch-scripts-and-modules" title="Permalink to this headline">¶</a></h1>
+<span id="tutorial-modules-section"></span><h1><span class="section-number">9.7. </span>Running Larch Scripts, and Modules<a class="headerlink" href="#running-larch-scripts-and-modules" title="Permalink to this heading">¶</a></h1>
 <p>Once you’ve done any significant amount of work with Larch, you’ll want to
 save what you’ve done to a file of Larch code or a <em>script</em> and run it over
 again, perhaps changing some input.  You may even want to write some
@@ -130,7 +132,7 @@ it into Larch.  The distinction can be subtle, and has to with where the
 variables “live” within your larch session.  We’ll discuss both
 possibilities and their differences here.</p>
 <section id="running-a-larch-script-with-run">
-<h2><span class="section-number">9.7.1. </span>Running a larch script with <a class="reference internal" href="builtins.html#run" title="run"><code class="xref py py-func docutils literal notranslate"><span class="pre">run()</span></code></a><a class="headerlink" href="#running-a-larch-script-with-run" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.7.1. </span>Running a larch script with <a class="reference internal" href="builtins.html#run" title="run"><code class="xref py py-func docutils literal notranslate"><span class="pre">run()</span></code></a><a class="headerlink" href="#running-a-larch-script-with-run" title="Permalink to this heading">¶</a></h2>
 <p>If you have a Larch script, you can run it with the built-in <a class="reference internal" href="builtins.html#run" title="run"><code class="xref py py-func docutils literal notranslate"><span class="pre">run()</span></code></a>
 function:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># file myscript.lar</span>
@@ -146,13 +148,13 @@ function:</p>
 </pre></div>
 </div>
 <p>To run this, you simply type:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; run(&#39;myscript.lar&#39;)</span>
-<span class="go">hello from myscript.lar!</span>
-<span class="go">0 0.0</span>
-<span class="go">1 1.0</span>
-<span class="go">2 1.41421356237</span>
-<span class="go">3 1.73205080757</span>
-<span class="go">4 2.0</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>larch&gt; run(&#39;myscript.lar&#39;)
+hello from myscript.lar!
+0 0.0
+1 1.0
+2 1.41421356237
+3 1.73205080757
+4 2.0
 </pre></div>
 </div>
 <p>Again, the script can contain any Larch code, including procedure
@@ -160,23 +162,23 @@ definitions.  After running the script, any variables assigned in the
 script will exist in your larch session.  For example, running the above
 script, there will be variables <code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">phi</span></code>, and <code class="docutils literal notranslate"><span class="pre">i</span></code> (and <code class="docutils literal notranslate"><span class="pre">i</span></code>
 will hold the value 4), and you can access these:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; print(i, name, phi)</span>
-<span class="go">4 Fred 1.61803398875</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">phi</span><span class="p">)</span>
+<span class="mi">4</span> <span class="n">Fred</span> <span class="mf">1.61803398875</span>
 </pre></div>
 </div>
 <p>These variables are held in the “top-level namespace”, <code class="docutils literal notranslate"><span class="pre">_main</span></code>, about which
 we’ll see more below.</p>
 </section>
 <section id="importing-a-larch-script-as-a-module">
-<h2><span class="section-number">9.7.2. </span>Importing a Larch Script as a Module<a class="headerlink" href="#importing-a-larch-script-as-a-module" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.7.2. </span>Importing a Larch Script as a Module<a class="headerlink" href="#importing-a-larch-script-as-a-module" title="Permalink to this heading">¶</a></h2>
 <p>The alternative method for using the script above is to <strong>import</strong> it,
 using the <code class="docutils literal notranslate"><span class="pre">import</span></code> statement:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">larch&gt; import myscript</span>
-<span class="go">0 0.0</span>
-<span class="go">1 1.0</span>
-<span class="go">2 1.41421356237</span>
-<span class="go">3 1.73205080757</span>
-<span class="go">4 2.0</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="kn">import</span> <span class="nn">myscript</span>
+<span class="mi">0</span> <span class="mf">0.0</span>
+<span class="mi">1</span> <span class="mf">1.0</span>
+<span class="mi">2</span> <span class="mf">1.41421356237</span>
+<span class="mi">3</span> <span class="mf">1.73205080757</span>
+<span class="mi">4</span> <span class="mf">2.0</span>
 </pre></div>
 </div>
 <p>Notice a few differences: First, the ‘.lar’ suffix was removed.  Second,
@@ -253,7 +255,7 @@ used.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>
 </html>
