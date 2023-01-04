@@ -95,7 +95,7 @@ def xas_deconvolve(energy, norm=None, group=None, form='lorentzian',
     group.deconv = out
 
 
-@Make_CallArgs(["energy","noem"])
+@Make_CallArgs(["energy","norm"])
 def xas_convolve(energy, norm=None, group=None, form='lorentzian',
                    esigma=1.0, eshift=0.0, _larch=None):
     """
