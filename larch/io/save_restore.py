@@ -21,7 +21,7 @@ SessionStore = namedtuple('SessionStore', ('config', 'command_history', 'symbols
 
 
 def invert_dict(d):
-    "invert a dictionary"
+    "invert a dictionary {k: v} -> {v: k}"
     return {v: k for k, v in d.items()}
 
 def get_machineid():
@@ -225,14 +225,13 @@ def read_session(fname):
     return SessionStore(config, cmd_history, symbols)
 
 
-def load_session(fname, ignore_groups=None, _larch=None, verbose=False):
+def load_session(fname, ignore_groups=None, _larch=None):
     """load all data from a Larch Session File into current larch session,
     merging into existing groups as appropriate (see Notes below)
 
     Arguments:
        fname  (str):  name of session file
-       ignore_groups (list of strings): list of symbols to not import [None]
-       verbose (bool) : whether to warn about overwriting symbols [False]
+       ignore_groups (lis of strings): list of symbols to not import
     Returns:
         None
 
@@ -298,7 +297,7 @@ def load_session(fname, ignore_groups=None, _larch=None, verbose=False):
                 s_xasg_inv = invert_dict(s_xasgroups)
             sym = newsym
 
-        if hasattr(symtab, sym) and verbose:
+        if hasattr(symtab, sym):
             print(f"warning overwriting '{sym}'")
 
         setattr(symtab, sym, val)
