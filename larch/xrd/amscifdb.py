@@ -255,7 +255,6 @@ class CifStructure():
             for i, line in enumerate(self.pub_title.split('\n')):
                 titles.append(f'Title{i+1:d}: {line}')
 
-        print(" get feffinp -> " )
         return cif2feffinp(self.ciftext, absorber, edge=edge,
                            cluster_size=cluster_size, with_h=with_h,
                            absorber_site=absorber_site,
