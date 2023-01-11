@@ -86,7 +86,7 @@ if HAS_WXPYTHON:
                                        filepromspt=fileprompt,
                                        wx_update=wx_update)}
 
-    from .plotter import (_plot, _oplot, _newplot, _plot_text, gplot,
+    from .plotter import (_plot, _oplot, _newplot, _plot_text, fileplot,
                           _plot_marker, _plot_arrow, _plot_setlimits,
                           _plot_axvline, _plot_axhline, _scatterplot,
                           _hist, _update_trace, _saveplot, _saveimg,
@@ -100,7 +100,7 @@ if HAS_WXPYTHON:
     from . import xafsplots
     from .xafsplots import plotlabels
 
-    _larch_builtins['_plotter'] = dict(plot=_plot, oplot=_oplot, gplot=gplot,
+    _larch_builtins['_plotter'] = dict(plot=_plot, oplot=_oplot,
                                        newplot=_newplot, plot_text=_plot_text,
                                        plot_marker=_plot_marker,
                                        plot_arrow=_plot_arrow,
@@ -119,6 +119,7 @@ if HAS_WXPYTHON:
                                        xrf_plot=_xrf_plot,
                                        xrf_oplot=_xrf_oplot,
                                        fit_plot=_fitplot,
+                                       fileplot=fileplot,
                                        redraw_plot=_redraw_plot)
 
     _larch_builtins['_xafs'] = dict(redraw=xafsplots.redraw,
