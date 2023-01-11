@@ -961,3 +961,48 @@ def set_zoomlimits(plotpanel, limits, verbose=False):
                 print("set zoom, exception")
             return False
     return True
+
+def fileplot(filename, col1=1, col2=2, **kws):
+    """gnuplot-like plot of columns from a plain text column data file,
+
+    Arguments
+    ---------
+    filename, str:  name of file to be read with `read_ascii()`
+    col1,     int:  index of column (starting at 1) for x-axis [1]
+    col2,     int:  index of column (starting at 1) for y-axis [2]
+
+
+    Examples
+    --------
+       > fileplot('xmu.dat', 1, 4, new=True)
+
+    Notes
+    -----
+    1. Additional keywords arguments will be forwarded to `plot()`, including
+          new = True/False
+          title, xlabel, ylabel,
+          linewidth, marker, color
+    2. If discoverable, column labels will be used to label axes
+    """
+    from larch.io import read_ascii
+    fdat = read_ascii(filename)
+    ncols, npts = fdat.data.shape
+    ix = max(0, col1-1)
+    iy = max(0, col2-1)
+    xlabel = f"col {col1}"
+    flabel = f"col {col2}"
+    if ix < len(fdat.array_labels):
+        xlabel = fdat.array_labels[ix]
+    if iy < len(fdat.array_labels):
+        ylabel = fdat.array_labels[iy]
+
+    title = f"{filename:s} {col1:d}:{col2:d}"
+    if 'xlabel' in kws:
+        xlabel = kws.pop('xlabel')
+    if 'ylabel' in kws:
+        ylabel = kws.pop('ylabel')
+    if 'title' in kws:
+        title = kws.pop('title')
+
+    _plot(fdat.data[ix,:], fdat.data[iy,:], xlabel=xlabel, ylabel=ylabel,
+          title=title, **kws)
