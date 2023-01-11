@@ -72,6 +72,18 @@ def SafeWxCall(fcn):
     wrapper.__dict__.update(fcn.__dict__)
     return wrapper
 
+def panel_pack(window, panel, pad=10):
+    """
+    a simple method to pack a single panel to a single frame
+    """
+    sizer = wx.BoxSizer(wx.VERTICAL)
+    sizer.Add(panel, 1, wx.LEFT, 5)
+    window.SetSizer(sizer)
+    sizer.Fit(window)
+    w0, h0 = window.GetSize()
+    w1, h1 = window.GetBestSize()
+    window.SetSize((max(w0, w1)+pad, max(h0, h1)+pad))
+
 def show_wxsizes(obj):
     """recursively show sizes of wxPython objects --
     useful for avoiding size<1 errors"""
