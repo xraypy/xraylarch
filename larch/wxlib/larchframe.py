@@ -15,7 +15,7 @@ import larch
 
 from wxutils import (MenuItem, Font, Button, Choice)
 
-from .gui_utils import LarchWxApp
+from .gui_utils import LarchWxApp, panel_pack
 from .readlinetextctrl import ReadlineTextCtrl
 from .larchfilling import Filling
 from .columnframe import ColumnDataFileFrame
@@ -25,7 +25,7 @@ from . import inputhook, FONTSIZE
 from larch.io import (read_ascii, read_xdi, read_gsexdi,
                       gsescan_group, fix_varname,
                       is_athena_project, AthenaProject)
-from larch.version import make_banner
+from larch.version import make_banner, version_data
 from larch.utils import get_cwd
 
 FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (*.*)|*.*"
@@ -281,7 +281,8 @@ class LarchPanel(wx.Panel):
         text =  event.GetString()
         self.input.Clear()
         if text.lower() in ('quit', 'exit', 'quit()', 'exit()'):
-            self.parent.onExit()
+            if self.parent.exit_on_close:
+                self.parent.onExit()
         else:
             wx.CallAfter(self.larchshell.eval, text)
 
@@ -325,6 +326,7 @@ class LarchFrame(wx.Frame):
 
         self.is_standalone = is_standalone
         self.with_inspection = with_inspection
+        self.exit_on_close = exit_on_close
         self.parent = parent
         self.historyfile = historyfile
         self.subframes = {}
@@ -353,10 +355,6 @@ class LarchFrame(wx.Frame):
 
         self.SetSizer(sizer)
 
-        if parent is None and exit_on_close:
-            self.Bind(wx.EVT_CLOSE,  self.onExit)
-        else:
-            self.Bind(wx.EVT_CLOSE,  self.onClose)
         self.Bind(wx.EVT_SHOW, self.onShow)
         self.BuildMenus()
         self.onSelectFont(fsize=FONTSIZE)
@@ -394,9 +392,15 @@ class LarchFrame(wx.Frame):
             MenuItem(self, fmenu, 'Show wxPython Inspector\tCtrl+I',
                      'Debug wxPython App', self.onWxInspect)
         fmenu.AppendSeparator()
-        MenuItem(self, fmenu, 'Close Display', 'Close display', self.onClose)
-        if self.parent is None:
-            MenuItem(self, fmenu, 'E&xit', 'End program', self.onExit)
+
+        if self.parent is None and self.exit_on_close:
+            self.Bind(wx.EVT_CLOSE,  self.onExit)
+            MenuItem(self, fmenu, 'E&xit', 'End program',
+                     self.onExit)
+        else:
+            self.Bind(wx.EVT_CLOSE,  self.onClose)
+            MenuItem(self, fmenu, 'Close Display',
+                     'Close display', self.onClose)
 
         menuBar.Append(fmenu, '&File')
 
@@ -426,6 +430,8 @@ class LarchFrame(wx.Frame):
         hmenu = wx.Menu()
         MenuItem(self, hmenu, '&About',
                  'Information about this program',  self.onAbout)
+        MenuItem(self, hmenu, '&Versions',
+                 'Show versions of Larch and libraries',  self.onVersions)
         menuBar.Append(hmenu, '&Help')
         self.SetMenuBar(menuBar)
 
@@ -438,8 +444,6 @@ class LarchFrame(wx.Frame):
             f1, f2 = fn.PixelSize
             fn.SetPixelSize(wx.Size(int((f1*fsize/f2)), fsize))
             obj.SetFont(fn)
-            # print('SetFont ', fn.Family, fn.FaceName, fn.PixelSize,
-            #       fn.PointSize, fn.Style, fn.Weight, obj)
 
         self.PointSize = fsize
         set_fontsize(self, fsize)
@@ -575,17 +579,16 @@ class LarchFrame(wx.Frame):
             self.SetStatusText("Wrote %s" % fout, 0)
         dlg.Destroy()
 
-
     def onText(self, event=None):
         text =  event.GetString()
         self.larchshell.write("%s\n" % text)
         self.input.Clear()
-        if text.lower() in ('quit', 'exit'):
-            self.onExit()
+        if text.lower() in ('quit', 'exit', 'quit()', 'exit()'):
+            if self.exit_on_close:
+                self.onExit()
         else:
             self.panel.AddToHistory(text)
             wx.CallAfter(self.larchshell.eval, text)
-
 
     def onChangeDir(self, event=None):
         dlg = wx.DirDialog(None, 'Choose a Working Directory',
@@ -605,6 +608,26 @@ class LarchFrame(wx.Frame):
                                "About LarchGui", wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
+
+    def onVersions(self, event=None):
+        vdat = version_data(with_libraries=True)
+        out = []
+        for key, val in vdat.items():
+            out.append(f"{key:20s}:  {val}")
+        version_message =  '\n'.join(out)
+        dlg = wx.Dialog(self, wx.ID_ANY, size=(700, 400),
+                        title='Larch Versions')
+
+        font = wx.Font(FONTSIZE-1, wx.MODERN, wx.NORMAL, wx.BOLD, 0, "")
+        dlg.SetFont(font)
+        panel = wx.Panel(dlg)
+        txt = wx.StaticText(panel, label=version_message)
+        s = wx.Sizer
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(txt, 1, wx.LEFT|wx.ALL, 5)
+        panel.SetSizer(sizer)
+        panel_pack(dlg, panel)
+        dlg.Show()
 
     def onShow(self, event=None):
         if event.Show:
@@ -633,7 +656,13 @@ class LarchFrame(wx.Frame):
             except:
                 pass
             try:
+                try:
+                    for a in self.GetChildren():
+                        a.Destroy()
+                except:
+                    pass
                 self.Destroy()
+
             except:
                 pass
             sys.exit()

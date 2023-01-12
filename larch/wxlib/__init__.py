@@ -27,16 +27,12 @@ except (ImportError, AttributeError):
 _larch_name = '_sys.wx'
 _larch_builtins = {}
 
-FONTSIZE = 11
-FONTSIZE_FW = 11
+FONTSIZE = 12
+FONTSIZE_FW = 12
 if platform == 'win':
     FONTSIZE = 10
     FONTSIZE_FW = 10
     locale.setlocale(locale.LC_ALL, 'C')
-
-if platform == 'darwin':
-    FONTSIZE = 12
-    FONTSIZE_FW = 12
 
 if HAS_WXPYTHON:
     try:
@@ -75,7 +71,7 @@ if HAS_WXPYTHON:
     from .specfile_importer import SpecfileImporter
     from .reportframe import ReportFrame, DictFrame, DataTableGrid
     from .gui_utils import (gcd, databrowser, fileprompt, LarchWxApp,
-                            wx_update, show_wxsizes)
+                            wx_update, show_wxsizes, panel_pack)
 
     from .larch_updater import LarchUpdaterDialog
     from .parameter import ParameterWidgets, ParameterPanel
@@ -90,7 +86,7 @@ if HAS_WXPYTHON:
                                        filepromspt=fileprompt,
                                        wx_update=wx_update)}
 
-    from .plotter import (_plot, _oplot, _newplot, _plot_text,
+    from .plotter import (_plot, _oplot, _newplot, _plot_text, fileplot,
                           _plot_marker, _plot_arrow, _plot_setlimits,
                           _plot_axvline, _plot_axhline, _scatterplot,
                           _hist, _update_trace, _saveplot, _saveimg,
@@ -123,6 +119,7 @@ if HAS_WXPYTHON:
                                        xrf_plot=_xrf_plot,
                                        xrf_oplot=_xrf_oplot,
                                        fit_plot=_fitplot,
+                                       fileplot=fileplot,
                                        redraw_plot=_redraw_plot)
 
     _larch_builtins['_xafs'] = dict(redraw=xafsplots.redraw,

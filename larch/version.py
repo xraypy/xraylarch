@@ -26,7 +26,7 @@ except PackageNotFoundError:
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-def version_data():
+def version_data(with_libraries=False):
     "get version data"
     vinf  = sys.version_info
     pyvers = f'{vinf.major:d}.{vinf.minor:d}.{vinf.micro:d}'
@@ -43,19 +43,42 @@ def version_data():
         if len(sects) > 1:
             builder = sects[1].strip()
 
-    vdat = {}
-    vdat['larch'] = f'{__release_version__}, released {__date__}'
-    vdat['python'] = f'{pyvers}, {builder:s}'
+    vdat = {'release version': __release_version__,
+            'release date':  __date__,
+            'development version':  __version__,
+            'authors': __authors__,
+            'python version': pyvers,
+            'python builder': builder,
+            'python sysversion': sys.version,
+            }
 
+    if with_libraries:
+        for modname in ('numpy', 'scipy', 'matplotlib', 'h5py', 'sklearn',
+                    'skimage', 'fabio', 'pyFAI', 'PIL', 'imageio',
+                    'silx', 'tomopy', 'pymatgen.core', 'numdifftools',
+                    'xraydb', 'lmfit', 'asteval', 'wx', 'wxmplot'):
+            vers = "not installed"
+            if modname not in sys.modules:
+                try:
+                    importlib.import_module(modname)
+                except:
+                    pass
+            if modname in sys.modules:
+                mod = sys.modules[modname]
+                vers = getattr(mod, '__version__', None)
+                if vers is None:
+                    vers = getattr(mod, 'version',
+                                   'unknown version')
+            vdat[modname] = vers
     return vdat
 
 def make_banner(mods=None):
     "return startup banner"
     vdat = version_data()
-    lines = [f"Larch {vdat['larch']}"]
-    if __version__ != __release_version__:
-        lines.append(f'Devel Version: {__version__:s}')
-    lines.append(f"Python {vdat['python']}")
+    lines = [f"Larch {vdat['release version']}, released {vdat['release date']}"]
+    if vdat['development version'] != vdat['release version']:
+        lines.append(f"development version: {vdat['development version']}")
+    lines.append(f"Python {vdat['python version']}, {vdat['python builder']}")
     lines.append('use `print(show_version())` for version details')
     linelen = max([len(line) for line in lines])
     border = '='*min(75, max(linelen, 25))
@@ -63,35 +86,11 @@ def make_banner(mods=None):
     lines.append(border)
     return '\n'.join(lines)
 
-
 def show_version():
-    vinf  = sys.version_info
-    pyvers = f'{vinf.major:d}.{vinf.minor:d}.{vinf.micro:d}'
-    out = [f'Larch release version {__release_version__}',
-           f'Larch develop version {__version__}',
-           f'Larch release date    {__date__}',
-           f'Larch authors         {__authors__}',
-           f'Python version        {pyvers}',
-           f'Python full version   {sys.version}']
-
-    for modname in ('numpy', 'scipy', 'matplotlib', 'h5py', 'sklearn',
-                    'skimage', 'fabio', 'pyFAI', 'PIL', 'imageio',
-                    'silx', 'tomopy', 'pymatgen.core', 'numdifftools',
-                    'xraydb', 'lmfit', 'asteval', 'wx', 'wxmplot'):
-
-        vers = "not installed"
-        if modname not in sys.modules:
-            try:
-                importlib.import_module(modname)
-            except:
-                pass
-        if modname in sys.modules:
-            mod = sys.modules[modname]
-            vers = getattr(mod, '__version__', None)
-            if vers is None:
-                vers = getattr(mod, 'version',
-                               'unknown version')
-        out.append(f'{modname:20s}  {vers}')
+    vdat = version_data(with_libraries=True)
+    out = []
+    for key, val in vdat.items():
+        out.append(f"{key:20s}:  {val}")
     return '\n'.join(out)
 
 
