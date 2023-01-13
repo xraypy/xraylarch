@@ -27,8 +27,8 @@ except (ImportError, AttributeError):
 _larch_name = '_sys.wx'
 _larch_builtins = {}
 
-FONTSIZE = 12
-FONTSIZE_FW = 12
+FONTSIZE = 11
+FONTSIZE_FW = 11
 if platform == 'win':
     FONTSIZE = 10
     FONTSIZE_FW = 10
