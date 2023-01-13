@@ -2618,6 +2618,7 @@ class XRDCIF(object):
                 coor_list += [a]
             self.elem_uvw.update({el:coor_list})
 
+
     def set_wyckoff(self):
         self.symm_key = []
         if str(self.symmetry.no) not in SPGRP_SYMM.keys():
@@ -2686,7 +2687,8 @@ class XRDCIF(object):
         return sorted(np.array(list(set(qarr))))
 
 
-    def structure_factors(self, wavelength=None, energy=None, qmin=0.2, qmax=10.2):
+    def structure_factors(self, wavelength=None, energy=None, hkls=None,
+                          qmin=0.2, qmax=9):
         if not HAS_CifFile:
             z = np.zeros(2, dtype=np.float64)
             o = np.ones(2, dtype=np.float64)
@@ -2695,15 +2697,16 @@ class XRDCIF(object):
                                    wavelength=o, energy=o)
 
 
-
         if energy is not None:
             wavelength = lambda_from_E(energy, E_units='eV')
         if wavelength is None:
             wavelength = 1.0
         if energy is None:
             energy = E_from_lambda(wavelength, E_units='eV')
+        if hkls is None:
+            hkls = generate_hkl(hmax=12, kmax=12, lmax=12, positive_only=False)
 
-        hkls = generate_hkl(hmax=12, kmax=12, lmax=12, positive_only=False)
+        # print("XSF get hkls  %d" % len(hkls))
         dhkl = d_from_hkl(hkls, *self.unitcell)
         qhkl = q_from_d(dhkl)
         f2hkl = np.zeros(len(hkls))
@@ -2730,7 +2733,6 @@ class XRDCIF(object):
                     hukvlw = hkl[0]*uvw[0] + hkl[1]*uvw[1] + hkl[2]*uvw[2]
                     fhkl += fval*np.exp(2*1j*PI*hukvlw)
             f2hkl[i] = (fhkl*fhkl.conjugate()).real
-
         ## removes zero value structure factors
         ii = ii*(f2hkl > 1.e-4)
 
@@ -2739,6 +2741,7 @@ class XRDCIF(object):
         hkl    = hkls[ii]
         f2hkl  = f2hkl[ii]
 
+        # print("XSF organized  %.3f" % (time.time()-t0))
         # find duplicates, set degen
         qwork, degen, f2work, hklwork = [], [], [], []
         for i, _q in enumerate(qhkl):
@@ -2755,7 +2758,6 @@ class XRDCIF(object):
         degen = np.array(degen)[qorder]
         f2hkl = np.array(f2work)[qorder]
         hkl   = abs(np.array(hklwork)[qorder])
-
         twotheta = twth_from_q(qhkl, wavelength)
         if np.any(np.isnan(twotheta)):
             nan_mask = np.where(np.isfinite(twotheta))
@@ -2772,6 +2774,7 @@ class XRDCIF(object):
         if self.volume is not None:
             ihkl *= wavelength**3 / float(self.volume)
 
+        # print("XSF final  %.3f  %d %d" % (time.time()-t0, len(ihkl), len(qhkl)))
         return StructureFactor(q=qhkl, intensity=ihkl, hkl=hkl, d=dhkl,
                                f2hkl=f2hkl, twotheta=twotheta, degen=degen,
                                lorentz=lap_corr, wavelength=wavelength,
