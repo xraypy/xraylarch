@@ -7,6 +7,7 @@ import os
 import sys
 import time
 import copy
+from threading import Thread
 import numpy as np
 np.seterr(all='ignore')
 
@@ -68,6 +69,7 @@ class CIFFrame(wx.Frame):
         self.all_minerals = self.cifdb.all_minerals()
         self.subframes = {}
         self.has_xrd1d = False
+        self.xrd1d_thread = None
         self.current_cif = None
         self.SetTitle(title)
         self.SetSize(MAINSIZE)
@@ -413,13 +415,18 @@ class CIFFrame(wx.Frame):
         self.wids['edge'].SetStringSelection(edge_val)
 
         sites = cif_sites(cif.ciftext, absorber=el0)
-        sites = ['%d' % (i+1) for i in range(len(sites))]
+        try:
+            sites = ['%d' % (i+1) for i in range(len(sites))]
+        except:
+            print("Warning: could not make sense of atomic sites")
+            print("Elements: ", list(elems.keys()))
+            print("Sites   : ", sites)
+
         self.wids['site'].Clear()
         self.wids['site'].AppendItems(sites)
         self.wids['site'].Select(0)
         i, p = self.get_nbpage('CIF Text')
         self.nb.SetSelection(i)
-
 
     def onCentralAtom(self, event=None):
         cif  = self.current_cif
@@ -638,29 +645,42 @@ class CIFFrame(wx.Frame):
     def showXRD1D(self, event=None):
         if self.has_xrd1d or self.current_cif is None:
             return
-        sfact = self.current_cif.get_structure_factors()
-        max_ = sfact.intensity.max()
-        mask = np.where(sfact.intensity>max_/10.0)[0]
-        qval = sfact.q[mask]
-        ival = sfact.intensity[mask]
-        ival = ival/(1.0*ival.max())
 
-        def qd_formatter(q, pos):
-            qval = float(q)
-            dval = '\n[%.2f]' % (2*np.pi/max(qval, 1.e-6))
-            return r"%.2f%s" % (qval, dval)
+        def display_xrd1d():
+            t0 = time.time()
+            sfact = self.current_cif.get_structure_factors()
+            print("got structure factors %.2f sec" % (time.time()-t0))
+            self.cifdb.set_hkls(self.current_cif.ams_id, sfact.hkls)
 
-        qd_label = r'$Q\rm\,(\AA^{-1}) \,\> [d \rm\,(\AA)]$'
-        title = self.cif_label + '\n' + '(cif %d)' % (self.current_cif.ams_id)
-        ppan = self.plotpanel
-        ppan.plot(qval, ival, linewidth=0, marker='o', markersize=2,
-                  xlabel=qd_label, ylabel='Relative Intensity',
-                  title=title, titlefontsize=8)
+            max_ = sfact.intensity.max()
+            mask = np.where(sfact.intensity>max_/10.0)[0]
+            qval = sfact.q[mask]
+            ival = sfact.intensity[mask]
+            ival = ival/(1.0*ival.max())
 
-        ppan.axes.bar(qval, ival, 0.05, color='blue')
-        ppan.axes.xaxis.set_major_formatter(FuncFormatter(qd_formatter))
-        ppan.canvas.draw()
-        self.has_xrd1d = True
+            def qd_formatter(q, pos):
+                qval = float(q)
+                dval = '\n[%.2f]' % (2*np.pi/max(qval, 1.e-6))
+                return r"%.2f%s" % (qval, dval)
+
+            qd_label = r'$Q\rm\,(\AA^{-1}) \,\> [d \rm\,(\AA)]$'
+            title = self.cif_label + '\n' + '(cif %d)' % (self.current_cif.ams_id)
+            ppan = self.plotpanel
+            ppan.plot(qval, ival, linewidth=0, marker='o', markersize=2,
+                      xlabel=qd_label, ylabel='Relative Intensity',
+                      title=title, titlefontsize=8, delay_draw=True)
+
+            ppan.axes.bar(qval, ival, 0.1, color='blue')
+            ppan.axes.xaxis.set_major_formatter(FuncFormatter(qd_formatter))
+            ppan.canvas.draw()
+            self.has_xrd1d = True
+
+        self.xrd1d_thread = Thread(target=display_xrd1d)
+        self.xrd1d_thread.start()
+        time.sleep(0.02)
+        self.xrd1d_thread.join()
+
+
 
     def onSelAll(self, event=None):
         self.controller.filelist.select_all()
