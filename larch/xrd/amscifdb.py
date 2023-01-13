@@ -26,6 +26,7 @@ import os
 import re
 import time
 import json
+from string import ascii_letters
 from base64 import b64encode, b64decode
 from collections import namedtuple
 import requests
@@ -33,7 +34,7 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 import numpy as np
 
-from sqlalchemy import MetaData, create_engine, func, text, and_
+from sqlalchemy import MetaData, create_engine, func, text, and_, Table
 from sqlalchemy.sql import select
 from sqlalchemy.orm import sessionmaker
 
@@ -49,14 +50,13 @@ from .amscifdb_utils import (make_engine, isAMSCIFDB, create_amscifdb,
                              put_optarray, get_optarray)
 from .xrd_cif import XRDCIF, elem_symbol
 from .cif2feff import cif2feffinp
-
+from ..utils import isotime
 from ..site_config import user_larchdir
 from .. import logger
 
 CifPublication = namedtuple('CifPublication', ('id', 'journalname', 'year',
                                             'volume', 'page_first',
                                             'page_last', 'authors'))
-
 
 _CIFDB = None
 AMSCIF_TRIM = 'amcsd_cif1.db'
@@ -72,6 +72,12 @@ def get_nonzero(thing):
         pass
     return thing
 
+def clean_elemsym(sym):
+    sx = (sym + ' ')[:2]
+    return ''.join([s.strip() for s in sx if s in ascii_letters])
+
+
+
 class CifStructure():
     """representation of a Cif Structure
     """
@@ -79,7 +85,7 @@ class CifStructure():
     def __init__(self, ams_id=None, publication=None, mineral=None,
                  spacegroup=None, hm_symbol=None, formula_title=None,
                  compound=None, formula=None, pub_title=None, a=None,
-                 b=None, c=None, alpha=None, beta=None, gamma=None,
+                 b=None, c=None, alpha=None, beta=None, gamma=None, hkls=None,
                  cell_volume=None, crystal_density=None, atoms_sites='<missing>',
                  atoms_aniso_label='<missing>', atoms_x=None, atoms_y=None,
                  atoms_z=None, atoms_occupancy=None, atoms_u_iso=None,
@@ -102,6 +108,7 @@ class CifStructure():
         self.alpha = alpha
         self.beta = beta
         self.gamma = gamma
+        self.hkls = hkls
         self.cell_volume = cell_volume
         self.crystal_density = crystal_density
         self.atoms_sites = atoms_sites
@@ -233,11 +240,14 @@ class CifStructure():
         self._ciftext = '\n'.join(out)
         return self.ciftext
 
-    def get_structure_factors(self, wavelength=None, energy=None, qmin=0.1, qmax=10):
+    def get_structure_factors(self, wavelength=None, energy=None, qmin=0.1, qmax=9):
         _xrdcif = XRDCIF(text=self.ciftext)
-        return _xrdcif.structure_factors(wavelength=wavelength,
-                                         energy=energy, qmin=qmin,
-                                         qmax=qmax)
+        return  _xrdcif.structure_factors(wavelength=wavelength,
+                                          energy=energy,
+                                          hkls=self.hkls,
+                                          qmin=qmin,
+                                          qmax=qmax)
+
 
     def get_feffinp(self, absorber, edge=None, cluster_size=8.0, absorber_site=1,
                     with_h=False, version8=True):
@@ -255,7 +265,6 @@ class CifStructure():
             for i, line in enumerate(self.pub_title.split('\n')):
                 titles.append(f'Title{i+1:d}: {line}')
 
-        print(" get feffinp -> " )
         return cif2feffinp(self.ciftext, absorber, edge=edge,
                            cluster_size=cluster_size, with_h=with_h,
                            absorber_site=absorber_site,
@@ -299,18 +308,29 @@ class AMSCIFDB():
         if not isAMSCIFDB(dbname):
             raise ValueError("'%s' is not a valid AMSCIF Database!" % dbname)
 
+        self.connect(dbname, read_only=read_only)
+
+        ciftab = self.tables['cif']
+        if 'hkls' not in ciftab.columns and not read_only:
+            self.engine.execute('alter table cif add column hkls text')
+            self.close()
+            self.connect(dbname, read_only=read_only)
+            time.sleep(0.1)
+            self.insert('version', tag='with hkls', date=isotime(),
+                        notes='added hkls column to cif table')
+            print("Added hkls column to cif table")
+
+
+    def connect(self, dbname, read_only=False):
         self.dbname = dbname
         self.engine = make_engine(dbname)
         self.conn = self.engine.connect()
-        kwargs = {}
+        kwargs = {'bind': self.engine, 'autoflush': True, 'autocommit': False}
+        self.session = sessionmaker(**kwargs)()
         if read_only:
-            kwargs = {'autoflush': True, 'autocommit': False}
             def readonly_flush(*args, **kwargs):
                 return
-            self.session = sessionmaker(bind=self.engine, **kwargs)()
             self.session.flush = readonly_flush
-        else:
-            self.session = sessionmaker(bind=self.engine)()
 
         self.metadata = MetaData()
         self.metadata.reflect(self.engine)
@@ -325,6 +345,27 @@ class AMSCIFDB():
     def query(self, *args, **kws):
         "generic query"
         return self.session.query(*args, **kws)
+
+    def insert(self, tablename, **kws):
+        if isinstance(tablename, Table):
+            table = tablename
+        else:
+            table = self.tables[tablename]
+        stmt = table.insert().values(kws)
+        out = self.session.execute(stmt)
+        self.session.commit()
+        self.session.flush()
+
+    def update(self, tablename, whereclause=False, **kws):
+        if isinstance(tablename, Table):
+            table = tablename
+        else:
+            table = self.tables[tablename]
+
+        stmt = table.update().where(whereclause).values(kws)
+        out = self.session.execute(stmt)
+        self.session.commit()
+        self.session.flush()
 
     def execall(self, query):
         return self.session.execute(query).fetchall()
@@ -359,7 +400,7 @@ class AMSCIFDB():
                 out.append(f"AMSCIF DB Version: {row.tag} [{row.date}] '{row.notes}'")
             out.append(f"Python Version: {__version__}")
             out = "\n".join(out)
-        elif row is None:
+        elif rows is None:
             out = f"AMSCIF DB Version: unknown, Python Version: {__version__}"
         else:
             out = f"AMSCIF DB Version: {rows[0].tag}, Python Version: {__version__}"
@@ -373,10 +414,9 @@ class AMSCIFDB():
         if len(rows) == 0:
             if not add:
                 return None
-            tab.insert().execute(name=name)
+            self.insert(tab, name=name)
             rows = self.execall(tab.select(tab.c.name==name))
         return rows[0]
-
 
     def get_spacegroup(self, hm_name):
         """get row from spacegroups table by HM notation.  See add_spacegroup()
@@ -395,11 +435,10 @@ class AMSCIFDB():
         if sg is not None and sg.symmetry_xyz == symmetry_xyz:
             return sg
 
-        tab = self.tables['spacegroups']
         args = {'hm_notation': hm_name, 'symmetry_xyz': symmetry_xyz}
         if category is not None:
             args['category'] = category
-        tab.insert().execute(**args)
+        self.insert('spacegroups', **args)
         return self.get_spacegroup(hm_name)
 
     def get_publications(self, journalname=None, year=None, volume=None,
@@ -442,7 +481,6 @@ class AMSCIFDB():
     def add_publication(self, journalname, year, authorlist, volume=None,
                         page_first=None, page_last=None, with_authors=True):
 
-        tab = self.tables['publications']
         args = dict(journalname=journalname, year=year)
         if volume is not None:
             args['volume']  = volume
@@ -451,18 +489,17 @@ class AMSCIFDB():
         if page_last is not None:
             args['page_last'] = page_last
 
-        tab.insert().execute(**args)
+        self.insert('publications', **args)
         self.session.flush()
         pub = self.get_publications(journalname, year, volume=volume,
                                     page_first=page_first,
                                     page_last=page_last)[0]
 
         if with_authors:
-            vals = []
             for name in authorlist:
                 auth = self._get_tablerow('authors', name, add=True)
-                vals.append(dict(publication_id=pub.id, author_id=auth.id))
-            self.tables['publication_authors'].insert().values(vals).execute()
+                self.insert('publication_authors',
+                            publication_id=pub.id, author_id=auth.id)
         return pub
 
     def add_cifdata(self, cif_id, mineral_id, publication_id,
@@ -477,34 +514,29 @@ class AMSCIFDB():
                     atoms_aniso_u12=None, atoms_aniso_u13=None,
                     atoms_aniso_u23=None, with_elements=True):
 
-        tab = self.tables['cif']
-
-        tab.insert().execute(id=cif_id, mineral_id=mineral_id,
-                             publication_id=publication_id,
-                             spacegroup_id=spacegroup_id,
-                             formula_title=formula_title,
-                             pub_title=pub_title, formula=formula,
-                             compound=compound, url=url, a=a, b=b, c=c,
-                             alpha=alpha, beta=beta, gamma=gamma,
-                             cell_volume=cell_volume,
-                             crystal_density=crystal_density,
-                             atoms_sites=atoms_sites, atoms_x=atoms_x,
-                             atoms_y=atoms_y, atoms_z=atoms_z,
-                             atoms_occupancy=atoms_occupancy,
-                             atoms_u_iso=atoms_u_iso,
-                             atoms_aniso_label=atoms_aniso_label,
-                             atoms_aniso_u11=atoms_aniso_u11,
-                             atoms_aniso_u22=atoms_aniso_u22,
-                             atoms_aniso_u33=atoms_aniso_u33,
-                             atoms_aniso_u12=atoms_aniso_u12,
-                             atoms_aniso_u13=atoms_aniso_u13,
-                             atoms_aniso_u23=atoms_aniso_u23)
+        self.insert('cif', id=cif_id, mineral_id=mineral_id,
+                    publication_id=publication_id,
+                    spacegroup_id=spacegroup_id,
+                    formula_title=formula_title, pub_title=pub_title,
+                    formula=formula, compound=compound, url=url, a=a, b=b,
+                    c=c, alpha=alpha, beta=beta, gamma=gamma,
+                    cell_volume=cell_volume,
+                    crystal_density=crystal_density,
+                    atoms_sites=atoms_sites, atoms_x=atoms_x,
+                    atoms_y=atoms_y, atoms_z=atoms_z,
+                    atoms_occupancy=atoms_occupancy,
+                    atoms_u_iso=atoms_u_iso,
+                    atoms_aniso_label=atoms_aniso_label,
+                    atoms_aniso_u11=atoms_aniso_u11,
+                    atoms_aniso_u22=atoms_aniso_u22,
+                    atoms_aniso_u33=atoms_aniso_u33,
+                    atoms_aniso_u12=atoms_aniso_u12,
+                    atoms_aniso_u13=atoms_aniso_u13,
+                    atoms_aniso_u23=atoms_aniso_u23)
 
         if with_elements:
-            vals = []
             for element in chemparse(formula).keys():
-                vals.append(dict(cif_id=cif_id, element=element))
-            self.tables['cif_elements'].insert().values(vals).execute()
+                self.insert('cif_elements', cif_id=cif_id, element=element)
         return self.get_cif(cif_id)
 
 
@@ -625,7 +657,7 @@ class AMSCIFDB():
             else:
                 cif_id = self.next_cif_id()
 
-        print("Would Add Cif Data !" )
+        print("Will add Cif Data !" )
         print(cif_id, mineral.id, pub.id, sgroup.id,
               formula)
         print(compound,
@@ -685,6 +717,7 @@ class AMSCIFDB():
     def get_cif(self, cif_id, as_strings=False):
         """get Cif Structure object """
         tab = self.tables['cif']
+
         cif = self.execone(tab.select(tab.c.id==cif_id))
         if cif is None:
             return
@@ -756,8 +789,13 @@ class AMSCIFDB():
         if cif.qdat is not None:
             out.qval = np.unpackbits(np.array([int(b) for b in b64decode(cif.qdat)],
                                               dtype='uint8'))
-        return out
+        out.hkls = None
+        if hasattr(cif, 'hkls'):
+           if cif.hkls is not None:
+               tmp = np.array([int(i) for i in b64decode(cif.hkls)])
+               out.hkls = tmp.reshape(len(tmp)//3, 3)
 
+        return out
 
     def next_cif_id(self):
         """next available CIF ID > 200000 that is not in current table"""
@@ -802,6 +840,7 @@ class AMSCIFDB():
 
             self.cif_elems = out
         return self.cif_elems
+
 
     def find_cifs(self, id=None, mineral_name=None, author_name=None,
                   journal_name=None, contains_elements=None,
@@ -915,6 +954,10 @@ class AMSCIFDB():
             matches = matches[:max_matches]
         return [self.get_cif(cid) for cid in matches]
 
+    def set_hkls(self, cifid, hkls):
+        hkldat = b64encode(bytes(hkls[:].flatten().tolist()))
+        ctab = self.tables['cif']
+        self.update(ctab, whereclause=(ctab.c.id == cifid), hkls=hkldat)
 
 def get_amscifdb(download_full=True, timeout=30):
     """return instance of the AMS CIF Database
@@ -967,9 +1010,10 @@ def find_cifs(mineral_name=None, journal_name=None, author_name=None,
      mineral_name:  case-insensitive match of mineral name
      journal_name:
      author_name:
-     contains_elements:  list of atomic symbols required to be in structure
+     containselements:  list of atomic symbols required to be in structure
      excludes_elements:  list of atomic symbols required to NOT be in structure
-     strict_contains:    `contains_elements` is complete -- no other elements.
+     strict_contains:    `contains_elements` is complete -- no other elements
+
 
     """
     db = get_amscifdb()
