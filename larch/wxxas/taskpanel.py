@@ -83,8 +83,7 @@ class GroupJournalFrame(wx.Frame):
         coltypes = ['string', 'string', 'string']
         coldefs  = [' ', ' ', ' ']
 
-        self.datagrid = DataTableGrid(self, nrows=80,
-                                      collabels=collabels,
+        self.datagrid = DataTableGrid(self, collabels=collabels,
                                       datatypes=coltypes,
                                       defaults=coldefs,
                                       colsizes=colsizes,
@@ -187,11 +186,11 @@ class GroupJournalFrame(wx.Frame):
         self.datagrid.table.Clear()
         nrows = self.datagrid.table.GetRowsCount()
         if len(grid_data) > nrows:
-            self.datagrid.table.AppendRows(len(grid_data)+8 - nrows)
+            grid_data = grid_data[-nrows:]
 
         self.datagrid.table.data = grid_data
         for i, rsize in enumerate(rowsize):
-            self.datagrid.SetRowSize(i, rsize*20)
+            pass # self.datagrid.SetRowSize(i, rsize*20)
 
         self.datagrid.table.View.Refresh()
 
