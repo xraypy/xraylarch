@@ -12,6 +12,8 @@ from larch.utils.strutils import break_longstring
 LEFT = wx.ALIGN_LEFT
 CEN |=  wx.ALL
 
+NROWS = 8000
+
 # from larch.wxlib import (BitmapButton, SetTip, GridPanel, FloatCtrl,
 #                          FloatSpin, FloatSpinWithPin, get_icon, SimpleText,
 #                          pack, Button, HLine, Choice, Check, MenuItem,
@@ -89,8 +91,7 @@ class DictFrame(wx.Frame):
         coltypes = ['string', 'string']
         coldefs  = [' ', ' ']
 
-        self.datagrid = DataTableGrid(self,
-                                      nrows=min(25, len(self.data)+2),
+        self.datagrid = DataTableGrid(self, nrows=NROWS,
                                       collabels=collabels,
                                       datatypes=coltypes,
                                       defaults=coldefs,
@@ -163,11 +164,11 @@ class DictFrame(wx.Frame):
         for i, rsize in enumerate(rowsize):
             self.datagrid.SetRowSize(i, rsize*20)
 
-        self.datagrid.table.View.Refresh()
+        self.datagrid.Refresh()
 
 
 class DataTable(wxgrid.GridTableBase):
-    def __init__(self, nrows=50, collabels=['a', 'b'],
+    def __init__(self, nrows=NROWS, collabels=['a', 'b'],
                  datatypes=['str', 'float:12,4'],
                  defaults=[None, None]):
 
@@ -187,7 +188,7 @@ class DataTable(wxgrid.GridTableBase):
                 defval = 0.0
             if defaults[i] is None:
                 defaults[i] = defval
-
+        self.defaults = defaults
         self.data = []
         for i in range(self.nrows):
             self.data.append(defaults)
@@ -211,7 +212,7 @@ class DataTable(wxgrid.GridTableBase):
         return self.colLabels[col]
 
     def GetRowLabelValue(self, row):
-        return "%d" % (row+1)
+        return " %d" % (row+1)
 
     def GetTypeName(self, row, col):
         return self.dataTypes[col]
@@ -227,7 +228,8 @@ class DataTable(wxgrid.GridTableBase):
         return self.CanGetValueAs(row, col, typeName)
 
 class DataTableGrid(wxgrid.Grid):
-    def __init__(self, parent, nrows=50, rowlabelsize=35, collabels=['a', 'b'],
+    def __init__(self, parent, nrows=NROWS, rowlabelsize=35,
+                 collabels=['a', 'b'],
                  datatypes=['str', 'float:12,4'],
                  defaults=[None, None],
                  colsizes=[200, 100]):
