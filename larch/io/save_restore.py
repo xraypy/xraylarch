@@ -19,6 +19,7 @@ from ..utils.jsonutils import encode4js, decode4js
 
 SessionStore = namedtuple('SessionStore', ('config', 'command_history', 'symbols'))
 
+EMPTY_FEFFCACHE = {'paths': {}, 'runs': {}}
 
 def invert_dict(d):
     "invert a dictionary {k: v} -> {v: k}"
@@ -261,7 +262,7 @@ def load_session(fname, ignore_groups=None, _larch=None):
     s_xasg_inv = invert_dict(s_xasgroups)
 
     s_feffpaths = s_symbols.pop('_feffpaths', {})
-    s_feffcache = s_symbols.pop('_feffcache', {'paths': [], 'runs': []})
+    s_feffcache = s_symbols.pop('_feffcache', EMPTY_FEFFCACHE)
 
     symtab = _larch.symtable
     if not hasattr(symtab, '_xasgroups'):
@@ -269,7 +270,7 @@ def load_session(fname, ignore_groups=None, _larch=None):
     if not hasattr(symtab, '_feffpaths'):
         symtab._feffpaths = {}
     if not hasattr(symtab, '_feffcache'):
-        symtab._feffcache = {'paths': [], 'runs': []}
+        symtab._feffcache = EMPTY_FEFFCACHE
 
     if not hasattr(symtab._sys, 'restored_sessions'):
         symtab._sys.restored_sessions = {}
@@ -305,6 +306,7 @@ def load_session(fname, ignore_groups=None, _larch=None):
     symtab._xasgroups.update(s_xasgroups)
     symtab._feffpaths.update(s_feffpaths)
     for name in ('paths', 'runs'):
-        for dat in s_feffcache[name]:
-            if dat not in symtab._feffcache[name]:
-                symtab._feffcache[name].append(dat)
+        symtab._feffcache[name].update(s_feffcache[name])
+#
+#             if dat not in symtab._feffcache[name]:
+#                 print('FEFFCACHE ' , name, type(   symtab._feffcache[name]), type(dat))
