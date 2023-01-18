@@ -268,6 +268,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
         dchi = t.ppf(prob, nchi-nspl) * np.sqrt(dfchi*redchi)
         dbkg = t.ppf(prob, nmue-nspl) * np.sqrt(dfbkg*redchi)
 
-        group.delta_chi = dchi
-        group.delta_bkg = 0.0*mu
-        group.delta_bkg[ie0:ie0+len(dbkg)] = dbkg
+        if not any(np.isnan(dchi)):
+            group.delta_chi = dchi
+            group.delta_bkg = 0.0*mu
+            group.delta_bkg[ie0:ie0+len(dbkg)] = dbkg
