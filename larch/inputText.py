@@ -171,7 +171,7 @@ class HistoryBuffer(object):
         comment = "# %s saved" % (self.title)
         out = ["%s %s" % (comment, time.ctime())]
         for bline in self.buffer[start_:end_]:
-            if not (bline.startswith(comment) or len(bline) < 0):
+            if not (bline.startswith(comment)):
                 out.append(str(bline))
         out.append('')
         return out
