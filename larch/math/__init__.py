@@ -4,7 +4,7 @@ import numpy as np
 
 from .utils import (linregress, realimag, as_ndarray,
                     complex_phase, deriv, interp, interp1d,
-                    remove_dups, remove_nans2, index_of,
+                    remove_dups, remove_nans, remove_nans2, index_of,
                     index_nearest, savitzky_golay, smooth, boxcar)
 
 from .lineshapes import (gaussian, lorentzian, voigt, pvoigt, hypermet,
