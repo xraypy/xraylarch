@@ -18,7 +18,7 @@ from lmfit.printfuncs import gformat as gformat
 
 from larch import Group, isNamedClass
 from larch.utils.strutils import fix_varname
-from ..math import index_of, realimag, complex_phase
+from ..math import index_of, realimag, complex_phase, remove_nans
 from ..fitting import (correlated_values, eval_stderr, ParameterGroup,
                        group2params, params2group, isParameter)
 
@@ -375,6 +375,9 @@ class FeffitDataSet(Group):
 
     def set_epsilon_k(self, eps_k):
         """set epsilon_k and epsilon_r -- ucertainties in chi(k) and chi(R)"""
+
+        eps_k = remove_nans(eps_k, 0.001)
+
         trans = self.transform
         all_kweights = isinstance(trans.kweight, Iterable)
         if isinstance(trans.kweight, Iterable):
@@ -395,6 +398,11 @@ class FeffitDataSet(Group):
             eps_r = eps_k / scale
             if isinstance(eps_r, np.ndarray): eps_r = eps_r.mean()
             self.epsilon_r = eps_r
+
+        # check for nans
+        self.epsilon_k = remove_nans(self.epsilon_k, eps_k, default=0.0001)
+        self.epsilon_r = remove_nans(self.epsilon_r, eps_r, default=0.0001)
+
 
 
     def _residual(self, paramgroup, data_only=False, **kws):
