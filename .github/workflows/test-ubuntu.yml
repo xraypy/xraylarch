@@ -27,7 +27,7 @@ jobs:
         conda config --add channels conda-forge
         conda update -n base -c defaults conda
         conda install python=${{ matrix.python-version }}
-        conda install numpy=>1.21 scipy=>1.8 matplotlib=>3.4 h5pye pandas cython pyparsing pytest pytest-cov coverage
+        conda install numpy=>1.21 scipy=>1.8 matplotlib=>3.4 h5py pandas cython pyparsing pytest pytest-cov coverage
         conda info -a
         conda list
         conda install scikit-learn pillow imageio sqlalchemy psutil pyyaml psycopg2-binary numdifftools emcee
