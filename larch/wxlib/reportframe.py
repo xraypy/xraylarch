@@ -12,7 +12,7 @@ from larch.utils.strutils import break_longstring
 LEFT = wx.ALIGN_LEFT
 CEN |=  wx.ALL
 
-NROWS = 8000
+NROWS = 25
 
 # from larch.wxlib import (BitmapButton, SetTip, GridPanel, FloatCtrl,
 #                          FloatSpin, FloatSpinWithPin, get_icon, SimpleText,
@@ -155,16 +155,16 @@ class DictFrame(wx.Frame):
             rowsize.append(len(xval))
             grid_data.append([key, val])
 
-        self.datagrid.table.Clear()
         nrows = self.datagrid.table.GetRowsCount()
         if len(grid_data) > nrows:
-            self.datagrid.table.AppendRows(len(grid_data)+8 - nrows)
+            self.datagrid.AppendRows(len(grid_data)+8 - nrows)
 
+        self.datagrid.table.Clear()
         self.datagrid.table.data = grid_data
         for i, rsize in enumerate(rowsize):
             self.datagrid.SetRowSize(i, rsize*20)
 
-        self.datagrid.Refresh()
+        self.datagrid.table.View.Refresh()
 
 
 class DataTable(wxgrid.GridTableBase):
@@ -227,11 +227,19 @@ class DataTable(wxgrid.GridTableBase):
     def CanSetValueAs(self, row, col, typeName):
         return self.CanGetValueAs(row, col, typeName)
 
+    def AppendRows(self, numRows=1, **kws):
+        self.nrows = self.nrows + numRows
+        msg = wxgrid.GridTableMessage(self,
+             wxgrid.GRIDTABLE_NOTIFY_ROWS_APPENDED, numRows)
+        self.GetView().ProcessTableMessage(msg)
+        return True
+
+
 class DataTableGrid(wxgrid.Grid):
     def __init__(self, parent, nrows=NROWS, rowlabelsize=35,
                  collabels=['a', 'b'],
                  datatypes=['str', 'float:12,4'],
-                 defaults=[None, None],
+                 defaults=['', ''],
                  colsizes=[200, 100]):
 
         wxgrid.Grid.__init__(self, parent, -1)
