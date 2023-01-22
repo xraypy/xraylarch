@@ -168,6 +168,7 @@ class GroupJournalFrame(wx.Frame):
             label = f'Journal for {desc.value}'
         self.label.SetLabel(label)
 
+
         grid_data = []
         rowsize = []
         self.n_entries = len(dgroup.journal.data)
@@ -179,20 +180,20 @@ class GroupJournalFrame(wx.Frame):
             xval = break_longstring(val)
             val = '\n'.join(xval)
             rowsize.append(len(xval))
-
             xtime = entry.datetime.strftime("%Y/%m/%d %H:%M:%S")
             grid_data.append([entry.key, val, xtime])
 
-        self.datagrid.table.Clear()
         nrows = self.datagrid.table.GetRowsCount()
+
         if len(grid_data) > nrows:
-            grid_data = grid_data[-nrows:]
-
+            self.datagrid.table.AppendRows(len(grid_data)+8 - nrows)
+        self.datagrid.table.Clear()
         self.datagrid.table.data = grid_data
-        for i, rsize in enumerate(rowsize):
-            pass # self.datagrid.SetRowSize(i, rsize*20)
 
-        self.datagrid.table.View.Refresh()
+        for i, rsize in enumerate(rowsize):
+            self.datagrid.SetRowSize(i, rsize*20)
+
+        self.datagrid.Refresh()
 
 
 class TaskPanel(wx.Panel):
