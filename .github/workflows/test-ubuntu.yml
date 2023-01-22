@@ -23,18 +23,20 @@ jobs:
     - name: Install conda dependencies
       run: |
         # printenv
-        conda update -n base -c defaults conda
         conda config --set always_yes true --set changeps1 true
         conda config --add channels conda-forge
+        conda update -n base -c defaults conda
         conda install python=${{ matrix.python-version }}
-        conda install numpy=>1.21 scipy=>1.8 matplotlib=>3.4 pillow scikit-learn pandas h5py imageio sqlalchemy psutil pyyaml
-        conda install psycopg2-binary numdifftools emcee cython pyparsing pytest pytest-cov coverage
+        conda install numpy=>1.21 scipy=>1.8 matplotlib=>3.4 h5pye pandas cython pyparsing pytest pytest-cov coverage
+        conda info -a
+        conda list
+        conda install scikit-learn pillow imageio sqlalchemy psutil pyyaml psycopg2-binary numdifftools emcee
         #conda install tomopy
         conda install wxpython pymatgen pycifrw
     - name: Install xraylarch and other dependencies with pip
       run: |
         conda info -a
-        conda list
+        conda listx
         pip install lmfit peakutils pyepics pyshortcuts termcolor sphinx dill pycifrw xraydb wxmplot wxutils fabio silx imageio
         pip install .
     - name: Run test suite
