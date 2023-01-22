@@ -210,17 +210,16 @@ def remove_nans(val, goodval=0.0, default=0.0):
     remove nan / inf from an value (array or scalar),
     and replace with 'goodval'.
     """
-    if isinstance(goodval, np.array):
+    if isinstance(goodval, np.ndarray):
         goodval = goodval.mean()
-    if ~np.isfinite(goodval):
+    if np.any(~np.isfinite(goodval)):
         goodval = default
 
-    if isinstance(val, np.ndarray):
-        isbad = ~np.isfinite(val)
-        if np.any(isbad):
-            val[np.where(bad)] = goodval
-    else:
-        if ~np.isfinite(val):
+    if np.any(~np.isfinite(val)):
+        if isinstance(val, np.ndarray):
+            isbad = np.any(~np.isfinite(val))
+            val[np.where(isbad)] = goodval
+        else:
             val = goodval
     return val
 
