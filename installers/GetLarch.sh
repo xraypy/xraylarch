@@ -18,7 +18,7 @@ logfile=GetLarch.log
 
 
 ## set list of conda packages to install from conda-forge
-cforge_pkgs="numpy=>1.18 scipy=>1.6 matplotlib=>3.3 scikit-image scikit-learn pymatgen pycifrw"
+cforge_pkgs="numpy=>1.20 scipy=>1.6 matplotlib=>3.5 scikit-image scikit-learn pycifrw"
 
 ## set list of pip packages to install from pypi
 pip_pkgs="wxmplot wxutils lmfit asteval pyshortcuts pyfai chardet"
@@ -35,13 +35,13 @@ for opt ; do
   option=''
   case "$opt" in
     -*=*)
-	 optarg=`echo "$opt" | sed 's/[-_a-zA-Z0-9]*=//'`
-	 option=`echo "$opt" | sed 's/=.*//' | sed 's/-*//'`
-	 ;;
+        optarg=`echo "$opt" | sed 's/[-_a-zA-Z0-9]*=//'`
+        option=`echo "$opt" | sed 's/=.*//' | sed 's/-*//'`
+        ;;
     *)
-	 option=`echo "$opt" | sed 's/^-*//'`
-	 optarg=
-	 ;;
+        option=`echo "$opt" | sed 's/^-*//'`
+        optarg=
+        ;;
   esac
   case "$option" in
     prefix)        prefix=$optarg ;;
@@ -64,7 +64,7 @@ EOF
    *)
        echo " unknown option "  $opt
        exit 1
-	;;
+       ;;
   esac
 done
 
@@ -126,8 +126,8 @@ $prefix/bin/conda update -n base -yc defaults --all | tee -a $logfile
 export PATH=$prefix/bin:$PATH
 
 echo "##  Installing packages from conda-forge"  | tee -a $logfile
-echo "#> $prefix/bin/conda install --force-reinstall -yc conda-forge $cforge_pkgs " | tee -a $logfile
-$prefix/bin/conda install --force-reinstall -yc conda-forge $cforge_pkgs | tee -a $logfile
+echo "#> $prefix/bin/conda install -yc conda-forge $cforge_pkgs " | tee -a $logfile
+$prefix/bin/conda install -yc conda-forge $cforge_pkgs | tee -a $logfile
 
 ## pip install of dependencies and Larch
 echo "##Installing dependencies from PyPI"  | tee -a $logfile
