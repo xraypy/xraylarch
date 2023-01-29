@@ -6,7 +6,6 @@ from gzip import GzipFile
 import io
 import copy
 import json
-import cchardet
 import numpy as np
 
 from .paths import uname, bindir, nativepath, unixpath, get_homedir, get_cwd
@@ -18,6 +17,30 @@ from .strutils import (fixName, isValidName, isNumber, bytes2str, str2bytes,
 
 from .shellutils import (_copy, _deepcopy, _more, _parent,
                          _ls, _cd, _cwd, _mkdir)
+
+HAS_CCHARDET = False
+try:
+    import cchardet
+    HAS_CCHARDET = True
+except ImportError:
+    HAS_CCHARDET = False
+
+HAS_CHARDET = False
+try:
+    import chardet
+    HAS_CHARDET = True
+except ImportError:
+    HAS_CHARDET = False
+
+HAS_CHARSET_NORMALIZER = False
+if True: #try:
+    import charset_normalizer
+    HAS_CHARSET_NORMALIZER = True
+else: # except ImportError:
+    HAS_CHARSET_NORMALIZER = False
+
+
+
 
 def is_gzip(filename):
     "is a file gzipped?"
@@ -46,10 +69,30 @@ def read_textfile(filename, size=None):
     3. if filename is given, it can be a gzip-compressed file
     """
 
-    def decode(bdat):
+    def decode_utf8(bdat):
+        return bdat.decode('utf-8')
+
+    def decode_chardet(bdat):
+        info = chardet.detect(bdat)
+        return bdat.decode(info.get('encoding', 'utf-8'))
+
+    def decode_cchardet(bdat):
         info = cchardet.detect(bdat)
         return bdat.decode(info.get('encoding', 'utf-8'))
 
+    def decode_charset_normalizer(bdat):
+        return str(charset_normalizer.from_bytes(bdat).best())
+
+    if HAS_CHARSET_NORMALIZER:
+        decode = decode_charset_normalizer
+    elif HAS_CCHARDET:
+        decode = decode_cchardet
+    elif HAS_CHARDET:
+        decode = decode_chardet
+    else:
+        decode = decode_utf8
+
+    t0 = time.time()
     text = ''
     if isinstance(filename, io.IOBase):
         if filename.mode == 'r':
@@ -60,7 +103,7 @@ def read_textfile(filename, size=None):
         fopen = GzipFile if is_gzip(filename) else open
         with fopen(filename, 'rb') as fh:
             text = decode(fh.read(size))
-
+    # print(f"Read text from {filename} in {time.time()-t0:.3f} sec, {decode}")
     return text.replace('\r\n', '\n').replace('\r', '\n')
 
 

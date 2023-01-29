@@ -15,7 +15,7 @@ sqlalchemy>=1.0
 h5py>=2.8
 pillow>=8.3.2
 imageio
-cchardet
+charset-normalizer
 peakutils
 requests
 scikit-image
