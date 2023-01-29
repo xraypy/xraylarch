@@ -560,18 +560,18 @@ class XASNormPanel(TaskPanel):
             for i in range(nplot_traces, nplot_request+5):
                 ppanel.conf.init_trace(i,  linecolors[i%ncols], 'dashed')
 
-        # 
-        # NOTE: with wxmplot 0.9.53, will be able to use  
+        #
+        # NOTE: with wxmplot 0.9.53, will be able to use
         # ppanel.plot_many(plot_traces, xlabel=plotlabels.energy, ylabel=ylabel,
         #                 zoom_limits=zoom_limits,
         #                 show_legend=True)
-        #  
-        
+        #
+
         ppanel.plot_many(plot_traces, xlabel=plotlabels.energy, ylabel=ylabel,
                          show_legend=True)
         set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
         ppanel.canvas.draw()
-        
+
         wx.CallAfter(self.controller.set_focus)
 
     def onAutoNorm(self, evt=None):
@@ -815,7 +815,7 @@ class XASNormPanel(TaskPanel):
             t = 0.0
             cmds.extend(["{group:s}.energy_shift = {eshift:.4f}",
                          "{group:s}.energy = {group:s}.xdat = {group:s}.energy_orig + {group:s}.energy_shift"])
-            
+
         if len(cmds) > 0:
             self.larch_eval(('\n'.join(cmds)).format(group=dgroup.groupname, eshift=eshift))
 
@@ -842,8 +842,8 @@ class XASNormPanel(TaskPanel):
             self.skip_process = False
             dgroup.mu = dgroup.ydat * 1.0
             opts = {'group': dgroup.groupname, 'scale': conf.get('scale', 1.0)}
-            return            
-            
+            return
+
         norm_method = form['norm_method'].lower()
         form['normmeth'] = 'poly'
 
@@ -1106,7 +1106,7 @@ class XASNormPanel(TaskPanel):
             linewidht = _linewidth
             if 'linewidth' in popts:
                 linewidth = popts.pop('linewidth')
-            popts['delay_draw'] = delay_draw 
+            popts['delay_draw'] = delay_draw
             if yaname == 'norm_mback' and not hasattr(dgroup, yaname):
                 self.process(dgroup=dgroup, force=True, force_mback=True)
             plotcmd(dgroup.xdat, getattr(dgroup, yaname)+yoff, linewidth=linewidth, **popts)
@@ -1129,5 +1129,6 @@ class XASNormPanel(TaskPanel):
                     xpopts.update(opts)
                     axes.axvline(x, **xpopts)
 
+        # set_zoomlimits(ppanel, zoom_limits)
         set_zoomlimits(ppanel, zoom_limits)
-        ppanel.canvas.draw()
+        ppanel.conf.unzoom(full=True, delay_draw=False)
