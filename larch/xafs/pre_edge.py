@@ -4,11 +4,11 @@
 """
 import numpy as np
 
-from lmfit import Parameters, Minimizer
+from lmfit import Parameters, Minimizer, report_fit
 from xraydb import guess_edge
 from larch import Group, Make_CallArgs, parse_group_args
 
-from larch.math import index_of, index_nearest, remove_dups, remove_nans2
+from larch.math import index_of, index_nearest, remove_dups, remove_nans2, interp
 from .xafsutils import set_xafsGroup
 
 MODNAME = '_xafs'
@@ -200,7 +200,6 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
             'pre1': pre1, 'pre2': pre2, 'precoefs': precoefs}
 
 @Make_CallArgs(["energy","mu"])
-
 def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
              nvict=0, pre1=None, pre2=None, norm1=None, norm2=None,
              make_flat=True, _larch=None):
@@ -275,7 +274,7 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
                       nvict=nvict, pre1=pre1, pre2=pre2, norm1=norm1,
                       norm2=norm2)
 
-    
+
     group = set_xafsGroup(group, _larch=_larch)
 
     e0    = pre_dat['e0']
@@ -345,3 +344,87 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
         if group.atsym is None: group.atsym = _atsym
         if group.edge is None:  group.edge = _edge
     return
+
+def energy_align(group, reference, array='dmude', emin=-15, emax=35):
+    """
+    align XAFS data group to a reference group
+
+    Arguments
+    ---------
+    group      Larch group for spectrum to be aligned (see Note 1)
+    reference  Larch group for reference spectrum     (see Note 1)
+    array      string of 'dmude', 'norm', or 'mu'     (see Note 2) ['dmude']
+    emin       float, min energy relative to e0 of reference for alignment [-15]
+    emax       float, max energy relative to e0 of reference for alignment [+35]
+
+    Returns
+    -------
+    eshift   energy shift to add to group.energy to match reference.
+             This value will also be written to group.eshift
+
+    Notes
+    -----
+      1.  Both group and reference must be XAFS data, with arrays of 'energy' and 'mu'.
+          The reference group must already have an e0 value set.
+
+      2.  The alignment can be done with 'mu' or 'dmude'.  If it does not exist, the
+          dmude array will be built for group and reference.
+
+    """
+
+    if not (hasattr(group, 'energy') and hasattr(group, 'mu')):
+        raise ValueError("group must have attributes 'energy' and 'mu'")
+
+    if not hasattr(group, 'dmude'):
+        mu = getattr(group, 'norm', getattr(group, 'mu'))
+        en = getattr(group, 'energy')
+        group.dmude = gradient(mu)/gradient(en)
+
+
+    if not (hasattr(reference, 'energy') and hasattr(reference, 'mu')
+            and hasattr(reference, 'e0') ):
+        raise ValueError("reference must have attributes 'energy', 'mu', and 'e0'")
+
+    if not hasattr(reference, 'dmude'):
+        mu = getattr(reference, 'norm', getattr(reference, 'mu'))
+        en = getattr(reference, 'energy')
+        reference.dmude = gradient(mu)/gradient(en)
+
+    xdat = group.energy[:]
+    xref = reference.energy[:]
+    ydat = group.dmude[:]
+    yref = reference.dmude[:]
+    if array == 'mu':
+        ydat = group.mu[:]
+        yref = reference.mu[:]
+    elif array == 'norm':
+        ydat = group.norm[:]
+        yref = reference.norm[:]
+    xdat, ydat = remove_nans2(xdat, ydat)
+    xref, yref = remove_nans2(xref, yref)
+
+    i1 = index_of(xref, reference.e0-emin)
+    i2 = index_of(xref, reference.e0+emax)
+    print("use Array ", array, i1, i2)
+
+    def align_resid(params, xdat, ydat, xref, yref, i1, i2):
+        "fit residual"
+        newx = xdat + params['eshift'].value
+        scale = params['scale'].value
+        ytmp = interp(newx, ydat, xref, kind='cubic')
+        return (ytmp*scale - yref)[i1:i2]
+
+    params = Parameters()
+    params.add('eshift', value=0, min=-50, max=50)
+    params.add('scale', value=1, min=0, max=50)
+
+    try:
+        fit = Minimizer(align_resid, params,
+                        fcn_args=(xdat, ydat, xref, yref, i1, i2))
+        result = fit.leastsq()
+        eshift = result.params['eshift'].value
+    except:
+        eshift = 0
+
+    group.eshift = eshift
+    return eshift
