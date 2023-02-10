@@ -83,6 +83,14 @@ EFano_Text = 'Peak Widths:  sigma = sqrt(E_Fano * Energy + Noise**2) '
 Geom_Text = 'Angles in degrees: 90=normal to surface, 0=grazing surface'
 Energy_Text = 'All energies in keV'
 
+
+FitTols = ['1.e-2', '3.e-3', '1.e-3', '3.e-4', '1.e-4', '3.e-5', '1.e-5',
+           '3.e-6', '1.e-6', '3.e-7', '1.e-7'] 
+FitSteps = ['1.e-2', '3.e-3', '1.e-3', '3.e-4', '1.e-4', '3.e-5', '1.e-5',
+            '3.e-6', '1.e-6', '3.e-7', '1.e-7'] 
+
+FitMaxNFevs = ['200', '500', '1000', '1500', '2000', '3000', '5000', '10000']
+
 xrfmod_setup = """### XRF Model: {mca_label:s}  @ {datetime:s}
 # setup XRF Model:
 _xrfmodel = xrf_model(xray_energy={en_xray:.2f}, count_time={count_time:.5f},
@@ -106,7 +114,7 @@ _xrfmodel.add_scatter_peak(name='{peakname:s}', center={_cen:.2f},
 
 xrfmod_fitscript = """
 # run XRF fit, save results
-_xrffitresult = _xrfmodel.fit_spectrum({group:s}, energy_min={emin:.2f}, energy_max={emax:.2f})
+_xrffitresult = _xrfmodel.fit_spectrum({group:s}, energy_min={emin:.2f}, energy_max={emax:.2f}, fit_toler={fit_toler:.6g}, fit_step={fit_step:.6g}, max_nfev={max_nfev:d})
 _xrfresults.insert(0, _xrffitresult)
 ########
 """
@@ -167,7 +175,7 @@ DEF_CONFIG = { "mca_name": "", "escape_use": True, "escape_amp": 0.25,
 class FitSpectraFrame(wx.Frame):
     """Frame for Spectral Analysis"""
 
-    def __init__(self, parent, size=(700, 825)):
+    def __init__(self, parent, size=(750, 850)):
         self.parent = parent
         self._larch = parent.larch
         symtable = self._larch.symtable
@@ -180,7 +188,6 @@ class FitSpectraFrame(wx.Frame):
         mcagroup = getattr(xrfgroup, '_mca')
         self.mca = getattr(xrfgroup, mcagroup)
         self.mcagroup = '%s.%s' % (XRFGROUP, mcagroup)
-        print("Get MCA Groups: ",XRFGROUP, xrfgroup, mcagroup)
 
         self.config = DEF_CONFIG
 
@@ -349,11 +356,11 @@ class FitSpectraFrame(wx.Frame):
         cal_offset = getattr(mca, 'offset',  0)
         cal_slope = getattr(mca, 'slope',  0.010)
         det_noise = getattr(mca, 'det_noise',  0.035)
-        escape_amp = getattr(mca, 'escape_amp', 0.25)
+        escape_amp = getattr(mca, 'escape_amp', 0.10)
 
         if not hasattr(self.mca, 'pileup_scale'):
             self.mca.predict_pileup()
-        pileup_amp = max(0.001, getattr(mca, 'pileup_scale', 0.10))
+        pileup_amp = max(0.001, getattr(mca, 'pileup_scale', 0.05))
 
         wids = self.wids
         pdet = GridPanel(self, itemstyle=LEFT)
@@ -424,6 +431,13 @@ class FitSpectraFrame(wx.Frame):
                        'flux_in'):
             wids[notyet].Disable()
 
+        wids['fit_toler'] = Choice(pdet, choices=FitTols, size=(90, -1))
+        wids['fit_toler'].SetStringSelection('1.e-4')
+        wids['fit_step'] = Choice(pdet, choices=FitSteps, size=(90, -1))
+        wids['fit_step'].SetStringSelection('1.e-4')
+        wids['fit_maxnfev'] = Choice(pdet, choices=FitMaxNFevs, size=(90, -1))
+        wids['fit_maxnfev'].SetStringSelection('1000')
+            
         pdet.AddText(' Beam Energy, Fit Range :', colour='#880000', dcol=2)
         pdet.AddText('   X-ray Energy (keV): ', newrow=True)
         pdet.Add(wids['en_xray'])
@@ -433,6 +447,12 @@ class FitSpectraFrame(wx.Frame):
         pdet.Add(wids['en_min'])
         pdet.AddText('Fit Energy Max (keV): ')
         pdet.Add(wids['en_max'])
+        pdet.AddText('   Fit Step Size: ', newrow=True)
+        pdet.Add(wids['fit_step'])
+        pdet.AddText('Fit Tolerance: ')
+        pdet.Add(wids['fit_toler'])
+        pdet.AddText('   Fit Max Evaluations: ', newrow=True)
+        pdet.Add(wids['fit_maxnfev'])
 
 
         addLine(pdet)
@@ -548,7 +568,6 @@ class FitSpectraFrame(wx.Frame):
         mview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectMaterial)
         self.selected_material = ''
 
-
         mview.AppendTextColumn('Name',      width=150)
         mview.AppendTextColumn('Formula',   width=325)
         mview.AppendTextColumn('density',    width=90)
@@ -559,7 +578,7 @@ class FitSpectraFrame(wx.Frame):
             this.Sortable = True
             this.Alignment = this.Renderer.Alignment = align
 
-        mview.SetMinSize((675, 170))
+        mview.SetMinSize((725, 170))
         mview.DeleteAllItems()
         self.materials_data = {}
         for name, data in materials._read_materials_db().items():
@@ -607,7 +626,7 @@ class FitSpectraFrame(wx.Frame):
         wids['data_title'] = SimpleText(panel, '< > ', font=Font(FONTSIZE+1),
                                              colour=self.colors.title, style=LEFT)
 
-        wids['fitlabel_lab'] = SimpleText(panel, ' Fit Label: ')
+        wids['fitlabel_lab'] = SimpleText(panel, 'Fit Label:')
         wids['fitlabel_txt'] = wx.TextCtrl(panel, -1, ' ', size=(150, -1))
         wids['fitlabel_btn'] = Button(panel, 'Set Label',  size=(150, -1),
                                       action=self.onChangeFitLabel)
@@ -652,12 +671,12 @@ class FitSpectraFrame(wx.Frame):
         sview = wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.SetFont(self.font_fixedwidth)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
-        sview.AppendTextColumn('  Fit Label', width=90)
-        sview.AppendTextColumn(' N_vary', width=70)
-        sview.AppendTextColumn(' N_eval', width=70)
-        sview.AppendTextColumn(' \u03c7\u00B2', width=125)
-        sview.AppendTextColumn(' \u03c7\u00B2_reduced', width=125)
-        sview.AppendTextColumn(' Akaike Info', width=125)
+        sview.AppendTextColumn('Fit Label', width=120)
+        sview.AppendTextColumn('N_vary', width=80)
+        sview.AppendTextColumn('N_eval', width=80)
+        sview.AppendTextColumn('\u03c7\u00B2', width=130)
+        sview.AppendTextColumn('\u03c7\u00B2_reduced', width=130)
+        sview.AppendTextColumn('Akaike Info', width=130)
 
         for col in range(sview.ColumnCount):
             this = sview.Columns[col]
@@ -666,7 +685,7 @@ class FitSpectraFrame(wx.Frame):
                 align = wx.ALIGN_LEFT
             this.Sortable = isort
             this.Alignment = this.Renderer.Alignment = align
-        sview.SetMinSize((675, 150))
+        sview.SetMinSize((725, 150))
 
         irow += 1
         sizer.Add(sview, (irow, 0), (1, 5), LEFT)
@@ -683,10 +702,10 @@ class FitSpectraFrame(wx.Frame):
         pview.SetFont(self.font_fixedwidth)
         wids['paramsdata'] = []
         pview.AppendTextColumn('Parameter',      width=150)
-        pview.AppendTextColumn('Refined Value',  width=110)
-        pview.AppendTextColumn('Standard Error', width=110)
-        pview.AppendTextColumn('% Uncertainty',  width=110)
-        pview.AppendTextColumn('Initial Value',  width=125)
+        pview.AppendTextColumn('Refined Value',  width=130)
+        pview.AppendTextColumn('Standard Error', width=130)
+        pview.AppendTextColumn('% Uncertainty',  width=130)
+        pview.AppendTextColumn('Initial Value',  width=130)
 
         for col in range(4):
             this = pview.Columns[col]
@@ -696,7 +715,7 @@ class FitSpectraFrame(wx.Frame):
             this.Sortable = False
             this.Alignment = this.Renderer.Alignment = align
 
-        pview.SetMinSize((675, 200))
+        pview.SetMinSize((725, 200))
         pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
 
         irow += 1
@@ -735,12 +754,12 @@ class FitSpectraFrame(wx.Frame):
             if col == 2:
                 align = wx.ALIGN_RIGHT
             this.Alignment = this.Renderer.Alignment = align
-        cview.SetMinSize((675, 125))
+        cview.SetMinSize((725, 125))
 
         irow += 1
         sizer.Add(cview, (irow, 0), (1, 5), LEFT)
         pack(panel, sizer)
-        panel.SetMinSize((675, 725))
+        panel.SetMinSize((725, 750))
         panel.SetupScrolling()
         return panel
 
@@ -757,9 +776,9 @@ class FitSpectraFrame(wx.Frame):
         cview.SetFont(self.font_fixedwidth)
         cview.AppendTextColumn(' Z ', width=50)
         cview.AppendTextColumn(' Element ', width=100)
-        cview.AppendTextColumn(' Amplitude', width=125)
-        cview.AppendTextColumn(' Concentration',  width=125)
-        cview.AppendTextColumn(' Uncertainty',  width=170)
+        cview.AppendTextColumn(' Amplitude', width=170)
+        cview.AppendTextColumn(' Concentration',  width=170)
+        cview.AppendTextColumn(' Uncertainty',  width=180)
 
         for col in range(5):
             this = cview.Columns[col]
@@ -769,7 +788,7 @@ class FitSpectraFrame(wx.Frame):
             this.Sortable = True
             this.Alignment = this.Renderer.Alignment = align
 
-        cview.SetMinSize((675, 500))
+        cview.SetMinSize((725, 500))
         wids['comp_fitlabel'] = Choice(panel, choices=[''], size=(175, -1),
                                        action=self.onCompSelectFit)
 
@@ -811,7 +830,7 @@ class FitSpectraFrame(wx.Frame):
         sizer.Add(wids['comp_save'],   (irow, 0), (1, 3), LEFT)
 
         pack(panel, sizer)
-        panel.SetMinSize((675, 750))
+        panel.SetMinSize((725, 750))
         panel.SetupScrolling()
         return panel
 
@@ -1234,7 +1253,7 @@ class FitSpectraFrame(wx.Frame):
         s = "{group:s}.xrf_init = _xrfmodel.calc_spectrum({group:s}.energy)"
         self._larch.eval(s.format(group=self.mcagroup))
 
-    def plot_model(self, model_spectrum=None, init=False, with_comps=True,
+    def plot_model(self, model_spectrum=None, init=False, with_comps=False,
                    label=None):
         conf = self.parent.conf
 
@@ -1283,21 +1302,30 @@ class FitSpectraFrame(wx.Frame):
 
     def onShowModel(self, event=None):
         self.build_model()
-        self.plot_model(init=True, with_comps=True)
+        self.plot_model(init=True, with_comps=False)
 
     def onFitIteration(self, iter=0, pars=None):
-        pass
-        # print("Fit iteration %d" % iter)
+        print("XRF Fit iteration %d" % iter)
         # self.wids['fit_message'].SetLabel("Fit iteration %d" % iter)
 
     def onFitModel(self, event=None):
         self.build_model()
         xrfmod = self._larch.symtable.get_symbol('_xrfmodel')
         xrfmod.iter_callback = self.onFitIteration
-        fit_script = xrfmod_fitscript.format(group=self.mcagroup,
-                                             emin=self.wids['en_min'].GetValue(),
-                                             emax=self.wids['en_max'].GetValue())
 
+        fit_tol = float(self.wids['fit_toler'].GetStringSelection())
+        fit_step = float(self.wids['fit_step'].GetStringSelection())
+        max_nfev = int(self.wids['fit_maxnfev'].GetStringSelection())
+        emin = float(self.wids['en_min'].GetValue())
+        emax = float(self.wids['en_max'].GetValue())
+
+        fit_script = xrfmod_fitscript.format(group=self.mcagroup,
+                                             emin=emin, emax=emax,
+                                             fit_toler=fit_tol,
+                                             fit_step=fit_step,
+                                             max_nfev=max_nfev)
+        # print("-- > ", fit_script)
+        
         self._larch.eval(fit_script)
         dgroup = self._larch.symtable.get_group(self.mcagroup)
         self.xrfresults = self._larch.symtable.get_symbol(XRFRESULTS_GROUP)
@@ -1305,7 +1333,7 @@ class FitSpectraFrame(wx.Frame):
         xrfresult = self.xrfresults[0]
         xrfresult.script = "%s\n%s" % (self.model_script, fit_script)
         xrfresult.label = "fit %d" % (len(self.xrfresults))
-        self.plot_model(init=True, with_comps=True)
+        self.plot_model(init=True, with_comps=False)
         for i in range(len(self.nb.pagelist)):
             if self.nb.GetPageText(i).strip().startswith('Fit R'):
                 self.nb.SetSelection(i)

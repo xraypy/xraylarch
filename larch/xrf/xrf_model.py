@@ -227,7 +227,6 @@ class XRF_Model:
     """
     def __init__(self, xray_energy=None, energy_min=1.5, energy_max=30.,
                  count_time=1, bgr=None, iter_callback=None, **kws):
-
         self.xray_energy = xray_energy
         self.energy_min = energy_min
         self.energy_max = energy_max
@@ -248,7 +247,9 @@ class XRF_Model:
         self.mu_lines = {}
         self.mu_energies = []
         self.fit_iter = 0
-        self.fit_toler = 1.e-4
+        self.fit_toler = 5.e-3
+        self.fit_step = 1.e-4
+        self.max_nfev = 1000
         self.fit_log = False
         self.bgr = None
         self.use_pileup = False
@@ -528,7 +529,15 @@ class XRF_Model:
         fit_wt = 0.1 + savitzky_golay( (counts+1.0)**(2/3.0), 15, 1)
         self.fit_weight = 1.0/fit_wt
 
-    def fit_spectrum(self, mca, energy_min=None, energy_max=None):
+    def fit_spectrum(self, mca, energy_min=None, energy_max=None,
+                     fit_toler=None, fit_step=None, max_nfev=None):
+        if fit_toler is not None:
+            self.fit_toler = max(1.e-7, min(0.25, fit_toler))
+        if fit_step is not None:
+            self.fit_step = max(1.e-7, min(0.1, fit_step))            
+        if max_nfev is not None:
+            self.max_nfev = max(200, min(12000, max_nfev))            
+
         self.mca = mca
         work_energy = 1.0*mca.energy
         work_counts = 1.0*mca.counts
@@ -569,8 +578,9 @@ class XRF_Model:
         tol = self.fit_toler
         self.fit_in_progress = True
         self.result = minimize(self.__resid, self.params, kws=userkws,
-                               method='leastsq', maxfev=2000, scale_covar=True,
-                               gtol=tol, ftol=tol, epsfcn=1.e-5)
+                               method='leastsq', maxfev=self.max_nfev,
+                               scale_covar=True,
+                               gtol=tol, ftol=tol, epsfcn=self.fit_step)
 
         self.fit_report = fit_report(self.result, min_correl=0.5)
         pars = self.result.params
