@@ -410,19 +410,19 @@ class AMSCIFDB():
         tab = self.tables[table]
         if '"' in name:
             name = name.replace('"', '\"')
-        rows = self.execall(tab.select(tab.c.name==name))
+        rows = self.execall(tab.select().where(tab.c.name==name))
         if len(rows) == 0:
             if not add:
                 return None
             self.insert(tab, name=name)
-            rows = self.execall(tab.select(tab.c.name==name))
+            rows = self.execall(tab.select().where(tab.c.name==name))
         return rows[0]
 
     def get_spacegroup(self, hm_name):
         """get row from spacegroups table by HM notation.  See add_spacegroup()
         """
         tab = self.tables['spacegroups']
-        rows = self.execall(tab.select(tab.c.hm_notation==hm_name))
+        rows = self.execall(tab.select().where(tab.c.hm_notation==hm_name))
         if len(rows) >0:
             return rows[0]
         return None
@@ -462,7 +462,7 @@ class AMSCIFDB():
         if id is not None:
             args.append(tab.c.id==id)
 
-        rows = self.execall(tab.select(and_(*args)))
+        rows = self.execall(tab.select().where(and_(*args)))
         if len(rows) > 0:
             out = []
             authtab = self.tables['authors']
@@ -718,7 +718,7 @@ class AMSCIFDB():
         """get Cif Structure object """
         tab = self.tables['cif']
 
-        cif = self.execone(tab.select(tab.c.id==cif_id))
+        cif = self.execone(tab.select().where(tab.c.id==cif_id))
         if cif is None:
             return
 
@@ -727,8 +727,8 @@ class AMSCIFDB():
         tab_pa   = self.tables['publication_authors']
         tab_min  = self.tables['minerals']
         tab_sp   = self.tables['spacegroups']
-        mineral  = self.execone(tab_min.select(tab_min.c.id==cif.mineral_id))
-        sgroup   = self.execone(tab_sp.select(tab_sp.c.id==cif.spacegroup_id))
+        mineral  = self.execone(tab_min.select().where(tab_min.c.id==cif.mineral_id))
+        sgroup   = self.execone(tab_sp.select().where(tab_sp.c.id==cif.spacegroup_id))
         hm_symbol = sgroup.hm_notation
         if '%var' in hm_symbol:
             hm_symbol = hm_symbol.split('%var')[0]
@@ -937,7 +937,7 @@ class AMSCIFDB():
         if full_occupancy:
             good = []
             for cif_id in matches:
-                cif = self.execone(tabcif.select(tabcif.c.id==cif_id))
+                cif = self.execone(tabcif.select().where(tabcif.c.id==cif_id))
                 occ = get_optarray(getattr(cif, 'atoms_occupancy'))
                 if occ in ('0', 0, None):
                     good.append(cif_id)
