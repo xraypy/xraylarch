@@ -312,7 +312,7 @@ class AMSCIFDB():
 
         ciftab = self.tables['cif']
         if 'hkls' not in ciftab.columns and not read_only:
-            self.engine.execute('alter table cif add column hkls text')
+            self.session.execute(text('alter table cif add column hkls text'))
             self.close()
             self.connect(dbname, read_only=read_only)
             time.sleep(0.1)
@@ -333,7 +333,7 @@ class AMSCIFDB():
             self.session.flush = readonly_flush
 
         self.metadata = MetaData()
-        self.metadata.reflect(self.engine)
+        self.metadata.reflect(bind=self.engine)
         self.tables = self.metadata.tables
         self.cif_elems = None
 

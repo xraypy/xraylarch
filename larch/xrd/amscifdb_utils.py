@@ -36,8 +36,8 @@ def isAMSCIFDB(dbname):
     result = False
     try:
         engine = make_engine(dbname)
-        meta = MetaData(engine)
-        meta.reflect()
+        meta = MetaData()
+        meta.reflect(bind=engine)
         result = all([t in meta.tables for t in _tables])
     except:
         pass
