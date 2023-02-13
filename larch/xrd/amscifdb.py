@@ -35,7 +35,8 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import numpy as np
 
 from sqlalchemy import MetaData, create_engine, func, text, and_, Table
-from sqlalchemy.sql import select
+from sqlalchemy import __version__ as sqla_version
+from sqlalchemy.sql import select as sqla_select
 from sqlalchemy.orm import sessionmaker
 
 try:
@@ -53,6 +54,7 @@ from .cif2feff import cif2feffinp
 from ..utils import isotime
 from ..site_config import user_larchdir
 from .. import logger
+from larch.utils.strutils import version_ge
 
 CifPublication = namedtuple('CifPublication', ('id', 'journalname', 'year',
                                             'volume', 'page_first',
@@ -63,6 +65,17 @@ AMSCIF_TRIM = 'amcsd_cif1.db'
 AMSCIF_FULL = 'amcsd_cif2.db'
 SOURCE_URLS = ('https://docs.xrayabsorption.org/databases/',
                'https://millenia.cars.aps.anl.gov/xraylarch/downloads/')
+
+
+def select(*args):
+    """wrap sqlalchemy select for version 1.3 and 2.0"""
+    # print("SELECT ", args, type(args))
+    # print(sqla_version, version_ge(sqla_version, '1.4.0'))
+    if version_ge(sqla_version, '1.4.0'):
+        return sqla_select(*args)
+    else:
+        return sqla_select(tuple(args))
+
 
 def get_nonzero(thing):
     try:
@@ -649,7 +662,8 @@ class AMSCIFDB():
 
         # check again for this cif id (must match CIF AMS id and formula
         tabcif = self.tables['cif']
-        this = self.execone(select(tabcif.c.id, tabcif.c.formula).where(tabcif.c.id==int(cif_id)))
+        this = self.execone(select(tabcif.c.id, tabcif.c.formula
+                               ).where(tabcif.c.id==int(cif_id)))
         if this is not None:
             _cid, _formula = this
             if formula.replace(' ', '') == _formula.replace(' ', ''):
@@ -882,8 +896,10 @@ class AMSCIFDB():
                 pattern = journal_name.replace('*', '.*').replace('..*', '.*')
                 new_matches = []
                 for c in matches:
-                    pub_id = self.execone(select(tabcif.c.publication_id).where(tabcif.c.id==c))
-                    this_journal = self.execone(select(tabpub.c.journalname).where(tabpub.c.id==pub_id))
+                    pub_id = self.execone(select(tabcif.c.publication_id
+                                             ).where(tabcif.c.id==c))
+                    this_journal = self.execone(select(tabpub.c.journalname
+                                                   ).where(tabpub.c.id==pub_id))
                     if re.search(pattern,  this_journal, flags=re.IGNORECASE) is not None:
                         new_matches.append[c]
                 matches = new_matches
