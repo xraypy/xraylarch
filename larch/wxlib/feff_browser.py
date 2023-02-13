@@ -145,7 +145,7 @@ class FeffResultsPanel(wx.Panel):
     """ present Feff results """
     def __init__(self, parent=None, feffresult=None, path_importer=None, xasmain=None,
                  _larch=None):
-        wx.Panel.__init__(self, parent, -1, size=(650, 650))
+        wx.Panel.__init__(self, parent, -1, size=(850, 650))
         self.parent = parent
         self.xasmain = xasmain
         self.path_importer = path_importer
@@ -154,7 +154,7 @@ class FeffResultsPanel(wx.Panel):
         self.report_frame = None
 
         self.dvc = dv.DataViewCtrl(self, style=DVSTYLE)
-        self.dvc.SetMinSize((650, 350))
+        self.dvc.SetMinSize((825, 350))
 
         self.model = FeffPathsModel(None, with_use=callable(path_importer))
         self.dvc.AssociateModel(self.model)
@@ -227,11 +227,11 @@ class FeffResultsPanel(wx.Panel):
 
         pack(panel, sizer)
 
-        columns = [('Feff File',   85, 'text'),
-                   ('R (\u212B)',  55, 'text'),
-                   ('# legs',      55, 'text'),
-                   ('# paths',     55, 'text'),
-                   ('Importance',  80, 'text')]
+        columns = [('Feff File',   125, 'text'),
+                   ('R (\u212B)',   75, 'text'),
+                   ('# legs',       55, 'text'),
+                   ('# paths',      55, 'text'),
+                   ('Importance',  100, 'text')]
         if callable(self.path_importer):
             columns.append(('Use',     50, 'bool'))
         columns.append(('Geometry',   175, 'text'))
@@ -358,8 +358,11 @@ class FeffResultsPanel(wx.Panel):
         for i, text in enumerate(feffresult.header.split('\n')[:nhead]):
             self.feff_header[i].SetLabel(text)
         self.model.set_data(feffresult.paths)
-        self.dvc.EnsureVisible(self.model.GetItem(0))
-        self.dvc.SetCurrentItem(self.dvc.GetTopItem())
+        try:
+            self.dvc.EnsureVisible(self.model.GetItem(0))
+            self.dvc.SetCurrentItem(self.dvc.GetTopItem())
+        except:
+            pass
 
 
 class FeffResultsFrame(wx.Frame):

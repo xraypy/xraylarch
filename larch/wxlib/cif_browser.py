@@ -650,7 +650,10 @@ class CIFFrame(wx.Frame):
             t0 = time.time()
             sfact = self.current_cif.get_structure_factors()
             print("got structure factors %.2f sec" % (time.time()-t0))
-            self.cifdb.set_hkls(self.current_cif.ams_id, sfact.hkls)
+            try:
+                self.cifdb.set_hkls(self.current_cif.ams_id, sfact.hkls)
+            except:
+                pass
 
             max_ = sfact.intensity.max()
             mask = np.where(sfact.intensity>max_/10.0)[0]
