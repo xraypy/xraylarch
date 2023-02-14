@@ -169,9 +169,17 @@ class Epics_Xspress3(object):
     def get_deadtime(self, mca=1):
         """return % deadtime"""
         try:
-            dval = self._xsp3.get("C%i:DeadTime_RBV" % (mca))
+            dval = self._xsp3.get("C%iSCA:10:Value_RBV" % (mca))
         except:
             dval = 0.0
+        return dval
+
+    def get_dtfactor(self, mca=1):
+        """return deadtime correction factor"""
+        try:
+            dval = self._xsp3.get("C%iSCA:9:Value_RBV" % (mca))
+        except:
+            dval = 1.0
         return dval
 
     def set_usesum(self, use_sum=True):
@@ -220,6 +228,7 @@ class Epics_Xspress3(object):
 
         thismca = MCA(counts=counts, offset=0.0, slope=0.01)
         thismca.energy = self.get_energy()
+        thismca.dt_factor = self.get_dtfactor()
         thismca.counts = counts
         thismca.quad   = 0.0
         thismca.rois = []
@@ -410,6 +419,14 @@ class Epics_MultiXMAP(object):
     def get_deadtime(self, mca=1):
         """return deadtime info"""
         return self._xmap.get("DeadTime")
+
+    def get_dtfactor(self, mca=1):
+        """return deadtime correction factor"""
+        ocr = self._xmap.get("OutputCountRate")
+        icr = self._xmap.get("InputCountRate")
+        if icr < 1 or ocr < 1:
+            return 1
+        return icr/ocr
 
     def set_dwelltime(self, dtime=0):
         if dtime <= 0.1:
