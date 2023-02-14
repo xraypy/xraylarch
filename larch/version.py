@@ -54,9 +54,10 @@ def version_data(with_libraries=False):
 
     if with_libraries:
         for modname in ('numpy', 'scipy', 'matplotlib', 'h5py', 'sklearn',
-                    'skimage', 'fabio', 'pyFAI', 'PIL', 'imageio',
-                    'silx', 'tomopy', 'pymatgen.core', 'numdifftools',
-                    'xraydb', 'lmfit', 'asteval', 'wx', 'wxmplot'):
+                        'skimage', 'sqlalchemy', 'fabio', 'pyFAI', 'PIL',
+                        'imageio', 'silx', 'tomopy', 'pymatgen.core',
+                        'numdifftools', 'xraydb', 'lmfit', 'asteval', 'wx',
+                        'wxmplot'):
             vers = "not installed"
             if modname not in sys.modules:
                 try:
