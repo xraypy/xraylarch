@@ -518,7 +518,7 @@ class AMSCIFDB():
     def add_cifdata(self, cif_id, mineral_id, publication_id,
                     spacegroup_id, formula=None, compound=None,
                     formula_title=None, pub_title=None, a=None, b=None,
-                    c=None, alpha=None, beta=None, gamma=None, url=None,
+                    c=None, alpha=None, beta=None, gamma=None, url='',
                     cell_volume=None, crystal_density=None,
                     atoms_sites=None, atoms_x=None, atoms_y=None,
                     atoms_z=None, atoms_occupancy=None, atoms_u_iso=None,
@@ -553,7 +553,7 @@ class AMSCIFDB():
         return self.get_cif(cif_id)
 
 
-    def add_ciffile(self, filename, cif_id=None, url=''):
+    def add_ciffile(self, filename, cif_id=None, url='', debug=False):
         if not HAS_CIFPARSER:
             raise ValueError("CifParser from pymatgen not available. Try 'pip install pymatgen'.")
         cif = CifParser(filename)
@@ -671,34 +671,34 @@ class AMSCIFDB():
             else:
                 cif_id = self.next_cif_id()
 
-        print("Will add Cif Data !" )
-        print(cif_id, mineral.id, pub.id, sgroup.id,
-              formula)
-        print(compound,
-              dat.get('_amcsd_formula_title', '<missing>'),
-              dat.get('_publ_section_title', '<missing>'),
-              json.dumps(dat['_atom_site_label']))
-        print(put_optarray(dat, '_atom_site_fract_x'),
-              put_optarray(dat, '_atom_site_fract_y'),
-              put_optarray(dat, '_atom_site_fract_z'),
-              put_optarray(dat, '_atom_site_occupancy'),
-              put_optarray(dat, '_atom_site_U_iso_or_equiv'))
-        print( json.dumps(dat.get('_atom_site_aniso_label', '<missing>')))
-        print(put_optarray(dat, '_atom_site_aniso_U_11'),
-              put_optarray(dat, '_atom_site_aniso_U_22'),
-              put_optarray(dat, '_atom_site_aniso_U_33'),
-              put_optarray(dat, '_atom_site_aniso_U_12'),
-              put_optarray(dat, '_atom_site_aniso_U_13'),
-              put_optarray(dat, '_atom_site_aniso_U_23'))
-        print('cell ', dat['_cell_length_a'],
-              dat['_cell_length_b'],
-              dat['_cell_length_c'],
-              dat['_cell_angle_alpha'],
-              dat['_cell_angle_beta'],
-              dat['_cell_angle_gamma'],
-              dat.get('_cell_volume', -1),
-              density,
-              url)
+        if debug:
+            print("Will add Cif Data !" )
+            print(cif_id, mineral.id, pub.id, sgroup.id,
+                  formula)
+            print(compound,
+                  dat.get('_amcsd_formula_title', '<missing>'),
+                  dat.get('_publ_section_title', '<missing>'),
+                  json.dumps(dat['_atom_site_label']))
+            print(put_optarray(dat, '_atom_site_fract_x'),
+                  put_optarray(dat, '_atom_site_fract_y'),
+                  put_optarray(dat, '_atom_site_fract_z'),
+                  put_optarray(dat, '_atom_site_occupancy'),
+                  put_optarray(dat, '_atom_site_U_iso_or_equiv'))
+            print( json.dumps(dat.get('_atom_site_aniso_label', '<missing>')))
+            print(put_optarray(dat, '_atom_site_aniso_U_11'),
+                  put_optarray(dat, '_atom_site_aniso_U_22'),
+                  put_optarray(dat, '_atom_site_aniso_U_33'),
+                  put_optarray(dat, '_atom_site_aniso_U_12'),
+                  put_optarray(dat, '_atom_site_aniso_U_13'),
+                  put_optarray(dat, '_atom_site_aniso_U_23'))
+            print('cell ', dat['_cell_length_a'],
+                  dat['_cell_length_b'],
+                  dat['_cell_length_c'],
+                  dat['_cell_angle_alpha'],
+                  dat['_cell_angle_beta'],
+                  dat['_cell_angle_gamma'],
+                  dat.get('_cell_volume', -1),
+                  density, url)
 
         self.add_cifdata(cif_id, mineral.id, pub.id, sgroup.id,
                          formula=formula, compound=compound,

@@ -1845,6 +1845,10 @@ class RemoveDialog(wx.Dialog):
 
 class LoadSessionDialog(wx.Frame):
     """Read, show data from saved larch session"""
+
+    xasgroups_name = '_xasgroups'
+    feffgroups_name = ['_feffpaths', '_feffcache']
+
     def __init__(self, parent, session, filename, controller, **kws):
         self.parent = parent
         self.session = session
@@ -1889,12 +1893,20 @@ class LoadSessionDialog(wx.Frame):
         panel = GridPanel(rightpanel, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
         self.wids = wids = {}
 
-
         top_message = 'Larch Session File: No XAFS Groups'
         symtable = controller.symtable
-        _xasgroups = getattr(symtable, '_xasgroups', None)
 
-        self.allgroups = session.symbols.get('_xasgroups', {})
+        self.allgroups = session.symbols.get(self.xasgroups_name, {})
+        self.extra_groups = []
+        for key, val in session.symbols.items():
+            if key == self.xasgroups_name or key in self.feffgroups_name:
+                continue
+            if key in self.allgroups:
+                continue
+            if hasattr(val, 'energy') and hasattr(val, 'mu'):
+                self.allgroups[key] = key
+                self.extra_groups.append(key)
+
 
         checked = []
         for fname, gname in self.allgroups.items():
@@ -1904,8 +1916,8 @@ class LoadSessionDialog(wx.Frame):
         self.grouplist.SetCheckedStrings(checked)
 
         group_names = list(self.allgroups.values())
-        group_names += ['_xasgroups', '_feffpaths', '_feffcache']
-
+        group_names.append(self.xasgroups_name)
+        group_names.extend(self.feffgroups_name)
 
         wids['view_conf'] = Button(panel, 'Show Session Configuration',
                                      size=(200, 30), action=self.onShowConfig)
@@ -1995,6 +2007,8 @@ class LoadSessionDialog(wx.Frame):
             ydat = getattr(grp, 'chi', xdef)
             ydat = ydat*xdat*xdat
             xlabel = plotlabels.chikw.format(2)
+
+        print(" PLOT GROUP ", gname, fname, grp, dir(grp), len(xdat), len(ydat))
         if len(ydat) > 1:
             self.plotpanel.plot(xdat, ydat, xlabel=xlabel,
                                 ylabel=ylabel, title=fname)
@@ -2030,20 +2044,26 @@ class LoadSessionDialog(wx.Frame):
             if fname not in sel_groups:
                 ignore.append(gname)
 
-        fname = self.filename.replace('\\','/')        
+        fname = self.filename.replace('\\','/')
         if fname.endswith('/'):
             fname = fname[:-1]
-        lcmd = f"load_session('{fname}')"
+        lcmd = [f"load_session('{fname}'"]
         if len(ignore) > 0:
             ignore = repr(ignore)
-            lcmd = f"load_session('{fname}', ignore_groups={ignore})"
+            lcmd.append(f", ignore_groups={ignore}")
+        if len(self.extra_groups) > 0:
+            extra = repr(self.extra_groups)
+            lcmd.append(f", include_xasgroups={extra}")
+
+        lcmd = ''.join(lcmd) + ')'
 
         cmds = ["# Loading Larch Session with ", lcmd, '######']
 
         self.controller.larch.eval('\n'.join(cmds))
 
         last_fname = None
-        for key, val in self.controller.symtable._xasgroups.items():
+        xasgroups = getattr(self.controller.symtable, self.xasgroups_name, {})
+        for key, val in xasgroups.items():
             if key not in self.controller.filelist.GetItems():
                 self.controller.filelist.Append(key)
                 last_fname = key

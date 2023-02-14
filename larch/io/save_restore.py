@@ -226,13 +226,15 @@ def read_session(fname):
     return SessionStore(config, cmd_history, symbols)
 
 
-def load_session(fname, ignore_groups=None, _larch=None, verbose=False):
+def load_session(fname, ignore_groups=None, include_xasgroups=None, _larch=None, verbose=False):
     """load all data from a Larch Session File into current larch session,
     merging into existing groups as appropriate (see Notes below)
 
     Arguments:
        fname  (str):  name of session file
        ignore_groups (list of strings): list of symbols to not import
+       include_xasgroups (list of strings): list of symbols to import as XAS spectra,
+                           even if not expicitly set in `_xasgroups`
        verbose (bool): whether to print warnings for overwrites [False]
     Returns:
         None
@@ -254,6 +256,8 @@ def load_session(fname, ignore_groups=None, _larch=None, verbose=False):
 
     if ignore_groups is None:
         ignore_groups = []
+    if include_xasgroups is None:
+        include_xasgroups = []
 
     # special groups to merge into existing session:
     #  _feffpaths, _feffcache, _xasgroups
@@ -290,7 +294,7 @@ def load_session(fname, ignore_groups=None, _larch=None, verbose=False):
                 s_xasg_inv = invert_dict(s_xasgroups)
 
             continue
-        if sym in c_xas_gnames:
+        if sym in c_xas_gnames or sym in inclde_xasgroups:
             newsym = unique_name(sym, c_xas_gnames)
             c_xas_gnames.append(newsym)
             if sym in s_xasgroups.values():
