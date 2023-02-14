@@ -2677,7 +2677,7 @@ class XRDCIF(object):
                         hukvlw = hkl[0]*uvw[0]+hkl[1]*uvw[1]+hkl[2]*uvw[2]## (hu+kv+lw)
                         Fhkl = Fhkl + (np.exp(2*1j*PI*hukvlw)).real
             if abs(Fhkl) > 1e-5:
-                F2hkl[i] = np.float(Fhkl**2)
+                F2hkl[i] = np.float64(Fhkl**2)
 
         ## removes zero value structure factors
         ii = ii*(F2hkl > 0.001)

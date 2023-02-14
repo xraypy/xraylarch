@@ -51,7 +51,7 @@ class MCA(Group):
 
     Attributes:
     -----------
-    * self.label       = 'mca'  # label for the mca 
+    * self.label       = 'mca'  # label for the mca
     * self.nchans      = 2048   # number of mca channels
     * self.counts      = None   # MCA data
     * self.pileup      = None   # predicted pileup
@@ -277,7 +277,7 @@ class MCA(Group):
         corrected counts...
         """
         if correct:
-            return  (self.dt_factor * self.counts).astype(np.int)
+            return  (self.dt_factor * self.counts).astype(np.int32)
         else:
             return self.counts
 
@@ -285,7 +285,7 @@ class MCA(Group):
         """
         Returns array of energy for each channel in the MCA spectra.
         """
-        chans = np.arange(self.nchans, dtype=np.float)
+        chans = np.arange(self.nchans, dtype=np.float64)
         self.energy = self.offset +  chans * (self.slope + chans * self.quad)
         return self.energy
 

@@ -221,11 +221,11 @@ class XrayBackground:
         max_counts = max(scratch)
 
         # Fit functions which come up from below
-        bckgnd = np.arange(nchans, dtype=np.float) - HUGE
+        bckgnd = np.arange(nchans, dtype=np.float64) - HUGE
 
         denom = max(TINY, (width / (2. * slope)**exponent))
 
-        indices     = np.arange(nchans*2+1, dtype=np.float) - nchans
+        indices     = np.arange(nchans*2+1, dtype=np.float64) - nchans
         power_funct = indices**exponent  * (REFERENCE_AMPL / denom)
         power_funct = np.compress((power_funct <= max_counts), power_funct)
         max_index   = int(len(power_funct)/2 - 1)
@@ -235,7 +235,7 @@ class XrayBackground:
                 # Find slope of tangent to spectrum at this channel
                 chan0  = max((chan - MAX_TANGENT), 0)
                 chan1  = min((chan + MAX_TANGENT), (nchans-1))
-                denom  = chan - np.arange(chan1 - chan0 + 1, dtype=np.float)
+                denom  = chan - np.arange(chan1 - chan0 + 1, dtype=np.float64)
                 # is this correct?
                 denom   = max(max(denom), 1)
                 tan_slope = (scratch[chan] - scratch[chan0:chan1+1]) / denom

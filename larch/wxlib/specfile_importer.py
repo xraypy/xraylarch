@@ -129,7 +129,7 @@ class AddColumnsFrame(wx.Frame):
                 sel.append(int(name[4:]))
         self.selected_columns = np.array(sel)
         narr, npts = self.group.raw.data.shape
-        ydat = np.zeros(npts, dtype=np.float)
+        ydat = np.zeros(npts, dtype=np.float64)
         for i in sel:
             ydat += self.group.raw.data[i, :]
         return ydat

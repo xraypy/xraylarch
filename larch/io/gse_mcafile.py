@@ -99,7 +99,7 @@ class GSEMCA_File(Group):
             if dt_correct:
                 mdat = mdat * mca.dt_factor
             dat = dat + mdat
-        return dat.astype(np.int)
+        return dat.astype(np.int32)
 
     def predict_pileup(self, scale=None):
         """predict pileup for an MCA spectra from its auto-correlation.

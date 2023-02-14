@@ -132,7 +132,7 @@ class AddColumnsFrame(wx.Frame):
                 sel.append(int(name[3:]))
         self.selected_columns = np.array(sel)
         narr, npts = self.group.raw.data.shape
-        ydat = np.zeros(npts, dtype=np.float)
+        ydat = np.zeros(npts, dtype=np.float64)
         for i in sel:
             ydat += self.group.raw.data[i, :]
         return ydat
@@ -816,8 +816,8 @@ class ColumnDataFileFrame(wx.Frame) :
 
             ref_filename = self.wid_reffilename.GetValue()
             ref_groupname = fix_varname(self.wid_refgroupname.GetValue())
-            
-            buff.append("# reference group")           
+
+            buff.append("# reference group")
             buff.append("{refgroup} = %s" % read_cmd)
             buff.append("{refgroup}.path = '{path}'")
             buff.append("{refgroup}.is_frozen = False")

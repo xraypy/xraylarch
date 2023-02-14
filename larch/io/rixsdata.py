@@ -38,7 +38,7 @@ def _restore_from_array(dictin):
         else:
             if isinstance(v[()], np.str):
                 dictin[k] = np.array_str(v)
-            if isinstance(v[()], np.float):
+            if isinstance(v[()], (np.float64, np.float32)):
                 dictin[k] = copy.deepcopy(v.item())
 
 
