@@ -283,9 +283,6 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         else:
             self.det = Epics_MultiXMAP(prefix=prefix, nmca=nmca)
         time.sleep(0.05)
-        # print(" Got detector ")
-        # for name, p in self.det._xsp3._pvs.items():
-        #    print(p, p._auto_monitor)
 
     def show_mca(self, init=False):
         self.needs_newplot = False
@@ -312,9 +309,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             i = self.wids['roilist'].GetStrings().index(roiname)
             self.wids['roilist'].EnsureVisible(i)
             self.onROI(label=roiname)
-        dtime = self.det.get_deadtime(mca=self.det_fore)
-        if dtime is not None:
-            self.wids['deadtime'].SetLabel("%.1f" % dtime)
+        deadtime = self.det.get_deadtime(mca=self.det_fore)
+        if deadtime is not None:
+            self.wids['deadtime'].SetLabel("%.1f" % deadtime)
         self.SetTitle("%s: %s" % (self.main_title, title))
         self.needs_newplot = False
 
