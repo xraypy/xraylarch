@@ -133,15 +133,10 @@ class Xspress3(Device, ADFileMixin, Xspress3BaseMixin):
             self.add_pv("%sdet1:%s" % (prefix, attr), attr)
         for i in range(nmca):
             imca = i+1
-            for j in range(8):
+            for j in range(10):
                 isca = j+1
                 attr="C%iSCA%i"% (imca, isca)
-                # self.add_pv("%s%s:Value_RBV" % (prefix, attr), attr, auto_monitor=False)
-            # for attr in ('TSNumPoints', 'TSControl'):
-            #     self.add_pv("%sMCA%iROI:%s" % (prefix, imca, attr),
-            #                 "MCA%i%s" % (imca, attr))
-                # self.add_pv("%sC%iSCA:%s" % (prefix, imca, attr),
-                #             "SCA%i%s" % (imca, attr))
+
         time.sleep(0.05)
 
     def TimeSeriesCaptureOn(self, npts=None):
