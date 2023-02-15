@@ -658,7 +658,7 @@ class AMSCIFDB():
 
         density = dat.get('_exptl_crystal_density_meas', None)
         if density is None:
-            density = dat.get('_exptl_crystal_density_diffrn', None)
+            density = dat.get('_exptl_crystal_density_diffrn', -1.0)
 
         if cif_id is None:
             cif_id = dat.get('_database_code_amcsd', None)
