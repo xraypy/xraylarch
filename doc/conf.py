@@ -42,7 +42,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'xraylarch'
-author = 'Matthewsdoc Newville'
+author = 'Matthew Newville'
 copyright = 'Matthew Newville, The University of Chicago, 2022'
 
 numfig = True
