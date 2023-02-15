@@ -66,6 +66,14 @@ AMSCIF_FULL = 'amcsd_cif2.db'
 SOURCE_URLS = ('https://docs.xrayabsorption.org/databases/',
                'https://millenia.cars.aps.anl.gov/xraylarch/downloads/')
 
+CIF_TEXTCOLUMNS = ('formula', 'compound', 'pub_title', 'formula_title', 'a',
+                   'b', 'c', 'alpha', 'beta', 'gamma', 'cell_volume',
+                   'crystal_density', 'atoms_sites', 'atoms_x', 'atoms_y',
+                   'atoms_z', 'atoms_occupancy', 'atoms_u_iso',
+                   'atoms_aniso_label', 'atoms_aniso_u11', 'atoms_aniso_u22',
+                   'atoms_aniso_u33', 'atoms_aniso_u12', 'atoms_aniso_u13',
+                   'atoms_aniso_u23', 'qdat','url', 'hkls')
+
 
 def select(*args):
     """wrap sqlalchemy select for version 1.3 and 2.0"""
@@ -324,14 +332,14 @@ class AMSCIFDB():
         self.connect(dbname, read_only=read_only)
 
         ciftab = self.tables['cif']
-        if 'hkls' not in ciftab.columns and not read_only:
-            self.session.execute(text('alter table cif add column hkls text'))
-            self.close()
-            self.connect(dbname, read_only=read_only)
-            time.sleep(0.1)
-            self.insert('version', tag='with hkls', date=isotime(),
-                        notes='added hkls column to cif table')
-            print("Added hkls column to cif table")
+        for colname in CIF_TEXTCOLUMNS:
+            if colname not in ciftab.columns and not read_only:
+                self.session.execute(text(f'alter table cif add column {colname} text'))
+                self.close()
+                self.connect(dbname, read_only=read_only)
+                time.sleep(0.1)
+                self.insert('version', tag=f'with {colname}', date=isotime(),
+                            notes=f'added {colname} column to cif table')
 
 
     def connect(self, dbname, read_only=False):
@@ -672,33 +680,36 @@ class AMSCIFDB():
                 cif_id = self.next_cif_id()
 
         if debug:
-            print("Will add Cif Data !" )
-            print(cif_id, mineral.id, pub.id, sgroup.id,
-                  formula)
-            print(compound,
+            print("##CIF Would add Cif Data !" )
+            print(cif_id, mineral.id, pub.id, sgroup.id)
+            print("##CIF formuala / compound: ", formula, compound)
+            print("titles: ",
                   dat.get('_amcsd_formula_title', '<missing>'),
-                  dat.get('_publ_section_title', '<missing>'),
-                  json.dumps(dat['_atom_site_label']))
-            print(put_optarray(dat, '_atom_site_fract_x'),
+                  dat.get('_publ_section_title', '<missing>'))
+            print("##CIF atom sites :", json.dumps(dat['_atom_site_label']))
+            print("##CIF locations : ",
+                  put_optarray(dat, '_atom_site_fract_x'),
                   put_optarray(dat, '_atom_site_fract_y'),
                   put_optarray(dat, '_atom_site_fract_z'),
                   put_optarray(dat, '_atom_site_occupancy'),
                   put_optarray(dat, '_atom_site_U_iso_or_equiv'))
-            print( json.dumps(dat.get('_atom_site_aniso_label', '<missing>')))
-            print(put_optarray(dat, '_atom_site_aniso_U_11'),
+            print("##CIF aniso label : ",
+                  json.dumps(dat.get('_atom_site_aniso_label', '<missing>')))
+            print("##CIF aniso : ",
+                  put_optarray(dat, '_atom_site_aniso_U_11'),
                   put_optarray(dat, '_atom_site_aniso_U_22'),
                   put_optarray(dat, '_atom_site_aniso_U_33'),
                   put_optarray(dat, '_atom_site_aniso_U_12'),
                   put_optarray(dat, '_atom_site_aniso_U_13'),
                   put_optarray(dat, '_atom_site_aniso_U_23'))
-            print('cell ', dat['_cell_length_a'],
+            print('##CIF cell data: ', dat['_cell_length_a'],
                   dat['_cell_length_b'],
                   dat['_cell_length_c'],
                   dat['_cell_angle_alpha'],
                   dat['_cell_angle_beta'],
-                  dat['_cell_angle_gamma'],
-                  dat.get('_cell_volume', -1),
-                  density, url)
+                  dat['_cell_angle_gamma'])
+            print("##CIF volume/ density ", dat.get('_cell_volume', -1),  density)
+            print("##CIF  url : ", type(url), url)
 
         self.add_cifdata(cif_id, mineral.id, pub.id, sgroup.id,
                          formula=formula, compound=compound,
