@@ -214,7 +214,7 @@ class XDIFile(object):
             dspacing = monodat['d_spacing'].strip()
             dunits = 'Angstroms'
             if ' ' in dspacing:
-                dspacing, dunits = dspacing.split(' ', 1)
+                dspacing, dunits = dspacing.split(None, 1)
             self.dspacing = float(dspacing)
             self.dspacing_units = dunits
 

@@ -147,7 +147,7 @@ class FeffDatFile(Group):
                     self.shell = words[6]
                 self.potentials.append((ipot, iz, rmt, rnm))
             elif mode == 'header' and line.startswith('Gam_ch'):
-                words  = line.replace('=', ' ').split(' ', 2)
+                words  = line.replace('=', ' ').split(None, 2)
                 self.gam_ch = float(words[1])
                 self.exch   = words[2]
             elif mode == 'header' and line.startswith('Mu'):

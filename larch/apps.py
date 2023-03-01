@@ -58,7 +58,7 @@ def fix_darwin_shebang(script):
     pyapp = os.path.join(sys.prefix, 'python.app', 'Contents', 'MacOS', 'python')
     pyapp = os.path.normpath(pyapp)
     # strip off any arguments:
-    script = script.split(' ', 1)[0]
+    script = script.split(None, 1)[0]
     if not os.path.exists(script):
         script = os.path.join(sys.exec_prefix, 'bin', script)
 

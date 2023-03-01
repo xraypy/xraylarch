@@ -177,7 +177,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.environ = []
             for line in textlines:
                 line = line[:-1].replace('\t', ' ')
-                pvname, desc = line.split(' ', 1)
+                pvname, desc = line.split(None, 1)
                 desc = desc.strip()
                 self.environ.append((pvname, desc))
 

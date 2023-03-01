@@ -95,7 +95,7 @@ def get_key(text):
     """return keyword: first word of text,
     isolating keywords followed by '(' and ':' """
     t =  text.replace('(', ' (').replace(':', ' :').strip()
-    return t.split(' ', 1)[0].strip()
+    return t.split(None, 1)[0].strip()
 
 def block_start(text):
     """return whether a complete-extended-line of text
@@ -118,7 +118,7 @@ def block_end(text):
         n = 3
         if txt.startswith('#end'):
             n = 4
-        key = txt[n:].split(' ', 1)[0].strip()
+        key = txt[n:].split(None, 1)[0].strip()
         if key in STARTKEYS:
             return key
     return False

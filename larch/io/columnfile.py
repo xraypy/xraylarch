@@ -333,6 +333,7 @@ def read_ascii(filename, labels=None, simple_labels=False,
     if labels is None and not simple_labels:
         bldat = guess_beamline(headers)(headers)
         labels = bldat.get_array_labels()
+
         if getattr(bldat, 'energy_units', 'eV') != 'eV':
             group.energy_units = bldat.energy_units
         if getattr(bldat, 'energy_column', 1) != 1:

@@ -328,7 +328,7 @@ def parse_perlathena(text, filename):
                 header.append(t)
             continue
         is_header = False
-        key = t.split(' ')[0].strip()
+        key = t.split()[0].strip()
         key = key.replace('$', '').replace('@', '').replace('%', '').strip()
         if key == 'old_group':
             raw['name'] = aeval(text2list(t))
@@ -429,7 +429,7 @@ def parse_perlathena_old(text, filename):
                 header.append(t)
             continue
         is_header = False
-        key = t.split(' ')[0].strip()
+        key = t.split()[0].strip()
         key = key.replace('$', '').replace('@', '').replace('%', '').strip()
         if key == 'old_group':
             raw['name'] = plarray2json(t)

@@ -38,7 +38,7 @@ def _parse_header(fname):
     header = {}
     for line in header_lines:
         if 'Analyzer.Energy' in line:
-            ene_line = line.split(' ')
+            ene_line = line.split()
             break
         else:
             ene_line = ['Analyzer.Energy:', '0', '', '||', '', '13XRM:ANA:Energy.VAL']  #: expected line

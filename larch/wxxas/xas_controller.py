@@ -158,7 +158,7 @@ class XASController():
                     if len(line) < 2 or line.startswith('#'):
                         continue
                     try:
-                        w = line[:-1].split(' ', maxsplit=1)
+                        w = line[:-1].split(None, maxsplit=1)
                         self.recentfiles.insert(0, (float(w[0]), w[1]))
                     except:
                         pass
