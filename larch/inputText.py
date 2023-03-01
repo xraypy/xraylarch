@@ -95,6 +95,8 @@ def get_key(text):
     """return keyword: first word of text,
     isolating keywords followed by '(' and ':' """
     t =  text.replace('(', ' (').replace(':', ' :').strip()
+    if len(t) == 0:
+        return ''
     return t.split(None, 1)[0].strip()
 
 def block_start(text):
