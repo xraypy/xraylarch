@@ -96,18 +96,13 @@ class GenericBeamlineData:
         lastline = "# "
         if len(self.headerlines) >= 1:
             lastline = self.headerlines[-1].strip()
+        print("---> GETARRAY ", lastline[:40])
         for cchars in ('#L', '#C', '#', 'C'):
             if lastline.startswith(cchars):
                 lastline = lastline[len(cchars):]
         for badchar in '\t,#@%&"\'':
             lastline = lastline.replace(badchar, ' ')
-        if len(self.headerlines) < 2:
-            try:
-                return self._set_labels(lastline.split(" "), ncolumns=ncolumns)
-            except Exception:
-                return None
-        else:
-            return self._set_labels(lastline.split(), ncolumns=ncolumns)
+        return self._set_labels(lastline.split(), ncolumns=ncolumns)
 
     def _set_labels(self, inlabels, ncolumns=None):
         """
