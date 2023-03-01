@@ -96,7 +96,6 @@ class GenericBeamlineData:
         lastline = "# "
         if len(self.headerlines) >= 1:
             lastline = self.headerlines[-1].strip()
-        print("---> GETARRAY ", lastline[:40])
         for cchars in ('#L', '#C', '#', 'C'):
             if lastline.startswith(cchars):
                 lastline = lastline[len(cchars):]
