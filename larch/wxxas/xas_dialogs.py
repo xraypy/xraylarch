@@ -1904,6 +1904,8 @@ class LoadSessionDialog(wx.Frame):
             if key in self.allgroups:
                 continue
             if hasattr(val, 'energy') and hasattr(val, 'mu'):
+                if key in self.allgroups.keys() or key in self.allgroups.values():
+                    continue
                 self.allgroups[key] = key
                 self.extra_groups.append(key)
 
@@ -2008,7 +2010,6 @@ class LoadSessionDialog(wx.Frame):
             ydat = ydat*xdat*xdat
             xlabel = plotlabels.chikw.format(2)
 
-        print(" PLOT GROUP ", gname, fname, grp, dir(grp), len(xdat), len(ydat))
         if len(ydat) > 1:
             self.plotpanel.plot(xdat, ydat, xlabel=xlabel,
                                 ylabel=ylabel, title=fname)
@@ -2033,7 +2034,6 @@ class LoadSessionDialog(wx.Frame):
         self.Destroy()
 
     def onImport(self, event=None):
-
         ignore = []
         for gname, chbox in self.overwrite_checkboxes.items():
             if not chbox.IsChecked():
@@ -2060,7 +2060,6 @@ class LoadSessionDialog(wx.Frame):
         cmds = ["# Loading Larch Session with ", lcmd, '######']
 
         self.controller.larch.eval('\n'.join(cmds))
-
         last_fname = None
         xasgroups = getattr(self.controller.symtable, self.xasgroups_name, {})
         for key, val in xasgroups.items():
