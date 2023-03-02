@@ -514,9 +514,9 @@ overwriting current arrays''')
         ngroup = self.controller.copy_group(fname, new_filename=new_fname)
 
         ensure_en_orig(ngroup)
-
-        ngroup.energy_shift = eshift
         ngroup.xdat = ngroup.energy = eshift + ngroup.energy_orig[:]
+        ngroup.energy_shift = 0
+        ngroup.energy_ref = ngroup.groupname
 
         ogroup = self.controller.get_group(fname)
         self.parent.onNewGroup(ngroup, journal=ogroup.journal)
