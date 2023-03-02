@@ -294,7 +294,7 @@ def load_session(fname, ignore_groups=None, include_xasgroups=None, _larch=None,
                 s_xasg_inv = invert_dict(s_xasgroups)
 
             continue
-        if sym in c_xas_gnames or sym in inclde_xasgroups:
+        if sym in c_xas_gnames or sym in include_xasgroups:
             newsym = unique_name(sym, c_xas_gnames)
             c_xas_gnames.append(newsym)
             if sym in s_xasgroups.values():
