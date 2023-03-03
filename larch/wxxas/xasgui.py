@@ -262,7 +262,7 @@ class XASFrame(wx.Frame):
 
         self.larch_buffer = parent
         if not isinstance(parent, LarchFrame):
-            self.larch_buffer = LarchFrame(_larch=_larch, 
+            self.larch_buffer = LarchFrame(_larch=_larch,
                                            parent=self,
                                            is_standalone=False,
                                            with_raise=False,
@@ -579,11 +579,11 @@ class XASFrame(wx.Frame):
         MenuItem(self, data_menu, "Smooth Data", "Smooth Data",
                  self.onSmoothData)
 
-        MenuItem(self, data_menu, "Rebin Data", "Rebin Data",
-                 self.onRebinData)
-
         MenuItem(self, data_menu, "Deconvolve Data",
                  "Deconvolution of Data",  self.onDeconvolveData)
+
+        MenuItem(self, data_menu, "Rebin Data", "Rebin Data",
+                 self.onRebinData)
 
         MenuItem(self, data_menu, "Correct Over-absorption",
                  "Correct Over-absorption",
@@ -994,26 +994,36 @@ before clearing"""
             self.controller.filelist.SetStringSelection(fname)
             self.controller.sync_xasgroups()
 
+    def has_datagroup(self):
+        return hasattr(self.controller.get_group(), 'energy')
+
     def onDeglitchData(self, event=None):
-        DeglitchDialog(self, self.controller).Show()
+        if self.has_datagroup():
+            DeglitchDialog(self, self.controller).Show()
 
     def onSmoothData(self, event=None):
-        SmoothDataDialog(self, self.controller).Show()
+        if self.has_datagroup():
+            SmoothDataDialog(self, self.controller).Show()
 
     def onRebinData(self, event=None):
-        RebinDataDialog(self, self.controller).Show()
+        if self.has_datagroup():
+            RebinDataDialog(self, self.controller).Show()
 
     def onCorrectOverAbsorptionData(self, event=None):
-        OverAbsorptionDialog(self, self.controller).Show()
+        if self.has_datagroup():
+            OverAbsorptionDialog(self, self.controller).Show()
 
     def onSpectraCalc(self, event=None):
-        SpectraCalcDialog(self, self.controller).Show()
+        if self.has_datagroup():
+            SpectraCalcDialog(self, self.controller).Show()
 
     def onEnergyCalibrateData(self, event=None):
-        EnergyCalibrateDialog(self, self.controller).Show()
+        if self.has_datagroup():
+            EnergyCalibrateDialog(self, self.controller).Show()
 
     def onDeconvolveData(self, event=None):
-        DeconvolutionDialog(self, self.controller).Show()
+        if self.has_datagroup():
+            DeconvolutionDialog(self, self.controller).Show()
 
     def onPrePeakLoad(self, event=None):
         idx, peakpage = self.get_nbpage('prepeak')

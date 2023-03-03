@@ -42,8 +42,10 @@ ELEM_LIST = ('H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na',
 
 EDGE_LIST = ('K', 'L3', 'L2', 'L1', 'M5', 'M4', 'M3')
 
+NORM_MU = 'Normalized \u03BC(E)'
+
 DEGLITCH_PLOTS = {'Raw \u03BC(E)': 'mu',
-                  'Normalized \u03BC(E)': 'norm',
+                  NORM_MU: 'norm',
                   '\u03c7(E)': 'chie',
                   '\u03c7(E)*(E-E_0)': 'chiew'}
 
@@ -119,9 +121,9 @@ class OverAbsorptionDialog(wx.Dialog):
 
         self.set_default_elem_edge(self.dgroup)
 
-        wids['apply'] = Button(panel, 'Save / Overwrite', size=(150, -1),
-                               action=self.on_apply)
-        SetTip(wids['apply'], 'Save corrected data, overwrite current arrays')
+        #wids['apply'] = Button(panel, 'Save / Overwrite', size=(150, -1),
+        #                       action=self.on_apply)
+        #SetTip(wids['apply'], 'Save corrected data, overwrite current arrays')
 
         wids['save_as'] = Button(panel, 'Save As New Group: ', size=(150, -1),
                            action=self.on_saveas)
@@ -155,7 +157,7 @@ class OverAbsorptionDialog(wx.Dialog):
         panel.Add(wids['phi_out'])
 
         panel.Add(wids['correct'], newrow=True)
-        panel.Add(wids['apply'], dcol=2, newrow=True)
+        # panel.Add(wids['apply'], dcol=2, newrow=True)
 
         panel.Add(wids['save_as'], newrow=True)
         panel.Add(wids['save_as_name'], dcol=3)
@@ -301,10 +303,9 @@ class EnergyCalibrateDialog(wx.Dialog):
         self.plottype = Choice(panel, choices=list(Plot_Choices.keys()),
                                    size=(250, -1), action=self.plot_results)
 
-
-        apply_one = Button(panel, 'Save / Overwrite ', size=(150, -1),
-                           action=self.on_apply_one)
-        SetTip(apply_one, 'Save rebinned data, overwrite current arrays')
+        # apply_one = Button(panel, 'Save / Overwrite ', size=(150, -1),
+        #                   action=self.on_apply_one)
+        # SetTip(apply_one, 'Save rebinned data, overwrite current arrays')
 
         apply_sel = Button(panel, 'Apply Shift to Selected Groups',
                            size=(250, -1),  action=self.on_apply_sel)
@@ -349,7 +350,7 @@ overwriting current arrays''')
         panel.Add(wids['eshift'])
         add_text(' eV', newrow=False)
         panel.Add(HLine(panel, size=(500, 3)), dcol=4, newrow=True)
-        panel.Add(apply_one, newrow=True)
+        # panel.Add(apply_one, newrow=True)
 
         panel.Add(wids['save_as'], newrow=True)
         panel.Add(wids['save_as_name'], dcol=3)
@@ -631,9 +632,9 @@ class RebinDataDialog(wx.Dialog):
             if wname != 'grouplist':
                 wid.SetAction(partial(self.on_rebin, name=wname))
 
-        wids['apply'] = Button(panel, 'Save / Overwrite', size=(150, -1),
-                               action=self.on_apply)
-        SetTip(wids['apply'], 'Save rebinned data, overwrite current arrays')
+        #wids['apply'] = Button(panel, 'Save / Overwrite', size=(150, -1),
+        #                       action=self.on_apply)
+        #SetTip(wids['apply'], 'Save rebinned data, overwrite current arrays')
 
         wids['save_as'] = Button(panel, 'Save As New Group: ', size=(150, -1),
                                  action=self.on_saveas)
@@ -676,7 +677,7 @@ class RebinDataDialog(wx.Dialog):
         panel.Add(wids['exafs_step'])
         add_text('1/\u212B', newrow=False)
 
-        panel.Add(wids['apply'], dcol=2, newrow=True)
+        # panel.Add(wids['apply'], dcol=2, newrow=True)
         panel.Add(wids['save_as'],  dcol=2, newrow=True)
         panel.Add(wids['save_as_name'], dcol=3)
         panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
@@ -841,9 +842,9 @@ class SmoothDataDialog(wx.Dialog):
 
         self.message = SimpleText(panel, label='         ', size=(200, -1))
 
-        wids['apply'] = Button(panel, 'Save / Overwrite', size=(150, -1),
-                               action=self.on_apply)
-        SetTip(wids['apply'], 'Save corrected data, overwrite current arrays')
+        # wids['apply'] = Button(panel, 'Save / Overwrite', size=(150, -1),
+        #                       action=self.on_apply)
+        # SetTip(wids['apply'], 'Save corrected data, overwrite current arrays')
 
         wids['save_as'] = Button(panel, 'Save As New Group: ', size=(150, -1),
                            action=self.on_saveas)
@@ -873,7 +874,7 @@ class SmoothDataDialog(wx.Dialog):
         panel.Add((10, 10), newrow=True)
         panel.Add(self.message, dcol=5)
 
-        panel.Add(wids['apply'], newrow=True)
+        # panel.Add(wids['apply'], newrow=True)
 
         panel.Add(wids['save_as'],  newrow=True)
         panel.Add(wids['save_as_name'], dcol=5)
@@ -1022,10 +1023,9 @@ class DeconvolutionDialog(wx.Dialog):
         wids['esigma'] = FloatSpin(panel, value=0.5, digits=2, size=(90, -1),
                                    increment=0.1, action=self.on_deconvolve)
 
-
-        wids['apply'] = Button(panel, 'Save / Overwrite', size=(150, -1),
-                               action=self.on_apply)
-        SetTip(wids['apply'], 'Save corrected data, overwrite current arrays')
+        #wids['apply'] = Button(panel, 'Save / Overwrite', size=(150, -1),
+        #                       action=self.on_apply)
+        #SetTip(wids['apply'], 'Save corrected data, overwrite current arrays')
 
         wids['save_as'] = Button(panel, 'Save As New Group: ', size=(150, -1),
                            action=self.on_saveas)
@@ -1045,7 +1045,7 @@ class DeconvolutionDialog(wx.Dialog):
 
         add_text(' sigma= ')
         panel.Add(wids['esigma'])
-        panel.Add(wids['apply'], newrow=True)
+        # panel.Add(wids['apply'], newrow=True)
         panel.Add(wids['save_as'],  newrow=True)
         panel.Add(wids['save_as_name'], dcol=5)
         panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
@@ -1171,10 +1171,10 @@ class DeglitchDialog(wx.Dialog):
 
         undo = Button(panel, 'Undo remove', size=(125, -1),
                       action=self.on_undo)
-        wids['apply'] = Button(panel, 'Save / Overwrite', size=(150, -1),
-                               action=self.on_apply)
-        SetTip(wids['apply'], '''Save deglitched, overwrite current arrays,
-clear undo history''')
+        #wids['apply'] = Button(panel, 'Save / Overwrite', size=(150, -1),
+        #                       action=self.on_apply)
+        #SetTip(wids['apply'], '''Save deglitched, overwrite current arrays,
+#clear undo history''')
 
         wids['save_as'] = Button(panel, 'Save As New Group: ', size=(150, -1),
                                  action=self.on_saveas)
@@ -1198,9 +1198,14 @@ clear undo history''')
         self.choice_range = Choice(panel, choices=('above', 'below', 'between'),
                                     size=(90, -1), action=self.on_rangechoice)
 
+        self.choice_range.SetStringSelection('above')
+        wids['range2'].Disable()
+
         wids['plotopts'] = Choice(panel, choices=list(DEGLITCH_PLOTS.keys()),
                                   size=(175, -1),
                                   action=self.on_plotchoice)
+
+        wids['plotopts'].SetStringSelection(NORM_MU)
 
         def add_text(text, dcol=1, newrow=True):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
@@ -1226,14 +1231,15 @@ clear undo history''')
         panel.Add(wids['range2'])
         panel.Add(wids['range2_pin'])
 
-        panel.Add(wids['apply'], dcol=2, newrow=True)
-        panel.Add(self.history_message, dcol=2)
-        panel.Add(undo)
+        # panel.Add(wids['apply'], dcol=2, newrow=True)
 
         panel.Add(wids['save_as'], dcol=2, newrow=True)
         panel.Add(wids['save_as_name'], dcol=4)
         panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
-                  newrow=True)
+                  dcol=2, newrow=True)
+        panel.Add(self.history_message, dcol=2)
+        panel.Add(undo)
+
         panel.pack()
 
         fit_dialog_window(self, panel)
@@ -1243,7 +1249,7 @@ clear undo history''')
         self.Destroy()
 
     def reset_data_history(self):
-        plottype = 'mu'
+        plottype = 'norm'
         if 'plotopts' in self.wids:
             plotstr = self.wids['plotopts'].GetStringSelection()
             plottype = DEGLITCH_PLOTS[plotstr]
@@ -1277,8 +1283,9 @@ clear undo history''')
         self.plot_results(use_zoom=True)
 
     def on_rangechoice(self, event=None):
-        if self.choice_range.GetStringSelection() == 'between':
-            self.wids['range2'].Enable()
+        sel = self.choice_range.GetStringSelection()
+        self.wids['range2'].Enable(sel == 'between')
+
 
     def on_plotchoice(self, event=None):
         plotstr = self.wids['plotopts'].GetStringSelection()
@@ -1401,7 +1408,7 @@ clear undo history''')
             s = '' if ex < 0 else '\n[%.1f]' % (etok(ex))
             return r"%1.4g%s" % (x, s)
 
-        set_zoomlimits(ppanel, zoom_limits, verbose=True) or ppanel.unzoom_all()
+        set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
         if plottype in ('chie', 'chiew'):
             ppanel.axes.xaxis.set_major_formatter(FuncFormatter(ek_formatter))
         ppanel.canvas.draw()
