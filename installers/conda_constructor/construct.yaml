@@ -20,22 +20,22 @@ post_install: post_install_macosx.sh [osx]
 post_install: post_install_windows.bat [win]
 
 specs:
-    - python==3.9.12
+    - python==3.10.9
     - conda
     - openssl
     - setuptools>=61.0
     - pip
     - requests
-    - numpy>=1.18
-    - scipy>=1.5
-    - matplotlib>=3.0
-    - h5py
-    - sqlalchemy>=1.0
+    - numpy>=1.20
+    - scipy>=1.7
+    - matplotlib>=3.5
+    - h5py>=3.2
+    - sqlalchemy>=1.4
     - scikit-image
     - scikit-learn
     - cython
-    - chardet
-    - pillow
+    - charset-normalizer
+    - pillow>=8.3.2
     - psutil
     - pandas
     - pytest
@@ -52,7 +52,7 @@ specs:
     - console_shortcut # [win64]
     - powershell_shortcut # [win64]
     - python.app       # [osx]
-    - wxpython
+    - wxpython>=4.1.0
     - tomopy
     - pymatgen
     - pycifrw

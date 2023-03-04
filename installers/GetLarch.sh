@@ -18,10 +18,10 @@ logfile=GetLarch.log
 
 
 ## set list of conda packages to install from conda-forge
-cforge_pkgs="numpy=>1.20 scipy=>1.6 matplotlib=>3.5 scikit-image scikit-learn pycifrw"
+cforge_pkgs="numpy=>1.20 scipy=>1.7 matplotlib=>3.5 scikit-image scikit-learn pycifrw"
 
 ## set list of pip packages to install from pypi
-pip_pkgs="wxmplot wxutils lmfit asteval pyshortcuts pyfai chardet"
+pip_pkgs="wxmplot wxutils lmfit asteval pyshortcuts pyfai charset_normalizer"
 
 unset CONDA_EXE CONDA_PYTHON_EXE CONDA_PREFIX PROJ_LIB
 
