@@ -5,16 +5,13 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>12.6. Fit Examples &#8212; xraylarch 0.9.66 documentation</title>
+    <title>12.6. Fit Examples &#8212; xraylarch 0.9.67 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -261,7 +258,7 @@ error-function.</p></li>
 <span class="n">dat</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="n">i1</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">i2</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
 
 <span class="k">def</span> <span class="nf">make_model</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;make model of spectra: 2 peak functions, 1 erf function, offset&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;make model of spectra: 2 peak functions, 1 erf function, offset&quot;&quot;&quot;</span>
     <span class="n">p1</span> <span class="o">=</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp1</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen1</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid1</span><span class="p">)</span>
     <span class="n">p2</span> <span class="o">=</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp2</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen2</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid2</span><span class="p">)</span>
 
@@ -378,7 +375,7 @@ that we may have missed a third peak at around E = 7122 eV.  We can add
 this by simply adding another peak function to the <code class="docutils literal notranslate"><span class="pre">make_models()</span></code>
 function:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">make_model</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;make model of spectra: 3 peak functions, 1 erf function, offset&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;make model of spectra: 3 peak functions, 1 erf function, offset&quot;&quot;&quot;</span>
     <span class="n">p1</span> <span class="o">=</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp1</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen1</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid1</span><span class="p">)</span>
     <span class="n">p2</span> <span class="o">=</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp2</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen2</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid2</span><span class="p">)</span>
     <span class="n">p3</span> <span class="o">=</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp3</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen3</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid3</span><span class="p">)</span>
@@ -676,7 +673,7 @@ scripting features of larch:</p>
 <span class="n">enddef</span>
 
 <span class="k">def</span> <span class="nf">resid</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;residual function for minimization&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;residual function for minimization&quot;&quot;&quot;</span>
     <span class="n">out</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mu</span> <span class="o">-</span> <span class="n">sum_standards</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;eps&#39;</span><span class="p">):</span>
         <span class="n">out</span> <span class="o">=</span> <span class="n">out</span> <span class="o">/</span> <span class="n">data</span><span class="o">.</span><span class="n">eps</span>
@@ -981,7 +978,7 @@ found here.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
     </div>
   </body>
 </html>

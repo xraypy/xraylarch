@@ -5,16 +5,13 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>1. Downloading and Installation &#8212; xraylarch 0.9.66 documentation</title>
+    <title>1. Downloading and Installation &#8212; xraylarch 0.9.67 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/sphinx_highlight.js"></script>
     
@@ -142,7 +139,7 @@
             
   <section id="downloading-and-installation">
 <span id="install-chapter"></span><h1><span class="section-number">1. </span>Downloading and Installation<a class="headerlink" href="#downloading-and-installation" title="Permalink to this heading">¶</a></h1>
-<p>The latest release version of Larch is 0.9.66.</p>
+<p>The latest release version of Larch is 0.9.67.</p>
 <p>Larch is in active and continuing development.  The goal is to release
 versions every six months, but we don’t use a strict schedule, and
 typically release more often than that.</p>
@@ -340,40 +337,40 @@ packages installed.</p>
 <ol class="arabic simple">
 <li><p>activate your conda environment (called <cite>base</cite> by default) and update it:</p></li>
 </ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda activate
-conda update -y conda python pip
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>activate
+conda<span class="w"> </span>update<span class="w"> </span>-y<span class="w"> </span>conda<span class="w"> </span>python<span class="w"> </span>pip
 </pre></div>
 </div>
 <ol class="arabic simple" start="2">
 <li><p><strong>(optional/expert)</strong> create a dedicated environment for Larch and activate it:</p></li>
 </ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create -y --name xraylarch <span class="nv">python</span><span class="o">=</span>&gt;3.9.10
-conda activate xraylarch
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-y<span class="w"> </span>--name<span class="w"> </span>xraylarch<span class="w"> </span><span class="nv">python</span><span class="o">=</span>&gt;3.9.10
+conda<span class="w"> </span>activate<span class="w"> </span>xraylarch
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">
 <li><p>install main dependencies:</p></li>
 </ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda install -y <span class="s2">&quot;numpy=&gt;1.20&quot;</span> <span class="s2">&quot;scipy=&gt;1.6&quot;</span> <span class="s2">&quot;matplotlib=&gt;3.0&quot;</span> scikit-learn pandas
-conda install -y -c conda-forge wxpython pymatgen tomopy pycifrw
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span><span class="s2">&quot;numpy=&gt;1.20&quot;</span><span class="w"> </span><span class="s2">&quot;scipy=&gt;1.6&quot;</span><span class="w"> </span><span class="s2">&quot;matplotlib=&gt;3.0&quot;</span><span class="w"> </span>scikit-learn<span class="w"> </span>pandas
+conda<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>wxpython<span class="w"> </span>pymatgen<span class="w"> </span>tomopy<span class="w"> </span>pycifrw
 </pre></div>
 </div>
 <ol class="arabic simple" start="4">
 <li><p>install Larch (latest release):</p></li>
 </ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install xraylarch
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>xraylarch
 </pre></div>
 </div>
 <ol class="arabic simple" start="5">
 <li><p>if anything of the above fails, report it to the <a class="reference external" href="https://github.com/xraypy/xraylarch/issues">Larch Github Issues</a></p></li>
 </ol>
 <p>Putting that all together:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create -y --name xraylarch <span class="nv">python</span><span class="o">=</span>&gt;3.9.10
-conda activate xraylarch
-conda install -y <span class="s2">&quot;numpy=&gt;1.20&quot;</span> <span class="s2">&quot;scipy=&gt;1.6&quot;</span> <span class="s2">&quot;matplotlib=&gt;3.0&quot;</span> scikit-learn pandas
-conda install -y -c conda-forge wxpython pymatgen tomopy pycifrw
-pip install xraylarch
-larch -m
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-y<span class="w"> </span>--name<span class="w"> </span>xraylarch<span class="w"> </span><span class="nv">python</span><span class="o">=</span>&gt;3.9.10
+conda<span class="w"> </span>activate<span class="w"> </span>xraylarch
+conda<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span><span class="s2">&quot;numpy=&gt;1.20&quot;</span><span class="w"> </span><span class="s2">&quot;scipy=&gt;1.6&quot;</span><span class="w"> </span><span class="s2">&quot;matplotlib=&gt;3.0&quot;</span><span class="w"> </span>scikit-learn<span class="w"> </span>pandas
+conda<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>wxpython<span class="w"> </span>pymatgen<span class="w"> </span>tomopy<span class="w"> </span>pycifrw
+pip<span class="w"> </span>install<span class="w"> </span>xraylarch
+larch<span class="w"> </span>-m
 </pre></div>
 </div>
 <section id="notes-on-anaconda-and-on-python-versions">
@@ -409,7 +406,7 @@ xraylarch, use <cite>pip</cite>, even when using Anaconda Python:</p>
 <section id="installing-the-development-version">
 <h2><span class="section-number">1.5. </span>Installing the development version<a class="headerlink" href="#installing-the-development-version" title="Permalink to this heading">¶</a></h2>
 <p>For the brave, a nightly build of the latest development version can be downloaded and installed with</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python -m pip install https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-latest-py3-none-any.whl
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-latest-py3-none-any.whl
 </pre></div>
 </div>
 <p>We try hard to keep this “working”, but as this is an automated snapshot it
@@ -617,7 +614,7 @@ the BSD License:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
     </div>
   </body>
 </html>

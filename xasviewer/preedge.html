@@ -5,16 +5,13 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>5.5. Pre-edge peak fitting &#8212; xraylarch 0.9.66 documentation</title>
+    <title>5.5. Pre-edge peak fitting &#8212; xraylarch 0.9.67 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -127,7 +124,7 @@
 <span id="xasviewer-peakfit"></span><h1><span class="section-number">5.5. </span>Pre-edge peak fitting<a class="headerlink" href="#pre-edge-peak-fitting" title="Permalink to this heading">¶</a></h1>
 <p>The “Pre-edge Peak Fit” tab (show in <a class="reference internal" href="#fig-xasviewer-3a"><span class="std std-numref">Figure 5.5.1</span></a>) provides a
 form for fitting pre-edge peaks to line shapes such as Gaussian, Lorentzian,
-or Voigt functions.  This provides an easy-to-use wrapper around <a href="#id21"><span class="problematic" id="id22">`lmfit`_</span></a>
+or Voigt functions.  This provides an easy-to-use wrapper around <a class="reference external" href="https://lmfit.github.io/lmfit-py/">lmfit</a>
 and the <a class="reference internal" href="../fitting_minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> function for curve-fitting with the ability to
 constrain fitting Parameters.</p>
 <p>Fitting of pre-edge peaks with this panel is a two step process.</p>
@@ -150,7 +147,7 @@ as shown below.  The initial fit may have poorly guessed ranges for the
 pre-edge peaks and fit range and may require some adjustment.  As mentioned
 above, clicking on the plot will select an energy that can then be
 transferred to any of the bounds energy using the corresponding pin icon
-<a href="#id19"><span class="problematic" id="id20">|pin|</span></a> on the form.</p>
+<a class="reference internal" href="../_images/pin_icon.png"><img alt="pin" src="../_images/pin_icon.png" style="width: 18pt; height: 18pt;" /></a> on the form.</p>
 <div class="figure compound align-center" id="fig-xasviewer3">
 <figure class="align-center" id="id1">
 <span id="fig-xasviewer-3a"></span><a class="reference external image-reference" href="../_images/XASViewer_prepeaks_baseline_form.png"><img alt="../_images/XASViewer_prepeaks_baseline_form.png" src="../_images/XASViewer_prepeaks_baseline_form.png" style="width: 70%;" /></a>
@@ -290,7 +287,7 @@ plot as shown in <a class="reference internal" href="#fig-xasviewer-7a"><span cl
 </div><p id="fig_xasviewer_7">As mentioned above, fit results can be saved in two different ways, using
 the “PreEdge Peaks” menu.  First, the model to set up the fit can be saved
 to a <cite>.modl</cite> file and then re-read later and used for other fits. This
-model file can also be read in and used with the <a href="#id23"><span class="problematic" id="id24">`lmfit`_</span></a> python module for
+model file can also be read in and used with the <a class="reference external" href="https://lmfit.github.io/lmfit-py/">lmfit</a> python module for
 complete scripting control.  Secondly, a fit can be <em>exported</em> to an ASCII
 file that will include the text of the fit report and columns including
 data, best-fit, and each of the components of the model.</p>
@@ -459,7 +456,7 @@ components to best match an unknown spectra.</span><a class="headerlink" href="#
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
     </div>
   </body>
 </html>

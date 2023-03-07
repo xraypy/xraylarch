@@ -5,16 +5,13 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>12.5. Some Builtin Line-shape Functions &#8212; xraylarch 0.9.66 documentation</title>
+    <title>12.5. Some Builtin Line-shape Functions &#8212; xraylarch 0.9.67 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -215,8 +212,7 @@ in</p>
 <div class="math notranslate nohighlight">
 \[f(x; A, \mu, \sigma, m) = \frac{A}{\sigma{\beta(m-\frac{1}{2}, \frac{1}{2})}} \bigl[1 + \frac{(x-\mu)^2}{\sigma^2}  \bigr]^{-m}\]</div>
 </div></blockquote>
-<p>where <span class="math notranslate nohighlight">\(\beta\)</span> is the beta function (see <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.beta.html">scipy.special.beta</a>
-in <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/special.html#module-scipy.special" title="(in SciPy v1.9.3)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">scipy.special</span></code></a>).</p>
+<p>where <span class="math notranslate nohighlight">\(\beta\)</span> is the beta function (see <cite>scipy.special.beta</cite>)</p>
 </dd></dl>
 
 <dl class="py function">
@@ -307,12 +303,12 @@ in the <a class="reference internal" href="#fit-funcs-table"><span class="std st
 </table>
 </div></blockquote>
 <p>Other standard special functions (Bessel functions, Legendre polynomials,
-etc) can be accessed from scipy.special:</p>
+etc) can be accessed from <code class="docutils literal notranslate"><span class="pre">scipy.special</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">j0</span> <span class="c1"># Bessel function of order 0,</span>
 <span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">y1</span> <span class="c1"># Bessel function of second kind of order 1</span>
 </pre></div>
 </div>
-<p>A host of functions to generate other distribution functions can be accessed from scipy.stats.</p>
+<p>A host of functions to generate other distribution functions can be accessed from <code class="docutils literal notranslate"><span class="pre">scipy.stats</span></code>.</p>
 </section>
 
 
@@ -346,7 +342,7 @@ etc) can be accessed from scipy.special:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
     </div>
   </body>
 </html>

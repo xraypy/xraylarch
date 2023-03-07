@@ -1,4 +1,3 @@
-
 .. _lmfit: https://lmfit.github.io/lmfit-py/
 
 ..  _lineshape-functions-label:
@@ -108,9 +107,7 @@ scalar or array, depending on the input ``x``.
 
         f(x; A, \mu, \sigma, m) = \frac{A}{\sigma{\beta(m-\frac{1}{2}, \frac{1}{2})}} \bigl[1 + \frac{(x-\mu)^2}{\sigma^2}  \bigr]^{-m}
 
-   where :math:`\beta` is the beta function (see :scipydoc:`special.beta`
-   in :mod:`scipy.special`).
-
+   where :math:`\beta` is the beta function (see `scipy.special.beta`)
 
 
 .. function:: students_t(x, amplitude=1, center=0, sigma=1)
@@ -123,8 +120,8 @@ scalar or array, depending on the input ``x``.
     .. math::
 
         f(x; A, \mu, \sigma) = \frac{A \Gamma(\frac{\sigma+1}{2})}
-	    {\sqrt{\sigma\pi}\,\Gamma(\frac{\sigma}{2})}
-	    \Bigl[1+\frac{(x-\mu)^2}{\sigma}\Bigr]^{-\frac{\sigma+1}{2}}
+            {\sqrt{\sigma\pi}\,\Gamma(\frac{\sigma}{2})}
+            \Bigl[1+\frac{(x-\mu)^2}{\sigma}\Bigr]^{-\frac{\sigma+1}{2}}
 
 
     where :math:`\Gamma(x)` is the gamma function.
@@ -182,9 +179,9 @@ in the :ref:`Table of Useful Line shapes <fit-funcs_table>`.
 
 
 Other standard special functions (Bessel functions, Legendre polynomials,
-etc) can be accessed from scipy.special::
+etc) can be accessed from ``scipy.special``::
 
     from scipy.special import j0 # Bessel function of order 0,
     from scipy.special import y1 # Bessel function of second kind of order 1
 
-A host of functions to generate other distribution functions can be accessed from scipy.stats.
+A host of functions to generate other distribution functions can be accessed from ``scipy.stats``.

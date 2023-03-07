@@ -5,16 +5,13 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>9.6. Writing Functions or Procedures &#8212; xraylarch 0.9.66 documentation</title>
+    <title>9.6. Writing Functions or Procedures &#8212; xraylarch 0.9.67 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/sphinx_highlight.js"></script>
     
@@ -311,7 +308,7 @@ Keyword arguments offer distinct advantages over positional arguments
 in that they have default values, and can be given in any order.
 In a procedure definition, you add an argument name with a default value,  like this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xlog</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="n">e</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;return log(a) with base = base (default=e=2.71828...)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;return log(a) with base = base (default=e=2.71828...)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
      <span class="k">if</span> <span class="n">base</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">log</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">/</span><span class="n">log</span><span class="p">(</span><span class="n">base</span><span class="p">)</span>
@@ -339,7 +336,7 @@ arguments and for unspecified keyword arguments.  To use unspecified
 positional arguments, a procedure definition takes an argument preceded by
 a ‘*’ after all the named positional arguments, like this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">addall</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;add all (at least 2!!) arguments given&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;add all (at least 2!!) arguments given&quot;&quot;&quot;</span>
     <span class="n">out</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
     <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
         <span class="n">out</span> <span class="o">=</span> <span class="n">out</span> <span class="o">+</span> <span class="n">c</span>
@@ -363,7 +360,7 @@ included in the call to ‘addall’ past the first two (which will be held by
 argument to the procedure definition preceded by two asterisks:
 <strong>‘**keywords’</strong>.  For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">operate</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;perform operation on a and b&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;perform operation on a and b&quot;&quot;&quot;</span>
     <span class="n">debug</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;debug&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
     <span class="n">verbose</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
     <span class="n">op</span>  <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;op&#39;</span><span class="p">,</span> <span class="s1">&#39;add&#39;</span><span class="p">)</span>
@@ -418,7 +415,7 @@ documentation.  You can use triple-quoted strings for multi-line
 documentation strings.  This doc string will be used by the built-in help
 mechanism, or when viewing details of the procedure.  For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">safe_sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-  <span class="sd">&quot;&quot;&quot;safe sqrt function:</span>
+<span class="w">  </span><span class="sd">&quot;&quot;&quot;safe sqrt function:</span>
 <span class="sd"> returns sqrt(abs(x))</span>
 <span class="sd"> &quot;&quot;&quot;</span>
  <span class="k">return</span> <span class="n">sqrt</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
@@ -465,7 +462,7 @@ mechanism, or when viewing details of the procedure.  For example:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
     </div>
   </body>
 </html>
