@@ -2,11 +2,11 @@
 [[Statistics]]
    nvarys, npts       =  4, 104
    n_independent      =  15.260
-   chi_square         =  112.916714
-   reduced chi_square =  10.0278754
-   r-factor           =  0.00272181
-   Akaike info crit   =  38.5418835
-   Bayesian info crit =  41.4428977
+   chi_square         =  112.91671
+   reduced chi_square =  10.027875
+   r-factor           =  2.722e-03
+   Akaike info crit   =  38.541883
+   Bayesian info crit =  41.442898
  
 [[Data]]
    fit space          = 'r'
@@ -15,15 +15,15 @@
    k window, dk       = 'kaiser', 4.000
    paths used in fit  = ['feffcu01.dat']
    k-weight           = 2
-   epsilon_k          = Array(mean=6.1910e-04, std=0.00165452)
-   epsilon_r          = 0.02080850
+   epsilon_k          = Array(mean=6.191e-04, std=1.655e-03)
+   epsilon_r          = 0.0208085
    n_independent      = 15.260
  
 [[Variables]]
-   amp            =  0.93155894 +/- 0.03916305   (init=  1.00000000)
-   del_e0         =  4.35776658 +/- 0.51134905   (init=  0.00000000)
-   del_r          = -0.00601666 +/- 0.00261331   (init=  0.00000000)
-   sig2           =  0.00866969 +/- 3.0784e-04   (init=  0.00000000)
+   amp            =  0.9315590 +/- 0.0391633   (init=  1.0000000)
+   del_e0         =  4.3577673 +/- 0.5113492   (init=  0.0000000)
+   del_r          = -6.017e-03 +/- 2.613e-03   (init=  0.0000000)
+   sig2           =  8.670e-03 +/- 3.078e-04   (init=  0.0000000)
  
 [[Correlations]]    (unreported correlations are <  0.100)
    amp, sig2            =  0.928
@@ -39,10 +39,10 @@
               Cu       0.0000, -1.8016,  1.8016  1
      reff   =  2.54780000
      degen  =  12.0000000
-     n*s02  =  0.93155894 +/- 0.03916305  := 'amp'
-     e0     =  4.35776658 +/- 0.51134905  := 'del_e0'
+     n*s02  =  0.93155899 +/- 0.03916328  := 'amp'
+     e0     =  4.35776725 +/- 0.51134921  := 'del_e0'
      r      =  2.54178334 +/- 0.00261331  := 'reff + del_r'
      deltar = -0.00601666 +/- 0.00261331  := 'del_r'
-     sigma2 =  0.00866969 +/- 3.0784e-04  := 'sig2'
+     sigma2 =  0.00866969 +/- 3.0785e-04  := 'sig2'
 
 =======================================================

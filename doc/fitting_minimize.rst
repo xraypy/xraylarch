@@ -1,4 +1,3 @@
-
 .. _fitting-minimize-sec:
 
 ==============================================
@@ -26,7 +25,7 @@ best approach.
 A simple objective function that models data as a line might look like this::
 
     params = param_group(offset = param(0., vary=True),
-                 	 slope = param(200, min=0, vary=True))
+                         slope = param(200, min=0, vary=True))
 
     def residual(pars, xdata=None, ydata=None):
         model = pars.offset + pars.slope * xdata
@@ -105,9 +104,7 @@ procedure decides it has found the best solution that it can.
     ============= ==================================================================
 
 Further information on these methods, including full lists of extra
-parameters that can be passed to them, can be found at
-:lmfitdoc:`fitting`.
-
+parameters that can be passed to them, can be found in the lmfit documentation.
 
 It should be noted that the Levenberg-Marquardt algorithm is almost always
 the fastest of the methods listed (often by 10x), and is generally fairly
