@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Version information"""
-__date__    = '2022-Dec-20'
-__release_version__ = '0.9.66'
+__date__    = '2023-Mar-06'
+__release_version__ = '0.9.67'
 __authors__ = "M. Newville, M. Koker, M. Rovezzi, B. Ravel, and others"
 import sys
 from collections import namedtuple
