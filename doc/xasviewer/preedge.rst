@@ -1,5 +1,10 @@
 ..include:: ../_config.rst
 
+.. _lmfit:    https://lmfit.github.io/lmfit-py/
+
+.. |pin| image:: ../_images/pin_icon.png
+    :width: 18pt
+    :height: 18pt
 
 .. _xasviewer_peakfit:
 
