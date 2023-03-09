@@ -1143,11 +1143,16 @@ before clearing"""
                             style=wx.FD_OPEN|wx.FD_MULTIPLE)
         self.paths2read = []
         if dlg.ShowModal() == wx.ID_OK:
-            self.paths2read = dlg.GetPaths()
+            paths2read = dlg.GetPaths()
         dlg.Destroy()
 
-        if len(self.paths2read) < 1:
+        if len(paths2read) < 1:
             return
+
+        def file_mtime(x):
+            return os.stat(x).st_mtime
+
+        self.paths2read = sorted(paths2read, key=file_mtime)
 
         path = self.paths2read.pop(0)
         path = path.replace('\\', '/')
