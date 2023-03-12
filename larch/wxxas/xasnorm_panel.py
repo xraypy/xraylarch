@@ -1130,5 +1130,6 @@ class XASNormPanel(TaskPanel):
                     axes.axvline(x, **xpopts)
 
         # set_zoomlimits(ppanel, zoom_limits)
+        ppanel.reset_formats()
         set_zoomlimits(ppanel, zoom_limits)
         ppanel.conf.unzoom(full=True, delay_draw=False)
