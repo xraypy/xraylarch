@@ -948,6 +948,7 @@ def set_zoomlimits(plotpanel, limits, verbose=False):
             print("set zoom, no limits")
         return False
     ax, vlims, zoom_lims = limits
+    plotpanel.reset_formats()
     if ax == plotpanel.axes:
         try:
             ax.set_xlim((vlims[0], vlims[1]), emit=True)
