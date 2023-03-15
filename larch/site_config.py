@@ -118,14 +118,13 @@ def make_user_larchdirs():
 
 def show_site_config():
     "print config"
-    print( """===  Larch Configuration
-  larch release:        {__release_version__}
-  larch version:        {__version__}
-  release version:        {__release_version__}
-  sys executable:       {sys.executable}
-  sys is frozen:        repr(getattr(sys, 'frozen', False))
-  users larch dir:      {user_larchdir}
-  users history_file:   {history_file}
+    isfrozen = getattr(sys, 'frozen', False)
+    print(f"""===  Larch Configuration
+  Larch release version: {__release_version__}
+  Development version:   {__version__}
+  Python executable:     {sys.executable}
+  User's larch dir:      {user_larchdir}
+  User's history_file:   {history_file}
 ========================
 """)
 
