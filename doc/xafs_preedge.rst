@@ -319,7 +319,7 @@ large features near the edge.
         norm_poly        normalized :math:`\mu(E)` from :func:`pre_edge`.
         norm             normalized :math:`\mu(E)` from this method/
         mback_mu         tabulated :math:`f'(E)` scaler and pre-edge added
-	      mback_params     params group for the MBACK minimization function
+	mback_params     params group for the MBACK minimization function
        ==============   ===========================================================
 
 
