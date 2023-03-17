@@ -20,6 +20,7 @@ if (sys.version_info.major < 3 or sys.version_info.minor < 8):
     raise EnvironmentError('larch requires python 3.8 or higher')
 
 import numpy
+
 import scipy, scipy.optimize, scipy.special, scipy.stats
 import matplotlib
 import lmfit
@@ -46,4 +47,3 @@ from .interpreter import Interpreter
 from . import larchlib
 from . import utils
 from . import site_config
-from .site_config import show_site_config
