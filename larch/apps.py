@@ -3,15 +3,14 @@ import sys
 import locale
 import numpy
 import time
-from argparse import ArgumentParser
-import pkg_resources
-from subprocess import check_call
 import shutil
-from pyshortcuts import make_shortcut, ico_ext, get_desktop
+from argparse import ArgumentParser
 
-from .site_config import icondir, home_dir, uname
-from .site_config import (extras_wxgraph, extras_qtgraph,
-                          extras_epics, extras_doc)
+from pyshortcuts import make_shortcut, ico_ext, get_desktop
+from .site_config import (icondir, home_dir, uname, install_extras,
+                          update_larch, extras_wxgraph, extras_qtgraph,
+                          extras_epics, extras_doc, extras_plotly)
+
 from .shell import Shell
 
 from .version import __date__, make_banner, check_larchversion
@@ -24,16 +23,6 @@ try:
     HAS_WXPYTHON = True
 except ImportError:
     pass
-
-def install_extras(package_set):
-    all_packages = set([pkg.key for pkg in pkg_resources.working_set])
-    missing = package_set - all_packages
-    if missing:
-        command = [sys.executable, '-m', 'pip', 'install', *missing]
-        check_call(command)
-
-def update_larch():
-    check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', 'xraylarch'])
 
 def use_mpl_wxagg():
     """import matplotlib, set backend to wxAgg"""
