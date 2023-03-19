@@ -20,7 +20,7 @@ from .readlinetextctrl import ReadlineTextCtrl
 from .larchfilling import Filling
 from .columnframe import ColumnDataFileFrame
 from .athena_importer import AthenaImporter
-from . import inputhook, FONTSIZE
+from . import inputhook, FONTSIZE, FONTSIZE_FW
 
 from larch.io import (read_ascii, read_xdi, read_gsexdi,
                       gsescan_group, fix_varname,
@@ -77,6 +77,7 @@ class LarchWxShell(object):
         self.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
         self.symtable.set_symbol('_sys.wx.parent', wx.GetApp().GetTopWindow())
         self.symtable.set_symbol('_sys.last_eval_time', 0.0)
+        self.fontsize = FONTSIZE_FW + 1
 
         if self.output is not None:
             style = self.output.GetDefaultStyle()
@@ -84,7 +85,7 @@ class LarchWxShell(object):
             sfont = style.GetFont()
             sfont.Family = wx.MODERN
             sfont.Weight = wx.BOLD
-            sfont.PointSize = FONTSIZE
+            sfont.PointSize = self.fontsize
             style.SetFont(sfont)
             self.output.SetDefaultStyle(style)
             self.textstyle = wx.TextAttr('black', bgcol, sfont)
@@ -217,7 +218,7 @@ class LarchPanel(wx.Panel):
         self.output.SetBackgroundColour(BACKGROUND_COLOUR)
         self.output.SetForegroundColour(FOREGROUND_COLOUR)
         if font is None:
-            font = wx.Font(FONTSIZE, wx.MODERN, wx.NORMAL, wx.BOLD, 0, "")
+            font = wx.Font(self.fontsize, wx.MODERN, wx.NORMAL, wx.BOLD, 0, "")
 
         self.output.SetFont(font)
         self.objtree.tree.SetFont(font)
@@ -331,11 +332,14 @@ class LarchFrame(wx.Frame):
         self.historyfile = historyfile
         self.subframes = {}
         self.last_array_sel = {}
+        self.fontsize = FONTSIZE_FW + 1
+        # print("FONTSIZE ", self.fontsize)
+
         wx.Frame.__init__(self, parent, -1, size=(800, 725),
                           style= wx.DEFAULT_FRAME_STYLE)
         self.SetTitle('LarchGUI')
 
-        self.font = wx.Font(FONTSIZE, wx.MODERN, wx.NORMAL, wx.BOLD, 0, "")
+        self.font = wx.Font(self.fontsize, wx.MODERN, wx.NORMAL, wx.BOLD, 0, "")
         self.SetFont(self.font)
         sbar = self.CreateStatusBar(2, wx.CAPTION)
 
@@ -357,7 +361,7 @@ class LarchFrame(wx.Frame):
 
         self.Bind(wx.EVT_SHOW, self.onShow)
         self.BuildMenus()
-        self.onSelectFont(fsize=FONTSIZE)
+        self.onSelectFont(fsize=self.fontsize)
         # larchdir = larch.site_config.larchdir
 
         fico = os.path.join(larch.site_config.icondir, ICON_FILE)
@@ -418,11 +422,11 @@ class LarchFrame(wx.Frame):
 
         fsmenu = wx.Menu()
         self.fontsizes = {}
-        for fsize in (7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24):
+        for fsize in (10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24):
             m = MenuItem(self, fsmenu,  "%d" % fsize, "%d" % fsize,
                          self.onSelectFont, kind=wx.ITEM_RADIO)
             self.fontsizes[m.GetId()] = fsize
-            if fsize == FONTSIZE:
+            if fsize == self.fontsize:
                 m.Check()
 
         menuBar.Append(fsmenu, 'Font Size')
@@ -437,7 +441,8 @@ class LarchFrame(wx.Frame):
 
     def onSelectFont(self, event=None, fsize=None):
         if fsize is None:
-            fsize = self.fontsizes.get(event.GetId(), FONTSIZE)
+            fsize = self.fontsizes.get(event.GetId(), self.fontsize)
+        self.fontsize = fsize
 
         def set_fontsize(obj, fsize):
             fn = obj.GetFont()
@@ -618,7 +623,7 @@ class LarchFrame(wx.Frame):
         dlg = wx.Dialog(self, wx.ID_ANY, size=(700, 400),
                         title='Larch Versions')
 
-        font = wx.Font(FONTSIZE-1, wx.MODERN, wx.NORMAL, wx.BOLD, 0, "")
+        font = wx.Font(self.fontsize, wx.MODERN, wx.NORMAL, wx.BOLD, 0, "")
         dlg.SetFont(font)
         panel = wx.Panel(dlg)
         txt = wx.StaticText(panel, label=version_message)
