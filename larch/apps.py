@@ -15,14 +15,17 @@ from .shell import Shell
 
 from .version import __date__, make_banner, check_larchversion
 
-HAS_CONDA = os.path.exists(os.path.join(sys.prefix, 'conda-meta'))
-
 HAS_WXPYTHON = False
 try:
     import wx
     HAS_WXPYTHON = True
 except ImportError:
     pass
+
+if HAS_WXPYTHON:
+    # note: this will be needed for some macOS builds until wxPython 4.2.1 is released.
+    if uname == 'darwin':
+        wx.PyApp.IsDisplayAvailable = lambda _: True
 
 def use_mpl_wxagg():
     """import matplotlib, set backend to wxAgg"""
@@ -39,31 +42,6 @@ def set_locale():
     """set locale to 'C' for these applications,
     may need some improvement!!"""
     locale.setlocale(locale.LC_ALL, 'C')
-
-def fix_darwin_shebang(script):
-    """
-    fix anaconda python apps on MacOs to launch with pythonw
-    """
-    pyapp = os.path.join(sys.prefix, 'python.app', 'Contents', 'MacOS', 'python')
-    pyapp = os.path.normpath(pyapp)
-    # strip off any arguments:
-    script = script.split(None, 1)[0]
-    if not os.path.exists(script):
-        script = os.path.join(sys.exec_prefix, 'bin', script)
-
-    if uname == 'darwin' and os.path.exists(pyapp) and os.path.exists(script):
-        with open(script, 'r') as fh:
-            try:
-                lines = fh.readlines()
-            except IOError:
-                lines = ['-']
-
-        if len(lines) > 1:
-            text = ["#!%s\n" % pyapp]
-            text.extend(lines[1:])
-            time.sleep(.05)
-            with open(script, 'w') as fh:
-                fh.write("".join(text))
 
 class LarchApp:
     """
@@ -88,11 +66,6 @@ class LarchApp:
                     icon = ticon
         make_shortcut(script, name=self.name, icon=icon,
                       terminal=self.terminal, folder='Larch')
-        if HAS_CONDA and uname == 'darwin':
-            try:
-                fix_darwin_shebang(script)
-            except:
-                print("Warning: could not fix Mac exe for ", script)
 
 APPS = (LarchApp('Larch CLI', 'larch', terminal=True),
         LarchApp('Larch GUI', 'larch --wxgui'),
