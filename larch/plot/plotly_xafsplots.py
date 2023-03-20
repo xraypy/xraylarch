@@ -21,6 +21,7 @@ Plotting macros for XAFS data sets and fits
 import os
 import time
 import logging
+from copy import deepcopy
 from matplotlib.ticker import FuncFormatter
 
 from larch import Group
@@ -32,7 +33,6 @@ def nullfunc(*args, **kws):
 
 get_display = _plot = _oplot = _newplot = _fitplot = _plot_text = nullfunc
 _plot_marker = _plot_arrow = _plot_axvline = _plot_axhline = nullfunc
-
 
 
 from larch.site_config import (install_extras, extras_plotly)
@@ -63,6 +63,21 @@ def get_display(win=1, *args, **kws):
 
 LineColors = ('#1f77b4', '#d62728', '#2ca02c', '#ff7f0e', '#9467bd',
               '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf')
+
+LineStyles = ('solid', 'dashed', 'dotted')
+NCOLORS = len(LineColors)
+NSTYLES = len(LineStyles)
+
+FIGSTYLE = dict(width=750, height=400,
+                showlegend=True, hovermode='closest',
+                legend=dict(borderwidth=0.5, bgcolor='#F2F2F2'),
+                 # orientation='v') #, x=0.1, y=1.15)# , yanchor='top'),
+                plot_bgcolor='#FDFDFF',
+                xaxis=dict(showgrid=True, gridcolor='#D8D8D8',
+                           color='#004', zerolinecolor='#DDD'),
+                yaxis=dict(showgrid=True, gridcolor='#D8D8D8',
+                           color='#004', zerolinecolor='#DDD')
+                )
 
 # common XAFS plot labels
 def chirlab(kweight, show_mag=True, show_real=False, show_imag=False):
@@ -198,6 +213,65 @@ def redraw(win=1, xmin=None, xmax=None, ymin=None, ymax=None,
 #enddef
 
 
+
+
+
+class PlotlyFigure:
+    """wrapping of Plotly Figure
+    """
+
+    def __init__(self, two_yaxis=False, style=None):
+        self.two_yaxis = two_yaxis
+        self.style = deepcopy(FIGSTYLE)
+        if style is not None:
+            self.style.update(style)
+        if self.two_yaxis:
+            self.fig = make_subplots(specs=[[{"secondary_y": True}]])
+        else:
+            self.fig = pgo.Figure()
+
+        self.traces = []
+
+    def clear(self):
+        self.traces = []
+
+    def add_plot(self, x, y, label=None, color=None, linewidth=3,
+                 style='solid', marker=None, side='left'):
+        itrace = len(self.traces)
+
+        if label is None:
+            label = "trace %d" % (1+itrace)
+        if color is None:
+            color = LineColors[itrace % NCOLORS]
+        if style is None:
+            style = LineStyles[ int(itrace*1.0 / NCOLORS) % NSTYLES]
+
+        trace_opts = {}
+        if self.two_yaxis:
+            trace_opts['secondary_y'] = (side.lower().startswith('l'))
+
+        lineopts = dict(color=color, width=3)
+        trace = pgo.Scatter(x=x, y=y, name=label, line=lineopts)
+
+        self.traces.append(trace)
+        self.fig.add_trace(trace, **trace_opts)
+
+    def add_vline(self, *args, **kws):
+        self.fig.add_vline(*args, **kws)
+
+    def set_xrange(self, xmin, xmax):
+        self.fig.update_xaxes(range=[xmin, xmax])
+
+    def set_yrange(self, ymin, ymax):
+        self.fig.update_yaxes(range=[ymin, ymax])
+
+    def set_style(self, **kws):
+        self.style.update(**kws)
+        self.fig.update_layout(**self.style)
+
+    def show(self):
+        self.fig.show()
+
 def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
             show_pre=False, show_post=False, show_e0=False, with_deriv=False,
             emin=None, emax=None, label='mu', new=True, delay_draw=False,
@@ -267,52 +341,27 @@ def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
     emin, emax = _get_erange(dgroup, emin, emax)
     title = _get_title(dgroup, title=title)
 
-    opts = dict(win=win, show_legend=True, linewidth=3,
-                title=title, xmin=emin, xmax=emax)
 
-    style = dict(showlegend=True,  plot_bgcolor='#FDFDFF',
-                 xaxis=dict(showgrid=True, gridcolor='#D8D8D8',
-                            color='#004', zerolinecolor='#DDD'),
-                 yaxis=dict(showgrid=True, gridcolor='#D8D8D8',
-                            color='#004', zerolinecolor='#DDD'))
-
-    style.update(dict(title=title, xaxis_title=plotlabels.energy, yaxis_title=ylabel))
-
+    fig = PlotlyFigure(two_yaxis=with_deriv)
+    fig.add_plot(dgroup.energy, mu+offset, label=label)
 
     if with_deriv:
-        fig = make_subplots(specs=[[{"secondary_y": True}]])
-
-        fig.add_trace(pgo.Scatter(x=dgroup.energy, y=mu+offset,
-                                  name=label,
-                                  line=dict(color=LineColors[0], width=3)),
-                      secondary_y=False)
-
-        fig.add_trace(pgo.Scatter(x=dgroup.energy, y=dgroup.dmude+offset,
-                                  name='%s (deriv)' % label,
-                                  line=dict(color=LineColors[1], width=3)),
-                      secondary_y=True)
+        fig.add_plot(dgroup.energy, dgroup.dmude+offset, label='%s (deriv)' % label, side='right')
 
     else:
-        fig = pgo.Figure()
-        fig.add_trace(pgo.Scatter(x=dgroup.energy, y=mu+offset,
-                                  name=label,
-                                  line=dict(color=LineColors[0], width=3)))
-
         if not show_norm and show_pre:
-            fig.add_trace(pgo.Scatter(x=dgroup.energy, y=dgroup.pre_edge+offset,
-                                      name='pre_edge',
-                                      line=dict(color=LineColors[1], width=3)))
+            fig.add_plot(dgroup.energy, dgroup.pre_edge+offset, label='pre_edge')
         if not show_norm and show_post:
-            fig.add_trace(pgo.Scatter(x=dgroup.energy, y=dgroup.post_edge+offset,
-                                      name='post_edge',
-                                      line=dict(color=LineColors[2], width=3)))
+            fig.add_plot(dgroup.energy, dgroup.post_edge+offset, label='post_edge')
 
     if show_e0:
         fig.add_vline(x=dgroup.e0, line_width=2, line_dash="dash", line_color="#AAC")
 
-    fig.update_xaxes(range=[emin, emax])
-    fig.update_layout(**style)
+    fig.set_xrange(emin, emax)
+    fig.set_style(title=title, xaxis_title=plotlabels.energy, yaxis_title=ylabel)
     fig.show()
+    return fig
+
 
 def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
              label=None, title=None, new=True, delay_draw=False, offset=0,
@@ -362,26 +411,18 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
         label = "%s (norm)" % label
     #endif
     title = _get_title(dgroup, title=title)
-    opts = dict(win=win, show_legend=True, linewidth=3,
-                delay_draw=True, _larch=_larch)
-    _plot(dgroup.energy, mu+offset, xlabel=plotlabels.energy, ylabel=ylabel,
-         title=title, label=label, zorder=20, new=new, xmin=emin, xmax=emax,
-         **opts)
-    ymin, ymax = None, None
-    disp = get_display(win=win, _larch=_larch)
-    if disp is not  None:
-        xylims = disp.panel.get_viewlimits()
-        ymin, ymax = xylims[2], xylims[3]
-    _plot(dgroup.energy, bkg+offset, zorder=18, label='bkg', **opts)
+
+    fig = PlotlyFigure(two_yaxis=False)
+    fig.add_plot(dgroup.energy, mu+offset, label=label)
+    fig.add_plot(dgroup.energy, bkg+offset, label='bkg')
 
     if show_e0:
-        _plot_axvline(dgroup.e0, zorder=2, size=3, label='E0',
-                      color=plotlabels.e0color, win=win, _larch=_larch)
-        if disp is not None:
-            disp.panel.conf.draw_legend()
-    #endif
-    redraw(win=win, xmin=emin, xmax=emax, ymin=ymin, ymax=ymax, _larch=_larch)
-#enddef
+        fig.add_vline(x=dgroup.e0, line_width=2, line_dash="dash", line_color="#AAC")
+    fig.set_xrange(emin, emax)
+    fig.set_style(title=title, xaxis_title=plotlabels.energy, yaxis_title=ylabel)
+    fig.show()
+    return fig
+
 
 def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
               eweight=0, show_k=True, new=True, delay_draw=False,
