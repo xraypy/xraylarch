@@ -68,7 +68,7 @@ LineStyles = ('solid', 'dashed', 'dotted')
 NCOLORS = len(LineColors)
 NSTYLES = len(LineStyles)
 
-FIGSTYLE = dict(width=750, height=400,
+FIGSTYLE = dict(width=650, height=500,
                 showlegend=True, hovermode='closest',
                 legend=dict(borderwidth=0.5, bgcolor='#F2F2F2'),
                  # orientation='v') #, x=0.1, y=1.15)# , yanchor='top'),
@@ -213,9 +213,6 @@ def redraw(win=1, xmin=None, xmax=None, ymin=None, ymax=None,
 #enddef
 
 
-
-
-
 class PlotlyFigure:
     """wrapping of Plotly Figure
     """
@@ -228,7 +225,7 @@ class PlotlyFigure:
         if self.two_yaxis:
             self.fig = make_subplots(specs=[[{"secondary_y": True}]])
         else:
-            self.fig = pgo.Figure()
+            self.fig = pgo.FigureWidget()
 
         self.traces = []
 
@@ -465,7 +462,7 @@ def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
         chie *= (dgroup.energy-e0)**(eweight)
         ylabel = plotlabels.chiew.format(eweight)
 
-    xlabel = plotlabels.ewithk if show_k else plotlabels.energy
+    xlabel = plotlabels.energy
 
     emin, emax = _get_erange(dgroup, emin, emax)
     if emin is not None:
@@ -484,20 +481,14 @@ def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
             s = '\n[%.2f]' % (etok(ex))
         return r"%1.4g%s" % (x, s)
 
-    _plot(dgroup.energy-e0, chie+offset, xlabel=xlabel, ylabel=ylabel,
-          title=title, label=label, zorder=20, new=new, xmin=emin,
-          xmax=emax, win=win, show_legend=True, delay_draw=delay_draw,
-          linewidth=3, _larch=_larch)
+    fig = PlotlyFigure(two_yaxis=False)
+    fig.add_plot(dgroup.energy-e0, chie+offset, label=label)
 
-    if show_k:
-        disp = get_display(win=win, _larch=_larch)
-        axes = disp.panel.axes
-        axes.xaxis.set_major_formatter(FuncFormatter(ek_formatter))
+    fig.set_xrange(emin, emax)
+    fig.set_style(title=title, xaxis_title=xlabel, yaxis_title=ylabel)
+    fig.show()
+    return fig
 
-    if not delay_draw:
-        redraw(win=win, xmin=emin, xmax=emax, _larch=_larch)
-
-#enddef
 
 def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
               scale_window=True, label=None, title=None, new=True,
@@ -537,17 +528,24 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
     #endif
     if new:
         title = _get_title(dgroup, title=title)
-    _plot(dgroup.k, chi+offset, xlabel=plotlabels.k,
-         ylabel=plotlabels.chikw.format(kweight), title=title,
-         label=label, zorder=20, new=new, xmax=kmax, **opts)
+
+    fig = PlotlyFigure(two_yaxis=False)
+    fig.add_plot(dgroup.k, chi+offset, label=label)
 
     if show_window and hasattr(dgroup, 'kwin'):
         kwin = dgroup.kwin
         if scale_window:
             kwin = kwin*max(abs(chi))
-        _plot(dgroup.k, kwin+offset, zorder=12, label='window',  **opts)
-    #endif
-    redraw(win=win, xmax=kmax, _larch=_larch)
+        fig.add_plot(dgroup.k, kwin+offset, label='window')
+
+    if kmax is not None:
+        fig.set_xrange(0, kmax)
+    fig.set_style(title=title, xaxis_title=plotlabels.k,
+                  yaxis_title=plotlabels.chikw.format(kweight))
+
+    fig.show()
+    return fig
+
 #enddef
 
 def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
@@ -598,26 +596,27 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
     if label is None:
         label = 'chir'
     #endif
+    fig = PlotlyFigure(two_yaxis=False)
     if show_mag:
-        _plot(dgroup.r, dgroup.chir_mag+offset, label='%s (mag)' % label, **opts)
-        opts['new'] = False
+        fig.add_plot(dgroup.r, dgroup.chir_mag+offset, label='%s (mag)' % label)
     #endif
     if show_real:
-        _plot(dgroup.r, dgroup.chir_re+offset, label='%s (real)' % label, **opts)
+        fig.add_plot(dgroup.r, dgroup.chir_re+offset, label='%s (real)' % label)
         opts['new'] = False
     #endif
     if show_imag:
-        _plot(dgroup.r, dgroup.chir_im+offset, label='%s (imag)' % label, **opts)
+        fig.add_plot(dgroup.r, dgroup.chir_im+offset, label='%s (imag)' % label)
     #endif
     if show_window and hasattr(dgroup, 'rwin'):
         rwin = dgroup.rwin * max(dgroup.chir_mag)
         opts['zorder'] = 15
-        _plot(dgroup.r, rwin+offset, label='window',  **opts)
+        fig.add_plot(dgroup.r, rwin+offset, label='window')
     #endif
+    if rmax is not None:
+        fig.set_xrange(0, rmax)
 
-    if show_mag or show_real or show_imag or show_window:
-        redraw(win=win, xmax=rmax, _larch=_larch)
-    #endif
+    fig.set_style(title=title, xaxis_title=plotlabels.r, yaxis_title=ylabel)
+
 #enddef
 
 def plot_chiq(dgroup, kweight=None, kmax=None, show_chik=False, label=None,

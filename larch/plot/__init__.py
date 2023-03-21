@@ -9,5 +9,4 @@ plotting libraries. It is intended as plotter module for standalone scripts and
 Jupyter notebooks.
 """
 
-
 from . import plotly_xafsplots
