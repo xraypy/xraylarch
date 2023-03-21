@@ -51,8 +51,7 @@ specs:
     - pywin32          # [win64]
     - console_shortcut # [win64]
     - powershell_shortcut # [win64]
-    - python.app       # [osx]
-    - wxpython>=4.1.0
+    - wxpython>=4.2.0
     - tomopy
     - pymatgen
     - pycifrw

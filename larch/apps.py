@@ -3,20 +3,17 @@ import sys
 import locale
 import numpy
 import time
-from argparse import ArgumentParser
-import pkg_resources
-from subprocess import check_call
 import shutil
-from pyshortcuts import make_shortcut, ico_ext, get_desktop
+from argparse import ArgumentParser
 
-from .site_config import icondir, home_dir, uname
-from .site_config import (extras_wxgraph, extras_qtgraph,
-                          extras_epics, extras_doc)
+from pyshortcuts import make_shortcut, ico_ext, get_desktop
+from .site_config import (icondir, home_dir, uname, install_extras,
+                          update_larch, extras_wxgraph, extras_qtgraph,
+                          extras_epics, extras_doc, extras_plotly)
+
 from .shell import Shell
 
 from .version import __date__, make_banner, check_larchversion
-
-HAS_CONDA = os.path.exists(os.path.join(sys.prefix, 'conda-meta'))
 
 HAS_WXPYTHON = False
 try:
@@ -25,15 +22,10 @@ try:
 except ImportError:
     pass
 
-def install_extras(package_set):
-    all_packages = set([pkg.key for pkg in pkg_resources.working_set])
-    missing = package_set - all_packages
-    if missing:
-        command = [sys.executable, '-m', 'pip', 'install', *missing]
-        check_call(command)
-
-def update_larch():
-    check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', 'xraylarch'])
+if HAS_WXPYTHON:
+    # note: this will be needed for some macOS builds until wxPython 4.2.1 is released.
+    if uname == 'darwin':
+        wx.PyApp.IsDisplayAvailable = lambda _: True
 
 def use_mpl_wxagg():
     """import matplotlib, set backend to wxAgg"""
@@ -50,31 +42,6 @@ def set_locale():
     """set locale to 'C' for these applications,
     may need some improvement!!"""
     locale.setlocale(locale.LC_ALL, 'C')
-
-def fix_darwin_shebang(script):
-    """
-    fix anaconda python apps on MacOs to launch with pythonw
-    """
-    pyapp = os.path.join(sys.prefix, 'python.app', 'Contents', 'MacOS', 'python')
-    pyapp = os.path.normpath(pyapp)
-    # strip off any arguments:
-    script = script.split(None, 1)[0]
-    if not os.path.exists(script):
-        script = os.path.join(sys.exec_prefix, 'bin', script)
-
-    if uname == 'darwin' and os.path.exists(pyapp) and os.path.exists(script):
-        with open(script, 'r') as fh:
-            try:
-                lines = fh.readlines()
-            except IOError:
-                lines = ['-']
-
-        if len(lines) > 1:
-            text = ["#!%s\n" % pyapp]
-            text.extend(lines[1:])
-            time.sleep(.05)
-            with open(script, 'w') as fh:
-                fh.write("".join(text))
 
 class LarchApp:
     """
@@ -99,11 +66,6 @@ class LarchApp:
                     icon = ticon
         make_shortcut(script, name=self.name, icon=icon,
                       terminal=self.terminal, folder='Larch')
-        if HAS_CONDA and uname == 'darwin':
-            try:
-                fix_darwin_shebang(script)
-            except:
-                print("Warning: could not fix Mac exe for ", script)
 
 APPS = (LarchApp('Larch CLI', 'larch', terminal=True),
         LarchApp('Larch GUI', 'larch --wxgui'),

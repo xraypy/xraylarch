@@ -33,6 +33,10 @@ if platform == 'win':
     FONTSIZE = 10
     FONTSIZE_FW = 10
     locale.setlocale(locale.LC_ALL, 'C')
+elif platform == 'darwin':
+    FONTSIZE = 11
+    FONTSIZE_FW = 12
+
 
 if HAS_WXPYTHON:
     try:

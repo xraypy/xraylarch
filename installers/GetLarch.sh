@@ -75,9 +75,6 @@ if [ -d $prefix ] ; then
 fi
 
 
-if [ $uname == 'MacOSX' ] ; then
-    cforge_pkgs="$cforge_pkgs python.app"
-fi
 
 if [ $with_wx == 1 ]; then
     cforge_pkgs="$cforge_pkgs wxpython"

@@ -9,10 +9,16 @@ from __future__ import print_function
 
 import sys
 import os
-from .utils import uname, get_homedir, nativepath, unixpath
+import logging
+import pkg_resources
+from subprocess import check_call, CalledProcessError, TimeoutExpired
+
+from .utils import (uname, get_homedir, nativepath, unixpath,
+                    log_warning, log_error)
 from .version import __version__, __release_version__
 
 larch_version = __version__
+larch_release_version = __release_version__
 # lists of recommended packages that are not installed by default
 # but may be installed if several of the larch apps are run.
 extras_wxgraph = set(['wxutils', 'wxmplot'])
@@ -20,10 +26,24 @@ extras_epics = set(['pyepics', 'epicsapps', 'psycopg2-binary'])
 extras_doc   = set(['pytest', 'sphinx', 'numpydoc',
                     'sphinxcontrib-bibtex', 'sphinxcontrib-argdoc'])
 extras_qtgraph = set(['pyqt5', 'pyqtwebengine', 'pyqtgraph'])
+extras_plotly = set(['plotly', 'jupyter', 'ipywidgets'])
 
 def pjoin(*args):
     "simple join"
     return nativepath(os.path.join(*args))
+
+def update_larch():
+    check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', 'xraylarch'])
+
+def install_extras(package_set, timeout=30):
+    all_packages = set([pkg.key for pkg in pkg_resources.working_set])
+    missing = package_set - all_packages
+    if missing:
+        command = [sys.executable, '-m', 'pip', 'install', *missing]
+        try:
+            check_call(command, timeout=timeout)
+        except (CalledProcessError, TimeoutExpired):
+            log_warning(f"could not pip install packages: {missing}")
 
 ##
 # set system-wide and local larch folders
@@ -93,9 +113,9 @@ def make_user_larchdirs():
             try:
                 os.mkdir(dname)
             except PermissionError:
-                print(f'no permission to create directory {dname}')
+                log_warning(f'no permission to create directory {dname}')
             except (OSError, TypeError):
-                print(sys.exc_info()[1])
+                log_error(sys.exc_info()[1])
 
     def write_file(fname, text):
         "write wrapper"
@@ -104,7 +124,7 @@ def make_user_larchdirs():
                 with open(fname, 'w', encoding='utf-8') as fh:
                     fh.write(f'# {text}\n')
             except:
-                print(sys.exc_info()[1])
+                log_error(sys.exc_info()[1])
 
     make_dir(user_larchdir)
     for fname, text in files.items():
@@ -116,17 +136,20 @@ def make_user_larchdirs():
         write_file(pjoin(sdir, 'README'), text)
 
 
-def show_site_config():
-    "print config"
+def site_config():
+    "retutn string of site config"
     isfrozen = getattr(sys, 'frozen', False)
-    print(f"""===  Larch Configuration
-  Larch release version: {__release_version__}
-  Development version:   {__version__}
-  Python executable:     {sys.executable}
-  User's larch dir:      {user_larchdir}
-  User's history_file:   {history_file}
-========================
-""")
+    return f"""#== Larch Configuration:
+  Release version:     {__release_version__}
+  Development version: {__version__}
+  Python executable:   {sys.executable}
+  User larch dir:      {user_larchdir}
+  User history_file:   {history_file}
+#========================
+"""
+
+def show_site_config():
+    print(site_config())
 
 def system_settings():
     """set system-specific Environmental Variables, and make sure
