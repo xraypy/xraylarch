@@ -85,9 +85,9 @@ Energy_Text = 'All energies in keV'
 
 
 FitTols = ['1.e-2', '3.e-3', '1.e-3', '3.e-4', '1.e-4', '3.e-5', '1.e-5',
-           '3.e-6', '1.e-6', '3.e-7', '1.e-7'] 
+           '3.e-6', '1.e-6', '3.e-7', '1.e-7']
 FitSteps = ['1.e-2', '3.e-3', '1.e-3', '3.e-4', '1.e-4', '3.e-5', '1.e-5',
-            '3.e-6', '1.e-6', '3.e-7', '1.e-7'] 
+            '3.e-6', '1.e-6', '3.e-7', '1.e-7']
 
 FitMaxNFevs = ['200', '500', '1000', '1500', '2000', '3000', '5000', '10000']
 
@@ -437,7 +437,7 @@ class FitSpectraFrame(wx.Frame):
         wids['fit_step'].SetStringSelection('1.e-4')
         wids['fit_maxnfev'] = Choice(pdet, choices=FitMaxNFevs, size=(90, -1))
         wids['fit_maxnfev'].SetStringSelection('1000')
-            
+
         pdet.AddText(' Beam Energy, Fit Range :', colour='#880000', dcol=2)
         pdet.AddText('   X-ray Energy (keV): ', newrow=True)
         pdet.Add(wids['en_xray'])
@@ -932,7 +932,7 @@ class FitSpectraFrame(wx.Frame):
                 uval = "%15.4f" % (serr*scale)
                 buff.append("  ".join([eout, sval, uval, rval]))
             buff.append('')
-            with open(sfile, 'w') as fh:
+            with open(sfile, 'w', encoding=sys.getdefaultencoding()) as fh:
                 fh.write('\n'.join(buff))
 
     def onCompSelectFit(self, event=None):
@@ -1325,7 +1325,7 @@ class FitSpectraFrame(wx.Frame):
                                              fit_step=fit_step,
                                              max_nfev=max_nfev)
         # print("-- > ", fit_script)
-        
+
         self._larch.eval(fit_script)
         dgroup = self._larch.symtable.get_group(self.mcagroup)
         self.xrfresults = self._larch.symtable.get_symbol(XRFRESULTS_GROUP)
@@ -1393,7 +1393,7 @@ class FitSpectraFrame(wx.Frame):
                     dline.append(gformat(c[i]))
                 buff.append(' '.join(dline))
             buff.append('\n')
-            with open(outfile, 'w') as fh:
+            with open(outfile, 'w', encoding=sys.getdefaultencoding()) as fh:
                 fh.write('\n'.join(buff))
 
     def get_fitresult(self, nfit=None):

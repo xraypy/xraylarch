@@ -59,7 +59,7 @@ def groups2csv(grouplist, filename, delim=',',
             buff.append(delim.join([gformat(_x[i]), gformat(_y[i])]))
         buff.append('')
         fnout = f"{label}.csv"
-        with open(fnout, 'w') as fh:
+        with open(fnout, 'w', encoding=sys.getdefaultencoding()) as fh:
             fh.write("\n".join(buff))
         print(f"Wrote group to {fnout}")
 
@@ -96,7 +96,7 @@ def groups2csv(grouplist, filename, delim=',',
         buff.append(delim.join([gformat(s[i]) for s in columns]))
 
     buff.append('')
-    with open(filename, 'w') as fh:
+    with open(filename, 'w', encoding=sys.getdefaultencoding()) as fh:
         fh.write("\n".join(buff))
 
     print("Wrote %i groups to %s" % (len(columns)-1, filename))

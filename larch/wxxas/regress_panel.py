@@ -522,7 +522,7 @@ class RegressionPanel(TaskPanel):
         for  row in self.wids['table'].table.data:
             buff.append("%s, %s, %s" % (row[0], gformat(row[1]), gformat(row[2])))
         buff.append('')
-        with open(fname, 'w') as fh:
+        with open(fname, 'w', encoding=sys.getdefaultencoding()) as fh:
             fh.write('\n'.join(buff))
         self.write_message('Wrote CSV File %s ' % fname)
 

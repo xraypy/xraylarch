@@ -1531,7 +1531,7 @@ class FeffitPanel(TaskPanel):
         if os.path.exists(fullname):
             backup = os.path.join(confdir, 'feffit_script_BAK.lar')
             shutil.copy(fullname, backup)
-        with open(fullname, 'w')as fh:
+        with open(fullname, 'w', encoding=sys.getdefaultencoding()) as fh:
             fh.write(text)
         return fullname
 
@@ -1925,7 +1925,7 @@ class FeffitResultFrame(wx.Frame):
                         wildcard=wildcard, default_file=fname)
         if path is not None:
             text  = '\n'.join(result.commands)
-            with open(path, 'w') as fh:
+            with open(path, 'w', encoding=sys.getdefaultencoding()) as fh:
                 fh.write(text)
                 fh.write('')
 
@@ -1989,7 +1989,7 @@ class FeffitResultFrame(wx.Frame):
         buff.append('')
 
 
-        with open(savefile, 'w') as fh:
+        with open(savefile, 'w', encoding=sys.getdefaultencoding()) as fh:
             fh.write('\n'.join(buff))
 
     def get_fitresult(self, nfit=None):

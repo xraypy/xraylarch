@@ -508,7 +508,7 @@ def write_ascii(filename, *args, commentchar='#', label=None, header=None,  _lar
         buff.append('  '.join(w))
 
     try:
-        fout = open(filename, 'w')
+        fout = open(filename, 'w', encoding=sys.getdefaultencoding())
     except:
         write("cannot open file %s'\n" % filename)
         return

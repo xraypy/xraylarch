@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import sys
 import time
 from datetime import datetime
 from collections import OrderedDict
@@ -196,7 +197,7 @@ def json_dump(data, filename):
     dump object or group to file using json
     """
     from .jsonutils import encode4js
-    with open(filename, 'w') as fh:
+    with open(filename, 'w', encoding=sys.getdefaultencoding()) as fh:
         fh.write(json.dumps(encode4js(data)))
         fh.write('\n')
 

@@ -67,7 +67,7 @@ class ReportFrame(wx.Frame):
                         wildcard=wildcard,
                         default_file=self.default_filename)
         if path is not None:
-            with open(path, 'w') as fh:
+            with open(path, 'w', encoding=sys.getdefaultencoding()) as fh:
                 fh.write(self.report.GetValue())
                 fh.write('')
 
@@ -129,7 +129,7 @@ class DictFrame(wx.Frame):
             buff.append(f"{k}\t{v}")
 
         buff.append('')
-        with open(fname, 'w') as fh:
+        with open(fname, 'w', encoding=sys.getdefaultencoding()) as fh:
             fh.write('\n'.join(buff))
 
         msg = f"Exported data '{fname}'"

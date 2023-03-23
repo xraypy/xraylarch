@@ -510,12 +510,12 @@ class CIFFrame(wx.Frame):
         out.SetInsertionPoint(out.GetLastPosition())
 
         fname = unixpath(os.path.join(folder, 'feff.inp'))
-        with open(fname, 'w') as fh:
+        with open(fname, 'w', encoding=sys.getdefaultencoding()) as fh:
             fh.write(strict_ascii(fefftext))
 
         if cif_fname is not None:
             cname = unixpath(os.path.join(folder, cif_fname))
-            with open(cname, 'w') as fh:
+            with open(cname, 'w', encoding=sys.getdefaultencoding()) as fh:
                 fh.write(strict_ascii(ciftext))
 
         wx.CallAfter(self.run_feff, folder, version8=version8)
@@ -570,7 +570,7 @@ class CIFFrame(wx.Frame):
                         wildcard=wildcard,
                         default_file=fname)
         if path is not None:
-            with open(path, 'w') as fh:
+            with open(path, 'w', encoding=sys.getdefaultencoding()) as fh:
                 fh.write(fefftext)
             self.write_message("Wrote Feff file %s" % path, 0)
 
@@ -586,7 +586,7 @@ class CIFFrame(wx.Frame):
                         wildcard=wildcard,
                         default_file=fname)
         if path is not None:
-            with open(path, 'w') as fh:
+            with open(path, 'w', encoding=sys.getdefaultencoding()) as fh:
                 fh.write(cc.ciftext)
             self.write_message("Wrote CIF file %s" % path, 0)
 
