@@ -432,7 +432,12 @@ class PrePeakFitResultFrame(wx.Frame):
             labels.append(pname+'_stderr')
         out.append('# %s' % (', '.join(labels)))
         for name, dgroup in self.datasets.items():
-            pkfit = dgroup.prepeaks.fit_history[0]
+            if not hasattr(dgroup, 'prepeaks'):
+                continue
+            try:
+                pkfit = dgroup.prepeaks.fit_history[0]
+            except:
+                continue
             result = pkfit.result
             label = dgroup.filename
             if len(label) < 25:
@@ -451,7 +456,7 @@ class PrePeakFitResultFrame(wx.Frame):
             out.append(', '.join(dat))
         out.append('')
 
-        with open(path, 'w') as fh:
+        with open(path, 'w', encoding=sys.getdefaultencoding()) as fh:
             fh.write('\n'.join(out))
 
 

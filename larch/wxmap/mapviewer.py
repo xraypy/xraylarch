@@ -1085,7 +1085,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             buff.append('  '.join(dat))
         buff.append('')
         try:
-            fout = open(outfile, 'w')
+            fout = open(outfile, 'w', encoding=sys.getdefaultencoding())
             fout.write('\n'.join(buff))
             fout.close()
         except IOError:

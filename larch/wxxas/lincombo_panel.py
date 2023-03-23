@@ -629,7 +629,7 @@ class LinComboResultFrame(wx.Frame):
             out.append(', '.join(dat))
         out.append('')
 
-        with open(path, 'w') as fh:
+        with open(path, 'w', encoding=sys.getdefaultencoding()) as fh:
             fh.write('\n'.join(out))
 
 class LinearComboPanel(TaskPanel):

@@ -157,7 +157,7 @@ class ReadlineTextCtrl(wx.TextCtrl):
         if filename is None:
             filename = self.hist_file
         try:
-            fout = open(filename,'w')
+            fout = open(filename,'w', encoding=sys.getdefaultencoding())
         except IOError:
             print( 'Cannot save history ', filename)
 

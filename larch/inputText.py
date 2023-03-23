@@ -185,8 +185,9 @@ class HistoryBuffer(object):
         out = self.get(session_only=session_only,
                        trim_last=trim_last,
                        maxlines=maxlines)
+        out.append('')
 
-        with open(filename, 'w') as fh:
+        with open(filename, 'w', encoding=sys.getdefaultencoding()) as fh:
             fh.write('\n'.join(out))
 
 class InputText:

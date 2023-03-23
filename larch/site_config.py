@@ -121,7 +121,7 @@ def make_user_larchdirs():
         "write wrapper"
         if not os.path.exists(fname):
             try:
-                with open(fname, 'w', encoding='utf-8') as fh:
+                with open(fname, 'w', encoding=sys.getdefaultencoding()) as fh:
                     fh.write(f'# {text}\n')
             except:
                 log_error(sys.exc_info()[1])

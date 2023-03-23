@@ -2,6 +2,7 @@
 #
 # export a ModelResult
 #
+import sys
 import numpy as np
 from collections import OrderedDict
 from lmfit.model import ModelResult
@@ -131,7 +132,7 @@ def export_modelresult(result, filename='fitresult.xdi',
         datatable.append(" ".join(row))
 
     datatable.append('')
-    with open(filename, 'w') as fh:
+    with open(filename, 'w', encoding=sys.getdefaultencoding()) as fh:
         fh.write("\n".join(['#%s' % s for s in header]))
         fh.write("\n")
         fh.write("\n".join(datatable))

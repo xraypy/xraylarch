@@ -375,7 +375,7 @@ def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected',
     if not os.path.exists(subdir):
         os.mkdir(subdir)
     try:
-       fout = open(ofile, 'w')
+       fout = open(ofile, 'w', encoding=sys.getdefaultencoding())
        fout.write("\n".join(buff))
        fout.close()
        print("wrote %s, npts=%i, channel='%s'" % (ofile, npts, channelname))

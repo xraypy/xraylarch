@@ -22,6 +22,7 @@ And the answers are that there are simple methods for:
 
 """
 
+import sys
 import os
 import re
 import time
@@ -307,7 +308,7 @@ class CifStructure():
                 os.makedirs(bfolder)
 
             filename = os.path.join(bfolder, 'feff.inp')
-        with open(filename, 'w') as fh:
+        with open(filename, 'w', encoding=sys.getdefaultencoding()) as fh:
             fh.write(feff6text)
         return filename
 

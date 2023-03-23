@@ -415,7 +415,7 @@ def save_workdir(conffile):
 
     try:
         w_file = os.path.join(user_larchdir, conffile)
-        fh = open(w_file, 'w')
+        fh = open(w_file, 'w', encoding=sys.getdefaultencoding())
         fh.write("%s\n" % get_cwd())
         fh.close()
     except:

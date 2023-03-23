@@ -146,7 +146,7 @@ class GroupJournalFrame(wx.Frame):
             buff.append(f"{k}\t{v}\t{dt}")
 
         buff.append('')
-        with open(fname, 'w') as fh:
+        with open(fname, 'w', encoding=sys.getdefaultencoding()) as fh:
             fh.write('\n'.join(buff))
 
         msg = f"Exported journal for {self.dgroup.filename} to '{fname}'"
