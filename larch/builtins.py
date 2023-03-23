@@ -7,7 +7,7 @@ import time
 from . import utils
 from .utils.show import _larch_builtins as show_builtins
 
-from .helper import Helper
+from .helper import help_function
 from .larchlib import parse_group_args, Journal
 from .symboltable import isgroup as sym_isgroup
 from .version import show_version
@@ -39,8 +39,6 @@ if wxlib.HAS_WXPYTHON:
         __core_modules.extend([plotter, wxmap, wxxas, wxxrd])
     except:
         pass
-
-helper = Helper()
 
 # inherit most available symbols from python's __builtins__
 from_builtin = [sym for sym in __builtins__ if not sym.startswith('__')]
@@ -192,20 +190,19 @@ def _reload(mod, _larch=None):
 
 def _help(*args, _larch=None):
     "show help on topic or object"
-    helper.buffer = []
-    if helper._larch is None and _larch is not None:
-        helper._larch = _larch
-    if args == ('',):
-        args = ('help',)
-    if helper._larch is None:
-        helper.addtext('cannot start help system!')
-    else:
-        for a in args:
-            helper.help(a)
-    if helper._larch is not None:
-        helper._larch.writer.write(f"helper.getbuffer()\n")
-    else:
-        return helper.getbuffer()
+    write = sys.stdout.write
+    if _larch is not None:
+        write = _larch.writer.write
+    buff = []
+    for arg in args:
+        if _larch is not None and isinstance(arg, str):
+            arg= _larch.symtable.get_symbol(arg, create=False)
+        buff.append(repr(arg))
+        if callable(arg) and arg.__doc__ is not None:
+            buff.append(arg.__doc__)
+    buff.append('')
+    write('\n'.join(buff))
+
 
 def _journal(*args, **kws):
     return Journal(*args, **kws)
