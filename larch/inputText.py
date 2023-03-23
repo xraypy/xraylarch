@@ -185,9 +185,10 @@ class HistoryBuffer(object):
         out = self.get(session_only=session_only,
                        trim_last=trim_last,
                        maxlines=maxlines)
-        out = '\n'.join(out)
-        with open(filename, 'wb') as fh:
-            fh.write(out.encode())
+        out.append('')
+
+        with open(filename, 'w', encoding=sys.getdefaultencoding()) as fh:
+            fh.write('\n'.join(out))
 
 class InputText:
     """input text for larch, with history"""
