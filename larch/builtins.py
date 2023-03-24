@@ -7,7 +7,6 @@ import time
 from . import utils
 from .utils.show import _larch_builtins as show_builtins
 
-from .helper import help_function
 from .larchlib import parse_group_args, Journal
 from .symboltable import isgroup as sym_isgroup
 from .version import show_version
