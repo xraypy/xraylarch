@@ -10,8 +10,8 @@ import wx.lib.mixins.inspection
 
 import numpy
 import scipy
-
 import larch
+from pyshortcuts import platform
 
 from wxutils import (MenuItem, Font, Button, Choice)
 
@@ -20,7 +20,7 @@ from .readlinetextctrl import ReadlineTextCtrl
 from .larchfilling import Filling
 from .columnframe import ColumnDataFileFrame
 from .athena_importer import AthenaImporter
-from . import inputhook, FONTSIZE, FONTSIZE_FW
+from . import inputhook
 
 from larch.io import (read_ascii, read_xdi, read_gsexdi,
                       gsescan_group, fix_varname,
@@ -34,15 +34,23 @@ ICON_FILE = 'larch.ico'
 BACKGROUND_COLOUR = '#FCFCFA'
 FOREGROUND_COLOUR = '#050520'
 
+FONTSIZE_FW = 13
+if platform == 'win':
+    FONTSIZE_FW = 12
+    locale.setlocale(locale.LC_ALL, 'C')
+elif platform == 'darwin':
+    FONTSIZE_FW = 14
 
 def makeColorPanel(parent, color):
     p = wx.Panel(parent, -1)
     p.SetBackgroundColour(color)
     return p
 
-
 def wx_inspect():
     wx.GetApp().ShowInspectionTool()
+
+def get_font(size):
+    return wx.Font(size, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
 
 class LarchWxShell(object):
     ps1 = 'Larch>'
@@ -77,13 +85,13 @@ class LarchWxShell(object):
         self.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
         self.symtable.set_symbol('_sys.wx.parent', wx.GetApp().GetTopWindow())
         self.symtable.set_symbol('_sys.last_eval_time', 0.0)
-        self.fontsize = FONTSIZE_FW + 1
+        self.fontsize = FONTSIZE_FW
 
         if self.output is not None:
             style = self.output.GetDefaultStyle()
             bgcol = style.GetBackgroundColour()
             sfont = style.GetFont()
-            sfont.Family = wx.MODERN
+            sfont.Family = wx.TELETYPE
             sfont.Weight = wx.BOLD
             sfont.PointSize = self.fontsize
             style.SetFont(sfont)
@@ -218,7 +226,7 @@ class LarchPanel(wx.Panel):
         self.output.SetBackgroundColour(BACKGROUND_COLOUR)
         self.output.SetForegroundColour(FOREGROUND_COLOUR)
         if font is None:
-            font = wx.Font(self.fontsize, wx.MODERN, wx.NORMAL, wx.BOLD, 0, "")
+            font = get_font(self.fontsize)
 
         self.output.SetFont(font)
         self.objtree.tree.SetFont(font)
@@ -271,7 +279,8 @@ class LarchPanel(wx.Panel):
 
     def write_banner(self):
         self.larchshell.set_textstyle('text2')
-        self.larchshell.write(make_banner())
+        self.larchshell.write(make_banner(show_libraries=['numpy', 'scipy', 'matplotlib', 'h5py',
+                                                          'lmfit', 'xraydb', 'wx','wxmplot']))
         self.larchshell.write("\n  \n")
         self.larchshell.set_textstyle('text')
 
@@ -332,14 +341,13 @@ class LarchFrame(wx.Frame):
         self.historyfile = historyfile
         self.subframes = {}
         self.last_array_sel = {}
-        self.fontsize = FONTSIZE_FW + 1
-        # print("FONTSIZE ", self.fontsize)
+        self.fontsize = FONTSIZE_FW
 
         wx.Frame.__init__(self, parent, -1, size=(800, 725),
                           style= wx.DEFAULT_FRAME_STYLE)
         self.SetTitle('LarchGUI')
 
-        self.font = wx.Font(self.fontsize, wx.MODERN, wx.NORMAL, wx.BOLD, 0, "")
+        self.font = get_font(self.fontsize)
         self.SetFont(self.font)
         sbar = self.CreateStatusBar(2, wx.CAPTION)
 
@@ -607,7 +615,7 @@ class LarchFrame(wx.Frame):
 
     def onAbout(self, event=None):
         about_msg =  """LarchGui:
-        %s""" % (make_banner())
+        %s""" % (make_banner(withlibraries=True))
 
         dlg = wx.MessageDialog(self, about_msg,
                                "About LarchGui", wx.OK | wx.ICON_INFORMATION)
@@ -623,7 +631,7 @@ class LarchFrame(wx.Frame):
         dlg = wx.Dialog(self, wx.ID_ANY, size=(700, 400),
                         title='Larch Versions')
 
-        font = wx.Font(self.fontsize, wx.MODERN, wx.NORMAL, wx.BOLD, 0, "")
+        font = get_font(self.fontsize)
         dlg.SetFont(font)
         panel = wx.Panel(dlg)
         txt = wx.StaticText(panel, label=version_message)

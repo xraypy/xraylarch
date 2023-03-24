@@ -26,6 +26,12 @@ except PackageNotFoundError:
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+# libraries whose versions might be interesting to know
+LIBS_VERSIONS = ('numpy', 'scipy', 'matplotlib', 'h5py', 'sklearn', 'skimage',
+                 'sqlalchemy', 'fabio', 'pyFAI', 'PIL', 'imageio', 'silx',
+                 'tomopy', 'pymatgen.core', 'numdifftools', 'xraydb', 'lmfit',
+                 'asteval', 'wx', 'wxmplot')
+
 def version_data(with_libraries=False):
     "get version data"
     vinf  = sys.version_info
@@ -53,11 +59,7 @@ def version_data(with_libraries=False):
             }
 
     if with_libraries:
-        for modname in ('numpy', 'scipy', 'matplotlib', 'h5py', 'sklearn',
-                        'skimage', 'sqlalchemy', 'fabio', 'pyFAI', 'PIL',
-                        'imageio', 'silx', 'tomopy', 'pymatgen.core',
-                        'numdifftools', 'xraydb', 'lmfit', 'asteval', 'wx',
-                        'wxmplot'):
+        for modname in LIBS_VERSIONS:
             vers = "not installed"
             if modname not in sys.modules:
                 try:
@@ -73,16 +75,30 @@ def version_data(with_libraries=False):
             vdat[modname] = vers
     return vdat
 
-def make_banner(mods=None):
+def make_banner(with_libraries=False, show_libraries=None):
     "return startup banner"
-    vdat = version_data()
+    if show_libraries is None:
+        show_libraries = LIBS_VERSIONS if with_libraries else []
+
+    vdat = version_data(with_libraries=True)
     lines = [f"Larch {vdat['release version']}, released {vdat['release date']}"]
     if vdat['development version'] != vdat['release version']:
         lines.append(f"development version: {vdat['development version']}")
     lines.append(f"Python {vdat['python version']}, {vdat['python builder']}")
-    lines.append('use `print(show_version())` for version details')
+    libline = []
+    for key, val in vdat.items():
+        if key in show_libraries:
+            libline.append(f"{key:s}: {val}")
+            if len(libline) > 3:
+                lines.append(', '.join(libline))
+                libline = []
+    if len(libline) > 0:
+        lines.append(', '.join(libline))
+
+    if len(show_libraries) < 10:
+        lines.append('use `print(show_version())` for detailed versions')
     linelen = max([len(line) for line in lines])
-    border = '='*min(75, max(linelen, 25))
+    border = '='*min(99, max(linelen, 25))
     lines.insert(0, border)
     lines.append(border)
     return '\n'.join(lines)

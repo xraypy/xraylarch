@@ -225,7 +225,7 @@ def run_larch():
 
     args = parser.parse_args()
     if args.version:
-        print(make_banner())
+        print(make_banner(with_libraries=True))
         vinfo = check_larchversion()
         if vinfo.update_available:
             print(vinfo.message)

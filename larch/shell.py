@@ -80,7 +80,8 @@ class Shell(cmd.Cmd):
         self.color_writer = (uname != 'win' and hasattr(writer, 'set_textstyle'))
         if not quiet:
             if banner_msg is None:
-                banner_msg = make_banner(mods=[wx])
+                banner_msg = make_banner(show_libraries=['numpy', 'scipy', 'matplotlib', 'h5py',
+                                                         'lmfit', 'xraydb', 'wx','wxmplot'])
             if self.color_writer:
                 writer.set_textstyle('error')
             writer.write(banner_msg)
