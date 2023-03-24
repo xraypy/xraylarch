@@ -1,7 +1,8 @@
 #!/bin/sh
 ##
 ## script to install Larch on Linux or MacOS
-## using a Miniforge environment and all required packages
+## using a Mambaforge environment and installing
+## all required packages with mamba or pip
 
 prefix=$HOME/xraylarch
 
@@ -10,24 +11,20 @@ if [ $uname == Darwin ]; then
     uname=MacOSX
 fi
 
-
 condaurl="https://github.com/conda-forge/miniforge/releases/latest/download"
-condafile="Miniforge3-$uname-x86_64.sh"
+condafile="Mambaforge-$uname-x86_64.sh"
 
 logfile=GetLarch.log
 
-
 ## set list of conda packages to install from conda-forge
-cforge_pkgs="numpy=>1.20 scipy=>1.7 matplotlib=>3.5 scikit-image scikit-learn pycifrw"
+cforge_pkgs="numpy=>1.22 scipy=>1.8 matplotlib=>3.6 scikit-image scikit-learn pycifrw pandas jupyter plotly"
 
 ## set list of pip packages to install from pypi
-pip_pkgs="wxmplot wxutils lmfit asteval pyshortcuts pyfai charset_normalizer"
+pip_pkgs="wxmplot wxutils lmfit asteval pyshortcuts pyfai"
 
 unset CONDA_EXE CONDA_PYTHON_EXE CONDA_PREFIX PROJ_LIB
 
-
 with_wx=1
-with_tomopy=1
 use_devel=0
 
 ## get command line options
@@ -45,8 +42,6 @@ for opt ; do
   esac
   case "$option" in
     prefix)        prefix=$optarg ;;
-    with-tomopy)   with_tomopy=1 ;;
-    no-tomopy)     with_tomopy=0 ;;
     devel)         use_devel=1 ;;
     with-wx)       with_wx=1 ;;
     no-wx)         with_wx=0 ;;
@@ -55,7 +50,6 @@ Usage: GetLarch.sh [options]
 Options:
   --prefix=PREFIX             base directory for installation [$prefix]
   --with-wx  / --no-wx        include / omit wxPython from Anaconda Python [with]
-  --with-tomopy / --no-tompy  include / omit tomopy from Anaconda Python   [with]
   --devel                     install development branch of xraylarch instead of latest release [no]
 EOF
     exit 0
@@ -78,10 +72,6 @@ fi
 
 if [ $with_wx == 1 ]; then
     cforge_pkgs="$cforge_pkgs wxpython"
-fi
-
-if [ $with_tomopy == 1 ]; then
-    cforge_pkgs="$cforge_pkgs tomopy"
 fi
 
 larchurl='xraylarch'
@@ -111,20 +101,11 @@ echo "##  Installing Miniconda for $uname to $prefix" | tee -a $logfile
 echo "#>  sh ./$condafile -b -p $prefix " | tee -a $logfile
 sh ./$condafile -b -p $prefix | tee -a $logfile
 
-
-echo "##  Running conda updates"  | tee -a $logfile
-echo "#>  $prefix/bin/conda clean -y --all " | tee -a $logfile
-$prefix/bin/conda clean -y --all | tee -a $logfile
-
-echo "##  Running conda updates"  | tee -a $logfile
-echo "#>  $prefix/bin/conda update -n base -yc defaults --all " | tee -a $logfile
-$prefix/bin/conda update -n base -yc defaults --all | tee -a $logfile
-
 export PATH=$prefix/bin:$PATH
 
 echo "##  Installing packages from conda-forge"  | tee -a $logfile
-echo "#> $prefix/bin/conda install -yc conda-forge $cforge_pkgs " | tee -a $logfile
-$prefix/bin/conda install -yc conda-forge $cforge_pkgs | tee -a $logfile
+echo "#> $prefix/bin/mamba install -yc conda-forge $cforge_pkgs " | tee -a $logfile
+$prefix/bin/mamba install -y -c conda-forge $cforge_pkgs
 
 ## pip install of dependencies and Larch
 echo "##Installing dependencies from PyPI"  | tee -a $logfile
