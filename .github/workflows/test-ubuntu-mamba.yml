@@ -1,4 +1,4 @@
-name: Test with Ubuntu, Miniconda
+name: Test with Ubuntu, Mamba
 
 on: [push]
 
