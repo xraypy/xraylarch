@@ -6,7 +6,14 @@ Larch:  Data Analysis Tools for X-ray Spectroscopy and More
 
 .. image::  https://github.com/xraypy/xraylarch/actions/workflows/test-windows.yml/badge.svg
    :target: https://github.com/xraypy/xraylarch/actions/workflows/test-windows.yml
-	    
+
+.. image::  https://github.com/xraypy/xraylarch/actions/workflows/test-ubuntu-mamba.yml/badge.svg
+   :target: https://github.com/xraypy/xraylarch/actions/workflows/test-ubuntu-mamba.yml
+
+.. image::  https://github.com/xraypy/xraylarch/actions/workflows/test-windows-mamba.yml/badge.svg
+   :target: https://github.com/xraypy/xraylarch/actions/workflows/test-windows-mamba.yml
+
+
 .. _scipy: https://scipy.org/
 .. _numpy: https://numpy.scipy.org/
 .. _matplotlib: https://matplotlib.org/
