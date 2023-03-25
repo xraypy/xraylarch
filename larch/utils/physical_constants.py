@@ -33,8 +33,8 @@ PLANCK_HBARC = PLANCK_HC / TAU
 RYDBERG = consts.Rydberg * consts.Planck * consts.c/ consts.e
 
 # classical electron radius in cm
-R_ELECTRON_CM  = 100.0 * consts.codata.physical_constants['classical electron radius'][0]
-R_ELECTRON_ANG = 1.e10 * consts.codata.physical_constants['classical electron radius'][0]
+R_ELECTRON_CM  = 100.0 * consts.physical_constants['classical electron radius'][0]
+R_ELECTRON_ANG = 1.e10 * consts.physical_constants['classical electron radius'][0]
 
 
 
