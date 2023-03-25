@@ -75,7 +75,7 @@ if HAS_WXPYTHON:
     from .specfile_importer import SpecfileImporter
     from .reportframe import ReportFrame, DictFrame, DataTableGrid
     from .gui_utils import (gcd, databrowser, fileprompt, LarchWxApp,
-                            wx_update, show_wxsizes, panel_pack)
+                            wx_update, show_wxsizes, panel_pack, ExceptionPopup)
 
     from .larch_updater import LarchUpdaterDialog
     from .parameter import ParameterWidgets, ParameterPanel

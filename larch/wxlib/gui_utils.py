@@ -2,6 +2,7 @@
 
 import sys
 import wx
+from  wx.lib.dialogs import ScrolledMessageDialog
 try:
     from wx._core import PyDeadObjectError
 except:
@@ -13,9 +14,23 @@ import locale
 
 from ..larchlib import ensuremod
 from .larchfilling import Filling
-from ..utils import get_cwd
+from ..utils import get_cwd, format_exception
 
 DEF_CHOICES = [('All Files', '*.*')]
+
+def ExceptionPopup(parent, title, lines, with_traceback=True,
+                   style=None, **kws):
+    """Modal message dialog with current Python Exception"""
+    if style is None:
+        style = wx.OK|wx.ICON_INFORMATION
+    lines.extend(format_exception(with_traceback=with_traceback))
+    message = '\n'.join(lines)
+
+    dkws = {'size': (700, 350)}
+    dkws.update(kws)
+    dlg = ScrolledMessageDialog(parent, message, title, **dkws)
+    dlg.ShowModal()
+    dlg.Destroy()
 
 class LarchWxApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     """wrapper for wx apps, with the following arguments and features:
