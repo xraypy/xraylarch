@@ -36,10 +36,11 @@ from larch.wxlib import (LarchFrame, FloatSpin, EditableListBox,
                          Button, Popup, HLine, FileSave, FileOpen, Choice,
                          Check, MenuItem, CEN, LEFT, FRAMESTYLE,
                          Font, FONTSIZE, flatnotebook, LarchUpdaterDialog,
-                         PeriodicTablePanel, FeffResultsPanel, LarchWxApp)
+                         PeriodicTablePanel, FeffResultsPanel, LarchWxApp,
+                         ExceptionPopup)
 
 
-from larch.xrd import CifStructure, get_amscifdb, find_cifs, get_cif
+from larch.xrd import CifStructure, get_amscifdb, find_cifs, get_cif, parse_cif_file
 
 LEFT = wx.ALIGN_LEFT
 CEN |=  wx.ALL
@@ -418,9 +419,10 @@ class CIFFrame(wx.Frame):
         try:
             sites = ['%d' % (i+1) for i in range(len(sites))]
         except:
-            print("Warning: could not make sense of atomic sites")
-            print("Elements: ", list(elems.keys()))
-            print("Sites   : ", sites)
+            title = "Could not make sense of atomic sites"
+            message = [f"Elements: {list(elems.keys())}",
+                       f"Sites: {sites}"]
+            ExceptionPopup(self, title, message)
 
         self.wids['site'].Clear()
         self.wids['site'].AppendItems(sites)
@@ -441,6 +443,10 @@ class CIFFrame(wx.Frame):
             self.wids['site'].Select(0)
         except:
             self.write_message(f"could not get sites for central atom '{catom}'")
+            title = f"Could not get sites for central atom '{catom}'"
+            message = []
+            ExceptionPopup(self, title, message)
+
         edge_val = 'K' if atomic_number(catom) < 60 else 'L3'
         self.wids['edge'].SetStringSelection(edge_val)
         self.onGetFeff()
@@ -593,23 +599,36 @@ class CIFFrame(wx.Frame):
     def onImportCIF(self, event=None):
         wildcard = 'CIF files (*.cif)|*.cif|All files (*.*)|*.*'
         path = FileOpen(self, message='Open CIF File',
-                        wildcard=wildcard,
-                        default_file='My.cif')
+                        wildcard=wildcard, default_file='My.cif')
+
         if path is not None:
             try:
+                cif_data = parse_cif_file(path)
+            except:
+                title = f"Cannot parse CIF file '{path}'"
+                message = [f"Error reading CIF File: {path}"]
+                ExceptionPopup(self, title, message)
+                return
+
+            try:
                 cif_id = self.cifdb.add_ciffile(path)
+            except:
+                title = f"Cannot add CIF from '{path}' to CIF database"
+                message = [f"Error adding CIF File to database: {path}"]
+                ExceptionPopup(self, title, message)
+                return
+
+            try:
                 self.onShowCIF(cif_id=cif_id)
             except:
-                title = "Cannot import CIF from '%s'" % path
-                message = "Error reading CIF File: %s\n" % path
-                r = Popup(self, message, title)
-
+                title = f"Cannot show CIF from '{path}'"
+                message = [f"Error displaying CIF File: {path}"]
+                ExceptionPopup(self, title, message)
 
     def onImportFeff(self, event=None):
         wildcard = 'Feff input files (*.inp)|*.inp|All files (*.*)|*.*'
         path = FileOpen(self, message='Open Feff Input File',
-                        wildcard=wildcard,
-                        default_file='feff.inp')
+                        wildcard=wildcard, default_file='feff.inp')
         if path is not None:
             fefftext = None
             _, fname = os.path.split(path)
