@@ -99,6 +99,52 @@ def clean_elemsym(sym):
     return ''.join([s.strip() for s in sx if s in ascii_letters])
 
 
+def parse_cif_file(filename):
+    """parse ciffile, extract data for 1st listed structure,
+    and do some basic checks:
+        must have formula
+        must have spacegroup
+    returns dat, formula, json-dumped symm_xyz
+    """
+    if not HAS_CIFPARSER:
+        raise ValueError("CifParser from pymatgen not available. Try 'pip install pymatgen'.")
+
+    cif = CifParser(filename)
+    cifkey = list(cif._cif.data.keys())[0]
+    dat = cif._cif.data[cifkey].data
+
+    formula = None
+    for formname in ('_chemical_formula_sum', '_chemical_formula_moiety'):
+        if formname in dat:
+            formula = dat[formname]
+    if formula is None and '_atom_site_type_symbol' in dat:
+        comps = {}
+        complist = dat['_atom_site_type_symbol']
+        for c in complist:
+            if c not in comps:
+                nx = complist.count(c)
+                comps[c] = '%s%d' % (c, nx) if nx != 1 else c
+        formula = ''.join(comps.values())
+
+    if formula is None:
+        raise ValueError(f'Cannot read chemical formula from file {filename:s}')
+
+    # get spacegroup and symmetry
+    sgroup_name = dat.get('_symmetry_space_group_name_H-M', None)
+    if sgroup_name is None:
+        for key, val in dat.items():
+            if 'space_group' in key and 'H-M' in key:
+                sgroup_name = val
+
+    symm_xyz = dat.get('_space_group_symop_operation_xyz', None)
+    if symm_xyz is None:
+        symm_xyz = dat.get('_symmetry_equiv_pos_as_xyz', None)
+    if symm_xyz is None:
+        raise ValueError(f'Cannot read symmetries from file {filename:s}')
+
+    symm_xyz = json.dumps(symm_xyz)
+    return dat, formula, symm_xyz
+
 
 class CifStructure():
     """representation of a Cif Structure
@@ -563,28 +609,15 @@ class AMSCIFDB():
 
 
     def add_ciffile(self, filename, cif_id=None, url='', debug=False):
+
         if not HAS_CIFPARSER:
             raise ValueError("CifParser from pymatgen not available. Try 'pip install pymatgen'.")
-        cif = CifParser(filename)
-        cifkey = list(cif._cif.data.keys())[0]
-        dat = cif._cif.data[cifkey].data
+        try:
+            dat, formula, symm_xyz = parse_cif_file(filename)
+        except:
+            raise ValueError(f"unknown error trying to parse CIF file: {filename}")
 
-        formula = None
-        for formname in ('_chemical_formula_sum', '_chemical_formula_moiety'):
-            if formname in dat:
-                formula = dat[formname]
-        if formula is None and '_atom_site_type_symbol' in dat:
-            comps = {}
-            complist = dat['_atom_site_type_symbol']
-            for c in complist:
-                if c not in comps:
-                    nx = complist.count(c)
-                    comps[c] = '%s%d' % (c, nx) if nx != 1 else c
-            formula = ''.join(comps.values())
-
-        if formula is None:
-            raise ValueError(f'Cannot read chemical formula from file {filename:s}')
-
+        # compound
         compound = '<missing>'
         for compname in ('_chemical_compound_source',
                          '_chemical_name_systematic',
@@ -593,20 +626,12 @@ class AMSCIFDB():
                 compound = dat[compname]
 
 
-        # get spacegroup and symmetry
+        # spacegroup
         sgroup_name = dat.get('_symmetry_space_group_name_H-M', None)
         if sgroup_name is None:
             for key, val in dat.items():
                 if 'space_group' in key and 'H-M' in key:
                     sgroup_name = val
-
-        symm_xyz = dat.get('_space_group_symop_operation_xyz', None)
-        if symm_xyz is None:
-            symm_xyz = dat.get('_symmetry_equiv_pos_as_xyz', None)
-        if symm_xyz is None:
-            raise ValueError(f'Cannot read symmetries from file {filename:s}')
-
-        symm_xyz = json.dumps(symm_xyz)
 
         sgroup = self.get_spacegroup(sgroup_name)
         if sgroup is not None and sgroup.symmetry_xyz != symm_xyz:
