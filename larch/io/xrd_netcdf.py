@@ -7,13 +7,7 @@ variables in netcdf file (or return all as dictionary)
 """
 
 import os
-
-## Package for reading netcdf files (in scipy)
-try:
-    import scipy.io.netcdf
-    netcdf_open = scipy.io.netcdf.netcdf_file
-except ImportError:
-    raise ImportError('cannot find scipy netcdf module')
+from scipy.io import netcdf_file
 
 def read_xrd_netcdf(fname,verbose=False):
 
@@ -46,12 +40,12 @@ def read_netcdf(fname,verbose=False,keyword=None):
     unless data from only one key is specified
     '''
 
-    with netcdf_open(fname, mmap=False) as file_netcdf:
-        if keyword is not None and keyword in file_netcdf.variables.keys():
-            return file_netcdf.variables[keyword].data
+    with netcdf_file(fname, mmap=False) as fh:
+        if keyword is not None and keyword in fh.variables.keys():
+            return fh.variables[keyword].data
         else:
             netcdf_dict = {}
-            for key,val in dict(file_netcdf.variables).items():
+            for key,val in dict(fh.variables).items():
                 netcdf_dict[key] = val.data
             return netcdf_dict
 

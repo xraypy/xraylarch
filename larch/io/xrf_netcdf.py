@@ -8,11 +8,7 @@ import time
 import sys
 import os
 
-try:
-    import scipy.io.netcdf
-    netcdf_open = scipy.io.netcdf.netcdf_file
-except ImportError:
-    raise ImportError('cannot find a netcdf module')
+from scipy.io import netcdf_file
 
 def aslong(d):
     """unravels and converts array of int16 (int) to int32 (long)"""
@@ -74,12 +70,12 @@ def read_xrf_netcdf(fname, npixels=None, verbose=False):
     read_ok = False
     fh = None
     try:
-        fh = netcdf_open(fname,'r')
+        fh = netcdf_file(fname,'r')
         read_ok = True
     except:
         time.sleep(0.010)
         try:
-            fh = netcdf_open(fname,'r')
+            fh = netcdf_file(fname,'r')
             read_ok = True
         except:
             pass
