@@ -37,7 +37,6 @@ FOREGROUND_COLOUR = '#050520'
 FONTSIZE_FW = 13
 if platform == 'win':
     FONTSIZE_FW = 12
-    locale.setlocale(locale.LC_ALL, 'C')
 elif platform == 'darwin':
     FONTSIZE_FW = 14
 
