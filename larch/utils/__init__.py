@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import sys
+from traceback import format_tb
 import time
 from datetime import datetime
 from collections import OrderedDict
@@ -23,6 +25,21 @@ from .shellutils import (_copy, _deepcopy, _more, _parent,
 
 logging.basicConfig(format='%(levelname)s [%(asctime)s]: %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S', level=logging.WARNING)
+
+def format_exception(with_traceback=True):
+    """return exception message as list of strings,
+    optionally including traceback
+    """
+    etype, exc, tb = sys.exc_info()
+    out = []
+    if with_traceback:
+        out = ["Traceback (most recent calls last):"]
+        for tline in format_tb(tb):
+            if tline.endswith('\n'): tline = tline[:-1]
+            out.append(tline)
+    out.append(f"{etype.__name__}: {exc}")
+    return out
+
 
 def write_log(msg, level='debug'):
     f = logging.debug
