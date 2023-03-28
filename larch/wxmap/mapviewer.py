@@ -1617,23 +1617,14 @@ class MapViewerFrame(wx.Frame):
             return
         pvmap = dict([(r.id, r.name) for r in self.scandb.get_rows('pv')])
 
-        #print("SAMPLESTAGE ", samplestage)
-
         pv_rows = self.scandb.get_rows('instrument_pv',
                                        where={'instrument_id': samplestage.id})
 
-        # print(" pv rows " , pv_rows)
         allpvs = []
         for row in pv_rows:
             for pvid, pvname in pvmap.items():
                 if pvid == row.pv_id:
                     allpvs.append(pvname)
-
-        # print("ALL PVS: " , allpvs)
-        
-        pv_vals = []
-       
-        # allpvs = [pv.name for pv in samplestage.pv]
 
         pvn  = pv_fullname
         conf = xrmfile.xrmmap['config']
@@ -1648,8 +1639,7 @@ class MapViewerFrame(wx.Frame):
         for addr, val in zip(env_addrs, env_vals):
             if addr in allpvs:
                 position[addr] = float(val)
-                # print("POS  ", addr, val)
-        # print("::: POSITION :: ",  position)
+
         position[pvn(h5str(conf['scan/pos1'][()]))] = x
         position[pvn(h5str(conf['scan/pos2'][()]))] = y
 
@@ -1940,7 +1930,16 @@ class MapViewerFrame(wx.Frame):
                 return
 
         save_workdir('gsemap.dat')
+        try:
+            self.htimer.Stop()
+        except:
+            pass
+        try:
+            self.file_timer.Stop()
+        except:
+            pass
 
+        
         for xrmfile in self.filemap.values():
             try:
                 xrmfile.close()
@@ -1968,13 +1967,11 @@ class MapViewerFrame(wx.Frame):
         except:
             pass
 
-        wx.CallAfter(self.larch.symtable._plotter.close_all_displays)
+
+        self.larch.symtable._plotter.close_all_displays()
         if self.larch_buffer is not None:
-            try:
-                self.larch_buffer.Show()
-                self.larch_buffer.onExit(force=True)
-            except:
-                pass
+            self.larch_buffer.exit_on_close = True
+            self.larch_buffer.onExit(force=True, with_sysexit=False)
         self.Destroy()
 
     def onReadFile(self, evt=None):
