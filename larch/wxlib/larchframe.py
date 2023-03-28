@@ -651,7 +651,7 @@ class LarchFrame(wx.Frame):
         except:
             pass
 
-    def onExit(self, event=None, force=False):
+    def onExit(self, event=None, force=False, with_sysexit=True):
         if not self.exit_on_close:
             self.Hide()
             return
@@ -677,7 +677,8 @@ class LarchFrame(wx.Frame):
 
             except:
                 pass
-            sys.exit()
+            if with_sysexit:
+                sys.exit()
         else:
             try:
                 event.Veto()
