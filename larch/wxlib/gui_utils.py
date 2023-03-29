@@ -3,10 +3,6 @@
 import sys
 import wx
 from  wx.lib.dialogs import ScrolledMessageDialog
-try:
-    from wx._core import PyDeadObjectError
-except:
-    PyDeadObjectError = Exception
 
 import time
 import os
@@ -18,19 +14,19 @@ from ..utils import get_cwd, format_exception
 
 DEF_CHOICES = [('All Files', '*.*')]
 
-def ExceptionPopup(parent, title, lines, with_traceback=True,
-                   style=None, **kws):
-    """Modal message dialog with current Python Exception"""
-    if style is None:
-        style = wx.OK|wx.ICON_INFORMATION
-    lines.extend(format_exception(with_traceback=with_traceback))
-    message = '\n'.join(lines)
-
-    dkws = {'size': (700, 350)}
-    dkws.update(kws)
-    dlg = ScrolledMessageDialog(parent, message, title, **dkws)
-    dlg.ShowModal()
-    dlg.Destroy()
+# def ExceptionPopup(parent, title, lines, with_traceback=True,
+#                    style=None, **kws):
+#     """Modal message dialog with current Python Exception"""
+#     if style is None:
+#         style = wx.OK|wx.ICON_INFORMATION
+#     lines.extend(format_exception(with_traceback=with_traceback))
+#     message = '\n'.join(lines)
+#
+#     dkws = {'size': (700, 350)}
+#     dkws.update(kws)
+#     dlg = ScrolledMessageDialog(parent, message, title, **dkws)
+#     dlg.ShowModal()
+#     dlg.Destroy()
 
 class LarchWxApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     """wrapper for wx apps, with the following arguments and features:
@@ -71,48 +67,32 @@ class LarchWxApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def run(self):
         self.MainLoop()
 
-
-def SafeWxCall(fcn):
-    """decorator to wrap function in a wx.CallAfter() so that
-    calls can be made in a separate thread, and asynchronously.
-    """
-    def wrapper(*args, **kwargs):
-        "callafter wrapper"
-        try:
-            wx.CallAfter(fcn, *args, **kwargs)
-        except PyDeadObjectError:
-            pass
-    wrapper.__doc__ = fcn.__doc__
-    wrapper.__name__ = fcn.__name__
-    wrapper.__dict__.update(fcn.__dict__)
-    return wrapper
-
-def panel_pack(window, panel, pad=10):
-    """
-    a simple method to pack a single panel to a single frame
-    """
-    sizer = wx.BoxSizer(wx.VERTICAL)
-    sizer.Add(panel, 1, wx.LEFT, 5)
-    window.SetSizer(sizer)
-    sizer.Fit(window)
-    w0, h0 = window.GetSize()
-    w1, h1 = window.GetBestSize()
-    window.SetSize((max(w0, w1)+pad, max(h0, h1)+pad))
-
-def show_wxsizes(obj):
-    """recursively show sizes of wxPython objects --
-    useful for avoiding size<1 errors"""
-    for child in obj.GetChildren():
-        try:
-            csize = child.GetSize()
-            if csize[0] < 1 or csize[1] < 1:
-                print(child, csize)
-        except:
-            pass
-        try:
-            show_wxsizes(child)
-        except:
-            pass
+# def panel_pack(window, panel, pad=10):
+#     """
+#     a simple method to pack a single panel to a single frame
+#     """
+#     sizer = wx.BoxSizer(wx.VERTICAL)
+#     sizer.Add(panel, 1, wx.LEFT, 5)
+#     window.SetSizer(sizer)
+#     sizer.Fit(window)
+#     w0, h0 = window.GetSize()
+#     w1, h1 = window.GetBestSize()
+#     window.SetSize((max(w0, w1)+pad, max(h0, h1)+pad))
+#
+# def show_wxsizes(obj):
+#     """recursively show sizes of wxPython objects --
+#     useful for avoiding size<1 errors"""
+#     for child in obj.GetChildren():
+#         try:
+#             csize = child.GetSize()
+#             if csize[0] < 1 or csize[1] < 1:
+#                 print(child, csize)
+#         except:
+#             pass
+#         try:
+#             show_wxsizes(child)
+#         except:
+#             pass
 
 def wx_update(_larch=None, **kws):
     """force an update of wxPython windows"""
@@ -155,21 +135,20 @@ class wxLarchTimer(wx.MiniFrame):
        time.sleep(0.001)
        print(" ..")
 
-# @SafeWxCall
-def gcd(wxparent=None, _larch=None, **kws):
-    """Directory Browser to Change Directory"""
-    parent = _larch.symtable.get_symbol('_sys.wx.wxapp')
-    if parent is None:
-        _larch.raise_exception(None, msg='wx not supported')
-
-    dlg = wx.DirDialog(None, 'Choose Directory',
-                       defaultPath = get_cwd(),
-                       style = wx.DD_DEFAULT_STYLE)
-
-    if dlg.ShowModal() == wx.ID_OK:
-        os.chdir(dlg.GetPath())
-    dlg.Destroy()
-    return get_cwd()
+# def gcd(wxparent=None, _larch=None, **kws):
+#     """Directory Browser to Change Directory"""
+#     parent = _larch.symtable.get_symbol('_sys.wx.wxapp')
+#     if parent is None:
+#         _larch.raise_exception(None, msg='wx not supported')
+#
+#     dlg = wx.DirDialog(None, 'Choose Directory',
+#                        defaultPath = get_cwd(),
+#                        style = wx.DD_DEFAULT_STYLE)
+#
+#     if dlg.ShowModal() == wx.ID_OK:
+#         os.chdir(dlg.GetPath())
+#     dlg.Destroy()
+#     return get_cwd()
 
 
 class DataBrowserFrame(wx.Frame):
@@ -206,7 +185,6 @@ def databrowser(_larch=None, **kws):
     return DataBrowserFrame(parent=parent, _larch=_larch)
 
 
-# @SafeWxCall
 def fileprompt(mode='open', multi=True, message = None,
                 fname=None, choices=None, _larch=None, **kws):
     """show File Browser for opening or saving file.

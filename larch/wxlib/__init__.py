@@ -52,38 +52,30 @@ if HAS_WXPYTHON:
     from . import larchfilling
     from . import readlinetextctrl
 
-    from wxutils import (set_sizer, pack, SetTip, Font, HLine, Check,
-                         MenuItem, Popup, RIGHT, LEFT, CEN , LTEXT,
-                         FRAMESTYLE, hms, DateTimeCtrl, Button, TextCtrl,
-                         ToggleButton, BitmapButton, Choice, YesNo,
-                         SimpleText, LabeledTextCtrl, HyperText, get_icon,
-                         OkCancel, FileOpen, FileSave, SelectWorkdir,
-                         fix_filename, SavedParameterDialog, GridPanel,
-                         RowPanel, make_steps, set_float, FloatCtrl,
-                         EditableListBox)
-
-    from .colors import COLORS, GUIColors, set_color
-    from .filechecklist import FileCheckList, FileDropTarget
-
-    from .floats import NumericCombo, FloatSpin, FloatSpinWithPin
-
-    from .notebooks import flatnotebook
+    from wxutils import (set_sizer, pack, SetTip, Font, HLine, Check, MenuItem,
+                         Popup, RIGHT, LEFT, CEN , LTEXT, FRAMESTYLE, hms,
+                         DateTimeCtrl, Button, TextCtrl, ToggleButton,
+                         BitmapButton, Choice, YesNo, SimpleText,
+                         LabeledTextCtrl, HyperText, get_icon, OkCancel,
+                         FileOpen, FileSave, SelectWorkdir, fix_filename,
+                         SavedParameterDialog, GridPanel, RowPanel, make_steps,
+                         set_float, FloatCtrl, EditableListBox, COLORS,
+                         GUIColors, set_color, FileCheckList, FileDropTarget,
+                         NumericCombo, FloatSpin, FloatSpinWithPin,
+                         flatnotebook, PeriodicTablePanel, gcd, ExceptionPopup,
+                         show_wxsizes, panel_pack)
 
     from .larchframe import LarchFrame, LarchPanel
     from .columnframe import ColumnDataFileFrame, EditColumnFrame
     from .athena_importer import AthenaImporter
     from .specfile_importer import SpecfileImporter
     from .reportframe import ReportFrame, DictFrame, DataTableGrid
-    from .gui_utils import (gcd, databrowser, fileprompt, LarchWxApp,
-                            wx_update, show_wxsizes, panel_pack, ExceptionPopup)
-
+    from .gui_utils import (databrowser, fileprompt, LarchWxApp, wx_update)
     from .larch_updater import LarchUpdaterDialog
     from .parameter import ParameterWidgets, ParameterPanel
-    from .periodictable import PeriodicTablePanel
+
     from .feff_browser import FeffResultsFrame, FeffResultsPanel
-
     from .cif_browser import CIFFrame
-
 
     _larch_builtins = {'_sys.wx': dict(gcd=gcd,
                                        databrowser=databrowser,
@@ -99,7 +91,6 @@ if HAS_WXPYTHON:
                           _xrf_oplot, _fitplot, _redraw_plot,
                           get_zoomlimits, set_zoomlimits)
 
-    # from .xrfdisplay import  XRFDisplayFrame
 
     from . import xafsplots
     from .xafsplots import plotlabels

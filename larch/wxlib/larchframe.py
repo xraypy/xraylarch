@@ -13,9 +13,9 @@ import scipy
 import larch
 from pyshortcuts import platform
 
-from wxutils import (MenuItem, Font, Button, Choice)
+from wxutils import (MenuItem, Font, Button, Choice, panel_pack)
 
-from .gui_utils import LarchWxApp, panel_pack
+from .gui_utils import LarchWxApp
 from .readlinetextctrl import ReadlineTextCtrl
 from .larchfilling import Filling
 from .columnframe import ColumnDataFileFrame
