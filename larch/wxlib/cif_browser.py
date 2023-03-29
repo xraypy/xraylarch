@@ -30,14 +30,14 @@ from larch.utils import read_textfile
 from larch.utils.paths import unixpath
 from larch.utils.strutils import fix_filename, unique_name, strict_ascii
 from larch.site_config import user_larchdir
-from .colors import set_color
+
 from larch.wxlib import (LarchFrame, FloatSpin, EditableListBox,
                          FloatCtrl, SetTip, get_icon, SimpleText, pack,
                          Button, Popup, HLine, FileSave, FileOpen, Choice,
                          Check, MenuItem, CEN, LEFT, FRAMESTYLE,
                          Font, FONTSIZE, flatnotebook, LarchUpdaterDialog,
                          PeriodicTablePanel, FeffResultsPanel, LarchWxApp,
-                         ExceptionPopup)
+                         ExceptionPopup, set_color)
 
 
 from larch.xrd import CifStructure, get_amscifdb, find_cifs, get_cif, parse_cif_file

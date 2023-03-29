@@ -11,11 +11,11 @@ import wx
 import larch
 from larch import Group
 from larch.io import fix_varname, read_athena
-from .colors import COLORS, set_color
+# from .colors import COLORS, set_color
 
 from wxutils import (SimpleText, Button, Choice, FileCheckList,
                      FileDropTarget, pack, Check, MenuItem, SetTip, Popup,
-                     CEN, LEFT, FRAMESTYLE, Font)
+                     CEN, LEFT, FRAMESTYLE, Font, COLORS, set_color)
 
 from wxmplot import PlotPanel
 
