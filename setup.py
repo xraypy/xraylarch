@@ -32,7 +32,7 @@ with open('requirements.txt', 'r') as f:
 
 try:
     import wx
-    # install_reqs.extend(['wxutils>=0.2.3', 'wxmplot>=0.9.43'])
+    # install_reqs.extend(['wxutils>=0.3.0', 'wxmplot>=0.9.53'])
 except (ImportError, AttributeError):
     pass
 
@@ -40,7 +40,7 @@ except (ImportError, AttributeError):
 #          required,  module name, import name, min version, description
 modules = ((True, 'numpy', 'numpy', '1.18', 'basic scientific python'),
            (True, 'scipy', 'scipy', '1.5', 'basic scientific python'),
-           (True, 'matplotlib', 'matplotlib', '3.0', 'basic scientific python'),
+           (True, 'matplotlib', 'matplotlib', '3.5', 'basic scientific python'),
            (True, 'h5py', 'h5py', '2.8', 'basic scientific python'),
            (True, 'pillow', 'PIL', '7.0', 'basic scientific python'),
            (True, 'sqlalchemy', 'sqlalchemy', '1.0', 'basic python'),
@@ -48,10 +48,10 @@ modules = ((True, 'numpy', 'numpy', '1.18', 'basic scientific python'),
            (True, 'requests', 'requests', '0.2', 'basic python'),
            (True, 'scikit-image', 'skimage', '0.17', 'scientific python'),
            (True, 'scikit-learn', 'sklearn', '0.23', 'scientific python'),
-           (True, 'lmfit', 'lmfit', '1.0.2', 'scientific python'),
-           (True, 'asteval', 'asteval', '0.9.22', 'scientific python'),
+           (True, 'lmfit', 'lmfit', '1.1.0', 'scientific python'),
+           (True, 'asteval', 'asteval', '0.9.27', 'scientific python'),
            (True, 'uncertainties', 'uncertainties', '3.0', 'scientific python'),
-           (True, 'xraydb', 'xraydb', '4.4.6', 'scientific python'),
+           (True, 'xraydb', 'xraydb', '4.5.0', 'scientific python'),
            # (False, 'dioptas', 'dioptas', '0.4', 'XRD Display and Integraton'),
            (False, 'tomopy', 'tomopy', '1.4', 'Tomographic reconstructions'),
            (True, 'silx', 'silx', '0.15.2', 'Spec File reading, XRD'),
@@ -59,10 +59,10 @@ modules = ((True, 'numpy', 'numpy', '1.18', 'basic scientific python'),
            (False, 'pyfai', 'pyFAI', '0.17', 'XRD intgration'),
            (False, 'pycifrw', 'CifFile', None, 'Crystallographic Information files'),
            (False, 'psycopg2', 'psycopg2', '2.8.5', 'Postgres databases'),
-           (False, 'pyepics', 'epics', '3.4.0', 'Epics Channel Access'),
+           (False, 'pyepics', 'epics', '3.5.0', 'Epics Channel Access'),
            (False, 'wxpython', 'wx', '4.0.4', 'Graphical User interface'),
-           (False, 'wxmplot', 'wxmplot', '0.9.43', 'Graphical User interface'),
-           (False, 'wxutils', 'wxutils', '0.2.3', 'Graphical User interface'),
+           (False, 'wxmplot', 'wxmplot', '0.9.53', 'Graphical User interface'),
+           (False, 'wxutils', 'wxutils', '0.3.0', 'Graphical User interface'),
            )
 
 missing = []
