@@ -27,7 +27,7 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          Button, HLine, Choice, Check, MenuItem, COLORS,
                          set_color, CEN, RIGHT, LEFT, FRAMESTYLE, Font,
                          FONTSIZE, FONTSIZE_FW, FileSave, FileOpen,
-                         flatnotebook, Popup, EditableListBox)
+                         flatnotebook, Popup, EditableListBox, ExceptionPopup)
 
 from larch.wxlib.parameter import ParameterWidgets
 from larch.wxlib.plotter import last_cursor_pos
@@ -697,7 +697,6 @@ class PrePeakPanel(TaskPanel):
             if not hasattr(dgroup, 'norm'):
                 self.xasmain.process_normalization(dgroup)
             self.fill_form(dgroup)
-
         except:
             pass # print(" Cannot Fill prepeak panel from group ")
 
@@ -1546,8 +1545,10 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         if not os.path.exists(confdir):
             try:
                 os.makedirs(confdir)
-            except OSError:
-                print("Warning: cannot create XAS_Viewer user folder")
+            except:
+                title = "Cannot create XAS Viewer folder"
+                message = [f"Cannot create directory {confdir}"]
+                ExceptionPopup(self, title, message)
                 return
         if fname is None:
             fname = 'autosave_peakfile.modl'

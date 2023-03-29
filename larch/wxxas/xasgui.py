@@ -39,7 +39,9 @@ from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
                          Choice, Check, MenuItem, HyperText, set_color, COLORS,
                          CEN, LEFT, FRAMESTYLE, Font, FONTSIZE,
                          flatnotebook, LarchUpdaterDialog, GridPanel,
-                         CIFFrame, FeffResultsFrame, LarchWxApp, OkCancel)
+                         CIFFrame, FeffResultsFrame, LarchWxApp, OkCancel,
+                         ExceptionPopup, set_color)
+
 
 from larch.wxlib.plotter import get_display
 
@@ -673,8 +675,11 @@ class XASFrame(wx.Frame):
             groups2csv(savegroups, outfile, x=res.xarray, y=res.yarray,
                     delim=res.delim, individual=res.individual, _larch=self.larch)
             self.write_message(f"Exported CSV file {outfile:s}")
-        except Exception as err:
-            self.write_message(f"/!\ Failed exporting CSV file /!\: {err}")
+        except:
+            title = "Could not export CSV File"
+            message = [f"Could not export CSV File {outfile}"]
+            ExceptionPopup(self, title, message)
+
     # Athena
     def onExportAthenaProject(self, evt=None):
         groups = []
@@ -761,12 +766,15 @@ class XASFrame(wx.Frame):
                                controller=self.controller, filename=path,
                                read_ok_cb=self.onReadAthenaProject_OK)
             return
+
         try:
             _session  = read_session(path)
         except:
-            Popup(self, f"{path} is not a valid Larch Session File",
-                   f"{path} is not a valid Larch Session File")
+            title = "Invalid Path for Larch Session"
+            message = [f"{path} is not a valid Larch Session File"]
+            ExceptionPopup(self, title, message)
             return
+
         LoadSessionDialog(self, _session, path, self.controller).Show()
         self.last_session_read = path
         fdir, fname = os.path.split(path)

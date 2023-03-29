@@ -18,7 +18,7 @@ from larch.math import index_of
 from larch.wxlib import (BitmapButton, TextCtrl, FloatCtrl, get_icon,
                          SimpleText, pack, Button, HLine, Choice, Check,
                          NumericCombo, CEN, LEFT, Font, FileSave, FileOpen,
-                         DataTableGrid, Popup, FONTSIZE_FW)
+                         DataTableGrid, Popup, FONTSIZE_FW, ExceptionPopup)
 from larch.io import save_groups, read_groups, read_csv
 from larch.utils.strutils import fix_varname
 from larch.utils import get_cwd
@@ -437,9 +437,9 @@ class RegressionPanel(TaskPanel):
         try:
             reg_model = self.larch_get('reg_model')
         except:
-            reg_model = None
-        if reg_model is None:
-            self.write_message('Cannot Save Regression Model')
+            title = "No regresion model to save"
+            message = [f"Cannot get regression model to save"]
+            ExceptionPopup(self, title, message)
             return
 
         dlg = wx.FileDialog(self, message="Save Regression Model",

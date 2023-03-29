@@ -13,6 +13,7 @@ from larch.larchlib import read_config, save_config
 from larch.utils import (group2dict, unique_name, fix_varname, get_cwd,
                          asfloat, get_sessionid)
 from larch.wxlib.plotter import last_cursor_pos
+from larch.wxlib import ExceptionPopup
 from larch.io import fix_varname, save_session
 from larch.site_config import home_dir, user_larchdir
 
@@ -47,7 +48,9 @@ class XASController():
             try:
                 os.mkdir(xasv_folder)
             except:
-                print("cannot create directory ", xasv_folder)
+                title = "Cannot create XAS Viewer folder"
+                message = [f"Cannot create directory {xasv_folder}"]
+                ExceptionPopup(self, title, message)
 
         self.config_file = CONF_FILE
         if os.path.exists(xasv_folder):

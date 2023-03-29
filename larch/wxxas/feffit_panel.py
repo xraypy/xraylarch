@@ -41,7 +41,8 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          Button, HLine, Choice, Check, MenuItem, GUIColors,
                          CEN, RIGHT, LEFT, FRAMESTYLE, Font, FONTSIZE,
                          COLORS, set_color, FONTSIZE_FW, FileSave,
-                         FileOpen, flatnotebook, EditableListBox, Popup)
+                         FileOpen, flatnotebook, EditableListBox, Popup,
+                         ExceptionPopup)
 
 from larch.wxlib.parameter import ParameterWidgets
 from larch.wxlib.plotter import last_cursor_pos
@@ -734,7 +735,7 @@ class FeffitPanel(TaskPanel):
                 self.xasmain.process_exafs(dgroup)
             self.fill_form(dgroup)
         except:
-            pass # print(" Cannot Fill prepeak panel from group ")
+            pass # print(" Cannot Fill feffit panel from group ")
         self.dgroup = dgroup
         feffpaths = getattr(self.larch.symtable, '_feffpaths', None)
 
@@ -1204,7 +1205,9 @@ class FeffitPanel(TaskPanel):
             atoms = [s.strip() for s in geomstr.split('>')]
             atoms.pop()
         except:
-            raise ValueError("could not interpret Path data sent to add_path()")
+            title = "Cannot interpret Feff Path data"
+            message = [f"Cannot interpret Feff path {filename}"]
+            ExceptionPopup(self, title, message)
 
         title = '_'.join(atoms) + "%d" % (round(100*reff))
         for c in ',.[](){}<>+=-?/\\&%$#@!|:;"\'':
@@ -1523,8 +1526,11 @@ class FeffitPanel(TaskPanel):
             try:
                 os.makedirs(confdir)
             except OSError:
-                print("Warning: cannot create XAS_Viewer user folder")
+                title = "Cannot create XAS Viewer folder"
+                message = [f"Cannot create directory {confdir}"]
+                ExceptionPopup(self, title, message)
                 return
+
         if fname is None:
             fname = 'feffit_script.lar'
         fullname = os.path.join(confdir, fname)
