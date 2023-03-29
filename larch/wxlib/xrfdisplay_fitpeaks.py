@@ -27,14 +27,14 @@ from wxutils import (SimpleText, FloatCtrl, FloatSpin, Choice, Font, pack,
                      Button, Check, HLine, GridPanel, RowPanel, CEN, LEFT,
                      RIGHT, FileSave, GUIColors, FRAMESTYLE, BitmapButton,
                      SetTip, GridPanel, Popup, FloatSpinWithPin, get_icon,
-                     fix_filename)
+                     fix_filename, flatnotebook, PeriodicTablePanel)
 
 from . import FONTSIZE, FONTSIZE_FW
 from xraydb import (material_mu, xray_edge, materials, add_material,
                     atomic_number, atomic_symbol, xray_line)
-from .notebooks import flatnotebook
+# from .notebooks import flatnotebook
+# from .periodictable import PeriodicTablePanel
 from .parameter import ParameterPanel
-from .periodictable import PeriodicTablePanel
 
 from larch import Group
 

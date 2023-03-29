@@ -23,7 +23,7 @@ from wxmplot import PlotPanel
 from wxutils import (SimpleText, EditableListBox, Font, pack, Popup,
                      get_icon, SetTip, Button, Check, MenuItem, Choice,
                      FileOpen, FileSave, fix_filename, HLine, GridPanel,
-                     CEN, LEFT, RIGHT)
+                     CEN, LEFT, RIGHT, PeriodicTablePanel)
 from pyshortcuts import platform
 from . import FONTSIZE, FONTSIZE_FW
 from ..math import index_of
@@ -34,7 +34,7 @@ from ..interpreter import Interpreter
 
 from .gui_utils import LarchWxApp
 from .larchframe import LarchFrame
-from .periodictable import PeriodicTablePanel
+# from .periodictable import PeriodicTablePanel
 
 from .xrfdisplay_utils import (XRFCalibrationFrame, ColorsFrame,
                                XrayLinesFrame, XRFDisplayConfig, XRFGROUP,
