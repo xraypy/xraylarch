@@ -240,7 +240,7 @@ py_inphook = c_void_p.in_dll(pythonapi, 'PyOS_InputHook')
 py_inphook.value = cast(cback, c_void_p).value
 
 # import for Darwin!
-if sys.platform == 'darwin':
-    #from .allow_idle_macosx import allow_idle
-    #allow_idle()
-    print("no allow idle")
+# if sys.platform == 'darwin':
+#     from .allow_idle_macosx import allow_idle
+#     allow_idle()
+#     print("no allow idle")
