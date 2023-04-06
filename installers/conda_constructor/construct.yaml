@@ -1,5 +1,5 @@
 name:  xraylarch
-version: 2022-04
+version: 2023-04
 
 channels:
     - https://conda.anaconda.org/conda-forge/
@@ -8,11 +8,12 @@ channels:
 
 installer_type: pkg [osx]
 welcome_image: larch_3cones.png
+welcome_image: LarchInstaller.png # [osx]
 license_file: ../../LICENSE
 ignore_duplicate_files: True
 
-osxpkg_readme: readme.rtf # [osx]
-osxpkg_image: LarchInstaller.png # [osx]
+readme_file: readme.rtf # [osx]
+
 osxpkg_userhome_only: True # [osx]
 
 post_install: post_install_linux.sh [linux]
@@ -20,16 +21,16 @@ post_install: post_install_macosx.sh [osx]
 post_install: post_install_windows.bat [win]
 
 specs:
-    - python==3.10.9
+    - python==3.11
     - conda
     - openssl
     - setuptools>=61.0
     - pip
     - requests
-    - numpy>=1.20
-    - scipy>=1.7
-    - matplotlib>=3.5
-    - h5py>=3.2
+    - numpy>=1.24
+    - scipy>=1.9
+    - matplotlib>=3.6
+    - h5py>=3.7
     - sqlalchemy>=1.4
     - scikit-image
     - scikit-learn
