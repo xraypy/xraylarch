@@ -39,7 +39,7 @@ from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
                          Choice, Check, MenuItem, HyperText, set_color, COLORS,
                          CEN, LEFT, FRAMESTYLE, Font, FONTSIZE,
                          flatnotebook, LarchUpdaterDialog, GridPanel,
-                         CIFFrame, FeffResultsFrame, LarchWxApp, OkCancel,
+                         CIFFrame, Structure2FeffFrame, FeffResultsFrame, LarchWxApp, OkCancel,
                          ExceptionPopup, set_color)
 
 
@@ -605,6 +605,8 @@ class XASFrame(wx.Frame):
 
         MenuItem(self, feff_menu, "Browse CIF Structures, Run Feff",
                  "Browse CIF Structure, run Feff", self.onCIFBrowse)
+        MenuItem(self, feff_menu, "Browse Structures, Run Feff",
+                 "Browse Structure, run Feff", self.onStructureBrowse)
         MenuItem(self, feff_menu, "Browse Feff Calculations",
                  "Browse Feff Calculations, Get Feff Paths", self.onFeffBrowse)
 
@@ -1131,6 +1133,9 @@ before clearing"""
 
     def onCIFBrowse(self, event=None):
         self.show_subframe('cif_feff', CIFFrame, _larch=self.larch)
+
+    def onStructureBrowse(self, event=None):
+        self.show_subframe('structure_feff', Structure2FeffFrame, _larch=self.larch)
 
     def onFeffBrowse(self, event=None):
         path_importer = self.get_nbpage('feffit')[1].add_path
