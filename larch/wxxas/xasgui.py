@@ -605,8 +605,8 @@ class XASFrame(wx.Frame):
 
         MenuItem(self, feff_menu, "Browse CIF Structures, Run Feff",
                  "Browse CIF Structure, run Feff", self.onCIFBrowse)
-        MenuItem(self, feff_menu, "Browse Structures, Run Feff",
-                 "Browse Structure, run Feff", self.onStructureBrowse)
+        MenuItem(self, feff_menu, "Generate Feff input from general structures, Run Feff",
+                 "Generate Feff input from general structures, run Feff", self.onStructureBrowse)
         MenuItem(self, feff_menu, "Browse Feff Calculations",
                  "Browse Feff Calculations, Get Feff Paths", self.onFeffBrowse)
 

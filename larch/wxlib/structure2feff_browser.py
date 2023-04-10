@@ -5,27 +5,18 @@ Read Structure input file, Make Feff input file, and run Feff
 
 import os
 import sys
-import time
-import copy
-from threading import Thread
 import numpy as np
 np.seterr(all='ignore')
 
-from functools import partial
 import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.agw.flatnotebook as fnb
-from wx.adv import AboutBox, AboutDialogInfo
-from matplotlib.ticker import FuncFormatter
 
-from wxmplot import PlotPanel
 from xraydb.chemparser import chemparse
 from xraydb import atomic_number
 
 import larch
-from larch import Group
 from larch.xafs import feff8l, feff6l
-from larch.xrd.cif2feff import cif_sites
 from larch.utils import read_textfile
 from larch.utils.paths import unixpath
 from larch.utils.strutils import fix_filename, unique_name, strict_ascii
@@ -40,7 +31,7 @@ from larch.wxlib import (LarchFrame, FloatSpin, EditableListBox,
                          ExceptionPopup, set_color)
 
 
-from larch.xrd import CifStructure, get_amscifdb, find_cifs, get_cif, parse_cif_file
+from larch.xrd import structure2feff
 
 LEFT = wx.ALIGN_LEFT
 CEN |=  wx.ALL
@@ -65,12 +56,8 @@ class Structure2FeffFrame(wx.Frame):
         self.larch.eval("# started Structure browser\n")
         self.larch.eval("if not hasattr('_sys', '_feffruns'): _sys._feffruns = {}")
 
-        # self.cifdb = get_amscifdb()
-        # self.all_minerals = self.cifdb.all_minerals()
         self.subframes = {}
-        # self.has_xrd1d = False
-        # self.xrd1d_thread = None
-        self.current_cif = None
+        self.current_structure = None
         self.SetTitle(title)
         self.SetSize(MAINSIZE)
         self.SetFont(Font(FONTSIZE))
@@ -102,59 +89,12 @@ class Structure2FeffFrame(wx.Frame):
         ypos = int((ymax-ymin)*0.09) + ymin
         self.SetPosition((xpos, ypos))
 
-        # splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
-        # splitter.SetMinimumPaneSize(250)
-
-        # leftpanel = wx.Panel(splitter)
-        # self.ciflist = EditableListBox(leftpanel,
-        #                                self.onShowCIF, size=(300,-1))
-        # set_color(self.ciflist, 'list_fg', bg='list_bg')
-        # self.cif_selections = {}
-
-        # sizer = wx.BoxSizer(wx.VERTICAL)
-        # sizer.Add(self.ciflist, 1, LEFT|wx.GROW|wx.ALL, 1)
-        # pack(leftpanel, sizer)
-
-        # right hand side
+        # main panel with scrolled panel
         scrolledpanel = scrolled.ScrolledPanel(self)
         panel = wx.Panel(scrolledpanel)
         sizer = wx.GridBagSizer(2,2)
 
-        # self.title = SimpleText(panel, 'Search American Mineralogical CIF Database:',
-        #                         size=(500, -1), style=LEFT)
-        # self.title.SetFont(Font(FONTSIZE+2))
         wids = self.wids = {}
-
-
-        # minlab = SimpleText(panel, ' Mineral Name: ')
-        # minhint= SimpleText(panel, ' example: hem* ')
-        # wids['mineral'] = wx.TextCtrl(panel, value='',   size=(250, -1),
-        #                               style=wx.TE_PROCESS_ENTER)
-        # wids['mineral'].Bind(wx.EVT_TEXT_ENTER, self.onSearch)
-
-        # authlab = SimpleText(panel, ' Author Name: ')
-        # wids['author'] = wx.TextCtrl(panel, value='',   size=(250, -1))
-
-        # journlab = SimpleText(panel, ' Journal Name: ')
-        # wids['journal'] = wx.TextCtrl(panel, value='',   size=(250, -1))
-
-        # elemlab = SimpleText(panel, ' Include Elements: ')
-        # elemhint= SimpleText(panel, ' example: O, Fe, Si ')
-
-        # wids['contains_elements'] = wx.TextCtrl(panel, value='', size=(250, -1))
-        # exelemlab = SimpleText(panel, ' Exclude Elements: ')
-        # wids['excludes_elements'] = wx.TextCtrl(panel, value='', size=(250, -1))
-        # wids['excludes_elements'].Enable()
-        # wids['strict_contains'] = Check(panel, default=False,
-        #                                label='Include only the elements listed',
-        #                                action=self.onStrict)
-
-        # wids['full_occupancy'] = Check(panel, default=False,
-        #                                label='Only Structures with Full Occupancy')
-
-        # wids['search']   = Button(panel, 'Search for CIFs',  action=self.onSearch)
-        # wids['get_feff'] = Button(panel, 'Get Feff Input', action=self.onGetFeff)
-        # wids['get_feff'].Disable()
 
         folderlab = SimpleText(panel, ' Feff Folder: ')
         wids['run_folder'] = wx.TextCtrl(panel, value='calc1', size=(250, -1))
@@ -191,44 +131,7 @@ class Structure2FeffFrame(wx.Frame):
         csizelab = SimpleText(panel, ' Cluster Size (\u212B): ')
         fverslab = SimpleText(panel, ' Feff Version:')
 
-        ir = 0
-        # sizer.Add(self.title,     (0, 0), (1, 6), LEFT, 2)
-
-        # ir += 1
-        # sizer.Add(HLine(panel, size=(550, 2)), (ir, 0), (1, 6), LEFT, 3)
-
-        # ir += 1
-        # sizer.Add(minlab,          (ir, 0), (1, 1), LEFT, 3)
-        # sizer.Add(wids['mineral'], (ir, 1), (1, 3), LEFT, 3)
-        # sizer.Add(minhint,         (ir, 4), (1, 2), LEFT, 3)
-        # ir += 1
-        # sizer.Add(authlab,        (ir, 0), (1, 1), LEFT, 3)
-        # sizer.Add(wids['author'], (ir, 1), (1, 3), LEFT, 3)
-
-        # ir += 1
-        # sizer.Add(journlab,        (ir, 0), (1, 1), LEFT, 3)
-        # sizer.Add(wids['journal'], (ir, 1), (1, 3), LEFT, 3)
-
-        # ir += 1
-        # sizer.Add(elemlab,        (ir, 0), (1, 1), LEFT, 3)
-        # sizer.Add(wids['contains_elements'], (ir, 1), (1, 3), LEFT, 3)
-        # sizer.Add(elemhint,         (ir, 4), (1, 3), LEFT, 2)
-
-        # ir += 1
-        # sizer.Add(exelemlab,        (ir, 0), (1, 1), LEFT, 3)
-        # sizer.Add(wids['excludes_elements'], (ir, 1), (1, 3), LEFT, 3)
-
-        # ir += 1
-        # sizer.Add(wids['search'],          (ir, 0), (1, 1), LEFT, 3)
-        # sizer.Add(wids['strict_contains'], (ir, 1), (1, 4), LEFT, 3)
-
-        # ir += 1
-        # sizer.Add(wids['full_occupancy'], (ir, 1), (1, 4), LEFT, 3)
-
-        # ir += 1
-        # sizer.Add(HLine(panel, size=(550, 2)), (ir, 0), (1, 6), LEFT, 3)
-
-        # ir += 1
+        ir = 1
 
         sizer.Add(catomlab,             (ir, 0), (1, 1), LEFT, 3)
         sizer.Add(wids['central_atom'], (ir, 1), (1, 1), LEFT, 3)
@@ -249,29 +152,11 @@ class Structure2FeffFrame(wx.Frame):
         sizer.Add(wids['run_folder'],    (ir, 1), (1, 4), LEFT, 3)
         sizer.Add(wids['run_feff'],      (ir, 5), (1, 1), LEFT, 3)
 
-        # ir += 1
-        # sizer.Add(HLine(panel, size=(550, 2)), (ir, 0), (1, 6), LEFT, 3)
-
         pack(panel, sizer)
 
         self.nb = flatnotebook(scrolledpanel, {}, on_change=self.onNBChanged)
 
         self.feffresults = FeffResultsPanel(scrolledpanel, _larch=self.larch)
-
-        # def _swallow_plot_messages(s, panel=0):
-        #     pass
-
-        # self.plotpanel = PlotPanel(rightpanel, messenger=_swallow_plot_messages)
-        # try:
-        #     plotopts = self.larch.symtable._sys.wx.plotopts
-        #     self.plotpanel.conf.set_theme(plotopts['theme'])
-        #     self.plotpanel.conf.enable_grid(plotopts['show_grid'])
-        # except:
-        #     pass
-
-        # self.plotpanel.SetMinSize((250, 250))
-        # self.plotpanel.SetMaxSize((600, 450))
-        # self.plotpanel.onPanelExposed = self.showXRD1D
 
         structure_panel = wx.Panel(scrolledpanel)
         wids['structure_text'] = wx.TextCtrl(structure_panel, value='<STRUCTURE TEXT>',
@@ -321,7 +206,6 @@ class Structure2FeffFrame(wx.Frame):
         r_sizer.Add(self.nb, 1, LEFT|wx.GROW, 2)
         pack(scrolledpanel, r_sizer)
         scrolledpanel.SetupScrolling()
-        # splitter.SplitVertically(leftpanel, rightpanel, 1)
 
     def get_nbpage(self, name):
         "get nb page by name"
@@ -332,54 +216,13 @@ class Structure2FeffFrame(wx.Frame):
                 return i, page
         return (0, self.npbages[0][1])
 
-
-    def onShowCIF(self, event=None, cif_id=None):
-        if cif_id is not None:
-            cif = get_cif(cif_id)
-            self.cif_label = '%d' % cif_id
-        elif event is not None:
-            self.cif_label = event.GetString()
-            cif = get_cif(self.cif_selections[self.cif_label])
-        self.current_cif = cif
-        self.has_xrd1d = False
-        self.wids['structure_text'].SetValue(cif.ciftext)
-        elems =  chemparse(cif.formula.replace(' ', ''))
-
-        self.wids['central_atom'].Enable()
-        self.wids['edge'].Enable()
-        self.wids['cluster_size'].Enable()
-        # self.wids['get_feff'].Enable()
-
-        self.wids['central_atom'].Clear()
-        self.wids['central_atom'].AppendItems(list(elems.keys()))
-        self.wids['central_atom'].Select(0)
-
-        el0 = list(elems.keys())[0]
-        edge_val = 'K' if atomic_number(el0) < 60 else 'L3'
-        self.wids['edge'].SetStringSelection(edge_val)
-
-        sites = cif_sites(cif.ciftext, absorber=el0)
-        try:
-            sites = ['%d' % (i+1) for i in range(len(sites))]
-        except:
-            title = "Could not make sense of atomic sites"
-            message = [f"Elements: {list(elems.keys())}",
-                       f"Sites: {sites}"]
-            ExceptionPopup(self, title, message)
-
-        self.wids['site'].Clear()
-        self.wids['site'].AppendItems(sites)
-        self.wids['site'].Select(0)
-        i, p = self.get_nbpage('Structure Text')
-        self.nb.SetSelection(i)
-
     def onCentralAtom(self, event=None):
-        cif  = self.current_cif
-        if cif is None:
+        structure  = self.current_structure
+        if structure is None:
             return
         catom = event.GetString()
         try:
-            sites = cif_sites(cif.ciftext, absorber=catom)
+            sites = structure2feff.structure_sites(structure['structure_text'], absorber=catom, fmt=structure['fmt'])
             sites = ['%d' % (i+1) for i in range(len(sites))]
             self.wids['site'].Clear()
             self.wids['site'].AppendItems(sites)
@@ -395,8 +238,8 @@ class Structure2FeffFrame(wx.Frame):
         self.onGetFeff()
 
     def onGetFeff(self, event=None):
-        cif  = self.current_cif
-        if cif is None:
+        structure  = self.current_structure
+        if structure is None:
             return
         edge  = self.wids['edge'].GetStringSelection()
         version8 = '8' == self.wids['feffvers'].GetStringSelection()
@@ -404,13 +247,15 @@ class Structure2FeffFrame(wx.Frame):
         asite = int(self.wids['site'].GetStringSelection())
         csize = self.wids['cluster_size'].GetValue()
         with_h = not self.wids['without_h'].IsChecked()
-        mineral = cif.get_mineralname()
-        folder = f'{catom:s}{asite:d}_{edge:s}_{mineral}_cif{cif.ams_id:d}'
+        folder = f'{catom:s}{asite:d}_{edge:s}'
         folder = unique_name(fix_filename(folder), self.runs_list)
 
-        fefftext = cif.get_feffinp(catom, edge=edge, cluster_size=csize,
-                                   absorber_site=asite, version8=version8,
-                                   with_h=with_h)
+        fefftext = structure2feff.structure2feffinp(structure['structure_text'], catom, edge=edge,
+                                                    cluster_size=csize,
+                                                    absorber_site=asite,
+                                                    version8=version8,
+                                                    with_h=with_h,
+                                                    fmt=structure['fmt'])
 
         self.wids['run_folder'].SetValue(folder)
         self.wids['feff_text'].SetValue(fefftext)
@@ -423,20 +268,13 @@ class Structure2FeffFrame(wx.Frame):
         if len(fefftext) < 100 or 'ATOMS' not in fefftext:
             return
 
-        ciftext = self.wids['structure_text'].GetValue()
-        cif  = self.current_cif
-        cif_fname = None
-        if cif is not None and len(ciftext) > 100:
-            mineral = cif.get_mineralname()
-            cif_fname = f'{mineral}_cif{cif.ams_id:d}.cif'
+        structure_text = self.wids['structure_text'].GetValue()
+        structure  = self.current_structure
+        structure_fname = None
+        
+        if structure is not None:
+            structure_fname = structure['fname']
 
-        # cc = self.current_cif
-        # edge  = self.wids['edge'].GetStringSelection()
-        # catom = self.wids['central_atom'].GetStringSelection()
-        # asite = int(self.wids['site'].GetStringSelection())
-        # mineral = cc.get_mineralname()
-        # folder = f'{catom:s}{asite:d}_{edge:s}_{mineral}_cif{cc.ams_id:d}'
-        # folder = unixpath(os.path.join(self.feff_folder, folder))
         version8 = '8' == self.wids['feffvers'].GetStringSelection()
 
         fname = self.wids['run_folder'].GetValue()
@@ -462,13 +300,12 @@ class Structure2FeffFrame(wx.Frame):
         with open(fname, 'w', encoding=sys.getdefaultencoding()) as fh:
             fh.write(strict_ascii(fefftext))
 
-        if cif_fname is not None:
-            cname = unixpath(os.path.join(folder, cif_fname))
+        if structure_fname is not None:
+            cname = unixpath(os.path.join(folder, structure_fname))
             with open(cname, 'w', encoding=sys.getdefaultencoding()) as fh:
-                fh.write(strict_ascii(ciftext))
+                fh.write(strict_ascii(structure_text))
 
         wx.CallAfter(self.run_feff, folder, version8=version8)
-        # feffexe, folder=dirname, message_writer=self.feff_output)
 
     def run_feff(self, folder=None, version8=True):
         _, dname = os.path.split(folder)
@@ -506,14 +343,13 @@ class Structure2FeffFrame(wx.Frame):
         out.Refresh()
 
     def onExportFeff(self, event=None):
-        if self.current_cif is None:
+        if self.current_structure is None:
             return
         fefftext = self.wids['feff_text'].GetValue()
         if len(fefftext) < 20:
             return
-        cc = self.current_cif
-        minname = cc.get_mineralname()
-        fname = f'{minname}_cif{cc.ams_id:d}_feff.inp'
+        cc = self.current_structure
+        fname = f'{cc["fname"]}_feff.inp'
         wildcard = 'Feff Inut files (*.inp)|*.inp|All files (*.*)|*.*'
         path = FileSave(self, message='Save Feff File',
                         wildcard=wildcard,
@@ -523,79 +359,73 @@ class Structure2FeffFrame(wx.Frame):
                 fh.write(fefftext)
             self.write_message("Wrote Feff file %s" % path, 0)
 
-
-    def onExportCIF(self, event=None):
-        if self.current_cif is None:
+    def onExportStructure(self, event=None):
+        if self.current_structure is None:
             return
-        cc = self.current_cif
-        minname = cc.get_mineralname()
-        fname = f'{minname}_cif{cc.ams_id:d}.cif'
-        wildcard = 'CIF files (*.cif)|*.cif|All files (*.*)|*.*'
-        path = FileSave(self, message='Save CIF File',
+        
+        cc = self.current_structure
+        fname = cc["fname"]
+        wildcard = f'Sturcture files (*.{cc["fmt"]})|*.{cc["fmt"]}|All files (*.*)|*.*'
+        path = FileSave(self, message='Save Structure File',
                         wildcard=wildcard,
                         default_file=fname)
+        
         if path is not None:
             with open(path, 'w', encoding=sys.getdefaultencoding()) as fh:
-                fh.write(cc.ciftext)
-            self.write_message("Wrote CIF file %s" % path, 0)
-
-    def onImportCIF(self, event=None):
-        wildcard = 'CIF files (*.cif)|*.cif|All files (*.*)|*.*'
-        path = FileOpen(self, message='Open CIF File',
-                        wildcard=wildcard, default_file='My.cif')
-
-        if path is not None:
-            try:
-                cif_data = parse_cif_file(path)
-            except:
-                title = f"Cannot parse CIF file '{path}'"
-                message = [f"Error reading CIF File: {path}"]
-                ExceptionPopup(self, title, message)
-                return
-
-            try:
-                cif_id = self.cifdb.add_ciffile(path)
-            except:
-                title = f"Cannot add CIF from '{path}' to CIF database"
-                message = [f"Error adding CIF File to database: {path}"]
-                ExceptionPopup(self, title, message)
-                return
-
-            try:
-                self.onShowCIF(cif_id=cif_id)
-            except:
-                title = f"Cannot show CIF from '{path}'"
-                message = [f"Error displaying CIF File: {path}"]
-                ExceptionPopup(self, title, message)
+                fh.write(cc['structure_text'])
+            self.write_message("Wrote structure file %s" % path, 0)
 
     def onImportStructure(self, event=None):
-        wildcard = 'Strucuture files (*.cif)|*.cif|All files (*.*)|*.*'
-        path = FileOpen(self, message='Open CIF File',
+        wildcard = 'Strucuture files (*.cif/*.postcar/*.contcar/*.chgcar/*locpot/*.cssr)|*.cif;*.postcar;*.contcar;*.chgcar;*locpot;*.cssr|Molecule files (*.xyz/*.gjf/*.g03/*.g09/*.com/*.inp)|*.xyz;*.gjf;*.g03;*.g09;*.com;*.inp|All other files readable with Openbabel (*.*)|*.*'
+        path = FileOpen(self, message='Open Structure File',
                         wildcard=wildcard, default_file='My.cif')
 
         if path is not None:
-            try:
-                cif_data = parse_cif_file(path)
-            except:
-                title = f"Cannot parse CIF file '{path}'"
-                message = [f"Error reading CIF File: {path}"]
-                ExceptionPopup(self, title, message)
-                return
+            
+            fmt = path.split('.')[-1]
+            fname = os.path.basename(path)
+            
+            with open(path, 'r', encoding=sys.getdefaultencoding()) as f:
+                structure_text = f.read()
+                
+                        
+            self.current_structure = structure2feff.parse_structure(structure_text=structure_text, fmt=fmt, fname=fname)
+            
+        self.wids['structure_text'].SetValue(self.current_structure['structure_text'])
+        
+        # use pytmatgen to get formula
+        elems =  chemparse(self.current_structure['formula'].replace(' ', ''))
 
-            try:
-                cif_id = self.cifdb.add_ciffile(path)
-            except:
-                title = f"Cannot add CIF from '{path}' to CIF database"
-                message = [f"Error adding CIF File to database: {path}"]
-                ExceptionPopup(self, title, message)
-                return
+        self.wids['central_atom'].Enable()
+        self.wids['edge'].Enable()
+        self.wids['cluster_size'].Enable()
+        
+        self.wids['central_atom'].Clear()
+        self.wids['central_atom'].AppendItems(list(elems.keys()))
+        self.wids['central_atom'].Select(0)
+        
+        
 
-            try:
-                self.onShowCIF(cif_id=cif_id)
-            except:
-                title = f"Cannot show CIF from '{path}'"
-                message = [f"Error displaying CIF File: {path}"]
-                ExceptionPopup(self, title, message)
+        el0 = list(elems.keys())[0]
+        edge_val = 'K' if atomic_number(el0) < 60 else 'L3'
+        self.wids['edge'].SetStringSelection(edge_val)
+
+        # sites
+        sites = structure2feff.structure_sites(self.current_structure['structure_text'], absorber=el0)
+        try:
+            sites = ['%d' % (i+1) for i in range(len(sites))]
+        except:
+            title = "Could not make sense of atomic sites"
+            message = [f"Elements: {list(elems.keys())}",
+                       f"Sites: {sites}"]
+            ExceptionPopup(self, title, message)
+
+
+        self.wids['site'].Clear()
+        self.wids['site'].AppendItems(sites)
+        self.wids['site'].Select(0)
+        i, p = self.get_nbpage('Structure Text')
+        self.nb.SetSelection(i)
 
     def onImportFeff(self, event=None):
         wildcard = 'Feff input files (*.inp)|*.inp|All files (*.*)|*.*'
@@ -644,7 +474,6 @@ class Structure2FeffFrame(wx.Frame):
         self.statusbar.SetStatusText(msg, panel)
 
     def createMenus(self):
-        # ppnl = self.plotpanel
         self.menubar = wx.MenuBar()
         fmenu = wx.Menu()
         group_menu = wx.Menu()
@@ -652,11 +481,11 @@ class Structure2FeffFrame(wx.Frame):
         ppeak_menu = wx.Menu()
         m = {}
 
-        MenuItem(self, fmenu, "&Open CIF File\tCtrl+O",
-                 "Open Structure File",  self.onImportCIF)
+        MenuItem(self, fmenu, "&Open Structure File\tCtrl+O",
+                 "Open Structure File",  self.onImportStructure)
 
-        # MenuItem(self, fmenu, "&Save CIF File\tCtrl+S",
-                #  "Save CIF File",  self.onExportCIF)
+        MenuItem(self, fmenu, "&Save Structure File\tCtrl+S",
+                 "Save Structure File",  self.onExportStructure)
 
         MenuItem(self, fmenu, "Open Feff Input File",
                  "Open Feff input File",  self.onImportFeff)
