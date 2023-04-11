@@ -33,8 +33,10 @@ PLOTOPTS_2 = dict(style='short dashed', zorder=3, marker='None')
 PLOTOPTS_D = dict(style='solid', zorder=2, side='right', marker='None')
 
 PlotOne_Choices = make_array_choice(['mu','norm', 'flat', 'prelines',
-                                     'mback_norm', 'mback_poly', 'dmude',
-                                     'norm+dmude', 'd2mude',  'norm+d2mude'])
+                                     'mback_norm', 'mback_poly', 'i0',
+                                     'norm+i0', 'dmude', 'norm+dmude',
+                                     'd2mude', 'norm+d2mude'])
+
 
 PlotSel_Choices = make_array_choice(['mu', 'norm', 'flat', 'dmude', 'd2mude'])
 
@@ -939,14 +941,14 @@ class XASNormPanel(TaskPanel):
                 lab = plotlabels.norm
                 dgroup.plot_y2label = 'd2y/dx2'
                 dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, 'y'),
-                                       ('d2normde', PLOTOPTS_D, 'd2y/dx')]
+                                       ('d2normde', PLOTOPTS_D, 'd2y/dx2')]
             return
 
         req_attrs = ['e0', 'norm', 'dmude', 'd2mude', 'pre_edge']
 
         pchoice = PlotOne_Choices[self.plotone_op.GetStringSelection()]
 
-        if pchoice in ('mu', 'norm', 'flat', 'dmude', 'd2mude'):
+        if pchoice in ('mu', 'norm', 'i0', 'flat', 'dmude', 'd2mude'):
             lab = getattr(plotlabels, pchoice)
             dgroup.plot_yarrays = [(pchoice, PLOTOPTS_1, lab)]
 
@@ -967,8 +969,11 @@ class XASNormPanel(TaskPanel):
             dgroup.plot_y2label = lab2 = plotlabels.dmude
             dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab),
                                    ('dmude', PLOTOPTS_D, lab2)]
-
-
+        elif pchoice == 'norm+i0':
+            lab = plotlabels.norm
+            dgroup.plot_y2label = lab2 = plotlabels.i0
+            dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, lab),
+                                   ('i0', PLOTOPTS_D, lab2)]
         elif pchoice == 'mback_norm':
             req_attrs.append('mback_norm')
             lab = plotlabels.mu
@@ -1109,6 +1114,8 @@ class XASNormPanel(TaskPanel):
             popts['delay_draw'] = delay_draw
             if yaname == 'norm_mback' and not hasattr(dgroup, yaname):
                 self.process(dgroup=dgroup, force=True, force_mback=True)
+            if yaname == 'i0' and not hasattr(dgroup, yaname):
+                dgroup.i0 = np.ones(len(dgroup.xdat))
             plotcmd(dgroup.xdat, getattr(dgroup, yaname)+yoff, linewidth=linewidth, **popts)
             plotcmd = ppanel.oplot
 

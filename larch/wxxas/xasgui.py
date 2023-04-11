@@ -1507,14 +1507,19 @@ before clearing"""
         cmds.append(f"{groupname:s}.journal = journal({jopts:s})")
         if datatype == 'xas':
             cmds.append(f"{groupname:s}.energy_orig = {groupname:s}.energy[:]")
+            array_labels = getattr(thisgroup, 'array_labels', [])
+            if len(array_labels) > 2  and getattr(thisgroup, 'data', None) is not None:
+                for i0name in ('i0', 'i_0', 'monitor'):
+                    if i0name in array_labels:
+                        i0x = array_labels.index(i0name)
+                        cmds.append(f"{groupname:s}.i0 = {groupname:s}.data[{i0x}, :]")
+
         cmds = ('\n'.join(cmds))
 
         if extra_sums is not None:
             self.extra_sums = extra_sums
             # print("## need to handle extra_sums " , self.extra_sums)
-
         self.larch.eval(cmds)
-
         if needs_config:
             self.controller.init_group_config(thisgroup)
         self.controller.filelist.Append(filename.strip())
