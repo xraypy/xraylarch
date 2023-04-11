@@ -76,6 +76,7 @@ if HAS_WXPYTHON:
 
     from .feff_browser import FeffResultsFrame, FeffResultsPanel
     from .cif_browser import CIFFrame
+    from .structure2feff_browser import Structure2FeffFrame
 
     _larch_builtins = {'_sys.wx': dict(gcd=gcd,
                                        databrowser=databrowser,
