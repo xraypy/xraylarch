@@ -411,7 +411,7 @@ class Structure2FeffFrame(wx.Frame):
         self.wids['edge'].SetStringSelection(edge_val)
 
         # sites
-        sites = structure2feff.structure_sites(self.current_structure['structure_text'], absorber=el0)
+        sites = structure2feff.structure_sites(self.current_structure['structure_text'], fmt=self.current_structure["fmt"], absorber=el0)
         try:
             sites = ['%d' % (i+1) for i in range(len(sites))]
         except:
