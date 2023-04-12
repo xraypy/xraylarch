@@ -97,6 +97,12 @@ def make_banner(with_libraries=False, show_libraries=None):
 
     if len(show_libraries) < 10:
         lines.append('use `print(show_version())` for detailed versions')
+    try:
+        from wxmplot.interactive import get_wxapp
+        app = get_wxapp()
+    except SystemExit:
+        lines.append("Warning: cannot get wxApp for plotting, GUI components")
+
     linelen = max([len(line) for line in lines])
     border = '='*min(99, max(linelen, 25))
     lines.insert(0, border)

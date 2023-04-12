@@ -56,9 +56,12 @@ class Shell(cmd.Cmd):
 
         if with_wx and HAS_WXPYTHON:
             symtable = self.larch.symtable
+            try:
+                app = LarchWxApp(redirect=False, clearSigInt=False)
+            except SystemExit:
+                with_wx = False
 
-            app = LarchWxApp(redirect=False, clearSigInt=False)
-
+        if with_wx and HAS_WXPYTHON:
             symtable.set_symbol('_sys.wx.wxapp', app)
             symtable.set_symbol('_sys.wx.force_wxupdate', False)
             symtable.set_symbol('_sys.wx.parent', None)
