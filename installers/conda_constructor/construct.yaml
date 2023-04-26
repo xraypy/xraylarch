@@ -31,7 +31,7 @@ specs:
     - scipy>=1.9
     - matplotlib>=3.6
     - h5py>=3.7
-    - sqlalchemy>=1.4
+    - sqlalchemy>=2.0
     - scikit-image
     - scikit-learn
     - cython
