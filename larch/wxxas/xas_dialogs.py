@@ -1254,7 +1254,7 @@ class DeglitchDialog(wx.Dialog):
             plotstr = self.wids['plotopts'].GetStringSelection()
             plottype = DEGLITCH_PLOTS[plotstr]
         self.data = self.get_xydata(datatype=plottype)
-        self.xmasks = [np.ones(len(self.data[0]), dtype=np.bool)]
+        self.xmasks = [np.ones(len(self.data[0]), dtype=np.bool_)]
 
     def get_xydata(self, datatype='mu'):
         if hasattr(self.dgroup, 'energy'):
@@ -1319,7 +1319,7 @@ class DeglitchDialog(wx.Dialog):
 
     def on_undo(self, event=None):
         if len(self.xmasks) == 1:
-            self.xmasks = [np.ones(len(self.data[0]), dtype=np.bool)]
+            self.xmasks = [np.ones(len(self.data[0]), dtype=np.bool_)]
         else:
             self.xmasks.pop()
         self.plot_results()

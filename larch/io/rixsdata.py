@@ -36,7 +36,7 @@ def _restore_from_array(dictin):
         if isinstance(v, dict):
             _restore_from_array(v)
         else:
-            if isinstance(v[()], np.str):
+            if isinstance(v[()], np.str_):
                 dictin[k] = np.array_str(v)
             if isinstance(v[()], (np.float64, np.float32)):
                 dictin[k] = copy.deepcopy(v.item())

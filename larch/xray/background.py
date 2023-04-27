@@ -200,7 +200,7 @@ class XrayBackground:
         compress = self.compress
 
         nchans   = len(data)
-        self.bgr = np.zeros(nchans, dtype=np.int)
+        self.bgr = np.zeros(nchans, dtype=np.int_)
         scratch  = data[:]
 
         # Compress scratch spectrum
