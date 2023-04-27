@@ -1319,7 +1319,7 @@ class DeglitchDialog(wx.Dialog):
 
     def on_undo(self, event=None):
         if len(self.xmasks) == 1:
-            self.xmasks = [np.ones(len(self.data[0]), dtype=np.bool_)]
+            self.xmasks = [np.ones(len(self.data[0]), dtype=np.int8)]
         else:
             self.xmasks.pop()
         self.plot_results()
