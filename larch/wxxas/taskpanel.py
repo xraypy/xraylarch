@@ -56,7 +56,7 @@ class GroupJournalFrame(wx.Frame):
 
         self.label = SimpleText(panel, 'Group Journal', size=(750, 30))
 
-        export_btn = Button(panel, 'Export to Tab-Separated File', size=(225, -1),
+        export_btn = Button(panel, ' Export to Tab-Separated File', size=(225, -1),
                             action=self.export)
 
         add_btn = Button(panel, 'Add Entry', size=(200, -1), action=self.add_entry)
@@ -65,25 +65,24 @@ class GroupJournalFrame(wx.Frame):
 
         panel.Add(self.label, dcol=3, style=LEFT)
 
-        panel.Add(SimpleText(panel, 'Add a Journal Entry:'), dcol=1, style=LEFT, newrow=True)
+        panel.Add(SimpleText(panel, ' Add a Journal Entry:'), dcol=1, style=LEFT, newrow=True)
         panel.Add(add_btn, dcol=1)
         panel.Add(export_btn, dcol=1, newrow=False)
 
-        panel.Add(SimpleText(panel, 'Label:'), style=LEFT, newrow=True)
+        panel.Add(SimpleText(panel, ' Label:'), style=LEFT, newrow=True)
         panel.Add(self.label_wid, dcol=1, style=LEFT)
 
-        panel.Add(SimpleText(panel, 'Value:'), style=LEFT, newrow=True)
+        panel.Add(SimpleText(panel, ' Value:'), style=LEFT, newrow=True)
         panel.Add(self.value_wid, dcol=2, style=LEFT)
-        panel.pack()
+        panel.Add((10, 10), newrow=True)
 
-
-        collabels = [' Label ', ' Value ', 'Date/Time']
+        collabels = [' Label ', ' Value ', ' Date/Time']
 
         colsizes = [150, 550, 150]
         coltypes = ['string', 'string', 'string']
         coldefs  = [' ', ' ', ' ']
 
-        self.datagrid = DataTableGrid(self, collabels=collabels,
+        self.datagrid = DataTableGrid(panel, collabels=collabels,
                                       datatypes=coltypes,
                                       defaults=coldefs,
                                       colsizes=colsizes,
@@ -91,12 +90,9 @@ class GroupJournalFrame(wx.Frame):
 
         self.datagrid.SetMinSize((925, 650))
         self.datagrid.EnableEditing(False)
-
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(panel, 0, LEFT, 3)
-        sizer.Add(self.datagrid, 1, LEFT|wx.ALL, 3)
-        pack(self, sizer)
-
+        panel.Add(self.datagrid, dcol=5, drow=9, newrow=True, style=LEFT|wx.GROW|wx.ALL)        
+        panel.pack()
+        
         self.xasmain.timers['journal_updater'] = wx.Timer(self.xasmain)
         self.xasmain.Bind(wx.EVT_TIMER, self.onRefresh,
                           self.xasmain.timers['journal_updater'])
