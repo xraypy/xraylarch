@@ -142,11 +142,6 @@ def encode4js(obj):
         return {'__class__': 'Model', 'value': obj.dumps()}
     elif isinstance(obj, ModelResult):
         return {'__class__': 'ModelResult', 'value': obj.dumps()}
-    elif hasattr(obj, '__getstate__'):
-        return {'__class__': 'StatefulObject',
-                '__type__': obj.__class__.__name__,
-                'value': encode4js(obj.__getstate__())}
-
     elif isgroup(obj):
         try:
             classname = obj.__class__.__name__
@@ -163,6 +158,10 @@ def encode4js(obj):
             for item in dir(obj):
                 out[item] = encode4js(getattr(obj, item))
         return out
+    elif hasattr(obj, '__getstate__'):
+        return {'__class__': 'StatefulObject',
+                '__type__': obj.__class__.__name__,
+                'value': encode4js(obj.__getstate__())}
     elif isinstance(obj, type):
         return {'__class__': 'Type',  'value': repr(obj),
                 'module': getattr(obj, '__module__', None)}
