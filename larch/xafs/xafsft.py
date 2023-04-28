@@ -6,15 +6,31 @@ import numpy as np
 from numpy import (pi, arange, zeros, ones, sin, cos,
                    exp, log, sqrt, where, interp, linspace)
 
-# notes on FFT method choice: (August 2022)
-#   benchmarking (and tossing out the first few runs)
-#   for complex128 arrays of size 1024, 2048, 4192
-#   still shows a slight performance win for
-#   fftpack over pocketfft from numpy/scipy
-#   but all are in the range of 20 microsec.
-# from numpy.fft import fft, ifft
-# from scipy.fft import fft, ifft
-from scipy.fftpack import fft, ifft
+# notes on FFT method choice: (April 2023)
+# benchmarking (and tossing out the first few runs)for complex128 arrays of
+# length 2048, as used here for XAFS, gives these kinds of run times:
+#
+#   fft interface :  mean       std   worst
+#   numpy         :  2.2509   0.0955  2.4858
+#   scipy         :  2.1156   0.0592  2.2758
+#   scipy fftpack :  1.9757   0.0233  2.0246
+#   mkl numpy     :  1.1822   0.0188  1.2279
+#   mkl scipy     :  1.4442   0.0688  1.6263
+#   fftw numpy    :  5.4955   0.1958  6.0779
+#   fftw scipy    :  5.5210   0.1620  5.9154
+#   fftw fftpack  :  5.4329   0.0807  5.5917
+#
+# this shows a noticeable performance win for MKL numpy interface,
+# with a modest win for scipy.fftpack over numpy or scipy if MKL
+# is not available.  These results were consistent for Linux,
+# Windows, and MacOSX.
+#
+
+try:
+    from mkl_fft.interfaces.numpy_fft import fft, ifft
+except ImportError:
+    from scipy.fftpack import fft, ifft
+
 from scipy.special import i0 as bessel_i0
 
 from larch import (Group, Make_CallArgs, parse_group_args)
