@@ -37,6 +37,7 @@ _plot_marker = _plot_arrow = _plot_axvline = _plot_axhline = nullfunc
 
 from larch.site_config import (install_extras, extras_plotly)
 
+
 HAS_PLOTLY = True
 try:
     import plotly
@@ -50,16 +51,12 @@ except ImportError:
         logger.warning(f"could not pip install plotly")
         HAS_PLOTLY = False
 
-
 if HAS_PLOTLY:
     import plotly.graph_objs as pgo
     from  plotly.subplots import make_subplots
 
-
-
 def get_display(win=1, *args, **kws):
     pass
-
 
 LineColors = ('#1f77b4', '#d62728', '#2ca02c', '#ff7f0e', '#9467bd',
               '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf')
@@ -79,6 +76,9 @@ FIGSTYLE = dict(width=650, height=500,
                            color='#004', zerolinecolor='#DDD')
                 )
 
+def set_label_weight(label, w):
+    return label.replace('__W__', '{0:g}'.format(w))
+
 # common XAFS plot labels
 def chirlab(kweight, show_mag=True, show_real=False, show_imag=False):
     """generate chi(R) label for a kweight
@@ -95,7 +95,7 @@ def chirlab(kweight, show_mag=True, show_real=False, show_imag=False):
     if show_real: ylab.append(plotlabels.chirre)
     if show_imag: ylab.append(plotlabels.chirim)
     if len(ylab) > 1:  ylab = [plotlabels.chir]
-    return ylab[0].format(kweight+1)
+    return set_label_weight(ylab[0], kweight+1)
 #enddef
 
 plotlabels = Group(k       = r'$k \rm\,(\AA^{-1})$',
@@ -111,19 +111,26 @@ plotlabels = Group(k       = r'$k \rm\,(\AA^{-1})$',
                    chie    = r'$\chi(E)$',
                    chie0   = r'$\chi(E)$',
                    chie1   = r'$E\chi(E) \rm\, (eV)$',
-                   chiew   = r'$E^{{{0:g}}}\chi(E) \rm\,(eV^{{{0:g}}})$',
-                   chikw   = r'$k^{{{0:g}}}\chi(k) \rm\,(\AA^{{-{0:g}}})$',
+                   chiew   = r'$E^{__W__}\chi(E) \rm\,(eV^{__W__})$',
+                   chikw   = r'$k^{{__W__}}\chi(k) \rm\,(\AA^{{-__W__}})$',
                    chi0    = r'$\chi(k)$',
                    chi1    = r'$k\chi(k) \rm\,(\AA^{-1})$',
                    chi2    = r'$k^2\chi(k) \rm\,(\AA^{-2})$',
                    chi3    = r'$k^3\chi(k) \rm\,(\AA^{-3})$',
-                   chir    = r'$\chi(R) \rm\,(\AA^{{-{0:g}}})$',
-                   chirmag = r'$|\chi(R)| \rm\,(\AA^{{-{0:g}}})$',
-                   chirre  = r'${{\rm Re}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$',
-                   chirim  = r'${{\rm Im}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$',
-                   chirpha = r'${{\rm Phase}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$',
+                   chir    = r'$\chi(R) \rm\,(\AA^{{-__W__}})$',
+                   chirmag = r'$|\chi(R)| \rm\,(\AA^{{-__W__}})$',
+                   chirre  = r'${{\rm Re}}[\chi(R)] \rm\,(\AA^{{-__W__}})$',
+                   chirim  = r'${{\rm Im}}[\chi(R)] \rm\,(\AA^{{-__W__}})$',
+                   chirpha = r'${{\rm Phase}}[\chi(R)] \rm\,(\AA^{{-__W__}})$',
                    e0color = '#B2B282',
                    chirlab = chirlab)
+
+# plotly's mathjax needs an extra package to support \AA:
+for attr in dir(plotlabels):
+    val = getattr(plotlabels, attr)
+    if isinstance(val, str) and r'\AA' in val:
+        setattr(plotlabels, attr, r'$\require{mediawiki-texvc} ' + val[1:])
+
 
 def safetitle(t):
     if "'" in t:
@@ -160,6 +167,7 @@ def _get_kweight(dgroup, kweight=None):
     callargs = getattr(dgroup, 'callargs', None)
     ftargs = getattr(callargs, 'xftf', {'kweight':0})
     return ftargs['kweight']
+
 
 
 def _get_erange(dgroup, emin=None, emax=None):
@@ -251,7 +259,9 @@ class PlotlyFigure:
         trace = pgo.Scatter(x=x, y=y, name=label, line=lineopts)
 
         self.traces.append(trace)
+
         self.fig.add_trace(trace, **trace_opts)
+
 
     def add_vline(self, *args, **kws):
         self.fig.add_vline(*args, **kws)
@@ -422,8 +432,8 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
 
 
 def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
-              eweight=0, show_k=True, new=True, delay_draw=False,
-              offset=0, win=1, _larch=None):
+              eweight=0, new=True, delay_draw=False,
+              offset=0, win=1, show_k=False, _larch=None):
     """
     plot_chie(dgroup, emin=None, emax=None, label=None, new=True, win=1):
 
@@ -438,7 +448,6 @@ def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
      title       string for plot title [None, may use filename if available]
      new         bool whether to start a new plot [True]
      eweight     energy weightingn for energisdef es>e0  [0]
-     show_k      bool whether to show k values   [True]
      delay_draw  bool whether to delay draw until more traces are added [False]
      offset      vertical offset to use for y-array [0]
      win         integer plot window to use [1]
@@ -460,8 +469,7 @@ def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
     ylabel = plotlabels.chie
     if abs(eweight) > 1.e-2:
         chie *= (dgroup.energy-e0)**(eweight)
-        ylabel = plotlabels.chiew.format(eweight)
-
+        ylabel = set_label_weight(plotlabels.chiew, eweight)
     xlabel = plotlabels.energy
 
     emin, emax = _get_erange(dgroup, emin, emax)
@@ -540,8 +548,9 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
 
     if kmax is not None:
         fig.set_xrange(0, kmax)
+    ylabel = set_label_weight(plotlabels.chikw, kweight)
     fig.set_style(title=title, xaxis_title=plotlabels.k,
-                  yaxis_title=plotlabels.chikw.format(kweight))
+                  yaxis_title=ylabel)
 
     fig.show()
     return fig
@@ -609,13 +618,14 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
     #endif
     if show_window and hasattr(dgroup, 'rwin'):
         rwin = dgroup.rwin * max(dgroup.chir_mag)
-        opts['zorder'] = 15
         fig.add_plot(dgroup.r, rwin+offset, label='window')
     #endif
     if rmax is not None:
         fig.set_xrange(0, rmax)
 
     fig.set_style(title=title, xaxis_title=plotlabels.r, yaxis_title=ylabel)
+    fig.show()
+    return fig
 
 #enddef
 
@@ -659,8 +669,8 @@ def plot_chiq(dgroup, kweight=None, kmax=None, show_chik=False, label=None,
         title = _get_title(dgroup, title=title)
 
     _plot(dgroup.k, chiq+offset, xlabel=plotlabels.k,
-         ylabel=plotlabels.chikw.format(kweight), title=title,
-         label=label, zorder=20, new=new, xmax=kmax, **opts)
+          ylabel=set_label_weight(plotlabels.chikw, kweight),
+          title=title, label=label, zorder=20, new=new, xmax=kmax, **opts)
 
     if show_chik:
         chik = dgroup.chi * dgroup.k ** kweight
@@ -761,8 +771,9 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
 
     # k-weighted chi(k) in first plot window
     _plot(dataset.data.k, data_chik+offset, xmin=kmin, xmax=kmax,
-            xlabel=plotlabels.k, ylabel=plotlabels.chikw.format(kweight),
-            label='data', new=new, **opts)
+          xlabel=plotlabels.k,
+          ylabel=set_label_weight(plotlabels.chikw, kweight),
+          label='data', new=new, **opts)
     _plot(dataset.model.k, model_chik+offset, label='fit',  **opts)
     redraw(win=win, xmin=kmin, xmax=kmax, _larch=_larch)
 
@@ -824,8 +835,9 @@ def plot_path_k(dataset, ipath=0, kmin=0, kmax=None, offset=0, label=None,
     chi_kw = offset + path.chi * path.k**kweight
 
     _plot(path.k, chi_kw, label=label, xmin=kmin, xmax=kmax,
-         xlabel=plotlabels.k, ylabel=plotlabels.chikw.format(kweight),
-         win=win, new=new, delay_draw=delay_draw, _larch=_larch, **kws)
+          xlabel=plotlabels.k,
+          ylabel=set_label_weight(plotlabels.chikw, kweight),
+          win=win, new=new, delay_draw=delay_draw, _larch=_larch, **kws)
     if delay_draw:
         redraw(win=win, xmin=kmin, xmax=kmax, _larch=_larch)
 #enddef
