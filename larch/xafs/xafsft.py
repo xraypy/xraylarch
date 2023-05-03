@@ -28,7 +28,7 @@ from numpy import (pi, arange, zeros, ones, sin, cos,
 
 try:
     from mkl_fft.interfaces.numpy_fft import fft, ifft
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     from scipy.fftpack import fft, ifft
 
 from scipy.special import i0 as bessel_i0
