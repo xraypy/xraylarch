@@ -881,7 +881,9 @@ class FeffitPanel(TaskPanel):
             self.xasmain.process_exafs(dgroup)
 
         dconf = self.get_defaultconfig()
-        if not hasattr(dgroup, 'config'):
+        if dgroup is None:
+            return dconf
+        if hasattr(dgroup, 'config'):
             dgroup.config = Group()
 
         conf = getattr(dgroup.config, self.configname, dconf)
@@ -1016,6 +1018,8 @@ class FeffitPanel(TaskPanel):
         fname = opts['filename']
         if title is None:
             title = fname
+        if title is None:
+            title = 'Feff Sum'
         if "'" in title:
             title = title.replace("'", "\\'")
 
