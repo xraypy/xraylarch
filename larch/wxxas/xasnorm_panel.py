@@ -750,6 +750,7 @@ class XASNormPanel(TaskPanel):
     def process(self, dgroup=None, force_mback=False, force=False, **kws):
         """ handle process (pre-edge/normalize) of XAS data from XAS form
         """
+
         if self.skip_process and not force:
             return
         if dgroup is None:
@@ -793,6 +794,10 @@ class XASNormPanel(TaskPanel):
                 dgroup.mono_dspace = res.dspace
                 dgroup.xdat = dgroup.energy = res.energy
         dgroup.energy_units = en_units
+
+        if hasattr(dgroup, 'e0') and form['atsym'] == '?':
+            form['atsym'], form['edge'] = guess_edge(dgroup.e0)
+
         dgroup.atsym = form['atsym']
         dgroup.edge = form['edge']
 
@@ -872,7 +877,6 @@ class XASNormPanel(TaskPanel):
 {group:s}.norm *= {group:s}.edge_step_{normmeth:s}/{edge_step:.8f}"""
                 self.larch_eval(norm_expr.format(**form))
 
-
         if norm_method.startswith('area'):
             form['normmeth'] = 'area'
             expr = """{group:s}.norm = 1.0*{group:s}.norm_{normmeth:s}
@@ -885,6 +889,11 @@ class XASNormPanel(TaskPanel):
         if form['auto_step'] and hasattr(dgroup, 'edge_step'):
             self.wids['step'].SetValue(dgroup.edge_step)
             autoset_fs_increment(self.wids['step'], dgroup.edge_step)
+
+        if hasattr(dgroup, 'e0') and (conf.get('atsym', '?') == '?'):
+            atsym, edge = guess_edge(dgroup.e0)
+            conf['atsym'] = dgroup.atsym = atsym
+            conf['edge'] = dgroup.edge = edge
 
         self.wids['atsym'].SetStringSelection(dgroup.atsym)
         self.wids['edge'].SetStringSelection(dgroup.edge)
