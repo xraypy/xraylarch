@@ -3,6 +3,7 @@
 Linear Combination panel
 """
 import os
+import sys
 import time
 
 import wx
