@@ -145,7 +145,7 @@ class FeffResultsPanel(wx.Panel):
     """ present Feff results """
     def __init__(self, parent=None, feffresult=None, path_importer=None, xasmain=None,
                  _larch=None):
-        wx.Panel.__init__(self, parent, -1, size=(850, 650))
+        wx.Panel.__init__(self, parent, -1, size=(700, 500))
         self.parent = parent
         self.xasmain = xasmain
         self.path_importer = path_importer
@@ -154,7 +154,7 @@ class FeffResultsPanel(wx.Panel):
         self.report_frame = None
 
         self.dvc = dv.DataViewCtrl(self, style=DVSTYLE)
-        self.dvc.SetMinSize((825, 350))
+        self.dvc.SetMinSize((695, 350))
 
         self.model = FeffPathsModel(None, with_use=callable(path_importer))
         self.dvc.AssociateModel(self.model)
@@ -227,14 +227,14 @@ class FeffResultsPanel(wx.Panel):
 
         pack(panel, sizer)
 
-        columns = [('Feff File',   125, 'text'),
-                   ('R (\u212B)',   75, 'text'),
-                   ('# legs',       55, 'text'),
-                   ('# paths',      55, 'text'),
+        columns = [('Feff File',   100, 'text'),
+                   ('R (\u212B)',   50, 'text'),
+                   ('# legs',       50, 'text'),
+                   ('# paths',      50, 'text'),
                    ('Importance',  100, 'text')]
         if callable(self.path_importer):
             columns.append(('Use',     50, 'bool'))
-        columns.append(('Geometry',   175, 'text'))
+        columns.append(('Geometry',   200, 'text'))
 
         for icol, dat in enumerate(columns):
              label, width, dtype = dat
@@ -251,8 +251,8 @@ class FeffResultsPanel(wx.Panel):
 
 
         mainsizer = wx.BoxSizer(wx.VERTICAL)
-        mainsizer.Add(panel,    0, LEFT|wx.GROW, 1)
-        mainsizer.Add(self.dvc, 1, LEFT|wx.GROW, 1)
+        mainsizer.Add(panel,    0, LEFT, 1)
+        mainsizer.Add(self.dvc, 0, LEFT, 1)
 
         pack(self, mainsizer)
         self.dvc.EnsureVisible(self.model.GetItem(0))
@@ -369,7 +369,7 @@ class FeffResultsFrame(wx.Frame):
     """ present Feff results """
     def __init__(self,  parent=None, feffresult=None, xasmain=None,
                  path_importer=None, _larch=None):
-        wx.Frame.__init__(self, parent, -1, size=(850, 650), style=FRAMESTYLE)
+        wx.Frame.__init__(self, parent, -1, size=(900, 650), style=FRAMESTYLE)
 
         title = "Manage Feff calculation results"
         self.larch = _larch
@@ -435,9 +435,9 @@ class FeffResultsFrame(wx.Frame):
         wids['edge']         = Choice(toprow, choices=EDGES, size=(125, -1),
                                       action=self.onAbsorbingEdge)
 
-        flabel = SimpleText(toprow, 'Filter Calculations by Element and Edge:', size=(200, -1))
+        flabel = SimpleText(toprow, 'Filter Calculations by Element and Edge:', size=(175, -1))
         tsizer = wx.BoxSizer(wx.HORIZONTAL)
-        tsizer.Add(flabel,               1, LEFT, 2)
+        tsizer.Add(flabel,               0, LEFT, 2)
         tsizer.Add(wids['central_atom'], 0, LEFT|wx.GROW, 2)
         tsizer.Add(wids['edge'],         0, LEFT|wx.GROW, 2)
         pack(toprow, tsizer)
@@ -446,7 +446,7 @@ class FeffResultsFrame(wx.Frame):
         self.feff_panel = FeffResultsPanel(panel, path_importer=path_importer,
                                            _larch=_larch)
         sizer.Add(toprow, 0, LEFT|wx.GROW|wx.ALL, 2)
-        sizer.Add(HLine(panel, size=(550, 2)), 0,  LEFT|wx.GROW|wx.ALL, 2)
+        sizer.Add(HLine(panel, size=(650, 2)), 0,  LEFT|wx.GROW|wx.ALL, 2)
         sizer.Add(self.feff_panel, 1, LEFT|wx.GROW|wx.ALL, 2)
         pack(panel, sizer)
         # panel.SetupScrolling()

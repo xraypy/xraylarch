@@ -119,10 +119,10 @@ class CIFFrame(wx.Frame):
         # right hand side
         rightpanel = scrolled.ScrolledPanel(splitter)
         panel = wx.Panel(rightpanel)
-        sizer = wx.GridBagSizer(2,2)
+        sizer = wx.GridBagSizer(2, 2)
 
         self.title = SimpleText(panel, 'Search American Mineralogical CIF Database:',
-                                size=(500, -1), style=LEFT)
+                                size=(650, -1), style=LEFT)
         self.title.SetFont(Font(FONTSIZE+2))
         wids = self.wids = {}
 
@@ -134,17 +134,27 @@ class CIFFrame(wx.Frame):
         wids['mineral'].Bind(wx.EVT_TEXT_ENTER, self.onSearch)
 
         authlab = SimpleText(panel, ' Author Name: ')
-        wids['author'] = wx.TextCtrl(panel, value='',   size=(250, -1))
+        wids['author'] = wx.TextCtrl(panel, value='',   size=(250, -1),
+                                     style=wx.TE_PROCESS_ENTER)
+        wids['author'].Bind(wx.EVT_TEXT_ENTER, self.onSearch)
 
         journlab = SimpleText(panel, ' Journal Name: ')
-        wids['journal'] = wx.TextCtrl(panel, value='',   size=(250, -1))
+        wids['journal'] = wx.TextCtrl(panel, value='',   size=(250, -1),
+                                      style=wx.TE_PROCESS_ENTER)
+        wids['journal'].Bind(wx.EVT_TEXT_ENTER, self.onSearch)
 
         elemlab = SimpleText(panel, ' Include Elements: ')
         elemhint= SimpleText(panel, ' example: O, Fe, Si ')
 
-        wids['contains_elements'] = wx.TextCtrl(panel, value='', size=(250, -1))
+        wids['contains_elements'] = wx.TextCtrl(panel, value='', size=(250, -1),
+                                                style=wx.TE_PROCESS_ENTER)
+        wids['contains_elements'].Bind(wx.EVT_TEXT_ENTER, self.onSearch)
+
         exelemlab = SimpleText(panel, ' Exclude Elements: ')
-        wids['excludes_elements'] = wx.TextCtrl(panel, value='', size=(250, -1))
+        wids['excludes_elements'] = wx.TextCtrl(panel, value='', size=(250, -1),
+                                                style=wx.TE_PROCESS_ENTER)
+        wids['excludes_elements'].Bind(wx.EVT_TEXT_ENTER, self.onSearch)
+
         wids['excludes_elements'].Enable()
         wids['strict_contains'] = Check(panel, default=False,
                                        label='Include only the elements listed',
@@ -271,40 +281,40 @@ class CIFFrame(wx.Frame):
             pass
 
         self.plotpanel.SetMinSize((250, 250))
-        self.plotpanel.SetMaxSize((600, 450))
+        self.plotpanel.SetMaxSize((700, 450))
         self.plotpanel.onPanelExposed = self.showXRD1D
 
         cif_panel = wx.Panel(rightpanel)
         wids['cif_text'] = wx.TextCtrl(cif_panel, value='<CIF TEXT>',
                                        style=wx.TE_MULTILINE|wx.TE_READONLY,
-                                       size=(300, 350))
+                                       size=(700, 450))
         wids['cif_text'].SetFont(Font(FONTSIZE+1))
         cif_sizer = wx.BoxSizer(wx.VERTICAL)
-        cif_sizer.Add(wids['cif_text'], 1, LEFT|wx.GROW, 1)
+        cif_sizer.Add(wids['cif_text'], 0, LEFT, 1)
         pack(cif_panel, cif_sizer)
 
         feff_panel = wx.Panel(rightpanel)
         wids['feff_text'] = wx.TextCtrl(feff_panel,
                                        value='<Feff Input Text>',
                                        style=wx.TE_MULTILINE,
-                                       size=(300, 350))
+                                       size=(700, 450))
         wids['feff_text'].CanCopy()
 
         feff_panel.onPanelExposed = self.onGetFeff
         wids['feff_text'].SetFont(Font(FONTSIZE+1))
         feff_sizer = wx.BoxSizer(wx.VERTICAL)
-        feff_sizer.Add(wids['feff_text'], 1, LEFT|wx.GROW, 1)
+        feff_sizer.Add(wids['feff_text'], 0, LEFT, 1)
         pack(feff_panel, feff_sizer)
 
         feffout_panel = wx.Panel(rightpanel)
         wids['feffout_text'] = wx.TextCtrl(feffout_panel,
                                            value='<Feff Output>',
                                            style=wx.TE_MULTILINE,
-                                           size=(300, 350))
+                                           size=(700, 450))
         wids['feffout_text'].CanCopy()
         wids['feffout_text'].SetFont(Font(FONTSIZE+1))
         feffout_sizer = wx.BoxSizer(wx.VERTICAL)
-        feffout_sizer.Add(wids['feffout_text'], 1, LEFT|wx.GROW, 1)
+        feffout_sizer.Add(wids['feffout_text'], 0, LEFT, 1)
         pack(feffout_panel, feffout_sizer)
 
         self.nbpages = []
@@ -525,7 +535,7 @@ class CIFFrame(wx.Frame):
                 fh.write(strict_ascii(ciftext))
 
         wx.CallAfter(self.run_feff, folder, version8=version8)
-        # feffexe, folder=dirname, message_writer=self.feff_output)
+
 
     def run_feff(self, folder=None, version8=True):
         _, dname = os.path.split(folder)
@@ -697,11 +707,11 @@ class CIFFrame(wx.Frame):
             ppan.canvas.draw()
             self.has_xrd1d = True
 
-        self.xrd1d_thread = Thread(target=display_xrd1d)
-        self.xrd1d_thread.start()
-        time.sleep(0.02)
-        self.xrd1d_thread.join()
-
+        display_xrd1d()
+#         self.xrd1d_thread = Thread(target=display_xrd1d)
+#         self.xrd1d_thread.start()
+#         time.sleep(0.25)
+#         self.xrd1d_thread.join()
 
 
     def onSelAll(self, event=None):
