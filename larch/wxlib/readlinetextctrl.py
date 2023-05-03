@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 #
-from __future__ import print_function
 import sys
-
-import wx
 import os
 import time
+import wx
 
 DEFAULT_HISTORYFILE = '.wxlarch_hist'
 MAX_HISTORY = 5000

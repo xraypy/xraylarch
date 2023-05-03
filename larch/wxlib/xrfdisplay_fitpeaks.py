@@ -3,6 +3,7 @@
 fitting GUI for XRF display
 """
 import os
+import sys
 import time
 import copy
 from functools import partial

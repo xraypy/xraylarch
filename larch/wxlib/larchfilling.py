@@ -5,8 +5,6 @@ Larch Filling:  stolen and hacked from PyCrust's Filling module
 Filling is the gui tree control through which a user can navigate
 the local namespace or any object."""
 
-from __future__ import print_function
-
 __author__ = "Patrick K. O'Brien <pobrien@orbtech.com>"
 __cvsid__ = "$Id: filling.py 37633 2006-02-18 21:40:57Z RD $"
 __revision__ = "$Revision: 37633 $"
