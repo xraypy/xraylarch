@@ -43,11 +43,10 @@ LarchGroupTypes = {'Group': Group,
                    'ParameterGroup': ParameterGroup,
                    'FeffitDataSet': FeffitDataSet,
                    'TransformGroup': TransformGroup,
-                   'MinimizerResult': MinimizerResult
+                   'MinimizerResult': MinimizerResult,
+                   'FeffDatFile':  FeffDatFile,
+                   'FeffPathGroup': FeffPathGroup,
                    }
-                   # 'FeffDatFile':  FeffDatFile,
-                   # 'FeffPathGroup': FeffPathGroup,
-
 
 def encode4js(obj):
     """return an object ready for json encoding.
