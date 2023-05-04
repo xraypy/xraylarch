@@ -250,6 +250,11 @@ class FeffitDataSet(Group):
                           groupname=getattr(data, 'groupname', repr(data)),
                           filename=getattr(data, 'filename', repr(data)),
                           k=data.k[:], chi=data.chi[:])
+        if hasattr(data, 'config'):
+            self.data.config = deepcopy(data.config)
+        else:
+            self.data.config = Group()
+
         self.data.delta_chi = getattr(data, 'delta_chi', None)
 
         self.data.epsilon_k = getattr(data, 'epsilon_k', epsilon_k)
