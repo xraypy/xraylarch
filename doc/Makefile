@@ -23,6 +23,9 @@ epub:
 	$(SPHINXBUILD) -b epub $(ALLSPHINXOPTS) $(BUILDDIR)/epub
 
 
+tarball: html
+	cd $(BUILDDIR)/html && tar cvzf ../../../larch_doc.tgz .
+
 pdf: latex
 	cp sphinx/ext_imgmath.py extensions.py
 	cd $(BUILDDIR)/latex && pdflatex xraylarch.tex
@@ -30,7 +33,7 @@ pdf: latex
 	cd $(BUILDDIR)/latex && pdflatex xraylarch.tex
 	cp -pr $(BUILDDIR)/latex/xraylarch.pdf $(BUILDDIR)/.
 
-all: html pdf
+all: html tarball pdf
 
 install: all
 	rm -rf  $(INSTALLDIR)/doc_old
