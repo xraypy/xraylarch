@@ -22,7 +22,7 @@ import wx.dataview as dv
 
 from lmfit import Parameter
 from lmfit.model import (save_modelresult, load_modelresult,
-                             save_model, load_model)
+                         save_model, load_model)
 
 import lmfit.models as lm_models
 from lmfit.printfuncs import gformat
@@ -741,8 +741,16 @@ class FeffitPanel(TaskPanel):
         feffpaths = getattr(self.larch.symtable, '_feffpaths', None)
 
 
-        fitset = getattr(self.larch.symtable, '_feffit_dataset', None)
-        if fitset is not None:
+        try:
+            has_fit_hist = len(dgroup.feffit_history) > 0
+        except:
+            has_fit_hist = False
+
+
+        if not has_fit_hist:
+            has_fit_hist = getattr(self.larch.symtable, '_feffit_dataset', None) is not None
+
+        if has_fit_hist:
             self.wids['show_results'].Enable()
         if feffpath is not None:
             self.reset_paths()
@@ -880,10 +888,12 @@ class FeffitPanel(TaskPanel):
         if not hasattr(dgroup, 'chi'):
             self.xasmain.process_exafs(dgroup)
 
+        # print("Get Config ", dgroup, self.configname, hasattr(dgroup, 'config'))
+
         dconf = self.get_defaultconfig()
         if dgroup is None:
             return dconf
-        if hasattr(dgroup, 'config'):
+        if not hasattr(dgroup, 'config'):
             dgroup.config = Group()
 
         conf = getattr(dgroup.config, self.configname, dconf)
@@ -1922,6 +1932,7 @@ class FeffitResultFrame(wx.Frame):
         opts['fit_kwstring'] = "%s" % getattr(trans, 'kweight')
         opts['kwindow']  = getattr(trans, 'window')
         opts['topwin'] = self
+
         self.feffit_panel.onPlot(**opts)
 
 
