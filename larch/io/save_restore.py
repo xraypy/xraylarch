@@ -209,7 +209,12 @@ def read_session(fname):
             if line.startswith('<:') and line.endswith(':>'):
                 symname = line.replace('<:', '').replace(':>', '')
             else:
-                symbols[symname] = decode4js(json.loads(line))
+                try:
+                    v = decode4js(json.loads(line))
+                    symbols[symname] = v
+                except:
+                    print("decode failed SS:: ", symname, line[:150])
+
         else:
             if line.startswith('##') and ':' in line:
                 line = line[2:]
@@ -220,9 +225,8 @@ def read_session(fname):
                     try:
                         val = decode4js(json.loads(val))
                     except:
-                        pass
+                        print("decode failed @## ", val[:150])
                 config[key] = val
-
     return SessionStore(config, cmd_history, symbols)
 
 
