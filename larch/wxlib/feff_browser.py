@@ -228,8 +228,8 @@ class FeffResultsPanel(wx.Panel):
         pack(panel, sizer)
 
         columns = [('Feff File',   100, 'text'),
-                   ('R (\u212B)',   55, 'text'),
-                   ('# legs',       55, 'text'),
+                   ('R (\u212B)',   60, 'text'),
+                   ('# legs',       60, 'text'),
                    ('# paths',      65, 'text'),
                    ('Importance',  100, 'text')]
         if callable(self.path_importer):
@@ -245,7 +245,9 @@ class FeffResultsPanel(wx.Panel):
                  mode = dv.DATAVIEW_CELL_ACTIVATABLE
              method(label, icol, width=width, mode=mode)
              c = self.dvc.Columns[icol]
-             align = wx.ALIGN_RIGHT if icol in (1, 2, 3, 4) else wx.ALIGN_LEFT
+             align = wx.ALIGN_RIGHT
+             if (label.startswith('Feff') or label.startswith('Geom')):
+                 align = wx.ALIGN_LEFT
              c.Alignment = c.Renderer.Alignment = align
              c.SetSortable(False)
 
