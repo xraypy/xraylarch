@@ -12,8 +12,10 @@ import types
 import ast
 import math
 import numpy
+from copy import deepcopy
 
 from . import site_config
+from asteval import valid_symbol_name
 from .symboltable import SymbolTable, Group, isgroup
 from .inputText import InputText, BLANK_TEXT
 from .larchlib import (LarchExceptionHolder, ReturnedNone,
@@ -94,7 +96,9 @@ class Interpreter:
                        'nameconstant', 'num', 'pass', 'raise', 'repr',
                        'return', 'slice', 'starred', 'str', 'subscript',
                        'try', 'tryexcept', 'tryfinally', 'tuple',
-                       'unaryop', 'while')
+                       'unaryop', 'while',
+                       'set', 'setcomp', 'dictcomp',
+                       'with', 'formattedvalue', 'joinedstr')
 
     def __init__(self, symtable=None, input=None, writer=None,
                  historyfile=None, maxhistory=5000):
@@ -482,6 +486,10 @@ class Interpreter:
         "tuple"
         return tuple(self.on_list(node))
 
+    def on_set(self, node):    # ('elts')
+        """Set."""
+        return set([self.run(k) for k in node.elts])
+
     def on_dict(self, node):    # ('keys', 'values')
         "dictionary"
         nodevals = list(zip(node.keys, node.values))
@@ -503,6 +511,21 @@ class Interpreter:
     def on_bytes(self, node):
         'return bytes'
         return node.s  # ('s',)
+
+    def on_joinedstr(self, node):  # ('values',)
+        "join strings, used in f-strings"
+        return ''.join([self.run(k) for k in node.values])
+
+    def on_formattedvalue(self, node): # ('value', 'conversion', 'format_spec')
+        "formatting used in f-strings"
+        val = self.run(node.value)
+        fstring_converters = {115: str, 114: repr, 97: ascii}
+        if node.conversion in fstring_converters:
+            val = fstring_converters[node.conversion](val)
+        fmt = '{0}'
+        if node.format_spec is not None:
+            fmt = f'{{0:{self.run(node.format_spec)}}}'
+        return fmt.format(val)
 
     def on_nameconstant(self, node):    # ('value')
         """ Name Constant node (new in Python3.4)"""
@@ -539,6 +562,9 @@ class Interpreter:
         if len(self.error) > 0:
             return
         if node.__class__ == ast.Name:
+            if not valid_symbol_name(node.id):
+                errmsg = f"invalid symbol name (reserved word?) {node.id}"
+                self.raise_exception(node, exc=NameError, msg=errmsg)
             sym = self.symtable.set_symbol(node.id, value=val)
         elif node.__class__ == ast.Attribute:
             if node.ctx.__class__  == ast.Load:
@@ -706,6 +732,29 @@ class Interpreter:
             expr = node.body
         return self.run(expr)
 
+    def on_with(self, node):    # ('items', 'body', 'type_comment')
+        """with blocks."""
+        contexts = []
+        for item in node.items:
+            ctx = self.run(item.context_expr)
+            contexts.append(ctx)
+            if hasattr(ctx, '__enter__'):
+                result = ctx.__enter__()
+                if item.optional_vars is not None:
+                    self.node_assign(item.optional_vars, result)
+            else:
+                msg = "object does not support the context manager protocol"
+                raise TypeError(f"'{type(ctx)}' {msg}")
+        for bnode in node.body:
+            self.run(bnode)
+            if self._interrupt is not None:
+                break
+
+        for ctx in contexts:
+            if hasattr(ctx, '__exit__'):
+                ctx.__exit__()
+
+
     def on_while(self, node):    # ('test', 'body', 'orelse')
         "while blocks"
         while self.run(node.test):
@@ -741,20 +790,104 @@ class Interpreter:
                 self.run(tnode)
         self._interrupt = None
 
-    def on_listcomp(self, node):    # ('elt', 'generators')
-        "list comprehension"
-        out = []
+
+    def comprehension_data(self, node):      # ('elt', 'generators')
+        "data for comprehensions"
+        mylocals = {}
+        saved_syms = {}
+
         for tnode in node.generators:
             if tnode.__class__ == ast.comprehension:
+                if tnode.target.__class__ == ast.Name:
+                    if not valid_symbol_name(tnode.target.id):
+                        errmsg = f"invalid symbol name (reserved word?) {tnode.target.id}"
+                        self.raise_exception(tnode.target, exc=NameError, msg=errmsg)
+                    mylocals[tnode.target.id] = []
+                    if self.symtable.has_symbol(tnode.target.id):
+                        saved_syms[tnode.target.id] = deepcopy(self.symtable.get_symbol(tnode.target.id))
+
+                elif tnode.target.__class__ == ast.Tuple:
+                    target = []
+                    for tval in tnode.target.elts:
+                        mylocals[tval.id] = []
+                        if self.symtable.has_symbol(tval.id):
+                            saved_syms[tval.id] = deepcopy(self.symtable.get_symbol(tval.id))
+
+        for tnode in node.generators:
+            if tnode.__class__ == ast.comprehension:
+                ttype = 'name'
+                if tnode.target.__class__ == ast.Name:
+                    if not valid_symbol_name(tnode.target.id):
+                        errmsg = f"invalid symbol name (reserved word?) {tnode.target.id}"
+                        self.raise_exception(tnode.target, exc=NameError, msg=errmsg)
+                    ttype, target = 'name', tnode.target.id
+                elif tnode.target.__class__ == ast.Tuple:
+                    ttype = 'tuple'
+                    target =tuple([tval.id for tval in tnode.target.elts])
+
                 for val in self.run(tnode.iter):
-                    self.node_assign(tnode.target, val)
-                    if len(self.error) > 0:
-                        return
+                    if ttype == 'name':
+                        self.symtable.set_symbol(target, val)
+                    else:
+                        for telem, tval in zip(target, val):
+                            self.symtable.set_symbol(target, val)
+
                     add = True
                     for cond in tnode.ifs:
                         add = add and self.run(cond)
                     if add:
-                        out.append(self.run(node.elt))
+                        if ttype == 'name':
+                            mylocals[target].append(val)
+                        else:
+                            for telem, tval in zip(target, val):
+                                mylocals[telem].append(tval)
+        return mylocals, saved_syms
+
+    def on_listcomp(self, node):
+        """List comprehension"""
+        mylocals, saved_syms = self.comprehension_data(node)
+
+        names = list(mylocals.keys())
+        data = list(mylocals.values())
+        def listcomp_recurse(out, i, names, data):
+            if i == len(names):
+                out.append(self.run(node.elt))
+                return
+
+            for val in data[i]:
+                self.symtable.set_symbol(names[i], val)
+                listcomp_recurse(out, i+1, names, data)
+
+        out = []
+        listcomp_recurse(out, 0, names, data)
+        for name, val in saved_syms.items():
+            self.symtable.set_symbol(name, val)
+        return out
+
+    def on_setcomp(self, node):
+        """Set comprehension"""
+        return set(self.on_listcomp(node))
+
+    def on_dictcomp(self, node):
+        """Dictionary comprehension"""
+        mylocals, saved_syms = self.comprehension_data(node)
+
+        names = list(mylocals.keys())
+        data = list(mylocals.values())
+
+        def dictcomp_recurse(out, i, names, data):
+            if i == len(names):
+                out[self.run(node.key)] = self.run(node.value)
+                return
+
+            for val in data[i]:
+                self.symtable.set_symbol(names[i], val)
+                dictcomp_recurse(out, i+1, names, data)
+
+        out = {}
+        dictcomp_recurse(out, 0, names, data)
+        for name, val in saved_syms.items():
+            self.symtable.set_symbol(name, val)
         return out
 
     def on_excepthandler(self, node): # ('type', 'name', 'body')
