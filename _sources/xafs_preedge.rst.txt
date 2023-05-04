@@ -190,9 +190,11 @@ If this is used in publication, a citation should be given to Weng :cite:`Weng`.
     :param z:         the Z number of the absorber
     :param edge:      the absorption edge, usually 'K' or 'L3'
     :param e0:        edge energy, :math:`E_0` in eV.  If None, the tabulated value is used.
-    :param emin:      the minimum energy to include in the fit.  If None, use first energy point
-    :param emax:      the maximum energy to include in the fit.  If None, use last energy point
-    :param whiteline: a margin around the edge to exclude from the fit.  If not None, must be a positive integer
+    :pre1:            low E range (relative to e0) for pre-edge region.
+    :pre2:            high E range (relative to e0) for pre-edge region.
+    :norm1:           low E range (relative to e0) for post-edge region.
+    :norm2:           high E range (relative to e0) for post-edge region.
+    :order:           order of the legendre polynomial for normalization.
     :param leexiang:  flag for using the use the Lee&Xiang extension [False]
     :param tables:    'CL' (Cromer-Liberman) or 'Chantler', ['Chantler']
     :param fit_erfc:  if True, fit the amplitude and width of the complementary error function [False]
@@ -216,10 +218,6 @@ If this is used in publication, a citation should be given to Weng :cite:`Weng`.
 
 Notes:
 
-  - The ``whiteline`` parameter is used to exclude the region around the
-    white line in the data from the fit.  The large spectral weight under
-    the white line can skew the fit result, particularly in data
-    measured over a short data range.  The value is eV units.
   - The ``order`` parameter is the order of the Legendre polynomial.
     Data measured over a very short data range are likely best processed
     with ``order=2``.  Extended XAS data are often better processed with
@@ -618,5 +616,3 @@ with results shown below:
     :func:`xas_convolve` for :math:`L_{\rm III}` XAFS of Pt metal.
     :math:`L_{\rm III}` XAFS of Pt metal, normalized :math:`\mu(E)` for raw
     data and the spectrum deconvolved by the energy of its core level.
-
-

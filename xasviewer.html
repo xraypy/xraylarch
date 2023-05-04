@@ -1,0 +1,200 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>5. XASViewer &#8212; xraylarch 0.9.68 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="5.1. XAS Viewer Overview" href="xasviewer/overview.html" />
+    <link rel="prev" title="4. Other Larch GUIs" href="guis.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
+
+  </head><body>
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<table border=0>
+  <tr>
+    <td width=20%>
+	<a href="index.html">
+	 <img src="_static/larchcones.png" height=50px alt="larchcones"/></a>
+    </td>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
+    </td>
+   </tr></table>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="xasviewer/overview.html" title="5.1. XAS Viewer Overview"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="guis.html" title="4. Other Larch GUIs"
+             accesskey="P">previous</a> |</li>
+   <li>[<a href="index.html"> Larch</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
+
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5. </span>XASViewer</a></li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="guis.html"
+                          title="previous chapter"><span class="section-number">4. </span>Other Larch GUIs</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="xasviewer/overview.html"
+                          title="next chapter"><span class="section-number">5.1. </span>XAS Viewer Overview</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/xasviewer.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
+<section id="xasviewer">
+<span id="xasviewer-app"></span><h1><span class="section-number">5. </span>XASViewer<a class="headerlink" href="#xasviewer" title="Permalink to this heading">¶</a></h1>
+<p>The XAS Viewer Application gives a graphical user interface (GUI) for the
+visualization and analyis of X-ray absorption spectroscopy (XAS) data, both
+XANES and EXAFS. It is deliberately patterned after the Demeter Package
+(Athena and Artemis programs), and shares many concepts and presentation
+ideas from this package.  As a GUI Program, XAS Viewer should seem very
+“Athena-like” though of course with many differences.   We hope that many of
+these differences will be “improvements”.</p>
+<p>By using Larch for all of its analysis steps, XAS Viewer not only provides
+interactive data visualization, exploration, and analysis, but records
+those steps as Larch / Python commands that can be saved and reproduced
+outside of the GUI, say to enable batch processing of large volumes of
+data. This application is still in active development, with new features
+driving the development and release of Larch version for the past year or
+more.</p>
+<p>At this writing (July, 2022, Larch version 0.9.65), the main feature goals
+of XAS Viewer are met, though improvements continue to be made, and bugs
+are being fixed as quickly as possible. Ideas for additions and
+improvements are most welcome.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="xasviewer/overview.html">5.1. XAS Viewer Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/overview.html#data-input-and-output">5.1.1. Data Input and Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/overview.html#xas-data-processing-and-management">5.1.2. XAS Data Processing and Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/overview.html#xanes-analysis">5.1.3. XANES Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/overview.html#exafs-processing">5.1.4. EXAFS Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/overview.html#exafs-modeling-with-feff">5.1.5. EXAFS Modeling with FEFF</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="xasviewer/iodata.html">5.2. Reading and Saving Data into XAS Viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/iodata.html#reading-plaintext-data-files-including-xdi">5.2.1. Reading Plaintext data files, including XDI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/iodata.html#reading-data-from-athena-project-files">5.2.2. Reading Data from Athena Project Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/iodata.html#reading-spec-bliss-hdf5-data">5.2.3. Reading Spec/Bliss HDF5 Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/iodata.html#larch-session-files-and-xas-viewer">5.2.4. Larch Session Files and XAS Viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/iodata.html#auto-saving-larch-session-files">5.2.5. Auto-saving Larch Session Files</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="xasviewer/dialogs.html">5.3. Pre-edge subtraction and Normalization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xasviewer/dialogs.html#common-xas-processing-dialogs">5.4. Common XAS Processing Dialogs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/dialogs.html#energy-calibration-and-alignment">5.4.1. Energy Calibration and alignment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/dialogs.html#deglitching-and-truncating-data">5.4.2. Deglitching and Truncating Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/dialogs.html#smoothing-data">5.4.3. Smoothing Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/dialogs.html#de-convolving-xas-data">5.4.4. De-convolving XAS  Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/dialogs.html#re-binning-xas-data">5.4.5. Re-binning XAS  Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/dialogs.html#correcting-for-over-absorption-in-xas-data">5.4.6. Correcting for Over-Absorption in XAS Data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="xasviewer/preedge.html">5.5. Pre-edge peak fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xasviewer/preedge.html#linear-combination-analysis">5.6. Linear Combination Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xasviewer/preedge.html#principal-component-and-non-negative-factor-analysis">5.7. Principal Component and Non-negative Factor Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xasviewer/preedge.html#linear-regression-with-lasso-and-pls-to-predict-external-variable">5.8. Linear Regression with LASSO and PLS to predict external variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xasviewer/preedge.html#exafs-processing-background-subtraction">5.9. EXAFS Processing: Background Subtraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xasviewer/preedge.html#exafs-processing-fourier-transforms">5.10. EXAFS Processing:  Fourier Transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xasviewer/preedge.html#fitting-exafs-data-to-feff-paths">5.11. Fitting EXAFS data to Feff Paths</a></li>
+</ul>
+</div>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="xasviewer/overview.html" title="5.1. XAS Viewer Overview"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="guis.html" title="4. Other Larch GUIs"
+             >previous</a> |</li>
+   <li>[<a href="index.html"> Larch</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
+
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5. </span>XASViewer</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright Matthew Newville, The University of Chicago, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.0.0.
+    </div>
+  </body>
+</html>

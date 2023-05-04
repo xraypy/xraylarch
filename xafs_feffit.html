@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>13.8. XAFS: Fitting XAFS to Feff Paths &#8212; xraylarch 0.9.67 documentation</title>
+    <title>13.8. XAFS: Fitting XAFS to Feff Paths &#8212; xraylarch 0.9.68 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
@@ -722,11 +721,11 @@ commands.</p>
 <span class="p">[[</span><span class="n">Statistics</span><span class="p">]]</span>
    <span class="n">nvarys</span><span class="p">,</span> <span class="n">npts</span>       <span class="o">=</span>  <span class="mi">4</span><span class="p">,</span> <span class="mi">104</span>
    <span class="n">n_independent</span>      <span class="o">=</span>  <span class="mf">15.260</span>
-   <span class="n">chi_square</span>         <span class="o">=</span>  <span class="mf">112.91671</span>
-   <span class="n">reduced</span> <span class="n">chi_square</span> <span class="o">=</span>  <span class="mf">10.027875</span>
-   <span class="n">r</span><span class="o">-</span><span class="n">factor</span>           <span class="o">=</span>  <span class="mf">2.722e-03</span>
-   <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span>  <span class="mf">38.541883</span>
-   <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span>  <span class="mf">41.442898</span>
+   <span class="n">chi_square</span>         <span class="o">=</span>  <span class="mf">112.916714</span>
+   <span class="n">reduced</span> <span class="n">chi_square</span> <span class="o">=</span>  <span class="mf">10.0278754</span>
+   <span class="n">r</span><span class="o">-</span><span class="n">factor</span>           <span class="o">=</span>  <span class="mf">0.00272181</span>
+   <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span>  <span class="mf">38.5418835</span>
+   <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span>  <span class="mf">41.4428977</span>
  
 <span class="p">[[</span><span class="n">Data</span><span class="p">]]</span>
    <span class="n">fit</span> <span class="n">space</span>          <span class="o">=</span> <span class="s1">&#39;r&#39;</span>
@@ -735,15 +734,15 @@ commands.</p>
    <span class="n">k</span> <span class="n">window</span><span class="p">,</span> <span class="n">dk</span>       <span class="o">=</span> <span class="s1">&#39;kaiser&#39;</span><span class="p">,</span> <span class="mf">4.000</span>
    <span class="n">paths</span> <span class="n">used</span> <span class="ow">in</span> <span class="n">fit</span>  <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;feffcu01.dat&#39;</span><span class="p">]</span>
    <span class="n">k</span><span class="o">-</span><span class="n">weight</span>           <span class="o">=</span> <span class="mi">2</span>
-   <span class="n">epsilon_k</span>          <span class="o">=</span> <span class="n">Array</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">6.191e-04</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">1.655e-03</span><span class="p">)</span>
-   <span class="n">epsilon_r</span>          <span class="o">=</span> <span class="mf">0.0208085</span>
+   <span class="n">epsilon_k</span>          <span class="o">=</span> <span class="n">Array</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">6.1910e-04</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.00165452</span><span class="p">)</span>
+   <span class="n">epsilon_r</span>          <span class="o">=</span> <span class="mf">0.02080850</span>
    <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">15.260</span>
  
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-   <span class="n">amp</span>            <span class="o">=</span>  <span class="mf">0.9315590</span> <span class="o">+/-</span> <span class="mf">0.0391633</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">1.0000000</span><span class="p">)</span>
-   <span class="n">del_e0</span>         <span class="o">=</span>  <span class="mf">4.3577673</span> <span class="o">+/-</span> <span class="mf">0.5113492</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.0000000</span><span class="p">)</span>
-   <span class="n">del_r</span>          <span class="o">=</span> <span class="o">-</span><span class="mf">6.017e-03</span> <span class="o">+/-</span> <span class="mf">2.613e-03</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.0000000</span><span class="p">)</span>
-   <span class="n">sig2</span>           <span class="o">=</span>  <span class="mf">8.670e-03</span> <span class="o">+/-</span> <span class="mf">3.078e-04</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.0000000</span><span class="p">)</span>
+   <span class="n">amp</span>            <span class="o">=</span>  <span class="mf">0.93155899</span> <span class="o">+/-</span> <span class="mf">0.03916328</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">1.00000000</span><span class="p">)</span>
+   <span class="n">del_e0</span>         <span class="o">=</span>  <span class="mf">4.35776725</span> <span class="o">+/-</span> <span class="mf">0.51134921</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.00000000</span><span class="p">)</span>
+   <span class="n">del_r</span>          <span class="o">=</span> <span class="o">-</span><span class="mf">0.00601666</span> <span class="o">+/-</span> <span class="mf">0.00261331</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.00000000</span><span class="p">)</span>
+   <span class="n">sig2</span>           <span class="o">=</span>  <span class="mf">0.00866969</span> <span class="o">+/-</span> <span class="mf">3.0785e-04</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.00000000</span><span class="p">)</span>
  
 <span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span>    <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.100</span><span class="p">)</span>
    <span class="n">amp</span><span class="p">,</span> <span class="n">sig2</span>            <span class="o">=</span>  <span class="mf">0.928</span>
@@ -1173,7 +1172,7 @@ of <span class="math notranslate nohighlight">\(R\)</span>. The output for this 
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
    <span class="n">alpha</span>          <span class="o">=</span>  <span class="mf">5.2689e-06</span> <span class="o">+/-</span> <span class="mf">6.6632e-06</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.00000000</span><span class="p">)</span>
    <span class="n">amp</span>            <span class="o">=</span>  <span class="mf">0.88870032</span> <span class="o">+/-</span> <span class="mf">0.03075399</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">1.00000000</span><span class="p">)</span>
-   <span class="n">del_e0</span>         <span class="o">=</span>  <span class="mf">5.37258212</span> <span class="o">+/-</span> <span class="mf">0.61378629</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">2.00000000</span><span class="p">)</span>
+   <span class="n">del_e0</span>         <span class="o">=</span>  <span class="mf">5.37258209</span> <span class="o">+/-</span> <span class="mf">0.61378630</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">2.00000000</span><span class="p">)</span>
    <span class="n">dr_off</span>         <span class="o">=</span> <span class="o">-</span><span class="mf">3.0870e-04</span> <span class="o">+/-</span> <span class="mf">0.00272044</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.00000000</span><span class="p">)</span>
    <span class="n">theta</span>          <span class="o">=</span>  <span class="mf">233.135611</span> <span class="o">+/-</span> <span class="mf">8.08151807</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">250.000000</span><span class="p">)</span>
  
@@ -1193,7 +1192,7 @@ of <span class="math notranslate nohighlight">\(R\)</span>. The output for this 
      <span class="n">reff</span>   <span class="o">=</span>  <span class="mf">2.54780000</span>
      <span class="n">degen</span>  <span class="o">=</span>  <span class="mf">12.0000000</span>
      <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.88870032</span> <span class="o">+/-</span> <span class="mf">0.03075399</span>  <span class="o">:=</span> <span class="s1">&#39;amp&#39;</span>
-     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.37258212</span> <span class="o">+/-</span> <span class="mf">0.61378629</span>  <span class="o">:=</span> <span class="s1">&#39;del_e0&#39;</span>
+     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.37258209</span> <span class="o">+/-</span> <span class="mf">0.61378630</span>  <span class="o">:=</span> <span class="s1">&#39;del_e0&#39;</span>
      <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.54762554</span> <span class="o">+/-</span> <span class="mf">0.00266048</span>  <span class="o">:=</span> <span class="s1">&#39;reff + dr_off + 10*alpha*reff&#39;</span>
      <span class="n">deltar</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.7446e-04</span> <span class="o">+/-</span> <span class="mf">0.00266048</span>  <span class="o">:=</span> <span class="s1">&#39;dr_off + 10*alpha*reff&#39;</span>
      <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.00327433</span> <span class="o">+/-</span> <span class="mf">1.1350e-04</span>  <span class="o">:=</span> <span class="s1">&#39;sigma2_eins(10, theta)&#39;</span>
@@ -1207,7 +1206,7 @@ of <span class="math notranslate nohighlight">\(R\)</span>. The output for this 
      <span class="n">reff</span>   <span class="o">=</span>  <span class="mf">2.54780000</span>
      <span class="n">degen</span>  <span class="o">=</span>  <span class="mf">12.0000000</span>
      <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.88870032</span> <span class="o">+/-</span> <span class="mf">0.03075399</span>  <span class="o">:=</span> <span class="s1">&#39;amp&#39;</span>
-     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.37258212</span> <span class="o">+/-</span> <span class="mf">0.61378629</span>  <span class="o">:=</span> <span class="s1">&#39;del_e0&#39;</span>
+     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.37258209</span> <span class="o">+/-</span> <span class="mf">0.61378630</span>  <span class="o">:=</span> <span class="s1">&#39;del_e0&#39;</span>
      <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.54816251</span> <span class="o">+/-</span> <span class="mf">0.00252272</span>  <span class="o">:=</span> <span class="s1">&#39;reff + dr_off + 50*alpha*reff&#39;</span>
      <span class="n">deltar</span> <span class="o">=</span>  <span class="mf">3.6251e-04</span> <span class="o">+/-</span> <span class="mf">0.00252272</span>  <span class="o">:=</span> <span class="s1">&#39;dr_off + 50*alpha*reff&#39;</span>
      <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.00333675</span> <span class="o">+/-</span> <span class="mf">1.2585e-04</span>  <span class="o">:=</span> <span class="s1">&#39;sigma2_eins(50, theta)&#39;</span>
@@ -1221,7 +1220,7 @@ of <span class="math notranslate nohighlight">\(R\)</span>. The output for this 
      <span class="n">reff</span>   <span class="o">=</span>  <span class="mf">2.54780000</span>
      <span class="n">degen</span>  <span class="o">=</span>  <span class="mf">12.0000000</span>
      <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.88870032</span> <span class="o">+/-</span> <span class="mf">0.03075399</span>  <span class="o">:=</span> <span class="s1">&#39;amp&#39;</span>
-     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.37258212</span> <span class="o">+/-</span> <span class="mf">0.61378629</span>  <span class="o">:=</span> <span class="s1">&#39;del_e0&#39;</span>
+     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.37258209</span> <span class="o">+/-</span> <span class="mf">0.61378630</span>  <span class="o">:=</span> <span class="s1">&#39;del_e0&#39;</span>
      <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.54950492</span> <span class="o">+/-</span> <span class="mf">0.00293494</span>  <span class="o">:=</span> <span class="s1">&#39;reff + dr_off + 150*alpha*reff&#39;</span>
      <span class="n">deltar</span> <span class="o">=</span>  <span class="mf">0.00170492</span> <span class="o">+/-</span> <span class="mf">0.00293494</span>  <span class="o">:=</span> <span class="s1">&#39;dr_off + 150*alpha*reff&#39;</span>
      <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.00502932</span> <span class="o">+/-</span> <span class="mf">2.9423e-04</span>  <span class="o">:=</span> <span class="s1">&#39;sigma2_eins(150, theta)&#39;</span>
@@ -2091,7 +2090,7 @@ powerful, and give increased confidence in the refined structure.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.0.0.
     </div>
   </body>
 </html>
