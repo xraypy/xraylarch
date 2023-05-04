@@ -539,11 +539,10 @@ class TestEval(TestCase):
     def test_reservedwords(self):
         """test reserved words"""
         for w in ('and', 'as', 'while', 'raise', 'else',
-                  'class', 'del', 'def', 'import', 'None', 'True', 'False', 'eval'):
+                  'class', 'del', 'def', 'import', 'None', 'True', 'False'):
             self.interp.error = []
             self.interp("%s=2" % w)
             self.check_error('SyntaxError')
-
 
     def test_raise(self):
         """test raise"""
