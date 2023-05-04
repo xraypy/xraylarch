@@ -1617,14 +1617,14 @@ class FeffitResultFrame(wx.Frame):
         splitter.SetMinimumPaneSize(200)
 
         self.filelist = EditableListBox(splitter, self.ShowDataSet,
-                                           size=(250, -1))
+                                        size=(250, -1))
         set_color(self.filelist, 'list_fg', bg='list_bg')
 
         self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
 
         panel = scrolled.ScrolledPanel(splitter)
 
-        panel.SetMinSize((600, 575))
+        panel.SetMinSize((725, 575))
         panel.SetSize((850, 575))
 
         # title row
@@ -1721,13 +1721,13 @@ class FeffitResultFrame(wx.Frame):
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.SetFont(self.font_fixedwidth)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
-        sview.AppendTextColumn(' # ', width=35)
+        sview.AppendTextColumn(' # ', width=40)
         sview.AppendTextColumn('Label', width=140)
-        sview.AppendTextColumn('N_paths', width=65)
-        sview.AppendTextColumn('N_vary', width=60)
-        sview.AppendTextColumn('N_idp',  width=60)
+        sview.AppendTextColumn('Npaths', width=70)
+        sview.AppendTextColumn('Nvary', width=60)
+        sview.AppendTextColumn('Nidp',  width=60)
         sview.AppendTextColumn('\u03c7\u00B2', width=75)
-        sview.AppendTextColumn('reduced \u03c7\u00B2', width=85)
+        sview.AppendTextColumn('reduced \u03c7\u00B2', width=95)
         sview.AppendTextColumn('R Factor', width=80)
         sview.AppendTextColumn('Akaike Info', width=85)
 
@@ -1738,13 +1738,10 @@ class FeffitResultFrame(wx.Frame):
             this.Alignment = wx.ALIGN_RIGHT if col > 1 else wx.ALIGN_LEFT
             this.Renderer.Alignment = this.Alignment
 
-        sview.SetMinSize((725, 150))
+        sview.SetMinSize((750, 150))
 
         irow += 1
         sizer.Add(sview, (irow, 0), (1, 5), LEFT)
-
-        irow += 1
-        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
 
         irow += 1
         title = SimpleText(panel, '[[Variables]]',  font=Font(FONTSIZE+2),
@@ -1770,14 +1767,11 @@ class FeffitResultFrame(wx.Frame):
             this.Alignment = wx.ALIGN_RIGHT if col in (1, 2) else wx.ALIGN_LEFT
             this.Renderer.Alignment = this.Alignment
 
-        pview.SetMinSize((725, 200))
+        pview.SetMinSize((750, 200))
         pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
 
         irow += 1
         sizer.Add(pview, (irow, 0), (1, 5), LEFT)
-
-        irow += 1
-        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
 
         irow += 1
         title = SimpleText(panel, '[[Correlations]]',  font=Font(FONTSIZE+2),
@@ -1798,7 +1792,6 @@ class FeffitResultFrame(wx.Frame):
         psizer.Add(self.wids['all_correl'], 0, 2)
         pack(ppanel, psizer)
 
-
         sizer.Add(title,  (irow, 0), (1, 1), LEFT)
         sizer.Add(ppanel, (irow, 1), (1, 4), LEFT)
 
@@ -1816,7 +1809,7 @@ class FeffitResultFrame(wx.Frame):
             if col == 2:
                 align = wx.ALIGN_RIGHT
             this.Alignment = this.Renderer.Alignment = align
-        cview.SetMinSize((475, 150))
+        cview.SetMinSize((550, 150))
 
         irow += 1
         sizer.Add(cview, (irow, 0), (1, 5), LEFT)

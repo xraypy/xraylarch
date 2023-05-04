@@ -186,7 +186,7 @@ class PrePeakFitResultFrame(wx.Frame):
         splitter.SetMinimumPaneSize(200)
 
         self.filelist = EditableListBox(splitter, self.ShowDataSet,
-                                           size=(250, -1))
+                                        size=(250, -1))
         set_color(self.filelist, 'list_fg', bg='list_bg')
 
         panel = scrolled.ScrolledPanel(splitter)
