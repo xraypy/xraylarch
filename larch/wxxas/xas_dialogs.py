@@ -1254,7 +1254,7 @@ class DeglitchDialog(wx.Dialog):
             plotstr = self.wids['plotopts'].GetStringSelection()
             plottype = DEGLITCH_PLOTS[plotstr]
         self.data = self.get_xydata(datatype=plottype)
-        self.xmasks = [np.ones(len(self.data[0]), dtype=np.int8)]
+        self.xmasks = [np.ones(len(self.data[0]), dtype=bool)]
 
     def get_xydata(self, datatype='mu'):
         if hasattr(self.dgroup, 'energy'):
@@ -1319,7 +1319,7 @@ class DeglitchDialog(wx.Dialog):
 
     def on_undo(self, event=None):
         if len(self.xmasks) == 1:
-            self.xmasks = [np.ones(len(self.data[0]), dtype=np.int8)]
+            self.xmasks = [np.ones(len(self.data[0]), dtype=bool)]
         else:
             self.xmasks.pop()
         self.plot_results()
@@ -1361,6 +1361,7 @@ class DeglitchDialog(wx.Dialog):
         ppanel = self.controller.get_display(stacked=False).panel
 
         xdat, ydat = self.data
+
         xmin = min(xdat) - 0.025*(max(xdat) - min(xdat))
         xmax = max(xdat) + 0.025*(max(xdat) - min(xdat))
         ymin = min(ydat) - 0.025*(max(ydat) - min(ydat))
@@ -1401,7 +1402,6 @@ class DeglitchDialog(wx.Dialog):
             ppanel.oplot(xdat[mask], ydat[mask], zorder=15,
                          marker='o', markersize=3, linewidth=2.0,
                          label='current', show_legend=True, **opts)
-
 
         def ek_formatter(x, pos):
             ex = float(x) - self.dgroup.e0
