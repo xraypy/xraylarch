@@ -5,7 +5,7 @@ import ast
 import shutil
 import string
 import json
-
+import math
 from copy import deepcopy
 from sys import exc_info
 from string import printable
@@ -420,9 +420,7 @@ class FeffitParamsPanel(wx.Panel):
         panel.Add(Button(panel, 'Force Refresh', action=self.Rebuild),         dcol=3)
 
         panel.Add(SLabel("Parameter "), style=wx.ALIGN_LEFT,  newrow=True)
-        panel.AddMany((SLabel(" Value"),
-                       SLabel(" Type"),
-                       SLabel(' Bounds'),
+        panel.AddMany((SLabel(" Value"), SLabel(" Type"), SLabel(' Bounds'),
                        SLabel("  Min", size=(60, -1)),
                        SLabel("  Max", size=(60, -1)),
                        SLabel(" Expression")))
@@ -448,8 +446,13 @@ class FeffitParamsPanel(wx.Panel):
 
     def set_init_values(self, params):
         for pname, par in params.items():
-            if pname in self.parwids:
-                self.parwids[pname].value.SetValue(par.value)
+            if pname in self.parwids and par.vary:
+                stderr = getattr(par, 'stderr', 0.001)
+                try:
+                    prec = max(1, min(8, round(2-math.log10(stderr))))
+                except:
+                    prec = 5
+                self.parwids[pname].value.SetValue(("%%.%.df" % prec) % par.value)
 
     def update(self):
         pargroup = self.feffit_panel.get_paramgroup()
@@ -458,22 +461,19 @@ class FeffitParamsPanel(wx.Panel):
         for pname, par in params.items():
             if any([pname.endswith('_%s' % phash) for phash in hashkeys]):
                 continue
-
             if pname not in self.parwids and not hasattr(par, '_is_pathparam'):
-                    pwids = ParameterWidgets(self.panel, par,
-                                             name_size=100,
-                                             expr_size=150,
-                                             float_size=70,
-                                             with_skip=True,
-                                             widgets=('name', 'value',
-                                                      'minval', 'maxval',
-                                                      'vary', 'expr'))
+                pwids = ParameterWidgets(self.panel, par, name_size=100,
+                                         expr_size=150,   float_size=70,
+                                         with_skip=True,
+                                         widgets=('name', 'value',
+                                                  'minval', 'maxval',
+                                                  'vary', 'expr'))
 
-                    self.parwids[pname] = pwids
-                    self.panel.Add(pwids.name, newrow=True)
-                    self.panel.AddMany((pwids.value, pwids.vary, pwids.bounds,
+                self.parwids[pname] = pwids
+                self.panel.Add(pwids.name, newrow=True)
+                self.panel.AddMany((pwids.value, pwids.vary, pwids.bounds,
                                     pwids.minval, pwids.maxval, pwids.expr))
-                    self.panel.pack()
+                self.panel.pack()
 
             pwids = self.parwids[pname]
             varstr = 'vary' if par.vary else 'fix'
@@ -488,7 +488,6 @@ class FeffitParamsPanel(wx.Panel):
                 pwids.minval.SetValue(par.min)
                 pwids.maxval.SetValue(par.max)
             pwids.onVaryChoice()
-
         self.panel.Update()
 
     def onEditParams(self, event=None):
@@ -1314,7 +1313,7 @@ class FeffitPanel(TaskPanel):
                 if isinstance(node, ast.Name):
                     sym = node.id
                     if sym not in symtable:
-                        s = f'_feffit_params.{sym:s} = param({value:.4f}, vary=True{extras:s})'
+                        s = f"_feffit_params.{sym:s} = param({value:.4f}, name='{sym:s}', vary=True{extras:s})"
                         self.larch_eval(s)
             result = True
         except:
@@ -1429,15 +1428,19 @@ class FeffitPanel(TaskPanel):
         curr_syms = self.get_used_params()
         pargroup = self.get_paramgroup()
         parpanel = self.params_panel
-        # print("Skip Unused ", curr_syms)
         # print(group2params(pargroup).keys())
         for pname, par in group2params(pargroup).items():
             if pname not in curr_syms and pname in parpanel.parwids:
                 par.skip = parpanel.parwids[pname].param.skip = True
                 parpanel.parwids[pname].vary.SetStringSelection('skip')
                 parpanel.parwids[pname].onVaryChoice()
-            parpanel.update()
 
+            elif (pname in curr_syms and pname in parpanel.parwids
+                  and parpanel.parwids[pname].param.skip):
+                par.skip = parpanel.parwids[pname].param.skip = False
+                parpanel.parwids[pname].vary.SetStringSelection('vary')
+                parpanel.parwids[pname].onVaryChoice()
+            parpanel.update()
 
     def onFitModel(self, event=None, dgroup=None):
         session_history = self.get_session_history()
