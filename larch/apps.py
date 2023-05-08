@@ -56,9 +56,12 @@ class LarchApp:
         self.bindir = os.path.join(sys.prefix, bindir)
 
     def create_shortcut(self):
-        script = os.path.normpath(os.path.join(self.bindir, self.script))
+        if self.script.startswith('_'):
+            script = self.script
+        else:
+            script = os.path.normpath(os.path.join(self.bindir, self.script))
+
         icon = os.path.join(icondir, self.icon)
-        from pyshortcuts import ico_ext
         if isinstance(ico_ext, (list, tuple)):
             for ext in ico_ext:
                 ticon = "{:s}.{:s}".format(icon, ext)
@@ -87,6 +90,10 @@ def make_desktop_shortcuts():
         shutil.rmtree(larchdir)
     for app in APPS:
         app.create_shortcut()
+    updater = LarchApp('Larch Updater',  '_ -m pip install --upgrade xraylarch', terminal=True)
+    updater.create_shortcut()
+
+
 
 def make_cli(description='run larch program', filedesc='data file'):
     usage = "usage: %prog [options] file"
