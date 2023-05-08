@@ -4,8 +4,8 @@
 # Many of these will be installed by default when running
 #   larch -m
 wxpython>=4.1
-wxutils>=0.2.4
-wxmplot>=0.9.48
+wxutils>=0.3.0
+wxmplot>=0.9.53
 pyepics>=3.5.0
 epicsapps
 psycopg2-binary

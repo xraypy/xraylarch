@@ -14,32 +14,39 @@ import pkg_resources
 from subprocess import check_call, CalledProcessError, TimeoutExpired
 
 from .utils import (uname, get_homedir, nativepath, unixpath,
-                    log_warning, log_error)
+                    log_warning, log_error, version_ge)
 from .version import __version__, __release_version__
 
 larch_version = __version__
 larch_release_version = __release_version__
 # lists of recommended packages that are not installed by default
 # but may be installed if several of the larch apps are run.
-extras_wxgraph = set(['wxutils', 'wxmplot'])
-extras_epics = set(['pyepics', 'epicsapps', 'psycopg2-binary'])
-extras_doc   = set(['pytest', 'sphinx', 'numpydoc',
-                    'sphinxcontrib-bibtex', 'sphinxcontrib-argdoc'])
-extras_qtgraph = set(['pyqt5', 'pyqtwebengine', 'pyqtgraph'])
-extras_plotly = set(['plotly', 'jupyter', 'ipywidgets'])
+extras_wxgraph = {'wxutils': '0.3.0', 'wxmplot': '0.9.53'}
+extras_epics =  {'pyepics': '3.5.0', 'epicsapps': None, 'psycopg2-binary':None}
+extras_doc   = {'pytest': None, 'sphinx': None, 'numpydoc': None,
+                'sphinxcontrib-bibtex': None, 'sphinxcontrib-argdoc': None}
+extras_qtgraph = {'pyqt5': None, 'pyqtwebengine': None, 'pyqtgraph': None}
+extras_plotly = {'plotly': None, 'jupyter': '5.0', 'ipywidgets': None}
 
 def pjoin(*args):
     "simple join"
     return nativepath(os.path.join(*args))
 
+def download_larch():
+    check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', 'xraylarch'])
+
 def update_larch():
     check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', 'xraylarch'])
 
-def install_extras(package_set, timeout=30):
-    all_packages = set([pkg.key for pkg in pkg_resources.working_set])
-    missing = package_set - all_packages
-    if missing:
-        command = [sys.executable, '-m', 'pip', 'install', *missing]
+def install_extras(package_dict, timeout=30):
+    current = {pkg.key: pkg.version for pkg in pkg_resources.working_set}
+    for pkg, vers in package_dict.items():
+        install_needed = pkg not in current
+        if pkg in current and vers is not None:
+            install_needed = install_needed or version_ge(vers, current[pkg])
+
+    if install_needed:
+        command = [sys.executable, '-m', 'pip', 'install', f"{pkg}>={vers}"]
         try:
             check_call(command, timeout=timeout)
         except (CalledProcessError, TimeoutExpired):
