@@ -45,7 +45,7 @@ class Structure2FeffFrame(wx.Frame):
     
     Ryuichi Shimogawa <ryuichi.shimogawa@stonybrook.edu>
     """
-    def __init__(self, parent=None, _larch=None, filename=None, **kws):
+    def __init__(self, parent=None, _larch=None, path_importer=None, filename=None, **kws):
         wx.Frame.__init__(self, parent, -1, size=MAINSIZE, style=FRAMESTYLE)
 
         title = "Larch FEFF Input Generator and FEFF Runner"
@@ -55,7 +55,7 @@ class Structure2FeffFrame(wx.Frame):
             self.larch = larch.Interpreter()
         self.larch.eval("# started Structure browser\n")
         self.larch.eval("if not hasattr('_sys', '_feffruns'): _sys._feffruns = {}")
-
+        self.path_importer = path_importer
         self.subframes = {}
         self.current_structure = None
         self.SetTitle(title)
@@ -156,7 +156,9 @@ class Structure2FeffFrame(wx.Frame):
 
         self.nb = flatnotebook(scrolledpanel, {}, on_change=self.onNBChanged)
 
-        self.feffresults = FeffResultsPanel(scrolledpanel, _larch=self.larch)
+        self.feffresults = FeffResultsPanel(scrolledpanel,
+                                            path_importer=self.path_importer,
+                                            _larch=self.larch)
 
         structure_panel = wx.Panel(scrolledpanel)
         wids['structure_text'] = wx.TextCtrl(structure_panel, value='<STRUCTURE TEXT>',
