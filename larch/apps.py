@@ -3,6 +3,11 @@ import sys
 import locale
 import numpy
 import time
+
+from argparse import ArgumentParser
+import pkg_resources
+from subprocess import check_call, Popen
+
 import shutil
 from argparse import ArgumentParser
 
