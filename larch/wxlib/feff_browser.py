@@ -143,11 +143,10 @@ class RemoveFeffCalcDialog(wx.Dialog):
 
 class FeffResultsPanel(wx.Panel):
     """ present Feff results """
-    def __init__(self, parent=None, feffresult=None, path_importer=None, xasmain=None,
+    def __init__(self, parent=None, feffresult=None, path_importer=None, 
                  _larch=None):
         wx.Panel.__init__(self, parent, -1, size=(700, 500))
         self.parent = parent
-        self.xasmain = xasmain
         self.path_importer = path_importer
         self._larch = _larch
         self.feffresult = feffresult
@@ -369,8 +368,7 @@ class FeffResultsPanel(wx.Panel):
 
 class FeffResultsFrame(wx.Frame):
     """ present Feff results """
-    def __init__(self,  parent=None, feffresult=None, xasmain=None,
-                 path_importer=None, _larch=None):
+    def __init__(self,  parent=None, feffresult=None, path_importer=None, _larch=None):
         wx.Frame.__init__(self, parent, -1, size=(900, 650), style=FRAMESTYLE)
 
         title = "Manage Feff calculation results"

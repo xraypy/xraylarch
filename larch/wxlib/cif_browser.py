@@ -55,7 +55,7 @@ class CIFFrame(wx.Frame):
 
     Matt Newville <newville @ cars.uchicago.edu>
     """
-    def __init__(self, parent=None, _larch=None, filename=None, **kws):
+    def __init__(self, parent=None, _larch=None, path_importer=None, filename=None, **kws):
         wx.Frame.__init__(self, parent, -1, size=MAINSIZE, style=FRAMESTYLE)
 
         title = "Larch American Mineralogist CIF Browser"
@@ -65,7 +65,7 @@ class CIFFrame(wx.Frame):
             self.larch = larch.Interpreter()
         self.larch.eval("# started CIF browser\n")
         self.larch.eval("if not hasattr('_sys', '_feffruns'): _sys._feffruns = {}")
-
+        self.path_importer = path_importer
         self.cifdb = get_amscifdb()
         self.all_minerals = self.cifdb.all_minerals()
         self.subframes = {}
@@ -267,7 +267,9 @@ class CIFFrame(wx.Frame):
 
         self.nb = flatnotebook(rightpanel, {}, on_change=self.onNBChanged)
 
-        self.feffresults = FeffResultsPanel(rightpanel, _larch=self.larch)
+        self.feffresults = FeffResultsPanel(rightpanel,
+                                            path_importer=self.path_importer,                                            
+                                            _larch=self.larch)
 
         def _swallow_plot_messages(s, panel=0):
             pass

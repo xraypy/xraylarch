@@ -1132,16 +1132,16 @@ before clearing"""
                                               overwrite=True))
 
     def onCIFBrowse(self, event=None):
-        self.show_subframe('cif_feff', CIFFrame, _larch=self.larch)
+        self.show_subframe('cif_feff', CIFFrame, _larch=self.larch,
+                           path_importer=self.get_nbpage('feffit')[1].add_path)                           
 
     def onStructureBrowse(self, event=None):
-        self.show_subframe('structure_feff', Structure2FeffFrame, _larch=self.larch)
+        self.show_subframe('structure_feff', Structure2FeffFrame, _larch=self.larch,
+                           path_importer=self.get_nbpage('feffit')[1].add_path)
 
     def onFeffBrowse(self, event=None):
-        path_importer = self.get_nbpage('feffit')[1].add_path
-        self.show_subframe('feff_paths', FeffResultsFrame,
-                           xasmain=self, _larch=self.larch,
-                           path_importer=path_importer)
+        self.show_subframe('feff_paths', FeffResultsFrame, _larch=self.larch,
+                           path_importer=self.get_nbpage('feffit')[1].add_path)
 
     def onLoadFitResult(self, event=None):
         pass
