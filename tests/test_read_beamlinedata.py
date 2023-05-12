@@ -1,8 +1,10 @@
-import os
+from pathlib import Path
 from larch.io import read_ascii, guess_beamline, guess_filereader, read_fdmnes
 
+base_dir = Path(__file__).parent.parent.resolve()
+
 def _tester(fname, return_group=False):
-    fname = os.path.join('..', 'examples', 'xafsdata', 'beamlines', fname)
+    fname =  base_dir / 'examples' / 'xafsdata' / 'beamlines' / fname
     group = read_ascii(fname)
     cls = guess_beamline(group.header)
     bldat = cls(group.header)
@@ -204,7 +206,7 @@ def test_zero_line_header(fname='generic_columns_no_header.dat'):
 
 def test_fdmnes(fnames=['FDMNES_2022_Mo2C_out.dat', 'FDMNES_2022_Mo2C_out_conv.dat']):
     for fname in fnames:
-        fname = os.path.join('..', 'examples', 'xafsdata', 'beamlines', fname)
+        fname =  base_dir / 'examples' / 'xafsdata' / 'beamlines' / fname
         assert(guess_filereader(fname) == 'read_fdmnes')
         group = read_fdmnes(fname)
         assert(group.array_labels == ['energy', 'xanes'])

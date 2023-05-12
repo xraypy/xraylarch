@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """ Tests of Larch Scripts  """
 import unittest
+from pathlib import Path
 import time
 import ast
 import numpy as np
@@ -9,41 +10,45 @@ from sys import version_info
 
 from utils import TestCase
 from larch import Interpreter
+
+
+base_dir = Path(__file__).parent.parent.resolve()
+
 class TestScripts(TestCase):
     '''tests'''
 
     def test_basic_interp(self):
-        self.runscript('interp.lar', dirname='../examples/basic/')
+        self.runscript('interp.lar', dirname=base_dir / 'examples' / 'basic')
         assert(len(self.session.get_errors()) == 0)
         self.isNear("y0[1]", 0.48578, places=3)
         self.isNear("y1[1]", 0.81310, places=3)
         self.isNear("y2[1]", 0.41532, places=3)
 
     def test_basic_smooth(self):
-        self.runscript('smoothing.lar', dirname='../examples/basic/')
+        self.runscript('smoothing.lar', dirname=base_dir / 'examples' / 'basic')
         assert(len(self.session.get_errors()) == 0)
         self.isNear("s_loren[5]", 0.087, places=2)
         self.isNear("s_gauss[5]", 3.958e-05, places=2)
         self.isNear("s_voigt[5]", 0.0957, places=2)
 
     def test_basic_localnames(self):
-        self.runscript('local_namespaces.lar', dirname='../examples/basic/')
+        self.runscript('local_namespaces.lar', dirname=base_dir / 'examples' / 'basic')
         assert(len(self.session.get_errors()) == 0)
         self.isNear("x", 1000.0, places=4)
 
     def test_basic_pi(self):
-        self.runscript('pi_archimedes.lar', dirname='../examples/basic/')
+        self.runscript('pi_archimedes.lar', dirname=base_dir / 'examples' / 'basic')
         assert(len(self.session.get_errors()) == 0)
         self.isNear("result", 3.14159265358979267, places=8)
 
     def test_basic_use_params(self):
-        self.runscript('use_params.lar', dirname='../examples/basic/')
+        self.runscript('use_params.lar', dirname=base_dir / 'examples' / 'basic')
         assert(len(self.session.get_errors()) == 0)
         self.isNear("a",  0.76863, places=4)
 
     def test_nested_runfiles(self):
-        origdir = os.path.abspath(os.getcwd())
-        dirname = os.path.abspath('larch_scripts')
+        origdir = Path.cwd().absolute()
+        dirname = base_dir / "tests" / "larch_scripts"
         os.chdir(dirname)
         out, err = self.trytext("run('nested_outer.lar')")
 
@@ -57,11 +62,9 @@ class TestScripts(TestCase):
         assert('in nested_outer.lar, after nested_inner' in out[4])
         self.isNear("deep_x",  5.0, places=2)
 
-
-
     def test_runfit(self):
-        origdir = os.path.abspath(os.getcwd())
-        dirname = os.path.abspath('larch_scripts')
+        origdir = Path.cwd().absolute()
+        dirname = base_dir / "tests" / "larch_scripts"
         os.chdir(dirname)
 
         out, err = self.trytext("run('fit_constraint.lar')")
