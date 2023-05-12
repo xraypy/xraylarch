@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """ Tests of Larch Scripts  """
 import unittest
+from pathlib import Path
 import time
 import ast
 import numpy as np
@@ -8,54 +9,57 @@ from sys import version_info
 
 from utils import TestCase
 from larch import Interpreter
+
+base_dir = Path(__file__).parent.parent.resolve()
+
 class TestScripts(TestCase):
     '''testing of asteval'''
     def test01_basic(self):
-        self.runscript('a.lar', dirname='larch_scripts')
+        self.runscript('a.lar', dirname=base_dir / 'tests' / 'larch_scripts')
         assert(len(self.session.get_errors()) == 0)
         self.isTrue("n < 10")
         self.isTrue("n >  5")
         self.isTrue("x >  3")
 
     def test02_autobk(self):
-        self.runscript('doc_autobk1.lar', dirname='../examples/xafs/')
+        self.runscript('doc_autobk1.lar', dirname=base_dir / 'examples' / 'xafs')
         assert(len(self.session.get_errors()) == 0)
         self.isTrue("cu.e0 > 8950.0")
         self.isTrue("len(cu.k) > 200")
         self.isTrue("max(abs(cu.chi)) < 2.0")
 
     def test03_autobk2(self):
-        self.runscript('doc_autobk2.lar', dirname='../examples/xafs/')
+        self.runscript('doc_autobk2.lar', dirname=base_dir / 'examples' / 'xafs')
         assert(len(self.session.get_errors()) == 0)
         self.isTrue("dat.e0 > 10000.0")
         self.isTrue("len(dat.k) > 200")
 
     def test04_autobk_clamp(self):
-        self.runscript('doc_autobk3.lar', dirname='../examples/xafs/')
+        self.runscript('doc_autobk3.lar', dirname=base_dir / 'examples' / 'xafs')
         assert(len(self.session.get_errors()) == 0)
         self.isTrue("dat.e0 > 11000.0")
         self.isTrue("len(dat.k) > 200")
 
     def test05_autobk_with_std(self):
-        self.runscript('doc_autobk4.lar', dirname='../examples/xafs/')
+        self.runscript('doc_autobk4.lar', dirname=base_dir / 'examples' / 'xafs')
         assert(len(self.session.get_errors()) == 0)
         self.isTrue("cu2.e0 > 8950.0")
         self.isTrue("len(cu2.k) > 200")
         self.isTrue("max(abs(cu2.chi)) < 2.0")
 
     def test06_ftwin1(self):
-        self.runscript('doc_ftwin1.lar', dirname='../examples/xafs/')
+        self.runscript('doc_ftwin1.lar', dirname=base_dir / 'examples' / 'xafs')
         assert(len(self.session.get_errors()) == 0)
         self.isTrue("len(hann_win1) == 401")
         self.isTrue("hann_win3.sum() > 50.0")
 
-        self.runscript('doc_ftwin2.lar', dirname='../examples/xafs/')
+        self.runscript('doc_ftwin2.lar', dirname=base_dir / 'examples' / 'xafs')
         assert(len(self.session.get_errors()) == 0)
         self.isTrue("len(kai_win1) == 401")
         self.isTrue("kai_win1.sum() > 20.0")
 
     def test07_xafsft1(self):
-        self.runscript('doc_xafsft1.lar', dirname='../examples/xafs/')
+        self.runscript('doc_xafsft1.lar', dirname=base_dir / 'examples' / 'xafs')
         assert(len(self.session.get_errors()) == 0)
         self.isTrue("len(d2.k) > 200")
         self.isTrue("len(d2.kwin) > 200")
@@ -63,7 +67,7 @@ class TestScripts(TestCase):
         self.isTrue("where(d1.chir_mag>1)[0][0] > 60")
 
     def test08_xafsft2(self):
-        self.runscript('doc_xafsft2.lar', dirname='../examples/xafs/')
+        self.runscript('doc_xafsft2.lar', dirname=base_dir / 'examples' / 'xafs')
         assert(len(self.session.get_errors()) == 0)
         self.isTrue("len(d3.k) > 200")
         self.isTrue("len(d3.kwin) > 200")
@@ -80,13 +84,13 @@ class TestScripts(TestCase):
 
 
     def test09_xafsft3(self):
-        self.runscript('doc_xafsft3.lar', dirname='../examples/xafs/')
+        self.runscript('doc_xafsft3.lar', dirname=base_dir / 'examples' / 'xafs')
         assert(len(self.session.get_errors()) == 0)
         self.isTrue("len(dat.k) > 200")
         self.isTrue("len(dat.kwin) > 200")
 
     def test10_xafsft3(self):
-        self.runscript('doc_xafsft4.lar', dirname='../examples/xafs/')
+        self.runscript('doc_xafsft4.lar', dirname=base_dir / 'examples' / 'xafs')
         assert(len(self.session.get_errors()) == 0)
         self.isTrue("len(dat.r) > 200")
         self.isTrue("len(dat.rwin) > 200")
@@ -94,13 +98,13 @@ class TestScripts(TestCase):
         self.isTrue("len(dat.chiq_re) > 200")
 
     def test11_wavelet1(self):
-        self.runscript('wavelet_example.lar', dirname='../examples/xafs/')
+        self.runscript('wavelet_example.lar', dirname=base_dir / 'examples' / 'xafs')
         assert(len(self.session.get_errors()) == 0)
         self.isTrue("f.wcauchy_im.shape == (326, 318)")
         self.isTrue("f.wcauchy_mag.sum() > 300")
 
     def test12_feffit_kws(self):
-        self.runscript('test_epsk_kws.lar', dirname='../examples/feffit/')
+        self.runscript('test_epsk_kws.lar', dirname=base_dir / 'examples' / 'feffit')
         assert(len(self.session.get_errors()) == 0)
         out = self.session.run('out')
         for row in out:
@@ -114,7 +118,7 @@ class TestScripts(TestCase):
             self.assertTrue(abs(delr) < 0.1)
 
     def test13_feffit1(self):
-        self.runscript('doc_feffit1.lar', dirname='../examples/feffit/')
+        self.runscript('doc_feffit1.lar', dirname=base_dir / 'examples' / 'feffit')
         assert(len(self.session.get_errors()) == 0)
 
         self.isTrue('out.nfev > 20')
@@ -131,7 +135,7 @@ class TestScripts(TestCase):
         self.isNear('out.paramgroup.sig2.value',    0.0087, places=3)
 
     def test14_feffdat3(self):
-        self.runscript('doc_feffdat3.lar', dirname='../examples/feffit/')
+        self.runscript('doc_feffdat3.lar', dirname=base_dir / 'examples' / 'feffit')
         assert(len(self.session.get_errors()) == 0)
 
         self.isNear('path1.degen',  6.0, places=1)
@@ -154,7 +158,7 @@ class TestScripts(TestCase):
 
 
     def test15_feffit2(self):
-        self.runscript('doc_feffit2.lar', dirname='../examples/feffit/')
+        self.runscript('doc_feffit2.lar', dirname=base_dir / 'examples' / 'feffit')
         assert(len(self.session.get_errors()) == 0)
 
         self.isTrue('out.nfev > 50')
@@ -173,7 +177,7 @@ class TestScripts(TestCase):
 
 
     def test16_feffit3(self):
-        self.runscript('doc_feffit3.lar', dirname='../examples/feffit/')
+        self.runscript('doc_feffit3.lar', dirname=base_dir / 'examples' / 'feffit')
         assert(len(self.session.get_errors()) == 0)
 
         self.isTrue('out.nfev > 15')
@@ -189,8 +193,8 @@ class TestScripts(TestCase):
 
 
     def test17_feffit3extra(self):
-        self.runscript('doc_feffit3.lar', dirname='../examples/feffit/')
-        self.runscript('doc_feffit3_extra.lar', dirname='../examples/feffit/')
+        self.runscript('doc_feffit3.lar', dirname=base_dir / 'examples' / 'feffit')
+        self.runscript('doc_feffit3_extra.lar', dirname=base_dir / 'examples' / 'feffit')
         assert(len(self.session.get_errors()) == 0)
         self.isNear('_ave', 0.005030, places=4)
         self.isNear('_dlo', 0.000315, places=4)
