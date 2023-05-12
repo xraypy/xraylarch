@@ -392,8 +392,7 @@ class XASNormPanel(TaskPanel):
             self.wids['scale'].Enable()
 
         frozen = opts.get('is_frozen', False)
-        if hasattr(dgroup, 'is_frozen'):
-            frozen = dgroup.is_frozen
+        frozen = getattr(dgroup, 'is_frozen', frozen)
 
         self.wids['is_frozen'].SetValue(frozen)
         self._set_frozen(frozen)
@@ -600,7 +599,7 @@ class XASNormPanel(TaskPanel):
         for checked in self.controller.filelist.GetCheckedStrings():
             groupname = self.controller.file_groups[str(checked)]
             grp = self.controller.get_group(groupname)
-            if grp != self.controller.group and not grp.is_frozen:
+            if grp != self.controller.group and not getattr(grp, 'is_frozen', False):
                 self.update_config(opts, dgroup=grp)
                 self.fill_form(grp)
                 self.process(grp, force=True)
@@ -645,7 +644,7 @@ class XASNormPanel(TaskPanel):
         for checked in self.controller.filelist.GetCheckedStrings():
             groupname = self.controller.file_groups[str(checked)]
             grp = self.controller.get_group(groupname)
-            if grp != self.controller.group and not grp.is_frozen:
+            if grp != self.controller.group and not getattr(grp, 'is_frozen', False):
                 self.update_config(opts, dgroup=grp)
                 for key, val in opts.items():
                     if hasattr(grp, key):
