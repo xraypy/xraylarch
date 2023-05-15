@@ -74,7 +74,7 @@ class XASNormPanel(TaskPanel):
                                  action=self.onPlotSel, size=(200, -1))
 
         self.plot_erange = Choice(panel, choices=list(Plot_EnergyRanges.keys()),
-                                 action=self.onPlotEither, size=(175, -1))
+                                 action=self.onPlotEither, size=(150, -1))
 
         self.plot_erange.SetSelection(0)
         self.plotone_op.SetSelection(1)
@@ -99,7 +99,7 @@ class XASNormPanel(TaskPanel):
 
 
         self.wids['energy_ref'] = Choice(panel, choices=['None'],
-                                         action=self.onEnergyRef, size=(350, -1))
+                                         action=self.onEnergyRef, size=(200, -1))
 
         self.wids['auto_step'] = Check(panel, default=True, label='auto?',
                                       action=self.onNormMethod)
@@ -127,9 +127,9 @@ class XASNormPanel(TaskPanel):
                                        action=self.onSet_XASE0)
 
 
-        opts = {'digits': 3, 'increment': 0.05, 'value': 0}
+        opts = {'digits': 2, 'increment': 0.05, 'value': 0}
         plot_voff = self.add_floatspin('plot_voff',  with_pin=False,
-                                       size=(80, -1),
+                                       size=(75, -1),
                                        action=self.onVoffset, **opts)
 
 
@@ -169,9 +169,9 @@ class XASNormPanel(TaskPanel):
                           action=partial(self.onCopyParam, 'all'))
 
         add_text = self.add_text
-        HLINEWID = 650
+        HLINEWID = 600
         panel.Add(SimpleText(panel, 'XAS Pre-edge subtraction and Normalization',
-                             size=(350, -1), **self.titleopts), style=LEFT, dcol=4)
+                             size=(550, -1), **self.titleopts), style=LEFT, dcol=6)
 
 
         panel.Add(plot_sel, newrow=True)
@@ -183,14 +183,14 @@ class XASNormPanel(TaskPanel):
         panel.Add(self.plotone_op, dcol=3)
         panel.Add(self.plot_erange, dcol=2, style=RIGHT)
 
-        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=7, newrow=True)
+        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
         add_text('Non-XAS Data Scale:')
-        panel.Add(scale, dcol=3)
+        panel.Add(scale, dcol=2)
         panel.Add(SimpleText(panel, 'Copy to Selected Groups:'),
-                  style=RIGHT, dcol=2)
+                  style=RIGHT, dcol=3)
 
 
-        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=7, newrow=True)
+        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
         add_text('XAS Data:')
         panel.Add(use_auto, dcol=4)
         panel.Add(copy_auto, dcol=1, style=RIGHT)
@@ -200,11 +200,11 @@ class XASNormPanel(TaskPanel):
         panel.Add(self.wids['edge'], dcol=3)
         panel.Add(CopyBtn('atsym'), dcol=1, style=RIGHT)
 
-        add_text('Energy Reference Group: ')
+        add_text('Energy Reference : ')
         panel.Add(self.wids['energy_ref'], dcol=4)
         panel.Add(CopyBtn('energy_ref'), dcol=1, style=RIGHT)
 
-        add_text('Energy Shift from Original: ')
+        add_text('Energy Shift : ')
         panel.Add(self.wids['energy_shift'], dcol=4)
         panel.Add(CopyBtn('energy_shift'), dcol=1, style=RIGHT)
 
@@ -219,7 +219,7 @@ class XASNormPanel(TaskPanel):
         panel.Add(CopyBtn('xas_step'), dcol=1, style=RIGHT)
 
         panel.Add((5, 5), newrow=True)
-        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=7, newrow=True)
+        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
 
         add_text('Pre-edge range: ')
         panel.Add(xas_pre1)
@@ -232,29 +232,25 @@ class XASNormPanel(TaskPanel):
         panel.Add(self.wids['nvict'], dcol=4)
 
         panel.Add((5, 5), newrow=True)
-        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=7, newrow=True)
+        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
 
-        add_text('Normalization method: ')
-        panel.Add(self.wids['norm_method'], dcol=4)
-        panel.Add(CopyBtn('xas_norm'), dcol=1, style=RIGHT)
+        add_text('Normalization : ')
+        panel.Add(self.wids['norm_method'], dcol=3)
+        panel.Add(CopyBtn('xas_norm'), dcol=2, style=RIGHT)
 
-        add_text('Normalization range: ')
+        add_text('Norm Energy range: ')
         panel.Add(xas_norm1)
         add_text(' : ', newrow=False)
         panel.Add(xas_norm2)
         panel.Add(self.wids['show_norm'])
         panel.Add(SimpleText(panel, 'Polynomial Type:'), newrow=True)
-        panel.Add(self.wids['nnorm'], dcol=4)
+        panel.Add(self.wids['nnorm'], dcol=2)
 
-        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=7, newrow=True)
+        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
         panel.Add((5, 5), newrow=True)
         panel.Add(self.wids['is_frozen'], newrow=True)
         panel.Add(copy_all, dcol=5, style=RIGHT)
 
-        # panel.Add(saveconf, dcol=5)
-
-        panel.Add((5, 5), newrow=True)
-        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=7, newrow=True)
         panel.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
