@@ -251,12 +251,12 @@ class xrd1d(larch.Group):
                 self.I[self.imin:self.imax],
                 self.bkgd]
 
-    def fit_background(self,**kwargs):
+    def fit_background(self, **kwargs):
         x = self.q[self.imin:self.imax],
         y = self.I[self.imin:self.imax]
-        self.bkgd = xrd_background(x, y, **kwargs)
-        while len(self.bkgd) < len(y):
-            self.bkgd = np.append(self.bkgd,self.bkgd[-1])
+        bkgd = xrd_background(x, y, **kwargs)
+        self.bkgd = np.zeros(len(y))
+        self.bkgd[:len(bkgd)] = bkgd
 
     def find_peaks(self,bkgd=False,threshold=None,**kwargs):
 
