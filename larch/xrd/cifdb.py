@@ -83,7 +83,6 @@ ENERGY = 19000 ## units eV
 _cifdb = None
 
 def get_cifdb(dbname='amcsd_cif0.db', _larch=None):
-    print("GET CIFDB A ", dbname)
     global _cifdb
     if _cifdb is None:
         _cifdb = cifDB(dbname=dbname)
@@ -149,7 +148,6 @@ class cifDB(object):
                     raise ValueError("'%s' is not a valid cif database file!" % self.dbname)
 
         self.dbname = self.dbname
-        print("CIFDB INIT  ", dbname)
         self.engine = make_engine(self.dbname)
         self.conn = self.engine.connect()
 
