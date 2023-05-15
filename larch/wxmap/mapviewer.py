@@ -62,6 +62,7 @@ from .maptomopanel import TomographyPanel
 from .mapxrfpanel import XRFAnalysisPanel
 
 from ..wxxrd import XRD1DViewerFrame, XRD2DViewerFrame
+from ..wxxrd.xrd1d_display import XRD1DBrowserFrame
 
 def timestring():
     return datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')
@@ -1771,16 +1772,19 @@ class MapViewerFrame(wx.Frame):
 
         xdat = xrd1d(label=label, energy=energy, wavelength=wavelength)
         xdat.set_xy_data(np.array([q, counts]), 'q')
+        print(" xrd1d:  " , xdat, label, dir(xrd1d))
 
         if self.xrddisplay1D is None:
-            self.xrddisplay1D = XRD1DViewerFrame(_larch=self.larch)
+            # self.xrddisplay1D = XRD1DViewerFrame(_larch=self.larch)
+            self.xrddisplay1D = XRD1DBrowserFrame(_larch=self.larch)
+        self.xrddisplay1D.add_data(xdat, label=label)
         try:
-            self.xrddisplay1D.xrd1Dviewer.add1Ddata(xdat)
-            self.xrddisplay1D.Show()
+            x = 1
         except:
-            self.xrddisplay1D = XRD1DViewerFrame(_larch=self.larch)
-            self.xrddisplay1D.xrd1Dviewer.add1Ddata(xdat)
-            self.xrddisplay1D.Show()
+            print("could not add data ")
+            # self.xrddisplay1D = XRD1DViewerFrame(_larch=self.larch)
+            # self.xrddisplay1D.xrd1Dviewer.add1Ddata(xdat)
+        self.xrddisplay1D.Show()
 
     def init_larch(self):
         self.SetStatusText('ready')
@@ -1939,7 +1943,7 @@ class MapViewerFrame(wx.Frame):
         except:
             pass
 
-        
+
         for xrmfile in self.filemap.values():
             try:
                 xrmfile.close()
