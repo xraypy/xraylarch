@@ -647,30 +647,36 @@ class PrePeakFitResultFrame(wx.Frame):
 
         result = self.get_fitresult(nfit=nfit)
         wids = self.wids
-        wids['fit_label'].SetValue(result.label)
-        wids['data_title'].SetLabel(self.datagroup.filename)
-        wids['model_desc'].SetLabel(self.get_model_desc(result.result.model))
+        try:
+            wids['fit_label'].SetValue(result.label)
+            wids['data_title'].SetLabel(self.datagroup.filename)
+            wids['model_desc'].SetLabel(self.get_model_desc(result.result.model))
+            valid_result = True
+        except:
+            valid_result = False
+
         wids['params'].DeleteAllItems()
         wids['paramsdata'] = []
-        for param in reversed(result.result.params.values()):
-            pname = param.name
-            try:
-                val = gformat(param.value, 10)
-            except (TypeError, ValueError):
-                val = ' ??? '
-            serr = ' N/A '
-            if param.stderr is not None:
-                serr = gformat(param.stderr, 10)
-            extra = ' '
-            if param.expr is not None:
-                extra = '= %s ' % param.expr
-            elif not param.vary:
-                extra = '(fixed)'
-            elif param.init_value is not None:
-                extra = '(init=%s)' % gformat(param.init_value, 10)
+        if valid_result:
+            for param in reversed(result.result.params.values()):
+                pname = param.name
+                try:
+                    val = gformat(param.value, 10)
+                except (TypeError, ValueError):
+                    val = ' ??? '
+                serr = ' N/A '
+                if param.stderr is not None:
+                    serr = gformat(param.stderr, 10)
+                extra = ' '
+                if param.expr is not None:
+                    extra = '= %s ' % param.expr
+                elif not param.vary:
+                    extra = '(fixed)'
+                elif param.init_value is not None:
+                    extra = '(init=%s)' % gformat(param.init_value, 10)
 
-            wids['params'].AppendItem((pname, val, serr, extra))
-            wids['paramsdata'].append(pname)
+                wids['params'].AppendItem((pname, val, serr, extra))
+                wids['paramsdata'].append(pname)
         self.Refresh()
 
 class PrePeakPanel(TaskPanel):
@@ -1519,13 +1525,15 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         self.autosave_modelresult(pkfit)
         self.onPlot()
         self.showresults_btn.Enable()
+
+
         self.show_subframe('prepeak_result', PrePeakFitResultFrame, peakframe=self)
         self.subframes['prepeak_result'].add_results(dgroup, form=opts,
                                                      larch_eval=self.larch_eval)
 
     def onShowResults(self, event=None):
-        self.show_subframe('prepeak_result',
-                           PrePeakFitResultFrame, peakframe=self)
+        self.show_subframe('prepeak_result', PrePeakFitResultFrame,
+                           peakframe=self)
 
 
     def update_start_values(self, params):
