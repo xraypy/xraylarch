@@ -1772,18 +1772,15 @@ class MapViewerFrame(wx.Frame):
 
         xdat = xrd1d(label=label, energy=energy, wavelength=wavelength)
         xdat.set_xy_data(np.array([q, counts]), 'q')
-        print(" xrd1d:  " , xdat, label, dir(xrd1d))
-
         if self.xrddisplay1D is None:
             # self.xrddisplay1D = XRD1DViewerFrame(_larch=self.larch)
             self.xrddisplay1D = XRD1DBrowserFrame(_larch=self.larch)
-        self.xrddisplay1D.add_data(xdat, label=label)
         try:
-            x = 1
+            self.xrddisplay1D.add_data(xdat, label=label)
         except:
-            print("could not add data ")
-            # self.xrddisplay1D = XRD1DViewerFrame(_larch=self.larch)
-            # self.xrddisplay1D.xrd1Dviewer.add1Ddata(xdat)
+            self.xrddisplay1D = XRD1DBrowserFrame(_larch=self.larch)            
+            self.xrddisplay1D.add_data(xdat, label=label)
+
         self.xrddisplay1D.Show()
 
     def init_larch(self):
