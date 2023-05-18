@@ -48,10 +48,12 @@ PlotWindowChoices = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
 X_SCALES = [u'q (\u212B\u207B\u00B9)', u'2\u03B8 (\u00B0)', u'd (\u212B)']
 Y_SCALES = ['linear', 'log']
 
-PLOT_OPTS = {'Raw Data': 'raw',
-                'Raw Data + Background' : 'raw+bkg',
-                'Background-subtracted Data': 'sub'}
+PLOT_TYPES = {'Raw Data': 'raw',
+              'Raw Data + Background' : 'raw+bkg',
+              'Background-subtracted Data': 'sub'}
+
 PLOT_CHOICES = list(PLOT_OPTS.keys())
+PLOT_CHOICES_MULTI = ['raw', 'sub']
 
 SCALE_METHODS = {'Max Raw Intensity': 'raw_max',
                  'Mean Raw Intensity': 'raw_mean',
@@ -223,7 +225,7 @@ class XRD1DBrowserFrame(wx.Frame):
                               action=self.onPlotSel)
         wids['plotone'] = Choice(panel, choices=PLOT_CHOICES, default=0,
                                  action=self.onPlotOne, size=(200, -1))
-        wids['plotsel'] = Choice(panel, choices=PLOT_CHOICES, default=0,
+        wids['plotsel'] = Choice(panel, choices=PLOT_CHOICES_MULTI, default=0,
                                  action=self.onPlotSel, size=(200, -1))
         wids['xscale'] = Choice(panel, choices=X_SCALES, default=0,
                                  action=self.onPlotEither, size=(100, -1))
@@ -450,18 +452,19 @@ class XRD1DBrowserFrame(wx.Frame):
            xdat = dset.d
         elif xscale == 1:
             xdat = dset.twth
-        ytype = self.wids['plotone'].GetStringSelection().lower()
+
+        plottype = PLOT_TYPES.get(self.wids['plotone'].GetStringSelection(), 'raw')
 
         ydat = 1.0*dset.I/dset.scale
         ylabel = 'Scaled Intensity'
-        if ytype.startswith('background-sub'):
+        if plottype == 'sub':
             ydat = 1.0*(dset.I-dset.bkgd)/dset.scale
             ylabel = 'Scaled (Intensity - Background)'
 
         pframe = self.get_display(win=win)
         pframe.plot(xdat, ydat, xlabel=xlabel, ylabel=ylabel,
                     label=dset.label, show_legend=True)
-        if ytype.startswith('data') and 'background' in ytype:
+        if plottype == 'raw+bkg':
             print("DATA SET bkg ", dset.bkgd, dset.bkgd.dtype)
             y2dat = 1.0*dset.bkgd/dset.scale
             ylabel = 'Scaled Intensity with Background'
@@ -476,6 +479,8 @@ class XRD1DBrowserFrame(wx.Frame):
             return
         self.last_plot_type = 'multi'
         last_id = group_ids[-1]
+
+        plottype = PLOT_TYPES.get(self.wids['plotone'].GetStringSelection(), 'raw')        
 
     def onPlotEither(self, event=None):
         if self.last_plot_type == 'multi':
