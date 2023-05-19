@@ -64,6 +64,26 @@ class Group():
                     not (key.startswith('__') and key.endswith('__')) and
                     key not in self.__private)]
 
+    def __getitem__(self, key):
+
+        if isinstance(key, int):
+            return self.__dir__()[key]
+        
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+
+        if isinstance(key, int):
+            key = self.__dir__()[key]
+        
+        return setattr(self, key, value)
+    
+    def __iter__(self):
+        return iter(self.__dir__())
+
+    def keys(self):
+        return self.__dir__()
+
     def _subgroups(self):
         "return list of names of members that are sub groups"
         return [k for k in self._members() if isgroup(self.__dict__[k])]
