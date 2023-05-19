@@ -78,12 +78,6 @@ class Group():
         
         return setattr(self, key, value)
     
-    def __iter__(self):
-        return iter(self.__dir__())
-
-    def keys(self):
-        return self.__dir__()
-
     def _subgroups(self):
         "return list of names of members that are sub groups"
         return [k for k in self._members() if isgroup(self.__dict__[k])]
