@@ -673,12 +673,12 @@ class XASNormPanel(TaskPanel):
         if conf['auto_energy_shift']:
             eshift = self.wids['energy_shift'].GetValue()
             dgroup = self.controller.get_group()
-            _eref = dgroup.energy_ref
+            _eref = getattr(dgroup, 'energy_ref', '<;no eref;>')
             _gname = dgroup.groupname
             self.stale_groups = []
             for fname, gname in self.controller.file_groups.items():
                 this = self.controller.get_group(gname)
-                if _gname != gname and this.energy_ref == _eref:
+                if _gname != gname and _eref == getattr(this, 'energy_ref', None):
                     this.energy_shift = this.config.xasnorm['energy_shift'] = eshift
                     self.stale_groups.append(this)
 
