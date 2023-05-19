@@ -285,13 +285,19 @@ Within a shell:
    conda install -y "numpy=>1.20" "scipy=>1.6" "matplotlib=>3.0" scikit-learn pandas
    conda install -y -c conda-forge wxpython pymatgen tomopy pycifrw
 
-4. install Larch (latest release):
+4. **(optional)** install openbabel support for reading more file formats (e.g. mol2, pdb etc.) to generate FEFF input files:
+
+.. code:: bash
+
+   conda install -y -c conda-forge openbabel
+
+5. install Larch (latest release):
 
 .. code:: bash
 
    pip install xraylarch
 
-5. if anything of the above fails, report it to the `Larch Github Issues`_
+6. if anything of the above fails, report it to the `Larch Github Issues`_
 
 Putting that all together:
 
@@ -301,6 +307,7 @@ Putting that all together:
    conda activate xraylarch
    conda install -y "numpy=>1.20" "scipy=>1.6" "matplotlib=>3.0" scikit-learn pandas
    conda install -y -c conda-forge wxpython pymatgen tomopy pycifrw
+   conda install -y -c conda-forge openbabel
    pip install xraylarch
    larch -m
 

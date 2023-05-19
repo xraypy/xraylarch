@@ -87,6 +87,7 @@ EXAFS Modeling with FEFF
 
    * Browser for CIF files from American Mineralogist Crystal Structure Database.
    * Convert CIF files (from AMCSDB or external file) to feff.inp for Feff6/Feff8l.
+   * FEFF input Generator from general structure (cif, VASP, xyz, Gaussian, and etc are supported. Installation of openbabel is required for some formats. See :ref:`installation/install-conda`).
    * Run Feff6 or Feff8, saving and browsing EXAFS Paths from these Feff runs.
    * Feff Fitting of single EXAFS spectra for a sum of Feff paths.
 
