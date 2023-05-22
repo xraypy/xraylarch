@@ -414,12 +414,15 @@ class TomographyPanel(GridPanel):
         # check for common case of a few too many angles -- in which case, always
         # remove the first and last:
         domega  = abs(np.diff(omega).mean())
-        if abs(omega[-1] - omega[0]) > 360+2*domega:
-            omega = omega[1:-1]
-            args['hotcols'] = True
+        # if abs(omega[-1] - omega[0]) > 360+2*domega:
+        #    if not args['hotcols']:                    
+        #        omega = omega[1:-1]
+        #        print("TRIMMED OMEGA ", domega, omega.shape)
+        #    args['hotcols'] = True
 
         def normalize_map(xmap, normmap, roiname):
-            xmap /= normmap
+            # print("normalize_map ", xmap.shape, xmap.dtype, normmap.shape, normmap.dtype)
+            xmap = xmap/(1.00*normmap)
             label = ''
             if self.i1trans.IsChecked() and roiname.lower().startswith('i1'):
                 xmap = -np.log(xmap)
@@ -474,7 +477,7 @@ class TomographyPanel(GridPanel):
             title = '%s: %s' % (fname, title)
             info  = 'Intensity: [%g, %g]' %(sino.min(), sino.max())
             subtitle = None
-
+       
         return title, subtitles, info, x, omega, sino_order, sino
 
     def onSaveTomograph(self, event=None):
