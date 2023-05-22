@@ -52,7 +52,7 @@ PLOT_TYPES = {'Raw Data': 'raw',
               'Raw Data + Background' : 'raw+bkg',
               'Background-subtracted Data': 'sub'}
 
-PLOT_CHOICES = list(PLOT_OPTS.keys())
+PLOT_CHOICES = list(PLOT_TYPES.keys())
 PLOT_CHOICES_MULTI = ['raw', 'sub']
 
 SCALE_METHODS = {'Max Raw Intensity': 'raw_max',
@@ -108,7 +108,7 @@ def extract_background(x, y, smooth_width=0.1, iterations=40, cheb_order=40):
     :return: vector of extracted y background
     """
     smooth_points = int((float(smooth_width) / (x[1] - x[0])))
-    print('bkg ', smooth_points, iterations,cheb_order)
+    # print('bkg ', smooth_points, iterations,cheb_order)
     y_smooth = smooth_bruckner(y, abs(smooth_points), iterations)
     # get cheb input parameters
     x_cheb = 2. * (x - x[0]) / (x[-1] - x[0]) - 1.
@@ -354,7 +354,7 @@ class XRD1DBrowserFrame(wx.Frame):
             self.onPlotOne()
         
     def show_dataset(self, event=None, label=None):
-        print('show xd1d ', event, label)
+        # print('show xd1d ', event, label)
         if label is None and event is not None:
             label = str(event.GetString())
         if label not in self.datasets:
@@ -372,8 +372,6 @@ class XRD1DBrowserFrame(wx.Frame):
             or (isinstance(bkgd, np.ndarray)
                 and (bkgd.sum() < 0.5/len(bkgd)))):
             dset.bkgd = calc_bgr(dset)
-
-        print("INIT Background " , dset.bkgd)
 
         self.wids['scale'].SetValue(dset.scale)
         self.wids['auto_scale'].SetValue(dset.auto_scale)
@@ -480,8 +478,12 @@ class XRD1DBrowserFrame(wx.Frame):
         self.last_plot_type = 'multi'
         last_id = group_ids[-1]
 
-        plottype = PLOT_TYPES.get(self.wids['plotone'].GetStringSelection(), 'raw')        
+        plotsel = self.wids['plotone'].GetStringSelection()
+        plottype = PLOT_TYPES.get(plotsel, 'raw')
+        print('plot sel ',  plotsel, plottype)
+        print('plot Sel ',  labels)
 
+        
     def onPlotEither(self, event=None):
         if self.last_plot_type == 'multi':
             self.onPlotSel(event=event)
