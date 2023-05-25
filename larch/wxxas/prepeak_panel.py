@@ -15,10 +15,9 @@ import wx.dataview as dv
 from lmfit import Parameter
 
 import lmfit.models as lm_models
-from lmfit.printfuncs import gformat
 
 from larch import Group, site_config
-from larch.utils import uname
+from larch.utils import uname, gformat
 from larch.math import index_of
 from larch.io.export_modelresult import export_modelresult
 from larch.io import save_groups, read_groups

@@ -11,7 +11,7 @@ from functools import partial
 
 from xraydb import guess_edge, atomic_number
 
-from lmfit.printfuncs import gformat
+from larch.utils import gformat
 from larch.math import index_of
 from larch.xafs.xafsutils import guess_energy_units
 

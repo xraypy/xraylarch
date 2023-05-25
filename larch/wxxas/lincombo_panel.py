@@ -14,7 +14,7 @@ import numpy as np
 from functools import partial
 
 import lmfit
-from lmfit.printfuncs import gformat, fit_report
+from lmfit.printfuncs import fit_report
 
 from larch import Group
 from larch.math import index_of
@@ -29,7 +29,8 @@ from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
 
 from .taskpanel import TaskPanel
 from .config import ARRAYS, Linear_ArrayChoices, PlotWindowChoices
-from larch.io.columnfile import write_ascii
+from larch.io import write_ascii
+from larch.utils import gformat
 
 np.seterr(all='ignore')
 
