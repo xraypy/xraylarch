@@ -14,10 +14,9 @@ from numpy import array, arange, interp, pi, zeros, sqrt, concatenate
 from scipy.optimize import leastsq as scipy_leastsq
 
 from lmfit import Parameters, Parameter, Minimizer, fit_report
-from lmfit.printfuncs import gformat as gformat
 
 from larch import Group, isNamedClass
-from larch.utils.strutils import fix_varname
+from larch.utils import fix_varname, gformat
 from ..math import index_of, realimag, complex_phase, remove_nans
 from ..fitting import (correlated_values, eval_stderr, ParameterGroup,
                        group2params, params2group, isParameter)
@@ -25,7 +24,6 @@ from ..fitting import (correlated_values, eval_stderr, ParameterGroup,
 from .xafsutils import set_xafsGroup
 from .xafsft import xftf_fast, xftr_fast, ftwindow
 from .feffdat import FeffPathGroup, ff2chi
-
 
 class TransformGroup(Group):
     """A Group of transform parameters.
@@ -564,7 +562,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
         chir_re      real part of chi(R).
         chir_im      imaginary part of chi(R).
     """
-    fit_kws = dict(gtol=1.e-6, ftol=1.e-6, xtol=1.e-6)
+    fit_kws = dict(gtol=1.e-6, ftol=1.e-6, xtol=1.e-6, epsfcn=1.e-10)
     if 'tol' in kws:
         tol = kws.pop('tol')
         fit_kws['gtol'] = fit_kws['ftol'] = fit_kws['xtol'] = tol
@@ -593,9 +591,18 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
             return
         ds.prepare_fit(params=params)
 
+#     n_idp = 0
+#     n_data = 0
+#     n_varys = len([p for p in params.values() if p.vary])
+#
+#     for ds in datasets:
+#         n_idp += ds.n_idp
+#         r1 = ds._residual(params)
+#         n_data += len(r1)
+#
     fit = Minimizer(_resid, params,
                     fcn_kws=dict(datasets=datasets, pargroup=work_paramgroup),
-                    scale_covar=True, **fit_kws)
+                    scale_covar=False, **fit_kws)
 
     result = fit.leastsq()
     params2group(result.params, work_paramgroup)
@@ -617,18 +624,13 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
     aic = neg2_loglikel + 2 * result.nvarys
     bic = neg2_loglikel + np.log(n_idp) * result.nvarys
 
-
-    # With scale_covar = True, Minimizer() scales the uncertainties
-    # by reduced chi-square assuming params.nfree is the correct value
-    # for degrees-of-freedom. But n_idp-params.nvarys is a better measure,
-    # so we rescale uncertainties here.
-
+    # We used scale_covar=False, so we rescale the uncertainties
+    # by reduced chi-square * (ndata - nvarys)/(nidp - nvarys)
     covar = getattr(result, 'covar', None)
     if covar is not None:
-        err_scale = (result.nfree / (n_idp - result.nvarys))
-        for name in result.var_names:
-            par = result.params[name]
-            if isParameter(par) and par.vary:
+        err_scale = result.redchi*(result.nfree/(n_idp - result.nvarys))
+        for name, par in result.params.items():
+            if isParameter(par) and getattr(par, 'stderr', None) is not None:
                 par.stderr *= sqrt(err_scale)
 
         # next, propagate uncertainties to constraints and path parameters.
@@ -640,7 +642,6 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
             par = result.params[vname]
             vsave[vname] = par
             vbest.append(par.value)
-
         # 2. get correlated uncertainties, set params accordingly
         uvars = correlated_values(vbest, result.covar)
         # 3. evaluate constrained params, save stderr

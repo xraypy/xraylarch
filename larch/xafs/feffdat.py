@@ -17,14 +17,13 @@ import numpy as np
 from copy import deepcopy
 from scipy.interpolate import UnivariateSpline
 from lmfit import Parameters, Parameter
-from lmfit.printfuncs import gformat
 
 from xraydb import atomic_mass, atomic_symbol
 
 from larch import Group, isNamedClass
 from larch.utils.strutils import fix_varname, b32hash
 from larch.fitting import group2params, dict2params, isParameter, param_value
-
+from larch.utils import gformat
 from .xafsutils import ETOK, ktoe, set_xafsGroup
 from .sigma2_models import add_sigma2funcs
 
