@@ -16,10 +16,11 @@ from .gformat import gformat, getfloat_attr
 from .paths import uname, bindir, nativepath, unixpath, get_homedir, get_cwd
 from .debugtime import debugtime, debugtimer
 
-from .strutils import (fixName, isValidName, isNumber, bytes2str, str2bytes,
-                       fix_varname, isLiteralStr, strip_comments, asfloat,
-                       find_delims, version_ge, unique_name, get_sessionid,
-                       strict_ascii)
+from .strutils import (fixName, isValidName, isNumber, bytes2str,
+                       str2bytes, fix_filename, fix_varname,
+                       isLiteralStr, strip_comments, asfloat,
+                       find_delims, version_ge, unique_name,
+                       get_sessionid, strict_ascii)
 
 from .shellutils import (_copy, _deepcopy, _more, _parent,
                          _ls, _cd, _cwd, _mkdir)
