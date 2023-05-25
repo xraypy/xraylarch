@@ -132,12 +132,21 @@ def calc_bgr(dset, qwid=0.1, nsmooth=40, cheb_order=40):
     return extract_background(dset.q, dset.I, smooth_width=qwid,
                               iterations=nsmooth, cheb_order=cheb_order)
 
+
+
 class XRD1DBrowserFrame(wx.Frame):
     """browse 1D XRD patterns"""
-    def __init__(self, parent=None, _larch=None, **kws):
+
+    def __init__(self, parent=None, energy=18000.0, en_units='eV',
+                 ponifile=None, _larch=None, **kws):
         wx.Frame.__init__(self, None, -1, title='1D XRD Browser',
                           style=FRAMESTYLE, size=(600, 600), **kws)
         self.parent = parent
+        self.energy = energy
+        if en_units == 'keV':
+            self.energy = 1000*energy
+
+        self.ponifile = ponifile
         self.larch = _larch
         self.current_label = None
         self.datasets = {}
@@ -161,12 +170,16 @@ class XRD1DBrowserFrame(wx.Frame):
 
     def onReadXY(self, event=None):
         print('read xy ')
-        deffile = 'some.xy'
         sfile = FileOpen(self, 'Read XY Data',
-                         default_file=deffile,
+                         defaultDir=get_cwd(),
                          wildcard=XYWcards)
         if sfile is not None:
             print(' would read ', sfile)
+            top, xfile = os.split(sfile)
+            dxrd = xrd1d(file=path)
+            self.add_data(dxrd, label=xfile)
+
+            
 
     def onSaveXY(self, event=None):
         print('save xy ')
@@ -188,7 +201,6 @@ class XRD1DBrowserFrame(wx.Frame):
         # left side: list of XRD 1D patterns
         lpanel = wx.Panel(splitter)
         lpanel.SetMinSize((275, 350))
-
         # rpanel = scrolled.ScrolledPanel(splitter)
         rpanel = wx.Panel(splitter)
         rpanel.SetMinSize((400, 350))
