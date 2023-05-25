@@ -118,8 +118,8 @@ def iscifDB(dbname):
     result = False
     try:
         engine = make_engine(dbname)
-        meta = MetaData(engine)
-        meta.reflect()
+        meta = MetaData()
+        meta.reflect(bind=engine)
         result = all([t in meta.tables for t in _tables])
     except:
         pass
@@ -150,6 +150,7 @@ class cifDB(object):
         self.dbname = self.dbname
         self.engine = make_engine(self.dbname)
         self.conn = self.engine.connect()
+
         kwargs = {}
         if read_only:
             kwargs = {'autoflush': True, 'autocommit':False}
@@ -160,8 +161,8 @@ class cifDB(object):
         else:
             self.session = sessionmaker(bind=self.engine, **kwargs)()
 
-        self.metadata =  MetaData(self.engine)
-        self.metadata.reflect()
+        self.metadata =  MetaData()
+        self.metadata.reflect(bind=self.engine)
         tables = self.tables = self.metadata.tables
 
         ## Load tables

@@ -27,14 +27,17 @@ def xrd_background(xdata, ydata, width=4, compress=5, exponent=2, slope=None):
 
     slope      channel to energy conversion, from energy calibration
                (default == None --> found from input energy array)
+
+    Returns
     -------
     bgr       background array
-    bgr_info  dictionary of parameters used to calculate background
     """
 
     if slope is None:
         slope = (xdata[-1] - xdata[0])/len(xdata)
+    bgr = ydata*1.0
 
-    xbgr = XrayBackground(ydata, width=width, compress=compress,
-                          exponent=exponent, slope=slope, tangent=True)
-    return xbgr.bgr
+    xb = XrayBackground(ydata, width=width, compress=compress,
+                        exponent=exponent, slope=slope, tangent=True)
+    bgr[:len(xb.bgr)] = xb.bgr
+    return bgr

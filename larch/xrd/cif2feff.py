@@ -12,9 +12,7 @@ except:
     HAS_PYMATGEN = False
 
 from xraydb import atomic_symbol, atomic_number, xray_edge
-from larch.io.fileutils import gformat
-from larch.utils.strutils import fix_varname, strict_ascii
-
+from larch.utils import fix_varname, strict_ascii, gformat
 
 def get_atom_map(structure):
     """generalization of pymatgen atom map

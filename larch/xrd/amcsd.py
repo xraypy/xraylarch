@@ -48,8 +48,7 @@ except IOError:
 
 from xraydb.chemparser import chemparse
 
-from .amscifdb_utils import (make_engine, isAMSCIFDB, create_amscifdb,
-                             put_optarray, get_optarray)
+from .amcsd_utils import (make_engine, isAMCSD, put_optarray, get_optarray)
 from .xrd_cif import XRDCIF, elem_symbol
 from .cif2feff import cif2feffinp
 from ..utils import isotime
@@ -62,8 +61,8 @@ CifPublication = namedtuple('CifPublication', ('id', 'journalname', 'year',
                                             'page_last', 'authors'))
 
 _CIFDB = None
-AMSCIF_TRIM = 'amcsd_cif1.db'
-AMSCIF_FULL = 'amcsd_cif2.db'
+AMCSD_TRIM = 'amcsd_cif1.db'
+AMCSD_FULL = 'amcsd_cif2.db'
 SOURCE_URLS = ('https://docs.xrayabsorption.org/databases/',
                'https://millenia.cars.aps.anl.gov/xraylarch/downloads/')
 
@@ -322,7 +321,7 @@ class CifStructure():
         pub = self.publication
         journal = f"{pub.journalname} {pub.volume}, pp. {pub.page_first}-{pub.page_last} ({pub.year:d})"
         authors = ', '.join(pub.authors)
-        titles = [f'Structure from AMSCIFDB, AMS_ID: {self.ams_id:d}',
+        titles = [f'Structure from AMCSD, AMS_ID: {self.ams_id:d}',
                   f'Mineral Name: {self.mineral.name:s}']
 
         if not self.formula_title.startswith('<missing'):
@@ -358,7 +357,7 @@ class CifStructure():
             fh.write(feff6text)
         return filename
 
-class AMSCIFDB():
+class AMCSD():
     """
     Database of CIF structure data from the American Mineralogical Crystal Structure Database
 
@@ -369,12 +368,12 @@ class AMSCIFDB():
         "connect to an existing database"
         if dbname is None:
             parent, _ = os.path.split(__file__)
-            dbname = os.path.join(parent, AMSCIF_TRIM)
+            dbname = os.path.join(parent, AMCSD_TRIM)
         if not os.path.exists(dbname):
             raise IOError("Database '%s' not found!" % dbname)
 
-        if not isAMSCIFDB(dbname):
-            raise ValueError("'%s' is not a valid AMSCIF Database!" % dbname)
+        if not isAMCSD(dbname):
+            raise ValueError("'%s' is not a valid AMCSD Database!" % dbname)
 
         self.connect(dbname, read_only=read_only)
 
@@ -465,13 +464,13 @@ class AMSCIFDB():
             rows = rows[-1:]
         if long or with_history:
             for row in rows:
-                out.append(f"AMSCIF DB Version: {row.tag} [{row.date}] '{row.notes}'")
+                out.append(f"AMCSD Version: {row.tag} [{row.date}] '{row.notes}'")
             out.append(f"Python Version: {__version__}")
             out = "\n".join(out)
         elif rows is None:
-            out = f"AMSCIF DB Version: unknown, Python Version: {__version__}"
+            out = f"AMCSD Version: unknown, Python Version: {__version__}"
         else:
-            out = f"AMSCIF DB Version: {rows[0].tag}, Python Version: {__version__}"
+            out = f"AMCSD Version: {rows[0].tag}, Python Version: {__version__}"
         return out
 
     def _get_tablerow(self, table, name, add=True):
@@ -1012,11 +1011,11 @@ class AMSCIFDB():
         ctab = self.tables['cif']
         self.update(ctab, whereclause=(ctab.c.id == cifid), hkls=hkldat)
 
-def get_amscifdb(download_full=True, timeout=30):
-    """return instance of the AMS CIF Database
+def get_amcsd(download_full=True, timeout=30):
+    """return instance of the AMCSD CIF Database
 
     Returns:
-        AMSCIF DB
+        AMCSD database
     Example:
 
     """
@@ -1024,15 +1023,15 @@ def get_amscifdb(download_full=True, timeout=30):
     if _CIFDB is not None:
         return _CIFDB
 
-    dbfull = os.path.join(user_larchdir, AMSCIF_FULL)
+    dbfull = os.path.join(user_larchdir, AMCSD_FULL)
     if os.path.exists(dbfull):
-        _CIFDB = AMSCIFDB(dbfull)
+        _CIFDB = AMCSD(dbfull)
         return _CIFDB
     t0 = time.time()
     if download_full:
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
         for src in SOURCE_URLS:
-            url = f"{src:s}/{AMSCIF_FULL:s}"
+            url = f"{src:s}/{AMCSD_FULL:s}"
             req = requests.get(url, verify=True, timeout=timeout)
             if req.status_code == 200:
                 break
@@ -1041,16 +1040,16 @@ def get_amscifdb(download_full=True, timeout=30):
                 fh.write(req.content)
             print("Downloaded  %s : %.2f sec" % (dbfull, time.time()-t0))
             time.sleep(0.25)
-            _CIFDB = AMSCIFDB(dbfull)
+            _CIFDB = AMCSD(dbfull)
             return _CIFDB
     # finally download of full must have failed
-    return AMSCIFDB()
+    return AMCSD()
 
 def get_cif(ams_id):
     """
     get CIF Structure by AMS ID
     """
-    db = get_amscifdb()
+    db = get_amcsd()
     return db.get_cif(ams_id)
 
 def find_cifs(mineral_name=None, journal_name=None, author_name=None,
@@ -1069,7 +1068,7 @@ def find_cifs(mineral_name=None, journal_name=None, author_name=None,
 
 
     """
-    db = get_amscifdb()
+    db = get_amcsd()
     return db.find_cifs(mineral_name=mineral_name,
                         journal_name=journal_name,
                         author_name=author_name,

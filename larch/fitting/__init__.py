@@ -10,11 +10,12 @@ from lmfit import Parameter
 from lmfit import (Parameters, Minimizer, conf_interval,
                    ci_report, conf_interval2d)
 
-from lmfit.minimizer import eval_stderr, MinimizerResult
+from lmfit.minimizer import MinimizerResult
 from lmfit.model import (ModelResult, save_model, load_model,
                          save_modelresult, load_modelresult)
 from lmfit.confidence import f_compare
 from uncertainties import ufloat, correlated_values
+from uncertainties import wrap as un_wrap
 
 from ..symboltable import Group, isgroup
 
@@ -42,6 +43,54 @@ def confidence_report(conf_vals, **kws):
     by confidence_intervals
     """
     return ci_report(conf_vals)
+
+
+
+def asteval_with_uncertainties(*vals, **kwargs):
+    """Calculate object value, given values for variables.
+
+    This is used by the uncertainties package to calculate the
+    uncertainty in an object even with a complicated expression.
+
+    """
+    _obj = kwargs.get('_obj', None)
+    _pars = kwargs.get('_pars', None)
+    _names = kwargs.get('_names', None)
+    _asteval = _pars._asteval
+    if (_obj is None or _pars is None or _names is None or
+         _asteval is None or _obj._expr_ast is None):
+        return 0
+    for val, name in zip(vals, _names):
+        _asteval.symtable[name] = val
+
+    # re-evaluate all constraint parameters to
+    # force the propagation of uncertainties
+    [p._getval() for p in _pars.values()]
+    return _asteval.eval(_obj._expr_ast)
+
+
+wrap_ueval = un_wrap(asteval_with_uncertainties)
+
+
+def eval_stderr(obj, uvars, _names, _pars):
+    """Evaluate uncertainty and set ``.stderr`` for a parameter `obj`.
+
+    Given the uncertain values `uvars` (list of `uncertainties.ufloats`),
+    a list of parameter names that matches `uvars`, and a dictionary of
+    parameter objects, keyed by name.
+
+    This uses the uncertainties package wrapped function to evaluate the
+    uncertainty for an arbitrary expression (in ``obj._expr_ast``) of
+    parameters.
+
+    """
+    if not isinstance(obj, Parameter) or getattr(obj, '_expr_ast', None) is None:
+        return
+    uval = wrap_ueval(*uvars, _obj=obj, _names=_names, _pars=_pars)
+    try:
+        obj.stderr = uval.std_dev
+    except Exception:
+        obj.stderr = 0
 
 
 class ParameterGroup(Group):

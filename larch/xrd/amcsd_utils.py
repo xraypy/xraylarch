@@ -19,14 +19,14 @@ def make_engine(dbname):
                          poolclass=SingletonThreadPool,
                          connect_args={'check_same_thread': False})
 
-def isAMSCIFDB(dbname):
-    """whether a file is a valid AMSCIF database
+def isAMCSD(dbname):
+    """whether a file is a valid AMCSD database
 
     Args:
-        dbname (string): name of AMSCIF database file
+        dbname (string): name of AMCSD database file
 
     Returns:
-        bool: is file a valid AMSCIF database
+        bool: is file a valid AMCSD database
 
     Notes:
       1. must be a sqlite db file, with tables
@@ -100,55 +100,55 @@ schema = (
     '''CREATE TABLE version (id integer primary key, tag text, date text, notes text);''',
     '''CREATE TABLE elements (
         id  integer not null,
-	z INTEGER NOT NULL,
-	name VARCHAR(40),
-	symbol VARCHAR(2) NOT NULL primary key);''',
+        z INTEGER NOT NULL,
+        name VARCHAR(40),
+        symbol VARCHAR(2) NOT NULL primary key);''',
 
     '''CREATE TABLE spacegroups (
         id INTEGER primary key,
-	hm_notation VARCHAR(16) not null unique,
-	symmetry_xyz text NOT NULL,
-	category text     );''',
+        hm_notation VARCHAR(16) not null unique,
+        symmetry_xyz text NOT NULL,
+        category text     );''',
 
     '''CREATE TABLE minerals (
-	id INTEGER not null primary key,
-	name text not null unique);''',
+        id INTEGER not null primary key,
+        name text not null unique);''',
 
     '''CREATE TABLE authors (
         id INTEGER NOT NULL primary key,
-	name text unique);''',
+        name text unique);''',
     '''CREATE TABLE publications (
-	id INTEGER NOT NULL primary key,
-	journalname text not null,
-	volume text,
-	year  integer not null,
-	page_first text,
-	page_last text);''',
+        id INTEGER NOT NULL primary key,
+        journalname text not null,
+        volume text,
+        year  integer not null,
+        page_first text,
+        page_last text);''',
 
     '''CREATE TABLE publication_authors (
         publication_id INTEGER not null,
-	author_id integer not null,
-	FOREIGN KEY(publication_id) REFERENCES publications (id),
-	FOREIGN KEY(author_id) REFERENCES authors (id));''',
+        author_id integer not null,
+        FOREIGN KEY(publication_id) REFERENCES publications (id),
+        FOREIGN KEY(author_id) REFERENCES authors (id));''',
 
     '''CREATE TABLE cif (
         id integer not null primary key,
-	mineral_id INTEGER,
-	spacegroup_id INTEGER,
-	publication_id INTEGER,
-	formula text,
+        mineral_id INTEGER,
+        spacegroup_id INTEGER,
+        publication_id INTEGER,
+        formula text,
         compound text,
         pub_title text,
         formula_title text,
-	a text,
-	b text,
-	c text,
-	alpha text,
-	beta text,
-	gamma text,
+        a text,
+        b text,
+        c text,
+        alpha text,
+        beta text,
+        gamma text,
         cell_volume text,
         crystal_density text,
-	atoms_sites text,
+        atoms_sites text,
         atoms_x text,
         atoms_y text,
         atoms_z text,
@@ -161,15 +161,15 @@ schema = (
         atoms_aniso_u12 text,
         atoms_aniso_u13 text,
         atoms_aniso_u23 text,
-	qdat text,
-     	amcsd_url text,
-	FOREIGN KEY(spacegroup_id) REFERENCES spacegroups (id),
-	FOREIGN KEY(mineral_id) REFERENCES minerals (id),
-	FOREIGN KEY(publication_id) REFERENCES publications (id));''',
+        qdat text,
+        amcsd_url text,
+        FOREIGN KEY(spacegroup_id) REFERENCES spacegroups (id),
+        FOREIGN KEY(mineral_id) REFERENCES minerals (id),
+        FOREIGN KEY(publication_id) REFERENCES publications (id));''',
 
     '''CREATE TABLE cif_elements (
         cif_id text not null,
-	element VARCHAR(2) not null);''',
+        element VARCHAR(2) not null);''',
     )
 
 
@@ -206,7 +206,7 @@ atnames = ['hydrogen', 'helium', 'lithium', 'beryllium',
          'berkelium', 'californium', 'einsteinium', 'fermium',
          'mendelevium', 'nobelium', 'lawrencium', 'deuterium' ]
 
-def create_amscifdb(dbname='test.db'):
+def create_amcsd(dbname='test.db'):
     if os.path.exists(dbname):
         os.unlink(dbname)
 

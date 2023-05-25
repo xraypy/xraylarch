@@ -22,7 +22,6 @@ DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 from peakutils import peak
 
 from lmfit import Parameter, Minimizer
-from lmfit.printfuncs import gformat
 
 from wxutils import (SimpleText, FloatCtrl, FloatSpin, Choice, Font, pack,
                      Button, Check, HLine, GridPanel, RowPanel, CEN, LEFT,
@@ -40,7 +39,7 @@ from .parameter import ParameterPanel
 from larch import Group
 
 from ..xrf import xrf_background, MCA, FanoFactors
-from ..utils import json_dump, json_load
+from ..utils import json_dump, json_load, gformat
 from ..utils.jsonutils import encode4js, decode4js
 from ..utils.physical_constants import E_MASS
 from ..site_config import user_larchdir

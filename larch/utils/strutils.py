@@ -28,9 +28,9 @@ def str2bytes(s):
 
 def strict_ascii(s, replacement='_'):
     """for string to be truly ASCII with all characters below 128"""
-
     t = bytes(s, 'UTF-8')
     return ''.join([chr(a) if a < 128 else replacement for a in t])
+
 
 RESERVED_WORDS = ('False', 'None', 'True', 'and', 'as', 'assert', 'async',
                   'await', 'break', 'class', 'continue', 'def', 'del', 'elif',

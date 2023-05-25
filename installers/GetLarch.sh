@@ -17,14 +17,13 @@ condafile="Mambaforge-$uname-x86_64.sh"
 logfile=GetLarch.log
 
 ## set list of conda packages to install from conda-forge
-cforge_pkgs="numpy=>1.22 scipy=>1.8 matplotlib=>3.6 scikit-image scikit-learn pycifrw pandas jupyter plotly"
+cforge_pkgs="numpy=>1.22 scipy=>1.8 matplotlib=>3.6 scikit-image scikit-learn pycifrw pandas jupyter plotly wxpython fabio pyfai pymatgen mkl_fft tomopy"
 
 ## set list of pip packages to install from pypi
-pip_pkgs="wxmplot wxutils lmfit asteval pyshortcuts pyfai"
+pip_pkgs="wxmplot wxutils lmfit asteval pyshortcuts pyepics epicsapps psycopg2-binary"
 
 unset CONDA_EXE CONDA_PYTHON_EXE CONDA_PREFIX PROJ_LIB
 
-with_wx=1
 use_devel=0
 
 ## get command line options
@@ -43,13 +42,10 @@ for opt ; do
   case "$option" in
     prefix)        prefix=$optarg ;;
     devel)         use_devel=1 ;;
-    with-wx)       with_wx=1 ;;
-    no-wx)         with_wx=0 ;;
     -h | h | -help | --help | help) cat<<EOF
 Usage: GetLarch.sh [options]
 Options:
   --prefix=PREFIX             base directory for installation [$prefix]
-  --with-wx  / --no-wx        include / omit wxPython from Anaconda Python [with]
   --devel                     install development branch of xraylarch instead of latest release [no]
 EOF
     exit 0
@@ -68,11 +64,6 @@ if [ -d $prefix ] ; then
    exit 0
 fi
 
-
-
-if [ $with_wx == 1 ]; then
-    cforge_pkgs="$cforge_pkgs wxpython"
-fi
 
 larchurl='xraylarch'
 if [ $use_devel == 1 ]; then

@@ -13,12 +13,11 @@ import numpy as np
 from functools import partial
 from collections import OrderedDict
 
-from lmfit.printfuncs import gformat
-
 from larch import Group
 from larch.math import index_of
 from larch.math.lincombo_fitting import get_arrays
-from larch.utils import get_cwd
+from larch.utils import get_cwd, gformat
+
 from larch.xafs import etok, ktoe
 from larch.wxlib import (BitmapButton, FloatCtrl, get_icon, SimpleText,
                          pack, Button, HLine, Choice, Check, CEN, RIGHT,
