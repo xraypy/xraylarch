@@ -15,8 +15,7 @@ import numpy as np
 from dateutil.parser import parse as dateparse
 from larch import Group
 from larch.math import interp
-from larch.utils.strutils import bytes2str, fix_varname
-from .fileutils import gformat
+from larch.utils import bytes2str, fix_varname, gformat
 
 maketrans = str.maketrans
 

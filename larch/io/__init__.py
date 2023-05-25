@@ -9,7 +9,7 @@ of scientific data files.
 from .fileutils import (increment_filename, new_filename, new_dirname,
                         fix_filename, fix_varname, pathOf, unixpath,
                         winpath, nativepath, strip_quotes, get_timestamp,
-                        gformat, asciikeys)
+                        asciikeys)
 
 from .columnfile import (read_ascii, write_ascii, write_group, set_array_labels,
                          guess_filereader, look_for_nans, read_fdmnes)

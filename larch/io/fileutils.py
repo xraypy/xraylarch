@@ -5,7 +5,7 @@ general purpose file utilities
 import time
 import os
 import sys
-from math import log10
+
 from random import seed, randrange
 from string import printable
 from ..utils.strutils import fix_filename, fix_varname, strip_quotes
@@ -82,52 +82,6 @@ def get_homedir():
         except:
             pass
     return homedir
-
-
-def gformat(val, length=12):
-    """Format a number with '%g'-like format.
-
-    Except that:
-        a) the length of the output string will be of the requested length.
-        b) positive numbers will have a leading blank.
-        b) the precision will be as high as possible.
-        c) trailing zeros will not be trimmed.
-
-    The precision will typically be ``length-7``.
-
-    Parameters
-    ----------
-    val : float
-        Value to be formatted.
-    length : int, optional
-        Length of output string (default is 12).
-
-    Returns
-    -------
-    str
-        String of specified length.
-
-    Notes
-    ------
-    Positive values will have leading blank.
-
-    """
-    try:
-        expon = int(log10(abs(val)))
-    except (OverflowError, ValueError):
-        expon = 0
-    length = max(length, 7)
-    form = 'e'
-    prec = length - 7
-    if abs(expon) > 99:
-        prec -= 1
-    elif ((expon > 0 and expon < (prec+4)) or
-          (expon <= 0 and -expon < (prec-1))):
-        form = 'f'
-        prec += 4
-        if expon > 0:
-            prec -= expon
-    return f'{val:{length}.{prec}{form}}'
 
 
 def increment_filename(inpfile, ndigits=3, delim='.'):
