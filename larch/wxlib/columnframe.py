@@ -24,9 +24,8 @@ import larch
 from larch import Group
 from larch.xafs.xafsutils import guess_energy_units
 from larch.utils.strutils import fix_varname, fix_filename, file2groupname
-from larch.io import look_for_nans
+from larch.io import look_for_nans,  guess_filereader, is_specfile
 from larch.utils.physical_constants import PLANCK_HC, DEG2RAD
-from larch.io.columnfile import guess_filereader
 
 from . import FONTSIZE
 
@@ -626,6 +625,10 @@ class ColumnDataFileFrame(wx.Frame) :
         """read column file, generally as initial read"""
         parent, filename = os.path.split(path)
         reader, text = guess_filereader(path, return_text=True)
+
+        if reader == 'read_specfile':
+            if not is_specfile(path, require_multiple_scans=True):
+                reader = 'read_ascii'
 
         if reader in ('read_xdi', 'read_gsexdi'):
             # first check for Nans and Infs
