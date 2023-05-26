@@ -125,23 +125,37 @@ def _make_dlist(dall, rep=1):
     return dlist
 
 
-def is_specfile(filename):
-    """tests whether file may be a Specfile (text or HDF5)"""
+def is_specfile(filename, require_multiple_scans=True):
+    """tests whether file may be a Specfile (text or HDF5)
+
+    Parameters
+    ----------
+    require_multiple_scans: bool [True]
+       for Text-based scans, return True only if the file contains
+       multiple scans.
+
+    """
     if not os.path.exists(filename):
         return False
     with open(filename, "rb") as fh:
         topbytes = fh.read(10)
-    scans = None
-    if (
-        topbytes.startswith(b"\x89HDF\r")  # HDF5
-        or topbytes.startswith(b"#S ")  # partial Spec file (1 scan)
-        or topbytes.startswith(b"#F ")  # full Spec file
-    ):  # full specscan
-        try:
-            scans = DataSourceSpecH5(filename)._scans
-        except Exception:
-            pass
-    return scans is not None
+
+    is_hdf5 = topbytes.startswith(b"\x89HDF\r") # HDF5
+    is_text_one = topbytes.startswith(b"#S ")   # partial Spec file (1 scan)
+    is_text_full = topbytes.startswith(b"#F ")  # Full Spec File
+
+    if (not (is_hdf5 or is_text_full or is_text_one)
+        or (is_text_one and require_multiple_scans)):
+        return False
+
+    try:
+        scans = DataSourceSpecH5(filename)._scans
+    except Exception:
+        return False
+
+    if is_text_full and require_multiple_scans and len(scans) < 2:
+        return False
+    return True
 
 
 def update_nested(d, u):
