@@ -1773,21 +1773,11 @@ class MapViewerFrame(wx.Frame):
         '''
         displays 1D XRD pattern in diFFit viewer
         '''
-        print("Display XRD ", energy)
-        ponifile = bytes2str(self.current_file.xrmmap['xrd1d'].attrs.get('calfile',''))
-        if len(ponifile) < 2 or not os.path.exists(ponifile):
-            t_ponifile = os.path.join(xrmfile.folder, 'XRD.poni')
-            if os.path.exists(t_ponifile):
-                ponifile = t_ponifile
-        
         wavelength = lambda_from_E(energy, E_units='keV')
-
         xdat = xrd1d(label=label, energy=energy, wavelength=wavelength)
         xdat.set_xy_data(np.array([q, counts]), 'q')
         if self.xrddisplay1D is None:
-            # self.xrddisplay1D = XRD1DViewerFrame(_larch=self.larch)
-            self.xrddisplay1D = XRD1DBrowserFrame(energy=energy, en_units='keV',
-                                                  ponifile=ponifile, _larch=self.larch)
+            self.xrddisplay1D = XRD1DBrowserFrame(wavelength=wavelength, _larch=self.larch)
         try:
             self.xrddisplay1D.add_data(xdat, label=label)
         except:
