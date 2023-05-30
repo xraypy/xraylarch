@@ -12,7 +12,7 @@ from .fileutils import (increment_filename, new_filename, new_dirname,
                         asciikeys)
 
 from .columnfile import (read_ascii, write_ascii, write_group, set_array_labels,
-                         guess_filereader, look_for_nans, read_fdmnes)
+                         guess_filereader, look_for_nans, read_fdmnes, sum_fluor_channels)
 from .xdi import read_xdi, XDIFile, XDIFileException
 from .mda import read_mda
 from .hdf5group import h5file, h5group, netcdf_file, netcdf_group
@@ -71,6 +71,7 @@ __exports__ = dict(increment_filename=increment_filename,
                    groups2csv=groups2csv,
                    read_csv=read_csv,
                    read_xdi=read_xdi,
+                   sum_fluor_channels=sum_fluor_channels,
                    read_athena=read_athena,
                    create_athena=create_athena,
                    extract_athenagroup=extract_athenagroup,
