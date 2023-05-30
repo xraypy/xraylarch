@@ -16,13 +16,15 @@ import math
 from threading import Thread
 from functools import partial
 
+import pyFAI.units
+
 import wx
 import wx.lib.scrolledpanel as scrolled
 from wxmplot import PlotPanel
 
 import larch
 from larch.larchlib import read_workdir, save_workdir
-from larch.utils import nativepath, get_cwd
+from larch.utils import nativepath, get_cwd, gformat, fix_filename
 from larch.utils.physical_constants import PLANCK_HC
 from larch.xray import XrayBackground
 from larch.xrd import (cifDB, SearchCIFdb, QSTEP, QMIN, QMAX, CATEGORIES,
@@ -31,7 +33,7 @@ from larch.xrd import (cifDB, SearchCIFdb, QSTEP, QMIN, QMAX, CATEGORIES,
                        E_from_lambda,calc_broadening,
                        instrumental_fit_uvw,peaklocater,peakfitter,
                        xrd1d, peakfinder_methods,SPACEGROUPS, create_xrdcif,
-                       save1D)
+                       save1D, read_poni)
 
 
 from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
@@ -137,22 +139,25 @@ def calc_bgr(dset, qwid=0.1, nsmooth=40, cheb_order=40):
 class XRD1DBrowserFrame(wx.Frame):
     """browse 1D XRD patterns"""
 
-    def __init__(self, parent=None, energy=18000.0, en_units='eV',
-                 ponifile=None, _larch=None, **kws):
+    def __init__(self, parent=None, wavelength=1.0, ponifile=None, _larch=None, **kws):
+        
         wx.Frame.__init__(self, None, -1, title='1D XRD Browser',
                           style=FRAMESTYLE, size=(600, 600), **kws)
         self.parent = parent
-        self.energy = energy
-        if en_units == 'keV':
-            self.energy = 1000*energy
-
-        self.ponifile = ponifile
+        self.wavelength = wavelength
+        self.poni = {'wavelength': 1.e-10*self.wavelength} # ! meters!
+        if ponifile is not None:
+            try:
+                self.poni.update(read_poni(ponifile))
+            except:
+                pass
         self.larch = _larch
         self.current_label = None
         self.datasets = {}
         self.form = {}
         self.createMenus()
         self.build()
+        self.set_wavelength(self.wavelength)        
 
     def createMenus(self):
         fmenu = wx.Menu()
@@ -164,32 +169,70 @@ class XRD1DBrowserFrame(wx.Frame):
                  "Save XRD 1D data to XY FIle",
                  self.onSaveXY)
 
+        fmenu.AppendSeparator()        
+        MenuItem(self, fmenu, "Read PONI Calibration File",
+                 "Read PONI Calibration (pyFAI) FIle",
+                 self.onReadPONI)
+
         menubar = wx.MenuBar()
         menubar.Append(fmenu, "&File")
         self.SetMenuBar(menubar)
 
+    def onReadPONI(self, event=None):
+        sfile = FileOpen(self, 'Read PONI (pyFAI) calibration file',
+                         defaultDir=get_cwd(),
+                         wildcard="PONI Files(*.poni)|*.poni|All files (*.*)|*.*")
+        
+        if sfile is not None:
+            top, xfile = os.split(sfile)
+            try:
+                self.poni.update(read_poni(path))
+            except:
+                pass
+        self.set_wavelength(self.poni[wavelength]*1.e10)
+
     def onReadXY(self, event=None):
-        print('read xy ')
         sfile = FileOpen(self, 'Read XY Data',
                          defaultDir=get_cwd(),
                          wildcard=XYWcards)
         if sfile is not None:
             print(' would read ', sfile)
             top, xfile = os.split(sfile)
-            dxrd = xrd1d(file=path)
+            dxrd = xrd1d(file=sfile)
             self.add_data(dxrd, label=xfile)
-
-            
+           
 
     def onSaveXY(self, event=None):
-        print('save xy ')
-        deffile = 'some.xy'
-        # self.datagroup.filename.replace('.', '_') + 'peak.modl'
-        sfile = FileSave(self, 'Save XY Data',
-                         default_file=deffile)
-        if sfile is not None:
-            print(' would save ', sfile)
+        fname = fix_filename(self.current_label.replace('.', '_') + '.xy')
+        sfile = FileSave(self, 'Save XY Data', default_file=fname)
+        if sfile is None:
+            return
 
+        label = self.current_label
+        dset = self.datasets[label]
+            
+        xscale = self.wids['xscale'].GetSelection()
+        xlabel = self.wids['xscale'].GetStringSelection()
+        xdat = dset.twth
+        xlabel = pyFAI.units.TTH_DEG
+        if xscale == 0:
+            xdat = dset.q
+            xlabel = pyFAI.units.Q_A
+
+        ydat = 1.0*dset.I/dset.scale
+        wavelength = PLANCK_HC/(dset.energy*1000.0)
+        buff = [f"# XY data from {label}",
+                f"# wavelength (Ang) = {gformat(wavelength)}",
+                "#-------------------------------------",
+                f"# {xlabel}    Intensity"]
+
+        for x, y in zip(xdat, ydat):
+            buff.append(f" {gformat(x)} {gformat(y)}")
+        buff.append('')
+        with open(sfile, 'w') as fh:
+            fh.write('\n'.join(buff))
+       
+            
     def build(self):
         sizer = wx.GridBagSizer(3, 3)
         sizer.SetVGap(3)
@@ -267,12 +310,9 @@ class XRD1DBrowserFrame(wx.Frame):
 
         wids['scale'] = FloatCtrl(panel, value=1.0, size=(90, -1), precision=2,
                                   action=self.set_scale)
-        wids['energy_ev'] = FloatCtrl(panel, value=PLANCK_HC, size=(90, -1),
-                                      precision=1, action=self.set_energy, minval=0.1)
-        wids['wavelength'] = FloatCtrl(panel, value=1.000,  size=(90, -1), precision=6,
-                                       action=self.set_wavelength, minval=1.e-5)
-        wids['energy_ev'].Disable()
-        wids['wavelength'].Disable()
+        wids['wavelength'] = SimpleText(panel, label="%.6f" % (self.wavelength), size=(100, -1))
+        wids['energy_ev'] = SimpleText(panel, label="%.1f" % (PLANCK_HC/self.wavelength), size=(100, -1))
+
         wids['bkg_qwid'] = FloatSpin(panel, value=0.1, size=(90, -1), digits=2,
                                      increment=0.01,
                                      min_val=0.001, max_val=5, action=self.on_bkg)
@@ -306,12 +346,6 @@ class XRD1DBrowserFrame(wx.Frame):
         panel.Add(HLine(panel, size=(550, 3)), dcol=5, newrow=True)
         panel.Add((5, 5))
 
-        panel.Add(slabel(' X-ray Energy (eV): '), style=LEFT, newrow=True)
-        panel.Add(wids['energy_ev'], dcol=1)
-        panel.Add(slabel('[Edit] '))                
-        panel.Add(slabel(' Wavelength (\u212B): '), style=LEFT, newrow=True)
-        panel.Add(wids['wavelength'], dcol=1)
-        panel.Add(slabel('[Edit]'))        
 
         panel.Add(slabel(' Scaling Factor: '), style=LEFT, newrow=True)
         panel.Add(wids['scale'])
@@ -337,11 +371,15 @@ class XRD1DBrowserFrame(wx.Frame):
         panel.Add(HLine(panel, size=(550, 3)), dcol=5, newrow=True)
         panel.Add((5, 5))
 
-        panel.Add(slabel(' Calculated XRD Patterns: '), dcol=2, style=LEFT, newrow=True)
-        panel.Add(slabel(' [Copy to Selected] '))
+        panel.Add(slabel(' Calibration, Calculated XRD Patterns: '), dcol=4, style=LEFT, newrow=True)
+        panel.Add(slabel(' X-ray Energy (eV): '), style=LEFT, newrow=True)
+        panel.Add(wids['energy_ev'], dcol=1)
+        panel.Add(slabel(' Wavelength (\u212B): '), style=LEFT, newrow=False)
+        panel.Add(wids['wavelength'], dcol=1)
 
 
-
+        panel.Add((5, 5))
+        
         panel.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -356,24 +394,14 @@ class XRD1DBrowserFrame(wx.Frame):
         mainsizer = wx.BoxSizer(wx.VERTICAL)
         mainsizer.Add(splitter, 1, wx.GROW|wx.ALL, 5)
         pack(self, mainsizer)
-        print(self, self.GetBestSize())
         self.SetSize( (850, 400))
 
         self.Show()
         self.Raise()
 
-    def set_energy(self, event=None, value=None):
-        if value is None:
-            value = wids['energy_ev'].GetValue()
-        if 'wavelength' in self.wids:
-            self.wids['wavelength'].SetValue(PLANCK_HC/value, act=False)
-
-    def set_wavelength(self, event=None, value=None):
-        if value is None:        
-            value = wids['wavelength'].GetValue()
-        if 'energy_ev' in self.wids:
-            print("Set E from Ang =", value)
-            self.wids['energy_ev'].SetValue(PLANCK_HC/value, act=False)
+    def set_wavelength(self, w):
+        self.wids['wavelength'].SetLabel("%.6f" % w)
+        self.wids['energy_ev'].SetLabel("%.1f" % (PLANCK_HC/w))
 
     def onCopyAttr(self, name=None, event=None):
         # print("Copy ", name, event)
@@ -429,7 +457,7 @@ class XRD1DBrowserFrame(wx.Frame):
         if label is None and event is not None:
             label = str(event.GetString())
         if label not in self.datasets:
-            print('dataset not found ', label)
+            return
 
         self.current_label = label
         dset = self.datasets[label]
@@ -453,7 +481,8 @@ class XRD1DBrowserFrame(wx.Frame):
         self.wids['scale_method'].SetStringSelection(meth_desc)
         self.wids['auto_scale'].SetValue(dset.auto_scale)
         self.wids['scale'].SetValue(dset.scale)
-        self.wids['energy_ev'].SetValue(dset.energy*1000.0)
+        self.wids['energy_ev'].SetLabel("%.1f" % (dset.energy*1000.0))
+        self.wids['wavelength'].SetLabel("%.6f" % (PLANCK_HC/(dset.energy*1000.0)))
 
         self.wids['bkg_qwid'].SetValue(dset.bkg_qwid)
         self.wids['bkg_nsmooth'].SetValue(dset.bkg_nsmooth)
@@ -464,7 +493,6 @@ class XRD1DBrowserFrame(wx.Frame):
     def set_scale(self, event=None, value=-1.0):
         label = self.current_label
         if label not in self.datasets:
-            print('dataset not found ', label)
             return
         if value < 0:
             value = self.wids['scale'].GetValue()
@@ -473,7 +501,6 @@ class XRD1DBrowserFrame(wx.Frame):
     def auto_scale(self, event=None):
         label = self.current_label
         if label not in self.datasets:
-            print('dataset not found ', label)
             return
         dset = self.datasets[label]
         dset.auto_scale = self.wids['auto_scale'].IsChecked()
