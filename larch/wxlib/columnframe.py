@@ -17,14 +17,14 @@ import wx.lib.agw.flatnotebook as fnb
 from wxmplot import PlotPanel
 
 from wxutils import (SimpleText, FloatCtrl, GUIColors, Button, Choice,
-                     pack, Popup, Check, MenuItem, CEN, RIGHT, LEFT,
+                     TextCtrl, pack, Popup, Check, MenuItem, CEN, RIGHT, LEFT,
                      FRAMESTYLE, HLine, Font)
 
 import larch
 from larch import Group
 from larch.xafs.xafsutils import guess_energy_units
 from larch.utils.strutils import fix_varname, fix_filename, file2groupname
-from larch.io import look_for_nans,  guess_filereader, is_specfile
+from larch.io import look_for_nans,  guess_filereader, is_specfile, sum_fluor_channels
 from larch.utils.physical_constants import PLANCK_HC, DEG2RAD
 
 from . import FONTSIZE
@@ -42,77 +42,142 @@ CONV_OPS  = ('Lorenztian', 'Gaussian')
 DATATYPES = ('raw', 'xas')
 ENUNITS_TYPES = ('eV', 'keV', 'degrees', 'not energy')
 
-class AddColumnsFrame(wx.Frame):
-    """Add Column Labels for a larch grouop"""
-    def __init__(self, parent, group, on_ok=None):
+
+MULTICHANNEL_TITLE = """
+  Build Arrays for MultiChannel Fluorescence Data:
+  To allow for many dead-time-correction mehtods, Spectra for each Channe are built as:
+        ROI_Corrected = ROI * ICR /(OCR * LTIME)
+
+  Select the Number of Fluorescence Channels, the Step (usually 1) between columns for
+  ROI 1, 2, ..., NChans.  Set Bad Channels as a list of Channel numbers (start at 1).
+
+  Select columns for ROI (raw counts) and correction factors ICR, OCR, and LTIME for Channel 1.
+"""
+ROI_STEP_TOOLTIP =  """number of columns between ROI columns -- typically 1 if the columns are like
+   ROI_Ch1 ROI_Ch2 ROI_Ch3 ... ICR_Ch1 ICR_Ch2 ICR_Ch3 ... OCR_Ch1 OCR_Ch2 OCR_Ch3 ...
+
+but set to 3 if the columns are arranged as
+   ROI_Ch1 ICR_Ch1 OCR_Ch1 ROI_Ch2 ICR_Ch2 OCR_Ch2 ROI_Ch3 ICR_Ch3 OCR_Ch3 ...
+"""
+
+class MultiChannelFrame(wx.Frame):
+    """Manage MultiChannel Fluorescence Data"""
+    def __init__(self, parent, group, config=None, on_ok=None):
         self.parent = parent
         self.group = group
+        self.config = {'bad_chans': [], 'plot_chan': 1, 'nchans': 4, 'step': 1,
+                       'roi': '1.0', 'icr': '1.0', 'ocr': '1.0',
+                       'ltime': '1.0', 'i0': '1.0'}
+                       # 'out_choice': 'summed spectrum',
+        if config is not None:
+            self.config.update(config)
+        self.arrays = {}
         self.on_ok = on_ok
-        wx.Frame.__init__(self, None, -1, 'Add Selected Columns',
+        wx.Frame.__init__(self, None, -1, 'MultiChannel Fluorescence Data',
                           style=wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
 
         self.SetFont(Font(10))
         sizer = wx.GridBagSizer(2, 2)
         panel = scrolled.ScrolledPanel(self)
 
-        self.SetMinSize((550, 550))
+        self.SetMinSize((650, 425))
 
-        self.wids = {}
-
-        lab_aname = SimpleText(panel, label=' Save Array Name:')
-        lab_range = SimpleText(panel, label=' Use column index:')
-        lab_regex = SimpleText(panel, label=' Use column label:')
+        self.yarr_labels = [s for s in self.parent.yarr_labels]
 
         wids = self.wids = {}
 
-        wids['arrayname'] = wx.TextCtrl(panel, value='sum',   size=(175, -1))
-        wids['tc_nums']   = wx.TextCtrl(panel, value='1,3-10', size=(175, -1))
-        wids['tc_regex']  = wx.TextCtrl(panel, value='*fe*',  size=(175, -1))
+        multi_title = wx.StaticText(panel, label=MULTICHANNEL_TITLE, size=(500, 110))
 
-        savebtn   = Button(panel, 'Save',       action=self.onOK)
-        plotbtn   = Button(panel, 'Plot Sum',   action=self.onPlot)
-        sel_nums  = Button(panel, 'Select by Index',
-                           action=self.onSelColumns)
-        sel_re    = Button(panel, 'Select by Pattern',
-                           action=self.onSelRegex)
+        # wids['out_choice'] = wx.RadioBox(panel, -1, '',   wx.DefaultPosition, wx.DefaultSize,
+        # ['summed spectrum', 'per-channel spectra', 'both sum and per-channel'],
+        #                                  3, wx.RA_SPECIFY_COLS)
+        # wids['out_choice'].SetStringSelection(self.config['out_choice'])
+        # wids['out_choice'].Bind(wx.EVT_RADIOBOX, self.read_form)
+        for s in ('roi', 'icr', 'ocr', 'ltime'):
+            wids[s] = Choice(panel, choices=self.yarr_labels, action=self.read_form, size=(150, -1))
+            sel = self.config.get(s, '1.0')
+            if sel == '1.0':
+                wids[s].SetStringSelection(sel)
+            else:
+                wids[s].SetSelection(sel[0])
+            wids[f'{s}_txt'] = SimpleText(panel, label='<list of column labels>', size=(275, -1))
 
+        wids['i0'] = Choice(panel, choices=self.yarr_labels, action=self.read_form, size=(150, -1))
+        wids['i0'].SetToolTip("All Channels will be divided by the I0 array")
 
-        sizer.Add(lab_aname,         (0, 0), (1, 2), LEFT, 3)
-        sizer.Add(wids['arrayname'], (0, 2), (1, 1), LEFT, 3)
+        wids['i0'].SetStringSelection(self.parent.yarr2.GetStringSelection())
+        wids['roi'].SetStringSelection(self.parent.yarr1.GetStringSelection())
 
-        sizer.Add(plotbtn,         (0, 3), (1, 1), LEFT, 3)
-        sizer.Add(savebtn,         (0, 4), (1, 1), LEFT, 3)
+        wids['nchans']  = FloatCtrl(panel, value=self.config.get('nchans', 4),
+                                    precision=0, maxval=2000, minval=1, size=(50, -1),
+                                    action=self.read_form)
+        wids['bad_chans'] = TextCtrl(panel, value='', size=(175, -1), action=self.read_form)
+        if len(self.config.get('bad_chans', [])) > 0:
+               wids['bad_chans'].SetValue(', '.join(['%d' % c for c in bad_chans]))
+        wids['bad_chans'].SetToolTip("List Channels to skip, separated by commas or spaces")
+        wids['step']    = FloatCtrl(panel, value=self.config.get('step', 1), precision=0,
+                                    maxval=2000, minval=1, size=(50, -1), action=self.read_form)
+        wids['step'].SetToolTip(ROI_STEP_TOOLTIP)
 
-        sizer.Add(lab_range,       (1, 0), (1, 2), LEFT, 3)
-        sizer.Add(wids['tc_nums'], (1, 2), (1, 1), LEFT, 3)
-        sizer.Add(sel_nums,        (1, 3), (1, 2), LEFT, 3)
+        wids['plot_chan'] = FloatCtrl(panel, value=self.config.get('plot_chan', 1),
+                                      precision=0, maxval=2000, minval=1, size=(50, -1))
 
-        sizer.Add(lab_regex,        (2, 0), (1, 2), LEFT, 3)
-        sizer.Add(wids['tc_regex'], (2, 2), (1, 1), LEFT, 3)
-        sizer.Add(sel_re,           (2, 3), (1, 2), LEFT, 3)
+        wids['save_btn'] = Button(panel, 'Use this Sum of Channels',  action=self.onOK)
+        wids['plot_sum'] = Button(panel, 'Plot Sum of Channels',   action=self.onPlotSum)
+        wids['plot_all'] = Button(panel, 'Plot Each Channel', action=self.onPlotEach)
+        wids['plot_this'] = Button(panel, 'Plot ROI and DeadTime Correction For Channel', action=self.onPlotThis)
 
-        sizer.Add(HLine(panel, size=(550, 2)), (3, 0), (1, 5), LEFT, 3)
-        ir = 4
+        def tlabel(t):
+            return SimpleText(panel, label=t)
 
-        cind = SimpleText(panel, label=' Index ')
-        csel = SimpleText(panel, label=' Select ')
-        cname = SimpleText(panel, label=' Array Name ')
+        sizer.Add(multi_title,       (0, 0), (2, 5), LEFT, 3)
+        ir = 2
+        sizer.Add(HLine(panel, size=(550, 3)), (ir, 0), (1, 5), LEFT, 3)
 
-        sizer.Add(cind,  (ir, 0), (1, 1), LEFT, 3)
-        sizer.Add(csel,  (ir, 1), (1, 1), LEFT, 3)
-        sizer.Add(cname, (ir, 2), (1, 3), LEFT, 3)
+        ir += 1
+        sizer.Add(tlabel(' Number of Channels:'),   (ir, 0), (1, 1), LEFT, 3)
+        sizer.Add(wids['nchans'],                   (ir, 1), (1, 1), LEFT, 3)
+        sizer.Add(tlabel(' Step between Channels:'), (ir, 2), (1, 1), LEFT, 3)
+        sizer.Add(wids['step'],                     (ir, 3), (1, 1), LEFT, 3)
 
-        for i, name in enumerate(group.array_labels):
+        ir += 1
+        sizer.Add(tlabel(' Bad Channels :'),   (ir, 0), (1, 1), LEFT, 3)
+        sizer.Add(wids['bad_chans'],           (ir, 1), (1, 2), LEFT, 3)
+
+        ir += 1
+        sizer.Add(HLine(panel, size=(550, 3)), (ir, 0), (1, 5), LEFT, 3)
+
+        ir += 1
+        sizer.Add(tlabel(' Signal '),  (ir, 0), (1, 1), LEFT, 3)
+        sizer.Add(tlabel(' Array for Chan #1 '),  (ir, 1), (1, 1), LEFT, 3)
+        sizer.Add(tlabel(' Array Labels used for all Channels '),  (ir, 2), (1, 3), LEFT, 3)
+
+        for s in ('roi', 'icr', 'ocr', 'ltime'):
             ir += 1
-            cind = SimpleText(panel, label='  %i ' % (i+1))
-            cname = SimpleText(panel, label=' %s ' % name)
-            csel = Check(panel, label='', default=False)
+            sizer.Add(tlabel(f' {s.upper()} #1 : '), (ir, 0), (1, 1), LEFT, 3)
+            sizer.Add(wids[s],               (ir, 1), (1, 1), LEFT, 3)
+            sizer.Add(wids[f'{s}_txt'],      (ir, 2), (1, 3), LEFT, 3)
 
-            self.wids["col%d" % i] = csel
+        ir += 1
+        sizer.Add(tlabel(' I0 : '),  (ir, 0), (1, 1), LEFT, 3)
+        sizer.Add(wids['i0'],        (ir, 1), (1, 1), LEFT, 3)
 
-            sizer.Add(cind,  (ir, 0), (1, 1), LEFT, 3)
-            sizer.Add(csel,  (ir, 1), (1, 1), LEFT, 3)
-            sizer.Add(cname, (ir, 2), (1, 3), LEFT, 3)
+        ir += 1
+        sizer.Add(HLine(panel, size=(550, 3)), (ir, 0), (1, 5), LEFT, 3)
+
+        ir += 1
+        sizer.Add(wids['plot_sum'],  (ir, 0), (1, 1), LEFT, 3)
+        sizer.Add(wids['plot_all'],  (ir, 1), (1, 3), LEFT, 3)
+
+        ir += 1
+        sizer.Add(wids['plot_this'], (ir, 0), (1, 2), LEFT, 3)
+        sizer.Add(tlabel(' Channel:'),  (ir, 2), (1, 1), LEFT, 3)
+        sizer.Add(wids['plot_chan'],     (ir, 3), (1, 1), LEFT, 3)
+        ir += 1
+        sizer.Add(HLine(panel, size=(550, 2)), (ir, 0), (1, 5), LEFT, 3)
+        ir += 1
+        sizer.Add(wids['save_btn'],   (ir, 0), (1, 3), LEFT, 3)
+        # sizer.Add(wids['out_choice'], (ir, 1), (1, 3), LEFT, 3)
 
         pack(panel, sizer)
         panel.SetupScrolling()
@@ -125,83 +190,139 @@ class AddColumnsFrame(wx.Frame):
         self.Raise()
 
     def make_sum(self):
-        sel =[]
-        for name, wid in self.wids.items():
-            if name.startswith('col') and wid.IsChecked():
-                sel.append(int(name[3:]))
-        self.selected_columns = np.array(sel)
-        narr, npts = self.group.raw.data.shape
-        ydat = np.zeros(npts, dtype=np.float64)
-        for i in sel:
-            ydat += self.group.raw.data[i, :]
-        return ydat
+        return sum_fluor_channels(self.group, self.config['roi'],
+                                  icr=self.config['icr'],
+                                  ocr=self.config['ocr'],
+                                  ltime=self.config['ltime'],
+                                  add_data=False)
 
-    def get_label(self):
-        label_in = self.wids["arrayname"].GetValue()
-        label = fix_varname(label_in)
-        if label in self.group.array_labels:
-            count = 1
-            while label in self.group.array_labels and count < 1000:
-                label = "%s_%d" % (label, count)
-                count +=1
-        if label != label_in:
-            self.wids["arrayname"].SetValue(label)
-        return label
+    def get_en_i0(self):
+        en = self.group.xdat
+        i0 = 1.0
+        if self.config['i0'] != '1.0':
+            i0 = self.group.data[self.config['i0'], :]
+        return en, i0
+
+    def read_arrays(self, pchan):
+        def get_array(name, pchan, default=1.0):
+            out = default
+            if self.config[name] != '1.0':
+                ix = self.config[name][pchan-1]
+                if ix > 0:
+                    out = self.group.data[ix, :]
+            return out
+        roi = get_array('roi', pchan, default=None)
+        icr = get_array('icr', pchan)
+        ocr = get_array('ocr', pchan)
+        ltime = get_array('ltime', pchan)
+        return roi, icr*ocr/ltime
 
     def onOK(self, event=None):
-        ydat = self.make_sum()
-        npts = len(ydat)
-        label = self.get_label()
-
+        self.read_form()
+        label, sum = self.make_sum()
+        npts = len(sum)
         self.group.array_labels.append(label)
-        new = np.append(self.group.raw.data, ydat.reshape(1, npts), axis=0)
+        new = np.append(self.group.raw.data, sum.reshape(1, npts), axis=0)
         self.group.raw.data = new
-        self.on_ok(label, self.selected_columns)
+        if callable(self.on_ok):
+            self.on_ok(label, self.config)
+        self.Destroy()
 
-    def onPlot(self, event=None):
-        ydat = self.make_sum()
-        xdat = self.group.xdat
-        label = self.get_label()
-        label = "%s (not saved)" % label
-        popts = dict(marker='o', markersize=4, linewidth=1.5, ylabel=label,
-                     label=label, xlabel=self.group.plot_xlabel)
-        self.parent.plotpanel.plot(xdat, ydat, **popts)
+    def onPlotSum(self, event=None):
+        self.read_form()
+        en, i0 = self.get_en_i0()
+        label, sum = self.make_sum()
+        popts = dict(marker=None, markersize=0, linewidth=2.5,
+                     show_legend=True, ylabel=label, label=label,
+                     xlabel='Energy (eV)')
+        self.parent.plotpanel.plot(en, sum/i0, new=True, **popts)
 
+    def onPlotEach(self, event=None):
+        self.read_form()
+        new = True
+        en, i0 = self.get_en_i0()
+        popts = dict(marker=None, markersize=0, linewidth=2.5,
+                     show_legend=True,  xlabel='Energy (eV)',
+                     ylabel=f'Corrected Channels')
 
-    def onSelColumns(self, event=None):
-        pattern = self.wids['tc_nums'].GetValue().split(',')
-        sel = []
-        for part in pattern:
-            if '-' in part:
-                start, stop = part.split('-')
-                try:
-                    istart = int(start)
-                except ValueError:
-                    istart = 1
-                try:
-                    istop = int(stop)
-                except ValueError:
-                    istop = len(self.group.array_labels) + 1
+        nused = 0
+        for pchan in range(1, self.config['nchans']+1):
+            roi, dtc = self.read_arrays(pchan)
+            if roi is not None:
+                popts['label'] = f'Chan{pchan} Corrected'
+                if new:
+                    self.parent.plotpanel.plot(en, roi*dtc/i0, new=True, **popts)
+                    new = False
+                else:
+                    self.parent.plotpanel.oplot(en, roi*dtc/i0, **popts)
 
-                sel.extend(range(istart-1, istop))
+    def onPlotThis(self, event=None):
+        self.read_form()
+        en, i0 = self.get_en_i0()
+        pchan = self.config['plot_chan']
+        roi, dtc = self.read_arrays(pchan)
+        if roi is None:
+            return
+        ylabel = self.wids['roi'].GetStringSelection()
+        popts = dict(marker=None, markersize=0, linewidth=2.5, show_legend=True,
+                     ylabel=f'Chan{pchan}', xlabel='Energy (eV)',
+                     label=f'Chan{pchan} Raw')
+
+        self.parent.plotpanel.plot(en, roi/i0, new=True, **popts)
+        popts['label'] = f'Chan{pchan} Corrected'
+        self.parent.plotpanel.oplot(en, roi*dtc/i0, **popts)
+
+    def read_form(self, event=None, value=None, **kws):
+        try:
+            wids = self.wids
+            nchans = int(wids['nchans'].GetValue())
+            step = int(wids['step'].GetValue())
+            badchans = wids['bad_chans'].GetValue().replace(',', ' ').strip()
+        except:
+            return
+
+        bad_channels = []
+        if len(badchans) > 0:
+            try:
+                bad_channels = [int(s) for s in badchans.split()]
+                wids['bad_chans'].SetBackgroundColour('#FFFFFF')
+            except:
+                bad_channels = []
+                wids['bad_chans'].SetBackgroundColour('#F0B03080')
+
+        pchan = int(wids['plot_chan'].GetValue())
+        if pchan <= nchans:
+            wids['plot_chan'].SetBackgroundColour('#FFFFFF')
+            self.config['plot_chan'] = pchan
+        else:
+            wids['plot_chan'].SetBackgroundColour('#F0B03080')
+            self.config['plot_chan'] = 1
+
+        # self.config['out_choice'] = wids['out_choice'].GetStringSelection()
+        self.config['bad_chans'] = bad_channels
+        self.config['nchans'] = nchans
+        self.config['step'] = step
+        self.config['i0'] = wids['i0'].GetSelection()
+        if wids['i0'].GetStringSelection() in ('1.0', ''):
+            self.config['i0'] = '1.0'
+
+        for s in ('roi', 'icr', 'ocr', 'ltime'):
+            lab = wids[s].GetStringSelection()
+            ilab = wids[s].GetSelection()
+            if lab in ('1.0', ''):
+                wids[f"{s}_txt"].SetLabel(lab)
+                wids[f"{s}_txt"].SetToolTip(lab)
+                self.config[s] = '1.0'
             else:
-                try:
-                    sel.append(int(part)-1)
-                except:
-                    pass
-
-        for name, wid in self.wids.items():
-            if name.startswith('col'):
-                wid.SetValue(int(name[3:]) in sel)
-
-    def onSelRegex(self, event=None):
-        pattern = self.wids['tc_regex'].GetValue().replace('*', '.*')
-        pattern = pattern.replace('..*', '.*')
-        sel =[]
-        for i, name in enumerate(self.group.array_labels):
-            sel = re.search(pattern, name, flags=re.IGNORECASE) is not None
-            self.wids["col%d" % i].SetValue(sel)
-
+                chans = [ilab + i*step for i in range(nchans)]
+                labs = []
+                for i in range(nchans):
+                    if (i+1) in bad_channels:
+                        chans[i] = -1
+                    else:
+                        labs.append(self.group.array_labels[chans[i]])
+                wids[f"{s}_txt"].SetLabel(', '.join(labs))
+                self.config[s] = chans
 
 class EditColumnFrame(wx.Frame) :
     """Edit Column Labels for a larch grouop"""
@@ -356,7 +477,7 @@ class ColumnDataFileFrame(wx.Frame) :
                               ypop='', monod=3.1355316, en_units=en_units,
                               yerror='constant', yerr_val=1, yerr_arr=None,
                               yrpop='', yrop='/', yref1='', yref2='',
-                              has_yref=False)
+                              has_yref=False, multicolumn_config={})
         if last_array_sel is not None:
             self.array_sel.update(last_array_sel)
 
@@ -400,7 +521,7 @@ class ColumnDataFileFrame(wx.Frame) :
         # title row
         title = subtitle(message, colour=self.colors.title)
 
-        yarr_labels = self.yarr_labels = arr_labels + ['1.0', '0.0', '']
+        yarr_labels = self.yarr_labels = arr_labels + ['1.0', '']
         xarr_labels = self.xarr_labels = arr_labels + ['_index']
 
         self.xarr   = Choice(panel, choices=xarr_labels, action=self.onXSelect, size=(150, -1))
@@ -480,6 +601,13 @@ class ColumnDataFileFrame(wx.Frame) :
         self.yref1.SetSelection(iyr1sel)
         self.yref2.SetSelection(iyr2sel)
 
+        self.wid_multicol = wx.RadioBox(panel, -1, '', wx.DefaultPosition, wx.DefaultSize,
+                                        ['use single data columns', 'add multi-column fluorescence'], 2,
+                                        wx.RA_SPECIFY_COLS)
+        self.wid_multicol.Bind(wx.EVT_RADIOBOX, self.onUseMultiColumn)
+        is_multicol = len(self.array_sel.get('multicolumn_config', {})) > 0
+        self.wid_multicol.SetSelection(1 if is_multicol else 0)
+
         self.wid_filename = wx.TextCtrl(panel, value=fix_filename(group.filename),
                                          size=(250, -1))
         self.wid_groupname = wx.TextCtrl(panel, value=group.groupname,
@@ -498,12 +626,9 @@ class ColumnDataFileFrame(wx.Frame) :
         _ok    = Button(bpanel, 'OK', action=self.onOK)
         _cancel = Button(bpanel, 'Cancel', action=self.onCancel)
         _edit   = Button(bpanel, 'Edit Array Names', action=self.onEditNames)
-        _add    = Button(bpanel, 'Select Columns to Sum', action=self.onAddColumns)
-
         bsizer.Add(_ok)
         bsizer.Add(_cancel)
         bsizer.Add(_edit)
-        bsizer.Add(_add)
         _ok.SetDefault()
         pack(bpanel, bsizer)
 
@@ -527,6 +652,7 @@ class ColumnDataFileFrame(wx.Frame) :
 
         ir += 1
         sizer.Add(subtitle(' Y [ \u03BC(E) ] Array:'),   (ir, 0), (1, 2), LEFT, 0)
+        sizer.Add(self.wid_multicol, (ir, 2), (1, 3), LEFT, 1)
         ir += 1
         sizer.Add(ylab,       (ir, 0), (1, 1), LEFT, 0)
         sizer.Add(self.ypop,  (ir, 1), (1, 1), LEFT, 0)
@@ -621,6 +747,12 @@ class ColumnDataFileFrame(wx.Frame) :
         self.Raise()
         self.onUpdate()
 
+    def onUseMultiColumn(self, event=None):
+        if 'multi' in self.wid_multicol.GetStringSelection().lower():
+            self.show_subframe('multicol', MultiChannelFrame,
+                               group=self.workgroup,
+                               on_ok=self.set_multichannel_info)
+
     def read_column_file(self, path):
         """read column file, generally as initial read"""
         parent, filename = os.path.split(path)
@@ -701,17 +833,12 @@ class ColumnDataFileFrame(wx.Frame) :
             self.subframes[name].Show()
             self.subframes[name].Raise()
 
-
-    def onAddColumns(self, event=None):
-        self.show_subframe('addcol', AddColumnsFrame,
-                           group=self.workgroup,
-                           on_ok=self.add_columns)
-
-    def add_columns(self, label, selection):
+    def set_multichannel_info(self, label, config=None, **kws):
         new_labels = self.workgroup.array_labels
         self.set_array_labels(new_labels)
-        self.yarr1.SetStringSelection(new_labels[-1])
-        self.extra_sums[label] = selection
+        self.yarr1.SetStringSelection(label)
+        self.yarr1.SetStringSelection(label)
+        self.array_sel['multicolumn_config'] = config
         self.onUpdate()
 
     def onEditNames(self, evt=None):
@@ -721,7 +848,7 @@ class ColumnDataFileFrame(wx.Frame) :
 
     def set_array_labels(self, arr_labels):
         self.workgroup.array_labels = arr_labels
-        yarr_labels = self.yarr_labels = arr_labels + ['1.0', '0.0', '']
+        yarr_labels = self.yarr_labels = arr_labels + ['1.0', '']
         xarr_labels = self.xarr_labels = arr_labels + ['_index']
         def update(wid, choices):
             curstr = wid.GetStringSelection()
@@ -769,6 +896,11 @@ class ColumnDataFileFrame(wx.Frame) :
                 "{group}.path = '{path}'",
                 "{group}.is_frozen = False"]
 
+        fconf = self.array_sel.get('multicolumn_config', {})
+        if len(fconf) > 0:
+            sumcmd = "sum_fluor_channels({{group}}, {roi}, icr={icr}, ocr={ocr}, ltime={ltime})"
+            buff.append(sumcmd.format(**fconf))
+
         for label, selection in self.extra_sums.items():
             buff.append("{group}.array_labels.append('%s')" % label)
             buff.append("_tmparr = {group}.data[%s, :].sum(axis=0)" % repr(selection))
@@ -801,6 +933,8 @@ class ColumnDataFileFrame(wx.Frame) :
             buff.append("sort_xafs({group}, overwrite=True, fix_repeats=True)")
         else:
             buff.append("{group}.scale = 1./({group}.ydat.ptp()+1.e-16)")
+
+
 
         array_desc = {}
         array_desc['xdat'] = self.workgroup.plot_xlabel
@@ -841,6 +975,7 @@ class ColumnDataFileFrame(wx.Frame) :
             buff.append("# end reference group")
         else:
             buff.append("{group}.energy_ref = '%s'" % (groupname))
+
 
         script = "\n".join(buff)
 
@@ -926,7 +1061,6 @@ class ColumnDataFileFrame(wx.Frame) :
                 self.monod_val.Enable()
             else:
                 self.en_units.SetSelection(0)
-
 
     def onEnUnitsSelect(self, evt=None):
         self.monod_val.Enable(self.en_units.GetStringSelection().startswith('deg'))
@@ -1125,12 +1259,13 @@ class ColumnDataFileFrame(wx.Frame) :
             workgroup.yrlabel = yrlabel
 
         self.expressions = exprs
-        self.array_sel = dict(xarr=xname, ypop=ypop, yop=yop, yarr1=yname1,
-                              yarr2=yname2, monod=monod, en_units=en_units,
-                              yerror=yerr_op, yerr_val=yerr_val,
-                              yerr_arr=yerr_arr, yrpop=yrpop, yrop=yrop,
-                              yref1=yrname1, yref2=yrname2,
-                              has_yref=has_yref)
+
+        self.array_sel.update(dict(xarr=xname, ypop=ypop, yop=yop,
+                                   yarr1=yname1, yarr2=yname2, monod=monod,
+                                   en_units=en_units, yerror=yerr_op,
+                                   yerr_val=yerr_val, yerr_arr=yerr_arr,
+                                   yrpop=yrpop, yrop=yrop, yref1=yrname1,
+                                   yref2=yrname2, has_yref=has_yref))
 
         try:
             npts = min(len(workgroup.xdat), len(workgroup.ydat))
