@@ -116,7 +116,7 @@ class DeadtimeCorrectionFrame(wx.Frame):
         wids['plot_chan'] = FloatSpin(panel, value=self.config.get('plot_chan', 1),
                                       digits=0, increment=1, max_val=MAXCHANS, min_val=1, size=(50, -1),
                                       action=self.onPlotThis)
-        
+
         wids['plot_this'] = Button(panel, 'Plot ROI + Correction For Channel', action=self.onPlotThis)
         wids['plot_all'] = Button(panel, 'Plot All Channels', action=self.onPlotEach)
         wids['plot_sum'] = Button(panel, 'Plot Sum of Channels',   action=self.onPlotSum)
@@ -182,12 +182,6 @@ class DeadtimeCorrectionFrame(wx.Frame):
         self.Show()
         self.Raise()
 
-    def make_sum(self):
-        return sum_fluor_channels(self.group, self.config['roi'],
-                                  icr=self.config['icr'],
-                                  ocr=self.config['ocr'],
-                                  ltime=self.config['ltime'],
-                                  add_data=False)
     def get_en_i0(self):
         en = self.group.xdat
         i0 = 1.0
@@ -218,11 +212,16 @@ class DeadtimeCorrectionFrame(wx.Frame):
     def onPlotSum(self, event=None):
         self.read_form()
         en, i0 = self.get_en_i0()
-        label, sum = self.make_sum()
-        popts = dict(marker=None, markersize=0, linewidth=2.5,
-                     show_legend=True, ylabel=label, label=label,
-                     xlabel='Energy (eV)')
-        self.parent.plotpanel.plot(en, sum/i0, new=True, **popts)
+        label, sum = sum_fluor_channels(self.group, self.config['roi'],
+                                        icr=self.config['icr'],
+                                        ocr=self.config['ocr'],
+                                        ltime=self.config['ltime'],
+                                        add_data=False)
+        if sum is not None:
+            popts = dict(marker=None, markersize=0, linewidth=2.5,
+                         show_legend=True, ylabel=label, label=label,
+                         xlabel='Energy (eV)')
+            self.parent.plotpanel.plot(en, sum/i0, new=True, **popts)
 
     def onPlotEach(self, event=None):
         self.read_form()
@@ -267,7 +266,7 @@ class DeadtimeCorrectionFrame(wx.Frame):
             self.wids['plot_chan'].SetValue(pchan)
         except:
             pass
-        
+
     def read_form(self, event=None, value=None, **kws):
         try:
             wids = self.wids
@@ -316,7 +315,7 @@ class DeadtimeCorrectionFrame(wx.Frame):
                 wids[f"{s}_txt"].SetLabel(', '.join(labs))
                 self.config[s] = chans
         # print("READ FORM ", self.config)
-        
+
 
 class EditColumnFrame(wx.Frame) :
     """Edit Column Labels for a larch grouop"""
@@ -477,7 +476,7 @@ class ColumnDataFileFrame(wx.Frame) :
                               ypop='', monod=3.1355316, en_units=en_units,
                               yerror='constant', yerr_val=1, yerr_arr=None,
                               yrpop='', yrop='/', yref1='', yref2='',
-                              has_yref=False, dtc_config={}, multi_cols={})
+                              has_yref=False, dtc_config={}, multicol_config={})
         if last_array_sel is not None:
             self.array_sel.update(last_array_sel)
 
@@ -622,7 +621,7 @@ class ColumnDataFileFrame(wx.Frame) :
         _dtc    = Button(bpanel, 'Sum MED Fluor Data', action=self.onDTC)
         _multi  = Button(bpanel, 'Select Multilple Columns',  action=self.onDTC)
         _edit.SetToolTip('Change the current Column Names')
-        _dtc.SetToolTip('Manage summing and deadtime-corrections for multi-element fluorescence data')        
+        _dtc.SetToolTip('Manage summing and deadtime-corrections for multi-element fluorescence data')
         _multi.SetToolTip('Select Multiple Columns to import together')
         bsizer.Add(_ok)
         bsizer.Add(_cancel)
@@ -743,46 +742,45 @@ class ColumnDataFileFrame(wx.Frame) :
             self.statusbar.SetStatusText(statusbar_fields[i], i)
 
         self.set_energy_units()
-        if len(self.array_sel.get('dtc_config', {})) > 0:
-            print('Array DTC_config: ', self.array_sel['dtc_config'])
-            self.show_subframe('dtc_conf', DeadtimeCorrectionFrame,
-                               group=self.workgroup,
-                               config=self.array_sel['dtc_config'],
-                               on_ok=self.onDTC_OK)
-        
+        dtc_conf = self.array_sel.get('dtc_config', {})
+        if len(dtc_conf) > 0:
+            self.onDTC_OK(dtc_conf, update=False)
+
         self.Show()
         self.Raise()
         self.onUpdate()
 
     def onDTC(self, event=None):
         self.show_subframe('dtc_conf', DeadtimeCorrectionFrame,
-                           config=self.array_sel['dtc_config'],                           
+                           config=self.array_sel['dtc_config'],
                            group=self.workgroup,
                            on_ok=self.onDTC_OK)
 
-    def onDTC_OK(self, config, **kws):
+    def onDTC_OK(self, config, update=True, **kws):
         label, sum = sum_fluor_channels(self.workgroup, config['roi'],
                                         icr=config['icr'],
                                         ocr=config['ocr'],
                                         ltime=config['ltime'],
                                         add_data=False)
-        
+        if sum is None:
+            return
         self.workgroup.array_labels.append(label)
         self.set_array_labels(self.workgroup.array_labels)
         npts = len(sum)
         new = np.append(self.workgroup.raw.data, sum.reshape(1, npts), axis=0)
         self.workgroup.raw.data = new[()]
-        self.workgroup.data = new[()]        
+        self.workgroup.data = new[()]
         self.yarr1.SetStringSelection(label)
         self.array_sel['dtc_config'] = config
-        self.onUpdate()
+        if update:
+            self.onUpdate()
 
     def onMultiColumn(self, event=None):
         self.show_subframe('multi_cols', DeadtimeCorrectionFrame,
-                           config=self.array_sel['multi_cols'],
+                           config=self.array_sel['multicol_config'],
                            group=self.workgroup,
                            on_ok=self.set_dtc_config)
-        
+
     def read_column_file(self, path):
         """read column file, generally as initial read"""
         parent, filename = os.path.split(path)
@@ -919,10 +917,10 @@ class ColumnDataFileFrame(wx.Frame) :
                 "{group}.path = '{path}'",
                 "{group}.is_frozen = False"]
 
-        fconf = self.array_sel.get('dtc_config', {})
-        if len(fconf) > 0:
+        dtc_conf = self.array_sel.get('dtc_config', {})
+        if len(dtc_conf) > 0:
             sumcmd = "sum_fluor_channels({{group}}, {roi}, icr={icr}, ocr={ocr}, ltime={ltime})"
-            buff.append(sumcmd.format(**fconf))
+            buff.append(sumcmd.format(**dtc_conf))
 
         for label, selection in self.extra_sums.items():
             buff.append("{group}.array_labels.append('%s')" % label)
@@ -998,6 +996,9 @@ class ColumnDataFileFrame(wx.Frame) :
             buff.append("# end reference group")
         else:
             buff.append("{group}.energy_ref = '%s'" % (groupname))
+
+        multi_conf = self.array_sel.get('multicol_config', {})
+        print("MULTI CONF ", multi_conf)
 
 
         script = "\n".join(buff)
