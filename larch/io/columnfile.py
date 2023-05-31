@@ -192,15 +192,19 @@ def sum_fluor_channels(dgroup, roi, icr=None, ocr=None, ltime=None, label=None,
     if add_data is True, the ndarray will also be appended to `dgroup.data,
     and the label will be appended to dgroup.array_labels
 
+
     Notes
     ------
     1.  The output array will be  Sum[ roi*icr/(ocr*ltime) ]
-    2.  The default label will be like the array label for the first ROI + 'SumN'
+    2.  The default label will be like the array label for the 'dtcN' + first ROI
     3.  icr, ocr, or ltime can be `None`, '1.0', '-1', or '1' to mean '1.0' or
         arrays of indices for the respective components: must be the same lenght as roi
 
     4.  an array index of -1 will indicate 'bad channel' and be skipped for ROI
         or set to 1.0 for icr, ocr, or ltime
+
+    5. if the list of arrays in roi, icr, ocr, or ltime are otherwise out-of-range,
+       the returned (label, data) will be (None, None)
 
     """
     nchans = len(roi)
@@ -213,35 +217,47 @@ def sum_fluor_channels(dgroup, roi, icr=None, ocr=None, ltime=None, label=None,
     if len(ltime) != nchans or len(icr) != nchans or len(ocr) != nchans:
         raise Value("arrays of indices for for roi, icr, ocr, and ltime must be the same length")
 
-    sum = None
+    narr, npts = dgroup.data.shape
     nused = 0
+    sum = 0.0
     olabel = None
+    def get_data(arr, idx):
+        iarr = arr[idx]
+        if iarr < 0:
+            return iarr, 1.0
+        if iarr > narr-1:
+            return None, None
+        return iarr, dgroup.data[iarr, :]
+
     for pchan in range(nchans):
         droi = dicr = docr = dltime = 1.0
-        iroi = roi[pchan]
-        if iroi > 0:
-            droi = dgroup.data[iroi, :]
+        iarr, droi = get_data(roi, pchan)
+        if isinstance(droi, np.ndarray):
             if olabel is None:
-                olabel = dgroup.array_labels[iroi]
-        else:
+                olabel = dgroup.array_labels[iarr]
+        elif iarr is None:
+            return (None, None)
+        else:  # index of -1 here means "skip"
             continue
-        iicr = icr[pchan]
-        if iicr > 0:
-            dicr = dgroup.data[iicr, :]
-        iocr = ocr[pchan]
-        if iocr > 0:
-            docr = dgroup.data[iocr, :]
-        iltime = ltime[pchan]
-        if iltime> 0:
-            dltime = dgroup.data[iltime, :]
-        if sum is None:
-            sum = droi*dicr/(docr*dltime)
-        else:
-            sum += droi*dicr/(docr*dltime)
+
+        iarr, dicr = get_data(icr, pchan)
+        if iarr is None: return (None, None)
+
+        iarr, docr = get_data(ocr, pchan)
+        if iarr is None:  return (None, None)
+
+        iarr, docr = get_data(ocr, pchan)
+        if iarr is None:  return (None, None)
+
+        iarr, dltime= get_data(ltime, pchan)
+        if iarr is None:  return (None, None)
+
+        sum += droi*dicr/(docr*dltime)
         nused += 1
+
     if label is None:
-        if olabel is None: olable = 'ROI'
-        label = olabel = f'{olabel}_sum{nused}'
+        if olabel is None: olabel = 'ROI'
+        label = olabel = f'dtc{nused}_{olabel}'
         n  = 1
         while label in dgroup.array_labels:
             n += 1
@@ -249,7 +265,7 @@ def sum_fluor_channels(dgroup, roi, icr=None, ocr=None, ltime=None, label=None,
     if add_data:
         dgroup.array_labels.append(label)
         dgroup.data = np.append(dgroup.data, sum.reshape(1, len(sum)), axis=0)
-    return label, sum
+    return (label, sum)
 
 
 
