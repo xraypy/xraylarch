@@ -9,6 +9,7 @@ from copy import deepcopy
 import wx
 
 import larch
+from larch import Group, Journal, Entry
 from larch.larchlib import read_config, save_config
 from larch.utils import (group2dict, unique_name, fix_varname, get_cwd,
                          asfloat, get_sessionid)
