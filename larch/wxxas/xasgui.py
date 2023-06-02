@@ -252,14 +252,13 @@ class XASFrame(wx.Frame):
             version_thread = Thread(target=version_checker)
             version_thread.start()
 
-        self.last_array_sel_col = {}
-        self.last_array_sel_spec = {}
+        self.last_col_config = {}
+        self.last_spec_config = {}
         self.last_session_file = None
         self.last_session_read = None
         self.last_athena_file = None
         self.paths2read = []
         self.current_filename = filename
-        self.extra_sums = None
         title = "Larch XAS GUI: XAS Visualization and Analysis"
 
         self.larch_buffer = parent
@@ -871,7 +870,9 @@ before clearing"""
             fname = self.controller.filelist.GetStringSelection()
         ogroup = self.controller.get_group(fname)
         ngroup = self.controller.copy_group(fname)
-        self.onNewGroup(ngroup, journal=ogroup.journal)
+        self.install_group(ngroup.groupname, ngroup.filename, source=None,
+                           overwrite=False, journal=ogroup.journal)
+        self.ShowFile(groupname=ngroup.groupname)
 
     def onGroupJournal(self, event=None):
         dgroup = self.controller.get_group()
@@ -1122,18 +1123,18 @@ before clearing"""
         if not shown:
             self.subframes[name] = frameclass(self, **opts)
 
-    def onSelectColumns(self, event=None):
+    def onUNUSEDSelectColumns(self, event=None):
         dgroup = self.controller.get_group()
-        self.show_subframe('readfile', ColumnDataFileFrame,
-                           group=dgroup.raw,
-                           last_array_sel=self.last_array_sel_col,
-                           _larch=self.larch,
-                           read_ok_cb=partial(self.onRead_OK,
-                                              overwrite=True))
+        # self.show_subframe('readfile', ColumnDataFileFrame,
+        #                    group=dgroup.raw,
+        #                    last_array_sel=self.last_array_sel_col,
+        #                   _larch=self.larch,
+        #                   read_ok_cb=partial(self.onRead_OK,
+        #                                      overwrite=True))
 
     def onCIFBrowse(self, event=None):
         self.show_subframe('cif_feff', CIFFrame, _larch=self.larch,
-                           path_importer=self.get_nbpage('feffit')[1].add_path)                           
+                           path_importer=self.get_nbpage('feffit')[1].add_path)
 
     def onStructureBrowse(self, event=None):
         self.show_subframe('structure_feff', Structure2FeffFrame, _larch=self.larch,
@@ -1193,20 +1194,22 @@ before clearing"""
             self.show_subframe('spec_import', SpecfileImporter,
                                filename=path,
                                _larch=self.larch_buffer.larchshell,
-                               last_array_sel=self.last_array_sel_spec,
+                               config=self.last_spec_config,
                                read_ok_cb=self.onReadSpecfile_OK)
         # check for Larch Session File
         elif is_larch_session_file(path):
             self.onLoadSession(path=path)
         # default to Column File
         else:
+            print(" column frame ", self.last_col_config)
+
             self.show_subframe('readfile', ColumnDataFileFrame,
                                filename=path,
                                _larch=self.larch_buffer.larchshell,
-                               last_array_sel = self.last_array_sel_col,
+                               config=self.last_col_config,
                                read_ok_cb=self.onRead_OK)
 
-    def onReadSpecfile_OK(self, script, path, scanlist, array_sel=None, extra_sums=None):
+    def onReadSpecfile_OK(self, script, path, scanlist, config=None):
         """read groups from a list of scans from a specfile"""
         self.larch.eval("_specfile = specfile('{path:s}')".format(path=path))
         dgroup = None
@@ -1215,8 +1218,8 @@ before clearing"""
         cur_panel = self.nb.GetCurrentPage()
         cur_panel.skip_plotting = True
         symtable = self.larch.symtable
-        if array_sel is not None:
-            self.last_array_sel_spec = array_sel
+        if config is not None:
+            self.last_spec_config = config
 
         for scan in scanlist:
             gname = fix_varname("{:s}{:s}".format(fname[:6], scan))
@@ -1228,7 +1231,7 @@ before clearing"""
                 gname = tname
 
             cur_panel.skip_plotting = (scan == scanlist[-1])
-            yname = self.last_array_sel_spec['yarr1']
+            yname = self.last_spec_config['yarr1']
             if first_group is None:
                 first_group = gname
             self.larch.eval(script.format(group=gname, specfile='_specfile',
@@ -1237,7 +1240,7 @@ before clearing"""
             displayname = f"{fname:s} scan{scan:s} {yname:s}"
             jrnl = {'source_desc': f"{fname:s}: scan{scan:s} {yname:s}"}
             dgroup = self.install_group(gname, displayname,
-                                        process=True, plot=False, extra_sums=extra_sums,
+                                        process=True, plot=False,
                                         source=displayname,
                                         journal=jrnl)
         cur_panel.skip_plotting = False
@@ -1248,7 +1251,7 @@ before clearing"""
         self.larch.eval('del _specfile')
 
 
-    def onReadAthenaProject_OK(self, path, namelist, extra_sums=None):
+    def onReadAthenaProject_OK(self, path, namelist):
         """read groups from a list of groups from an athena project file"""
         self.larch.eval("_prj = read_athena('{path:s}', do_fft=False, do_bkg=False)".format(path=path))
         dgroup = None
@@ -1274,8 +1277,7 @@ before clearing"""
             jrnl = {'source_desc': f'{spath:s}: {gname:s}'}
             self.larch.eval(script.format(group=gid, prjgroup=gname))
             dgroup = self.install_group(gid, label, process=True, plot=False,
-                                        source=path, journal=jrnl,
-                                        extra_sums=extra_sums)
+                                        source=path, journal=jrnl)
             groups_added.append(gid)
 
         for gid in groups_added:
@@ -1361,7 +1363,8 @@ before clearing"""
 
     def onRead_OK(self, script, path, groupname=None, filename=None,
                   ref_groupname=None, ref_filename=None,
-                  array_sel=None, overwrite=False, extra_sums=None, array_desc=None):
+                  config=None, overwrite=False, array_desc=None):
+
         """ called when column data has been selected and is ready to be used
         overwrite: whether to overwrite the current datagroup, as when
         editing a datagroup
@@ -1381,10 +1384,14 @@ before clearing"""
         if abort_read:
             return
 
-        self.larch.eval(script.format(group=groupname, path=path,
-                                      refgroup=ref_groupname))
-        if array_sel is not None:
-            self.last_array_sel_col = array_sel
+        config = copy.copy(config)
+        config['group'] = groupname
+        config['refgroup'] = ref_groupname
+        config['path'] = path
+        self.larch.eval(script.format(**config))
+
+        if config is not None:
+            self.last_col_config = config
 
         journal = {'source': path}
         refjournal = {}
@@ -1398,9 +1405,9 @@ before clearing"""
             journal['yerr'] = array_desc['yerr'].format(group=groupname)
 
         self.install_group(groupname, filename, overwrite=overwrite,
-                           extra_sums=extra_sums, source=path, journal=journal)
+                           source=path, journal=journal)
 
-        if ref_groupname is not None:
+        if config['has_yref'] and ref_groupname is not None:
             if 'xdat' in array_desc:
                 refjournal['xdat'] = array_desc['xdat'].format(group=groupname)
             if 'yref' in array_desc:
@@ -1408,7 +1415,6 @@ before clearing"""
                 refjournal['source_desc'] = f'{spath:s}: {ydx:s}'
             self.install_group(ref_groupname, ref_filename,
                                overwrite=overwrite,
-                               extra_sums=extra_sums,
                                source=path, journal=refjournal)
 
         # check if rebin is needed
@@ -1436,16 +1442,20 @@ before clearing"""
                 do_rebin = (wx.ID_YES == dlg.ShowModal())
                 dlg.Destroy()
         gname = None
+        has_yref = config.get('has_yref', False)
         for path in self.paths2read:
+            # print("Read Next File --- > ", path)
             path = path.replace('\\', '/')
             filedir, spath = os.path.split(path)
             gname = file2groupname(spath, symtable=self.larch.symtable)
-            ref_gname = ref_fname = None
-            if ref_groupname is not None:
-                ref_gname = gname + '_ref'
-                ref_fname = spath + '_ref'
-            self.larch.eval(script.format(group=gname, refgroup=ref_gname,
+
+            if has_yref:
+                ref_groupname = gname + '_ref'
+                ref_fname =     spath + '_ref'
+            self.larch.eval(script.format(group=gname, refgroup=ref_groupname,
                                           path=path))
+            if has_yref:
+                self.larch.eval(f"{gname}.energy_ref = {ref_gname}.energy_ref = '{ref_gname}'\n")
             if 'xdat' in array_desc:
                 journal['xdat'] = array_desc['xdat'].format(group=gname)
             if 'ydat' in array_desc:
@@ -1468,13 +1478,13 @@ before clearing"""
 
         if gname is not None:
             self.ShowFile(groupname=gname)
-
+        # print("#### DONE")
         self.write_message("read %s" % (spath))
         if do_rebin:
             RebinDataDialog(self, self.controller).Show()
 
     def install_group(self, groupname, filename, overwrite=False,
-                      process=True, rebin=False, plot=True, extra_sums=None,
+                      process=True, rebin=False, plot=True,
                       source=None, journal=None):
         """add groupname / filename to list of available data groups"""
 
@@ -1521,9 +1531,6 @@ before clearing"""
 
         cmds = ('\n'.join(cmds))
 
-        if extra_sums is not None:
-            self.extra_sums = extra_sums
-            # print("## need to handle extra_sums " , self.extra_sums)
         self.larch.eval(cmds)
         if needs_config:
             self.controller.init_group_config(thisgroup)
