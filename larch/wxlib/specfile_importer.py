@@ -39,167 +39,6 @@ CONV_OPS  = ('Lorenztian', 'Gaussian')
 XDATATYPES = ('raw', 'xas')
 ENUNITS_TYPES = ('eV', 'keV', 'degrees', 'not energy')
 
-class AddColumnsFrame(wx.Frame):
-    """Add Column Labels for a larch grouop"""
-    def __init__(self, parent, group, on_ok=None):
-        self.parent = parent
-        self.group = group
-        self.on_ok = on_ok
-        wx.Frame.__init__(self, None, -1, 'Add Selected Columns',
-                          style=wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
-
-        self.SetFont(Font(10))
-        sizer = wx.GridBagSizer(2, 2)
-        panel = scrolled.ScrolledPanel(self)
-
-        self.SetMinSize((550, 550))
-
-        self.wids = {}
-
-        lab_aname = SimpleText(panel, label=' Save Array Name:')
-        lab_range = SimpleText(panel, label=' Use column index:')
-        lab_regex = SimpleText(panel, label=' Use column label:')
-
-        wids = self.wids = {}
-
-        wids['arrayname'] = wx.TextCtrl(panel, value='sum',   size=(175, -1))
-        wids['tc_nums']   = wx.TextCtrl(panel, value='1,3-10', size=(175, -1))
-        wids['tc_regex']  = wx.TextCtrl(panel, value='*fe*',  size=(175, -1))
-
-        savebtn   = Button(panel, 'Save',       action=self.onOK)
-        plotbtn   = Button(panel, 'Plot Sum',   action=self.onPlot)
-        sel_nums  = Button(panel, 'Select by Index',
-                           action=self.onSelColumns)
-        sel_re    = Button(panel, 'Select by Pattern',
-                           action=self.onSelRegex)
-
-
-        sizer.Add(lab_aname,         (0, 0), (1, 2), LEFT, 3)
-        sizer.Add(wids['arrayname'], (0, 2), (1, 1), LEFT, 3)
-
-        sizer.Add(plotbtn,         (0, 3), (1, 1), LEFT, 3)
-        sizer.Add(savebtn,         (0, 4), (1, 1), LEFT, 3)
-
-        sizer.Add(lab_range,       (1, 0), (1, 2), LEFT, 3)
-        sizer.Add(wids['tc_nums'], (1, 2), (1, 1), LEFT, 3)
-        sizer.Add(sel_nums,        (1, 3), (1, 2), LEFT, 3)
-
-        sizer.Add(lab_regex,        (2, 0), (1, 2), LEFT, 3)
-        sizer.Add(wids['tc_regex'], (2, 2), (1, 1), LEFT, 3)
-        sizer.Add(sel_re,           (2, 3), (1, 2), LEFT, 3)
-
-        sizer.Add(HLine(panel, size=(550, 2)), (3, 0), (1, 5), LEFT, 3)
-        ir = 4
-
-        cind = SimpleText(panel, label=' Index ')
-        csel = SimpleText(panel, label=' Select ')
-        cname = SimpleText(panel, label=' Array Name ')
-
-        sizer.Add(cind,  (ir, 0), (1, 1), LEFT, 3)
-        sizer.Add(csel,  (ir, 1), (1, 1), LEFT, 3)
-        sizer.Add(cname, (ir, 2), (1, 3), LEFT, 3)
-
-        for i, name in enumerate(group.array_labels):
-            ir += 1
-            cind = SimpleText(panel, label='  %i ' % (i+1))
-            cname = SimpleText(panel, label=' %s ' % name)
-            csel = Check(panel, label='', default=False)
-
-            self.wids["col_%d" % i] = csel
-
-            sizer.Add(cind,  (ir, 0), (1, 1), LEFT, 3)
-            sizer.Add(csel,  (ir, 1), (1, 1), LEFT, 3)
-            sizer.Add(cname, (ir, 2), (1, 3), LEFT, 3)
-
-        pack(panel, sizer)
-        panel.SetupScrolling()
-
-        mainsizer = wx.BoxSizer(wx.VERTICAL)
-        mainsizer.Add(panel, 1, wx.GROW|wx.ALL, 1)
-
-        pack(self, mainsizer)
-        self.Show()
-        self.SetSize(self.GetBestSize())
-        self.Raise()
-
-    def make_sum(self):
-        sel =[]
-        for name, wid in self.wids.items():
-            if name.startswith('col_') and wid.IsChecked():
-                sel.append(int(name[4:]))
-        self.selected_columns = np.array(sel)
-        narr, npts = self.group.raw.data.shape
-        ydat = np.zeros(npts, dtype=np.float64)
-        for i in sel:
-            ydat += self.group.raw.data[i, :]
-        return ydat
-
-    def get_label(self):
-        label_in = self.wids["arrayname"].GetValue()
-        label = fix_varname(label_in)
-        if label in self.group.array_labels:
-            count = 1
-            while label in self.group.array_labels and count < 1000:
-                label = "%s_%d" % (label, count)
-                count +=1
-        if label != label_in:
-            self.wids["arrayname"].SetValue(label)
-        return label
-
-    def onOK(self, event=None):
-        ydat = self.make_sum()
-        npts = len(ydat)
-        label = self.get_label()
-        self.group.array_labels.append(label)
-        new = np.append(self.group.raw.data, ydat.reshape(1, npts), axis=0)
-        self.group.raw.data = new
-        self.on_ok(label, self.selected_columns)
-
-    def onPlot(self, event=None):
-        ydat = self.make_sum()
-        xdat = self.group.xdat
-        label = self.get_label()
-        label = "%s (not saved)" % label
-        popts = dict(marker='o', markersize=4, linewidth=1.5, ylabel=label,
-                     label=label, xlabel=self.group.plot_xlabel)
-        self.parent.plotpanel.plot(xdat, ydat, **popts)
-
-
-    def onSelColumns(self, event=None):
-        pattern = self.wids['tc_nums'].GetValue().split(',')
-        sel = []
-        for part in pattern:
-            if '-' in part:
-                start, stop = part.split('-')
-                try:
-                    istart = int(start)
-                except ValueError:
-                    istart = 1
-                try:
-                    istop = int(stop)
-                except ValueError:
-                    istop = len(self.group.array_labels) + 1
-
-                sel.extend(range(istart-1, istop))
-            else:
-                try:
-                    sel.append(int(part)-1)
-                except:
-                    pass
-
-        for name, wid in self.wids.items():
-            if name.startswith('col_'):
-                wid.SetValue(int(name[4:]) in sel)
-
-    def onSelRegex(self, event=None):
-        pattern = self.wids['tc_regex'].GetValue().replace('*', '.*')
-        pattern = pattern.replace('..*', '.*')
-        sel =[]
-        for i, name in enumerate(self.group.array_labels):
-            sel = re.search(pattern, name, flags=re.IGNORECASE) is not None
-            self.wids["col_%d" % i].SetValue(sel)
-
-
 class EditColumnFrame(wx.Frame) :
     """Edit Column Labels for a larch grouop"""
     def __init__(self, parent, group, on_ok=None):
@@ -315,7 +154,7 @@ class EditColumnFrame(wx.Frame) :
 
 class SpecfileImporter(wx.Frame) :
     """Column Data File, select columns"""
-    def __init__(self, parent, filename=None, last_array_sel=None, _larch=None,
+    def __init__(self, parent, filename=None, config=None, _larch=None,
                  read_ok_cb=None):
         if not is_specfile(filename):
             title = "Not a Specfile: %s" % filename
@@ -327,7 +166,6 @@ class SpecfileImporter(wx.Frame) :
         self.path = filename
         path, fname = os.path.split(filename)
         self.filename = fname
-        self.extra_sums = {}
         self._larch = _larch
         self.specfile = open_specfile(filename)
         self.scans = []
@@ -356,21 +194,23 @@ class SpecfileImporter(wx.Frame) :
 
         self.read_ok_cb = read_ok_cb
 
-        self.array_sel = dict(xarr=self.curscan.axis.lower(), yarr1=None, yarr2=None, yop='/',
-                              ypop='', monod=3.1355316, en_units='eV',
-                              yerror=YERR_OPS[0], yerr_val=1, yerr_arr=None)
+        self.config = dict(xarr=self.curscan.axis.lower(), yarr1=None,
+                           yarr2=None, yop='/', ypop='',
+                           monod=3.1355316, en_units='eV',
+                           yerror=YERR_OPS[0], yerr_val=1,
+                           yerr_arr=None)
 
-        if last_array_sel is not None:
-            self.array_sel.update(last_array_sel)
+        if config is not None:
+            self.config.update(config)
 
-        if self.array_sel['yarr2'] is None and 'i0' in arr_labels:
-            self.array_sel['yarr2'] = 'i0'
+        if self.config['yarr2'] is None and 'i0' in arr_labels:
+            self.config['yarr2'] = 'i0'
 
-        if self.array_sel['yarr1'] is None:
+        if self.config['yarr1'] is None:
             if 'itrans' in arr_labels:
-                self.array_sel['yarr1'] = 'itrans'
+                self.config['yarr1'] = 'itrans'
             elif 'i1' in arr_labels:
-                self.array_sel['yarr1'] = 'i1'
+                self.config['yarr1'] = 'i1'
 
         wx.Frame.__init__(self, None, -1, f'Build Arrays for {filename:s}',
                           style=FRAMESTYLE)
@@ -455,27 +295,27 @@ class SpecfileImporter(wx.Frame) :
         self.message = SimpleText(panel, '', font=Font(11),
                            colour=self.colors.title, style=LEFT)
 
-        self.ypop.SetStringSelection(self.array_sel['ypop'])
-        self.yop.SetStringSelection(self.array_sel['yop'])
-        self.monod_val.SetValue(self.array_sel['monod'])
+        self.ypop.SetStringSelection(self.config['ypop'])
+        self.yop.SetStringSelection(self.config['yop'])
+        self.monod_val.SetValue(self.config['monod'])
         self.monod_val.SetAction(self.onUpdate)
 
-        self.monod_val.Enable(self.array_sel['en_units'].startswith('deg'))
-        self.en_units.SetStringSelection(self.array_sel['en_units'])
-        self.yerr_op.SetStringSelection(self.array_sel['yerror'])
-        self.yerr_val.SetValue(self.array_sel['yerr_val'])
-        if '(' in self.array_sel['ypop']:
+        self.monod_val.Enable(self.config['en_units'].startswith('deg'))
+        self.en_units.SetStringSelection(self.config['en_units'])
+        self.yerr_op.SetStringSelection(self.config['yerror'])
+        self.yerr_val.SetValue(self.config['yerr_val'])
+        if '(' in self.config['ypop']:
             self.ysuf.SetLabel(')')
 
         ixsel, iysel, iy2sel, iyesel = 0, 1, len(yarr_labels)-1,  len(yarr_labels)-1
-        if self.array_sel['xarr'] in xarr_labels:
-            ixsel = xarr_labels.index(self.array_sel['xarr'])
-        if self.array_sel['yarr1'] in arr_labels:
-            iysel = arr_labels.index(self.array_sel['yarr1'])
-        if self.array_sel['yarr2'] in yarr_labels:
-            iy2sel = yarr_labels.index(self.array_sel['yarr2'])
-        if self.array_sel['yerr_arr'] in yarr_labels:
-            iyesel = yarr_labels.index(self.array_sel['yerr_arr'])
+        if self.config['xarr'] in xarr_labels:
+            ixsel = xarr_labels.index(self.config['xarr'])
+        if self.config['yarr1'] in arr_labels:
+            iysel = arr_labels.index(self.config['yarr1'])
+        if self.config['yarr2'] in yarr_labels:
+            iy2sel = yarr_labels.index(self.config['yarr2'])
+        if self.config['yerr_arr'] in yarr_labels:
+            iyesel = yarr_labels.index(self.config['yerr_arr'])
         self.xarr.SetSelection(ixsel)
         self.yarr1.SetSelection(iysel)
         self.yarr2.SetSelection(iy2sel)
@@ -669,19 +509,6 @@ class SpecfileImporter(wx.Frame) :
             self.subframes[name].Show()
             self.subframes[name].Raise()
 
-
-    def onAddColumns(self, event=None):
-        self.show_subframe('addcol', AddColumnsFrame,
-                           group=self.workgroup,
-                           on_ok=self.add_columns)
-
-    def add_columns(self, label, selection):
-        new_labels = self.workgroup.array_labels
-        self.set_array_labels(new_labels)
-        self.yarr1.SetStringSelection(new_labels[-1])
-        self.extra_sums[label] = selection
-        self.onUpdate()
-
     def onEditNames(self, evt=None):
         self.show_subframe('editcol', EditColumnFrame,
                            group=self.workgroup,
@@ -752,14 +579,6 @@ class SpecfileImporter(wx.Frame) :
                 "{group}.path = '{path}'",
                 "{group}.is_frozen = False"]
 
-        for label, selection in self.extra_sums.items():
-            buff.append("{group}.array_labels.append('%s')" % label)
-            buff.append("_tmparr = {group}.data[%s, :].sum(axis=0)" % repr(selection))
-            buff.append("_tmpn   = len(_tmparr)")
-            buff.append("{group}.data = append({group}.data, _tmparr.reshape(1, _tmpn), axis=0)")
-            buff.append("del _tmparr, _tmpn")
-
-
         for attr in ('datatype', 'plot_xlabel', 'plot_ylabel'):
             val = getattr(self.workgroup, attr)
             buff.append("{group}.%s = '%s'" % (attr, val))
@@ -785,20 +604,20 @@ class SpecfileImporter(wx.Frame) :
             buff.append("{group}.scale = 1./({group}.ydat.ptp()+1.e-16)")
         script = "\n".join(buff)
 
-        self.array_sel['xarr'] = xarr
-        self.array_sel['yarr1'] = yarr1
-        self.array_sel['yarr2'] = yarr2
-        self.array_sel['yop'] = yop
-        self.array_sel['ypop'] = ypop
-        self.array_sel['yerror'] = yerr_op
-        self.array_sel['yerr_val'] = yerr_val
-        self.array_sel['yerr_arr'] = yerr_arr
-        self.array_sel['monod'] = dspace
-        self.array_sel['en_units'] = en_units
+        self.config['xarr'] = xarr
+        self.config['yarr1'] = yarr1
+        self.config['yarr2'] = yarr2
+        self.config['yop'] = yop
+        self.config['ypop'] = ypop
+        self.config['yerror'] = yerr_op
+        self.config['yerr_val'] = yerr_val
+        self.config['yerr_arr'] = yerr_arr
+        self.config['monod'] = dspace
+        self.config['en_units'] = en_units
 
         if self.read_ok_cb is not None:
             self.read_ok_cb(script, self.path, scanlist,
-                            array_sel=self.array_sel)
+                            config=self.config)
 
         for f in self.subframes.values():
             try:
@@ -969,9 +788,9 @@ class SpecfileImporter(wx.Frame) :
 
 
         self.expressions = exprs
-        self.array_sel = {'xarr': xname,
-                          'ypop': ypop, 'yop': yop,
-                          'yarr1': yname1, 'yarr2': yname2}
+        self.config = {'xarr': xname,
+                       'ypop': ypop, 'yop': yop,
+                       'yarr1': yname1, 'yarr2': yname2}
         try:
             npts = min(len(workgroup.xdat), len(workgroup.ydat))
         except AttributeError:
