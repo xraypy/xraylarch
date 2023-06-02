@@ -69,21 +69,21 @@ class XASNormPanel(TaskPanel):
         self.wids = {}
         self.last_plot_type = 'one'
         self.plotone_op = Choice(panel, choices=list(PlotOne_Choices.keys()),
-                                 action=self.onPlotOne, size=(200, -1))
+                                 action=self.onPlotOne, size=(275, -1))
         self.plotsel_op = Choice(panel, choices=list(PlotSel_Choices.keys()),
-                                 action=self.onPlotSel, size=(200, -1))
+                                 action=self.onPlotSel, size=(275, -1))
 
         self.plot_erange = Choice(panel, choices=list(Plot_EnergyRanges.keys()),
-                                 action=self.onPlotEither, size=(150, -1))
+                                 action=self.onPlotEither, size=(175, -1))
 
         self.plot_erange.SetSelection(0)
         self.plotone_op.SetSelection(1)
         self.plotsel_op.SetSelection(1)
 
-        plot_one = Button(panel, 'Plot Current Group', size=(170, -1),
+        plot_one = Button(panel, 'Plot Current Group', size=(175, -1),
                           action=self.onPlotOne)
 
-        plot_sel = Button(panel, 'Plot Selected Groups', size=(170, -1),
+        plot_sel = Button(panel, 'Plot Selected Groups', size=(175, -1),
                           action=self.onPlotSel)
 
         e0panel = wx.Panel(panel)
@@ -99,7 +99,7 @@ class XASNormPanel(TaskPanel):
 
 
         self.wids['energy_ref'] = Choice(panel, choices=['None'],
-                                         action=self.onEnergyRef, size=(200, -1))
+                                         action=self.onEnergyRef, size=(300, -1))
 
         self.wids['auto_step'] = Check(panel, default=True, label='auto?',
                                       action=self.onNormMethod)
@@ -109,7 +109,7 @@ class XASNormPanel(TaskPanel):
                                     default=0)
 
         self.wids['nnorm'] = Choice(panel, choices=list(NNORM_CHOICES.keys()),
-                                    size=(100, -1), action=self.onNormMethod,
+                                    size=(150, -1), action=self.onNormMethod,
                                     default=0)
 
         opts = {'size': (100, -1), 'digits': 2, 'increment': 5.0,
@@ -141,7 +141,7 @@ class XASNormPanel(TaskPanel):
         scale = self.add_floatspin('scale', action=self.onSet_Scale, **opts)
 
         self.wids['norm_method'] = Choice(panel, choices=NORM_METHODS,
-                                          size=(120, -1), action=self.onNormMethod)
+                                          size=(150, -1), action=self.onNormMethod)
         self.wids['norm_method'].SetSelection(0)
         self.wids['energy_shift'] = FloatSpin(panel, value=0, digits=3, increment=0.05,
                                               action=self.onSet_EnergyShift)
@@ -165,7 +165,7 @@ class XASNormPanel(TaskPanel):
             return Button(panel, 'Copy', size=(60, -1),
                           action=partial(self.onCopyParam, name))
 
-        copy_all = Button(panel, 'Copy All Parameters', size=(150, -1),
+        copy_all = Button(panel, 'Copy All Parameters', size=(200, -1),
                           action=partial(self.onCopyParam, 'all'))
 
         add_text = self.add_text
@@ -244,7 +244,7 @@ class XASNormPanel(TaskPanel):
         panel.Add(xas_norm2)
         panel.Add(self.wids['show_norm'])
         panel.Add(SimpleText(panel, 'Polynomial Type:'), newrow=True)
-        panel.Add(self.wids['nnorm'], dcol=2)
+        panel.Add(self.wids['nnorm'], dcol=3)
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
         panel.Add((5, 5), newrow=True)
