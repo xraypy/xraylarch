@@ -43,14 +43,14 @@ DATATYPES = ('raw', 'xas')
 ENUNITS_TYPES = ('eV', 'keV', 'degrees', 'not energy')
 
 
-MULTICHANNEL_TITLE = """ Build Arrays for MultiChannel Fluorescence Data, including Dead-Time Corrections:
-  To allow for many Dead-Time-Correction methods, Spectra for each Channel are built as:
+MULTICHANNEL_TITLE = """ Sum MultiChannel Fluorescence Data, with Dead-Time Corrections:
+  To allow for many Dead-Time-Correction methods, each Channel is built as:
         ROI_Corrected = ROI * ICR /(OCR * LTIME)
 
-  Select the Number of Fluorescence Channels, the Step (usually 1) between columns for
-  ROI 1, 2, ..., NChans.  Set Bad Channels as a list of Channel numbers (start at 1).
+  Set the Number of Channels, the Step (usually 1) between columns for
+  ROI 1, 2, ..., NChans, and any Bad Channels: a list of Channel numbers (start at 1).
 
-  Select columns for ROI (raw counts) and correction factors ICR, OCR, and LTIME for Channel 1.
+  Select columns for ROI (counts) and correction factors ICR, OCR, and LTIME for Channel 1.
 
 """
 
@@ -78,7 +78,7 @@ class DeadtimeCorrectionFrame(wx.Frame):
         wx.Frame.__init__(self, None, -1, 'MultiChannel Fluorescence Data',
                           style=wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
 
-        self.SetFont(Font(10))
+        self.SetFont(Font(FONTSIZE))
         sizer = wx.GridBagSizer(2, 2)
         panel = scrolled.ScrolledPanel(self)
 
@@ -86,8 +86,8 @@ class DeadtimeCorrectionFrame(wx.Frame):
         self.yarr_labels = [s for s in self.parent.yarr_labels]
         wids = self.wids = {}
 
-        multi_title = wx.StaticText(panel, label=MULTICHANNEL_TITLE, size=(625, 140))
-
+        multi_title = wx.StaticText(panel, label=MULTICHANNEL_TITLE, size=(650, 150))
+        multi_title.SetFont(Font(FONTSIZE-1))
         for s in ('roi', 'icr', 'ocr', 'ltime'):
             wids[s] = Choice(panel, choices=self.yarr_labels, action=self.read_form, size=(150, -1))
             sel = self.config.get(s, '1.0')
@@ -331,7 +331,7 @@ class MultiColumnFrame(wx.Frame) :
         if config is not None:
             self.config.update(config)
 
-        self.SetFont(Font(10))
+        self.SetFont(Font(FONTSIZE))
         sizer = wx.GridBagSizer(2, 2)
         panel = scrolled.ScrolledPanel(self)
 
@@ -442,7 +442,7 @@ class EditColumnFrame(wx.Frame) :
         wx.Frame.__init__(self, None, -1, 'Edit Array Names',
                           style=wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
 
-        self.SetFont(Font(10))
+        self.SetFont(Font(FONTSIZE))
         sizer = wx.GridBagSizer(2, 2)
         panel = scrolled.ScrolledPanel(self)
 
@@ -558,9 +558,8 @@ class EditColumnFrame(wx.Frame) :
 
 class ColumnDataFileFrame(wx.Frame) :
     """Column Data File, select columns"""
-    def __init__(self, parent, filename=None, groupname=None,
-                 config=None, read_ok_cb=None,
-                 edit_groupname=True, _larch=None):
+    def __init__(self, parent, filename=None, groupname=None, config=None,
+                 read_ok_cb=None, edit_groupname=True, _larch=None):
         self.parent = parent
         self._larch = _larch
         self.path = filename
@@ -623,7 +622,7 @@ class ColumnDataFileFrame(wx.Frame) :
 
         self.SetFont(Font(FONTSIZE))
         panel = wx.Panel(self)
-        self.SetMinSize((625, 700))
+        self.SetMinSize((725, 700))
         self.colors = GUIColors()
 
         def subtitle(s, fontsize=12, colour=wx.Colour(10, 10, 180)):
@@ -838,7 +837,7 @@ class ColumnDataFileFrame(wx.Frame) :
                                size=(400, 250))
 
         ftext.SetValue(group.text)
-        ftext.SetFont(Font(11))
+        ftext.SetFont(Font(FONTSIZE))
 
         textsizer = wx.BoxSizer(wx.VERTICAL)
         textsizer.Add(ftext, 1, LEFT|wx.GROW, 1)
