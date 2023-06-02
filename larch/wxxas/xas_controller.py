@@ -73,6 +73,64 @@ class XASController():
         self.clean_autosave_sessions()
 
 
+    def install_group(self, groupname, filename, source=None, journal=None):
+        """add groupname / filename to list of available data groups"""
+
+        try:
+            thisgroup = getattr(self.symtable, groupname)
+        except AttributeError:
+            thisgroup = self.symtable.new_group(groupname)
+
+        # file /group may already exist in list
+        if filename in self.file_groups:
+            fbase, i = filename, 0
+            while i < 50000 and filename in self.file_groups:
+                filename = f"{fbase}_{i}"
+                i += 1
+                if i >= 50000:
+                    raise ValueError(f"Too many repeated filenames: {fbase}")
+
+        filename = filename.strip()
+        if source is None:
+            source = filename
+
+        jopts = f"source='{source}'"
+        if isinstance(journal, dict):
+            jnl =  {'source': f"{source}"}
+            jnl.update(journal)
+            jopts = ', '.join([f"{k}='{v}'" for k, v in jnl.items()])
+        elif isinstance(journal, (list, Journal)):
+            jopts = repr(journal)
+
+        cmds = [f"{groupname:s}.groupname = '{groupname:s}'",
+                f"{groupname:s}.filename = '{filename:s}'"]
+        needs_config = not hasattr(thisgroup, 'config')
+        if needs_config:
+            cmds.append(f"{groupname:s}.config = group(__name__='xas_viewer config')")
+
+        cmds.append(f"{groupname:s}.journal = journal({jopts:s})")
+
+        datatype = getattr(thisgroup, 'datatype', 'raw')
+        if datatype == 'xas':
+            cmds.append(f"{groupname:s}.energy_orig = {groupname:s}.energy[:]")
+            array_labels = getattr(thisgroup, 'array_labels', [])
+            if len(array_labels) > 2  and getattr(thisgroup, 'data', None) is not None:
+                for i0name in ('i0', 'i_0', 'monitor'):
+                    if i0name in array_labels:
+                        i0x = array_labels.index(i0name)
+                        cmds.append(f"{groupname:s}.i0 = {groupname:s}.data[{i0x}, :]")
+
+        self.larch.eval('\n'.join(cmds))
+
+        if needs_config:
+            self.init_group_config(thisgroup)
+
+        self.file_groups[filename] = groupname
+        self.filelist.Append(filename)
+        self.filelist.SetStringSelection(filename)
+        self.sync_xasgroups()
+        return filename
+
     def sync_xasgroups(self):
         "make sure `_xasgroups` is identical to file_groups"
         if self.file_groups != self.symtable._xasgroups:
@@ -332,7 +390,7 @@ class XASController():
             this.mu = this.ydat
         this.plot_xlabel = 'energy'
         this.plot_ylabel = yarray
-        return outgroup
+        return this
 
     def set_plot_erange(self, erange):
         self.plot_erange = erange
