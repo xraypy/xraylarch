@@ -220,7 +220,7 @@ class OverAbsorptionDialog(wx.Dialog):
             del ngroup.norm_corr
 
         ogroup = self.controller.get_group(fname)
-        self.parent.onNewGroup(ngroup, journal=ogroup.journal)
+        self.parent.install_group(ngroup, journal=ogroup.journal)
         olddesc = ogroup.journal.get('source_desc').value
         ngroup.journal.add('source_desc', f"fluo_corrected({olddesc})")
         ngroup.journal.add('fluor_correction_command', self.cmd)
@@ -520,7 +520,7 @@ overwriting current arrays''')
         ngroup.energy_ref = ngroup.groupname
 
         ogroup = self.controller.get_group(fname)
-        self.parent.onNewGroup(ngroup, journal=ogroup.journal)
+        self.parent.install_group(ngroup, journal=ogroup.journal)
         olddesc = ogroup.journal.get('source_desc').value
         ngroup.journal.add('source_desc', f"energy_shifted({olddesc}, {eshift:.4f})")
         ngroup.journal.add('energy_shift ', 0.0)
@@ -761,7 +761,7 @@ class RebinDataDialog(wx.Dialog):
         ngroup.delta_mu = getattr(ngroup, 'yerr', 1.0)
         self.parent.process_normalization(ngroup)
 
-        self.parent.onNewGroup(ngroup, journal=ogroup.journal)
+        self.parent.install_group(ngroup, journal=ogroup.journal)
         ngroup.journal.add('source_desc', f"rebinned({olddesc})")
         ngroup.journal.add('rebin_command ', self.cmd)
 
@@ -955,7 +955,7 @@ class SmoothDataDialog(wx.Dialog):
         ogroup = self.controller.get_group(fname)
         olddesc = ogroup.journal.get('source_desc').value
 
-        self.parent.onNewGroup(ngroup, journal=ogroup.journal)
+        self.parent.install_group(ngroup, journal=ogroup.journal)
         ngroup.journal.add('source_desc', f"smoothed({olddesc})")
         ngroup.journal.add('smooth_command', self.cmd)
         self.parent.process_normalization(ngroup)
@@ -1070,7 +1070,7 @@ class DeconvolutionDialog(wx.Dialog):
         ogroup = self.controller.get_group(fname)
         olddesc = ogroup.journal.get('source_desc').value
 
-        self.parent.onNewGroup(ngroup, journal=ogroup.journal)
+        self.parent.install_group(ngroup, journal=ogroup.journal)
         ngroup.journal.add('source_desc', f"deconvolved({olddesc})")
         ngroup.journal.add('deconvolve_command', self.cmd)
         self.parent.process_normalization(ngroup)
@@ -1351,7 +1351,7 @@ class DeglitchDialog(wx.Dialog):
         ogroup = self.controller.get_group(fname)
         olddesc = ogroup.journal.get('source_desc').value
 
-        self.parent.onNewGroup(ngroup, journal=ogroup.journal)
+        self.parent.install_group(ngroup, journal=ogroup.journal)
         ngroup.journal.add('source_desc', f"deglitched({olddesc})")
         ngroup.journal.add('deglitch_removed_energies', energies_removed)
 
@@ -1568,10 +1568,8 @@ class SpectraCalcDialog(wx.Dialog):
 
         ngroup = getattr(_larch.symtable, new_gname, None)
         if ngroup is not None:
-            self.parent.install_group(ngroup.groupname, ngroup.filename,
-                                      source=journal['source_desc'],
+            self.parent.install_group(ngroup, source=journal['source_desc'],
                                       journal=journal)
-            self.parent.ShowFile(groupname=ngroup.groupname)
 
     def GetResponse(self):
         raise AttributeError("use as non-modal dialog!")
