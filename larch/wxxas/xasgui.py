@@ -854,15 +854,6 @@ before clearing"""
     def onConfigDataProcessing(self, event=None):
         pass
 
-    def onNewGroup(self, datagroup, source=None, journal=None):
-        """
-        install and display a new group, as from 'copy / modify'
-        Note: this is a group object, not the groupname or filename
-        """
-        dgroup = datagroup
-        self.install_group(dgroup.groupname, dgroup.filename, source=source,
-                           overwrite=False, journal=journal)
-        self.ShowFile(groupname=dgroup.groupname)
 
     def onCopyGroup(self, event=None, journal=None):
         fname = self.current_filename
@@ -870,9 +861,7 @@ before clearing"""
             fname = self.controller.filelist.GetStringSelection()
         ogroup = self.controller.get_group(fname)
         ngroup = self.controller.copy_group(fname)
-        self.install_group(ngroup.groupname, ngroup.filename, source=None,
-                           overwrite=False, journal=ogroup.journal)
-        self.ShowFile(groupname=ngroup.groupname)
+        self.install_group(ngroup, journal=ogroup.journal)
 
     def onGroupJournal(self, event=None):
         dgroup = self.controller.get_group()
@@ -984,10 +973,10 @@ before clearing"""
             gname = fix_varname(res.group.lower())
             master = self.controller.file_groups[res.master]
             yname = 'norm' if res.ynorm else 'mu'
-            self.controller.merge_groups(list(groups.values()),
-                                         master=master,
-                                         yarray=yname,
-                                         outgroup=gname)
+            this = self.controller.merge_groups(list(groups.values()),
+                                                master=master,
+                                                yarray=yname,
+                                                outgroup=gname)
 
             mfiles, mgroups = [], []
             for g in groups.values():
@@ -996,14 +985,10 @@ before clearing"""
             mfiles  = '[%s]' % (', '.join(mfiles))
             mgroups = '[%s]' % (', '.join(mgroups))
             desc = "%s: merge of %d groups" % (fname, len(groups))
-            self.install_group(gname, fname, overwrite=False,
-                               source=desc,
+            self.install_group(gname, fname, source=desc,
                                journal={'source_desc': desc,
                                         'merged_groups': mgroups,
                                         'merged_filenames': mfiles})
-
-            self.controller.filelist.SetStringSelection(fname)
-            self.controller.sync_xasgroups()
 
     def has_datagroup(self):
         return hasattr(self.controller.get_group(), 'energy')
@@ -1201,12 +1186,9 @@ before clearing"""
             self.onLoadSession(path=path)
         # default to Column File
         else:
-            print(" column frame ", self.last_col_config)
-
-            self.show_subframe('readfile', ColumnDataFileFrame,
-                               filename=path,
-                               _larch=self.larch_buffer.larchshell,
+            self.show_subframe('readfile', ColumnDataFileFrame, filename=path,
                                config=self.last_col_config,
+                               _larch=self.larch_buffer.larchshell,
                                read_ok_cb=self.onRead_OK)
 
     def onReadSpecfile_OK(self, script, path, scanlist, config=None):
@@ -1239,10 +1221,7 @@ before clearing"""
 
             displayname = f"{fname:s} scan{scan:s} {yname:s}"
             jrnl = {'source_desc': f"{fname:s}: scan{scan:s} {yname:s}"}
-            dgroup = self.install_group(gname, displayname,
-                                        process=True, plot=False,
-                                        source=displayname,
-                                        journal=jrnl)
+            dgroup = self.install_group(gname, displayname, journal=jrnl)
         cur_panel.skip_plotting = False
 
         if first_group is not None:
@@ -1276,7 +1255,7 @@ before clearing"""
 
             jrnl = {'source_desc': f'{spath:s}: {gname:s}'}
             self.larch.eval(script.format(group=gid, prjgroup=gname))
-            dgroup = self.install_group(gid, label, process=True, plot=False,
+            dgroup = self.install_group(gid, label, process=True,
                                         source=path, journal=jrnl)
             groups_added.append(gid)
 
@@ -1362,8 +1341,8 @@ before clearing"""
         self.controller.recentfiles.append((time.time(), path))
 
     def onRead_OK(self, script, path, groupname=None, filename=None,
-                  ref_groupname=None, ref_filename=None,
-                  config=None, overwrite=False, array_desc=None):
+                  ref_groupname=None, ref_filename=None, config=None,
+                  array_desc=None):
 
         """ called when column data has been selected and is ready to be used
         overwrite: whether to overwrite the current datagroup, as when
@@ -1378,7 +1357,7 @@ before clearing"""
         filedir, spath = os.path.split(path)
         if filename is None:
             filename = spath
-        if not overwrite and hasattr(self.larch.symtable, groupname):
+        if hasattr(self.larch.symtable, groupname):
             groupname = file2groupname(spath, symtable=self.larch.symtable)
 
         if abort_read:
@@ -1404,8 +1383,7 @@ before clearing"""
         if 'yerr' in array_desc:
             journal['yerr'] = array_desc['yerr'].format(group=groupname)
 
-        self.install_group(groupname, filename, overwrite=overwrite,
-                           source=path, journal=journal)
+        self.install_group(groupname, filename, source=path, journal=journal)
 
         if config['has_yref'] and ref_groupname is not None:
             if 'xdat' in array_desc:
@@ -1414,7 +1392,6 @@ before clearing"""
                 refjournal['ydat'] = ydx = array_desc['yref'].format(group=groupname)
                 refjournal['source_desc'] = f'{spath:s}: {ydx:s}'
             self.install_group(ref_groupname, ref_filename,
-                               overwrite=overwrite,
                                source=path, journal=refjournal)
 
         # check if rebin is needed
@@ -1444,18 +1421,21 @@ before clearing"""
         gname = None
         has_yref = config.get('has_yref', False)
         for path in self.paths2read:
-            # print("Read Next File --- > ", path)
             path = path.replace('\\', '/')
             filedir, spath = os.path.split(path)
             gname = file2groupname(spath, symtable=self.larch.symtable)
 
             if has_yref:
-                ref_groupname = gname + '_ref'
-                ref_fname =     spath + '_ref'
-            self.larch.eval(script.format(group=gname, refgroup=ref_groupname,
-                                          path=path))
+                ref_gname = gname + '_ref'
+                ref_fname = spath + '_ref'
+            config = copy.copy(config)
+            config['group'] = gname
+            config['refgroup'] = ref_gname
+            config['path'] = path
+            self.larch.eval(script.format(**config))
             if has_yref:
                 self.larch.eval(f"{gname}.energy_ref = {ref_gname}.energy_ref = '{ref_gname}'\n")
+
             if 'xdat' in array_desc:
                 journal['xdat'] = array_desc['xdat'].format(group=gname)
             if 'ydat' in array_desc:
@@ -1464,17 +1444,15 @@ before clearing"""
             if 'yerr' in array_desc:
                 journal['yerr'] = array_desc['yerr'].format(group=gname)
 
-            self.install_group(gname, spath, overwrite=overwrite,
-                               source=path, journal=journal, plot=False)
-            if ref_gname is not None:
+            self.install_group(gname, spath, source=path, journal=journal)
+            if has_yref:
                 if 'xdat' in array_desc:
                     refjournal['xdat'] = array_desc['xdat'].format(group=ref_gname)
                 if 'yref' in array_desc:
                     refjournal['ydat'] = ydx = array_desc['yref'].format(group=ref_gname)
                     refjournal['source_desc'] = f'{spath:s}: {ydx:s}'
 
-                self.install_group(ref_gname, ref_fname, overwrite=overwrite,
-                                   source=path, journal=refjournal, plot=False)
+                self.install_group(ref_gname, ref_fname, source=path, journal=refjournal)
 
         if gname is not None:
             self.ShowFile(groupname=gname)
@@ -1483,66 +1461,21 @@ before clearing"""
         if do_rebin:
             RebinDataDialog(self, self.controller).Show()
 
-    def install_group(self, groupname, filename, overwrite=False,
-                      process=True, rebin=False, plot=True,
-                      source=None, journal=None):
+    def install_group(self, groupname, filename=None, source=None, journal=None,
+                      process=True, plot=True):
         """add groupname / filename to list of available data groups"""
+        if isinstance(groupname, Group):
+            groupname = groupname.groupname
+        if filename is None:
+            g = getattr(self.controller.symtable, groupname)
+            filename = g.filename
 
-        try:
-            thisgroup = getattr(self.larch.symtable, groupname)
-        except AttributeError:
-            thisgroup = self.larch.symtable.new_group(groupname)
-
-        datatype = getattr(thisgroup, 'datatype', 'raw')
-        # file /group may already exist in list
-        if filename in self.controller.file_groups and not overwrite:
-            fbase, i = filename, 0
-            while i < 10000 and filename in self.controller.file_groups:
-                filename = "%s_%d" % (fbase, i)
-                i += 1
-
-        if source is None:
-            source = filename
-
-        cmds = [f"{groupname:s}.groupname = '{groupname:s}'",
-                f"{groupname:s}.filename = '{filename:s}'"]
-
-        jopts = f"source='{source}'"
-        if isinstance(journal, dict):
-            jnl =  {'source': f"{source}"}
-            jnl.update(journal)
-            jopts = ', '.join([f"{k}='{v}'" for k, v in jnl.items()])
-        elif isinstance(journal, (list, Journal)):
-            jopts = repr(journal)
-
-        needs_config = not hasattr(thisgroup, 'config')
-        if needs_config:
-            cmds.append(f"{groupname:s}.config = group(__name__='xas_viewer config')")
-
-        cmds.append(f"{groupname:s}.journal = journal({jopts:s})")
-        if datatype == 'xas':
-            cmds.append(f"{groupname:s}.energy_orig = {groupname:s}.energy[:]")
-            array_labels = getattr(thisgroup, 'array_labels', [])
-            if len(array_labels) > 2  and getattr(thisgroup, 'data', None) is not None:
-                for i0name in ('i0', 'i_0', 'monitor'):
-                    if i0name in array_labels:
-                        i0x = array_labels.index(i0name)
-                        cmds.append(f"{groupname:s}.i0 = {groupname:s}.data[{i0x}, :]")
-
-        cmds = ('\n'.join(cmds))
-
-        self.larch.eval(cmds)
-        if needs_config:
-            self.controller.init_group_config(thisgroup)
-        self.controller.filelist.Append(filename.strip())
-        self.controller.file_groups[filename] = groupname
-        self.controller.sync_xasgroups()
+        self.controller.install_group(groupname, filename,
+                                      source=source, journal=journal)
 
         self.nb.SetSelection(0)
         self.ShowFile(groupname=groupname, filename=filename,
                       process=process, plot=plot)
-        self.controller.filelist.SetStringSelection(filename.strip())
-        return thisgroup
 
     ##
     def onAutoSaveTimer(self, event=None):
