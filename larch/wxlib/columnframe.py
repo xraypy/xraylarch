@@ -43,16 +43,17 @@ DATATYPES = ('raw', 'xas')
 ENUNITS_TYPES = ('eV', 'keV', 'degrees', 'not energy')
 
 
-MULTICHANNEL_TITLE = """
-  Build Arrays for MultiChannel Fluorescence Data:
-  To allow for many dead-time-correction mehtods, Spectra for each Channe are built as:
+MULTICHANNEL_TITLE = """ Build Arrays for MultiChannel Fluorescence Data, including Dead-Time Corrections:
+  To allow for many Dead-Time-Correction methods, Spectra for each Channel are built as:
         ROI_Corrected = ROI * ICR /(OCR * LTIME)
 
   Select the Number of Fluorescence Channels, the Step (usually 1) between columns for
   ROI 1, 2, ..., NChans.  Set Bad Channels as a list of Channel numbers (start at 1).
 
   Select columns for ROI (raw counts) and correction factors ICR, OCR, and LTIME for Channel 1.
+
 """
+
 ROI_STEP_TOOLTIP =  """number of columns between ROI columns -- typically 1 if the columns are like
    ROI_Ch1 ROI_Ch2 ROI_Ch3 ... ICR_Ch1 ICR_Ch2 ICR_Ch3 ... OCR_Ch1 OCR_Ch2 OCR_Ch3 ...
 
@@ -81,11 +82,11 @@ class DeadtimeCorrectionFrame(wx.Frame):
         sizer = wx.GridBagSizer(2, 2)
         panel = scrolled.ScrolledPanel(self)
 
-        self.SetMinSize((650, 425))
+        self.SetMinSize((650, 450))
         self.yarr_labels = [s for s in self.parent.yarr_labels]
         wids = self.wids = {}
 
-        multi_title = wx.StaticText(panel, label=MULTICHANNEL_TITLE, size=(500, 110))
+        multi_title = wx.StaticText(panel, label=MULTICHANNEL_TITLE, size=(625, 140))
 
         for s in ('roi', 'icr', 'ocr', 'ltime'):
             wids[s] = Choice(panel, choices=self.yarr_labels, action=self.read_form, size=(150, -1))
@@ -144,7 +145,7 @@ class DeadtimeCorrectionFrame(wx.Frame):
 
         ir += 1
         sizer.Add(tlabel(' Signal '),  (ir, 0), (1, 1), LEFT, 3)
-        sizer.Add(tlabel(' Array for Chan #1 '),  (ir, 1), (1, 1), LEFT, 3)
+        sizer.Add(tlabel(' Array for Channel #1 '),  (ir, 1), (1, 1), LEFT, 3)
         sizer.Add(tlabel(' Array Labels used for all Channels '),  (ir, 2), (1, 3), LEFT, 3)
 
         for s in ('roi', 'icr', 'ocr', 'ltime'):
@@ -314,7 +315,122 @@ class DeadtimeCorrectionFrame(wx.Frame):
                             labs.append(self.group.array_labels[nchan])
                 wids[f"{s}_txt"].SetLabel(', '.join(labs))
                 self.config[s] = chans
-        # print("READ FORM ", self.config)
+
+
+class MultiColumnFrame(wx.Frame) :
+    """Select Multiple Columns for import, optional i0 channel"""
+    def __init__(self, parent, group, config=None, on_ok=None):
+        self.parent = parent
+        self.group = group
+        # print(group, dir(group))
+        self.on_ok = on_ok
+        wx.Frame.__init__(self, None, -1, 'Import Multiple Columns from a file',
+                          style=wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
+
+        self.config = {'channels': [], 'i0': '1.0'}
+        if config is not None:
+            self.config.update(config)
+
+        self.SetFont(Font(10))
+        sizer = wx.GridBagSizer(2, 2)
+        panel = scrolled.ScrolledPanel(self)
+
+        self.SetMinSize((575, 425))
+        self.yarr_labels = [s for s in self.parent.yarr_labels]
+        wids = self.wids = {}
+
+        wids['i0'] = Choice(panel, choices=self.yarr_labels, size=(150, -1))
+        wids['i0'].SetToolTip("All Channels will be divided by the I0 array")
+
+        wids['i0'].SetStringSelection(self.parent.yarr2.GetStringSelection())
+
+        wids['ok'] = Button(panel, 'Import Selected Columns', action=self.onOK)
+        wids['sel_all'] = Button(panel, 'Select All', action=self.onSelAll)
+        wids['sel_none'] = Button(panel, 'Select None', action=self.onSelNone)
+
+        ir = 0
+        sizer.Add(wids['sel_all'],   (ir, 0), (1, 2), LEFT, 3)
+        sizer.Add(wids['sel_none'],  (ir, 2), (1, 1), LEFT, 3)
+        sizer.Add(wids['ok'],        (ir, 3), (1, 1), LEFT, 3)
+
+        ir += 1
+        sizer.Add(HLine(panel, size=(550, 2)),  (ir, 1), (1, 5), LEFT, 3)
+
+        ir += 1
+        sizer.Add(SimpleText(panel, label=' I0: '),  (ir, 0), (1, 1), LEFT, 3)
+        sizer.Add(wids['i0'],                        (ir, 1), (1, 3), LEFT, 3)
+
+        ir += 1
+        sizer.Add(SimpleText(panel, label=' Array Index'),  (ir, 1), (1, 1), LEFT, 3)
+        sizer.Add(SimpleText(panel, label=' Array Name'),  (ir, 2), (1, 1), LEFT, 3)
+        sizer.Add(SimpleText(panel, label=' Import? '),   (ir, 0), (1, 1), LEFT, 3)
+        sizer.Add(SimpleText(panel, label=' Plot'),       (ir, 3), (1, 1), LEFT, 3)
+
+        nlabels = len(group.array_labels)
+        narrays, npts = group.data.shape
+        for i in range(narrays):
+            if i < nlabels:
+                name = group.array_labels[i]
+            else:
+                name = f'unnamed_column{i+1}'
+            self.wids[f'use_{i}'] = chuse = Check(panel, label='', default=(i in self.config['channels']))
+            ilabel = SimpleText(panel, label=f' {i+1} ')
+            slabel = SimpleText(panel, label=f' {name} ')
+            bplot  = Button(panel, 'Plot', action=partial(self.onPlot, index=i))
+
+            ir += 1
+            sizer.Add(ilabel, (ir, 0), (1, 1), LEFT, 3)
+            sizer.Add(slabel, (ir, 1), (1, 1), LEFT, 3)
+            sizer.Add(chuse,  (ir, 2), (1, 1), LEFT, 3)
+            sizer.Add(bplot,  (ir, 3), (1, 1), LEFT, 3)
+
+        pack(panel, sizer)
+        panel.SetupScrolling()
+
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        mainsizer.Add(panel, 1, wx.GROW|wx.ALL, 1)
+
+        pack(self, mainsizer)
+        self.Show()
+        self.Raise()
+
+
+    def onSelAll(self, event=None, *kws):
+        for wname, wid in self.wids.items():
+            if wname.startswith('use_'):
+                wid.SetValue(1)
+
+    def onSelNone(self, event=None, *kws):
+        for wname, wid in self.wids.items():
+            if wname.startswith('use_'):
+                wid.SetValue(0)
+
+    def onPlot(self, event=None, index=None):
+        if index is not None:
+            x = self.group.xdat
+            y = self.group.data[index, :]
+            try:
+                label = self.group.array_labels[index]
+            except:
+                label = f'column {index+1}'
+
+            popts = dict(marker=None, markersize=0, linewidth=2.5,
+                         ylabel=label, xlabel=self.group.plot_xlabel, label=label)
+            self.parent.plotpanel.plot(x, y, **popts)
+
+    def onOK(self, evt=None):
+        group = self.group
+        self.config['i0']  = self.wids['i0'].GetSelection()
+        channels = []
+        for wname, wid in self.wids.items():
+            if wname.startswith('use_') and wid.IsChecked():
+                chan = int(wname.replace('use_', ''))
+                channels.append(chan)
+
+        self.config['channels']  = channels
+        if callable(self.on_ok):
+            self.on_ok(self.config)
+        self.Destroy()
 
 
 class EditColumnFrame(wx.Frame) :
@@ -403,8 +519,8 @@ class EditColumnFrame(wx.Frame) :
 
     def onPlot(self, event=None, index=None):
         if index is not None:
-            x = self.parent.workgroup.index
-            y = self.parent.workgroup.data[index, :]
+            x = self.group.index
+            y = self.group.data[index, :]
             label = self.wids["ret_%i" % index].GetLabel()
             popts = dict(marker='o', markersize=4, linewidth=1.5,
                          ylabel=label, xlabel='data point', label=label)
@@ -443,14 +559,11 @@ class EditColumnFrame(wx.Frame) :
 class ColumnDataFileFrame(wx.Frame) :
     """Column Data File, select columns"""
     def __init__(self, parent, filename=None, groupname=None,
-                 last_array_sel=None, read_ok_cb=None, extra_sums=None,
+                 config=None, read_ok_cb=None,
                  edit_groupname=True, _larch=None):
         self.parent = parent
         self._larch = _larch
         self.path = filename
-        if extra_sums is None:
-            extra_sums = {}
-        self.extra_sums = extra_sums
 
         group = self.initgroup = self.read_column_file(self.path)
 
@@ -472,33 +585,33 @@ class ColumnDataFileFrame(wx.Frame) :
                     self.workgroup.datatype = 'xas'
 
         self.read_ok_cb = read_ok_cb
-        self.array_sel = dict(xarr=None, yarr1=None, yarr2=None, yop='/',
+        self.config = dict(xarr=None, yarr1=None, yarr2=None, yop='/',
                               ypop='', monod=3.1355316, en_units=en_units,
-                              yerror='constant', yerr_val=1, yerr_arr=None,
+                              yerr_op='constant', yerr_val=1, yerr_arr=None,
                               yrpop='', yrop='/', yref1='', yref2='',
                               has_yref=False, dtc_config={}, multicol_config={})
-        if last_array_sel is not None:
-            self.array_sel.update(last_array_sel)
+        if config is not None:
+            self.config.update(config)
 
-        if self.array_sel['yarr2'] is None and 'i0' in arr_labels:
-            self.array_sel['yarr2'] = 'i0'
+        if self.config['yarr2'] is None and 'i0' in arr_labels:
+            self.config['yarr2'] = 'i0'
 
-        if self.array_sel['yarr1'] is None:
+        if self.config['yarr1'] is None:
             if 'itrans' in arr_labels:
-                self.array_sel['yarr1'] = 'itrans'
+                self.config['yarr1'] = 'itrans'
             elif 'i1' in arr_labels:
-                self.array_sel['yarr1'] = 'i1'
+                self.config['yarr1'] = 'i1'
 
-        if self.array_sel['yref1'] is None:
+        if self.config['yref1'] is None:
             if 'iref' in arr_labels:
-                self.array_sel['yref1'] = 'iref'
+                self.config['yref1'] = 'iref'
             elif 'irefer' in arr_labels:
-                self.array_sel['yref1'] = 'irefer'
+                self.config['yref1'] = 'irefer'
             elif 'i2' in arr_labels:
-                self.array_sel['yref1'] = 'i2'
+                self.config['yref1'] = 'i2'
 
-        if self.array_sel['yref2'] is None and 'i1' in arr_labels:
-            self.array_sel['yref2'] = 'i1'
+        if self.config['yref2'] is None and 'i1' in arr_labels:
+            self.config['yref2'] = 'i1'
 
         message = "Data Columns for %s" % group.filename
         wx.Frame.__init__(self, None, -1,
@@ -550,10 +663,11 @@ class ColumnDataFileFrame(wx.Frame) :
         dtype_lab = SimpleText(panel, ' Data Type: ')
         monod_lab = SimpleText(panel, ' Mono D spacing (Ang): ')
         yerrval_lab = SimpleText(panel, ' Value:')
+        self.info_message = subtitle('    ', colour=wx.Colour(100, 10, 10))
 
         # yref
         self.has_yref = Check(panel, label='data file includes energy reference data',
-                              default=self.array_sel['has_yref'],
+                              default=self.config['has_yref'],
                               action=self.onYrefCheck)
         refylab = SimpleText(panel, ' Refer array = ')
         self.yref1 = Choice(panel, choices=yarr_labels, action=self.onUpdate, size=(150, -1))
@@ -562,36 +676,33 @@ class ColumnDataFileFrame(wx.Frame) :
         self.yrop =  Choice(panel, choices=ARR_OPS, action=self.onUpdate, size=(100, -1))
 
         self.ysuf = SimpleText(panel, '')
-        self.message = subtitle(' ', colour=wx.Colour(0, 0, 0))
-
-
-        self.ypop.SetStringSelection(self.array_sel['ypop'])
-        self.yop.SetStringSelection(self.array_sel['yop'])
-        self.yrpop.SetStringSelection(self.array_sel['yrpop'])
-        self.yrop.SetStringSelection(self.array_sel['yrop'])
-        self.monod_val.SetValue(self.array_sel['monod'])
+        self.ypop.SetStringSelection(self.config['ypop'])
+        self.yop.SetStringSelection(self.config['yop'])
+        self.yrpop.SetStringSelection(self.config['yrpop'])
+        self.yrop.SetStringSelection(self.config['yrop'])
+        self.monod_val.SetValue(self.config['monod'])
         self.monod_val.SetAction(self.onUpdate)
-        self.monod_val.Enable(self.array_sel['en_units'].startswith('deg'))
-        self.en_units.SetStringSelection(self.array_sel['en_units'])
-        self.yerr_op.SetStringSelection(self.array_sel['yerror'])
-        self.yerr_val.SetValue(self.array_sel['yerr_val'])
-        if '(' in self.array_sel['ypop']:
+        self.monod_val.Enable(self.config['en_units'].startswith('deg'))
+        self.en_units.SetStringSelection(self.config['en_units'])
+        self.yerr_op.SetStringSelection(self.config['yerr_op'])
+        self.yerr_val.SetValue(self.config['yerr_val'])
+        if '(' in self.config['ypop']:
             self.ysuf.SetLabel(')')
 
         ixsel, iysel = 0, 1
         iy2sel = iyesel = iyr1sel = iyr2sel = len(yarr_labels)-1
-        if self.array_sel['xarr'] in xarr_labels:
-            ixsel = xarr_labels.index(self.array_sel['xarr'])
-        if self.array_sel['yarr1'] in arr_labels:
-            iysel = arr_labels.index(self.array_sel['yarr1'])
-        if self.array_sel['yarr2'] in yarr_labels:
-            iy2sel = yarr_labels.index(self.array_sel['yarr2'])
-        if self.array_sel['yerr_arr'] in yarr_labels:
-            iyesel = yarr_labels.index(self.array_sel['yerr_arr'])
-        if self.array_sel['yref1'] in arr_labels:
-            iyr1sel = arr_labels.index(self.array_sel['yref1'])
-        if self.array_sel['yref2'] in arr_labels:
-            iyr2sel = arr_labels.index(self.array_sel['yref2'])
+        if self.config['xarr'] in xarr_labels:
+            ixsel = xarr_labels.index(self.config['xarr'])
+        if self.config['yarr1'] in arr_labels:
+            iysel = arr_labels.index(self.config['yarr1'])
+        if self.config['yarr2'] in yarr_labels:
+            iy2sel = yarr_labels.index(self.config['yarr2'])
+        if self.config['yerr_arr'] in yarr_labels:
+            iyesel = yarr_labels.index(self.config['yerr_arr'])
+        if self.config['yref1'] in arr_labels:
+            iyr1sel = arr_labels.index(self.config['yref1'])
+        if self.config['yref2'] in arr_labels:
+            iyr2sel = arr_labels.index(self.config['yref2'])
 
         self.xarr.SetSelection(ixsel)
         self.yarr1.SetSelection(iysel)
@@ -611,31 +722,37 @@ class ColumnDataFileFrame(wx.Frame) :
         self.wid_refgroupname = wx.TextCtrl(panel, value=group.groupname + '_ref',
                                          size=(150, -1))
 
-        self.onYrefCheck(has_yref=self.array_sel['has_yref'])
+        self.onYrefCheck(has_yref=self.config['has_yref'])
+
 
         bpanel = wx.Panel(panel)
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
         _ok    = Button(bpanel, 'OK', action=self.onOK)
         _cancel = Button(bpanel, 'Cancel', action=self.onCancel)
         _edit   = Button(bpanel, 'Edit Array Names', action=self.onEditNames)
-        _dtc    = Button(bpanel, 'Sum MED Fluor Data', action=self.onDTC)
-        _multi  = Button(bpanel, 'Select Multilple Columns',  action=self.onDTC)
+        _multi  = Button(bpanel, 'Select Multilple Columns',  action=self.onMultiColumn)
+        self.multi_clear  = Button(bpanel, 'Clear Multiple Columns',  action=self.onClearMultiColumn)
+        self.multi_clear.Disable()
         _edit.SetToolTip('Change the current Column Names')
-        _dtc.SetToolTip('Manage summing and deadtime-corrections for multi-element fluorescence data')
+
         _multi.SetToolTip('Select Multiple Columns to import together')
+        self.multi_clear.SetToolTip('Clear Multiple Column Selection')
         bsizer.Add(_ok)
         bsizer.Add(_cancel)
         bsizer.Add(_edit)
-        bsizer.Add(_dtc)
         bsizer.Add(_multi)
+        bsizer.Add(self.multi_clear)
         _ok.SetDefault()
         pack(bpanel, bsizer)
+
+        self.dtc_button  = Button(panel, 'Sum and Correct Fluoresence Data', action=self.onDTC)
+        self.dtc_button.SetToolTip('Select channels and do deadtime-corrections for multi-element fluorescence data')
 
         sizer = wx.GridBagSizer(2, 2)
         sizer.Add(title,     (0, 0), (1, 7), LEFT, 5)
 
         ir = 1
-        sizer.Add(subtitle(' X [ Energy ] Array:'),   (ir, 0), (1, 2), LEFT, 0)
+        sizer.Add(subtitle(' X [Energy] Array:'),   (ir, 0), (1, 2), LEFT, 0)
         sizer.Add(dtype_lab,       (ir, 3), (1, 1), RIGHT, 0)
         sizer.Add(self.datatype,   (ir, 4), (1, 2), LEFT, 0)
 
@@ -650,8 +767,8 @@ class ColumnDataFileFrame(wx.Frame) :
         sizer.Add(self.monod_val,(ir, 4), (1, 1), LEFT, 0)
 
         ir += 1
-        sizer.Add(subtitle(' Y [\u03BC(E)] Array:'),   (ir, 0), (1, 2), LEFT, 0)
-        # sizer.Add(self.wid_dtc, (ir, 2), (1, 3), LEFT, 1)
+        sizer.Add(subtitle(' Y [\u03BC(E)] Array:'), (ir, 0), (1, 2), LEFT, 0)
+        sizer.Add(self.dtc_button,                   (ir, 2), (1, 3), RIGHT, 0)
         ir += 1
         sizer.Add(ylab,       (ir, 0), (1, 1), LEFT, 0)
         sizer.Add(self.ypop,  (ir, 1), (1, 1), LEFT, 0)
@@ -674,6 +791,9 @@ class ColumnDataFileFrame(wx.Frame) :
         sizer.Add(SimpleText(panel, ' Group Name:'),   (ir, 3), (1, 1), RIGHT, 0)
         sizer.Add(self.wid_groupname,                 (ir, 4), (1, 2), LEFT, 0)
 
+        ir += 1
+        sizer.Add(self.info_message,                  (ir, 0), (1, 5), LEFT, 1)
+
         ir += 2
         sizer.Add(subtitle(' Reference [\u03BC_ref(E)] Array: '),
                   (ir, 0), (1, 2), LEFT, 0)
@@ -691,11 +811,8 @@ class ColumnDataFileFrame(wx.Frame) :
         sizer.Add(self.wid_reffilename,               (ir, 1), (1, 2), LEFT, 0)
         sizer.Add(SimpleText(panel, ' Group Name:'),   (ir, 3), (1, 1), RIGHT, 0)
         sizer.Add(self.wid_refgroupname,              (ir, 4), (1, 2), LEFT, 0)
+
         ir +=1
-        sizer.Add(self.message,                     (ir, 1), (1, 4), LEFT, 0)
-
-
-        ir += 1
         sizer.Add(bpanel,     (ir, 0), (1, 5), LEFT, 3)
 
         pack(panel, sizer)
@@ -742,7 +859,7 @@ class ColumnDataFileFrame(wx.Frame) :
             self.statusbar.SetStatusText(statusbar_fields[i], i)
 
         self.set_energy_units()
-        dtc_conf = self.array_sel.get('dtc_config', {})
+        dtc_conf = self.config.get('dtc_config', {})
         if len(dtc_conf) > 0:
             self.onDTC_OK(dtc_conf, update=False)
 
@@ -752,7 +869,7 @@ class ColumnDataFileFrame(wx.Frame) :
 
     def onDTC(self, event=None):
         self.show_subframe('dtc_conf', DeadtimeCorrectionFrame,
-                           config=self.array_sel['dtc_config'],
+                           config=self.config['dtc_config'],
                            group=self.workgroup,
                            on_ok=self.onDTC_OK)
 
@@ -764,6 +881,7 @@ class ColumnDataFileFrame(wx.Frame) :
                                         add_data=False)
         if sum is None:
             return
+        self.info_message.SetLabel(f"Added array '{label}' with summed and corrected fluorecence data")
         self.workgroup.array_labels.append(label)
         self.set_array_labels(self.workgroup.array_labels)
         npts = len(sum)
@@ -771,15 +889,43 @@ class ColumnDataFileFrame(wx.Frame) :
         self.workgroup.raw.data = new[()]
         self.workgroup.data = new[()]
         self.yarr1.SetStringSelection(label)
-        self.array_sel['dtc_config'] = config
+        self.config['dtc_config'] = config
         if update:
             self.onUpdate()
 
+    def onClearMultiColumn(self, event=None):
+        self.config['multicol_config'] = {}
+        self.info_message.SetLabel(f" cleared reading of multiple columns")
+        self.multi_clear.Disable()
+        self.yarr1.Enable()
+        self.ypop.Enable()
+        self.yop.Enable()
+        self.onUpdate()
+
+
     def onMultiColumn(self, event=None):
-        self.show_subframe('multi_cols', DeadtimeCorrectionFrame,
-                           config=self.array_sel['multicol_config'],
+        self.show_subframe('multicol', MultiColumnFrame,
+                           config=self.config['multicol_config'],
                            group=self.workgroup,
-                           on_ok=self.set_dtc_config)
+                           on_ok=self.onMultiColumn_OK)
+
+
+    def onMultiColumn_OK(self, config, update=True, **kws):
+        chans = config.get('channels', [])
+        if len(chans) == 0:
+            self.config['multicol_config'] = {}
+        else:
+            self.config['multicol_config'] = config
+            self.yarr1.SetSelection(chans[0])
+            self.yarr2.SetSelection(config['i0'])
+            self.yarr1.Disable()
+            self.ypop.Disable()
+            self.yop.Disable()
+            self.info_message.SetLabel(f"  Will import {len(config['channels'])} arrays")
+            self.multi_clear.Enable()
+        if update:
+            self.onUpdate()
+
 
     def read_column_file(self, path):
         """read column file, generally as initial read"""
@@ -887,64 +1033,44 @@ class ColumnDataFileFrame(wx.Frame) :
 
     def onOK(self, event=None):
         """ build arrays according to selection """
-        user_filename = self.wid_filename.GetValue()
-        groupname = fix_varname(self.wid_groupname.GetValue())
+        self.read_form()
+        cout = create_arrays(self.workgroup, **self.config)
+        self.config.update(cout)
 
-        en_units = self.en_units.GetStringSelection()
-        monod    = float(self.monod_val.GetValue())
-        xarr     = self.xarr.GetStringSelection()
-        yarr1    = self.yarr1.GetStringSelection()
-        yarr2    = self.yarr2.GetStringSelection()
-        ypop     = self.ypop.GetStringSelection()
-        yop      = self.yop.GetStringSelection()
-        yerr_op  = self.yerr_op.GetStringSelection()
-        yerr_arr = self.yerr_arr.GetStringSelection()
-        yerr_idx = self.yerr_arr.GetSelection()
-        yerr_val = self.yerr_val.GetValue()
-        yerr_expr = '1'
-        if yerr_op.startswith('const'):
-            yerr_expr = "%f" % self.yerr_val.GetValue()
-        elif yerr_op.startswith('array'):
-            yerr_expr = '%%s.data[%i, :]' % self.yerr_arr.GetSelection()
-        elif yerr_op.startswith('sqrt'):
-            yerr_expr = 'sqrt(%s.ydat)'
-        self.expressions['yerr'] = yerr_expr
+        conf = self.config
+        self.expressions = conf['expressions']
+        filename = conf['user_filename']
+        groupname = conf['groupname']
 
         # generate script to pass back to calling program:
-        read_cmd = "%s('{path}', labels='%s')" % (self.reader,
-                                                  ', '.join(self.orig_labels))
-        buff = ["{group} = %s" % read_cmd,
+        labstr = ', '.join(self.orig_labels)
+        buff = [f"{{group}} = {self.reader}('{{path}}', labels='{labstr}')",
                 "{group}.path = '{path}'",
-                "{group}.is_frozen = False"]
+                "{group}.is_frozen = False",
+                "{group}.energy_ref = '{groupname}'"]
 
-        dtc_conf = self.array_sel.get('dtc_config', {})
+        dtc_conf = conf.get('dtc_config', {})
         if len(dtc_conf) > 0:
             sumcmd = "sum_fluor_channels({{group}}, {roi}, icr={icr}, ocr={ocr}, ltime={ltime})"
             buff.append(sumcmd.format(**dtc_conf))
-
-        for label, selection in self.extra_sums.items():
-            buff.append("{group}.array_labels.append('%s')" % label)
-            buff.append("_tmparr = {group}.data[%s, :].sum(axis=0)" % repr(selection))
-            buff.append("_tmpn   = len(_tmparr)")
-            buff.append("{group}.data = append({group}.data, _tmparr.reshape(1, _tmpn), axis=0)")
-            buff.append("del _tmparr, _tmpn")
 
         for attr in ('datatype', 'plot_xlabel', 'plot_ylabel'):
             val = getattr(self.workgroup, attr)
             buff.append("{group}.%s = '%s'" % (attr, val))
 
-        expr = self.expressions['xdat'].replace('%s', '{group:s}')
+        xexpr = self.expressions['xdat']
+        en_units = conf['en_units']
         if en_units.startswith('deg'):
             buff.append(f"monod = {monod:.9f}")
-            buff.append(f"{{group}}.xdat = PLANCK_HC/(2*monod*sin(DEG2RAD*({expr:s})))")
+            buff.append(f"{{group}}.xdat = PLANCK_HC/(2*monod*sin(DEG2RAD*({xexpr:s})))")
         elif en_units.startswith('keV'):
-            buff.append(f"{{group}}.xdat = 1000.0*{expr:s}")
+            buff.append(f"{{group}}.xdat = 1000.0*{xexpr:s}")
         else:
-            buff.append(f"{{group}}.xdat = {expr:s}")
+            buff.append(f"{{group}}.xdat = {xexpr:s}")
 
         for aname in ('ydat', 'yerr'):
-            expr = self.expressions[aname].replace('%s', '{group:s}')
-            buff.append("{group}.%s = %s" % (aname, expr))
+            expr = self.expressions[aname]
+            buff.append(f"{{group}}.{aname} = {expr}")
 
         if getattr(self.workgroup, 'datatype', 'raw') == 'xas':
             if self.reader == 'read_gsescan':
@@ -955,73 +1081,40 @@ class ColumnDataFileFrame(wx.Frame) :
         else:
             buff.append("{group}.scale = 1./({group}.ydat.ptp()+1.e-16)")
 
+        array_desc = dict(xdat=self.workgroup.plot_xlabel,
+                          ydat=self.workgroup.plot_ylabel,
+                          yerr=self.expressions['yerr'])
 
-
-        array_desc = {}
-        array_desc['xdat'] = self.workgroup.plot_xlabel
-        array_desc['ydat'] = self.workgroup.plot_ylabel
-        array_desc['yerr'] = self.expressions['yerr'].replace('%s', '{group:s}')
-
-        ref_filename = None
-        ref_groupname = None
-        if self.has_yref.IsChecked():
-            yrname1 = self.yref1.GetStringSelection().strip()
-            yrname2 = self.yref2.GetStringSelection().strip()
-            iry1    = self.yref1.GetSelection()
-            iry2    = self.yref2.GetSelection()
-            yrpop   = self.yrpop.GetStringSelection().strip()
-            yrop    = self.yop.GetStringSelection().strip()
-
-            ref_filename = self.wid_reffilename.GetValue()
-            ref_groupname = fix_varname(self.wid_refgroupname.GetValue())
+        ref_filename = ref_groupname = None
+        if conf['has_yref']:
+            ref_filename = conf['ref_filename']
+            ref_groupname = conf['ref_groupname']
+            refexpr = self.expressions['yref']
+            array_desc['yref'] = getattr(self.workgroup, 'yrlabel', 'reference')
 
             buff.append("# reference group")
-            buff.append("{refgroup} = %s" % read_cmd)
+            buff.append(f"{{refgroup}} = {self.reader}('{{path}}', labels='{labstr}')")
             buff.append("{refgroup}.path = '{path}'")
             buff.append("{refgroup}.is_frozen = False")
             buff.append("{refgroup}.datatype = 'xas'")
-            buff.append("{refgroup}.plot_xlabel = 'energy'")
-            buff.append("{refgroup}.plot_ylabel = '%s'" % self.workgroup.yrlabel)
             buff.append("{refgroup}.xdat =1.0*{group}.xdat")
             buff.append("{refgroup}.energy = {refgroup}.xdat")
-
-            refexpr = self.expressions['yref'].replace('%s', '{group:s}')
-            array_desc['yref'] = self.workgroup.yrlabel
-
-            buff.append("{group}.energy_ref = '%s'" % (ref_groupname))
-            buff.append("{refgroup}.energy_ref = '%s'" % (ref_groupname))
-            buff.append("{refgroup}.ydat =  %s" % refexpr)
-            buff.append("{refgroup}.mu = {refgroup}.ydat")
+            buff.append(f"{{refgroup}}.ydat = {{refgroup}}.mu = {refexpr}")
+            buff.append(f"{{refgroup}}.plot_ylabel = '{self.workgroup.yrlabel}'")
+            buff.append("{refgroup}.plot_xlabel = 'energy'")
+            buff.append("{refgroup}.energy_ref = {group}.energy_ref = '{ref_groupname}'")
             buff.append("sort_xafs({refgroup}, overwrite=True, fix_repeats=True)")
             buff.append("# end reference group")
-        else:
-            buff.append("{group}.energy_ref = '%s'" % (groupname))
-
-        multi_conf = self.array_sel.get('multicol_config', {})
-        print("MULTI CONF ", multi_conf)
-
 
         script = "\n".join(buff)
 
-        self.array_sel['xarr'] = xarr
-        self.array_sel['yarr1'] = yarr1
-        self.array_sel['yarr2'] = yarr2
-        self.array_sel['yop'] = yop
-        self.array_sel['ypop'] = ypop
-        self.array_sel['yerror'] = yerr_op
-        self.array_sel['yerr_val'] = yerr_val
-        self.array_sel['yerr_arr'] = yerr_arr
-        self.array_sel['monod'] = monod
-        self.array_sel['en_units'] = en_units
-
         if self.read_ok_cb is not None:
             self.read_ok_cb(script, self.path, groupname=groupname,
-                            filename=user_filename,
-                            ref_groupname=ref_groupname,
-                            ref_filename=ref_filename,
+                            filename=conf['user_filename'],
+                            ref_groupname=conf['ref_groupname'],
+                            ref_filename=conf['ref_filename'],
                             array_desc=array_desc,
-                            extra_sums=self.extra_sums,
-                            array_sel=self.array_sel)
+                            config=conf)
 
         for f in self.subframes.values():
             try:
@@ -1047,7 +1140,7 @@ class ColumnDataFileFrame(wx.Frame) :
             self.yerr_val.Enable()
         elif 'array' in yerr_choice.lower():
             self.yerr_arr.Enable()
-        self.onUpdate()
+        # self.onUpdate()
 
     def onYrefCheck(self, evt=None, has_yref=False):
         if evt is not None:
@@ -1107,234 +1200,80 @@ class ColumnDataFileFrame(wx.Frame) :
             elif eguess.startswith('keV'):
                 self.en_units.SetStringSelection('keV')
 
+
+    def read_form(self, **kws):
+        """return form configuration"""
+
+        datatype = self.datatype.GetStringSelection().strip().lower()
+        if datatype == 'raw':
+            self.en_units.SetStringSelection('not energy')
+
+        conf = {'datatype': datatype,
+                'ix':  self.xarr.GetSelection(),
+                'xarr': self.xarr.GetStringSelection(),
+                'en_units': self.en_units.GetStringSelection(),
+                'monod': float(self.monod_val.GetValue()),
+                'yarr1': self.yarr1.GetStringSelection().strip(),
+                'yarr2': self.yarr2.GetStringSelection().strip(),
+                'iy1': self.yarr1.GetSelection(),
+                'iy2': self.yarr2.GetSelection(),
+                'yop': self.yop.GetStringSelection().strip(),
+                'ypop': self.ypop.GetStringSelection().strip(),
+                'iyerr': self.yerr_arr.GetSelection(),
+                'yerr_arr': self.yerr_arr.GetStringSelection(),
+                'yerr_op': self.yerr_op.GetStringSelection().lower(),
+                'yerr_val': self.yerr_val.GetValue(),
+                'has_yref': self.has_yref.IsChecked(),
+                'yref1': self.yref1.GetStringSelection().strip(),
+                'yref2': self.yref2.GetStringSelection().strip(),
+                'iry1': self.yref1.GetSelection(),
+                'iry2': self.yref2.GetSelection(),
+                'yrpop': self.yrpop.GetStringSelection().strip(),
+                'yrop': self.yop.GetStringSelection().strip(),
+                'user_filename': self.wid_filename.GetValue(),
+                'groupname': fix_varname(self.wid_groupname.GetValue()),
+                'ref_filename': self.wid_reffilename.GetValue(),
+                'ref_groupname': fix_varname(self.wid_refgroupname.GetValue()),
+                }
+        self.config.update(conf)
+        return conf
+
     def onUpdate(self, evt=None, **kws):
         """column selections changed calc xdat and ydat"""
         rawgroup = self.initgroup
         workgroup = self.workgroup
-        rdata = self.initgroup.data
-
-        ix  = self.xarr.GetSelection()
-        xname = self.xarr.GetStringSelection()
-
-        exprs = dict(xdat=None, ydat=None, yerr=None, yref=None)
-
         try:
-            ncol, npts = rdata.shape
+            ncol, npts = self.workgroup.data.shape
         except:
             return
 
-        workgroup.index = 1.0*np.arange(npts)
-        if xname.startswith('_index') or ix >= ncol:
-            workgroup.xdat = 1.0*np.arange(npts)
-            xname = '_index'
-            exprs['xdat'] = 'arange(%i)' % npts
-        else:
-            workgroup.xdat = 1.0*rdata[ix, :]
-            exprs['xdat'] = '%%s.data[%i, : ]' % ix
-
-        workgroup.datatype = self.datatype.GetStringSelection().strip().lower()
-        if workgroup.datatype == 'raw':
-            self.en_units.SetStringSelection('not energy')
-
-        xlabel = xname
-        en_units = self.en_units.GetStringSelection()
-        monod = float(self.monod_val.GetValue())
-        if en_units.startswith('deg'):
-            workgroup.xdat = PLANCK_HC/(2*monod*np.sin(DEG2RAD*workgroup.xdat))
-            xlabel = xname + ' (eV)'
-        elif en_units.startswith('keV'):
-            workgroup.xdat *= 1000.0
-            xlabel = xname + ' (eV)'
-
-
-        def pre_op(opwid, arr):
-            opstr = opwid.GetStringSelection().strip()
-            if opstr == '-':
-                return '', opstr, -arr
-            suf = ''
-            if opstr in ('-log(', 'log('):
-                suf = ')'
-                if opstr == 'log(':
-                    arr = np.log(arr)
-                elif opstr == '-log(':
-                    arr = -np.log(arr)
-                arr[np.where(np.isnan(arr))] = 0
-            return suf, opstr, arr
-
-        yname1  = self.yarr1.GetStringSelection().strip()
-        yname2  = self.yarr2.GetStringSelection().strip()
-        iy1    = self.yarr1.GetSelection()
-        iy2    = self.yarr2.GetSelection()
-        yop = self.yop.GetStringSelection().strip()
-
-        ylabel = yname1
-        if len(yname2) == 0:
-            yname2 = '1.0'
-        else:
-            ylabel = "%s%s%s" % (ylabel, yop, yname2)
-
-        if yname1 == '0.0':
-            yarr1 = np.zeros(npts)*1.0
-            yexpr1 = 'zeros(%i)' % npts
-        elif len(yname1) == 0 or yname1 == '1.0' or iy1 >= ncol:
-            yarr1 = np.ones(npts)*1.0
-            yexpr1 = 'ones(%i)' % npts
-        else:
-            yarr1 = rdata[iy1, :]
-            yexpr1 = '%%s.data[%i, : ]' % iy1
-
-        if yname2 == '0.0':
-            yarr2 = np.zeros(npts)*1.0
-            yexpr2 = '0.0'
-        elif len(yname2) == 0 or yname2 == '1.0' or iy2 >= ncol:
-            yarr2 = np.ones(npts)*1.0
-            yexpr2 = '1.0'
-        else:
-            yarr2 = rdata[iy2, :]
-            yexpr2 = '%%s.data[%i, : ]' % iy2
-
-        workgroup.ydat = yarr1
-
-        exprs['ydat'] = yexpr1
-        if yop in ('+', '-', '*', '/'):
-            exprs['ydat'] = "%s %s %s" % (yexpr1, yop, yexpr2)
-            if yop == '+':
-                workgroup.ydat = yarr1.__add__(yarr2)
-            elif yop == '-':
-                workgroup.ydat = yarr1.__sub__(yarr2)
-            elif yop == '*':
-                workgroup.ydat = yarr1.__mul__(yarr2)
-            elif yop == '/':
-                workgroup.ydat = yarr1.__truediv__(yarr2)
-
-        ysuf, ypop, workgroup.ydat = pre_op(self.ypop, workgroup.ydat)
-        self.ysuf.SetLabel(ysuf)
-        exprs['ydat'] = '%s%s%s' % (ypop, exprs['ydat'], ysuf)
-        ylabel = '%s%s%s' % (ypop, ylabel,ysuf)
-
-        # error
-        yerr_arr = self.yerr_arr.GetStringSelection()
-        yerr_op = self.yerr_op.GetStringSelection().lower()
-        exprs['yerr'] = '1'
-        yerr_val = self.yerr_val.GetValue()
-        if yerr_op.startswith('const'):
-            yerr = yerr_val
-            exprs['yerr'] = '%f' % yerr_val
-        elif yerr_op.startswith('array'):
-            iyerr = self.yerr_arr.GetSelection()
-            yerr = rdata[iyerr, :]
-            exprs['yerr'] = '%%s.data[%i, :]' % iyerr
-        elif yerr_op.startswith('sqrt'):
-            yerr = np.sqrt(workgroup.ydat)
-            exprs['yerr'] = 'sqrt(%s.ydat)'
-
-        # ref
-        has_yref = self.has_yref.IsChecked()
-        yrname1  = self.yref1.GetStringSelection().strip()
-        yrname2  = self.yref2.GetStringSelection().strip()
-        iry1    = self.yref1.GetSelection()
-        iry2    = self.yref2.GetSelection()
-        yrpop  = self.yrpop.GetStringSelection().strip()
-        yrop   = self.yop.GetStringSelection().strip()
-        yrlabel = ''
-        if has_yref:
-            yrlabel = yrname1
-            if len(yrname2) == 0:
-                yrname2 = '1.0'
-            else:
-                yrlabel = "%s%s%s" % (yrlabel, yrop, yrname2)
-
-            if yrname1 == '0.0':
-                yrarr1 = np.zeros(npts)*1.0
-                yrexpr1 = 'zeros(%i)' % npts
-            elif len(yrname1) == 0 or yrname1 == '1.0' or iry1 >= ncol:
-                yrarr1 = np.ones(npts)*1.0
-                yrexpr1 = 'ones(%i)' % npts
-            else:
-                yrarr1 = rdata[iry1, :]
-                yrexpr1 = '%%s.data[%i, : ]' % iry1
-
-            if yrname2 == '0.0':
-                yrarr2 = np.zeros(npts)*1.0
-                yrexpr2 = '0.0'
-            elif len(yrname2) == 0 or yrname2 == '1.0' or iry2 >= ncol:
-                yrarr2 = np.ones(npts)*1.0
-                yrexpr2 = '1.0'
-            else:
-                yrarr2 = rdata[iry2, :]
-                yrexpr2 = '%%s.data[%i, : ]' % iry2
-
-            workgroup.yref = yrarr1
-            exprs['yref'] = yrexpr1
-            if yrop in ('+', '-', '*', '/'):
-                exprs['yref'] = "%s %s %s" % (yrexpr1, yop, yrexpr2)
-                if yrop == '+':
-                    workgroup.yref = yrarr1.__add__(yrarr2)
-                elif yrop == '-':
-                    workgroup.yref = yrarr1.__sub__(yrarr2)
-                elif yrop == '*':
-                    workgroup.yref = yrarr1.__mul__(yarr2)
-                elif yrop == '/':
-                    workgroup.yref = yrarr1.__truediv__(yrarr2)
-
-            yrsuf, yprop, workgroup.yref = pre_op(self.yrpop, workgroup.yref)
-            exprs['yref'] = '%s%s%s' % (yrpop, exprs['yref'], yrsuf)
-            yrlabel = '%s%s%s' % (yrpop, yrlabel, yrsuf)
-            workgroup.yrlabel = yrlabel
-
-        self.expressions = exprs
-
-        self.array_sel.update(dict(xarr=xname, ypop=ypop, yop=yop,
-                                   yarr1=yname1, yarr2=yname2, monod=monod,
-                                   en_units=en_units, yerror=yerr_op,
-                                   yerr_val=yerr_val, yerr_arr=yerr_arr,
-                                   yrpop=yrpop, yrop=yrop, yref1=yrname1,
-                                   yref2=yrname2, has_yref=has_yref))
-
-        try:
-            npts = min(len(workgroup.xdat), len(workgroup.ydat))
-        except AttributeError:
-            return
-        except ValueError:
-            return
+        conf = self.read_form()
+        cout = create_arrays(workgroup, **conf)
+        self.expressions = cout.pop('expressions')
+        conf.update(cout)
 
         en = workgroup.xdat
         if ((workgroup.datatype == 'xas') and
             ((len(en) > 1000 or any(np.diff(en) < 0) or
               ((max(en)-min(en)) > 350 and
                (np.diff(en[:100]).mean() < 1.0))))):
-            self.message.SetLabel("Warning: XAS data may need to be rebinned!")
-        else:
-            self.message.SetLabel("")
+            self.info_message.SetLabel("Warning: XAS data may need to be rebinned!")
 
-        workgroup.filename    = rawgroup.filename
-        workgroup.npts        = npts
-        workgroup.plot_xlabel = xlabel
-        workgroup.plot_ylabel = ylabel
-        workgroup.plot_yrlabel = yrlabel
-        workgroup.xdat        = np.array(workgroup.xdat[:npts])
-        workgroup.ydat        = np.array(workgroup.ydat[:npts])
-        workgroup.y           = workgroup.ydat
-        workgroup.yerr        = yerr
-        if isinstance(yerr, np.ndarray):
-            workgroup.yerr    = np.array(yerr[:npts])
-
-        if workgroup.datatype == 'xas':
-            workgroup.energy = workgroup.xdat
-            workgroup.mu     = workgroup.ydat
 
         path, fname = os.path.split(workgroup.filename)
         popts = dict(marker='o', markersize=4, linewidth=1.5,
-                     title=fname, ylabel=ylabel, xlabel=xlabel,
-                     label=ylabel)
+                     title=fname,
+                     xlabel=workgroup.plot_xlabel,
+                     ylabel=workgroup.plot_ylabel,
+                     label=workgroup.plot_ylabel)
 
         self.plotpanel.plot(workgroup.xdat, workgroup.ydat, **popts)
-        if has_yref:
+        if conf['has_yref']:
+            yrlabel = getattr(workgroup, 'plot_yrlabel', 'reference')
             self.plotpanel.oplot(workgroup.xdat, workgroup.yref,
                                  y2label=yrlabel,
                                  linewidth=2.0, color='#E08070',
                                  label=yrlabel, zorder=-40, side='right')
-
 
         for i in range(self.nb.GetPageCount()):
             if 'plot' in self.nb.GetPageText(i).lower():
@@ -1342,3 +1281,192 @@ class ColumnDataFileFrame(wx.Frame) :
 
     def plot_messages(self, msg, panel=1):
         self.statusbar.SetStatusText(msg, panel)
+
+
+def create_arrays(dgroup, datatype='xas', ix=0, xarr='energy', en_units='eV',
+                  monod=3.1355316, yarr1=None, yarr2=None, iy1=2, iy2=1, yop='/',
+                  ypop='', iyerr=5, yerr_arr=None, yerr_op='constant', yerr_val=1.0,
+                  has_yref=False, yref1=None, yref2=None, iry1=3, iry2=2,
+                  yrpop='', yrop='/', user_filename='filename',
+                  groupname='groupname', ref_filename='ref_filename',
+                  ref_groupname='ref_groupname', **kws):
+    """
+    build arrays and values for datagroup based on configuration as from ColumnFile
+    """
+    ncol, npts = dgroup.data.shape
+    exprs = dict(xdat=None, ydat=None, yerr=None, yref=None)
+
+    if not hasattr(dgroup, 'index'):
+        dgroup.index = 1.0*np.arange(npts)
+
+    if xarr.startswith('_index') or ix >= ncol:
+        dgroup.xdat = 1.0*np.arange(npts)
+        xarr = '_index'
+        exprs['xdat'] = 'arange({npts})'
+    else:
+        dgroup.xdat = 1.0*dgroup.data[ix, :]
+        exprs['xdat'] = '{group}.data[{ix}, : ]'
+
+    xlabel = xarr
+    monod = float(monod)
+    if en_units.startswith('deg'):
+        dgroup.xdat = PLANCK_HC/(2*monod*np.sin(DEG2RAD*dgroup.xdat))
+        xlabel = xarr + ' (eV)'
+    elif en_units.startswith('keV'):
+        dgroup.xdat *= 1000.0
+        xlabel = xarr + ' (eV)'
+
+    def pre_op(opstr, arr):
+        if opstr == '-':
+            return '', opstr, -arr
+        suf = ''
+        if opstr in ('-log(', 'log('):
+            suf = ')'
+            if opstr == 'log(':
+                arr = np.log(arr)
+            elif opstr == '-log(':
+                arr = -np.log(arr)
+            arr[np.where(np.isnan(arr))] = 0
+        return suf, opstr, arr
+
+    if yarr1 is None:
+        yarr1 = dgroup.array_labels[iy1]
+
+    if yarr2 is None:
+        yarr2 = dgroup.array_labels[iy2]
+
+    ylabel = yarr1
+    if len(yarr2) == 0:
+        yarr2 = '1.0'
+    else:
+        ylabel = f"{ylabel}{yop}{yarr2}"
+
+    if yarr1 == '0.0':
+        ydarr1 = np.zeros(npts)*1.0
+        yexpr1 = f'np.zeros(npts)'
+    elif len(yarr1) == 0 or yarr1 == '1.0' or iy1 >= ncol:
+        ydarr1 = np.ones(npts)*1.0
+        yexpr1 = f'np.ones({npts})'
+    else:
+        ydarr1 = dgroup.data[iy1, :]
+        yexpr1 = '{group}.data[{iy1}, : ]'
+
+    dgroup.ydat = ydarr1
+    exprs['ydat'] = yexpr1
+
+    if yarr2 == '0.0':
+        ydarr2 = np.zeros(npts)*1.0
+        yexpr2 = '0.0'
+    elif len(yarr2) == 0 or yarr2 == '1.0' or iy2 >= ncol:
+        ydarr2 = np.ones(npts)*1.0
+        yexpr2 = '1.0'
+    else:
+        ydarr2 = dgroup.data[iy2, :]
+        yexpr2 = '{group}.data[{iy2}, : ]'
+
+    if yop in ('+', '-', '*', '/'):
+        exprs['ydat'] = f"{yexpr1}{yop}{yexpr2}"
+        if yop == '+':
+            dgroup.ydat = ydarr1 + ydarr2
+        elif yop == '-':
+            dgroup.ydat = ydarr1 - ydarr2
+        elif yop == '*':
+            dgroup.ydat = ydarr1 * ydarr2
+        elif yop == '/':
+            dgroup.ydat = ydarr1 / ydarr2
+
+    ysuf, ypop, dgroup.ydat = pre_op(ypop, dgroup.ydat)
+
+    exprs['ydat'] = f"{ypop}{exprs['ydat']}{ysuf}"
+    ylabel = f"{ypop}{ylabel}{ysuf}"
+
+    # error
+    exprs['yerr'] = '1'
+    if yerr_op.startswith('const'):
+        yderr = yerr_val
+        exprs['yerr'] = f"{yerr_val}"
+    elif yerr_op.startswith('array'):
+        yderr = dgroup.data[iyerr, :]
+        exprs['yerr'] = '{group}.data[{iyerr}, :]'
+    elif yerr_op.startswith('sqrt'):
+        yderr = np.sqrt(dgroup.ydat)
+        exprs['yerr'] = 'sqrt({group}.ydat)'
+
+    # reference
+    yrlabel = None
+    if has_yref:
+        yrlabel = yref1
+        if len(yref2) == 0:
+            yref2 = '1.0'
+        else:
+            yrlabel = f"{yrlabel}{yrop}{yref2}"
+
+        if yref1 == '0.0':
+            ydrarr1 = np.zeros(npts)*1.0
+            yrexpr1 = 'zeros({npts})'
+        elif len(yref1) == 0 or yref1 == '1.0' or iry1 >= ncol:
+            ydrarr1 = np.ones(npts)*1.0
+            yrexpr1 = 'ones({npts})'
+        else:
+            ydrarr1 = dgroup.data[iry1, :]
+            yrexpr1 = '{group}.data[{iry1}, : ]'
+
+        dgroup.yref = ydrarr1
+        exprs['yref'] = yrexpr1
+
+        if yref2 == '0.0':
+            ydrarr2 = np.zeros(npts)*1.0
+            ydrexpr2 = '0.0'
+        elif len(yref2) == 0 or yref2 == '1.0' or iry2 >= ncol:
+            ydrarr2 = np.ones(npts)*1.0
+            yrexpr2 = '1.0'
+        else:
+            ydrarr2 = dgroup.data[iry2, :]
+            yrexpr2 = '{group}.data[{iry2}, : ]'
+
+        if yrop in ('+', '-', '*', '/'):
+            exprs['yref'] = f'{yrexpr1} {yop} {yrexpr2}'
+            if yrop == '+':
+                dgroup.yref = ydrarr1 + ydrarr2
+            elif yrop == '-':
+                dgroup.yref = ydrarr1 - ydrarr2
+            elif yrop == '*':
+                dgroup.yref = ydrarr1 * ydarr2
+            elif yrop == '/':
+                dgroup.yref = ydrarr1 / ydrarr2
+
+        yrsuf, yprop, dgroup.yref = pre_op(yrpop, dgroup.yref)
+        exprs['yref'] = f"{yrpop}{exprs['yref']}{yrsuf}"
+        yrlabel = f'{yrpop} {yrlabel} {yrsuf}'
+        dgroup.yrlabel = yrlabel
+
+
+    try:
+        npts = min(len(dgroup.xdat), len(dgroup.ydat))
+    except AttributeError:
+        return
+    except ValueError:
+        return
+
+    en = dgroup.xdat
+    dgroup.npts        = npts
+    dgroup.plot_xlabel = xlabel
+    dgroup.plot_ylabel = ylabel
+    dgroup.xdat        = np.array(dgroup.xdat[:npts])
+    dgroup.ydat        = np.array(dgroup.ydat[:npts])
+    dgroup.y           = dgroup.ydat
+    dgroup.yerr        = yderr
+    if isinstance(yderr, np.ndarray):
+        dgroup.yerr    = np.array(yderr[:npts])
+    if yrlabel is not None:
+        dgroup.plot_yrlabel = yrlabel
+
+    if dgroup.datatype == 'xas':
+        dgroup.energy = dgroup.xdat
+        dgroup.mu     = dgroup.ydat
+
+    return dict(xarr=xarr, ypop=ypop, yop=yop, yarr1=yarr1, yarr2=yarr2,
+                monod=monod, en_units=en_units, yerr_op=yerr_op,
+                yerr_val=yerr_val, yerr_arr=yerr_arr, yrpop=yrpop, yrop=yrop,
+                yref1=yref1, yref2=yref2, has_yref=has_yref,
+                expressions=exprs)
