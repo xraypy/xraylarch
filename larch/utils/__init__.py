@@ -236,7 +236,7 @@ def _larch_init(_larch):
                                                      text2={'color': 'blue'},
                                                      error={'color': 'red'}))
 
-_larch_builtins = dict(copy=copy, deepcopy=copy.deepcopy, more= _more,
+_larch_builtins = dict(copy=copy.copy, deepcopy=copy.deepcopy, more= _more,
                        parent=_parent, ls=_ls, mkdir=_mkdir, cd=_cd,
                        cwd=_cwd, group2dict=group2dict,
                        copy_group=copy_group, copy_xafs_group=copy_xafs_group,
