@@ -915,8 +915,8 @@ class ColumnDataFileFrame(wx.Frame) :
             self.config['multicol_config'] = config
             self.yarr1.SetSelection(chans[0])
             self.yarr2.SetSelection(config['i0'])
-            self.yarr1.Disable()
             self.ypop.SetStringSelection('')
+            self.yarr1.Disable()
             self.ypop.Disable()
             self.yop.Disable()
             y2 = self.yarr2.GetStringSelection()
@@ -1036,8 +1036,12 @@ class ColumnDataFileFrame(wx.Frame) :
         self.read_form()
         cout = create_arrays(self.workgroup, **self.config)
         self.config.update(cout)
-
         conf = self.config
+        if self.ypop.Enabled:  #not using multicolumn mode
+            conf['multicol_config'] = {'channels': [], 'i0': conf['iy2']}
+            print("unset multicol")
+
+
         self.expressions = conf['expressions']
         filename = conf['user_filename']
         groupname = conf['groupname']
