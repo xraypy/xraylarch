@@ -9,17 +9,8 @@
 
 import os
 import sys
-from copy import copy, deepcopy
 from glob import glob
 from .paths import get_cwd
-
-def _copy(obj):
-    """copy an object"""
-    return copy(obj)
-
-def _deepcopy(obj):
-    """deep copy an object"""
-    return deepcopy(obj)
 
 def _parent(name, _larch=None):
     "return parent group name of an object"
