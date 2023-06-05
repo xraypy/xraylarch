@@ -1108,14 +1108,6 @@ before clearing"""
         if not shown:
             self.subframes[name] = frameclass(self, **opts)
 
-    def onUNUSEDSelectColumns(self, event=None):
-        dgroup = self.controller.get_group()
-        # self.show_subframe('readfile', ColumnDataFileFrame,
-        #                    group=dgroup.raw,
-        #                    last_array_sel=self.last_array_sel_col,
-        #                   _larch=self.larch,
-        #                   read_ok_cb=partial(self.onRead_OK,
-        #                                      overwrite=True))
 
     def onCIFBrowse(self, event=None):
         self.show_subframe('cif_feff', CIFFrame, _larch=self.larch,
@@ -1340,33 +1332,48 @@ before clearing"""
         self.controller.sync_xasgroups()
         self.controller.recentfiles.append((time.time(), path))
 
-    def onRead_OK(self, script, path, groupname=None, filename=None,
-                  ref_groupname=None, ref_filename=None, config=None,
-                  array_desc=None):
+    def onRead_OK(self, script, path, config):
+        #groupname=None, filename=None,
+        #          ref_groupname=None, ref_filename=None, config=None,
+        #          array_desc=None):
 
         """ called when column data has been selected and is ready to be used
         overwrite: whether to overwrite the current datagroup, as when
         editing a datagroup
         """
+        filedir, spath = os.path.split(path)
+        filename = config.get('filename', spath)
+        groupname = config.get('groupname', None)
         if groupname is None:
             return
-        if array_desc is None:
-            array_desc = {}
+        array_desc = config.get('array_desc', {})
 
-        abort_read = False
-        filedir, spath = os.path.split(path)
-        if filename is None:
-            filename = spath
         if hasattr(self.larch.symtable, groupname):
-            groupname = file2groupname(spath, symtable=self.larch.symtable)
+            groupname = file2groupname(filename, symtable=self.larch.symtable)
 
-        if abort_read:
-            return
+        refgroup = config.get('refgroup', groupname + '_ref')
+        # print("READ OK ", path, groupname, filename, array_desc)
+        # print(config)
+        # print("-------------")
+        # print(script)
+        # print("-------------")
+        multiconfig = config.get('multicol_config', {'channels':[], 'i0': config['iy2']})
+        multi_i0  = multiconfig.get('i0', config['iy2'])
+        multi_chans = multiconfig.get('channels', [])
+
+        if len(multi_chans) > 0:
+            if (multi_chans[0] == config['iy1'] and multi_i0 == config['iy2']
+                and 'log' not in config['expressions']['ydat']):
+                yname = config['array_labels'][config['iy1']]
+                filename = f"{spath}:{yname}"
+                multi_chans.pop(0)
 
         config = copy.copy(config)
         config['group'] = groupname
-        config['refgroup'] = ref_groupname
         config['path'] = path
+        has_yref = config.get('has_yref', False)
+
+
         self.larch.eval(script.format(**config))
 
         if config is not None:
@@ -1378,20 +1385,52 @@ before clearing"""
         if 'xdat' in array_desc:
             journal['xdat'] = array_desc['xdat'].format(group=groupname)
         if 'ydat' in array_desc:
-            journal['ydat'] = ydx = array_desc['ydat'].format(group=groupname)
-            journal['source_desc'] = f'{spath:s}: {ydx:s}'
+            journal['ydat'] = ylab = array_desc['ydat'].format(group=groupname)
+            journal['source_desc'] = f'{spath}: {ylab}'
         if 'yerr' in array_desc:
             journal['yerr'] = array_desc['yerr'].format(group=groupname)
 
         self.install_group(groupname, filename, source=path, journal=journal)
 
-        if config['has_yref'] and ref_groupname is not None:
+        def install_multichans(config):
+            ydatline = None
+            for line in script.split('\n'):
+                if line.startswith("{group}.ydat ="):
+                    ydatline = line.replace("{group}", "{ngroup}")
+            mscript = '\n'.join(["{ngroup} = deepcopy({group})",
+                                 ydatline,
+                                 "{ngroup}.mu = {ngroup}.ydat",
+                                 "{ngroup}.plot_ylabel = '{ylabel}'"])
+            i0 = '1.0'
+            if multi_i0  < len(config['array_labels']):
+                i0 = config['array_labels'][multi_i0]
+
+            for mchan in multi_chans:
+                yname = config['array_labels'][mchan]
+                ylabel = f"{yname}/{i0}"
+                fname = f"{spath}:{yname}"
+                ngroup = file2groupname(fname, symtable=self.larch.symtable)
+                njournal = {'source': path,
+                            'xdat': array_desc['xdat'].format(group=ngroup),
+                            'ydat': ylabel,
+                            'source_desc': f"{spath}: {ylabel}",
+                            'yerr': array_desc['yerr'].format(group=ngroup)}
+                cmd = mscript.format(group=config['group'], ngroup=ngroup,
+                                     iy1=mchan, iy2=multi_i0, ylabel=ylabel)
+                self.larch.eval(cmd)
+                self.install_group(ngroup, fname, source=path, journal=njournal)
+
+        if len(multi_chans) > 0:
+            install_multichans(config)
+
+        if has_yref:
+
             if 'xdat' in array_desc:
-                refjournal['xdat'] = array_desc['xdat'].format(group=groupname)
+                refjournal['xdat'] = array_desc['xdat'].format(group=refgroup)
             if 'yref' in array_desc:
-                refjournal['ydat'] = ydx = array_desc['yref'].format(group=groupname)
+                refjournal['ydat'] = ydx = array_desc['yref'].format(group=refgroup)
                 refjournal['source_desc'] = f'{spath:s}: {ydx:s}'
-            self.install_group(ref_groupname, ref_filename,
+            self.install_group(refgroup, config['reffile'],
                                source=path, journal=refjournal)
 
         # check if rebin is needed
@@ -1419,22 +1458,28 @@ before clearing"""
                 do_rebin = (wx.ID_YES == dlg.ShowModal())
                 dlg.Destroy()
         gname = None
-        has_yref = config.get('has_yref', False)
+
         for path in self.paths2read:
             path = path.replace('\\', '/')
             filedir, spath = os.path.split(path)
-            gname = file2groupname(spath, symtable=self.larch.symtable)
+            fname = spath
+            if len(multi_chans) > 0:
+                yname = config['array_labels'][config['iy1']]
+                fname = f"{spath}:{yname}"
 
+            gname = file2groupname(fname, symtable=self.larch.symtable)
+            refgroup = config['refgroup']
             if has_yref:
-                ref_gname = gname + '_ref'
-                ref_fname = spath + '_ref'
+                refgroup = gname + '_ref'
+                reffile = spath + '_ref'
             config = copy.copy(config)
             config['group'] = gname
-            config['refgroup'] = ref_gname
+            config['refgroup'] = refgroup
             config['path'] = path
+
             self.larch.eval(script.format(**config))
             if has_yref:
-                self.larch.eval(f"{gname}.energy_ref = {ref_gname}.energy_ref = '{ref_gname}'\n")
+                self.larch.eval(f"{gname}.energy_ref = {refgroup}.energy_ref = '{refgroup}'\n")
 
             if 'xdat' in array_desc:
                 journal['xdat'] = array_desc['xdat'].format(group=gname)
@@ -1444,19 +1489,23 @@ before clearing"""
             if 'yerr' in array_desc:
                 journal['yerr'] = array_desc['yerr'].format(group=gname)
 
-            self.install_group(gname, spath, source=path, journal=journal)
+            self.install_group(gname, fname, source=path, journal=journal, plot=False)
+            if len(multi_chans) > 0:
+                install_multichans(config)
+
             if has_yref:
                 if 'xdat' in array_desc:
-                    refjournal['xdat'] = array_desc['xdat'].format(group=ref_gname)
+                    refjournal['xdat'] = array_desc['xdat'].format(group=refgroup)
                 if 'yref' in array_desc:
-                    refjournal['ydat'] = ydx = array_desc['yref'].format(group=ref_gname)
+                    refjournal['ydat'] = ydx = array_desc['yref'].format(group=refgroup)
                     refjournal['source_desc'] = f'{spath:s}: {ydx:s}'
 
-                self.install_group(ref_gname, ref_fname, source=path, journal=refjournal)
+                self.install_group(refgroup, reffile, source=path, journal=refjournal, plot=False)
+
 
         if gname is not None:
             self.ShowFile(groupname=gname)
-        # print("#### DONE")
+
         self.write_message("read %s" % (spath))
         if do_rebin:
             RebinDataDialog(self, self.controller).Show()

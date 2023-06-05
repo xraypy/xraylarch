@@ -335,36 +335,36 @@ class MultiColumnFrame(wx.Frame) :
         sizer = wx.GridBagSizer(2, 2)
         panel = scrolled.ScrolledPanel(self)
 
-        self.SetMinSize((575, 425))
+        self.SetMinSize((475, 350))
         self.yarr_labels = [s for s in self.parent.yarr_labels]
         wids = self.wids = {}
 
-        wids['i0'] = Choice(panel, choices=self.yarr_labels, size=(150, -1))
+        wids['i0'] = Choice(panel, choices=self.yarr_labels, size=(200, -1))
         wids['i0'].SetToolTip("All Channels will be divided by the I0 array")
 
         wids['i0'].SetStringSelection(self.parent.yarr2.GetStringSelection())
 
-        wids['ok'] = Button(panel, 'Import Selected Columns', action=self.onOK)
-        wids['sel_all'] = Button(panel, 'Select All', action=self.onSelAll)
-        wids['sel_none'] = Button(panel, 'Select None', action=self.onSelNone)
+        bpanel = wx.Panel(panel)
+        bsizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        bsizer.Add(Button(bpanel, ' Select All ', action=self.onSelAll))
+        bsizer.Add(Button(bpanel, ' Select None ', action=self.onSelNone))
+        bsizer.Add(Button(bpanel, ' Import Selected Columns ', action=self.onOK))
+        pack(bpanel, bsizer)
 
         ir = 0
-        sizer.Add(wids['sel_all'],   (ir, 0), (1, 2), LEFT, 3)
-        sizer.Add(wids['sel_none'],  (ir, 2), (1, 1), LEFT, 3)
-        sizer.Add(wids['ok'],        (ir, 3), (1, 1), LEFT, 3)
+        sizer.Add(bpanel,  (ir, 0), (1, 5), LEFT, 3)
+        ir += 1
+        sizer.Add(HLine(panel, size=(450, 2)),  (ir, 0), (1, 5), LEFT, 3)
 
         ir += 1
-        sizer.Add(HLine(panel, size=(550, 2)),  (ir, 1), (1, 5), LEFT, 3)
-
-        ir += 1
-        sizer.Add(SimpleText(panel, label=' I0: '),  (ir, 0), (1, 1), LEFT, 3)
+        sizer.Add(SimpleText(panel, label=' I0 Array: '), (ir, 0), (1, 1), LEFT, 3)
         sizer.Add(wids['i0'],                        (ir, 1), (1, 3), LEFT, 3)
 
         ir += 1
-        sizer.Add(SimpleText(panel, label=' Array Index'),  (ir, 1), (1, 1), LEFT, 3)
-        sizer.Add(SimpleText(panel, label=' Array Name'),  (ir, 2), (1, 1), LEFT, 3)
-        sizer.Add(SimpleText(panel, label=' Import? '),   (ir, 0), (1, 1), LEFT, 3)
-        sizer.Add(SimpleText(panel, label=' Plot'),       (ir, 3), (1, 1), LEFT, 3)
+        sizer.Add(SimpleText(panel, label=' Array Name'),  (ir, 0), (1, 1), LEFT, 3)
+        sizer.Add(SimpleText(panel, label=' Import? '),   (ir, 1), (1, 1), LEFT, 3)
+        sizer.Add(SimpleText(panel, label=' Plot'),       (ir, 2), (1, 1), LEFT, 3)
 
         nlabels = len(group.array_labels)
         narrays, npts = group.data.shape
@@ -374,15 +374,13 @@ class MultiColumnFrame(wx.Frame) :
             else:
                 name = f'unnamed_column{i+1}'
             self.wids[f'use_{i}'] = chuse = Check(panel, label='', default=(i in self.config['channels']))
-            ilabel = SimpleText(panel, label=f' {i+1} ')
-            slabel = SimpleText(panel, label=f' {name} ')
+            slabel = SimpleText(panel, label=f' {name}  ')
             bplot  = Button(panel, 'Plot', action=partial(self.onPlot, index=i))
 
             ir += 1
-            sizer.Add(ilabel, (ir, 0), (1, 1), LEFT, 3)
-            sizer.Add(slabel, (ir, 1), (1, 1), LEFT, 3)
-            sizer.Add(chuse,  (ir, 2), (1, 1), LEFT, 3)
-            sizer.Add(bplot,  (ir, 3), (1, 1), LEFT, 3)
+            sizer.Add(slabel, (ir, 0), (1, 1), LEFT, 3)
+            sizer.Add(chuse,  (ir, 1), (1, 1), LEFT, 3)
+            sizer.Add(bplot,  (ir, 2), (1, 1), LEFT, 3)
 
         pack(panel, sizer)
         panel.SetupScrolling()
@@ -918,9 +916,12 @@ class ColumnDataFileFrame(wx.Frame) :
             self.yarr1.SetSelection(chans[0])
             self.yarr2.SetSelection(config['i0'])
             self.yarr1.Disable()
+            self.ypop.SetStringSelection('')
             self.ypop.Disable()
             self.yop.Disable()
-            self.info_message.SetLabel(f"  Will import {len(config['channels'])} arrays")
+            y2 = self.yarr2.GetStringSelection()
+            msg = f"  Will import {len(config['channels'])} Y arrays, divided by '{y2}'"
+            self.info_message.SetLabel(msg)
             self.multi_clear.Enable()
         if update:
             self.onUpdate()
@@ -1040,13 +1041,14 @@ class ColumnDataFileFrame(wx.Frame) :
         self.expressions = conf['expressions']
         filename = conf['user_filename']
         groupname = conf['groupname']
+        conf['array_labels'] = self.workgroup.array_labels
 
         # generate script to pass back to calling program:
         labstr = ', '.join(self.orig_labels)
         buff = [f"{{group}} = {self.reader}('{{path}}', labels='{labstr}')",
                 "{group}.path = '{path}'",
                 "{group}.is_frozen = False",
-                "{group}.energy_ref = '{groupname}'"]
+                "{group}.energy_ref = '{group}'"]
 
         dtc_conf = conf.get('dtc_config', {})
         if len(dtc_conf) > 0:
@@ -1078,42 +1080,31 @@ class ColumnDataFileFrame(wx.Frame) :
             buff.append("{group}.mu = {group}.ydat")
             buff.append("sort_xafs({group}, overwrite=True, fix_repeats=True)")
         else:
-            buff.append("{group}.scale = 1./({group}.ydat.ptp()+1.e-16)")
+            buff.append("{group}.scale = 1./({group}.ydat.ptp()+1.e-15)")
 
         array_desc = dict(xdat=self.workgroup.plot_xlabel,
                           ydat=self.workgroup.plot_ylabel,
                           yerr=self.expressions['yerr'])
 
-        ref_filename = ref_groupname = None
+        reffile = refgroup = None
         if conf['has_yref']:
-            ref_filename = conf['ref_filename']
-            ref_groupname = conf['ref_groupname']
+            reffile = conf['reffile']
+            refgroup = conf['refgroup']
             refexpr = self.expressions['yref']
             array_desc['yref'] = getattr(self.workgroup, 'yrlabel', 'reference')
 
             buff.append("# reference group")
-            buff.append(f"{{refgroup}} = {self.reader}('{{path}}', labels='{labstr}')")
-            buff.append("{refgroup}.path = '{path}'")
-            buff.append("{refgroup}.is_frozen = False")
-            buff.append("{refgroup}.datatype = 'xas'")
-            buff.append("{refgroup}.xdat =1.0*{group}.xdat")
-            buff.append("{refgroup}.energy = {refgroup}.xdat")
+            buff.append("{refgroup} = deepcopy({group})")
             buff.append(f"{{refgroup}}.ydat = {{refgroup}}.mu = {refexpr}")
             buff.append(f"{{refgroup}}.plot_ylabel = '{self.workgroup.yrlabel}'")
-            buff.append("{refgroup}.plot_xlabel = 'energy'")
-            buff.append("{refgroup}.energy_ref = {group}.energy_ref = '{ref_groupname}'")
-            buff.append("sort_xafs({refgroup}, overwrite=True, fix_repeats=True)")
+            buff.append("{refgroup}.energy_ref = {group}.energy_ref = '{refgroup}'")
             buff.append("# end reference group")
 
         script = "\n".join(buff)
+        conf['array_desc'] = array_desc
 
         if self.read_ok_cb is not None:
-            self.read_ok_cb(script, self.path, groupname=groupname,
-                            filename=conf['user_filename'],
-                            ref_groupname=conf['ref_groupname'],
-                            ref_filename=conf['ref_filename'],
-                            array_desc=array_desc,
-                            config=conf)
+            self.read_ok_cb(script, self.path, conf)
 
         for f in self.subframes.values():
             try:
@@ -1231,8 +1222,8 @@ class ColumnDataFileFrame(wx.Frame) :
                 'yrop': self.yop.GetStringSelection().strip(),
                 'user_filename': self.wid_filename.GetValue(),
                 'groupname': fix_varname(self.wid_groupname.GetValue()),
-                'ref_filename': self.wid_reffilename.GetValue(),
-                'ref_groupname': fix_varname(self.wid_refgroupname.GetValue()),
+                'reffile': self.wid_reffilename.GetValue(),
+                'refgroup': fix_varname(self.wid_refgroupname.GetValue()),
                 }
         self.config.update(conf)
         return conf
@@ -1287,8 +1278,8 @@ def create_arrays(dgroup, datatype='xas', ix=0, xarr='energy', en_units='eV',
                   ypop='', iyerr=5, yerr_arr=None, yerr_op='constant', yerr_val=1.0,
                   has_yref=False, yref1=None, yref2=None, iry1=3, iry2=2,
                   yrpop='', yrop='/', user_filename='filename',
-                  groupname='groupname', ref_filename='ref_filename',
-                  ref_groupname='ref_groupname', **kws):
+                  groupname='groupname', reffile='reffile',
+                  refgroup='refgroup', **kws):
     """
     build arrays and values for datagroup based on configuration as from ColumnFile
     """
