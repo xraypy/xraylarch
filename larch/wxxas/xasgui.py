@@ -1359,7 +1359,7 @@ before clearing"""
         # print("-------------")
         multiconfig = config.get('multicol_config', {'channels':[], 'i0': config['iy2']})
         multi_i0  = multiconfig.get('i0', config['iy2'])
-        multi_chans = multiconfig.get('channels', [])
+        multi_chans = copy.copy(multiconfig.get('channels', []))
 
         if len(multi_chans) > 0:
             if (multi_chans[0] == config['iy1'] and multi_i0 == config['iy2']
