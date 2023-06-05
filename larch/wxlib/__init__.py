@@ -153,7 +153,7 @@ if HAS_WXPYTHON:
     #############################
     ## Hack System and Startfile on Windows totry to track down
     ## weird error of starting other applications, like Mail
-    if platform.system() == 'Windows':
+    if platform == 'win':
         from os import system as os_system
         from os import startfile as os_startfile
 
