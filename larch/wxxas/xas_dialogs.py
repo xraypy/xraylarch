@@ -294,15 +294,14 @@ class EnergyCalibrateDialog(wx.Dialog):
         wids['do_align'] = Button(panel, 'Auto Align', size=(100, -1),
                                   action=self.on_align)
 
-        wids['apply_one'] = Button(panel, 'Apply to Current Group', size=(150, -1),
+        wids['apply_one'] = Button(panel, 'Apply to Current Group', size=(200, -1),
                                    action=self.on_apply_one)
 
         wids['apply_sel'] = Button(panel, 'Apply to Selected Groups',
                                    size=(250, -1),  action=self.on_apply_sel)
-        SetTip(wids['apply_sel'], '''Apply the Energy Shift to all Selected Groups,
-overwriting current arrays''')
+        SetTip(wids['apply_sel'], 'Apply the Energy Shift to all Selected Groups')
 
-        wids['save_as'] = Button(panel, 'Save As New Group: ', size=(150, -1),
+        wids['save_as'] = Button(panel, 'Save As New Group ', size=(200, -1),
                            action=self.on_saveas)
         SetTip(wids['save_as'], 'Save shifted data as new group')
 
@@ -312,7 +311,7 @@ overwriting current arrays''')
 
         wids['sharedref_msg'] = wx.StaticText(panel, label="1 groups share this energy reference")
         wids['select_sharedref'] = Button(panel, 'Select Groups with shared reference',
-                                          size=(250, -1),  action=self.on_select_sharedrefs)
+                                          size=(300, -1),  action=self.on_select_sharedrefs)
 
         def add_text(text, dcol=1, newrow=True):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
@@ -334,7 +333,7 @@ overwriting current arrays''')
 
         panel.Add(wids['sharedref_msg'], dcol=2, newrow=True)
         panel.Add(wids['select_sharedref'], dcol=2)
-        panel.Add(wids['apply_one'], dcol=2, newrow=True)
+        panel.Add(wids['apply_one'], dcol=1, newrow=True)
         panel.Add(wids['apply_sel'], dcol=2)
 
         panel.Add(HLine(panel, size=(500, 3)), dcol=4, newrow=True)
