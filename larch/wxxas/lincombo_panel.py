@@ -486,16 +486,14 @@ class LinComboResultFrame(wx.Frame):
         label = f"lcf_fit_{nfit}"
         groupname = new_group = f"{dgroup.groupname}_{label}"
         filename = f"{dgroup.filename}_{label}"
-        cmdstr = f"{new_group} = group(name={groupname}, groupname={groupname}, filename={filename}, energy={xarr}, mu={yfit}, i0={i0}, datatype='xas')"
+        cmdstr = f"""{new_group} = group(name="{groupname}", groupname="{groupname}", filename="{filename}")"""
         controller.larch.eval(cmdstr)
         g = controller.symtable.get_group(new_group)
         g.energy = g.xdat = xarr
-        g.mu = g.ydat = yfit
+        g.mu = g.ydat = g.norm = yfit
         g.i0 = i0
         g.datatype = 'xas'
-        controller.install_group(groupname, filename)
-
-        import pdb; pdb.set_trace()
+        controller.install_group(groupname, filename, source="exported from Linear Combo / Fit Results")
 
     def onSaveGroupFit(self, evt=None):
         "Save Fit and Compoents for current fit to Data File"
