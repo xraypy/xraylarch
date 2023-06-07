@@ -1195,6 +1195,19 @@ before clearing"""
         if config is not None:
             self.last_spec_config = config
 
+        array_desc = config.get('array_desc', {})
+
+        multiconfig = config.get('multicol_config', {'channels':[], 'i0': config['iy2']})
+        multi_i0  = multiconfig.get('i0', config['iy2'])
+        multi_chans = copy.copy(multiconfig.get('channels', []))
+
+        if len(multi_chans) > 0:
+            if (multi_chans[0] == config['iy1'] and multi_i0 == config['iy2']
+                and 'log' not in config['expressions']['ydat']):
+                yname = config['array_labels'][config['iy1']]
+                # filename = f"{spath}:{yname}"
+                multi_chans.pop(0)
+
         for scan in scanlist:
             gname = fix_varname("{:s}{:s}".format(fname[:6], scan))
             if hasattr(symtable, gname):
@@ -1205,15 +1218,45 @@ before clearing"""
                 gname = tname
 
             cur_panel.skip_plotting = (scan == scanlist[-1])
-            yname = self.last_spec_config['yarr1']
+            yname = config['yarr1']
             if first_group is None:
                 first_group = gname
-            self.larch.eval(script.format(group=gname, specfile='_specfile',
-                                          path=path, scan=scan))
+            cmd = script.format(group=gname, specfile='_specfile',
+                                path=path, scan=scan, **config)
 
+            self.larch.eval(cmd)
             displayname = f"{fname:s} scan{scan:s} {yname:s}"
             jrnl = {'source_desc': f"{fname:s}: scan{scan:s} {yname:s}"}
             dgroup = self.install_group(gname, displayname, journal=jrnl)
+            if len(multi_chans) > 0:
+                ydatline = None
+                for line in script.split('\n'):
+                    if line.startswith("{group}.ydat ="):
+                        ydatline = line.replace("{group}", "{ngroup}")
+                mscript = '\n'.join(["{ngroup} = deepcopy({group})",
+                                     ydatline,
+                                    "{ngroup}.mu = {ngroup}.ydat",
+                                     "{ngroup}.plot_ylabel = '{ylabel}'"])
+                i0 = '1.0'
+                if multi_i0  < len(config['array_labels']):
+                    i0 = config['array_labels'][multi_i0]
+
+                for mchan in multi_chans:
+                    yname = config['array_labels'][mchan]
+                    ylabel = f"{yname}/{i0}"
+                    dname = f"{fname:s} {scan:s} {yname:s}"
+                    ngroup = file2groupname(dname, symtable=self.larch.symtable)
+                    njournal = {'source': path,
+                                'xdat': array_desc['xdat'].format(group=ngroup),
+                                'ydat': ylabel,
+                                'source_desc': f"{path}: {ylabel}",
+                                'yerr': array_desc['yerr'].format(group=ngroup)}
+                    cmd = mscript.format(group=gname, ngroup=ngroup,
+                                         iy1=mchan, iy2=multi_i0, ylabel=ylabel)
+                    self.larch.eval(cmd)
+                    self.install_group(ngroup, dname, source=path, journal=njournal)
+
+
         cur_panel.skip_plotting = False
 
         if first_group is not None:
@@ -1352,11 +1395,7 @@ before clearing"""
             groupname = file2groupname(filename, symtable=self.larch.symtable)
 
         refgroup = config.get('refgroup', groupname + '_ref')
-        # print("READ OK ", path, groupname, filename, array_desc)
-        # print(config)
-        # print("-------------")
-        # print(script)
-        # print("-------------")
+
         multiconfig = config.get('multicol_config', {'channels':[], 'i0': config['iy2']})
         multi_i0  = multiconfig.get('i0', config['iy2'])
         multi_chans = copy.copy(multiconfig.get('channels', []))
