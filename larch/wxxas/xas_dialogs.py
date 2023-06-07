@@ -405,7 +405,7 @@ class EnergyCalibrateDialog(wx.Dialog):
             newx = dat.xdat + pars['eshift'].value
             scale = pars['scale'].value
             y = interp(newx, dat.dmude, ref.xdat, kind='cubic')
-            returnd smooth(newx, y*scale-ref.dmude, sigma=0.50)[i1:i2]
+            return smooth(newx, y*scale-ref.dmude, sigma=0.50)[i1:i2]
 
         params = Parameters()
         params.add('eshift', value=ref.e0-dat.e0, min=-50, max=50)
