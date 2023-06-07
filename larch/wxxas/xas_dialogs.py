@@ -5,7 +5,7 @@ import time
 from collections import namedtuple
 from functools import partial
 import numpy as np
-from lmfit import Parameters, minimize
+from lmfit import Parameters, minimize, fit_report
 from matplotlib.ticker import FuncFormatter
 
 import wx
@@ -25,6 +25,7 @@ from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl, FloatSpin,
 
 from larch.xafs.xafsutils  import etok, ktoe
 from larch.utils.physical_constants import PI, DEG2RAD, PLANCK_HC
+from larch.math import smooth
 
 Plot_Choices = {'Normalized': 'norm', 'Derivative': 'dmude'}
 
@@ -396,15 +397,15 @@ class EnergyCalibrateDialog(wx.Dialog):
         dat.xdat = dat.energy_orig[:]
         ref.xdat = ref.energy_orig[:]
 
-        i1 = index_of(ref.energy_orig, ref.e0-15)
-        i2 = index_of(ref.energy_orig, ref.e0+35)
+        i1 = index_of(ref.energy_orig, ref.e0-20)
+        i2 = index_of(ref.energy_orig, ref.e0+20)
 
         def resid(pars, ref, dat, i1, i2):
             "fit residual"
             newx = dat.xdat + pars['eshift'].value
             scale = pars['scale'].value
             y = interp(newx, dat.dmude, ref.xdat, kind='cubic')
-            return (y*scale - ref.dmude)[i1:i2]
+            returnd smooth(newx, y*scale-ref.dmude, sigma=0.50)[i1:i2]
 
         params = Parameters()
         params.add('eshift', value=ref.e0-dat.e0, min=-50, max=50)
@@ -413,7 +414,6 @@ class EnergyCalibrateDialog(wx.Dialog):
         result = minimize(resid, params, args=(ref, dat, i1, i2))
         eshift = result.params['eshift'].value
         self.wids['eshift'].SetValue(eshift)
-        # self.wids['e0_new'].SetValue(dat.e0 + eshift)
 
         ensure_en_orig(self.dgroup)
         xnew = self.dgroup.energy_orig + eshift
