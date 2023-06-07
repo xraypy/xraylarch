@@ -1039,8 +1039,6 @@ class ColumnDataFileFrame(wx.Frame) :
         conf = self.config
         if self.ypop.Enabled:  #not using multicolumn mode
             conf['multicol_config'] = {'channels': [], 'i0': conf['iy2']}
-            print("unset multicol")
-
 
         self.expressions = conf['expressions']
         filename = conf['user_filename']
