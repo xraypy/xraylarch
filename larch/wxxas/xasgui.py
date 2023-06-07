@@ -1225,8 +1225,8 @@ before clearing"""
                                 path=path, scan=scan, **config)
 
             self.larch.eval(cmd)
-            displayname = f"{fname:s} scan{scan:s} {yname:s}"
-            jrnl = {'source_desc': f"{fname:s}: scan{scan:s} {yname:s}"}
+            displayname = f"{fname} scan{scan} {yname}"
+            jrnl = {'source_desc': f"{fname}: scan{scan} {yname}"}
             dgroup = self.install_group(gname, displayname, journal=jrnl)
             if len(multi_chans) > 0:
                 ydatline = None
@@ -1244,12 +1244,12 @@ before clearing"""
                 for mchan in multi_chans:
                     yname = config['array_labels'][mchan]
                     ylabel = f"{yname}/{i0}"
-                    dname = f"{fname:s} {scan:s} {yname:s}"
+                    dname = f"{fname} scan{scan} {yname}"
                     ngroup = file2groupname(dname, symtable=self.larch.symtable)
                     njournal = {'source': path,
                                 'xdat': array_desc['xdat'].format(group=ngroup),
                                 'ydat': ylabel,
-                                'source_desc': f"{path}: {ylabel}",
+                                'source_desc': f"{fname}: scan{scan} {yname}",
                                 'yerr': array_desc['yerr'].format(group=ngroup)}
                     cmd = mscript.format(group=gname, ngroup=ngroup,
                                          iy1=mchan, iy2=multi_i0, ylabel=ylabel)
