@@ -121,7 +121,7 @@ class DeadtimeCorrectionFrame(wx.Frame):
         wids['plot_this'] = Button(panel, 'Plot ROI + Correction For Channel', action=self.onPlotThis)
         wids['plot_all'] = Button(panel, 'Plot All Channels', action=self.onPlotEach)
         wids['plot_sum'] = Button(panel, 'Plot Sum of Channels',   action=self.onPlotSum)
-        wids['save_btn'] = Button(panel, 'Use this Sum of Channels',  action=self.onOK)
+        wids['save_btn'] = Button(panel, 'Use this Sum of Channels',  action=self.onOK_DTC)
 
         def tlabel(t):
             return SimpleText(panel, label=t)
@@ -204,7 +204,7 @@ class DeadtimeCorrectionFrame(wx.Frame):
         ltime = get_array('ltime', pchan)
         return roi, icr*ocr/ltime
 
-    def onOK(self, event=None):
+    def onOK_DTC(self, event=None):
         self.read_form()
         if callable(self.on_ok):
             self.on_ok(self.config)
@@ -349,7 +349,7 @@ class MultiColumnFrame(wx.Frame) :
 
         bsizer.Add(Button(bpanel, ' Select All ', action=self.onSelAll))
         bsizer.Add(Button(bpanel, ' Select None ', action=self.onSelNone))
-        bsizer.Add(Button(bpanel, ' Import Selected Columns ', action=self.onOK))
+        bsizer.Add(Button(bpanel, ' Import Selected Columns ', action=self.onOK_Multi))
         pack(bpanel, bsizer)
 
         ir = 0
@@ -366,11 +366,12 @@ class MultiColumnFrame(wx.Frame) :
         sizer.Add(SimpleText(panel, label=' Import? '),   (ir, 1), (1, 1), LEFT, 3)
         sizer.Add(SimpleText(panel, label=' Plot'),       (ir, 2), (1, 1), LEFT, 3)
 
-        nlabels = len(group.array_labels)
+        array_labels = getattr(group, 'array_labels', self.yarr_labels)
+        nlabels = len(array_labels)
         narrays, npts = group.data.shape
         for i in range(narrays):
             if i < nlabels:
-                name = group.array_labels[i]
+                name = array_labels[i]
             else:
                 name = f'unnamed_column{i+1}'
             self.wids[f'use_{i}'] = chuse = Check(panel, label='', default=(i in self.config['channels']))
@@ -416,7 +417,7 @@ class MultiColumnFrame(wx.Frame) :
                          ylabel=label, xlabel=self.group.plot_xlabel, label=label)
             self.parent.plotpanel.plot(x, y, **popts)
 
-    def onOK(self, evt=None):
+    def onOK_Multi(self, evt=None):
         group = self.group
         self.config['i0']  = self.wids['i0'].GetSelection()
         channels = []
@@ -449,7 +450,7 @@ class EditColumnFrame(wx.Frame) :
         self.wids = {}
         ir = 0
         sizer.Add(Button(panel, 'Apply Changes', size=(200, -1),
-                         action=self.onOK),
+                         action=self.onOK_Edit),
                   (0, 1), (1, 2), LEFT, 3)
         sizer.Add(Button(panel, 'Use Column Number', size=(200, -1),
                          action=self.onColNumber),
@@ -543,7 +544,7 @@ class EditColumnFrame(wx.Frame) :
             self.update(evt=evt, index=index)
         # evt.Skip()
 
-    def onOK(self, evt=None):
+    def onOK_Edit(self, evt=None):
         group = self.group
         array_labels = []
         for i in range(len(self.group.array_labels)):
@@ -562,7 +563,7 @@ class ColumnDataFileFrame(wx.Frame) :
         self._larch = _larch
         self.path = filename
 
-        group = self.initgroup = self.read_column_file(self.path)
+        group = self.read_column_file(self.path)
 
         self.subframes = {}
         self.workgroup  = Group(raw=group)
@@ -570,7 +571,7 @@ class ColumnDataFileFrame(wx.Frame) :
                      'array_labels', 'data'):
             setattr(self.workgroup, attr, getattr(group, attr, None))
 
-        arr_labels = [l.lower() for l in self.initgroup.array_labels]
+        arr_labels = [l.lower() for l in group.array_labels]
         self.orig_labels = arr_labels[:]
 
         if self.workgroup.datatype is None:
@@ -727,17 +728,17 @@ class ColumnDataFileFrame(wx.Frame) :
         _ok    = Button(bpanel, 'OK', action=self.onOK)
         _cancel = Button(bpanel, 'Cancel', action=self.onCancel)
         _edit   = Button(bpanel, 'Edit Array Names', action=self.onEditNames)
-        _multi  = Button(bpanel, 'Select Multilple Columns',  action=self.onMultiColumn)
-        self.multi_clear  = Button(bpanel, 'Clear Multiple Columns',  action=self.onClearMultiColumn)
+        self.multi_sel = Button(bpanel, 'Select Multilple Columns',  action=self.onMultiColumn)
+        self.multi_clear = Button(bpanel, 'Clear Multiple Columns',  action=self.onClearMultiColumn)
         self.multi_clear.Disable()
         _edit.SetToolTip('Change the current Column Names')
 
-        _multi.SetToolTip('Select Multiple Columns to import together')
+        self.multi_sel.SetToolTip('Select Multiple Columns to import as separate groups')
         self.multi_clear.SetToolTip('Clear Multiple Column Selection')
         bsizer.Add(_ok)
         bsizer.Add(_cancel)
         bsizer.Add(_edit)
-        bsizer.Add(_multi)
+        bsizer.Add(self.multi_sel)
         bsizer.Add(self.multi_clear)
         _ok.SetDefault()
         pack(bpanel, bsizer)
@@ -1150,12 +1151,11 @@ class ColumnDataFileFrame(wx.Frame) :
         xname = self.xarr.GetStringSelection()
 
         workgroup = self.workgroup
-        rdata = self.initgroup.data
-        ncol, npts = rdata.shape
+        ncol, npts = self.workgroup.data.shape
         if xname.startswith('_index') or ix >= ncol:
             workgroup.xdat = 1.0*np.arange(npts)
         else:
-            workgroup.xdat = 1.0*rdata[ix, :]
+            workgroup.xdat = 1.0*self.workgroup.data[ix, :]
         self.onUpdate()
 
         self.monod_val.Disable()
@@ -1178,13 +1178,12 @@ class ColumnDataFileFrame(wx.Frame) :
     def set_energy_units(self):
         ix  = self.xarr.GetSelection()
         xname = self.xarr.GetStringSelection()
-        rdata = self.initgroup.data
-        ncol, npts = rdata.shape
         workgroup = self.workgroup
+        ncol, npts = workgroup.data.shape
         if xname.startswith('_index') or ix >= ncol:
             workgroup.xdat = 1.0*np.arange(npts)
         else:
-            workgroup.xdat = 1.0*rdata[ix, :]
+            workgroup.xdat = 1.0*self.workgroup.data[ix, :]
         if self.datatype.GetStringSelection().strip().lower() != 'raw':
             eguess =  guess_energy_units(workgroup.xdat)
             if eguess.startswith('eV'):
@@ -1195,7 +1194,6 @@ class ColumnDataFileFrame(wx.Frame) :
 
     def read_form(self, **kws):
         """return form configuration"""
-
         datatype = self.datatype.GetStringSelection().strip().lower()
         if datatype == 'raw':
             self.en_units.SetStringSelection('not energy')
@@ -1232,7 +1230,6 @@ class ColumnDataFileFrame(wx.Frame) :
 
     def onUpdate(self, evt=None, **kws):
         """column selections changed calc xdat and ydat"""
-        rawgroup = self.initgroup
         workgroup = self.workgroup
         try:
             ncol, npts = self.workgroup.data.shape
@@ -1244,17 +1241,11 @@ class ColumnDataFileFrame(wx.Frame) :
         self.expressions = cout.pop('expressions')
         conf.update(cout)
 
-        en = workgroup.xdat
-        if ((workgroup.datatype == 'xas') and
-            ((len(en) > 1000 or any(np.diff(en) < 0) or
-              ((max(en)-min(en)) > 350 and
-               (np.diff(en[:100]).mean() < 1.0))))):
+        if energy_may_need_rebinning(workgroup):
             self.info_message.SetLabel("Warning: XAS data may need to be rebinned!")
 
-
         path, fname = os.path.split(workgroup.filename)
-        popts = dict(marker='o', markersize=4, linewidth=1.5,
-                     title=fname,
+        popts = dict(marker='o', markersize=4, linewidth=1.5, title=fname,
                      xlabel=workgroup.plot_xlabel,
                      ylabel=workgroup.plot_ylabel,
                      label=workgroup.plot_ylabel)
@@ -1279,9 +1270,7 @@ def create_arrays(dgroup, datatype='xas', ix=0, xarr='energy', en_units='eV',
                   monod=3.1355316, yarr1=None, yarr2=None, iy1=2, iy2=1, yop='/',
                   ypop='', iyerr=5, yerr_arr=None, yerr_op='constant', yerr_val=1.0,
                   has_yref=False, yref1=None, yref2=None, iry1=3, iry2=2,
-                  yrpop='', yrop='/', user_filename='filename',
-                  groupname='groupname', reffile='reffile',
-                  refgroup='refgroup', **kws):
+                  yrpop='', yrop='/', **kws):
     """
     build arrays and values for datagroup based on configuration as from ColumnFile
     """
@@ -1462,3 +1451,18 @@ def create_arrays(dgroup, datatype='xas', ix=0, xarr='energy', en_units='eV',
                 yerr_val=yerr_val, yerr_arr=yerr_arr, yrpop=yrpop, yrop=yrop,
                 yref1=yref1, yref2=yref2, has_yref=has_yref,
                 expressions=exprs)
+
+def energy_may_need_rebinning(workgroup):
+    "test if energy may need rebinning"
+    if getattr(workgroup, 'datatype', '?') != 'xas':
+        return False
+    en = getattr(workgroup, 'xdat', [-8.0e12])
+    if len(en) < 2:
+        return False
+    if not isinstance(en, np.ndarray):
+        en = np.array(en)
+    if len(en) > 2000 or any(np.diff(en))< 0:
+        return True
+    if (len(en) > 200 and (max(en) - min(en)) > 350 and
+        np.diff(en[:-100]).mean() < 1.0):
+        return True
