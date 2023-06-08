@@ -691,8 +691,8 @@ class ColumnDataFileFrame(wx.Frame) :
         iy2sel = iyesel = iyr1sel = iyr2sel = len(yarr_labels)-1
         if self.config['xarr'] in xarr_labels:
             ixsel = xarr_labels.index(self.config['xarr'])
-        if self.config['yarr1'] in arr_labels:
-            iysel = arr_labels.index(self.config['yarr1'])
+        if self.config['yarr1'] in self.array_labels:
+            iysel = self.array_labels.index(self.config['yarr1'])
         if self.config['yarr2'] in yarr_labels:
             iy2sel = yarr_labels.index(self.config['yarr2'])
         if self.config['yerr_arr'] in yarr_labels:
