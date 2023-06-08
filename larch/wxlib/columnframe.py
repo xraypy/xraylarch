@@ -591,7 +591,7 @@ class ColumnDataFileFrame(wx.Frame) :
         if config is not None:
             self.config.update(config)
 
-        if self.config['yarr2'] is None and 'i0' in self.arrary_labels:
+        if self.config['yarr2'] is None and 'i0' in self.array_labels:
             self.config['yarr2'] = 'i0'
 
         if self.config['yarr1'] is None:
