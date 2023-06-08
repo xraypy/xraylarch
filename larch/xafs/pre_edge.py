@@ -8,7 +8,8 @@ from lmfit import Parameters, Minimizer, report_fit
 from xraydb import guess_edge
 from larch import Group, Make_CallArgs, parse_group_args
 
-from larch.math import index_of, index_nearest, remove_dups, remove_nans2, interp
+from larch.math import (index_of, index_nearest, remove_dups, remove_nans2,
+                        interp, smooth)
 from .xafsutils import set_xafsGroup
 
 MODNAME = '_xafs'
@@ -50,7 +51,7 @@ def _finde0(energy, mu):
     if len(mu.shape) > 1:
         mu = mu.squeeze()
 
-    dmu = np.gradient(mu)/np.gradient(energy)
+    dmu = smooth(energy, np.gradient(mu)/np.gradient(energy), sigma=0.25)
     # find points of high derivative
     dmu[np.where(~np.isfinite(dmu))] = -1.0
     nmin = max(3, int(len(dmu)*0.05))

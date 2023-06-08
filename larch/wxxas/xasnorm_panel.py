@@ -798,23 +798,21 @@ class XASNormPanel(TaskPanel):
 
         cmds = []
         # test whether the energy shift is 0 or is different from the current energy shift:
-        eshift_current = getattr(dgroup, 'energy_shift', 9e30)
-        eshift = form.get('energy_shift', 9e31)
-        e1 = getattr(dgroup, 'energy', [9e32])
+        ediff = 8.42e14  # just a huge energy step/shift
+        eshift_current = getattr(dgroup, 'energy_shift', ediff)
+        eshift = form.get('energy_shift', ediff)
+        e1 = getattr(dgroup, 'energy', [ediff])
         e2 = getattr(dgroup, 'energy_orig', None)
 
         if (not isinstance(e2, np.ndarray) or (len(e1) != len(e2))):
             cmds.append("{group:s}.energy_orig = {group:s}.energy[:]")
 
-        ediff = 9e33
         if (isinstance(e1, np.ndarray) and isinstance(e2, np.ndarray) and
             len(e1) == len(e2)):
             ediff = (e1-e2).min()
 
-
         if abs(eshift-ediff) > 1.e-5 or abs(eshift-eshift_current) > 1.e-5:
-            if abs(eshift) > 1e15: eshif
-            t = 0.0
+            if abs(eshift) > 1e15: eshift = 0.0
             cmds.extend(["{group:s}.energy_shift = {eshift:.4f}",
                          "{group:s}.energy = {group:s}.xdat = {group:s}.energy_orig + {group:s}.energy_shift"])
 

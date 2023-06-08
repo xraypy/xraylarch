@@ -24,6 +24,7 @@ from larch.utils.strutils import fix_varname
 from larch.xafs.xafsutils import guess_energy_units
 from larch.io import look_for_nans, is_specfile, open_specfile
 from larch.utils.physical_constants import PLANCK_HC, DEG2RAD, PI
+from .columnframe import MultiColumnFrame, create_arrays, energy_may_need_rebinning
 
 CEN |=  wx.ALL
 FNB_STYLE = fnb.FNB_NO_X_BUTTON|fnb.FNB_SMART_TABS
@@ -39,118 +40,6 @@ CONV_OPS  = ('Lorenztian', 'Gaussian')
 XDATATYPES = ('raw', 'xas')
 ENUNITS_TYPES = ('eV', 'keV', 'degrees', 'not energy')
 
-class EditColumnFrame(wx.Frame) :
-    """Edit Column Labels for a larch grouop"""
-    def __init__(self, parent, group, on_ok=None):
-        self.parent = parent
-        self.group = group
-        self.on_ok = on_ok
-        wx.Frame.__init__(self, None, -1, 'Edit Array Names',
-                          style=wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
-
-        self.SetFont(Font(10))
-        sizer = wx.GridBagSizer(2, 2)
-        panel = scrolled.ScrolledPanel(self)
-
-        self.SetMinSize((675, 450))
-
-        self.wids = {}
-        ir = 0
-        sizer.Add(Button(panel, 'Apply Changes', size=(200, -1),
-                         action=self.onOK),
-                  (0, 1), (1, 2), LEFT, 3)
-        sizer.Add(Button(panel, 'Use Column Number', size=(200, -1),
-                         action=self.onColNumber),
-                  (0, 3), (1, 2), LEFT, 3)
-        sizer.Add(HLine(panel, size=(550, 2)),
-                  (1, 1), (1, 5), LEFT, 3)
-
-        cind = SimpleText(panel, label='Column')
-        cold = SimpleText(panel, label='Current Name')
-        cnew = SimpleText(panel, label='Enter New Name')
-        cret = SimpleText(panel, label='  Result   ', size=(150, -1))
-        cinfo = SimpleText(panel, label='   Data Range')
-        cplot = SimpleText(panel, label='   Plot')
-
-        ir = 2
-        sizer.Add(cind,  (ir, 0), (1, 1), LEFT, 3)
-        sizer.Add(cold,  (ir, 1), (1, 1), LEFT, 3)
-        sizer.Add(cnew,  (ir, 2), (1, 1), LEFT, 3)
-        sizer.Add(cret,  (ir, 3), (1, 1), LEFT, 3)
-        sizer.Add(cinfo, (ir, 4), (1, 1), LEFT, 3)
-        sizer.Add(cplot, (ir, 5), (1, 1), LEFT, 3)
-
-        for i, name in enumerate(group.array_labels):
-            ir += 1
-            cind = SimpleText(panel, label='  %i ' % (i+1))
-            cold = SimpleText(panel, label=' %s ' % name)
-            cret = SimpleText(panel, label=fix_varname(name), size=(150, -1))
-
-            cnew = wx.TextCtrl(panel, value=name, size=(150, -1),
-                               style=wx.TE_PROCESS_ENTER)
-
-            cnew.Bind(wx.EVT_TEXT_ENTER, partial(self.update, index=i))
-            cnew.Bind(wx.EVT_KILL_FOCUS, partial(self.update, index=i))
-
-            arr = group.data[i,:]
-            info_str = " [ %8g : %8g ] " % (arr.min(), arr.max())
-            cinfo = SimpleText(panel, label=info_str)
-            cplot = Button(panel, 'Plot', action=partial(self.onPlot, index=i))
-
-
-            self.wids["%d" % i] = cnew
-            self.wids["ret_%d" % i] = cret
-
-            sizer.Add(cind,  (ir, 0), (1, 1), LEFT, 3)
-            sizer.Add(cold,  (ir, 1), (1, 1), LEFT, 3)
-            sizer.Add(cnew,  (ir, 2), (1, 1), LEFT, 3)
-            sizer.Add(cret,  (ir, 3), (1, 1), LEFT, 3)
-            sizer.Add(cinfo, (ir, 4), (1, 1), LEFT, 3)
-            sizer.Add(cplot, (ir, 5), (1, 1), LEFT, 3)
-
-        pack(panel, sizer)
-        panel.SetupScrolling()
-
-        mainsizer = wx.BoxSizer(wx.VERTICAL)
-        mainsizer.Add(panel, 1, wx.GROW|wx.ALL, 1)
-
-        pack(self, mainsizer)
-        self.Show()
-        self.Raise()
-
-    def onPlot(self, event=None, index=None):
-        if index is not None:
-            x = self.parent.workgroup.index
-            y = self.parent.workgroup.data[index, :]
-            label = self.wids["ret_%i" % index].GetLabel()
-            popts = dict(marker='o', markersize=4, linewidth=1.5,
-                         ylabel=label, xlabel='data point', label=label)
-            self.parent.plotpanel.plot(x, y, **popts)
-
-    def onColNumber(self, evt=None, index=-1):
-        for name, wid in self.wids.items():
-            val = name
-            if name.startswith('ret_'):
-                val = name[4:]
-                setter = wid.SetLabel
-            else:
-                setter = wid.SetValue
-            setter("col_%d" % (int(val) +1))
-
-    def update(self, evt=None, index=-1):
-        newval = fix_varname(self.wids["%d" % index].GetValue())
-        self.wids["ret_%i" % index].SetLabel(newval)
-
-    def onOK(self, evt=None):
-        group = self.group
-        array_labels = []
-        for i in range(len(self.group.array_labels)):
-            newname = self.wids["ret_%i" % i].GetLabel()
-            array_labels.append(newname)
-
-        if callable(self.on_ok):
-            self.on_ok(array_labels)
-        self.Destroy()
 
 class SpecfileImporter(wx.Frame) :
     """Column Data File, select columns"""
@@ -198,7 +87,7 @@ class SpecfileImporter(wx.Frame) :
                            yarr2=None, yop='/', ypop='',
                            monod=3.1355316, en_units='eV',
                            yerror=YERR_OPS[0], yerr_val=1,
-                           yerr_arr=None)
+                           yerr_arr=None, dtc_config={}, multicol_config={})
 
         if config is not None:
             self.config.update(config)
@@ -321,6 +210,17 @@ class SpecfileImporter(wx.Frame) :
         self.yarr2.SetSelection(iy2sel)
         self.yerr_arr.SetSelection(iyesel)
 
+        bpanel = wx.Panel(panel)
+        bsizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.multi_sel = Button(bpanel, 'Select Multilple Columns',  action=self.onMultiColumn)
+        self.multi_clear = Button(bpanel, 'Clear Multiple Columns',  action=self.onClearMultiColumn)
+        self.multi_clear.Disable()
+        self.multi_sel.SetToolTip('Select Multiple Columns to import as separate groups')
+        self.multi_clear.SetToolTip('Clear Multiple Column Selection')
+        bsizer.Add(self.multi_sel)
+        bsizer.Add(self.multi_clear)
+        pack(bpanel, bsizer)
+
         sizer = wx.GridBagSizer(2, 2)
         ir = 0
         sizer.Add(self.title,     (ir, 0), (1, 7), LEFT, 5)
@@ -359,6 +259,9 @@ class SpecfileImporter(wx.Frame) :
 
         ir += 1
         sizer.Add(self.message,                     (ir, 0), (1, 4), LEFT, 0)
+        ir +=1
+        sizer.Add(bpanel,     (ir, 0), (1, 5), LEFT, 3)
+
         pack(panel, sizer)
 
         self.nb = fnb.FlatNotebook(rightpanel, -1, agwStyle=FNB_STYLE)
@@ -462,6 +365,8 @@ class SpecfileImporter(wx.Frame) :
         self.title.SetLabel("  %s, scan %s" % (self.path, self.curscan.scan_name))
         arr_labels = [l.lower() for l in self.curscan.array_labels]
         self.orig_labels = arr_labels[:]
+        self.workgroup.array_labels = arr_labels
+        self.workgroup.data = self.curscan.data
 
         yarr_labels = self.yarr_labels = arr_labels + ['1.0', '0.0', '']
         xarr_labels = self.xarr_labels = arr_labels + ['_index']
@@ -496,6 +401,43 @@ class SpecfileImporter(wx.Frame) :
         self.set_energy_units()
         self.onUpdate()
 
+    def onClearMultiColumn(self, event=None):
+        self.config['multicol_config'] = {}
+        self.message.SetLabel(f" cleared reading of multiple columns")
+        self.multi_clear.Disable()
+        self.yarr1.Enable()
+        self.ypop.Enable()
+        self.yop.Enable()
+        self.onUpdate()
+
+    def onMultiColumn(self, event=None):
+        if 'multicol_config' not in self.config:
+            self.config['multicol_config'] = {}
+        self.show_subframe('multicol', MultiColumnFrame,
+                           config=self.config['multicol_config'],
+                           group=self.workgroup,
+                           on_ok=self.onMultiColumn_OK)
+
+    def onMultiColumn_OK(self, config, update=True, **kws):
+        chans = config.get('channels', [])
+        if len(chans) == 0:
+            self.config['multicol_config'] = {}
+        else:
+            self.config['multicol_config'] = config
+            self.yarr1.SetSelection(chans[0])
+            self.yarr2.SetSelection(config['i0'])
+            self.ypop.SetStringSelection('')
+            self.yarr1.Disable()
+            self.ypop.Disable()
+            self.yop.Disable()
+            y2 = self.yarr2.GetStringSelection()
+            msg = f"  Will import {len(config['channels'])} Y arrays, divided by '{y2}'"
+            self.message.SetLabel(msg)
+            self.multi_clear.Enable()
+        if update:
+            self.onUpdate()
+
+
     def show_subframe(self, name, frameclass, **opts):
         shown = False
         if name in self.subframes:
@@ -508,11 +450,6 @@ class SpecfileImporter(wx.Frame) :
             self.subframes[name] = frameclass(self, **opts)
             self.subframes[name].Show()
             self.subframes[name].Raise()
-
-    def onEditNames(self, evt=None):
-        self.show_subframe('editcol', EditColumnFrame,
-                           group=self.workgroup,
-                           on_ok=self.set_array_labels)
 
     def set_array_labels(self, arr_labels):
         self.workgroup.array_labels = arr_labels
@@ -540,6 +477,7 @@ class SpecfileImporter(wx.Frame) :
 
     def onOK(self, event=None):
         """ build arrays according to selection """
+
         scanlist = []
         for s in self.scanlist.GetCheckedStrings():
             words = [s.strip() for s in s.split('|')]
@@ -553,25 +491,16 @@ class SpecfileImporter(wx.Frame) :
             else:
                 return
 
-        en_units = self.en_units.GetStringSelection()
-        dspace   = float(self.monod_val.GetValue())
-        xarr     = self.xarr.GetStringSelection()
-        yarr1    = self.yarr1.GetStringSelection()
-        yarr2    = self.yarr2.GetStringSelection()
-        ypop     = self.ypop.GetStringSelection()
-        yop      = self.yop.GetStringSelection()
-        yerr_op = self.yerr_op.GetStringSelection()
-        yerr_arr = self.yerr_arr.GetStringSelection()
-        yerr_idx = self.yerr_arr.GetSelection()
-        yerr_val = self.yerr_val.GetValue()
-        yerr_expr = '1'
-        if yerr_op.startswith('const'):
-            yerr_expr = "%f" % yerr_val
-        elif yerr_op.lower().startswith('array'):
-            yerr_expr = '%%s.data[%i, :]' % yerr_idx
-        elif yerr_op.startswith('sqrt'):
-            yerr_expr = 'sqrt(%s.ydat)'
-        self.expressions['yerr'] = yerr_expr
+        self.read_form()
+        cout = create_arrays(self.workgroup, **self.config)
+        self.config.update(cout)
+        conf = self.config
+        conf['array_labels'] = self.workgroup.array_labels
+
+        if self.ypop.Enabled:  #not using multicolumn mode
+            conf['multicol_config'] = {'channels': [], 'i0': conf['iy2']}
+
+        self.expressions = conf['expressions']
 
         # generate script to pass back to calling program:
         # read_cmd = "_specfile.get_scan(scan='{scan}')"
@@ -583,18 +512,19 @@ class SpecfileImporter(wx.Frame) :
             val = getattr(self.workgroup, attr)
             buff.append("{group}.%s = '%s'" % (attr, val))
 
-        expr = self.expressions['xdat'].replace('%s', '{group:s}')
+        xexpr = self.expressions['xdat']
+        en_units = conf['en_units']
         if en_units.startswith('deg'):
             buff.append(f"mono_dspace = {dspace:.9f}")
             buff.append(f"{{group}}.xdat = PLANCK_HC/(2*mono_dspace*sin(DEG2RAD*({expr:s})))")
         elif en_units.startswith('keV'):
-            buff.append(f"{{group}}.xdat = 1000.0*{expr:s}")
+            buff.append(f"{{group}}.xdat = 1000.0*{xexpr:s}")
         else:
-            buff.append(f"{{group}}.xdat = {expr:s}")
+            buff.append(f"{{group}}.xdat = {xexpr:s}")
 
         for aname in ('ydat', 'yerr'):
-            expr = self.expressions[aname].replace('%s', '{group:s}')
-            buff.append("{group}.%s = %s" % (aname, expr))
+            expr = self.expressions[aname]
+            buff.append(f"{{group}}.{aname} = {expr}")
 
         if getattr(self.workgroup, 'datatype', 'raw') == 'xas':
             buff.append("{group}.energy = {group}.xdat")
@@ -604,17 +534,9 @@ class SpecfileImporter(wx.Frame) :
             buff.append("{group}.scale = 1./({group}.ydat.ptp()+1.e-16)")
         script = "\n".join(buff)
 
-        self.config['xarr'] = xarr
-        self.config['yarr1'] = yarr1
-        self.config['yarr2'] = yarr2
-        self.config['yop'] = yop
-        self.config['ypop'] = ypop
-        self.config['yerror'] = yerr_op
-        self.config['yerr_val'] = yerr_val
-        self.config['yerr_arr'] = yerr_arr
-        self.config['monod'] = dspace
-        self.config['en_units'] = en_units
-
+        self.config['array_desc'] = dict(xdat=self.workgroup.plot_xlabel,
+                                         ydat=self.workgroup.plot_ylabel,
+                                         yerr=self.expressions['yerr'])
         if self.read_ok_cb is not None:
             self.read_ok_cb(script, self.path, scanlist,
                             config=self.config)
@@ -676,155 +598,52 @@ class SpecfileImporter(wx.Frame) :
         self.monod_val.Enable(self.en_units.GetStringSelection().startswith('deg'))
         self.onUpdate()
 
+    def read_form(self, **kws):
+        """return form configuration"""
+        datatype = self.datatype.GetStringSelection().strip().lower()
+        if datatype == 'raw':
+            self.en_units.SetStringSelection('not energy')
+
+        conf = {'datatype': datatype,
+                'ix':  self.xarr.GetSelection(),
+                'xarr': self.xarr.GetStringSelection(),
+                'en_units': self.en_units.GetStringSelection(),
+                'monod': float(self.monod_val.GetValue()),
+                'yarr1': self.yarr1.GetStringSelection().strip(),
+                'yarr2': self.yarr2.GetStringSelection().strip(),
+                'iy1': self.yarr1.GetSelection(),
+                'iy2': self.yarr2.GetSelection(),
+                'yop': self.yop.GetStringSelection().strip(),
+                'ypop': self.ypop.GetStringSelection().strip(),
+                'iyerr': self.yerr_arr.GetSelection(),
+                'yerr_arr': self.yerr_arr.GetStringSelection(),
+                'yerr_op': self.yerr_op.GetStringSelection().lower(),
+                'yerr_val': self.yerr_val.GetValue(),
+                }
+        self.config.update(conf)
+        return conf
+
 
     def onUpdate(self, value=None, evt=None):
         """column selections changed calc xdat and ydat"""
-        # dtcorr = self.dtcorr.IsChecked()
         workgroup = self.workgroup
-        rdata = self.curscan.data
+        workgroup.data = self.curscan.data
+        workgroup.filename = self.curscan.filename
 
-        dtcorr = False
+        conf = self.read_form()
+        cout = create_arrays(workgroup, **conf)
 
-        ix  = self.xarr.GetSelection()
-        xname = self.xarr.GetStringSelection()
-        yname1  = self.yarr1.GetStringSelection().strip()
-        yname2  = self.yarr2.GetStringSelection().strip()
-        iy1    = self.yarr1.GetSelection()
-        iy2    = self.yarr2.GetSelection()
-        yop = self.yop.GetStringSelection().strip()
+        self.expression = cout.pop('expressions')
+        conf.update(cout)
 
-        exprs = dict(xdat=None, ydat=None, yerr=None)
-
-        ncol, npts = rdata.shape
-        workgroup.index = 1.0*np.arange(npts)
-        if xname.startswith('_index') or ix >= ncol:
-            workgroup.xdat = 1.0*np.arange(npts)
-            xname = '_index'
-            exprs['xdat'] = 'arange(%i)' % npts
-        else:
-            workgroup.xdat = 1.0*rdata[ix, :]
-            exprs['xdat'] = '%%s.data[%i, : ]' % ix
-
-        xlabel = xname
-        en_units = self.en_units.GetStringSelection()
-        if en_units.startswith('deg'):
-            dspace = float(self.monod_val.GetValue())
-            workgroup.xdat = PLANCK_HC/(2*dspace*np.sin(DEG2RAD*workgroup.xdat))
-            xlabel = xname + ' (eV)'
-        elif en_units.startswith('keV'):
-            workgroup.xdat *= 1000.0
-            xlabel = xname + ' (eV)'
-
-        workgroup.datatype = self.datatype.GetStringSelection().strip().lower()
-
-        def pre_op(opwid, arr):
-            opstr = opwid.GetStringSelection().strip()
-            suf = ''
-            if opstr in ('-log(', 'log('):
-                suf = ')'
-                if opstr == 'log(':
-                    arr = np.log(arr)
-                elif opstr == '-log(':
-                    arr = -np.log(arr)
-                arr[np.where(np.isnan(arr))] = 0
-            return suf, opstr, arr
-
-
-        ylabel = yname1
-        if len(yname2) == 0:
-            yname2 = '1.0'
-        else:
-            ylabel = "%s%s%s" % (ylabel, yop, yname2)
-
-        if yname1 == '0.0':
-            yarr1 = np.zeros(npts)*1.0
-            yexpr1 = 'zeros(%i)' % npts
-        elif len(yname1) == 0 or yname1 == '1.0' or iy1 >= ncol:
-            yarr1 = np.ones(npts)*1.0
-            yexpr1 = 'ones(%i)' % npts
-        else:
-            yarr1 = rdata[iy1, :]
-            yexpr1 = '%%s.data[%i, : ]' % iy1
-
-        if yname2 == '0.0':
-            yarr2 = np.zeros(npts)*1.0
-            yexpr2 = '0.0'
-        elif len(yname2) == 0 or yname2 == '1.0' or iy2 >= ncol:
-            yarr2 = np.ones(npts)*1.0
-            yexpr2 = '1.0'
-        else:
-            yarr2 = rdata[iy2, :]
-            yexpr2 = '%%s.data[%i, : ]' % iy2
-
-        workgroup.ydat = yarr1
-
-        exprs['ydat'] = yexpr1
-        if yop in ('+', '-', '*', '/'):
-            exprs['ydat'] = "%s %s %s" % (yexpr1, yop, yexpr2)
-            if yop == '+':
-                workgroup.ydat = yarr1.__add__(yarr2)
-            elif yop == '-':
-                workgroup.ydat = yarr1.__sub__(yarr2)
-            elif yop == '*':
-                workgroup.ydat = yarr1.__mul__(yarr2)
-            elif yop == '/':
-                workgroup.ydat = yarr1.__truediv__(yarr2)
-
-        ysuf, ypop, workgroup.ydat = pre_op(self.ypop, workgroup.ydat)
-        exprs['ydat'] = '%s%s%s' % (ypop, exprs['ydat'], ysuf)
-
-        yerr_op = self.yerr_op.GetStringSelection().lower()
-        exprs['yerr'] = '1'
-        if yerr_op.startswith('const'):
-            yerr = self.yerr_val.GetValue()
-            exprs['yerr'] = '%f' % yerr
-        elif yerr_op.startswith('array'):
-            iyerr = self.yerr_arr.GetSelection()
-            yerr = rdata[iyerr, :]
-            exprs['yerr'] = '%%s.data[%i, :]' % iyerr
-        elif yerr_op.startswith('sqrt'):
-            yerr = np.sqrt(workgroup.ydat)
-            exprs['yerr'] = 'sqrt(%s.ydat)'
-
-
-        self.expressions = exprs
-        self.config = {'xarr': xname,
-                       'ypop': ypop, 'yop': yop,
-                       'yarr1': yname1, 'yarr2': yname2}
-        try:
-            npts = min(len(workgroup.xdat), len(workgroup.ydat))
-        except AttributeError:
-            return
-        except ValueError:
-            return
-
-        en = workgroup.xdat
-        if ((workgroup.datatype == 'xas') and
-            ((len(en) > 1000 or any(np.diff(en) < 0) or
-              ((max(en)-min(en)) > 350 and
-               (np.diff(en[:100]).mean() < 1.0))))):
-            self.statusbar.SetStatusText("Warning: XAS data may need to be rebinned!")
-
-
-        workgroup.filename    = self.curscan.filename
-        workgroup.npts        = npts
-        workgroup.plot_xlabel = xlabel
-        workgroup.plot_ylabel = ylabel
-        workgroup.xdat        = np.array(workgroup.xdat[:npts])
-        workgroup.ydat        = np.array(workgroup.ydat[:npts])
-        workgroup.y           = workgroup.ydat
-        workgroup.yerr        = yerr
-        if isinstance(yerr, np.ndarray):
-            workgroup.yerr    = np.array(yerr[:npts])
-
-        if workgroup.datatype == 'xas':
-            workgroup.energy = workgroup.xdat
-            workgroup.mu     = workgroup.ydat
+        if energy_may_need_rebinning(workgroup):
+            self.info_message.SetLabel("Warning: XAS data may need to be rebinned!")
 
         path, fname = os.path.split(workgroup.filename)
-        popts = dict(marker='o', markersize=4, linewidth=1.5,
-                     title=fname, ylabel=ylabel, xlabel=xlabel,
-                     label="%s: %s" % (fname, workgroup.plot_ylabel))
+        popts = dict(marker='o', markersize=4, linewidth=1.5, title=fname,
+                     ylabel=workgroup.plot_ylabel,
+                     xlabel=workgroup.plot_xlabel,
+                     label=workgroup.plot_ylabel)
         try:
             self.plotpanel.plot(workgroup.xdat, workgroup.ydat, **popts)
         except:
