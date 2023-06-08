@@ -72,12 +72,11 @@ class SpecfileImporter(wx.Frame) :
                      'array_labels', 'data'):
             setattr(self.workgroup, attr, None)
 
-        arr_labels = [l.lower() for l in self.curscan.array_labels]
-        self.orig_labels = arr_labels[:]
+        self.array_labels = [l.lower() for l in self.curscan.array_labels]
 
         if self.workgroup.datatype is None:
             self.workgroup.datatype = 'raw'
-            for arrlab in arr_labels[:4]:
+            for arrlab in self.array_labels[:4]:
                 if 'ener' in arrlab.lower():
                     self.workgroup.datatype = 'xas'
 
@@ -92,13 +91,13 @@ class SpecfileImporter(wx.Frame) :
         if config is not None:
             self.config.update(config)
 
-        if self.config['yarr2'] is None and 'i0' in arr_labels:
+        if self.config['yarr2'] is None and 'i0' in self.array_labels:
             self.config['yarr2'] = 'i0'
 
         if self.config['yarr1'] is None:
-            if 'itrans' in arr_labels:
+            if 'itrans' in self.array_labels:
                 self.config['yarr1'] = 'itrans'
-            elif 'i1' in arr_labels:
+            elif 'i1' in self.array_labels:
                 self.config['yarr1'] = 'i1'
 
         wx.Frame.__init__(self, None, -1, f'Build Arrays for {filename:s}',
@@ -150,8 +149,8 @@ class SpecfileImporter(wx.Frame) :
         self.wid_scantime = SimpleText(panel, self.curscan.timestring,
                                        font=Font(11), style=LEFT)
 
-        yarr_labels = self.yarr_labels = arr_labels + ['1.0', '0.0', '']
-        xarr_labels = self.xarr_labels = arr_labels + ['_index']
+        yarr_labels = self.yarr_labels = self.array_labels + ['1.0', '0.0', '']
+        xarr_labels = self.xarr_labels = self.array_labels + ['_index']
 
         self.xarr   = Choice(panel, choices=xarr_labels, action=self.onXSelect, size=(150, -1))
         self.yarr1  = Choice(panel, choices=yarr_labels, action=self.onUpdate, size=(150, -1))
@@ -199,8 +198,8 @@ class SpecfileImporter(wx.Frame) :
         ixsel, iysel, iy2sel, iyesel = 0, 1, len(yarr_labels)-1,  len(yarr_labels)-1
         if self.config['xarr'] in xarr_labels:
             ixsel = xarr_labels.index(self.config['xarr'])
-        if self.config['yarr1'] in arr_labels:
-            iysel = arr_labels.index(self.config['yarr1'])
+        if self.config['yarr1'] in self.array_labels:
+            iysel = self.array_labels.index(self.config['yarr1'])
         if self.config['yarr2'] in yarr_labels:
             iy2sel = yarr_labels.index(self.config['yarr2'])
         if self.config['yerr_arr'] in yarr_labels:
@@ -363,13 +362,12 @@ class SpecfileImporter(wx.Frame) :
         self.wid_scantime.SetLabel(self.curscan.timestring)
 
         self.title.SetLabel("  %s, scan %s" % (self.path, self.curscan.scan_name))
-        arr_labels = [l.lower() for l in self.curscan.array_labels]
-        self.orig_labels = arr_labels[:]
-        self.workgroup.array_labels = arr_labels
+        self.array_labels = [l.lower() for l in self.curscan.array_labels]
+        self.workgroup.array_labels = self.array_labels
         self.workgroup.data = self.curscan.data
 
-        yarr_labels = self.yarr_labels = arr_labels + ['1.0', '0.0', '']
-        xarr_labels = self.xarr_labels = arr_labels + ['_index']
+        yarr_labels = self.yarr_labels = self.array_labels + ['1.0', '0.0', '']
+        xarr_labels = self.xarr_labels = self.array_labels + ['_index']
 
         xsel = self.xarr.GetStringSelection()
         self.xarr.Clear()
@@ -413,6 +411,11 @@ class SpecfileImporter(wx.Frame) :
     def onMultiColumn(self, event=None):
         if 'multicol_config' not in self.config:
             self.config['multicol_config'] = {}
+
+        if len(self.array_labels)  < 1:
+            self.array_labels = [l.lower() for l in self.curscan.array_labels]
+        self.workgroup.array_labels = self.array_labels
+        self.workgroup.data = self.curscan.data
         self.show_subframe('multicol', MultiColumnFrame,
                            config=self.config['multicol_config'],
                            group=self.workgroup,
