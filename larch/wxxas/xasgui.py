@@ -315,7 +315,10 @@ class XASFrame(wx.Frame):
             version_thread.join()
             if self.vinfo is not None:
                 if self.vinfo.update_available:
-                    self.onCheckforUpdates()
+                    self.statusbar.SetStatusText(f'Larch Version {self.vinfo.remote_version} is available!', 0)
+                    self.statusbar.SetStatusText(f'Larch Version {self.vinfo.local_version}', 1)
+                else:
+                    self.statusbar.SetStatusText(f'Larch Version {self.vinfo.local_version} (latest)', 1)
 
 
     def createMainPanel(self):
