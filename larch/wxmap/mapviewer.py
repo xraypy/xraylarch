@@ -1406,6 +1406,10 @@ class MapViewerFrame(wx.Frame):
             if self.vinfo is not None:
                 if self.vinfo.update_available:
                     self.onCheckforUpdates()
+                    self.statusbar.SetStatusText(f'Larch Version {self.vinfo.remote_version} is available!', 0)
+                    self.statusbar.SetStatusText(f'Larch Version {self.vinfo.local_version}', 1)
+                else:
+                    self.statusbar.SetStatusText(f'Larch Version {self.vinfo.local_version} (latest)', 1)
 
 
     def CloseFile(self, filename, event=None):
@@ -1781,7 +1785,7 @@ class MapViewerFrame(wx.Frame):
         try:
             self.xrddisplay1D.add_data(xdat, label=label)
         except:
-            self.xrddisplay1D = XRD1DBrowserFrame(_larch=self.larch)            
+            self.xrddisplay1D = XRD1DBrowserFrame(_larch=self.larch)
             self.xrddisplay1D.add_data(xdat, label=label)
 
         self.xrddisplay1D.Show()
