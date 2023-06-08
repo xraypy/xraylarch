@@ -322,7 +322,7 @@ class MultiColumnFrame(wx.Frame) :
     def __init__(self, parent, group, config=None, on_ok=None):
         self.parent = parent
         self.group = group
-        # print(group, dir(group))
+
         self.on_ok = on_ok
         wx.Frame.__init__(self, None, -1, 'Import Multiple Columns from a file',
                           style=wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
@@ -571,13 +571,13 @@ class ColumnDataFileFrame(wx.Frame) :
                      'array_labels', 'data'):
             setattr(self.workgroup, attr, getattr(group, attr, None))
 
-        arr_labels = [l.lower() for l in group.array_labels]
-        self.orig_labels = arr_labels[:]
+        self.array_labels = [l.lower() for l in group.array_labels]
+
 
         if self.workgroup.datatype is None:
             self.workgroup.datatype = 'raw'
             en_units = 'not energy'
-            for arrlab in arr_labels[:4]:
+            for arrlab in self.array_labels[:4]:
                 if 'ener' in arrlab.lower():
                     en_units = 'eV'
                     self.workgroup.datatype = 'xas'
@@ -591,24 +591,24 @@ class ColumnDataFileFrame(wx.Frame) :
         if config is not None:
             self.config.update(config)
 
-        if self.config['yarr2'] is None and 'i0' in arr_labels:
+        if self.config['yarr2'] is None and 'i0' in self.arrary_labels:
             self.config['yarr2'] = 'i0'
 
         if self.config['yarr1'] is None:
-            if 'itrans' in arr_labels:
+            if 'itrans' in self.array_labels:
                 self.config['yarr1'] = 'itrans'
-            elif 'i1' in arr_labels:
+            elif 'i1' in self.array_labels:
                 self.config['yarr1'] = 'i1'
 
         if self.config['yref1'] is None:
-            if 'iref' in arr_labels:
+            if 'iref' in self.array_labels:
                 self.config['yref1'] = 'iref'
-            elif 'irefer' in arr_labels:
+            elif 'irefer' in self.array_labels:
                 self.config['yref1'] = 'irefer'
-            elif 'i2' in arr_labels:
+            elif 'i2' in self.array_labels:
                 self.config['yref1'] = 'i2'
 
-        if self.config['yref2'] is None and 'i1' in arr_labels:
+        if self.config['yref2'] is None and 'i1' in self.array_labels:
             self.config['yref2'] = 'i1'
 
         message = "Data Columns for %s" % group.filename
@@ -631,11 +631,11 @@ class ColumnDataFileFrame(wx.Frame) :
         # title row
         title = subtitle(message, colour=self.colors.title)
 
-        yarr_labels = self.yarr_labels = arr_labels + ['1.0', '']
-        xarr_labels = self.xarr_labels = arr_labels + ['_index']
+        yarr_labels = self.yarr_labels = self.array_labels + ['1.0', '']
+        xarr_labels = self.xarr_labels = self.array_labels + ['_index']
 
         self.xarr   = Choice(panel, choices=xarr_labels, action=self.onXSelect, size=(150, -1))
-        self.yarr1  = Choice(panel, choices= arr_labels, action=self.onUpdate, size=(150, -1))
+        self.yarr1  = Choice(panel, choices= self.array_labels, action=self.onUpdate, size=(150, -1))
         self.yarr2  = Choice(panel, choices=yarr_labels, action=self.onUpdate, size=(150, -1))
         self.yerr_arr = Choice(panel, choices=yarr_labels, action=self.onUpdate, size=(150, -1))
         self.yerr_arr.Disable()
@@ -697,10 +697,10 @@ class ColumnDataFileFrame(wx.Frame) :
             iy2sel = yarr_labels.index(self.config['yarr2'])
         if self.config['yerr_arr'] in yarr_labels:
             iyesel = yarr_labels.index(self.config['yerr_arr'])
-        if self.config['yref1'] in arr_labels:
-            iyr1sel = arr_labels.index(self.config['yref1'])
-        if self.config['yref2'] in arr_labels:
-            iyr2sel = arr_labels.index(self.config['yref2'])
+        if self.config['yref1'] in self.array_labels:
+            iyr1sel = self.array_labels.index(self.config['yref1'])
+        if self.config['yref2'] in self.array_labels:
+            iyr2sel = self.array_labels.index(self.config['yref2'])
 
         self.xarr.SetSelection(ixsel)
         self.yarr1.SetSelection(iysel)
@@ -1047,7 +1047,7 @@ class ColumnDataFileFrame(wx.Frame) :
         conf['array_labels'] = self.workgroup.array_labels
 
         # generate script to pass back to calling program:
-        labstr = ', '.join(self.orig_labels)
+        labstr = ', '.join(self.array_labels)
         buff = [f"{{group}} = {self.reader}('{{path}}', labels='{labstr}')",
                 "{group}.path = '{path}'",
                 "{group}.is_frozen = False",
