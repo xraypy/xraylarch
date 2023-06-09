@@ -126,8 +126,11 @@ class LinComboResultFrame(wx.Frame):
         fmenu = wx.Menu()
         m = {}
 
+        MenuItem(self, fmenu, "Export current fit as group",
+                 "Export current fit to a new group in the main panel",  self.onExportGroupFit)
+
         MenuItem(self, fmenu, "Save Fit And Components for Current Group",
-                 "Save Fit and Compoents to Data File for Current Group",  self.onSaveGroupFit)
+                 "Save Fit and Components to Data File for Current Group",  self.onSaveGroupFit)
 
         MenuItem(self, fmenu, "Save Statistics for Best N Fits for Current Group",
                  "Save Statistics and Weights for Best N Fits for Current Group",  self.onSaveGroupStats)
@@ -469,6 +472,28 @@ class LinComboResultFrame(wx.Frame):
         script = "\n".join(cmds)
         self.larch_eval(script.format(**form))
         self.parent.controller.set_focus(topwin=self)
+
+    def onExportGroupFit(self, evt=None):
+        "Export current fit to a new group in the main panel"
+
+        nfit = self.current_fit
+        dgroup = self.datagroup
+        xarr = dgroup.lcf_result[nfit].xdata
+        yfit = dgroup.lcf_result[nfit].yfit
+        i0 = np.ones_like(xarr)
+
+        controller = self.parent.controller
+        label = f"lcf_fit_{nfit}"
+        groupname = new_group = f"{dgroup.groupname}_{label}"
+        filename = f"{dgroup.filename}_{label}"
+        cmdstr = f"""{new_group} = group(name="{groupname}", groupname="{groupname}", filename="{filename}")"""
+        controller.larch.eval(cmdstr)
+        g = controller.symtable.get_group(new_group)
+        g.energy = g.xdat = xarr
+        g.mu = g.ydat = g.norm = yfit
+        g.i0 = i0
+        g.datatype = 'xas'
+        controller.install_group(groupname, filename, source="exported from Linear Combo / Fit Results")
 
     def onSaveGroupFit(self, evt=None):
         "Save Fit and Compoents for current fit to Data File"
