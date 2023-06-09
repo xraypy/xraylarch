@@ -35,7 +35,7 @@ def sort_xafs(energy, mu=None, group=None, fix_repeats=True, overwrite=True):
     new_mu  = mu[indices]
 
     if fix_repeats:
-        new_energy = remove_dups(new_energy)
+        new_energy = remove_dups(new_energy, tiny=2.5e-3)
 
     if not overwrite:
         group.sorted = Group(energy=new_energy, mu=new_mu)
@@ -83,7 +83,7 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
      1 If the first argument is a Group, it must contain 'energy' and 'mu'.
        See First Argrument Group in Documentation
 
-     2 If xanes_step is None, it will be found from the data as E0/25000, 
+     2 If xanes_step is None, it will be found from the data as E0/25000,
        truncated down to the nearest 0.05: xanes_step = 0.05*max(1, int(e0/1250.0))
 
 
