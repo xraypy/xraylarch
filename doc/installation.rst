@@ -161,7 +161,7 @@ Linux Notes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-For Linux, use the `GetLarch.bat`_ script and run that in a Terminal session.
+For Linux, use the `GetLarch.sh`_ script and run that in a Terminal session.
 
 Desktop shortcuts as ``.desktop`` files will be created on all Linux
 platforms, but whether these actually appear on your desktop depends on the
@@ -230,8 +230,8 @@ To be clear, much of the core Larch functionality can be used as a library
 without these packages installed, but especially `wxpython` and `pymatgen` are
 heavily used and should be installed.
 
-There is already a `conda-forge` package for X-ray Larch, so from a shell it
-may be that all you need to do is run
+There is a `conda-forge` package for X-ray Larch, so from a shell it may be
+that all you need to do is run
 
 
 .. code:: bash
@@ -239,9 +239,9 @@ may be that all you need to do is run
    conda install -yc conda-forge xraylarch
 
 
-To create a dedicated environment, you might try something like this to first
-create a dedicated "scipy ecosystem" infrastructure and then install xraylarch
-with pip:
+To create a dedicated environment, can either use the `conda-forge` package or
+try something like this to first create a dedicated "scipy ecosystem"
+infrastructure and then install xraylarch with pip:
 
 .. code:: bash
 
@@ -251,7 +251,12 @@ with pip:
    pip install xraylarch
 
 
-Finally, you can run
+
+Since the `PyPI_` packages are the main release package, this method may better
+ensure that you get the latest version.
+
+
+Finally, no matter how you install Larch, you can run
 
 .. code:: bash
 
@@ -259,8 +264,6 @@ Finally, you can run
 
 
 to create the Larch desktop application launchers or shortcuts.
-
-
 
 
 Updating a previous installation
@@ -388,8 +391,8 @@ Conference Series, 430:012007 (2013).  :cite:`larch2013`
 .. raw:: html
 
     <span class="__dimensions_badge_embed__"
-	  data-doi="10.1088/1742-6596/430/1/012007"
-	  data-style="large_rectangle">
+          data-doi="10.1088/1742-6596/430/1/012007"
+          data-style="large_rectangle">
     </span>
 
 
