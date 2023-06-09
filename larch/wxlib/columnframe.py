@@ -573,12 +573,12 @@ class ColumnDataFileFrame(wx.Frame) :
 
         self.array_labels = [l.lower() for l in group.array_labels]
 
-
         if self.workgroup.datatype is None:
             self.workgroup.datatype = 'raw'
             en_units = 'not energy'
-            for arrlab in self.array_labels[:4]:
-                if 'ener' in arrlab.lower():
+            for arrlab in self.array_labels[:3]:
+                arrlab  = arrlab.lower()
+                if arrlab.startswith('en') or 'ener' in arrlab:
                     en_units = 'eV'
                     self.workgroup.datatype = 'xas'
 
@@ -1058,7 +1058,9 @@ class ColumnDataFileFrame(wx.Frame) :
             sumcmd = "sum_fluor_channels({{group}}, {roi}, icr={icr}, ocr={ocr}, ltime={ltime})"
             buff.append(sumcmd.format(**dtc_conf))
 
-        for attr in ('datatype', 'plot_xlabel', 'plot_ylabel'):
+        buff.append("{group}.datatype = '%s'" % (conf['datatype']))
+
+        for attr in ('plot_xlabel', 'plot_ylabel'):
             val = getattr(self.workgroup, attr)
             buff.append("{group}.%s = '%s'" % (attr, val))
 
@@ -1180,6 +1182,7 @@ class ColumnDataFileFrame(wx.Frame) :
         xname = self.xarr.GetStringSelection()
         workgroup = self.workgroup
         ncol, npts = workgroup.data.shape
+
         if xname.startswith('_index') or ix >= ncol:
             workgroup.xdat = 1.0*np.arange(npts)
         else:
@@ -1191,10 +1194,19 @@ class ColumnDataFileFrame(wx.Frame) :
             elif eguess.startswith('keV'):
                 self.en_units.SetStringSelection('keV')
 
-
     def read_form(self, **kws):
         """return form configuration"""
         datatype = self.datatype.GetStringSelection().strip().lower()
+        if self.workgroup.datatype == 'raw' and datatype == 'xas':
+            self.workgroup.datatype = 'xas'
+            eguess = guess_energy_units(self.workgroup.xdat)
+            if eguess.startswith('keV'):
+                self.en_units.SetSelection(1)
+            elif eguess.startswith('deg'):
+                self.en_units.SetSelection(2)
+                self.monod_val.Enable()
+            else:
+                self.en_units.SetSelection(0)
         if datatype == 'raw':
             self.en_units.SetStringSelection('not energy')
 
@@ -1277,6 +1289,7 @@ def create_arrays(dgroup, datatype='xas', ix=0, xarr='energy', en_units='eV',
     ncol, npts = dgroup.data.shape
     exprs = dict(xdat=None, ydat=None, yerr=None, yref=None)
 
+    # print("CREATE ARRAYS ", dgroup, datatype, ncol, npts)
     if not hasattr(dgroup, 'index'):
         dgroup.index = 1.0*np.arange(npts)
 
@@ -1430,6 +1443,7 @@ def create_arrays(dgroup, datatype='xas', ix=0, xarr='energy', en_units='eV',
         return
 
     en = dgroup.xdat
+    dgroup.datatype    = datatype
     dgroup.npts        = npts
     dgroup.plot_xlabel = xlabel
     dgroup.plot_ylabel = ylabel
