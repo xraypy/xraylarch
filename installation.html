@@ -4,9 +4,9 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>1. Downloading and Installation &#8212; xraylarch 0.9.68 documentation</title>
+    <title>1. Downloading and Installation &#8212; xraylarch 0.9.70 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
@@ -79,10 +79,7 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#installing-with-the-getlarch-sh-and-getlarch-bat-scripts">1.2. Installing with the <cite>GetLarch.sh</cite> and <cite>GetLarch.bat</cite> scripts</a></li>
-<li><a class="reference internal" href="#installing-into-an-existing-anaconda-python-environment">1.3. Installing into an existing Anaconda Python environment</a><ul>
-<li><a class="reference internal" href="#notes-on-anaconda-and-on-python-versions">1.3.1. Notes on Anaconda and on Python Versions</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#installing-into-an-existing-anaconda-python-environment">1.3. Installing into an existing Anaconda Python environment</a></li>
 <li><a class="reference internal" href="#updating-a-previous-installation">1.4. Updating a previous installation</a></li>
 <li><a class="reference internal" href="#installing-the-development-version">1.5. Installing the development version</a></li>
 <li><a class="reference internal" href="#making-desktop-shortcuts-to-link-to-the-applications">1.6. Making Desktop shortcuts to Link to the Applications</a></li>
@@ -138,10 +135,10 @@
             
   <section id="downloading-and-installation">
 <span id="install-chapter"></span><h1><span class="section-number">1. </span>Downloading and Installation<a class="headerlink" href="#downloading-and-installation" title="Permalink to this heading">¶</a></h1>
-<p>The latest release version of Larch is 0.9.68.</p>
-<p>Larch is in active and continuing development.  The goal is to release
-versions every six months, but we don’t use a strict schedule, and
-typically release more often than that.</p>
+<p>The latest release version of Larch is 0.9.70.</p>
+<p>Larch is in active and continuing development.  We do not use a strict
+schedule, but for the past few years, new versions have typically been
+released every 2 months or so.</p>
 <p>There are three ways to install Larch. Which of these is right for you will
 depend on your operating system and your familiarity with the Python
 programming language and environment:</p>
@@ -155,11 +152,12 @@ command-line or want to customize your installation.</p></li>
 environment that you want to use.</p></li>
 </ol>
 </div></blockquote>
-<p>There should not be any difference in the resulting code or packages when
-using these different methods.  One is not “more right” or even “more
-preferred”.  In short, use the Binary installer unless you know that you
-want to install into an existing Python environment.  If that doesn’t work,
-try the installation script.</p>
+<p>There will not be any difference in the resulting code or packages when using
+these different methods.  Each of these will result in a Python environment
+from which you can either use Larch and its GUI applications, or develop code
+with Larch.  We recommend using the Binary installer on Windws, and the
+installation scripts on macOS or Linux, unless you know that  you want to
+install into an existing Python environment.</p>
 <section id="installing-from-a-binary-installers">
 <span id="install-binary"></span><h2><span class="section-number">1.1. </span>Installing from a Binary installers<a class="headerlink" href="#installing-from-a-binary-installers" title="Permalink to this heading">¶</a></h2>
 <p id="installers-table"><strong>Table of Larch binary installers</strong></p>
@@ -176,23 +174,18 @@ try the installation script.</p>
 <td><p><a class="reference external" href="https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2022-04-Windows-x86_64.exe">Larch for Windows</a></p></td>
 <td><p><a class="reference internal" href="#install-win"><span class="std std-ref">Notes</span></a></p></td>
 </tr>
-<tr class="row-odd"><td><p>Mac OSX (64 bit)</p></td>
+<tr class="row-odd"><td><p>macOSX  (64 bit)</p></td>
 <td><p><a class="reference external" href="https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2022-04-MacOSX-x86_64.pkg">Larch for MacOSX</a></p></td>
 <td><p><a class="reference internal" href="#install-mac"><span class="std std-ref">Notes</span></a></p></td>
-</tr>
-<tr class="row-even"><td><p>Linux (64 bit)</p></td>
-<td><p><a class="reference external" href="https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2022-04-Linux-x86_64.sh">Larch for Linux</a></p></td>
-<td><p><a class="reference internal" href="#install-lin"><span class="std std-ref">Notes</span></a></p></td>
 </tr>
 </tbody>
 </table>
 </div></blockquote>
-<p>Binary installers for Windows, Mac OSX, and Linux, are available at
-<a class="reference external" href="https://millenia.cars.aps.anl.gov/xraylarch/downloads">Larch Binary Installers</a>.  These are fairly large (400 to 600 Mb files)
-self-contained files that will install a complete Anaconda Python
-environment with all of libraries needed by Larch.  Normally, this
-installation will create a folder called <cite>xraylarch</cite> in your home folder –
-see platform-specific notes below.</p>
+<p>Binary installers for Windows and macOSX are available at <a class="reference external" href="https://millenia.cars.aps.anl.gov/xraylarch/downloads">Larch Binary
+Installers</a>.  These are fairly large (400 to 600 Mb files) self-contained
+files that will install a complete Anaconda Python environment with all of
+libraries needed by Larch.  Normally, this installation will create a folder
+called <cite>xraylarch</cite> in your home folder – see platform-specific notes below.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>There can be no spaces in your username or the path in which Larch is
@@ -217,71 +210,55 @@ or to <code class="docutils literal notranslate"><span class="pre">C:\Users\&lt;
 part of a Windows Workgroup or Domain. As mentioned above, if your user
 name has a space in it, you will probably need to install to
 <code class="docutils literal notranslate"><span class="pre">C:\Users\Public</span></code>.</p>
-<p>Alternatively you can download the <a class="reference external" href="https://raw.githubusercontent.com/xraypy/xraylarch/master/installers/GetLarch.bat">GetLarch.bat</a> script, and run that by double-clicking
-on it. This will download, install, and configure the Larch package, with a result that
-is nearly identical to the binary installer.</p>
+<p>Alternatively you can download the <a class="reference external" href="https://raw.githubusercontent.com/xraypy/xraylarch/master/installers/GetLarch.bat">GetLarch.bat</a> script, and run that by
+double-clicking on it. This will download, install, and configure the Larch
+package, with a result that is nearly identical to the binary installer.</p>
 </section>
 <section id="macos-notes">
 <span id="install-mac"></span><h3><span class="section-number">1.1.2. </span>MacOS Notes<a class="headerlink" href="#macos-notes" title="Permalink to this heading">¶</a></h3>
-<p>For Mac OS, download the <a class="reference external" href="https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2022-04-MacOSX-x86_64.pkg">Larch for MacOSX</a> package installer above and click it to
-install Larch.  There are two important notes:</p>
+<p>For Mac OS, download the <a class="reference external" href="https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2022-04-MacOSX-x86_64.pkg">Larch for MacOSX</a> package installer above and click
+it to install Larch.  There are two important notes:</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>With MacOS 10.15 (Catalina), Apple will not install non-signed 3rd party packages by default.
-You may need to go into General Settings part of the <strong>Security &amp; Privacy</strong> section of <strong>System
-Preferences</strong> and explicitly allow this package to be installed. You probably will be prompted for
-an Administrative password.</p>
+<p>With MacOS 10.15 (Catalina), Apple will not install non-signed 3rd party
+packages by default.  You may need to go into General Settings part of the
+<strong>Security &amp; Privacy</strong> section of <strong>System Preferences</strong> and explicitly
+allow this package to be installed. You probably will be prompted for an
+Administrative password.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>You need to explicitly click on “Install only for me” during the installation process.  If you
-get prompted for an Administrative password by the installer, go back and explicitly choose
-“Install only for me”.</p>
+<p>You need to explicitly click on “Install only for me” during the
+installation process.  If you get prompted for an Administrative password
+by the installer, go back and explicitly choose “Install only for me”.</p>
 </div>
-<p>Alternatively you can download the <a class="reference external" href="https://raw.githubusercontent.com/xraypy/xraylarch/master/installers/GetLarch.sh">GetLarch.sh</a> script, and run that in a Terminal
-session (Applications-&gt;Utilities-&gt;Terminal). This will download, install, and configure
-the Larch package, with a result that is nearly identical to the binary installer.  If you
-run into any problems with permissions or administrative privileges or “unauthorized
-application” with the package installer, running this installer script actually avoids all
-of those issues since your user account will simply be running the commands to write files
-to your home directory.</p>
+<p>Alternatively you can download the <a class="reference external" href="https://raw.githubusercontent.com/xraypy/xraylarch/master/installers/GetLarch.sh">GetLarch.sh</a> script, and run that in a
+Terminal session (Applications-&gt;Utilities-&gt;Terminal). This will download,
+install, and configure the Larch package, with a result that is nearly
+identical to the binary installer.  If you run into any problems with
+permissions or administrative privileges or “unauthorized application” with
+the package installer, running this installer script actually avoids all of
+those issues since your user account will simply be running the commands to
+write files to your home directory.</p>
 </section>
 <section id="linux-notes">
 <span id="install-lin"></span><h3><span class="section-number">1.1.3. </span>Linux Notes<a class="headerlink" href="#linux-notes" title="Permalink to this heading">¶</a></h3>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>There have been reports of the binary installation not working well on
-all Linux systems.  We recommend using GetLarch.sh on Linux</p>
-</div>
-<p>For Linux, download the <a class="reference external" href="https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2022-04-Linux-x86_64.sh">Larch for Linux</a> shell installer file, then open a Terminal, use <cite>cd</cite> to
-move to the download folder (typically <cite>$HOME/Downloads</cite>) and run:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">~&gt;</span> <span class="n">bash</span> <span class="o">./</span><span class="n">xraylarch</span><span class="o">-</span><span class="mi">2022</span><span class="o">-</span><span class="mi">04</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
-</pre></div>
-</div>
-<p>Desktop shortcuts as <code class="docutils literal notranslate"><span class="pre">.desktop</span></code> files will be created on all Linux platforms, but whether these
-actually appear on your desktop depends on the Windowing system used:  they will appear on the
-desktop with KDE and many other systems, but not with Gnome.  Clickable icons should also show up
-in the Applications selection of the “Start Menu” or Applications list.</p>
-<p>Alternatively you can download the <a class="reference external" href="https://raw.githubusercontent.com/xraypy/xraylarch/master/installers/GetLarch.sh">GetLarch.sh</a> script, and run that in a Terminal
-session. This will download, install, and configure the Larch package, with a result that
-is nearly identical to the binary installer.</p>
-<p>Larch uses a relatively large number of Python packages (<strong>dependencies</strong>),
-and these also evolve.  We try keep up with the latest versions of these
-packages, but changes in those sometimes complicate the installation of
-Larch.  We also try to keep these installation instructions up-to-date, but
-strategies we use may change (slowly, we hope). Your feedback, bug reports,
-and patience are greatly appreciated.</p>
+<p>For Linux, use the <a class="reference external" href="https://raw.githubusercontent.com/xraypy/xraylarch/master/installers/GetLarch.sh">GetLarch.sh</a> script and run that in a Terminal session.</p>
+<p>Desktop shortcuts as <code class="docutils literal notranslate"><span class="pre">.desktop</span></code> files will be created on all Linux
+platforms, but whether these actually appear on your desktop depends on the
+Windowing system used: they will appear on the desktop with KDE and many other
+systems, but not with Gnome.  Clickable icons should also show up in the
+Applications selection of the “Start Menu” or Applications list.</p>
 </section>
 </section>
 <section id="installing-with-the-getlarch-sh-and-getlarch-bat-scripts">
 <span id="install-scripts"></span><h2><span class="section-number">1.2. </span>Installing with the <cite>GetLarch.sh</cite> and <cite>GetLarch.bat</cite> scripts<a class="headerlink" href="#installing-with-the-getlarch-sh-and-getlarch-bat-scripts" title="Permalink to this heading">¶</a></h2>
-<p>This method is recommended for those who are relatively comfortable using a
-command-line, and is helpful for debugging cases where the binary installer
-has failed.  The approach here is basically to run a script that follows
-the steps that the binary installer should follow, but is likely to give
-more useful error messages if something goes wrong.  On Linux and MacOS,
-there are also command-line options.</p>
-<p>To install with this method, download and execute one of the following:</p>
+<p>This method is recommended on Linux, and for those who are relatively
+comfortable using a command-line, and is helpful for debugging cases where the
+binary installer has failed.  The approach here is basically to run a script
+that follows the steps that the binary installer should follow, but is likely
+to give more useful error messages if something goes wrong.  To install with
+this method, download and execute one of the following:</p>
 <blockquote>
 <div><ul class="simple">
 <li><p><a class="reference external" href="https://raw.githubusercontent.com/xraypy/xraylarch/master/installers/GetLarch.sh">GetLarch.sh</a> for Linux and Mac OSX</p></li>
@@ -295,112 +272,78 @@ like:</p>
 <span class="n">GetLarch</span>
 </pre></div>
 </div>
-<p>On MacOS on Linux, open a Terminal (from Applications -&gt; Utilities on
-MacOS), and then type:</p>
+<p>On macOS on Linux, open a Terminal (from Applications-&gt;Utilities-&gt;Terminal on
+macOS), and then type:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">Downloads</span>
 <span class="n">sh</span> <span class="n">GetLarch</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 <p>If this script fails, report it to the <a class="reference external" href="https://github.com/xraypy/xraylarch/issues">Larch Github Issues</a> (including
 the error trace and the <cite>GetLarch.log</cite> file).</p>
-<p>The scripts will download and install <cite>Miniforge Python</cite> which uses Anaconda
+<p>The scripts will download and install <cite>Mambaforge Python</cite> which uses Anaconda
 Python and the <cite>conda-forge</cite> channel as the basis of an installation that will
 be essentially identical to the environment installed by the binary installers,
 that is, the whole environment is stored in a folder called <cite>xraylarch</cite> in your
 home folder. In case of problems, simply remove this folder to clean the
 installation.</p>
-<p>You can also read these scripts and modify them for your needs (or maybe suggest ways
-we could maintain that for others to use too).</p>
 </section>
 <section id="installing-into-an-existing-anaconda-python-environment">
 <span id="install-conda"></span><h2><span class="section-number">1.3. </span>Installing into an existing Anaconda Python environment<a class="headerlink" href="#installing-into-an-existing-anaconda-python-environment" title="Permalink to this heading">¶</a></h2>
-<p>The following procedure is recommended for those who are familiar with <a class="reference external" href="https://www.continuum.io/">Anaconda
-Python</a> / <a class="reference external" href="https://conda.io">Conda</a> and have already installed it in their system.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Some packages that Larch uses are not currently (January 2022) handled
-by the standard Python package manager <a class="reference external" href="https://pypi.org">Pip</a>.  For this reason, we use
-a <a class="reference external" href="https://conda.io">Conda</a> environment and “conda forge” for installing them.  These
-packages include:</p>
-<ul class="simple">
-<li><p><cite>pymatgen</cite>: needed for handling CIF files and running FEFF calculations.</p></li>
+<p>If you are already using an <a class="reference external" href="https://www.continuum.io/">Anaconda Python</a>  environment, you may want to
+install Larch into that environment or create a new environment for it.
+Larch uses many of the common “scipy ecosystem” packages. The main packages
+that you may need to install that may not be installed are:</p>
+<blockquote>
+<div><ul class="simple">
 <li><p><cite>wxpython</cite>: needed for all plotting, graphics and GUI applications.</p></li>
-<li><p><cite>tomopy</cite>: needed for reconstructing X-ray fluorescence tomography.</p></li>
-<li><p><cite>python.app</cite>: needed (from conda-forge) for Anaconda-based Python on MacOS.</p></li>
+<li><p><cite>pymatgen</cite>: needed for handling CIF files and running FEFF calculations.</p></li>
+<li><p><cite>tomopy</cite>: needed only for reconstructing X-ray fluorescence tomography.</p></li>
 <li><p><cite>epicsapps</cite>: applications using the Epics control system.</p></li>
 </ul>
-<p>Most of Larch functionality can be used as a library without these
-packages installed.</p>
-</div>
-<p>Within a shell:</p>
-<ol class="arabic simple">
-<li><p>activate your conda environment (called <cite>base</cite> by default) and update it:</p></li>
-</ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>activate
-conda<span class="w"> </span>update<span class="w"> </span>-y<span class="w"> </span>conda<span class="w"> </span>python<span class="w"> </span>pip
+</div></blockquote>
+<p>To be clear, much of the core Larch functionality can be used as a library
+without these packages installed, but especially <cite>wxpython</cite> and <cite>pymatgen</cite> are
+heavily used and should be installed.</p>
+<p>There is a <cite>conda-forge</cite> package for X-ray Larch, so from a shell it may be
+that all you need to do is run</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>-yc<span class="w"> </span>conda-forge<span class="w"> </span>xraylarch
 </pre></div>
 </div>
-<ol class="arabic simple" start="2">
-<li><p><strong>(optional/expert)</strong> create a dedicated environment for Larch and activate it:</p></li>
-</ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-y<span class="w"> </span>--name<span class="w"> </span>xraylarch<span class="w"> </span><span class="nv">python</span><span class="o">=</span>&gt;3.9.10
+<p>To create a dedicated environment, can either use the <cite>conda-forge</cite> package or
+try something like this to first create a dedicated “scipy ecosystem”
+infrastructure and then install xraylarch with pip:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-y<span class="w"> </span>--name<span class="w"> </span>xraylarch<span class="w"> </span><span class="nv">python</span><span class="o">=</span>&gt;3.10
 conda<span class="w"> </span>activate<span class="w"> </span>xraylarch
-</pre></div>
-</div>
-<ol class="arabic simple" start="3">
-<li><p>install main dependencies:</p></li>
-</ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span><span class="s2">&quot;numpy=&gt;1.20&quot;</span><span class="w"> </span><span class="s2">&quot;scipy=&gt;1.6&quot;</span><span class="w"> </span><span class="s2">&quot;matplotlib=&gt;3.0&quot;</span><span class="w"> </span>scikit-learn<span class="w"> </span>pandas
-conda<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>wxpython<span class="w"> </span>pymatgen<span class="w"> </span>tomopy<span class="w"> </span>pycifrw
-</pre></div>
-</div>
-<ol class="arabic simple" start="4">
-<li><p>install Larch (latest release):</p></li>
-</ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>xraylarch
-</pre></div>
-</div>
-<ol class="arabic simple" start="5">
-<li><p>if anything of the above fails, report it to the <a class="reference external" href="https://github.com/xraypy/xraylarch/issues">Larch Github Issues</a></p></li>
-</ol>
-<p>Putting that all together:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-y<span class="w"> </span>--name<span class="w"> </span>xraylarch<span class="w"> </span><span class="nv">python</span><span class="o">=</span>&gt;3.9.10
-conda<span class="w"> </span>activate<span class="w"> </span>xraylarch
-conda<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span><span class="s2">&quot;numpy=&gt;1.20&quot;</span><span class="w"> </span><span class="s2">&quot;scipy=&gt;1.6&quot;</span><span class="w"> </span><span class="s2">&quot;matplotlib=&gt;3.0&quot;</span><span class="w"> </span>scikit-learn<span class="w"> </span>pandas
-conda<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>wxpython<span class="w"> </span>pymatgen<span class="w"> </span>tomopy<span class="w"> </span>pycifrw
+conda<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>wxpython<span class="w"> </span>pymatgen<span class="w"> </span>scipy<span class="w"> </span>h5py<span class="w"> </span>matplotlib
 pip<span class="w"> </span>install<span class="w"> </span>xraylarch
-larch<span class="w"> </span>-m
 </pre></div>
 </div>
-<section id="notes-on-anaconda-and-on-python-versions">
-<h3><span class="section-number">1.3.1. </span>Notes on Anaconda and on Python Versions<a class="headerlink" href="#notes-on-anaconda-and-on-python-versions" title="Permalink to this heading">¶</a></h3>
-<p>By default, Anaconda Python installs into your own home folder (on Windows,
-this will be the <cite>APPDATA</cite> location, which is typically something like
-<code class="docutils literal notranslate"><span class="pre">C:\\Users\&lt;YourName&gt;\Anaconda3</span></code> or
-<code class="docutils literal notranslate"><span class="pre">C:\\Users\&lt;YourName&gt;\AppData\Local\Anaconda3</span></code>).  As with the single-file
-installers below, installing Anaconda Python does not require extra
-permissions to install, upgrade, or remove components.  Anaconda includes a
-robust package manager called <em>conda</em> that makes it easy to update the
-packages it manages, including Larch. You can start by installing the
-latest version of Anaconda Python from the <a class="reference external" href="https://www.continuum.io/downloads">Anaconda Downloads</a> site, or
-by downloading and installing Miniconda from <cite>Miniconda Downloads</cite> as a
-starting distribution.</p>
-<p>Python 3.9 is recommended, and using Python 3.8 is also supported.  Testing
-of basic functionality with Python 3.10 does work, but at this writing
-(June, 2022) only “bleeding edge” versions of wxPython support Python 3.10
-and we cannot recommend using Python 3.10 for most users (such as those who
-would expect GUIs to work).  We no longer test with Python 3.7 or earlier:
-Python 3.7 should still work, Python 3.6 and earlier will probably not
-work.</p>
-</section>
+<p>Since the <cite>PyPI_</cite> packages are the main release package, this method may better
+ensure that you get the latest version.</p>
+<p>Finally, no matter how you install Larch, you can run</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>larch<span class="w"> </span>-m
+</pre></div>
+</div>
+<p>to create the Larch desktop application launchers or shortcuts.</p>
 </section>
 <section id="updating-a-previous-installation">
 <h2><span class="section-number">1.4. </span>Updating a previous installation<a class="headerlink" href="#updating-a-previous-installation" title="Permalink to this heading">¶</a></h2>
-<p>Updating xraylarch with <cite>conda</cite> is no longer supported.  to update
-xraylarch, use <cite>pip</cite>, even when using Anaconda Python:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">xraylarch</span>
-</pre></div>
+<p>As new versions of X-ray Larch are released, they will be announced and pushed
+to <a class="reference external" href="https://pypi.org">PyPI</a>, so that updating can be done with:</p>
+<blockquote>
+<div><p>pip install –upgrade xraylarch</p>
+</div></blockquote>
+<p>For versions up to 0.9.68, XAS Viewer and other Larch Applications would
+notify users as updates became available and prompt them to install the latest
+version.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Automatic updates using XAS Viewer have been unreliable for a long time,
+and can cause a non-working system, especially on Windows.</p>
 </div>
+<p>With version 0.9.70,these notifications about updates are now informational
+and do not prompt for an immediate update. In addition, there is now a desktop
+shortcut called “Larch Updater” which will run the update <cite>pip</cite> command above.</p>
 </section>
 <section id="installing-the-development-version">
 <h2><span class="section-number">1.5. </span>Installing the development version<a class="headerlink" href="#installing-the-development-version" title="Permalink to this heading">¶</a></h2>
@@ -408,9 +351,8 @@ xraylarch, use <cite>pip</cite>, even when using Anaconda Python:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-latest-py3-none-any.whl
 </pre></div>
 </div>
-<p>We try hard to keep this “working”, but as this is an automated snapshot it
-might catch the development in the middle of trying to fix something
-tricky.</p>
+<p>We try to keep this working, but as this is an automated snapshot it might
+catch the development in the middle of trying to fix something tricky.</p>
 </section>
 <section id="making-desktop-shortcuts-to-link-to-the-applications">
 <h2><span class="section-number">1.6. </span>Making Desktop shortcuts to Link to the Applications<a class="headerlink" href="#making-desktop-shortcuts-to-link-to-the-applications" title="Permalink to this heading">¶</a></h2>
@@ -437,8 +379,9 @@ happening at the <a class="reference external" href="https://github.com/xraypy/x
 the latest source code and pages for submit bug reports.</p>
 <p>To get started, we recommend following the installation instructions for or
 ref:<cite>install-binary</cite>, ref:<cite>install-script</cite>, or ref:<cite>install-conda</cite>.  That
-gives you a base starting Python environment that we can all be pretty sure
-is working.  With that in place, to install <cite>Larch</cite> from source, you can clone the source repository with:</p>
+gives you a base starting Python environment that we can all be pretty sure is
+working.  With that in place, to install <cite>Larch</cite> from source, you can clone
+the source repository with:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">xraypy</span><span class="o">/</span><span class="n">xraylarch</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>
@@ -452,15 +395,13 @@ platform and version of Python you are installing to, you may need elevated
 permissions as from <cite>sudo</cite> to install Larch to a system folder.</p>
 <section id="optional-python-packages">
 <h3><span class="section-number">1.7.1. </span>Optional Python Packages<a class="headerlink" href="#optional-python-packages" title="Permalink to this heading">¶</a></h3>
-<p>While most of the packages required for Larch will be installed
-automatically (and are listed in the <cite>requirements.txt</cite> file in the source
-tree), there are a few packages that are useful for some functionality but
-somewhat less easy to have as a hard dependency (usually because they are
-not readily available on PyPI for all platforms).  These optional packages
-are listed in the table below.  Note that most of these will be
-installed with Larch whether you install from a binary installer,
-with <cite>conda install xraylarch</cite>, with <cite>pip install xraylarch</cite>, or with
-<cite>python setup.py install</cite></p>
+<p>While most of the packages required for Larch will be installed automatically
+(and are listed in the <cite>requirements.txt</cite> file in the source tree), there are
+a few packages that are useful for some functionality but somewhat less easy
+to have as a hard dependency (usually because they are not readily available
+on <a class="reference external" href="https://pypi.org">PyPI</a> for all platforms).  These optional packages are listed in the
+table below.  Note that most of these will be installed with Larch whether you
+install from a binary installer with <cite>pip install xraylarch</cite>.</p>
 </section>
 </section>
 <section id="getting-help">
@@ -613,7 +554,7 @@ the BSD License:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.0.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.0.1.
     </div>
   </body>
 </html>
