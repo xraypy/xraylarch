@@ -34,7 +34,7 @@ ICON_FILE = 'larch.ico'
 BACKGROUND_COLOUR = '#FCFCFA'
 FOREGROUND_COLOUR = '#050520'
 
-FONTSIZE_FW = 13
+FONTSIZE_FW = 14
 if platform == 'win':
     FONTSIZE_FW = 12
 elif platform == 'darwin':
@@ -237,7 +237,7 @@ class LarchPanel(wx.Panel):
 
         ipanel = wx.Panel(self)
 
-        self.prompt = wx.StaticText(ipanel, label='Larch>', size=(65,-1),
+        self.prompt = wx.StaticText(ipanel, label='Larch>', size=(75,-1),
                                     style=wx.ALIGN_CENTER|wx.ALIGN_RIGHT)
 
         self.input = wx.TextCtrl(ipanel, value='', size=(525,-1),

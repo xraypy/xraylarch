@@ -62,6 +62,7 @@ from .maptomopanel import TomographyPanel
 from .mapxrfpanel import XRFAnalysisPanel
 
 from ..wxxrd import XRD1DViewerFrame, XRD2DViewerFrame
+from ..wxxrd.xrd1d_display import XRD1DBrowserFrame
 
 def timestring():
     return datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')
@@ -1268,9 +1269,9 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             stem = '%s_%s' % (stem,title)
 
         kwargs = dict(filename=self.owner.current_file.filename,
-                      npixels = area[()].sum(),
-                      energy  = 0.001*xrmfile.get_incident_energy(),
-                      calfile = ponifile, title = title, xrd2d=False)
+                      npixels=area[()].sum(),
+                      energy=0.001*xrmfile.get_incident_energy(),
+                      calfile=ponifile, title=title, xrd2d=False)
 
         if xrd1d and xrmfile.has_xrd1d:
             self._xrd = xrmfile.get_xrd1d_area(aname, **kwargs)
@@ -1405,6 +1406,10 @@ class MapViewerFrame(wx.Frame):
             if self.vinfo is not None:
                 if self.vinfo.update_available:
                     self.onCheckforUpdates()
+                    self.statusbar.SetStatusText(f'Larch Version {self.vinfo.remote_version} is available!', 0)
+                    self.statusbar.SetStatusText(f'Larch Version {self.vinfo.local_version}', 1)
+                else:
+                    self.statusbar.SetStatusText(f'Larch Version {self.vinfo.local_version} (latest)', 1)
 
 
     def CloseFile(self, filename, event=None):
@@ -1747,9 +1752,14 @@ class MapViewerFrame(wx.Frame):
         '''
         flptyp = 'vertical' if flip is True else False
 
-        poni = bytes2str(self.current_file.xrmmap['xrd1d'].attrs.get('calfile',''))
-        if not os.path.exists(poni):
-            poni = None
+        ponifile = bytes2str(self.current_file.xrmmap['xrd1d'].attrs.get('calfile',''))
+        if len(ponifile) < 2 or not os.path.exists(ponifile):
+            t_ponifile = os.path.join(xrmfile.folder, 'XRD.poni')
+            if os.path.exists(t_ponifile):
+                ponifile = t_ponifile
+        if os.path.exists(ponifile):
+            self.current_file.xrmmap['xrd1d'].attrs['calfile'] = ponifile
+
 
         if self.xrddisplay2D is None:
             self.xrddisplay2D = XRD2DViewerFrame(_larch=self.larch,flip=flptyp,
@@ -1768,19 +1778,17 @@ class MapViewerFrame(wx.Frame):
         displays 1D XRD pattern in diFFit viewer
         '''
         wavelength = lambda_from_E(energy, E_units='keV')
-
         xdat = xrd1d(label=label, energy=energy, wavelength=wavelength)
         xdat.set_xy_data(np.array([q, counts]), 'q')
-
         if self.xrddisplay1D is None:
-            self.xrddisplay1D = XRD1DViewerFrame(_larch=self.larch)
+            self.xrddisplay1D = XRD1DBrowserFrame(wavelength=wavelength, _larch=self.larch)
         try:
-            self.xrddisplay1D.xrd1Dviewer.add1Ddata(xdat)
-            self.xrddisplay1D.Show()
+            self.xrddisplay1D.add_data(xdat, label=label)
         except:
-            self.xrddisplay1D = XRD1DViewerFrame(_larch=self.larch)
-            self.xrddisplay1D.xrd1Dviewer.add1Ddata(xdat)
-            self.xrddisplay1D.Show()
+            self.xrddisplay1D = XRD1DBrowserFrame(_larch=self.larch)
+            self.xrddisplay1D.add_data(xdat, label=label)
+
+        self.xrddisplay1D.Show()
 
     def init_larch(self):
         self.SetStatusText('ready')
@@ -1939,7 +1947,7 @@ class MapViewerFrame(wx.Frame):
         except:
             pass
 
-        
+
         for xrmfile in self.filemap.values():
             try:
                 xrmfile.close()

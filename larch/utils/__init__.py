@@ -12,15 +12,17 @@ import numpy as np
 import logging
 
 from charset_normalizer import from_bytes
-
+from .gformat import gformat, getfloat_attr
 from .paths import uname, bindir, nativepath, unixpath, get_homedir, get_cwd
 from .debugtime import debugtime, debugtimer
 
-from .strutils import (fixName, isValidName, isNumber, bytes2str, str2bytes,
-                       fix_varname, isLiteralStr, strip_comments, asfloat,
-                       find_delims, version_ge, unique_name, get_sessionid)
+from .strutils import (fixName, isValidName, isNumber, bytes2str,
+                       str2bytes, fix_filename, fix_varname,
+                       isLiteralStr, strip_comments, asfloat,
+                       find_delims, version_ge, unique_name,
+                       get_sessionid, strict_ascii)
 
-from .shellutils import (_copy, _deepcopy, _more, _parent,
+from .shellutils import (_more, _parent,
                          _ls, _cd, _cwd, _mkdir)
 
 logging.basicConfig(format='%(levelname)s [%(asctime)s]: %(message)s',
@@ -234,10 +236,10 @@ def _larch_init(_larch):
                                                      text2={'color': 'blue'},
                                                      error={'color': 'red'}))
 
-_larch_builtins = dict(copy=_copy, deepcopy=_deepcopy, more= _more,
+_larch_builtins = dict(copy=copy.copy, deepcopy=copy.deepcopy, more= _more,
                        parent=_parent, ls=_ls, mkdir=_mkdir, cd=_cd,
                        cwd=_cwd, group2dict=group2dict,
                        copy_group=copy_group, copy_xafs_group=copy_xafs_group,
                        dict2group=dict2group, debugtimer=debugtimer,
                        isotime=isotime, json_dump=json_dump,
-                       json_load=json_load)
+                       json_load=json_load, gformat=gformat)

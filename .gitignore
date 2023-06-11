@@ -31,6 +31,7 @@ AMAP/
 Thumbs.db
 *.egg-info
 *.ipynb_checkpoints/
+*iframe_figures
 .vscode/
 .empty/
 .eggs/

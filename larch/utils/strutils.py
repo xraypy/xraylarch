@@ -28,9 +28,9 @@ def str2bytes(s):
 
 def strict_ascii(s, replacement='_'):
     """for string to be truly ASCII with all characters below 128"""
-
     t = bytes(s, 'UTF-8')
     return ''.join([chr(a) if a < 128 else replacement for a in t])
+
 
 RESERVED_WORDS = ('False', 'None', 'True', 'and', 'as', 'assert', 'async',
                   'await', 'break', 'class', 'continue', 'def', 'del', 'elif',
@@ -45,6 +45,7 @@ NAME_MATCH = re.compile(r"[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*$").m
 VALID_SNAME_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
 VALID_NAME_CHARS = '.%s' % VALID_SNAME_CHARS
 VALID_CHARS1 = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_'
+
 
 BAD_FILECHARS = ';~,`!%$@$&^?*#:"/|\'\\\t\r\n (){}[]<>'
 GOOD_FILECHARS = '_'*len(BAD_FILECHARS)
@@ -257,10 +258,15 @@ def get_sessionid():
     return out.replace('/', '-').replace('+', '=')
 
 
+def random_varname(n):
+    L = 'abcdefghijklmnopqrstuvwxyz0123456789'
+    return random.choice(L[:26]) + ''.join([random.choice(L) for _ in range(n-1)])
+
+
 def file2groupname(filename, slen=5, symtable=None):
     """create a group name based of filename
     the group name will have a string component of
-    length slen followed by a 4 digit number
+    length slen followed by a 3 digit number
 
     Arguments
     ---------
@@ -269,28 +275,26 @@ def file2groupname(filename, slen=5, symtable=None):
     symtable  (None or larch symbol table) symbol table for
               checking that the group name is unique
     """
-    def randstr(n):
-        return ''.join([chr(random.randint(97, 122)) for i in range(n)])
 
-    gname = fix_varname(filename).lower() +  randstr(slen)
-    if '_' in gname:
-        gname = gname.replace('_', '')
-        gname = fix_varname(gname)
+    gname = fix_varname(filename).lower().replace('_', '')
+    if len(gname) < slen:
+        gname = gname + randstr(slen-len(gname))
 
-    fmt, count, maxcount = "%s{:04d}", 1, 999
-    fstr = fmt % (gname[:slen])
-    gname = fstr.format(count)
-    if symtable is not None:
-        scount = 0
-        while hasattr(symtable, gname):
-            count += 1
-            if count > maxcount:
-                scount += 1
-                count = 1
-                fstr = fmt % randstr(slen)
-            gname = fstr.format(count)
-            if scount > 1000:
-                raise ValueError("exhausted unique group names")
+    gname = gname[:slen]
+    if symtable is None:
+        return gname
+
+    gbase = gname
+    scount, count = 0, 0
+    while hasattr(symtable, gname):
+        count += 1
+        if count == 1000:
+            count = 1
+            scount += 1
+            if (scount % 500) == 0:
+                slen += 1
+            gbase = random_varname(slen)
+        gname = f"{gbase}{count:03d}"
     return gname
 
 

@@ -5,7 +5,7 @@ import time
 from collections import namedtuple
 from functools import partial
 import numpy as np
-from lmfit import Parameters, minimize
+from lmfit import Parameters, minimize, fit_report
 from matplotlib.ticker import FuncFormatter
 
 import wx
@@ -25,6 +25,7 @@ from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl, FloatSpin,
 
 from larch.xafs.xafsutils  import etok, ktoe
 from larch.utils.physical_constants import PI, DEG2RAD, PLANCK_HC
+from larch.math import smooth
 
 Plot_Choices = {'Normalized': 'norm', 'Derivative': 'dmude'}
 
@@ -220,7 +221,7 @@ class OverAbsorptionDialog(wx.Dialog):
             del ngroup.norm_corr
 
         ogroup = self.controller.get_group(fname)
-        self.parent.onNewGroup(ngroup, journal=ogroup.journal)
+        self.parent.install_group(ngroup, journal=ogroup.journal)
         olddesc = ogroup.journal.get('source_desc').value
         ngroup.journal.add('source_desc', f"fluo_corrected({olddesc})")
         ngroup.journal.add('fluor_correction_command', self.cmd)
@@ -276,105 +277,77 @@ class EnergyCalibrateDialog(wx.Dialog):
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
 
         self.wids = wids = {}
-        wids['grouplist'] = Choice(panel, choices=groupnames, size=(250, -1),
+        wids['grouplist'] = Choice(panel, choices=groupnames, size=(275, -1),
                                    action=self.on_groupchoice)
         wids['grouplist'].SetStringSelection(self.dgroup.filename)
 
         refgroups = ['None'] + groupnames
+        wids['reflist'] = Choice(panel, choices=refgroups, size=(275, -1),
+                                 action=self.on_align, default=0)
 
-        wids['reflist'] = Choice(panel, choices=refgroups, size=(250, -1),
-                              action=self.on_align)
-        wids['reflist'].SetSelection(0)
-
-        opts  = dict(size=(90, -1), digits=3, increment=0.1)
-        for wname in ('e0_old', 'e0_new'):
-            opts['action'] = partial(self.on_calib, name=wname)
-            pin_callback = partial(self.on_pinvalue, opt=wname)
-
-            fspin, pinbtn = add_floatspin(wname, e0val, panel,
-                                          with_pin=True, xasmain=self.parent,
-                                          callback=pin_callback, **opts)
-            wids[wname] = fspin
-            wids[wname+'_pin'] = pinbtn
+        opts = dict(size=(90, -1), digits=3, increment=0.1)
 
         opts['action'] = partial(self.on_calib, name='eshift')
         wids['eshift'] = FloatSpin(panel, value=0, **opts)
 
         self.plottype = Choice(panel, choices=list(Plot_Choices.keys()),
-                                   size=(250, -1), action=self.plot_results)
+                                   size=(275, -1), action=self.plot_results)
+        wids['do_align'] = Button(panel, 'Auto Align', size=(100, -1),
+                                  action=self.on_align)
 
-        # apply_one = Button(panel, 'Save / Overwrite ', size=(150, -1),
-        #                   action=self.on_apply_one)
-        # SetTip(apply_one, 'Save rebinned data, overwrite current arrays')
+        wids['apply_one'] = Button(panel, 'Apply to Current Group', size=(200, -1),
+                                   action=self.on_apply_one)
 
-        apply_sel = Button(panel, 'Apply Shift to Selected Groups',
-                           size=(250, -1),  action=self.on_apply_sel)
-        SetTip(apply_sel, '''Apply the Energy Shift to all Selected Groups,
-overwriting current arrays''')
+        wids['apply_sel'] = Button(panel, 'Apply to Selected Groups',
+                                   size=(250, -1),  action=self.on_apply_sel)
+        SetTip(wids['apply_sel'], 'Apply the Energy Shift to all Selected Groups')
 
-        wids['save_as'] = Button(panel, 'Save As New Group: ', size=(150, -1),
+        wids['save_as'] = Button(panel, 'Save As New Group ', size=(200, -1),
                            action=self.on_saveas)
         SetTip(wids['save_as'], 'Save shifted data as new group')
 
         wids['save_as_name'] = wx.TextCtrl(panel, -1,
                                            self.dgroup.filename + '_eshift',
-                                           size=(250, -1))
+                                           size=(275, -1))
 
-        wids['sharedref_msg'] = wx.StaticText(panel, label="1 groups share an energy reference")
-        select_sharedref = Button(panel, 'Select Groups with shared reference',
-                                  size=(250, -1),  action=self.on_select_sharedrefs)
+        wids['sharedref_msg'] = wx.StaticText(panel, label="1 groups share this energy reference")
+        wids['select_sharedref'] = Button(panel, 'Select Groups with shared reference',
+                                          size=(300, -1),  action=self.on_select_sharedrefs)
 
         def add_text(text, dcol=1, newrow=True):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
 
-        add_text(' Energy Calibration for Group: ',  newrow=False)
-        panel.Add(wids['grouplist'], dcol=3)
-
-        add_text(' Plot Arrays as: ')
-        panel.Add(self.plottype, dcol=3)
+        add_text(' Current Group: ',  newrow=False)
+        panel.Add(wids['grouplist'], dcol=2)
 
         add_text(' Auto-Align to : ')
-        panel.Add(wids['reflist'], dcol=3)
+        panel.Add(wids['reflist'], dcol=2)
 
-        add_text(' Energy Reference (E0): ')
-        panel.Add(wids['e0_old'])
-        panel.Add(wids['e0_old_pin'])
-        add_text(' eV', newrow=False)
+        add_text(' Plot Arrays as: ')
+        panel.Add(self.plottype, dcol=2)
 
-        add_text(' Calibrate to: ')
-        panel.Add(wids['e0_new'])
-        panel.Add(wids['e0_new_pin'])
-        add_text(' eV', newrow=False)
-
-        add_text(' Energy Shift : ')
-        panel.Add(wids['eshift'])
-        add_text(' eV', newrow=False)
+        add_text(' Energy Shift (eV): ')
+        panel.Add(wids['eshift'], dcol=1)
+        panel.Add(wids['do_align'], dcol=1)
         panel.Add(HLine(panel, size=(500, 3)), dcol=4, newrow=True)
         # panel.Add(apply_one, newrow=True)
+
+        panel.Add(wids['sharedref_msg'], dcol=2, newrow=True)
+        panel.Add(wids['select_sharedref'], dcol=2)
+        panel.Add(wids['apply_one'], dcol=1, newrow=True)
+        panel.Add(wids['apply_sel'], dcol=2)
+
+        panel.Add(HLine(panel, size=(500, 3)), dcol=4, newrow=True)
 
         panel.Add(wids['save_as'], newrow=True)
         panel.Add(wids['save_as_name'], dcol=3)
 
-        panel.Add(HLine(panel, size=(500, 3)), dcol=4, newrow=True)
-        panel.Add(wids['sharedref_msg'], dcol=4, newrow=True)
-        panel.Add(select_sharedref, dcol=4, newrow=True)
-        panel.Add(apply_sel, dcol=4, newrow=True)
-
-        panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
-                  newrow=True)
         panel.pack()
 
         fit_dialog_window(self, panel)
 
         self.plot_results()
         wx.CallAfter(self.get_groups_shared_energyrefs)
-
-    def onDone(self, event=None):
-        self.Destroy()
-
-    def on_pinvalue(self, opt='__', xsel=None, relative_e0=False, **kws):
-        if xsel is not None and opt in self.wids:
-            self.wids[opt].SetValue(xsel)
 
     def on_select(self, event=None, opt=None):
         _x, _y = self.controller.get_cursor()
@@ -401,29 +374,18 @@ overwriting current arrays''')
                 geref = None
             if geref == eref:
                 sharedrefs.append(key)
-        self.wids['sharedref_msg'].SetLabel(f"{len(sharedrefs):d} groups share an energy reference")
+        self.wids['sharedref_msg'].SetLabel(f" {len(sharedrefs):d} groups share this energy reference")
         return sharedrefs
 
     def on_select_sharedrefs(self, event=None):
-        dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
-        others =  self.get_groups_shared_energyrefs(dgroup)
-        flist = self.controller.filelist
-        current = list(flist.GetCheckedStrings())
-        if dgroup.filename not in current:
-            current.append(dgroup.filename)
-        for o in others:
-            if o not in current:
-                current.append(o)
-        flist.SetCheckedStrings(current)
+        groups = self.get_groups_shared_energyrefs()
+        self.controller.filelist.SetCheckedStrings(groups)
 
     def on_groupchoice(self, event=None):
         dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
         self.dgroup = dgroup
         others = self.get_groups_shared_energyrefs(dgroup)
         self.wids['save_as_name'].SetValue(self.dgroup.filename + '_eshift')
-        self.wids['e0_old'].SetValue(dgroup.e0)
-        e0_new = dgroup.e0 + self.wids['eshift'].GetValue()
-        self.wids['e0_new'].SetValue(e0_new)
         self.plot_results()
 
     def on_align(self, event=None, name=None, value=None):
@@ -435,15 +397,15 @@ overwriting current arrays''')
         dat.xdat = dat.energy_orig[:]
         ref.xdat = ref.energy_orig[:]
 
-        i1 = index_of(ref.energy_orig, ref.e0-15)
-        i2 = index_of(ref.energy_orig, ref.e0+35)
+        i1 = index_of(ref.energy_orig, ref.e0-20)
+        i2 = index_of(ref.energy_orig, ref.e0+20)
 
         def resid(pars, ref, dat, i1, i2):
             "fit residual"
             newx = dat.xdat + pars['eshift'].value
             scale = pars['scale'].value
             y = interp(newx, dat.dmude, ref.xdat, kind='cubic')
-            return (y*scale - ref.dmude)[i1:i2]
+            return smooth(newx, y*scale-ref.dmude, sigma=0.50)[i1:i2]
 
         params = Parameters()
         params.add('eshift', value=ref.e0-dat.e0, min=-50, max=50)
@@ -452,7 +414,6 @@ overwriting current arrays''')
         result = minimize(resid, params, args=(ref, dat, i1, i2))
         eshift = result.params['eshift'].value
         self.wids['eshift'].SetValue(eshift)
-        self.wids['e0_new'].SetValue(dat.e0 + eshift)
 
         ensure_en_orig(self.dgroup)
         xnew = self.dgroup.energy_orig + eshift
@@ -461,17 +422,7 @@ overwriting current arrays''')
 
     def on_calib(self, event=None, name=None):
         wids = self.wids
-        e0_old = wids['e0_old'].GetValue()
-        e0_new = wids['e0_new'].GetValue()
         eshift = wids['eshift'].GetValue()
-
-        if name in ('e0_old', 'e0_new'):
-            eshift = e0_new - e0_old
-            wids['eshift'].SetValue(eshift)
-        elif name == 'eshift':
-            e0_new = e0_old + eshift
-            wids['e0_new'].SetValue(e0_new)
-
         ensure_en_orig(self.dgroup)
         xnew = self.dgroup.energy_orig + eshift
         self.data = xnew, self.dgroup.norm[:]
@@ -520,7 +471,7 @@ overwriting current arrays''')
         ngroup.energy_ref = ngroup.groupname
 
         ogroup = self.controller.get_group(fname)
-        self.parent.onNewGroup(ngroup, journal=ogroup.journal)
+        self.parent.install_group(ngroup, journal=ogroup.journal)
         olddesc = ogroup.journal.get('source_desc').value
         ngroup.journal.add('source_desc', f"energy_shifted({olddesc}, {eshift:.4f})")
         ngroup.journal.add('energy_shift ', 0.0)
@@ -534,8 +485,9 @@ overwriting current arrays''')
         path, fname = os.path.split(dgroup.filename)
 
         wids = self.wids
-        e0_old = wids['e0_old'].GetValue()
-        e0_new = wids['e0_new'].GetValue()
+        eshift = wids['eshift'].GetValue()
+        e0_old = dgroup.e0
+        e0_new = dgroup.e0 + eshift
 
         xmin = min(e0_old, e0_new) - 25
         xmax = max(e0_old, e0_new) + 50
@@ -547,40 +499,39 @@ overwriting current arrays''')
             ynew = np.gradient(ynew)/np.gradient(xnew)
             ylabel = plotlabels.dmude
 
-        opts = dict(xmin=xmin, xmax=xmax, linewidth=3, ylabel=ylabel,
+        opts = dict(xmin=xmin, xmax=xmax, ylabel=ylabel,
                     xlabel=plotlabels.energy, show_legend=True)
 
         if self.controller.plot_erange is not None:
             opts['xmin'] = dgroup.e0 + self.controller.plot_erange[0]
             opts['xmax'] = dgroup.e0 + self.controller.plot_erange[1]
 
-        ppanel.plot(xnew, ynew, zorder=20, marker=None,
-                    title='Energy Calibration:\n %s' % fname,
-                    label='shifted', delay_draw=True, **opts)
-
         xold, yold = self.dgroup.energy_orig, self.dgroup.norm
         if use_deriv:
             yold = np.gradient(yold)/np.gradient(xold)
 
-        ppanel.oplot(xold, yold, zorder=10, marker='o', markersize=3,
-                     label='original', **opts)
+        ppanel.plot(xold, yold, zorder=10, marker='o', markersize=3,
+                     label='original', linewidth=2, color='#1f77b4',
+                     title=f'Energy Calibration:\n {fname}',
+                     delay_draw=True, **opts)
+
+        ppanel.oplot(xnew, ynew, zorder=15, marker='+', markersize=3,
+                    linewidth=2, label='shifted', delay_draw=True,
+                    color='#d62728', **opts)
 
         if wids['reflist'].GetStringSelection() != 'None':
             refgroup = self.controller.get_group(wids['reflist'].GetStringSelection())
             xref, yref = refgroup.energy, refgroup.norm
             if use_deriv:
                 yref = np.gradient(yref)/np.gradient(xref)
-            ppanel.oplot(xref, yref, style='short dashed', zorder=5,
+
+            ppanel.oplot(xref, yref, style='solid', zorder=5, color='#2ca02c',
                          marker=None, label=refgroup.filename, **opts)
 
-        axv_opts = dict(ymin=0.05, ymax=0.95, linewidth=2.0, alpha=0.5,
-                         zorder=1, label='_nolegend_')
-        color1 = ppanel.conf.traces[0].color
-        color2 = ppanel.conf.traces[1].color
-        ppanel.axes.axvline(e0_new, color=color1, **axv_opts)
-        ppanel.axes.axvline(e0_old, color=color2, **axv_opts)
         set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
         ppanel.canvas.draw()
+
+
 
     def GetResponse(self):
         raise AttributeError("use as non-modal dialog!")
@@ -761,7 +712,7 @@ class RebinDataDialog(wx.Dialog):
         ngroup.delta_mu = getattr(ngroup, 'yerr', 1.0)
         self.parent.process_normalization(ngroup)
 
-        self.parent.onNewGroup(ngroup, journal=ogroup.journal)
+        self.parent.install_group(ngroup, journal=ogroup.journal)
         ngroup.journal.add('source_desc', f"rebinned({olddesc})")
         ngroup.journal.add('rebin_command ', self.cmd)
 
@@ -955,7 +906,7 @@ class SmoothDataDialog(wx.Dialog):
         ogroup = self.controller.get_group(fname)
         olddesc = ogroup.journal.get('source_desc').value
 
-        self.parent.onNewGroup(ngroup, journal=ogroup.journal)
+        self.parent.install_group(ngroup, journal=ogroup.journal)
         ngroup.journal.add('source_desc', f"smoothed({olddesc})")
         ngroup.journal.add('smooth_command', self.cmd)
         self.parent.process_normalization(ngroup)
@@ -1070,7 +1021,7 @@ class DeconvolutionDialog(wx.Dialog):
         ogroup = self.controller.get_group(fname)
         olddesc = ogroup.journal.get('source_desc').value
 
-        self.parent.onNewGroup(ngroup, journal=ogroup.journal)
+        self.parent.install_group(ngroup, journal=ogroup.journal)
         ngroup.journal.add('source_desc', f"deconvolved({olddesc})")
         ngroup.journal.add('deconvolve_command', self.cmd)
         self.parent.process_normalization(ngroup)
@@ -1351,7 +1302,7 @@ class DeglitchDialog(wx.Dialog):
         ogroup = self.controller.get_group(fname)
         olddesc = ogroup.journal.get('source_desc').value
 
-        self.parent.onNewGroup(ngroup, journal=ogroup.journal)
+        self.parent.install_group(ngroup, journal=ogroup.journal)
         ngroup.journal.add('source_desc', f"deglitched({olddesc})")
         ngroup.journal.add('deglitch_removed_energies', energies_removed)
 
@@ -1568,10 +1519,8 @@ class SpectraCalcDialog(wx.Dialog):
 
         ngroup = getattr(_larch.symtable, new_gname, None)
         if ngroup is not None:
-            self.parent.install_group(ngroup.groupname, ngroup.filename,
-                                      source=journal['source_desc'],
+            self.parent.install_group(ngroup, source=journal['source_desc'],
                                       journal=journal)
-            self.parent.ShowFile(groupname=ngroup.groupname)
 
     def GetResponse(self):
         raise AttributeError("use as non-modal dialog!")

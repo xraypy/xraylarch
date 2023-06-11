@@ -10,7 +10,8 @@ from .xrd_fitting import (peakfinder, peaklocater, peakfitter, peakfilter,
 
 from .xrd_pyFAI import (integrate_xrd, integrate_xrd_row, read_lambda,
                         calc_cake, save1D, return_ai, twth_from_xy,
-                        q_from_xy, eta_from_xy)
+                        q_from_xy, eta_from_xy,
+                        read_poni, write_poni)
 
 from .xrd_tools import (d_from_q, d_from_twth, twth_from_d, twth_from_q,
                         E_from_lambda, lambda_from_E, q_from_d,
@@ -22,7 +23,7 @@ from .xrd_cif import (SPACEGROUPS, create_xrdcif, check_elemsym, SPGRP_SYMM)
 from .cifdb import (get_cifdb, cifDB, cif_match, read_cif, SearchCIFdb,
                     match_database, CATEGORIES, QSTEP, QMIN, QMAX, QAXIS)
 
-from .amscifdb import CifStructure, get_amscifdb, get_cif, find_cifs, parse_cif_file
+from .amcsd import CifStructure, get_amcsd, get_cif, find_cifs, parse_cif_file
 
 from .xrd_files import xy_file_reader
 
@@ -66,7 +67,8 @@ _larch_builtins = {'_xrd':  {'d_from_q': d_from_q,
                              'peaklocater': peaklocater,
                              'instrumental_fit_uvw': instrumental_fit_uvw,
                              'xy_file_reader': xy_file_reader,
-                             'get_amscifdb': get_amscifdb,
+                             'get_amscifdb': get_amcsd,
+                             'get_amcsd': get_amcsd,
                              'get_cif': get_cif,
                              'find_cifs': find_cifs,
                              }}

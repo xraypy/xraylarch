@@ -19,7 +19,6 @@ from .xafs_beamlines import guess_beamline
 nanresult = namedtuple('NanResult', ('file_ok', 'message', 'nan_rows',
                                      'nan_cols', 'inf_rows', 'inf_cols'))
 
-
 MODNAME = '_io'
 TINY = 1.e-7
 MAX_FILESIZE = 100*1024*1024  # 100 Mb limit
@@ -169,8 +168,105 @@ def parse_labelline(labelline, header):
 
     This is meant to handle some special cases of XAFS data collected at a variety of sources
     """
-
     pass
+
+
+def sum_fluor_channels(dgroup, roi, icr=None, ocr=None, ltime=None, label=None,
+                       add_data=True, **kws):
+    """build summed, deadtime-corrected fluorescence spectrum for a Group
+
+    Arguments
+    ---------
+    dgroup    data group
+    roi       list in array indices for ROI
+    icr       None or list of array indices for ICR   [None]
+    ocr       None or list of array indices for OCR   [None]
+    ltime     None or list of array indices for LTIME [None]
+    label     None or label for the summed, corrected array [None]
+    add_data  bool, whether to add label and data to datgroup [False]
+
+    Returns
+    -------
+    label, ndarray   with summed, deadtime-corrected data
+
+    if add_data is True, the ndarray will also be appended to `dgroup.data,
+    and the label will be appended to dgroup.array_labels
+
+
+    Notes
+    ------
+    1.  The output array will be  Sum[ roi*icr/(ocr*ltime) ]
+    2.  The default label will be like the array label for the 'dtcN' + first ROI
+    3.  icr, ocr, or ltime can be `None`, '1.0', '-1', or '1' to mean '1.0' or
+        arrays of indices for the respective components: must be the same lenght as roi
+
+    4.  an array index of -1 will indicate 'bad channel' and be skipped for ROI
+        or set to 1.0 for icr, ocr, or ltime
+
+    5. if the list of arrays in roi, icr, ocr, or ltime are otherwise out-of-range,
+       the returned (label, data) will be (None, None)
+
+    """
+    nchans = len(roi)
+    if icr in ('1.0', -1, 1, None):
+        icr = [-1]*nchans
+    if ocr in ('1.0', -1, 1, None):
+        ocr = [-1]*nchans
+    if ltime in ('1.0', -1, 1, None):
+        ltime = [-1]*nchans
+    if len(ltime) != nchans or len(icr) != nchans or len(ocr) != nchans:
+        raise Value("arrays of indices for for roi, icr, ocr, and ltime must be the same length")
+
+    narr, npts = dgroup.data.shape
+    nused = 0
+    sum = 0.0
+    olabel = None
+    def get_data(arr, idx):
+        iarr = arr[idx]
+        if iarr < 0:
+            return iarr, 1.0
+        if iarr > narr-1:
+            return None, None
+        return iarr, dgroup.data[iarr, :]
+
+    for pchan in range(nchans):
+        droi = dicr = docr = dltime = 1.0
+        iarr, droi = get_data(roi, pchan)
+        if isinstance(droi, np.ndarray):
+            if olabel is None:
+                olabel = dgroup.array_labels[iarr]
+        elif iarr is None:
+            return (None, None)
+        else:  # index of -1 here means "skip"
+            continue
+
+        iarr, dicr = get_data(icr, pchan)
+        if iarr is None: return (None, None)
+
+        iarr, docr = get_data(ocr, pchan)
+        if iarr is None:  return (None, None)
+
+        iarr, docr = get_data(ocr, pchan)
+        if iarr is None:  return (None, None)
+
+        iarr, dltime= get_data(ltime, pchan)
+        if iarr is None:  return (None, None)
+
+        sum += droi*dicr/(docr*dltime)
+        nused += 1
+
+    if label is None:
+        if olabel is None: olabel = 'ROI'
+        label = olabel = f'dtc{nused}_{olabel}'
+        n  = 1
+        while label in dgroup.array_labels:
+            n += 1
+            label = f'{olabel}_{n}'
+    if add_data:
+        dgroup.array_labels.append(label)
+        dgroup.data = np.append(dgroup.data, sum.reshape(1, len(sum)), axis=0)
+    return (label, sum)
+
 
 
 def read_ascii(filename, labels=None, simple_labels=False,

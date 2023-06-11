@@ -6,7 +6,7 @@ import sys
 import numpy as np
 from collections import OrderedDict
 from lmfit.model import ModelResult
-from lmfit.printfuncs  import gformat, getfloat_attr
+from larch.utils  import gformat, getfloat_attr
 
 def export_modelresult(result, filename='fitresult.xdi',
                        datafile=None, ydata=None, yerr=None,

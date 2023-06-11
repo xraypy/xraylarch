@@ -864,8 +864,9 @@ class GSEXRM_MapFile(object):
             calfile = os.path.join(nativepath(self.folder), self.XRDCALFile)
             if os.path.exists(calfile):
                 self.xrdcalfile = calfile
+
         scan_version = getattr(self, 'scan_version', 1.00)
-        # print(" read row data, scan version  ", scan_version, self.xrdcalfile)
+        print(" read row data, scan version  ", scan_version, self.xrdcalfile)
 
         # if not self.has_xrf and not self.has_xrd2d and not self.has_xrd1d:
         #    raise IOError('No XRF or XRD flags provided.')

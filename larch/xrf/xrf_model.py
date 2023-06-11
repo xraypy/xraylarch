@@ -7,7 +7,6 @@ from scipy.optimize import nnls
 
 
 from lmfit import  Parameters, minimize, fit_report
-from lmfit.printfuncs import gformat
 
 from xraydb import (material_mu, mu_elam, ck_probability, xray_edge,
                     xray_edges, xray_lines, xray_line)
@@ -16,7 +15,7 @@ from xraydb.xray import XrayLine
 from .. import Group
 from ..math import index_of, interp, savitzky_golay, hypermet, erfc
 from ..xafs import ftwindow
-from ..utils import group2dict, json_dump, json_load
+from ..utils import group2dict, json_dump, json_load, gformat
 
 xrf_prediction = namedtuple("xrf_prediction", ("weights", "total"))
 xrf_peak = namedtuple('xrf_peak', ('name', 'amplitude', 'center', 'step',
@@ -534,9 +533,9 @@ class XRF_Model:
         if fit_toler is not None:
             self.fit_toler = max(1.e-7, min(0.25, fit_toler))
         if fit_step is not None:
-            self.fit_step = max(1.e-7, min(0.1, fit_step))            
+            self.fit_step = max(1.e-7, min(0.1, fit_step))
         if max_nfev is not None:
-            self.max_nfev = max(200, min(12000, max_nfev))            
+            self.max_nfev = max(200, min(12000, max_nfev))
 
         self.mca = mca
         work_energy = 1.0*mca.energy

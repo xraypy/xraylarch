@@ -200,8 +200,15 @@ def tomo_reconstruction(sino, omega, algorithm='gridrec',
     if center is None:
         center = sino.shape[1]/2.
 
+    x = tomopy.init_tomo(sino, sinogram_order)
+    nomega = len(omega)
+    ns, nth, nx = sino.shape
+    if nth > nomega:
+        sino = sino[:, :nomega, :]
+    romega = ensure_radians(omega)
+
     if refine_center:
-        center = find_tomo_center(sino, ensure_radians(omega), center=center,
+        center = find_tomo_center(sino, romega, center=center,
                                   sinogram_order=sinogram_order)
         print(">> Refine Center done>> ", center, sinogram_order)
     algorithm = algorithm.lower()
@@ -211,7 +218,6 @@ def tomo_reconstruction(sino, omega, algorithm='gridrec',
     else:
         recon_kws['num_iter'] = num_iter
 
-
-    tomo = tomopy.recon(sino, ensure_radians(omega), algorithm=algorithm,
+    tomo = tomopy.recon(sino, romega, algorithm=algorithm,
                         center=center, sinogram_order=sinogram_order, **recon_kws)
     return center, tomo
