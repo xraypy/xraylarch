@@ -15,6 +15,8 @@ class Group():
     """
     __private = ('_main', '_larch', '_parents', '__name__', '__doc__',
                  '__private', '_subgroups', '_members', '_repr_html_')
+    
+    __generic_functions = ('keys', 'values', 'items')
 
     def __init__(self, name=None, **kws):
         if name is None:
@@ -62,12 +64,13 @@ class Group():
                     not key.startswith('_Group_') and
                     not key.startswith(f'_{cname}_') and
                     not (key.startswith('__') and key.endswith('__')) and
+                    key not in self.__generic_functions and
                     key not in self.__private)]
 
     def __getitem__(self, key):
 
         if isinstance(key, int):
-            return self.__dir__()[key]
+            key = self.__dir__()[key]
         
         return getattr(self, key)
 
@@ -77,6 +80,18 @@ class Group():
             key = self.__dir__()[key]
         
         return setattr(self, key, value)
+    
+    def __iter__(self):
+        return iter(self.keys())
+    
+    def keys(self):
+        return self.__dir__()
+    
+    def values(self):
+        return [getattr(self, key) for key in self.__dir__()]
+    
+    def items(self):
+        return [(key, getattr(self, key)) for key in self.__dir__()]
     
     def _subgroups(self):
         "return list of names of members that are sub groups"
