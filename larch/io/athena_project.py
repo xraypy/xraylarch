@@ -597,6 +597,20 @@ class AthenaGroup(Group):
     def groups(self, groups):
         self._athena_groups = groups
 
+    def __getitem__(self, key):
+
+        if isinstance(key, int):
+            group_key = list(self.groups.keys())
+            return self.groups[group_key[key]]
+        
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+
+        if isinstance(key, int):
+            key = self.groups[key]
+        
+        return setattr(self, key, value)
 
 class AthenaProject(object):
     """read and write Athena Project files, mapping to Larch group
