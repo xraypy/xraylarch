@@ -63,8 +63,8 @@ the array choices will be assumed to be the same for all files.
 
 .. _fig_xasviewer_dataimport:
 
-.. figure:: ../_images/DataImporter.png
-    :target: ../_images/DataImporter.png
+.. figure:: ../_images/XASViewer_TextFileImport.png
+    :target: ../_images/XASViewer_TextFileImport.png
     :width: 55%
     :align: center
 
@@ -86,8 +86,8 @@ Viewer.
 
 .. _fig_xasviewer_athenaimporter:
 
-.. figure:: ../_images/AthenaImporter.png
-    :target: ../_images/AthenaImporter.png
+.. figure:: ../_images/XASViewer_AthenaImporter.png
+    :target: ../_images/XASViewer_AthenaImporter.png
     :width: 60%
     :align: center
 
