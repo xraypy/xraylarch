@@ -13,6 +13,7 @@
 .. _spec:    https://www.certif.com/content/spec
 .. _bliss:   https://bliss.gitlab-pages.esrf.fr/bliss/master/
 .. _silx:    https://www.silx.org/
+.. _openbabel: https://openbabel.org/
 
 .. _pyepics:  https://pyepics.github.com/pyepics/
 .. _xraydb:   https://xraypy.github.io/XrayDB/
