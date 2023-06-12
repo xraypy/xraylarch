@@ -8,7 +8,6 @@ wxutils>=0.3.0
 wxmplot>=0.9.53
 pyepics>=3.5.0
 epicsapps
-psycopg2-binary
 pytest
 sphinx
 numpydoc
