@@ -131,13 +131,13 @@ class XASNormPanel(TaskPanel):
         plot_voff = self.add_floatspin('plot_voff',  with_pin=False,
                                        size=(75, -1),
                                        action=self.onVoffset, **opts)
-
-
+        opts['digits'] = 3
         xas_e0   = self.add_floatspin('e0', action=self.onSet_XASE0Val, **opts)
+        opts['digits'] = 4
         xas_step = self.add_floatspin('step', action=self.onSet_XASStep,
                                       with_pin=False, min_val=0.0, **opts)
 
-        opts['value'] = 1.0
+        opts.update({'value': 1.0, 'digits': 3})
         scale = self.add_floatspin('scale', action=self.onSet_Scale, **opts)
 
         self.wids['norm_method'] = Choice(panel, choices=NORM_METHODS,
@@ -152,14 +152,10 @@ class XASNormPanel(TaskPanel):
         self.wids['is_frozen'] = Check(panel, default=False, label='Freeze Group',
                                        action=self.onFreezeGroup)
 
-        # saveconf = Button(panel, 'Save as Default Settings', size=(200, -1),
-        #                   action=self.onSaveConfigBtn)
-
-        use_auto = Button(panel, 'Use Default Settings',
-                          size=(200, -1),
+        use_auto = Button(panel, 'Use Default Settings', size=(200, -1),
                           action=self.onAutoNorm)
-        copy_auto = Button(panel, 'Copy',
-                           size=(60, -1), action=self.onCopyAuto)
+        copy_auto = Button(panel, 'Copy', size=(60, -1),
+                           action=self.onCopyAuto)
 
         def CopyBtn(name):
             return Button(panel, 'Copy', size=(60, -1),
@@ -371,7 +367,6 @@ class XASNormPanel(TaskPanel):
             for attr in ('pre1', 'pre2', 'norm1', 'norm2', 'nnorm', 'edge',
                          'atsym', 'step', 'norm_method'):
                 self.wids[attr].Enable()
-            # print("Fill Form OPTS ",  opts['show_pre'], opts['show_norm'])
             self.wids['show_pre'].SetValue(opts['show_pre'])
             self.wids['show_norm'].SetValue(opts['show_norm'])
 
@@ -693,7 +688,11 @@ class XASNormPanel(TaskPanel):
 
     def onSet_Scale(self, evt=None, value=None):
         "handle setting non-XAFS scale value"
+        scale = self.wids['scale'].GetValue()
+        if scale < 0:
+            self.wids['scale'].SetValue(abs(scale))
         self.update_config({'scale': self.wids['scale'].GetValue()})
+        autoset_fs_increment(self.wids['scale'], abs(scale))
         time.sleep(0.01)
         wx.CallAfter(self.onReprocess)
 
