@@ -1,0 +1,81 @@
+
+#(C) 2022 by FIZ Karlsruhe - Leibniz Institute for Information Infrastructure.  All rights reserved.
+data_82028-ICSD
+_database_code_ICSD 82028
+_audit_creation_date 1999-11-30
+_chemical_name_common 'Zinc oxide'
+_chemical_formula_structural 'Zn O'
+_chemical_formula_sum 'O1 Zn1'
+_chemical_name_structure_type Wurtzite#ZnS(2H)
+_exptl_crystal_density_diffrn 5.68
+_diffrn_ambient_temperature 296.
+_citation_title 'An electron density residual study of zinc oxide'
+loop_
+_citation_id
+_citation_journal_full
+_citation_year
+_citation_journal_volume
+_citation_page_first
+_citation_page_last
+_citation_journal_id_ASTM
+primary 'Journal of Solid State Chemistry' 1996 122 148 150 JSSCBI
+loop_
+_citation_author_citation_id
+_citation_author_name
+primary 'Sawada, H.'
+primary 'Wang, R.'
+primary 'Sleight, A.W.'
+_cell_length_a 3.2488(1)
+_cell_length_b 3.2488(1)
+_cell_length_c 5.2054(1)
+_cell_angle_alpha 90.
+_cell_angle_beta 90.
+_cell_angle_gamma 120.
+_cell_volume 47.58
+_cell_formula_units_Z 2
+_space_group_name_H-M_alt 'P 63 m c'
+_space_group_IT_number 186
+loop_
+_space_group_symop_id
+_space_group_symop_operation_xyz
+1 '-x, -x+y, z+1/2'
+2 'x-y, -y, z+1/2'
+3 'y, x, z+1/2'
+4 'x-y, x, z+1/2'
+5 'y, -x+y, z+1/2'
+6 '-x, -y, z+1/2'
+7 'x, x-y, z'
+8 '-x+y, y, z'
+9 '-y, -x, z'
+10 '-x+y, -x, z'
+11 '-y, x-y, z'
+12 'x, y, z'
+loop_
+_atom_type_symbol
+_atom_type_oxidation_number
+Zn2+ 2
+O2- -2
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_symmetry_multiplicity
+_atom_site_Wyckoff_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_B_iso_or_equiv
+_atom_site_occupancy
+Zn1 Zn2+ 2 b 0.6667 0.3333 0 . 1.
+O1 O2- 2 b 0.6667 0.3333 0.619(3) . 1.
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_type_symbol
+_atom_site_aniso_beta_11
+_atom_site_aniso_beta_22
+_atom_site_aniso_beta_33
+_atom_site_aniso_beta_12
+_atom_site_aniso_beta_13
+_atom_site_aniso_beta_23
+Zn1 Zn2+ 0.0201(3) 0.0201(3) 0.00625(4) 0.0101(2) 0 0
+O1 O2- 0.020(1) 0.020(1) 0.0059(2) 0.010(1) 0 0
+#End of TTdata_82028-ICSD
