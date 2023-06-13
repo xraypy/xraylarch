@@ -102,6 +102,7 @@ if not hasattr({group}.prepeaks, 'fit_history'): {group}.prepeaks.fit_history = 
 """
 
 COMMANDS['prepeaks_setup'] = """# setup prepeaks
+if not hasattr({group}, 'energy'): {group:s}.energy = 1.0*{group:s}.xdat
 {group:s}.xdat = 1.0*{group:s}.energy
 {group:s}.ydat = 1.0*{group:s}.{array_name:s}
 prepeaks_setup(energy={group:s}, arrayname='{array_name:s}', elo={elo:.3f}, ehi={ehi:.3f},
