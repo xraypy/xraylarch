@@ -12,7 +12,7 @@ XAS Viewer Overview
 XAS Viewer is Graphical User Interface program for working with X-ray
 Absorption Spectroscopy (XAS) data.  The program is intended to be useful for
 both novices and experts of XAS, and the aim is to include all analytic methods
-used for XAS data.  While the program emphasises rapid and interactive data
+used for XAS data.  While the program emphasizes rapid and interactive data
 visualization and analysis, analysis can generally be applied to multiple
 spectra.  In addition, all analysis steps are recorded in a way that is readily
 converted to a Python program or script for reproducible and batch processing
@@ -42,7 +42,7 @@ topics in the following sections.
 Basic Layout, GUI Controls, and XAS Data Management
 =========================================================
 
-Each XAS Spectra or Goup of data will be displayed in a list of Specta of the
+Each XAS Spectra or Group of data will be displayed in a list of Spectra of the
 main XAS Viewer window.  This list will show the "File Name" for each
 spectra/group which will usually be derived from the name of the file from
 which the data was read.  Since a data files might give multiple spectra and
@@ -85,7 +85,7 @@ used, and so is somewhat less useful for displaying as the name of the group,
 but will be how this Group of data is accessed in the Larch buffer.
 
 As hinted at above, each Group will also have a Journal associated with it. The
-jouneal will contain the history of processing steps done for that group,
+journal will contain the history of processing steps done for that group,
 usually with detailed, human-readable parameters used in the processing.  When
 saving and loading Session files, these Journals are preserved across data
 analysis sessions.
@@ -115,7 +115,7 @@ Most of the GUI controls should be pretty familiar.  Several of the fields for
 numerical values only allow valid numbers.  Some of these also have arrows to
 increment or decrement the value by an appropriate amount for that value.
 
-Seveal numerical values also have a button with a 'pin' icon |pin| just to the
+Several numerical values also have a button with a 'pin' icon |pin| just to the
 right of the value.  This pin button allows you to select a value from the
 current plot window.  Clicking this button and then clicking anywhere on the
 plot window will use the X value (or occasionally the Y value) from the point
@@ -127,11 +127,11 @@ Menus and Dialogs
 ^^^^^^^^^^^^^^^^^^
 
 From the Menubar, a series of Dialogs can be accessed.  These are generally
-useful for auxilliary data processing and analysis tasks including categories
+useful for auxiliary data processing and analysis tasks including categories
 of:
 
    * reading data file in, saving or loading session files, exporting data.
-   * editing program prefereneces
+   * editing program preferences
    * managing Groups of data: renaming, removing, merging, viewing Journals.
    * data correction steps, such as energy calibration, deglitching, and so
      forth.
@@ -209,12 +209,12 @@ The first task for working with XAS data is to subtract the pre-edge and
 normalize the data, so that normalized XAFS (which goes from 0 below the
 absorption edge to 1 above the absorption edge) is available for downstream
 analysis.  The "Normalization" panel of XAS Viewer shows most of the parameters
-needed for selectign the energy threshold value 'E0', doing pre-edge
+needed for selecting the energy threshold value 'E0', doing pre-edge
 subtraction, and estimating the value of the edge step.
 
 This step is also typically where data corrections and summing of multiple
 spectra will be done.  There are variety of Task-specific Dialog boxes may be
-used to perform optional data procesing and analysis tasks.  These dialogs are
+used to perform optional data processing and analysis tasks.  These dialogs are
 brought up from the Menu of the XAS Viewer window, and include tools for the
 following data processing operations:
 
