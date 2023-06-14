@@ -104,7 +104,7 @@ class Struct2XAS:
         self.abs_atom = abs_atom
         self.frame = 0
         self.abs_site = 0
-        self.struct = self._structure_reader()
+        self._structure_reader()
         self.nabs_sites = len(self.get_abs_sites())
         self.elems = self._get_elems()
         self.species = self._get_species()
@@ -121,7 +121,7 @@ class Struct2XAS:
             self.mol = self.molecules[self.frame]
         else:
             logger.error("single frame structure")
-        logger.info(f"frame idx: {frame} ")
+        logger.debug(f"frame idx: {frame} ")
 
     def get_frame(self):
         """For multiframe xyz file, get the frame index site."""
@@ -134,7 +134,7 @@ class Struct2XAS:
         except IndexError:
             logger.error("absorber site index out of range")
             raise IndexError("absorber site index out of range")
-        logger.info(f"abs_site idx: {abs_site} ")
+        logger.debug(f"abs_site idx: {abs_site} ")
         self.abs_site = abs_site
 
     def get_abs_site(self):
@@ -173,7 +173,7 @@ class Struct2XAS:
         return species_list
 
     def _structure_reader(self):
-        """Reader to determine the type of the input file"""
+        """Reader to initialize the structure/molecule from the input file"""
 
         self.is_cif = False
         self.is_xyz = False
@@ -186,28 +186,30 @@ class Struct2XAS:
             self.file_name = split_file[0]
             ext = split_file[1]
         else:
-            logger.error(f"File {self.file} not found")
+            errmsg = f"{self.file} not found"
+            logger.error(errmsg)
+            raise FileNotFoundError(errmsg)
 
         if ext == ".cif":
-            struct = Structure.from_file(self.file)
             self.is_cif = True
+            self.xyz = None
             self.molecules = None
+            self.mol = None
             self.nframes = 1
-            logger.info("Structure creation from a CIF file.")
-
+            self.struct = Structure.from_file(self.file)
+            logger.debug("structure creation from a CIF file")
         elif ext == ".xyz":
+            self.is_xyz = True
             self.xyz = XYZ.from_file(self.file)
             self.molecules = self.xyz.all_molecules
-            self.nframes = len(self.molecules)
             self.mol = self.molecules[self.frame]
-            struct = xyz2struct(self.mol)
-            self.is_xyz = True
-            logger.info("Structure creation from a XYZ file.")
-
+            self.nframes = len(self.molecules)
+            self.struct = xyz2struct(self.mol)
+            logger.debug("structure creation from a XYZ file")
         else:
-            logger.error(f"File {self.file} is not a cif or xyz file")
-
-        return struct
+            errmsg = "only CIF and XYZ files are currently supported"
+            logger.error(errmsg)
+            raise NotImplementedError(errmsg)
 
     def get_abs_sites(self):
         """Get information about the possible absorbing sites present in the structure.
@@ -484,9 +486,10 @@ class Struct2XAS:
 
 
         """
-        if self.is_cif:
-            abs_sites = self.get_abs_sites()
+        abs_sites = self.get_abs_sites()
+        idx_abs_site = abs_sites[self.abs_site][-1]
 
+        if self.is_cif:
             lgf = LocalGeometryFinder()
             lgf.setup_structure(self.struct)
 
@@ -500,13 +503,11 @@ class Struct2XAS:
             se = lgf.compute_structure_environments(
                 max_cn=6,
                 valences=valences,
-                only_indices=[self.get_abs_sites()[self.abs_site][-1]],
+                only_indices=[idx_abs_site],
                 only_symbols=["S:4", "T:4", "T:5", "S:5", "O:6", "T:6"],
             )
 
-            dist_1st_shell = se.voronoi.neighbors_distances[
-                self.get_abs_sites()[self.abs_site][-1]
-            ][0]["max"]
+            dist_1st_shell = se.voronoi.neighbors_distances[idx_abs_site][0]["max"]
             logger.debug(dist_1st_shell)
             #atom_coord = lgf.compute_coordination_environments(self.struct)
             strategy = MultiWeightsChemenvStrategy.stats_article_weights_parameters()
@@ -514,9 +515,7 @@ class Struct2XAS:
             lse = LightStructureEnvironments.from_structure_environments(
                 strategy=strategy, structure_environments=se
             )
-            coord_env_ce = lse.coordination_environments[
-                self.get_abs_sites()[self.abs_site][-1]
-            ]
+            coord_env_ce = lse.coordination_environments[idx_abs_site]
             ngbs_sites = lse._all_nbs_sites
             coord_env_list.append(
                 [
@@ -527,13 +526,12 @@ class Struct2XAS:
             )
 
         if self.is_xyz:
-            abs_sites = self.get_abs_sites()
             obj = BrunnerNN_real()
             coord_env_list = []
-            coord_env = obj.get_nn_info(self.struct, abs_sites[self.abs_site][-1])
+            coord_env = obj.get_nn_info(self.struct, idx_abs_site)
             for site in coord_env:
                 site["site"].cart_coords = self.struct[site["site_index"]].coords
-            coord_dict = obj.get_cn_dict(self.struct, abs_sites[self.abs_site][-1])
+            coord_dict = obj.get_cn_dict(self.struct, idx_abs_site)
             coord_env_list.append(
                 [
                     f"Coord. Env. for Site {abs_sites[self.abs_site][0]}",
