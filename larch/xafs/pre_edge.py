@@ -46,12 +46,14 @@ def find_e0(energy, mu=None, group=None, _larch=None):
     return e0
 
 def _finde0(energy, mu):
-    if len(energy.shape) > 1:
-        energy = energy.squeeze()
+
+    en = remove_dups(energy, tiny=0.005)
+    if len(en.shape) > 1:
+        en = en.squeeze()
     if len(mu.shape) > 1:
         mu = mu.squeeze()
 
-    dmu = smooth(energy, np.gradient(mu)/np.gradient(energy), sigma=0.25)
+    dmu = smooth(en, np.gradient(mu)/np.gradient(en), sigma=0.25)
     # find points of high derivative
     dmu[np.where(~np.isfinite(dmu))] = -1.0
     nmin = max(3, int(len(dmu)*0.05))
@@ -61,14 +63,14 @@ def _finde0(energy, mu):
     idmu_max, dmu_max = 0, 0
 
     for i in high_deriv_pts:
-        if i < nmin or i > len(energy) - nmin:
+        if i < nmin or i > len(en) - nmin:
             continue
         if (dmu[i] > dmu_max and
             (i+1 in high_deriv_pts) and
             (i-1 in high_deriv_pts)):
             idmu_max, dmu_max = i, dmu[i]
 
-    return energy[idmu_max]
+    return en[idmu_max]
 
 def flat_resid(pars, en, mu):
     return pars['c0'] + en * (pars['c1'] + en * pars['c2']) - mu
@@ -121,7 +123,7 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
          norm2 = max energy - e0, rounded to 5 eV
          norm1 = roughly min(150, norm2/3.0), rounded to 5 eV
     """
-    energy = remove_dups(energy)
+    energy = remove_dups(energy, tiny=0.005)
     if energy.size <= 1:
         raise ValueError("energy array must have at least 2 points")
     if e0 is None or e0 < energy[1] or e0 > energy[-2]:
