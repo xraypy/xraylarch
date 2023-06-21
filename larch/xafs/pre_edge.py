@@ -53,15 +53,16 @@ def _finde0(energy, mu):
     if len(mu.shape) > 1:
         mu = mu.squeeze()
 
-    dmu = smooth(en, np.gradient(mu)/np.gradient(en), sigma=0.25)
+    estep = max(min(np.diff(en)), en.mean()*2.5e-6)
+    dmu = smooth(en, np.gradient(mu)/np.gradient(en), xstep=estep, sigma=5*estep)
+
     # find points of high derivative
     dmu[np.where(~np.isfinite(dmu))] = -1.0
-    nmin = max(3, int(len(dmu)*0.05))
+    nmin = max(3, int(len(dmu)*0.02))
     maxdmu = max(dmu[nmin:-nmin])
 
     high_deriv_pts = np.where(dmu >  maxdmu*0.1)[0]
     idmu_max, dmu_max = 0, 0
-
     for i in high_deriv_pts:
         if i < nmin or i > len(en) - nmin:
             continue
@@ -414,7 +415,6 @@ def energy_align(group, reference, array='dmude', emin=-15, emax=35):
 
     i1 = index_of(xref, reference.e0-emin)
     i2 = index_of(xref, reference.e0+emax)
-    print("use Array ", array, i1, i2)
 
     def align_resid(params, xdat, ydat, xref, yref, i1, i2):
         "fit residual"
