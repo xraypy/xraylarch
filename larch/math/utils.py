@@ -268,7 +268,7 @@ def remove_nans2(a, b):
     return a, b
 
 
-def smooth(x, y, sigma=1, gamma=None, npad=None, form='lorentzian'):
+def smooth(x, y, sigma=1, gamma=None, xstep=None, npad=None, form='lorentzian'):
     """smooth a function y(x) by convolving wih a lorentzian, gaussian,
     or voigt function.
 
@@ -289,13 +289,15 @@ def smooth(x, y, sigma=1, gamma=None, npad=None, form='lorentzian'):
     """
     # make uniform x, y data
     TINY = 1.e-12
-    xstep = min(np.diff(x))
+    if xstep is None:
+        xstep = min(np.diff(x))
     if xstep < TINY:
         raise Warning('Cannot smooth data: must be strictly increasing ')
     npad = 5
     xmin = xstep * int( (min(x) - npad*xstep)/xstep)
     xmax = xstep * int( (max(x) + npad*xstep)/xstep)
-    npts = 1 + int(abs(xmax-xmin+xstep*0.1)/xstep)
+    npts1 = 1 + int(abs(xmax-xmin+xstep*0.1)/xstep)
+    npts = min(npts1, 50*len(x))
     x0  = np.linspace(xmin, xmax, npts)
     y0  = np.interp(x0, x, y)
 
