@@ -5,7 +5,7 @@ import numpy as np
 from .utils import (linregress, realimag, as_ndarray,
                     complex_phase, deriv, interp, interp1d,
                     remove_dups, remove_nans, remove_nans2, index_of,
-                    index_nearest, savitzky_golay, smooth, boxcar)
+                    index_nearest, savitzky_golay, smooth, boxcar, polyfit)
 
 from .lineshapes import (gaussian, lorentzian, voigt, pvoigt, hypermet,
                          pearson7, lognormal, gammaln,
@@ -22,7 +22,7 @@ from .gridxyz import gridxyz
 from .spline import spline_rep, spline_eval
 from . import transformations as trans
 
-_larch_builtins = {'_math': dict(linregress=linregress, polyfit=np.polyfit,
+_larch_builtins = {'_math': dict(linregress=linregress, polyfit=polyfit,
                                  realimag=realimag, as_ndarray=as_ndarray,
                                  complex_phase=complex_phase, deriv=deriv,
                                  interp=interp, interp1d=interp1d,

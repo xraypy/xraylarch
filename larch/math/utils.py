@@ -145,11 +145,11 @@ def interp(x, y, xnew, kind='linear', fill_value=np.nan, **kws):
             ncoef = 3
         sel = slice(None, ncoef) if isbelow  else slice(-ncoef, None)
         if kind.startswith('lin'):
-            coefs = np.polyfit(x[sel], y[sel], 1)
-            out[span] = coefs[1] + coefs[0]*xnew[span]
+            coefs = polyfit(x[sel], y[sel], 1)
+            out[span] = coefs[0] + coefs[1]*xnew[span]
         elif kind.startswith('quad'):
-            coefs = np.polyfit(x[sel], y[sel], 2)
-            out[span] = coefs[2] + xnew[span]*(coefs[1] + coefs[0]*xnew[span])
+            coefs = polyfit(x[sel], y[sel], 2)
+            out[span] = coefs[0] + xnew[span]*(coefs[1] + coefs[2]*xnew[span])
         elif kind.startswith('cubic'):
             out[span] = UnivariateSpline(x[sel], y[sel], s=0)(xnew[span])
     return out
@@ -431,3 +431,14 @@ def boxcar(data, nrepeats=1):
         left[:-1] = qdat[1:]
         out = 2*qdat + left + right
     return out
+
+def polyfit(x, y, deg, reverse=False):
+    """
+    simple emulation of deprecated numpy.polyfit,
+    including its ordering of coefficients
+    """
+    pfit = np.polynomial.Polynomial.fit(x, y, deg=deg)
+    coefs = pfit.convert().coef
+    if reverse:
+        coefs = list(reversed(coefs))
+    return coefs

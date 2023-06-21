@@ -39,7 +39,7 @@ from string import Template
 import numpy as np
 
 from .lineshapes import gaussian, lorentzian
-
+from .utils import polyfit
 
 def get_ene_index(ene, cen, hwhm):
     """returns the min/max indexes for array ene at (cen-hwhm) and (cen+hwhm)
@@ -183,8 +183,8 @@ def conv(x, y, gammas, e_cut=None, kernel="gaussian"):
     # linear fit upper part of the spectrum to avoid border effects
     # polyfit => pf
     lpf = int(len(x) / 2.0)
-    cpf = np.polyfit(x[-lpf:], f[-lpf:], 1)
-    fpf = np.poly1d(cpf)
+    cpf = polyfit(x[-lpf:], f[-lpf:], 1, reverse=False)
+    fpf = np.polynomial.Polynomial(cpf)
 
     # extend upper energy border to 3*fhwm_e[-1]
     xstep = x[-1] - x[-2]
