@@ -9,7 +9,7 @@ from xraydb import guess_edge
 from larch import Group, Make_CallArgs, parse_group_args
 
 from larch.math import (index_of, index_nearest, remove_dups, remove_nans2,
-                        interp, smooth)
+                        interp, smooth, polyfit)
 from .xafsutils import set_xafsGroup
 
 MODNAME = '_xafs'
@@ -174,8 +174,8 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
     omu  = mu*energy**nvict
     ex, mx = remove_nans2(energy[p1:p2], omu[p1:p2])
 
-    precoefs = np.polyfit(ex, mx, 1)
-    pre_edge = (precoefs[0] * energy + precoefs[1]) * energy**(-nvict)
+    precoefs = polyfit(ex, mx, 1)
+    pre_edge = (precoefs[0] + energy*precoefs[1]) * energy**(-nvict)
 
     # normalization
     p1 = index_of(energy, norm1+e0)
@@ -186,10 +186,10 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
         p1 = p1-2
 
     presub = (mu-pre_edge)[p1:p2]
-    coefs = np.polyfit(energy[p1:p2], presub, nnorm)
+    coefs = polyfit(energy[p1:p2], presub, nnorm)
     post_edge = 1.0*pre_edge
     norm_coefs = []
-    for n, c in enumerate(reversed(list(coefs))):
+    for n, c in enumerate(coefs):
         post_edge += c * energy**(n)
         norm_coefs.append(c)
     edge_step = step
