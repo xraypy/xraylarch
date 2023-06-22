@@ -833,7 +833,8 @@ class XASNormPanel(TaskPanel):
             if form[attr] is None:
                 copts.append("%s=None" % attr)
             else:
-                copts.append("%s=%.2f" % (attr, form[attr]))
+                fmt = "%s=%d" if attr in ('nvict', 'nnorm') else "%s=%.2f"
+                copts.append(fmt % (attr, form[attr]))
 
         self.larch_eval("pre_edge(%s)" % (', '.join(copts)))
         self.larch_eval("{group:s}.norm_poly = 1.0*{group:s}.norm".format(**form))
