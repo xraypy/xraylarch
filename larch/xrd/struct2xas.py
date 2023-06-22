@@ -1191,9 +1191,8 @@ def convolve_data(
     return group
 
 
-def get_cif(api_key, material_id):
-    """
-    Function to collect CIF file given the material id from Material Project Database.
+def get_cif_from_mp(api_key, material_id):
+    """Collect a CIF file from the Materials Project Database, given the material id
 
     Parameters:
         api_key (str): api-key from Materials Project
