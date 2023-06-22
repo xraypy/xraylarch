@@ -432,12 +432,12 @@ def boxcar(data, nrepeats=1):
         out = 2*qdat + left + right
     return out
 
-def polyfit(x, y, deg, reverse=False):
+def polyfit(x, y, deg=1, reverse=False):
     """
     simple emulation of deprecated numpy.polyfit,
     including its ordering of coefficients
     """
-    pfit = np.polynomial.Polynomial.fit(x, y, deg=deg)
+    pfit = np.polynomial.Polynomial.fit(x, y, deg=int(deg))
     coefs = pfit.convert().coef
     if reverse:
         coefs = list(reversed(coefs))
