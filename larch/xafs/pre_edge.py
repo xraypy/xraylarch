@@ -45,6 +45,16 @@ def find_e0(energy, mu=None, group=None, _larch=None):
         group.e0 = e0
     return e0
 
+def find_energy_step(energy, frac_ignore=0.01, nave=10):
+    """robustly find energy step in XAS energy array, 
+    ignoring the smallest fraction of energy steps (frac_ignore), 
+    and averaging over the next `nave` values
+    """
+    ediff = np.diff(energy)
+    nskip = int(frac_ignore*len(energy))
+    return ediff[np.argsort(ediff)][nskip:nskip+nave].mean()
+
+    
 def _finde0(energy, mu):
 
     en = remove_dups(energy, tiny=0.005)
@@ -52,26 +62,32 @@ def _finde0(energy, mu):
         en = en.squeeze()
     if len(mu.shape) > 1:
         mu = mu.squeeze()
-
-    estep = max(min(np.diff(en)), en.mean()*2.5e-6)
-    dmu = smooth(en, np.gradient(mu)/np.gradient(en), xstep=estep, sigma=5*estep)
+    estep = find_energy_step(en)
+    nmin = max(2, int(len(en)*0.01))
+    dmu = smooth(en, np.gradient(mu)/np.gradient(en), xstep=estep/2.0, sigma=estep)
 
     # find points of high derivative
     dmu[np.where(~np.isfinite(dmu))] = -1.0
-    nmin = max(3, int(len(dmu)*0.02))
-    maxdmu = max(dmu[nmin:-nmin])
+    dm_min = dmu[nmin:-nmin].min()
+    dm_ptp = max(1.e-10, dmu[nmin:-nmin].ptp())
+    dmu = (dmu - dm_min)/dm_ptp
 
-    high_deriv_pts = np.where(dmu >  maxdmu*0.1)[0]
-    idmu_max, dmu_max = 0, 0
+    dhigh = 0.6
+    high_deriv_pts = np.where(dmu > dhigh)[0]
+    if len(high_deriv_pts) < 3:
+        dhigh = dhigh - 0.2
+        while len(high_deriv_pts) < 3:
+            high_deriv_pts = np.where(dmu > dhigh)[0]
+
+    imax, dmax = 0, 0
     for i in high_deriv_pts:
         if i < nmin or i > len(en) - nmin:
             continue
-        if (dmu[i] > dmu_max and
+        if (dmu[i] > dmax and
             (i+1 in high_deriv_pts) and
             (i-1 in high_deriv_pts)):
-            idmu_max, dmu_max = i, dmu[i]
-
-    return en[idmu_max]
+            imax, dmax = i, dmu[i]
+    return en[imax]
 
 def flat_resid(pars, en, mu):
     return pars['c0'] + en * (pars['c1'] + en * pars['c2']) - mu
@@ -274,6 +290,9 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
         mu = mu.squeeze()
 
     energy, mu = remove_nans2(energy, mu)
+    if group is not None and e0 is None:
+        e0 = getattr(group, 'e0', None)
+        
     pre_dat = preedge(energy, mu, e0=e0, step=step, nnorm=nnorm,
                       nvict=nvict, pre1=pre1, pre2=pre2, norm1=norm1,
                       norm2=norm2)
