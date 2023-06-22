@@ -15,6 +15,8 @@ class Group():
     """
     __private = ('_main', '_larch', '_parents', '__name__', '__doc__',
                  '__private', '_subgroups', '_members', '_repr_html_')
+    
+    __generic_functions = ('keys', 'values', 'items')
 
     def __init__(self, name=None, **kws):
         if name is None:
@@ -62,8 +64,35 @@ class Group():
                     not key.startswith('_Group_') and
                     not key.startswith(f'_{cname}_') and
                     not (key.startswith('__') and key.endswith('__')) and
+                    key not in self.__generic_functions and
                     key not in self.__private)]
 
+    def __getitem__(self, key):
+
+        if isinstance(key, int):
+            raise IndexError("Group does not support Integer indexing")
+        
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+
+        if isinstance(key, int):
+            raise IndexError("Group does not support Integer indexing")
+        
+        return setattr(self, key, value)
+    
+    def __iter__(self):
+        return iter(self.keys())
+    
+    def keys(self):
+        return self.__dir__()
+    
+    def values(self):
+        return [getattr(self, key) for key in self.__dir__()]
+    
+    def items(self):
+        return [(key, getattr(self, key)) for key in self.__dir__()]
+    
     def _subgroups(self):
         "return list of names of members that are sub groups"
         return [k for k in self._members() if isgroup(self.__dict__[k])]

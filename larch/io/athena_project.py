@@ -597,6 +597,28 @@ class AthenaGroup(Group):
     def groups(self, groups):
         self._athena_groups = groups
 
+    def __getitem__(self, key):
+
+        if isinstance(key, int):
+            raise IndexError("AthenaGroup does not support integer indexing")
+        
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+
+        if isinstance(key, int):
+            raise IndexError("AthenaGroup does not support integer indexing")
+        
+        return setattr(self, key, value)
+    
+    def keys(self):
+        return list(self.groups.keys())
+    
+    def values(self):
+        return list(self.groups.values())
+    
+    def items(self):
+        return list(self.groups.items())
 
 class AthenaProject(object):
     """read and write Athena Project files, mapping to Larch group
