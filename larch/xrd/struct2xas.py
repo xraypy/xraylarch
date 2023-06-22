@@ -590,22 +590,26 @@ class Struct2XAS:
         """
         Create a fdmnes input from a template.
 
-        Args:
+        Arguments
+        ---------
+        radius (float)
+            radius for fdmnes calculation in Angstrom
+        parent_path (str) [None]
+            path to the parent directory where the input files are stored
+            if None it will create a temporary directory    
+        template (str) [None]
+            full path to the template file
+        green (boolean):
+                    if True, both green AND SCF methods are used.
+                    if False, just the SCF method is used (more time for calculation).
 
-            > radius (float):
-                        radius for fdmnes calculation [Angstrom].
+        ..note: for further information about FDMNES keywords, search for "FDMNES user's guide"
 
-            > parent_path (str):
-                        if None will create an automatic path from where the script is running.
+        Returns
+        -------
+        None -> writes FDMNES input to disk
+        directory structure: {parent_path}/fdmnes/{self.file_name}/{self.abs_atom}/frame{self.frame}/site{self.abs_site}/
 
-            > green (boolean):
-                        if True, both green AND SCF methods are used.
-                        if False, just the SCF method is used (more time for calculation).
-
-            NOTE: for further information about FDMNES keywords, search for "FDMNES user's guide"
-
-
-        return fdmnes input.
         """
         replacements = {}
         replacements.update(**kwargs)
@@ -616,9 +620,9 @@ class Struct2XAS:
             )
 
         if parent_path is None:
-            tmpdir = tempfile.mkdtemp(prefix="struct2xas-")
-            parent_path = os.path.join(tmpdir, "fdmnes", self.file_name, self.abs_atom, f"site{self.abs_site}")
+            parent_path = tempfile.mkdtemp(prefix="struct2xas-")
         self.parent_path = parent_path
+        self.outdir = os.path.join(self.parent_path, "fdmnes", self.file_name, self.abs_atom, f"frame{self.frame}", f"site{self.abs_site}")
 
         if green:
             method = "green"
@@ -781,21 +785,21 @@ class Struct2XAS:
         replacements["occupancy"] = occupancy
 
         try:
-            os.makedirs(parent_path, mode=0o755)
+            os.makedirs(self.outdir, mode=0o755)
         except FileExistsError:
             pass
 
         # Write the input file.
-        filename = os.path.join(parent_path, "job_inp.txt")
-        with open(filename, "w") as fp, open(template) as tp:
+        fnout = os.path.join(self.outdir, "job_inp.txt")
+        with open(fnout, "w") as fp, open(template) as tp:
             inp = tp.read().format(**replacements)
             fp.write(inp)
 
         # Write the fdmfile.txt.
-        with open(os.path.join(parent_path, "fdmfile.txt"), "w") as fp:
+        with open(os.path.join(self.outdir, "fdmfile.txt"), "w") as fp:
             fp.write("1\njob_inp.txt")
 
-        logger.info(f"written FDMNES input -> {filename}")
+        logger.info(f"written FDMNES input -> {fnout}")
 
     def make_input_feff(
         self,
@@ -810,37 +814,39 @@ class Struct2XAS:
         """
         Create a FEFF input from a template.
 
-        Args:
-
-            > radius (float):
-                        radius for feff calculation [Angstrom].
-
-            > parent_path (str):
-                        path for feff folder creation. If None will create an automatic path from where script is running.
-
-            > feff_coment (str):
-                        comment for input file.
-
-            > sig2 (float or None):
-                        SIG2 keywork, if None it will be commented
-
-            > debye (list of two floats or None):
-                        DEBYE keyword, if None it will be commented else give
-                        debye=[temperature, debye_temperature]
-                        > temperatue (float):
-                            temperature at which the Debye-Waller factors are calculate [Kelvin].
-                        > debye_temperature (float):
-                            Debye Temperature of the material [Kelvin].
+        Arguments
+        ---------
+            radius (float)
+                radius for feff calculation [Angstrom].
+            parent_path (str) [None]
+                path to the parent directory where the input files are stored
+                if None it will create a temporary directory        
+            template (str) [None]
+                full path to the template file
+            feff_coment (str)
+                comment for input file.
+            sig2 (float or None)
+                SIG2 keywork, if None it will be commented
+            debye (list of two floats or None)
+                DEBYE keyword, if None it will be commented, otherwise:
+                debye=[temperature, debye_temperature]
+                    temperatue (float):
+                        temperature at which the Debye-Waller factors are calculate [Kelvin].
+                    debye_temperature (float):
+                        Debye Temperature of the material [Kelvin].
 
             NOTE: for further information about FEFF keywords, search for "FEFF user's guide"
 
-        return fdmnes input.
+        Returns
+        -------
+        None -> writes FEFF input to disk
+        directory structure: {parent_path}/feff/{self.file_name}/{self.abs_atom}/frame{self.frame}/site{self.abs_site}/
         """
 
         if parent_path is None:
-            tmpdir = tempfile.mkdtemp(prefix="struct2xas-")
-            parent_path = os.path.join(tmpdir, "feff", self.file_name, self.abs_atom, f"site{self.abs_site}")
+            parent_path = tempfile.mkdtemp(prefix="struct2xas-")
         self.parent_path = parent_path
+        self.outdir = os.path.join(self.parent_path, "feff", self.file_name, self.abs_atom, f"frame{self.frame}", f"site{self.abs_site}")
 
         if template is None:
             template = os.path.join(
@@ -975,17 +981,17 @@ class Struct2XAS:
         # replacements[""] =
 
         try:
-            os.makedirs(parent_path, mode=0o755)
+            os.makedirs(self.outdir, mode=0o755)
         except FileExistsError:
             pass
 
         # Write the input file.
-        filename = os.path.join(parent_path, "feff.inp")
-        with open(filename, "w") as fp, open(template) as tp:
+        fnout = os.path.join(self.outdir, "feff.inp")
+        with open(fnout, "w") as fp, open(template) as tp:
             inp = tp.read().format(**replacements)
             fp.write(inp)
 
-        logger.info(f"written FEFF input in -> {self.parent_path}")
+        logger.info(f"written FEFF input -> {fnout}")
 
     def _get_xyz_and_elements(self, radius):
         """
