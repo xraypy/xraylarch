@@ -70,14 +70,14 @@ class Group():
     def __getitem__(self, key):
 
         if isinstance(key, int):
-            key = self.__dir__()[key]
+            raise IndexError("Group does not support Integer indexing")
         
         return getattr(self, key)
 
     def __setitem__(self, key, value):
 
         if isinstance(key, int):
-            key = self.__dir__()[key]
+            raise IndexError("Group does not support Integer indexing")
         
         return setattr(self, key, value)
     

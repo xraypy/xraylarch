@@ -600,15 +600,14 @@ class AthenaGroup(Group):
     def __getitem__(self, key):
 
         if isinstance(key, int):
-            group_key = list(self.groups.keys())
-            return self.groups[group_key[key]]
+            raise IndexError("AthenaGroup does not support integer indexing")
         
         return getattr(self, key)
 
     def __setitem__(self, key, value):
 
         if isinstance(key, int):
-            key = self.groups[key]
+            raise IndexError("AthenaGroup does not support integer indexing")
         
         return setattr(self, key, value)
     
