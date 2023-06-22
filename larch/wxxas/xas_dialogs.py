@@ -23,7 +23,7 @@ from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl, FloatSpin,
                          FileCheckList, Font, FONTSIZE, plotlabels,
                          get_zoomlimits, set_zoomlimits)
 
-from larch.xafs.xafsutils  import etok, ktoe
+from larch.xafs import etok, ktoe, find_energy_step
 from larch.utils.physical_constants import PI, DEG2RAD, PLANCK_HC
 from larch.math import smooth
 
@@ -396,7 +396,7 @@ class EnergyCalibrateDialog(wx.Dialog):
 
         dat.xdat = dat.energy_orig[:]
         ref.xdat = ref.energy_orig[:]
-
+        estep = find_energy_step(dat.xdat)
         i1 = index_of(ref.energy_orig, ref.e0-20)
         i2 = index_of(ref.energy_orig, ref.e0+20)
 
@@ -405,7 +405,7 @@ class EnergyCalibrateDialog(wx.Dialog):
             newx = dat.xdat + pars['eshift'].value
             scale = pars['scale'].value
             y = interp(newx, dat.dmude, ref.xdat, kind='cubic')
-            return smooth(newx, y*scale-ref.dmude, sigma=0.50)[i1:i2]
+            return smooth(newx, y*scale-ref.dmude, xstep=estep, sigma=0.50)[i1:i2]
 
         params = Parameters()
         params.add('eshift', value=ref.e0-dat.e0, min=-50, max=50)
@@ -875,10 +875,10 @@ class SmoothDataDialog(wx.Dialog):
             cmd = "savitzky_golay({group:s}.mu, {par_n:d}, {par_o:d})"
 
         elif smoothop.startswith('conv'):
-            cmd = "smooth({group:s}.energy, {group:s}.mu, sigma={sigma:f}, form='{convop:s}')"
-
+            estep = find_energy_step(self.data[0])
+            cmd = "smooth({group:s}.energy, {group:s}.mu, xstep={estep:f}, sigma={sigma:f}, form='{convop:s}')"
         self.cmd = cmd.format(group=self.dgroup.groupname, convop=convop,
-                              sigma=sigma, par_n=par_n, par_o=par_o)
+                              estep=estep, sigma=sigma, par_n=par_n, par_o=par_o)
 
         self.controller.larch.eval("_tmpy = %s" % self.cmd)
         self.data = self.dgroup.energy[:], self.controller.symtable._tmpy
