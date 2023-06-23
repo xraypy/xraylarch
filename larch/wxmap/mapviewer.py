@@ -1760,11 +1760,10 @@ class MapViewerFrame(wx.Frame):
         if os.path.exists(ponifile):
             self.current_file.xrmmap['xrd1d'].attrs['calfile'] = ponifile
 
-
         if self.xrddisplay2D is None:
-            self.xrddisplay2D = XRD2DViewerFrame(_larch=self.larch,flip=flptyp,
+            self.xrddisplay2D = XRD2DViewerFrame(_larch=self.larch, flip=flptyp,
                                                  xrd1Dviewer=self.xrddisplay1D,
-                                                 ponifile=poni)
+                                                 ponifile=ponifile)
         try:
             self.xrddisplay2D.plot2Dxrd(label,map)
         except:

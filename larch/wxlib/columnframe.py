@@ -1067,6 +1067,7 @@ class ColumnDataFileFrame(wx.Frame) :
         xexpr = self.expressions['xdat']
         en_units = conf['en_units']
         if en_units.startswith('deg'):
+            monod = conf['monod']
             buff.append(f"monod = {monod:.9f}")
             buff.append(f"{{group}}.xdat = PLANCK_HC/(2*monod*sin(DEG2RAD*({xexpr:s})))")
         elif en_units.startswith('keV'):

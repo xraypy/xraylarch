@@ -9,7 +9,7 @@
 Pre-edge subtraction and Normalization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-As shown above in :numref:`fig_xasviewer_1`, the main analysis panel for
+As shown above in :numref:`fig_xasviewer_top`, the main analysis panel for
 the XAS Viewer program is the "XAS Normalization" Panel.  This panel helps
 you do pre-edge subtraction and normalization of XAFS data using the
 :func:`find_e0`, :func:`pre_edge`, or :func:`mback_norm` functions.  This

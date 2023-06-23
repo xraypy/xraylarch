@@ -9,7 +9,7 @@ from xraydb import guess_edge
 from larch import Group, Make_CallArgs, parse_group_args
 
 from larch.math import (index_of, index_nearest, remove_dups, remove_nans2,
-                        interp, smooth)
+                        interp, smooth, polyfit)
 from .xafsutils import set_xafsGroup
 
 MODNAME = '_xafs'
@@ -45,30 +45,49 @@ def find_e0(energy, mu=None, group=None, _larch=None):
         group.e0 = e0
     return e0
 
+def find_energy_step(energy, frac_ignore=0.01, nave=10):
+    """robustly find energy step in XAS energy array, 
+    ignoring the smallest fraction of energy steps (frac_ignore), 
+    and averaging over the next `nave` values
+    """
+    ediff = np.diff(energy)
+    nskip = int(frac_ignore*len(energy))
+    return ediff[np.argsort(ediff)][nskip:nskip+nave].mean()
+
+    
 def _finde0(energy, mu):
-    if len(energy.shape) > 1:
-        energy = energy.squeeze()
+
+    en = remove_dups(energy, tiny=0.005)
+    if len(en.shape) > 1:
+        en = en.squeeze()
     if len(mu.shape) > 1:
         mu = mu.squeeze()
+    estep = find_energy_step(en)
+    nmin = max(2, int(len(en)*0.01))
+    dmu = smooth(en, np.gradient(mu)/np.gradient(en), xstep=estep/2.0, sigma=estep)
 
-    dmu = smooth(energy, np.gradient(mu)/np.gradient(energy), sigma=0.25)
     # find points of high derivative
     dmu[np.where(~np.isfinite(dmu))] = -1.0
-    nmin = max(3, int(len(dmu)*0.05))
-    maxdmu = max(dmu[nmin:-nmin])
+    dm_min = dmu[nmin:-nmin].min()
+    dm_ptp = max(1.e-10, dmu[nmin:-nmin].ptp())
+    dmu = (dmu - dm_min)/dm_ptp
 
-    high_deriv_pts = np.where(dmu >  maxdmu*0.1)[0]
-    idmu_max, dmu_max = 0, 0
+    dhigh = 0.6
+    high_deriv_pts = np.where(dmu > dhigh)[0]
+    if len(high_deriv_pts) < 3:
+        dhigh = dhigh - 0.2
+        while len(high_deriv_pts) < 3:
+            high_deriv_pts = np.where(dmu > dhigh)[0]
 
+    imax, dmax = 0, 0
     for i in high_deriv_pts:
-        if i < nmin or i > len(energy) - nmin:
+        if i < nmin or i > len(en) - nmin:
             continue
-        if (dmu[i] > dmu_max and
+        if (dmu[i] > dmax and
             (i+1 in high_deriv_pts) and
             (i-1 in high_deriv_pts)):
-            idmu_max, dmu_max = i, dmu[i]
-
-    return energy[idmu_max]
+            imax, dmax = i, dmu[i]
+    return en[imax]
 
 def flat_resid(pars, en, mu):
     return pars['c0'] + en * (pars['c1'] + en * pars['c2']) - mu
@@ -121,7 +140,7 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
          norm2 = max energy - e0, rounded to 5 eV
          norm1 = roughly min(150, norm2/3.0), rounded to 5 eV
     """
-    energy = remove_dups(energy)
+    energy = remove_dups(energy, tiny=0.005)
     if energy.size <= 1:
         raise ValueError("energy array must have at least 2 points")
     if e0 is None or e0 < energy[1] or e0 > energy[-2]:
@@ -171,8 +190,8 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
     omu  = mu*energy**nvict
     ex, mx = remove_nans2(energy[p1:p2], omu[p1:p2])
 
-    precoefs = np.polyfit(ex, mx, 1)
-    pre_edge = (precoefs[0] * energy + precoefs[1]) * energy**(-nvict)
+    precoefs = polyfit(ex, mx, 1)
+    pre_edge = (precoefs[0] + energy*precoefs[1]) * energy**(-nvict)
 
     # normalization
     p1 = index_of(energy, norm1+e0)
@@ -183,10 +202,10 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
         p1 = p1-2
 
     presub = (mu-pre_edge)[p1:p2]
-    coefs = np.polyfit(energy[p1:p2], presub, nnorm)
+    coefs = polyfit(energy[p1:p2], presub, nnorm)
     post_edge = 1.0*pre_edge
     norm_coefs = []
-    for n, c in enumerate(reversed(list(coefs))):
+    for n, c in enumerate(coefs):
         post_edge += c * energy**(n)
         norm_coefs.append(c)
     edge_step = step
@@ -271,6 +290,9 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
         mu = mu.squeeze()
 
     energy, mu = remove_nans2(energy, mu)
+    if group is not None and e0 is None:
+        e0 = getattr(group, 'e0', None)
+        
     pre_dat = preedge(energy, mu, e0=e0, step=step, nnorm=nnorm,
                       nvict=nvict, pre1=pre1, pre2=pre2, norm1=norm1,
                       norm2=norm2)
@@ -412,7 +434,6 @@ def energy_align(group, reference, array='dmude', emin=-15, emax=35):
 
     i1 = index_of(xref, reference.e0-emin)
     i2 = index_of(xref, reference.e0+emax)
-    print("use Array ", array, i1, i2)
 
     def align_resid(params, xdat, ydat, xref, yref, i1, i2):
         "fit residual"

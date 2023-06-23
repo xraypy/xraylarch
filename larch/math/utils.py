@@ -145,11 +145,11 @@ def interp(x, y, xnew, kind='linear', fill_value=np.nan, **kws):
             ncoef = 3
         sel = slice(None, ncoef) if isbelow  else slice(-ncoef, None)
         if kind.startswith('lin'):
-            coefs = np.polyfit(x[sel], y[sel], 1)
-            out[span] = coefs[1] + coefs[0]*xnew[span]
+            coefs = polyfit(x[sel], y[sel], 1)
+            out[span] = coefs[0] + coefs[1]*xnew[span]
         elif kind.startswith('quad'):
-            coefs = np.polyfit(x[sel], y[sel], 2)
-            out[span] = coefs[2] + xnew[span]*(coefs[1] + coefs[0]*xnew[span])
+            coefs = polyfit(x[sel], y[sel], 2)
+            out[span] = coefs[0] + xnew[span]*(coefs[1] + coefs[2]*xnew[span])
         elif kind.startswith('cubic'):
             out[span] = UnivariateSpline(x[sel], y[sel], s=0)(xnew[span])
     return out
@@ -268,7 +268,7 @@ def remove_nans2(a, b):
     return a, b
 
 
-def smooth(x, y, sigma=1, gamma=None, npad=None, form='lorentzian'):
+def smooth(x, y, sigma=1, gamma=None, xstep=None, npad=None, form='lorentzian'):
     """smooth a function y(x) by convolving wih a lorentzian, gaussian,
     or voigt function.
 
@@ -289,13 +289,15 @@ def smooth(x, y, sigma=1, gamma=None, npad=None, form='lorentzian'):
     """
     # make uniform x, y data
     TINY = 1.e-12
-    xstep = min(np.diff(x))
+    if xstep is None:
+        xstep = min(np.diff(x))
     if xstep < TINY:
         raise Warning('Cannot smooth data: must be strictly increasing ')
     npad = 5
     xmin = xstep * int( (min(x) - npad*xstep)/xstep)
     xmax = xstep * int( (max(x) + npad*xstep)/xstep)
-    npts = 1 + int(abs(xmax-xmin+xstep*0.1)/xstep)
+    npts1 = 1 + int(abs(xmax-xmin+xstep*0.1)/xstep)
+    npts = min(npts1, 50*len(x))
     x0  = np.linspace(xmin, xmax, npts)
     y0  = np.interp(x0, x, y)
 
@@ -429,3 +431,14 @@ def boxcar(data, nrepeats=1):
         left[:-1] = qdat[1:]
         out = 2*qdat + left + right
     return out
+
+def polyfit(x, y, deg=1, reverse=False):
+    """
+    simple emulation of deprecated numpy.polyfit,
+    including its ordering of coefficients
+    """
+    pfit = np.polynomial.Polynomial.fit(x, y, deg=int(deg))
+    coefs = pfit.convert().coef
+    if reverse:
+        coefs = list(reversed(coefs))
+    return coefs

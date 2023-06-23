@@ -222,7 +222,8 @@ Larch uses many of the common "scipy ecosystem" packages. The main packages
 that you may need to install that may not be installed are:
 
    * `wxpython`: needed for all plotting, graphics and GUI applications.
-   * `pymatgen`: needed for handling CIF files and running FEFF calculations.
+   * `pymatgen`: needed for handling CIF files to generate Feff input files.
+   * `openbabel`: needed for converting some structure files to Feff input files.
    * `tomopy`: needed only for reconstructing X-ray fluorescence tomography.
    * `epicsapps`: applications using the Epics control system.
 
@@ -248,8 +249,8 @@ infrastructure and then install xraylarch with pip:
    conda create -y --name xraylarch python=>3.10
    conda activate xraylarch
    conda install -y -c conda-forge wxpython pymatgen scipy h5py matplotlib
+   conda install -y -c conda-forge openbabel tomopy epicsapps    # <- optional packages
    pip install xraylarch
-
 
 
 Since the `PyPI_` packages are the main release package, this method may better

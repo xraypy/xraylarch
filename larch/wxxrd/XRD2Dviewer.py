@@ -261,8 +261,8 @@ class XRD2DViewerFrame(wx.Frame):
             img_no = self.ch_img.GetSelection()
             if self.open_image[img_no].iframes > 1:
                 self.hrz_frm_sldr.Enable()
-                self.hrz_frm_sldr.SetRange(0,(self.open_image[img_no].iframes-1))
-                self.hrz_frm_sldr.SetValue(self.open_image[img_no].i)
+                self.hrz_frm_sldr.SetRange(0, int(self.open_image[img_no].iframes-1))
+                self.hrz_frm_sldr.SetValue(int(self.open_image[img_no].i))
                 for btn in self.hrz_frm_btn: btn.Enable()
             else:
                 self.hrz_frm_sldr.Disable()
@@ -272,8 +272,8 @@ class XRD2DViewerFrame(wx.Frame):
 
             if self.open_image[img_no].jframes > 1:
                 self.vrt_frm_sldr.Enable()
-                self.vrt_frm_sldr.SetRange(0,(self.open_image[img_no].jframes-1))
-                self.vrt_frm_sldr.SetValue(self.open_image[img_no].j)
+                self.vrt_frm_sldr.SetRange(0,int(self.open_image[img_no].jframes-1))
+                self.vrt_frm_sldr.SetValue(int(self.open_image[img_no].j))
                 for btn in self.vrt_frm_btn: btn.Enable()
             else:
                 self.vrt_frm_sldr.Disable()
@@ -366,14 +366,14 @@ class XRD2DViewerFrame(wx.Frame):
 
         if self.open_image[-1].iframes > 1:
             self.hrz_frm_sldr.SetRange(0,(self.open_image[-1].iframes-1))
-            self.hrz_frm_sldr.SetValue(self.open_image[-1].i)
+            self.hrz_frm_sldr.SetValue(int(self.open_image[-1].i))
         else:
             self.hrz_frm_sldr.Disable()
             for btn in self.hrz_frm_btn: btn.Disable()
 
         if self.open_image[-1].jframes > 1:
             self.vrt_frm_sldr.SetRange(0,(self.open_image[-1].jframes-1))
-            self.vrt_frm_sldr.SetValue(self.open_image[-1].j)
+            self.vrt_frm_sldr.SetValue(int(self.open_image[-1].j))
         else:
             self.vrt_frm_sldr.Disable()
             for btn in self.vrt_frm_btn: btn.Disable()
@@ -517,8 +517,8 @@ class XRD2DViewerFrame(wx.Frame):
             self.sldr_bkgd.Enable()
             self.use_bkgd = True
 
-        self.sldr_bkgd.SetRange(0,self.bkgdMAX*SLIDER_SCALE)
-        self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)
+        self.sldr_bkgd.SetRange(0, int(self.bkgdMAX*SLIDER_SCALE))
+        self.sldr_bkgd.SetValue(int(self.bkgd_scale*SLIDER_SCALE))
 
     def colorIMAGE(self,unzoom=False):
         self.xrd2Dviewer.plot2D.conf.cmap[0] = getattr(colormap, self.color)
@@ -614,11 +614,11 @@ class XRD2DViewerFrame(wx.Frame):
             self.xrd2Dviewer.plot2D.conf.int_hi[0] = img.maxval
         self.xrd2Dviewer.plot2D.redraw()
 
-        self.sldr_cntrst.SetRange(img.minval,img.maxval)
+        self.sldr_cntrst.SetRange(int(img.minval), int(img.maxval))
         if auto_contrast:
             self.sldr_cntrst.SetValue(int(img.maxval*0.4))
         else:
-            self.sldr_cntrst.SetValue(img.maxval)
+            self.sldr_cntrst.SetValue(int(img.maxval))
         self.entr_min.SetValue('%i' % img.minval)
         self.entr_max.SetValue('%i' % img.maxval)
 
@@ -1149,7 +1149,7 @@ class XRD2DViewerFrame(wx.Frame):
         hbox_ct2 = wx.BoxSizer(wx.HORIZONTAL)
 
         self.sldr_cntrst = wx.Slider(self.panel, style=wx.SL_LABELS,
-                                     size=(275,-1), maxValue=5e6)
+                                     size=(275,-1), minValue=0, maxValue=5000000)
 
         self.entr_min = wx.TextCtrl(self.panel,  style=wx.TE_PROCESS_ENTER, size=(50,-1))
         self.entr_max = wx.TextCtrl(self.panel,  style=wx.TE_PROCESS_ENTER, size=(80,-1))
@@ -1216,7 +1216,7 @@ class XRD2DViewerFrame(wx.Frame):
         ## Background
         hbox_bkgd1 = wx.BoxSizer(wx.HORIZONTAL)
         self.btn_bkgd = wx.Button(panel,label='BACKGROUND')
-        self.sldr_bkgd = wx.Slider(self.panel,style=wx.SL_VALUE_LABEL, maxValue=1e3)
+        self.sldr_bkgd = wx.Slider(self.panel,style=wx.SL_VALUE_LABEL, minValue=0, maxValue=1000)
 
         self.sldr_bkgd.Bind(wx.EVT_SLIDER,self.onBkgdScale)
         self.btn_bkgd.Bind(wx.EVT_BUTTON,self.openBkgd)
@@ -1225,7 +1225,7 @@ class XRD2DViewerFrame(wx.Frame):
         hbox_bkgd1.Add(self.sldr_bkgd, flag=wx.EXPAND|wx.TOP, border=6)
         vbox.Add(hbox_bkgd1,           flag=wx.TOP|wx.BOTTOM,                border=4)
 
-        self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)
+        self.sldr_bkgd.SetValue(int(self.bkgd_scale*SLIDER_SCALE))
 
         ###########################
         ## Set defaults

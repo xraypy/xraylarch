@@ -1,4 +1,4 @@
-name: Test with Windows, Miniconda
+name: Test with Windows, Mamba
 
 on: [push]
 
@@ -9,28 +9,23 @@ jobs:
       max-parallel: 5
       fail-fast: false
       matrix:
-        python-version: ['3.9', '3.10']
+        python-version: ['3.8.10', '3.9', '3.10', '3.11']
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python from Miniconda
+    - name: Set up Python from Miniconda,mamba
       uses: conda-incubator/setup-miniconda@v2
       with:
-          auto-update-conda: true
+          miniconda-version: latest
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
+          activate-environment: anaconda-client-env
           python-version: ${{ matrix.python-version }}
-    - name: Install conda dependencies
+    - name: Install mamba dependencies
       run: |
         printenv
-        conda config --set always_yes yes --set changeps1 no
-        conda config --add channels conda-forge
-        conda install python=${{ matrix.python-version }} numpy=>1.21 scipy=>1.9 matplotlib=>3.3 pillow>=7.3
-        conda install scikit-learn pandas h5py==3.6
-        conda install imageio sqlalchemy psutil pyyaml
-        conda install psycopg2-binary numdifftools emcee cython
-        conda install pyparsing pytest pytest-cov coverage
-        conda install pip setuptools pandas sqlalchemy psutil pyyaml pymatgen tomopy wxpython importlib_metadata pycifrw
-        conda update --all
-        conda info -a
-        conda list
+        mamba install -y -c conda-forge python=${{ matrix.python-version }} numpy=>1.22 scipy=>1.8 matplotlib=>3.6 wxpython
+        mamba install -y -c conda-forge scikit-image scikit-learn pycifrw pandas jupyter plotly pyparsing pytest pytest-cov coverage
     - name: Install xraylarch and other dependencies with pip
       run: |
         printenv

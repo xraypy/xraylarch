@@ -34,7 +34,7 @@ def autoset_fs_increment(wid, value):
     if abs(value) < 1.e-20:
         return
     ndig = int(1-round(np.log10(abs(value*0.5))))
-    wid.SetDigits(ndig+1)
+    wid.SetDigits(ndig+2)
     c, inc = 0, 10.0**(-ndig)
     while (inc/abs(value) > 0.02):
         scale = 0.5 if (c % 2 == 0) else 0.4
@@ -90,9 +90,9 @@ class GroupJournalFrame(wx.Frame):
 
         self.datagrid.SetMinSize((925, 650))
         self.datagrid.EnableEditing(False)
-        panel.Add(self.datagrid, dcol=5, drow=9, newrow=True, style=LEFT|wx.GROW|wx.ALL)        
+        panel.Add(self.datagrid, dcol=5, drow=9, newrow=True, style=LEFT|wx.GROW|wx.ALL)
         panel.pack()
-        
+
         self.xasmain.timers['journal_updater'] = wx.Timer(self.xasmain)
         self.xasmain.Bind(wx.EVT_TIMER, self.onRefresh,
                           self.xasmain.timers['journal_updater'])

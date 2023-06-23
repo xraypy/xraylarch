@@ -1,4 +1,4 @@
-name: Test with Ubuntu, Miniconda
+name: Test with Ubuntu, Mamba
 
 on: [push]
 
@@ -9,34 +9,28 @@ jobs:
       max-parallel: 5
       fail-fast: false
       matrix:
-        python-version: ['3.10', '3.11']
+        python-version: ['3.8', '3.9', '3.10', '3.11']
     defaults:
       run:
         shell: bash -l {0}
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python from Miniconda
+    - name: Set up Python from Miniconda/mamba
       uses: conda-incubator/setup-miniconda@v2
       with:
         miniconda-version: latest
+        mamba-version: "*"
+        channels: conda-forge,defaults
+        channel-priority: true
+        activate-environment: anaconda-client-env
         python-version: ${{ matrix.python-version }}
-    - name: Install conda dependencies
+    - name: Install mamba dependencies
       run: |
-        # printenv
-        conda config --set always_yes true --set changeps1 true
-        conda config --add channels conda-forge
-        conda update -n base -c defaults conda
-        conda install python=${{ matrix.python-version }}
-        conda install numpy=>1.21 scipy=>1.8 matplotlib=>3.4 h5py pandas cython pyparsing pytest pytest-cov coverage
-        conda install scikit-learn pillow imageio sqlalchemy psutil pyyaml psycopg2-binary numdifftools emcee
-        #conda install tomopy
-        conda install wxpython pymatgen pycifrw
-        conda info -a
-        conda list
+        printenv
+        mamba install -y -c conda-forge python=${{ matrix.python-version }} numpy=>1.22 scipy=>1.8 matplotlib=>3.6 wxpython
+        mamba install -y -c conda-forge scikit-image scikit-learn pycifrw pandas jupyter plotly pyparsing pytest pytest-cov coverage
     - name: Install xraylarch and other dependencies with pip
       run: |
-        conda info -a
-        conda list
         pip install lmfit peakutils pyepics pyshortcuts termcolor sphinx dill pycifrw xraydb wxmplot wxutils fabio silx imageio charset-normalizer
         pip install .
     - name: Run test suite
