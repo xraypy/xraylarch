@@ -46,7 +46,6 @@ VALID_SNAME_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456
 VALID_NAME_CHARS = '.%s' % VALID_SNAME_CHARS
 VALID_CHARS1 = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_'
 
-
 BAD_FILECHARS = ';~,`!%$@$&^?*#:"/|\'\\\t\r\n (){}[]<>'
 GOOD_FILECHARS = '_'*len(BAD_FILECHARS)
 
@@ -277,6 +276,9 @@ def file2groupname(filename, slen=5, symtable=None):
     """
 
     gname = fix_varname(filename).lower().replace('_', '')
+
+    if gname[0] not in 'abcdefghijklmnopqrstuvwxyz':
+        gname = random.choice(['a', 'b', 'c', 'd', 'e', 'f', 'g']) + gname
     if len(gname) < slen:
         gname = gname + randstr(slen-len(gname))
 
