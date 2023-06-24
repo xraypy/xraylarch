@@ -20,6 +20,8 @@ from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, get_icon,
                          GridPanel, CEN, RIGHT, LEFT, plotlabels,
                          get_zoomlimits, set_zoomlimits)
 
+from larch.utils.strutils import fix_varname, fix_filename, file2groupname
+
 from larch.utils.physical_constants import ATOM_NAMES
 from larch.wxlib.plotter import last_cursor_pos
 from .xas_dialogs import EnergyUnitsDialog
@@ -299,10 +301,17 @@ class XASNormPanel(TaskPanel):
         conf['edge'] = getattr(dgroup,'edge', conf['edge'])
 
         xeref = getattr(dgroup, 'energy_ref', '')
-        conf['energy_ref'] = getattr(dgroup, 'energy_ref', dgroup.filename)
+        fname = getattr(dgroup, 'filename', None)
+        if fname is None:
+            fname = getattr(dgroup, 'groupname', None)
+            if fname is None:
+                fname =file2groupname('unknown_group',
+                                      symtable=self._larch.symtable)
+
+        conf['energy_ref'] = getattr(dgroup, 'energy_ref', fname)
 
         if conf['energy_ref'] in (None, 'None'):
-            conf['energy_ref'] = dgroup.filename
+            conf['energy_ref'] = fname
 
 
         conf['energy_shift'] = getattr(dgroup,'energy_shift', conf['energy_shift'])
