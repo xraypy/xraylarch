@@ -126,6 +126,9 @@ class EXAFSPanel(TaskPanel):
         opts = dict(digits=2, increment=0.1, min_val=0, action=self.onProcess)
         wids['ek0'] = FloatSpin(panel, **opts)
 
+        wids['push_e0'] = Button(panel, 'Push to Normalization E0', size=(175, -1),
+                                 action=self.onPushE0)
+
         opts['max_val'] = 6
         opts['action'] = self.onRbkg
         wids['rbkg'] = FloatSpin(panel, value=1.0, **opts)
@@ -211,7 +214,7 @@ class EXAFSPanel(TaskPanel):
 
         add_text('E k=0: ')
         panel.Add(wids['ek0'])
-        panel.Add((10, 10), dcol=2)
+        panel.Add(wids['push_e0'], dcol=2)
         panel.Add(CopyBtn('ek0'), style=RIGHT)
 
         add_text('R bkg: ')
@@ -314,8 +317,6 @@ class EXAFSPanel(TaskPanel):
         if ek0 is None:
             nconf = getattr(dgroup.config, 'xasnorm', {'e0': None})
             ek0 = nconf.get('e0', None)
-            print("found e0 ", ek0)
-
         if ek0 is None:
             ek0 = min(dgroup.energy)
             e0val = getattr(dgroup, 'e0', None)
@@ -427,6 +428,14 @@ class EXAFSPanel(TaskPanel):
 
     def onSaveConfigBtn(self, evt=None):
         self.set_defaultconfig(self.read_form())
+
+    def onPushE0(self, evt=None):
+        conf = self.read_form()
+        dgroup = self.controller.get_group()
+        if dgroup is not None:
+            nconf = getattr(dgroup.config, 'xasnorm', {'e0': None})
+            nconf['auto_e0'] = False
+            nconf['e0'] = dgroup.e0 = conf['ek0']
 
     def onCopyParam(self, name=None, evt=None):
         conf = self.read_form()
