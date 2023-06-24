@@ -14,6 +14,7 @@ from xraydb import guess_edge, atomic_number
 from larch.utils import gformat
 from larch.math import index_of
 from larch.xafs.xafsutils import guess_energy_units
+from larch.xafs.pre_edge import find_e0
 
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, get_icon,
                          SimpleText, pack, Button, HLine, Choice, Check,
@@ -90,7 +91,7 @@ class XASNormPanel(TaskPanel):
 
         e0panel = wx.Panel(panel)
         self.wids['auto_e0'] = Check(e0panel, default=True, label='auto?',
-                                    action=self.onSet_XASE0)
+                                    action=self.onAuto_XASE0)
         self.wids['show_e0'] = Check(e0panel, default=True, label='show?',
                                      action=self.onSet_XASE0)
 
@@ -453,7 +454,7 @@ class XASNormPanel(TaskPanel):
                 self.wids['edge'].SetStringSelection(edge)
                 self.wids['atsym'].SetStringSelection(atsym)
                 self.update_config({'edge': edge, 'atsym': atsym})
-        time.sleep(0.01)
+        time.sleep(0.002)
         wx.CallAfter(self.onReprocess)
 
     def _set_frozen(self, frozen):
@@ -490,7 +491,7 @@ class XASNormPanel(TaskPanel):
         wx.CallAfter(self.controller.set_focus)
 
     def onVoffset(self, evt=None):
-        time.sleep(0.01)
+        time.sleep(0.002)
         wx.CallAfter(self.onPlotSel)
 
     def onPlotSel(self, evt=None):
@@ -652,12 +653,20 @@ class XASNormPanel(TaskPanel):
                 self.fill_form(grp)
                 self.process(grp, force=True)
 
+    def onAuto_XASE0(self, evt=None):
+        if evt.IsChecked():
+            dgroup = self.controller.get_group()
+            find_e0(dgroup)
+            self.update_config({'e0': dgroup.e0})
+            time.sleep(0.002)
+            wx.CallAfter(self.onReprocess)
+
     def onSet_XASE0(self, evt=None, value=None):
         "handle setting auto e0 / show e0"
         auto_e0  = self.wids['auto_e0'].GetValue()
         self.update_config({'e0': self.wids['e0'].GetValue(),
                            'auto_e0':self.wids['auto_e0'].GetValue()})
-        time.sleep(0.01)
+        time.sleep(0.002)
         wx.CallAfter(self.onReprocess)
 
     def onSet_XASE0Val(self, evt=None, value=None):
@@ -665,7 +674,7 @@ class XASNormPanel(TaskPanel):
         self.wids['auto_e0'].SetValue(0)
         self.update_config({'e0': self.wids['e0'].GetValue(),
                             'auto_e0':self.wids['auto_e0'].GetValue()})
-        time.sleep(0.01)
+        time.sleep(0.002)
         wx.CallAfter(self.onReprocess)
 
     def onSet_EnergyShift(self, evt=None, value=None):
