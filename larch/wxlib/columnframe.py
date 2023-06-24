@@ -590,6 +590,9 @@ class ColumnDataFileFrame(wx.Frame) :
                               has_yref=False, dtc_config={}, multicol_config={})
         if config is not None:
             self.config.update(config)
+            dtype = config.get('datatype', None)
+            if dtype in ('xas', 'raw'):
+                self.workgroup.datatype = dtype
 
         if self.config['yarr2'] is None and 'i0' in self.array_labels:
             self.config['yarr2'] = 'i0'
