@@ -39,7 +39,11 @@ def find_e0(energy, mu=None, group=None, _larch=None):
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
                                          fcn_name='find_e0')
-    e0 = _finde0(energy, mu)
+    # first find e0 without smoothing, then refine with smoothing
+    e1, ie0, estep = _finde0(energy, mu, estep=None, use_smooth=False)
+    istart = max(1, ie0-75)
+    istop  = min(ie0+75, len(energy)-2)
+    e0, ix, ex = _finde0(energy[istart:istop], mu[istart:istop], estep=estep, use_smooth=True)
     if group is not None:
         group = set_xafsGroup(group, _larch=_larch)
         group.e0 = e0
@@ -55,17 +59,21 @@ def find_energy_step(energy, frac_ignore=0.01, nave=10):
     return ediff[np.argsort(ediff)][nskip:nskip+nave].mean()
 
     
-def _finde0(energy, mu):
+def _finde0(energy, mu, estep=None, use_smooth=True):
+    "internally used by find e0 " 
 
     en = remove_dups(energy, tiny=0.005)
     if len(en.shape) > 1:
         en = en.squeeze()
     if len(mu.shape) > 1:
         mu = mu.squeeze()
-    estep = find_energy_step(en)
+    if estep is None:
+        estep = find_energy_step(en)/2.0
     nmin = max(2, int(len(en)*0.01))
-    dmu = smooth(en, np.gradient(mu)/np.gradient(en), xstep=estep/2.0, sigma=estep)
-
+    if use_smooth:
+        dmu = smooth(en, np.gradient(mu)/np.gradient(en), xstep=estep, sigma=3*estep)
+    else:
+        dmu = np.gradient(mu)/np.gradient(en)
     # find points of high derivative
     dmu[np.where(~np.isfinite(dmu))] = -1.0
     dm_min = dmu[nmin:-nmin].min()
@@ -87,11 +95,10 @@ def _finde0(energy, mu):
             (i+1 in high_deriv_pts) and
             (i-1 in high_deriv_pts)):
             imax, dmax = i, dmu[i]
-    return en[imax]
+    return en[imax], imax, estep
 
 def flat_resid(pars, en, mu):
     return pars['c0'] + en * (pars['c1'] + en * pars['c2']) - mu
-
 
 def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
             pre2=None, norm1=None, norm2=None):
@@ -144,8 +151,7 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
     if energy.size <= 1:
         raise ValueError("energy array must have at least 2 points")
     if e0 is None or e0 < energy[1] or e0 > energy[-2]:
-        e0 = _finde0(energy, mu)
-
+        e0 = find_e0(energy, mu)
     ie0 = index_nearest(energy, e0)
     e0 = energy[ie0]
 
@@ -180,7 +186,6 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
         if norm2-norm1 < 350: nnorm = 1
         if norm2-norm1 <  50: nnorm = 0
     nnorm = max(min(nnorm, MAX_NNORM), 0)
-
     # preedge
     p1 = index_of(energy, pre1+e0)
     p2 = index_nearest(energy, pre2+e0)
@@ -189,10 +194,8 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
 
     omu  = mu*energy**nvict
     ex, mx = remove_nans2(energy[p1:p2], omu[p1:p2])
-
     precoefs = polyfit(ex, mx, 1)
     pre_edge = (precoefs[0] + energy*precoefs[1]) * energy**(-nvict)
-
     # normalization
     p1 = index_of(energy, norm1+e0)
     p2 = index_nearest(energy, norm2+e0)
@@ -280,7 +283,6 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
       5. flattening fits a quadratic curve (no matter nnorm) to the post-edge
          normalized mu(E) and subtracts that curve from it.
     """
-
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
                                          fcn_name='pre_edge')
@@ -288,16 +290,12 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
         energy = energy.squeeze()
     if len(mu.shape) > 1:
         mu = mu.squeeze()
-
     energy, mu = remove_nans2(energy, mu)
     if group is not None and e0 is None:
         e0 = getattr(group, 'e0', None)
-        
     pre_dat = preedge(energy, mu, e0=e0, step=step, nnorm=nnorm,
                       nvict=nvict, pre1=pre1, pre2=pre2, norm1=norm1,
                       norm2=norm2)
-
-
     group = set_xafsGroup(group, _larch=_larch)
 
     e0    = pre_dat['e0']
@@ -400,7 +398,6 @@ def energy_align(group, reference, array='dmude', emin=-15, emax=35):
           dmude array will be built for group and reference.
 
     """
-
     if not (hasattr(group, 'energy') and hasattr(group, 'mu')):
         raise ValueError("group must have attributes 'energy' and 'mu'")
 
