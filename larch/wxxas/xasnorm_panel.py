@@ -367,7 +367,7 @@ class XASNormPanel(TaskPanel):
             self.set_nnorm_widget(opts.get('nnorm'))
 
             self.wids['energy_shift'].SetValue(opts['energy_shift'])
-            self.wids['nvict'].SetSelection(int(opts['nvict']))
+            self.wids['nvict'].SetStringSelection("%d" % opts['nvict'])
             self.wids['show_e0'].SetValue(opts['show_e0'])
             self.wids['auto_e0'].SetValue(opts['auto_e0'])
             self.wids['auto_step'].SetValue(opts['auto_step'])
@@ -428,7 +428,7 @@ class XASNormPanel(TaskPanel):
         form_opts['energy_shift'] = self.wids['energy_shift'].GetValue()
 
         form_opts['nnorm'] = NNORM_CHOICES.get(self.wids['nnorm'].GetStringSelection(), None)
-        form_opts['nvict'] = int(self.wids['nvict'].GetSelection())
+        form_opts['nvict'] = int(self.wids['nvict'].GetStringSelection())
         form_opts['plotone_op'] = self.plotone_op.GetStringSelection()
         form_opts['plotsel_op'] = self.plotsel_op.GetStringSelection()
         form_opts['plot_voff'] = self.wids['plot_voff'].GetValue()
@@ -445,7 +445,8 @@ class XASNormPanel(TaskPanel):
     def onNormMethod(self, evt=None):
         method = self.wids['norm_method'].GetStringSelection().lower()
         nnorm  = NNORM_CHOICES.get(self.wids['nnorm'].GetStringSelection(), None)
-        self.update_config({'norm_method': method, 'nnorm': nnorm})
+        nvict = int(self.wids['nvict'].GetStringSelection())
+        self.update_config({'norm_method': method, 'nnorm': nnorm, 'nvict': nvict})
         if method.startswith('mback'):
             dgroup = self.controller.get_group()
             cur_elem = self.wids['atsym'].GetStringSelection()
@@ -771,8 +772,8 @@ class XASNormPanel(TaskPanel):
             return
 
         self.skip_process = True
-        conf = self.get_config(dgroup)
 
+        conf = self.get_config(dgroup)
         form = self.read_form()
         form['group'] = dgroup.groupname
         groupnames = list(self.controller.file_groups.keys())
