@@ -262,15 +262,15 @@ def random_varname(n):
     return random.choice(L[:26]) + ''.join([random.choice(L) for _ in range(n-1)])
 
 
-def file2groupname(filename, slen=5, symtable=None):
+def file2groupname(filename, slen=9, minlen=2, symtable=None):
     """create a group name based of filename
     the group name will have a string component of
-    length slen followed by a 3 digit number
+    length slen followed by a 2 digit number
 
     Arguments
     ---------
-    filename  (str)  filename to use
-    slen      (int)  length of string portion (default 5)
+    filename  (str) filename to use
+    slen      (int) maximum length of string portion (default 9)
     symtable  (None or larch symbol table) symbol table for
               checking that the group name is unique
     """
@@ -279,24 +279,25 @@ def file2groupname(filename, slen=5, symtable=None):
 
     if gname[0] not in 'abcdefghijklmnopqrstuvwxyz':
         gname = random.choice(['a', 'b', 'c', 'd', 'e', 'f', 'g']) + gname
-    if len(gname) < slen:
-        gname = gname + randstr(slen-len(gname))
+    if len(gname) < minlen:
+        gname = gname + random_varname(minlen-len(gname))
 
     gname = gname[:slen]
     if symtable is None:
         return gname
 
     gbase = gname
-    scount, count = 0, 0
+    scount, count, n = 0, 0, 2
     while hasattr(symtable, gname):
         count += 1
-        if count == 1000:
+        if count == 100:
             count = 1
             scount += 1
-            if (scount % 500) == 0:
-                slen += 1
-            gbase = random_varname(slen)
-        gname = f"{gbase}{count:03d}"
+            if scount > 200:
+                scount = 0
+                n = n + 1
+            gbase = gname + random_varname(n)
+        gname = f"{gbase}{count:02d}"
     return gname
 
 
