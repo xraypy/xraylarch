@@ -1279,10 +1279,11 @@ before clearing"""
         labels = []
         groups_added = []
 
-        for gname in namelist:
+        for ig, gname in enumerate(namelist):
             cur_panel.skip_plotting = (gname == namelist[-1])
             this = getattr(self.larch.symtable._prj, gname)
-            gid = str(getattr(this, 'athena_id', gname))
+            gid = file2groupname(str(getattr(this, 'athena_id', gname)),
+                                 symtable=self.larch.symtable)
             if self.larch.symtable.has_group(gid):
                 count, prefix = 0, gname[:3]
                 while count < 1e7 and self.larch.symtable.has_group(gid):
@@ -1293,7 +1294,7 @@ before clearing"""
 
             jrnl = {'source_desc': f'{spath:s}: {gname:s}'}
             self.larch.eval(script.format(group=gid, prjgroup=gname))
-            dgroup = self.install_group(gid, label, process=True,
+            dgroup = self.install_group(gid, label, process=False,
                                         source=path, journal=jrnl)
             groups_added.append(gid)
 
@@ -1395,7 +1396,8 @@ before clearing"""
         array_desc = config.get('array_desc', {})
 
         if hasattr(self.larch.symtable, groupname):
-            groupname = file2groupname(filename, symtable=self.larch.symtable)
+            groupname = file2groupname(filename,
+                                       symtable=self.larch.symtable)
 
         refgroup = config.get('refgroup', groupname + '_ref')
 
