@@ -43,7 +43,10 @@ def install_extras(package_dict, timeout=30):
     for pkg, vers in package_dict.items():
         install_needed = pkg not in current
         if pkg in current and vers is not None:
-            install_needed = install_needed or version_ge(vers, current[pkg])
+            curr = current[pkg]
+            currwords = curr.split('.') + ['0', '0', '0']
+            curr = '.'.join(currwords[:3])
+            install_needed = install_needed or version_ge(vers, curr)
 
     if install_needed:
         command = [sys.executable, '-m', 'pip', 'install', f"{pkg}>={vers}"]
