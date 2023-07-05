@@ -10,7 +10,7 @@ from larch import Group, Make_CallArgs, parse_group_args
 
 from larch.math import (index_of, index_nearest, remove_dups, remove_nans2,
                         interp, smooth, polyfit)
-from .xafsutils import set_xafsGroup
+from .xafsutils import set_xafsGroup, TINY_ENERGY
 
 MODNAME = '_xafs'
 MAX_NNORM = 5
@@ -50,19 +50,19 @@ def find_e0(energy, mu=None, group=None, _larch=None):
     return e0
 
 def find_energy_step(energy, frac_ignore=0.01, nave=10):
-    """robustly find energy step in XAS energy array, 
-    ignoring the smallest fraction of energy steps (frac_ignore), 
+    """robustly find energy step in XAS energy array,
+    ignoring the smallest fraction of energy steps (frac_ignore),
     and averaging over the next `nave` values
     """
     ediff = np.diff(energy)
     nskip = int(frac_ignore*len(energy))
     return ediff[np.argsort(ediff)][nskip:nskip+nave].mean()
 
-    
-def _finde0(energy, mu, estep=None, use_smooth=True):
-    "internally used by find e0 " 
 
-    en = remove_dups(energy, tiny=0.005)
+def _finde0(energy, mu, estep=None, use_smooth=True):
+    "internally used by find e0 "
+
+    en = remove_dups(energy, tiny=TINY_ENERGY)
     if len(en.shape) > 1:
         en = en.squeeze()
     if len(mu.shape) > 1:
@@ -147,7 +147,8 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
          norm2 = max energy - e0, rounded to 5 eV
          norm1 = roughly min(150, norm2/3.0), rounded to 5 eV
     """
-    energy = remove_dups(energy, tiny=0.005)
+
+    energy = remove_dups(energy, tiny=TINY_ENERGY)
     if energy.size <= 1:
         raise ValueError("energy array must have at least 2 points")
     if e0 is None or e0 < energy[1] or e0 > energy[-2]:
@@ -290,6 +291,7 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
         energy = energy.squeeze()
     if len(mu.shape) > 1:
         mu = mu.squeeze()
+
     energy, mu = remove_nans2(energy, mu)
     if group is not None and e0 is None:
         e0 = getattr(group, 'e0', None)

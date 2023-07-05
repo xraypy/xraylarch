@@ -7,6 +7,7 @@ from larch import Group, Journal
 import scipy.constants as consts
 KTOE = 1.e20*consts.hbar**2 / (2*consts.m_e * consts.e) # 3.8099819442818976
 ETOK = 1.0/KTOE
+TINY_ENERGY = 0.005  # in eV:
 
 FT_WINDOWS = ('Kaiser-Bessel', 'Hanning', 'Parzen', 'Welch', 'Gaussian', 'Sine')
 FT_WINDOWS_SHORT = tuple([a[:3].lower() for a in FT_WINDOWS])
