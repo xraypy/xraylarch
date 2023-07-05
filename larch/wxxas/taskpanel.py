@@ -228,6 +228,13 @@ class TaskPanel(wx.Panel):
         self.fit_xspace = 'e'
         self.fit_last_erange = None
 
+    def is_xasgroup(self, dgroup):
+        return getattr(dgroup, 'datatype', 'raw').startswith('xa')
+
+    def ensure_xas_processed(self, dgroup):
+        if self.is_xasgroup(dgroup) and (not hasattr(dgroup, 'norm') or not hasattr(dgroup, 'e0')):
+            self.xasmain.process_normalization(dgroup, force=True)
+
     def make_fit_xspace_widgets(self, elo=-1, ehi=1):
         self.wids['fitspace_label'] = SimpleText(self.panel, 'Fit Range (eV):')
         opts = dict(digits=2, increment=1.0, relative_e0=True)
@@ -289,6 +296,7 @@ class TaskPanel(wx.Panel):
         if fname in self.controller.file_groups:
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
+            self.ensure_xas_processed(dgroup)
             self.fill_form(dgroup)
             self.process(dgroup=dgroup)
 
@@ -355,8 +363,10 @@ class TaskPanel(wx.Panel):
             _emin = min(dgroup.energy)
             _emax = max(dgroup.energy)
             e0 = 5*int(dgroup.e0/5.0)
-            conf['elo'] = min(_emax, max(_emin, conf['elo_rel'] + e0))
-            conf['ehi'] = min(_emax, max(_emin, conf['ehi_rel'] + e0))
+            if 'elo' not in conf:
+                conf['elo'] = min(_emax, max(_emin, conf['elo_rel'] + e0))
+            if 'ehi' not in conf:
+                conf['ehi'] = min(_emax, max(_emin, conf['ehi_rel'] + e0))
         return conf
 
     def update_config(self, config, dgroup=None):

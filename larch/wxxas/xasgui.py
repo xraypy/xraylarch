@@ -441,6 +441,10 @@ class XASFrame(wx.Frame):
         if dgroup is None:
             return
 
+        if (getattr(dgroup, 'datatype', 'raw').startswith('xa') and not
+            (hasattr(dgroup, 'norm') and hasattr(dgroup, 'e0'))):
+            self.process_normalization(dgroup, force=True)
+
         if filename is None:
             filename = dgroup.filename
         self.current_filename = filename
@@ -1364,7 +1368,6 @@ before clearing"""
             else:
                 refgroup = dgroup.filename
             dgroup.energy_ref = refgroup
-
 
         self.larch.eval("del _prj")
         cur_panel.skip_plotting = False

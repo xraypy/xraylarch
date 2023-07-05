@@ -59,9 +59,6 @@ PlotSel_Choices_nonxas = {'Raw Data': 'mu',
                           'Scaled Data': 'norm',
                           'Derivative': 'dmude'}
 
-def is_xasgroup(dgroup):
-    return getattr(dgroup, 'datatype', 'raw').startswith('xa')
-
 class XASNormPanel(TaskPanel):
     """XAS normalization Panel"""
     def __init__(self, parent, controller=None, **kws):
@@ -333,7 +330,7 @@ class XASNormPanel(TaskPanel):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
         self.skip_process = True
-        if is_xasgroup(dgroup):
+        if self.is_xasgroup(dgroup):
             if self.plotone_op.GetCount() != len(PlotOne_Choices.keys()):
                 self.plotone_op.SetChoices(list(PlotOne_Choices.keys()))
                 self.plotone_op.SetSelection(1)
@@ -507,7 +504,7 @@ class XASNormPanel(TaskPanel):
         dgroup = self.controller.get_group(groupname)
 
         plot_choices = PlotSel_Choices
-        if not is_xasgroup(dgroup):
+        if not self.is_xasgroup(dgroup):
             plot_choices = PlotSel_Choices_nonxas
 
         erange = Plot_EnergyRanges[self.plot_erange.GetStringSelection()]
@@ -541,6 +538,8 @@ class XASNormPanel(TaskPanel):
             dgroup = self.controller.get_group(groupname)
             if dgroup is None:
                 continue
+            self.ensure_xas_processed(dgroup)
+
             if erange is not None and hasattr(dgroup, 'e0') and 'xmin' not in popts:
                 popts['xmin'] = dgroup.e0 + erange[0]
                 popts['xmax'] = dgroup.e0 + erange[1]
@@ -564,14 +563,9 @@ class XASNormPanel(TaskPanel):
                 ppanel.conf.init_trace(i,  linecolors[i%ncols], 'dashed')
 
         #
-        # NOTE: with wxmplot 0.9.53, will be able to use
-        # ppanel.plot_many(plot_traces, xlabel=plotlabels.energy, ylabel=ylabel,
-        #                 zoom_limits=zoom_limits,
-        #                 show_legend=True)
-        #
 
         ppanel.plot_many(plot_traces, xlabel=plotlabels.energy, ylabel=ylabel,
-                         show_legend=True)
+                         zoom_limits=zoom_limits, show_legend=True)
         set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
         ppanel.canvas.draw()
 
@@ -760,6 +754,7 @@ class XASNormPanel(TaskPanel):
             self.stale_groups = None
         self.onPlotEither()
 
+
     def process(self, dgroup=None, force_mback=False, force=False, **kws):
         """ handle process (pre-edge/normalize) of XAS data from XAS form
         """
@@ -783,7 +778,7 @@ class XASNormPanel(TaskPanel):
             if eref_sel in (val, key):
                 self.wids['energy_ref'].SetStringSelection(key)
 
-        if not is_xasgroup(dgroup):
+        if not self.is_xasgroup(dgroup):
             self.skip_process = False
             dgroup.mu = dgroup.ydat * 1.0
             opts = {'group': dgroup.groupname, 'scale': conf.get('scale', 1.0)}
@@ -933,7 +928,7 @@ class XASNormPanel(TaskPanel):
         dgroup.plot_xlabel = plotlabels.energy
         dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab)]
 
-        if not is_xasgroup(dgroup):
+        if not self.is_xasgroup(dgroup):
             pchoice = PlotOne_Choices_nonxas[self.plotone_op.GetStringSelection()]
             dgroup.plot_xlabel = 'x'
             dgroup.plot_ylabel = 'y'
@@ -1106,14 +1101,14 @@ class XASNormPanel(TaskPanel):
             popts['y2label'] = dgroup.plot_y2label
 
         plot_choices = PlotSel_Choices
-        if not is_xasgroup(dgroup):
+        if not self.is_xasgroup(dgroup):
             plot_choices = PlotSel_Choices_nonxas
 
         if multi:
             ylabel = self.plotsel_op.GetStringSelection()
             yarray_name = plot_choices[ylabel]
 
-            if is_xasgroup(dgroup):
+            if self.is_xasgroup(dgroup):
                 ylabel = getattr(plotlabels, yarray_name, ylabel)
             popts['ylabel'] = ylabel
 
