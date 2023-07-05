@@ -675,7 +675,6 @@ class LinearComboPanel(TaskPanel):
             conf[key]  = form[key]
         self.update_config(conf, dgroup=dgroup)
 
-
     def build_display(self):
         panel = self.panel
         wids = self.wids
@@ -779,8 +778,7 @@ class LinearComboPanel(TaskPanel):
             fname = self.controller.filelist.GetStringSelection()
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
-            if not hasattr(dgroup, 'norm'):
-                self.xasmain.process_normalization(dgroup)
+            self.ensure_xas_processed(dgroup)
             self.fill_form(dgroup)
         except:
             pass # print(" Cannot Fill prepeak panel from group ")
@@ -845,6 +843,7 @@ class LinearComboPanel(TaskPanel):
 
     def fill_form(self, dgroup):
         """fill in form from a data group"""
+
         opts = self.get_config(dgroup, with_erange=True)
         if not hasattr(dgroup, 'norm'):
             self.xasmain.process_normalization(dgroup)
@@ -992,6 +991,7 @@ lcf_result = {func:s}({gname:s}, [{comps:s}],
 
         self.skip_process = True
         form = self.read_form()
+        self.update_config(form)
         self.do_fit(form['group'], form)
         self.skip_process = False
 
