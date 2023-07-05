@@ -1042,7 +1042,7 @@ class XASNormPanel(TaskPanel):
             if self.wids['show_norm'].IsChecked():  wids.extend(['norm1', 'norm2'])
             for wid in wids:
                 val = self.wids[wid].GetValue()
-                ival = index_of(dgroup.energy, dgroup.e0 + val)
+                ival = min(len(y4e0)-1, index_of(dgroup.energy, dgroup.e0 + val))
                 dgroup.plot_extras.append(('marker', dgroup.e0+val, y4e0[ival], popts))
 
 
