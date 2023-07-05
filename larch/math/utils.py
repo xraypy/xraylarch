@@ -268,6 +268,9 @@ def remove_nans2(a, b):
     return a, b
 
 
+def safe_log(x, extreme=50):
+    return np.log(np.clip(x, np.e**-extreme, np.e**extreme))
+
 def smooth(x, y, sigma=1, gamma=None, xstep=None, npad=None, form='lorentzian'):
     """smooth a function y(x) by convolving wih a lorentzian, gaussian,
     or voigt function.
