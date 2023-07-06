@@ -44,7 +44,13 @@ def install_extras(package_dict, timeout=30):
         install_needed = pkg not in current
         if pkg in current and vers is not None:
             curr = current[pkg]
-            currwords = curr.split('.') + ['0', '0', '0']
+            currwords = []
+            for s in curr.split('.') + ['0', '0', '0']:
+                try:
+                    a = int(s)
+                    currwords.append(s)
+                except:
+                    pass
             curr = '.'.join(currwords[:3])
             install_needed = install_needed or version_ge(vers, curr)
 
