@@ -247,7 +247,7 @@ class FeffitDataSet(Group):
         self.data = Group(__name__='Feffit DatasSet from %s' % repr(data),
                           groupname=getattr(data, 'groupname', repr(data)),
                           filename=getattr(data, 'filename', repr(data)),
-                          k=data.k[:], chi=data.chi[:])
+                          k=data.k.copy(), chi=data.chi.copy())
         if hasattr(data, 'config'):
             self.data.config = deepcopy(data.config)
         else:
@@ -356,7 +356,7 @@ class FeffitDataSet(Group):
         # use Parseval's theorem to convert epsilon_r to epsilon_k,
         # compensating for kweight
         if all_kweights:
-            kweights = trans.kweight[:]
+            kweights = trans.kweight.copy()
         else:
             kweights = [trans.kweight]
 

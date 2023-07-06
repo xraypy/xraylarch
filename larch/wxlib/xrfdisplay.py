@@ -1172,9 +1172,9 @@ class XRFDisplayFrame(wx.Frame):
                   'color': self.conf.spectra_color}
         kwargs.update(kws)
 
-        self.xdata = 1.0*x[:]
-        self.ydata = 1.0*y[:]
-        ydat = 1.0*y[:] + 1.e-9
+        self.xdata = x.copy()
+        self.ydata = y.copy()
+        ydat = nycopy() + 1.e-9
         kwargs['ymax'] = max(ydat)*1.25
         kwargs['ymin'] = 0.9
         kwargs['xmax'] = max(self.xdata)
@@ -1215,9 +1215,9 @@ class XRFDisplayFrame(wx.Frame):
         if is_mca2:
             mca = self.mca2
             ix = 2
-        mca.counts = counts[:]
+        mca.counts = counts.copy()
         if energy is not None:
-            mca.energy = energy[:]
+            mca.energy = energy.copy()
         xnpts = 1.0/len(energy)
         nrois = len(mca.rois)
         if not is_mca2 and with_rois and nrois > 0:
@@ -1241,7 +1241,7 @@ class XRFDisplayFrame(wx.Frame):
 
         self.panel.axes.set_ylim(0.9, 1.25*max(max_counts, max_counts2))
         if mca == self.mca:
-            self.ydata = 1.0*counts[:]
+            self.ydata = counts.copy()
         self.update_status()
         if draw: self.draw()
 
@@ -1250,8 +1250,8 @@ class XRFDisplayFrame(wx.Frame):
         if mca is not None:
             self.mca2 = mca
 
-        self.x2data = 1.0*x[:]
-        self.y2data = 1.0*y[:]
+        self.x2data = x.copy()
+        self.y2data = y.copy()
         if hasattr(self, 'ydata'):
             ymax = max(max(self.ydata), max(y))*1.25
         else:

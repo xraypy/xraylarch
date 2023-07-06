@@ -205,7 +205,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=None,
     coefs = [result.params[FMT_COEF % i].value for i in range(len(coefs))]
     bkg, chi = spline_eval(kraw[:iemax-iek0+1], mu[iek0:iemax+1],
                            knots, coefs, order, kout)
-    obkg = np.copy(mu)
+    obkg = my.copy()
     obkg[iek0:iek0+len(bkg)] = bkg
 
     # outputs to group
@@ -220,7 +220,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=None,
     details = Group(kmin=kmin, kmax=kmax, irbkg=irbkg, nknots=len(spl_k),
                     knots_k=knots, init_knots_y=spl_y, nspl=nspl,
                     init_chi=initchi/edge_step, report=fit_report(result))
-    details.init_bkg = np.copy(mu)
+    details.init_bkg = mu.copy()
     details.init_bkg[iek0:iek0+len(bkg)] = initbkg
     details.knots_y  = np.array([coefs[i] for i in range(nspl)])
     group.autobk_details = details

@@ -633,7 +633,7 @@ def ff2chi(paths, group=None, paramgroup=None, k=None, kmax=None,
             return
         path.create_path_params(params=params)
         path._calc_chi(k=k, kstep=kstep, kmax=kmax)
-    k = pathlist[0].k[:]
+    k = pathlist[0].k.copy()
     out = np.zeros_like(k)
     for path in pathlist:
         out += path.chi

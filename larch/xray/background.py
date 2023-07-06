@@ -201,7 +201,7 @@ class XrayBackground:
 
         nchans   = len(data)
         self.bgr = np.zeros(nchans, dtype=np.int32)
-        scratch  = data[:]
+        scratch  = data.copy()
 
         # Compress scratch spectrum
         if compress > 1:
@@ -214,7 +214,7 @@ class XrayBackground:
                 nchans = len(scratch) #nchans / compress
 
         # Copy scratch spectrum to background spectrum
-        bckgnd = scratch[:]
+        bckgnd = scratch.copy()
 
         # Find maximum counts in input spectrum. This information is used to
         # limit the size of the function lookup table

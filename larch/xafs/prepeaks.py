@@ -66,17 +66,17 @@ def prepeaks_setup(energy, norm=None, arrayname=None, group=None, emin=None, ema
     ydat = None
     if norm is not None and arrayname in (None, 'aspassed'):
         arrayname = 'aspassed'
-        ydat = norm[:]
+        ydat = norm.copy()
 
     energy, norm, group = parse_group_args(energy, members=('energy', 'norm'),
                                            defaults=(norm,), group=group,
                                            fcn_name='pre_edge_baseline')
     if arrayname == 'flat' and hasattr(group, 'flat'):
-        ydat = group.flat[:]
+        ydat = group.flat.copy()
     elif arrayname == 'deconv' and hasattr(group, 'deconv'):
-        ydat = group.deconv[:]
+        ydat = group.deconv.copy()
     if ydat is None:
-        ydat = norm[:]
+        ydat = norm.copy()
 
     if len(energy.shape) > 1:
         energy = energy.squeeze()
