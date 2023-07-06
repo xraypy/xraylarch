@@ -126,8 +126,10 @@ class EXAFSPanel(TaskPanel):
         opts = dict(digits=2, increment=0.1, min_val=0, action=self.onProcess)
         wids['ek0'] = FloatSpin(panel, **opts)
 
-        wids['push_e0'] = Button(panel, 'Push to Normalization E0', size=(175, -1),
+        wids['push_e0'] = Button(panel, 'Use as Normalization E0', size=(200, -1),
                                  action=self.onPushE0)
+        wids['push_e0'].SetToolTip('Use this value for E0 in the Normalization Tab')
+
 
         opts['max_val'] = 6
         opts['action'] = self.onRbkg
@@ -176,7 +178,7 @@ class EXAFSPanel(TaskPanel):
         def CopyBtn(name):
             return Button(panel, 'Copy', size=(60, -1),
                           action=partial(self.onCopyParam, name))
-        copy_all = Button(panel, 'Copy All Parameters', size=(150, -1),
+        copy_all = Button(panel, 'Copy All Parameters', size=(175, -1),
                           action=partial(self.onCopyParam, 'all'))
 
 
@@ -394,7 +396,6 @@ class EXAFSPanel(TaskPanel):
         "read form, return dict of values"
         skip_save = self.skip_process
         self.skip_process = True
-
         if dgroup is None:
             dgroup = self.controller.get_group()
         self.dgroup = dgroup
@@ -517,7 +518,7 @@ class EXAFSPanel(TaskPanel):
         self.process(dgroup=self.dgroup, read_form=True)
         self.skip_process = False
         plotter = self.onPlotSel if self.last_plot=='selected' else self.onPlotOne
-        plotter()
+        wx.CallAfter(plotter)
 
     def process(self, dgroup=None, read_form=True, force=False, **kws):
         conf = {}
@@ -534,7 +535,6 @@ class EXAFSPanel(TaskPanel):
         if dgroup is None or 'fft_kwindow' not in conf:
             return
 
-        # if 'group' not in conf:
         conf['group'] = dgroup.groupname
 
         try:
