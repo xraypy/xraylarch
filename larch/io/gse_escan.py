@@ -370,7 +370,7 @@ class EscanData:
 
         # finally, icr/ocr corrected sums
         self.det_corr  = self.det.copy()
-        self.sums_corr = self.sums.copy)
+        self.sums_corr = self.sums.copy()
 
         if self.correct_deadtime:
             idet = -1
