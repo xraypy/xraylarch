@@ -4,9 +4,9 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>1. Downloading and Installation &#8212; xraylarch 0.9.70 documentation</title>
+    <title>1. Downloading and Installation &#8212; xraylarch 0.9.71 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
@@ -135,7 +135,7 @@
             
   <section id="downloading-and-installation">
 <span id="install-chapter"></span><h1><span class="section-number">1. </span>Downloading and Installation<a class="headerlink" href="#downloading-and-installation" title="Permalink to this heading">¶</a></h1>
-<p>The latest release version of Larch is 0.9.70.</p>
+<p>The latest release version of Larch is 0.9.71.</p>
 <p>Larch is in active and continuing development.  We do not use a strict
 schedule, but for the past few years, new versions have typically been
 released every 2 months or so.</p>
@@ -296,7 +296,8 @@ that you may need to install that may not be installed are:</p>
 <blockquote>
 <div><ul class="simple">
 <li><p><cite>wxpython</cite>: needed for all plotting, graphics and GUI applications.</p></li>
-<li><p><cite>pymatgen</cite>: needed for handling CIF files and running FEFF calculations.</p></li>
+<li><p><cite>pymatgen</cite>: needed for handling CIF files to generate Feff input files.</p></li>
+<li><p><cite>openbabel</cite>: needed for converting some structure files to Feff input files.</p></li>
 <li><p><cite>tomopy</cite>: needed only for reconstructing X-ray fluorescence tomography.</p></li>
 <li><p><cite>epicsapps</cite>: applications using the Epics control system.</p></li>
 </ul>
@@ -315,6 +316,7 @@ infrastructure and then install xraylarch with pip:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-y<span class="w"> </span>--name<span class="w"> </span>xraylarch<span class="w"> </span><span class="nv">python</span><span class="o">=</span>&gt;3.10
 conda<span class="w"> </span>activate<span class="w"> </span>xraylarch
 conda<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>wxpython<span class="w"> </span>pymatgen<span class="w"> </span>scipy<span class="w"> </span>h5py<span class="w"> </span>matplotlib
+conda<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>openbabel<span class="w"> </span>tomopy<span class="w"> </span>epicsapps<span class="w">    </span><span class="c1"># &lt;- optional packages</span>
 pip<span class="w"> </span>install<span class="w"> </span>xraylarch
 </pre></div>
 </div>

@@ -4,9 +4,9 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Larch &#8212; xraylarch 0.9.70 documentation</title>
+    <title>Larch &#8212; xraylarch 0.9.71 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
@@ -65,7 +65,7 @@
 
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper"><h3> Get Larch</h3>
-<p>Current version: <b>0.9.70</b></p>
+<p>Current version: <b>0.9.71</b></p>
 
 &nbsp; &nbsp; <a href="installation.html">Install Latest Version</a>  <br>
 &nbsp; &nbsp; <a href="https://github.com/xraypy/xraylarch"> Development Version</a> <br>
@@ -108,23 +108,22 @@
   <p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
 <section id="larch">
 <h1>Larch<a class="headerlink" href="#larch" title="Permalink to this heading">¶</a></h1>
-<p>Larch is a open-source library and set of <a class="reference internal" href="#larch-app-table"><span class="std std-ref">applications</span></a> for processing and analyzing X-ray absorption and
-fluorescence spectroscopy data and X-ray fluorescence and diffraction image
-data from synchrotron beamlines.  Larch aims to provide a complete analysis
-toolkit for X-ray absorption fine-structure spectroscopy (XAFS), including
-both X-ray absorption near-edge spectroscopy (XANES) and extended X-ray
-absorption fine-structure spectroscopy (EXAFS).  Larch also provides
-visualization and analysis tools for X-ray fluorescence (XRF) spectra and
-XRF and X-ray diffraction (XRD) images as collected at scanning X-ray
-microprobe beamlines.</p>
+<p>Larch is a open-source library and set of <a class="reference internal" href="#larch-app-table"><span class="std std-ref">applications</span></a>
+for processing and analyzing X-ray absorption and fluorescence spectroscopy
+data and X-ray fluorescence and diffraction image data from synchrotron
+beamlines.  Larch aims to provide a complete analysis toolkit for X-ray
+absorption fine-structure spectroscopy (XAFS), including both X-ray absorption
+near-edge spectroscopy (XANES) and extended X-ray absorption fine-structure
+spectroscopy (EXAFS).  Larch also provides visualization and analysis tools for
+X-ray fluorescence (XRF) spectra and XRF and X-ray diffraction (XRD) images as
+collected at scanning X-ray microprobe beamlines.</p>
 <p>Larch is written in Python and relies on the excellent scientific python
-libraries including <a class="reference external" href="https://numpy.scipy.org/">numpy</a>, <a class="reference external" href="https://scipy.org/">scipy</a>, <a class="reference external" href="https://code.google.com/p/h5py/">h5py</a>, <a class="reference external" href="https://matplotlib.org/">matplotlib</a>. In turn,
-Larch provides a comprehensive Python library for processing and analyzing
-X-ray spectroscopy and imaging data.  Several Python libraries - <a class="reference external" href="https://xraypy.github.io/XrayDB/">xraydb</a>,
-<a class="reference external" href="https://lmfit.github.io/lmfit-py/">lmfit</a>, <a class="reference external" href="https://newville.github.io/asteval/">asteval</a>, <a class="reference external" href="https://newville.github.io/wxmplot/">wxmplot</a>, and <a class="reference external" href="https://newville.github.io/pyshortcuts/">pyshortcuts</a> - were orginally built
-with Larch in mind or as part of Larch and then spun-off as separate
-libraries that can be used by the broader scientific and programming
-communities.</p>
+libraries including <a class="reference external" href="https://numpy.scipy.org/">numpy</a>, <a class="reference external" href="https://scipy.org/">scipy</a>, <a class="reference external" href="https://code.google.com/p/h5py/">h5py</a>, <a class="reference external" href="https://matplotlib.org/">matplotlib</a>. In turn, Larch
+provides a comprehensive Python library for processing and analyzing X-ray
+spectroscopy and imaging data.  Several Python libraries - <a class="reference external" href="https://xraypy.github.io/XrayDB/">xraydb</a>, <a class="reference external" href="https://lmfit.github.io/lmfit-py/">lmfit</a>,
+<a class="reference external" href="https://newville.github.io/asteval/">asteval</a>, <a class="reference external" href="https://newville.github.io/wxmplot/">wxmplot</a>, and <a class="reference external" href="https://newville.github.io/pyshortcuts/">pyshortcuts</a> - were orginally built with Larch in
+mind or as part of Larch and then spun-off as separate libraries that can be
+used by the broader X-ray, scientific, and programming communities.</p>
 <p>There are a few GUI applications written using Larch.  These provide
 user-friendly and interactiv data visualization and analysis tasks for many
 common X-ray analysis tasks.  The most notable of these are <a class="reference internal" href="xasviewer.html#xasviewer-app"><span class="std std-ref">XAS
@@ -132,37 +131,35 @@ Viewer</span></a>, <a class="reference internal" href="wxmap_viewer.html#mapview
 <a class="reference internal" href="xrf_viewer.html#xrfviewer-app"><span class="std std-ref">XRF Viewer</span></a> as described in more detail below.</p>
 <p>In addition to being used as a Python library or from the user-friendly GUI
 applications built, Larch also provides a Python-like macro language - the
-“Larch language” - for interactive and batch processing.  This macro
-language is essentially an isolated, restricted “mini-Python” (from
-<a class="reference external" href="https://newville.github.io/asteval/">asteval</a>).  This is intended to be both easy to use and complete enough
-to automate data processing and analysis available as an interactive
-command-line interface.  This command-line interface is available either
-from the <a class="reference internal" href="guis.html#larchcli-app"><span class="std std-ref">larch</span></a> or <a class="reference internal" href="guis.html#larchgui-app"><span class="std std-ref">Larch GUI</span></a>.
-Compared to Python itself, this macro language is not recommended for
-serious programming, but it is an important part of the Larch suite, and
-can be viewed as the bridge between using the GUIs for fully interactive,
-non-coding analysis, and writing batch-processing analysis scripts.</p>
+“Larch language” - for interactive and batch processing.  This macro language
+is essentially an isolated, restricted “mini-Python” (from <a class="reference external" href="https://newville.github.io/asteval/">asteval</a>).  This
+is intended to be both easy to use and complete enough to automate data
+processing and analysis available as an interactive command-line interface.
+This command-line interface is available either from the <a class="reference internal" href="guis.html#larchcli-app"><span class="std std-ref">larch</span></a> or <a class="reference internal" href="guis.html#larchgui-app"><span class="std std-ref">Larch GUI</span></a>.  Compared to Python itself,
+this macro language is not recommended for serious programming, but it is an
+important part of the Larch suite, and can be viewed as the bridge between
+using the GUIs for fully interactive, non-coding analysis, and writing
+batch-processing analysis scripts.</p>
 <p>Most of the GUIs (notably, <a class="reference internal" href="xasviewer.html#xasviewer-app"><span class="std std-ref">XAS Viewer</span></a>) work by
-generating and executing this “Larch code”, with all of their “real work”
-done through this macro language.  This allows for self-documented and
-reproducible analysis sessions, and facilitates transitioning from GUI-only
-analyses to scripting, batch processing, and programmatic analysis of
-larger data sets.  That is, with a few simple changes and added boilerplate
-code, the Larch macro code saved from a GUI session becomes a Python
-program.  This macro language also allows Larch to be run as a background
-service so that other processes can use Larch as the analysis engine.  The
-popular <a class="reference external" href="https://bruceravel.github.io/demeter/">Demeter</a> XAFS application suite can use Larch in this way, though
-the <a class="reference internal" href="xasviewer.html#xasviewer-app"><span class="std std-ref">XAS Viewer</span></a> now contains almost all of the
-features of <a class="reference external" href="https://bruceravel.github.io/demeter/">Demeter</a> and is much more actively being developed and
-maintained.</p>
-<p>Larch is distribute under an open-source license that is nearly identical
-to the BSD license.  It is under active and open development centered at
-the GeoScoilEnviroCARS sector of Center for Advanced Radiation Sources at
-the University of Chicago has been supported by the US National Science
-Foundation - Earth Sciences (EAR-1128799), and Department of Energy
-GeoSciences (DE-FG02-94ER14466).  In addition, funding specifically for
-Larch was granted by the National Science Foundation - Advanced
-CyberInfrastructure (ACI-1450468).</p>
+generating and executing this “Larch code”, with all of the real work done
+through this macro language.  This allows for self-documented and reproducible
+analysis sessions, and facilitates transitioning from GUI-only analyses to
+scripting, batch processing, and programmatic analysis of larger data sets.
+That is, with a few simple changes and added boilerplate code, the Larch macro
+code saved from a GUI session becomes a Python program.  This macro language
+also allows Larch to be run as a background service so that other processes can
+use Larch as the analysis engine.  The popular <a class="reference external" href="https://bruceravel.github.io/demeter/">Demeter</a> XAFS application
+suite can use Larch in this way, though the <a class="reference internal" href="xasviewer.html#xasviewer-app"><span class="std std-ref">XAS Viewer</span></a>
+now contains almost all of the features of <a class="reference external" href="https://bruceravel.github.io/demeter/">Demeter</a> and is much more actively
+being developed and maintained.</p>
+<p>Larch is distribute under an open-source license that is nearly identical to
+the BSD license.  It is under active and open development centered at the
+GeoScoilEnviroCARS sector of Center for Advanced Radiation Sources at the
+University of Chicago has been supported by the US National Science
+Foundation - Earth Sciences (EAR-1128799), and Department of Energy GeoSciences
+(DE-FG02-94ER14466).  In addition, funding specifically for Larch was granted
+by the National Science Foundation - Advanced CyberInfrastructure
+(ACI-1450468).</p>
 <p id="larch-app-table"><strong>Table of Larch Applications</strong></p>
 <blockquote>
 <div><blockquote>
@@ -225,10 +222,6 @@ fitting, linear analysis, PCA/LASSO, EXAFS extraction</p></td>
 </tbody>
 </table>
 </div></blockquote>
-<p>Note that the <a class="reference external" href="https://github.com/Dioptas/Dioptas">Dioptas</a> program for viewing and calibrating 2-D XRD
-patterns, written and maintained by Clemens Prescher has been included with
-earlier versions of Larch. It is no longer included, but we recommend
-downloading and installing that for working with XRD image data.</p>
 <section id="table-of-contents">
 <span id="contents"></span><h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">

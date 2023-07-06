@@ -4,9 +4,9 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>5. XASViewer &#8212; xraylarch 0.9.70 documentation</title>
+    <title>5. XASViewer &#8212; xraylarch 0.9.71 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
@@ -109,34 +109,37 @@
 <span id="xasviewer-app"></span><h1><span class="section-number">5. </span>XASViewer<a class="headerlink" href="#xasviewer" title="Permalink to this heading">¶</a></h1>
 <p>The XAS Viewer Application gives a graphical user interface (GUI) for the
 visualization and analyis of X-ray absorption spectroscopy (XAS) data, both
-XANES and EXAFS. It is deliberately patterned after the Demeter Package
-(Athena and Artemis programs), and shares many concepts and presentation
-ideas from this package.  As a GUI Program, XAS Viewer should seem very
-“Athena-like” though of course with many differences.   We hope that many of
-these differences will be “improvements”.</p>
-<p>By using Larch for all of its analysis steps, XAS Viewer not only provides
-interactive data visualization, exploration, and analysis, but records
-those steps as Larch / Python commands that can be saved and reproduced
-outside of the GUI, say to enable batch processing of large volumes of
-data. This application is still in active development, with new features
-driving the development and release of Larch version for the past year or
-more.</p>
-<p>At this writing (July, 2022, Larch version 0.9.65), the main feature goals
-of XAS Viewer are met, though improvements continue to be made, and bugs
-are being fixed as quickly as possible. Ideas for additions and
-improvements are most welcome.</p>
+XANES and EXAFS. It is deliberately patterned after the Demeter Package (Athena
+and Artemis programs), and shares many concepts and presentation ideas with
+these progrqms.  As a GUI Program, XAS Viewer should seem very “Athena-like”
+though of course there will be several differences.  We hope that many of these
+differences will be “improvements”.  By using Larch for all of its analysis
+steps, XAS Viewer not only provides interactive data visualization,
+exploration, and analysis of XAS data, but also records those steps as Larch /
+Python commands that can be saved and reproduced outside of the GUI, say to
+enable batch processing of large volumes of data.</p>
+<p>XAS Viewer is still in active development with new features driving much of the
+development and releases of Larch version for the past few years. At this
+writing (June, 2023, Larch version 0.9.70), the main feature of XAS Viewer are
+met, though improvements and new featutes continue to be made, and bugs are
+being fixed as quickly as possible. Ideas for additions and improvements are
+most welcome.  If you find problems with it or unexpected or missing
+functionality, please let us know.  In addition, if you find any features from
+Athena, Artemis, Sixpack, or other analysis programs that you would like to see
+in XAS Viewer, please let us know.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="xasviewer/overview.html">5.1. XAS Viewer Overview</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/overview.html#data-input-and-output">5.1.1. Data Input and Output</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/overview.html#xas-data-processing-and-management">5.1.2. XAS Data Processing and Management</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/overview.html#xanes-analysis">5.1.3. XANES Analysis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/overview.html#exafs-processing">5.1.4. EXAFS Processing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/overview.html#exafs-modeling-with-feff">5.1.5. EXAFS Modeling with FEFF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/overview.html#basic-layout-gui-controls-and-xas-data-management">5.1.1. Basic Layout, GUI Controls, and XAS Data Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/overview.html#data-input-and-output">5.1.2. Data Input and Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/overview.html#data-normalization">5.1.3. Data Normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/overview.html#xanes-analysis">5.1.4. XANES Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/overview.html#exafs-processing">5.1.5. EXAFS Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/overview.html#exafs-modeling-with-feff">5.1.6. EXAFS Modeling with FEFF</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="xasviewer/iodata.html">5.2. Reading and Saving Data into XAS Viewer</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/iodata.html#reading-plaintext-data-files-including-xdi">5.2.1. Reading Plaintext data files, including XDI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/iodata.html#reading-plain-text-data-files-including-xdi">5.2.1. Reading Plain text data files, including XDI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xasviewer/iodata.html#reading-data-from-athena-project-files">5.2.2. Reading Data from Athena Project Files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xasviewer/iodata.html#reading-spec-bliss-hdf5-data">5.2.3. Reading Spec/Bliss HDF5 Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xasviewer/iodata.html#larch-session-files-and-xas-viewer">5.2.4. Larch Session Files and XAS Viewer</a></li>
