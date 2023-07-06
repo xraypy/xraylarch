@@ -369,8 +369,8 @@ class EscanData:
             while len(s) < nsums:  s.append(-1)
 
         # finally, icr/ocr corrected sums
-        self.det_corr  = 1.0 * self.det[:]
-        self.sums_corr = 1.0 * self.sums[:]
+        self.det_corr  = self.det.copy()
+        self.sums_corr = self.sums.copy)
 
         if self.correct_deadtime:
             idet = -1
