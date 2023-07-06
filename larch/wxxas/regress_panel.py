@@ -297,6 +297,7 @@ class RegressionPanel(TaskPanel):
 
     def onTrainModel(self, event=None):
         form = self.read_form()
+        self.update_config(form)
         varname = form['varname']
         predname = varname + '_predicted'
 
