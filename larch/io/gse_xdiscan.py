@@ -9,7 +9,7 @@ import gc
 
 import numpy as np
 from .. import Group
-from ..utils import OrderedDict
+from ..utils import OrderedDict, read_textfile
 from ..utils.strutils import bytes2str
 
 from . import XDIFile, XDIFileException
@@ -204,7 +204,7 @@ def is_GSEXDI(filename):
     """test if file is GSE XDI data file
     reads only the first line of file
     """
-    line1 = open(filename, 'r').readline()
+    line1 = read_textfile(filename, size=40).split('\n')[0]
     return (line1.startswith('#XDI/1') and 'Epics StepScan File' in line1)
 
 def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected',
