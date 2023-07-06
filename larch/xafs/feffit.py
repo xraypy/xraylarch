@@ -356,7 +356,7 @@ class FeffitDataSet(Group):
         # use Parseval's theorem to convert epsilon_r to epsilon_k,
         # compensating for kweight
         if all_kweights:
-            kweights = trans.kweight.copy()
+            kweights = trans.kweight[:]
         else:
             kweights = [trans.kweight]
 
