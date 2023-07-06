@@ -21,8 +21,8 @@ larch_version = __version__
 larch_release_version = __release_version__
 # lists of recommended packages that are not installed by default
 # but may be installed if several of the larch apps are run.
-extras_wxgraph = {'wxutils': '0.3.0', 'wxmplot': '0.9.53'}
-extras_epics =  {'pyepics': '3.5.0', 'epicsapps': None, 'psycopg2-binary':None}
+extras_wxgraph = {'wxutils': '0.3.0', 'wxmplot': '0.9.56'}
+extras_epics =  {'pyepics': '3.5.1', 'epicsapps': None, 'psycopg2-binary':None}
 extras_doc   = {'pytest': None, 'sphinx': None, 'numpydoc': None,
                 'sphinxcontrib-bibtex': None, 'sphinxcontrib-argdoc': None}
 extras_qtgraph = {'pyqt5': None, 'pyqtwebengine': None, 'pyqtgraph': None}
