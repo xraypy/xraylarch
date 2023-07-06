@@ -205,7 +205,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=None,
     coefs = [result.params[FMT_COEF % i].value for i in range(len(coefs))]
     bkg, chi = spline_eval(kraw[:iemax-iek0+1], mu[iek0:iemax+1],
                            knots, coefs, order, kout)
-    obkg = my.copy()
+    obkg = mu.copy()
     obkg[iek0:iek0+len(bkg)] = bkg
 
     # outputs to group
