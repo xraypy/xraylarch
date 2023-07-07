@@ -44,7 +44,7 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
 
 
 @Make_CallArgs(["energy" ,"mu"])
-def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
+def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=None,
            edge_step=None, kmin=0, kmax=None, kweight=1, dk=0.1,
            win='hanning', k_std=None, chi_std=None, nfft=2048, kstep=0.05,
            pre_edge_kws=None, nclamp=3, clamp_lo=0, clamp_hi=1,
@@ -58,7 +58,8 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
       group:     output group (and input group for e0 and edge_step).
       rbkg:      distance (in Ang) for chi(R) above
                  which the signal is ignored. Default = 1.
-      e0:        edge energy, in eV.  If None, it will be determined.
+      e0:        edge energy, in eV.  (deprecated: use ek0)
+      ek0:       edge energy, in eV.  If None, it will be determined.
       edge_step: edge step.  If None, it will be determined.
       pre_edge_kws:  keyword arguments to pass to pre_edge()
       nknots:    number of knots in spline.  If None, it will be determined.
@@ -106,40 +107,45 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
 
     if edge_step is None and isgroup(group, 'edge_step'):
         edge_step = group.edge_step
-    if e0 is None and isgroup(group, 'e0'):
-        e0 = group.e0
-    if e0 is not None and (e0 < energy.min() or e0 > energy.max()):
-        e0 = None
-    if e0 is None or edge_step is None:
+    if e0 is not None and ek0 is None:  # command-line e0 still valid
+        ek0 = e0
+    if ek0 is None and isgroup(group, 'ek0'):
+        ek0 = group.ek0
+    if ek0 is None and isgroup(group, 'e0'):
+        ek0 = group.e0
+
+    if ek0 is not None and (ek0 < energy.min() or ek0 > energy.max()):
+        ek0 = None
+    if ek0 is None or edge_step is None:
         # need to run pre_edge:
         pre_kws = dict(nnorm=None, nvict=0, pre1=None,
                        pre2=None, norm1=None, norm2=None)
         if pre_edge_kws is not None:
             pre_kws.update(pre_edge_kws)
         pre_edge(energy, mu, group=group, _larch=_larch, **pre_kws)
-        if e0 is None:
-            e0 = group.e0
+        if ek0 is None:
+            ek0 = group.e0
         if edge_step is None:
             edge_step = group.edge_step
-    if e0 is None or edge_step is None:
-        msg('autobk() could not determine e0 or edge_step!: trying running pre_edge first\n')
+    if ek0 is None or edge_step is None:
+        msg('autobk() could not determine ek0 or edge_step!: trying running pre_edge first\n')
         return
 
-    # get array indices for rkbg and e0: irbkg, ie0
-    ie0 = index_of(energy, e0)
+    # get array indices for rkbg and ek0: irbkg, iek0
+    iek0 = index_of(energy, ek0)
     rgrid = np.pi/(kstep*nfft)
     if rbkg < 2*rgrid: rbkg = 2*rgrid
 
     # save ungridded k (kraw) and grided k (kout)
     # and ftwin (*k-weighting) for FT in residual
-    enpe = energy[ie0:] - e0
+    enpe = energy[iek0:] - ek0
     kraw = np.sign(enpe)*np.sqrt(ETOK*abs(enpe))
     if kmax is None:
         kmax = max(kraw)
     else:
         kmax = max(0, min(max(kraw), kmax))
     kout  = kstep * np.arange(int(1.01+kmax/kstep), dtype='float64')
-    iemax = min(len(energy), 2+index_of(energy, e0+kmax*kmax/ETOK)) - 1
+    iemax = min(len(energy), 2+index_of(energy, ek0+kmax*kmax/ETOK)) - 1
 
     # interpolate provided chi(k) onto the kout grid
     if chi_std is not None and k_std is not None:
@@ -160,7 +166,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
         i1 = min(len(kraw)-1, ik + 5)
         i2 = max(0, ik - 5)
         spl_k[i] = kraw[ik]
-        spl_y[i] = (2*mu[ik+ie0] + mu[i1+ie0] + mu[i2+ie0] ) / 4.0
+        spl_y[i] = (2*mu[ik+iek0] + mu[i1+iek0] + mu[i2+iek0] ) / 4.0
 
     order = 3
     qmin, qmax  = spl_k[0], spl_k[nspl-1]
@@ -172,7 +178,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     for i in range(order+1):
         knots.append(qlast + 1.e-4*(i+1))
 
-    # coefs = [mu[index_nearest(energy, e0 + q**2/ETOK)] for q in knots]
+    # coefs = [mu[index_nearest(energy, ek0 + q**2/ETOK)] for q in knots]
     knots, coefs, order = splrep(spl_k, spl_y, k=order)
     coefs[nspl:] = coefs[nspl-1]
 
@@ -181,7 +187,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     for i in range(len(coefs)):
         params.add(name = FMT_COEF % i, value=coefs[i], vary=i<len(spl_y))
 
-    initbkg, initchi = spline_eval(kraw[:iemax-ie0+1], mu[ie0:iemax+1],
+    initbkg, initchi = spline_eval(kraw[:iemax-iek0+1], mu[iek0:iemax+1],
                                    knots, coefs, order, kout)
 
     # do fit
@@ -189,18 +195,18 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
                       gtol=1.e-6, ftol=1.e-6, xtol=1.e-6, epsfcn=1.e-6,
                       kws = dict(ncoefs=len(coefs), chi_std=chi_std,
                                  knots=knots, order=order,
-                                 kraw=kraw[:iemax-ie0+1],
-                                 mu=mu[ie0:iemax+1], irbkg=irbkg, kout=kout,
+                                 kraw=kraw[:iemax-iek0+1],
+                                 mu=mu[iek0:iemax+1], irbkg=irbkg, kout=kout,
                                  ftwin=ftwin, kweight=kweight,
                                  nfft=nfft, nclamp=nclamp,
                                  clamp_lo=clamp_lo, clamp_hi=clamp_hi))
 
     # write final results
     coefs = [result.params[FMT_COEF % i].value for i in range(len(coefs))]
-    bkg, chi = spline_eval(kraw[:iemax-ie0+1], mu[ie0:iemax+1],
+    bkg, chi = spline_eval(kraw[:iemax-iek0+1], mu[iek0:iemax+1],
                            knots, coefs, order, kout)
-    obkg = np.copy(mu)
-    obkg[ie0:ie0+len(bkg)] = bkg
+    obkg = mu.copy()
+    obkg[iek0:iek0+len(bkg)] = bkg
 
     # outputs to group
     group = set_xafsGroup(group, _larch=_larch)
@@ -208,14 +214,14 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     group.chie = (mu-obkg)/edge_step
     group.k    = kout
     group.chi  = chi/edge_step
-    group.e0   = e0
+    group.ek0  = ek0
 
     # now fill in 'autobk_details' group
     details = Group(kmin=kmin, kmax=kmax, irbkg=irbkg, nknots=len(spl_k),
                     knots_k=knots, init_knots_y=spl_y, nspl=nspl,
                     init_chi=initchi/edge_step, report=fit_report(result))
-    details.init_bkg = np.copy(mu)
-    details.init_bkg[ie0:ie0+len(bkg)] = initbkg
+    details.init_bkg = mu.copy()
+    details.init_bkg[iek0:iek0+len(bkg)] = initbkg
     details.knots_y  = np.array([coefs[i] for i in range(nspl)])
     group.autobk_details = details
     for attr in ('nfev', 'redchi', 'chisqr', 'aic', 'bic', 'params'):
@@ -225,7 +231,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     covar = getattr(result, 'covar', None)
     if calc_uncertainties and covar is not None:
         nchi = len(chi)
-        nmue = iemax-ie0 + 1
+        nmue = iemax-iek0 + 1
         redchi = result.redchi
         covar  = result.covar / redchi
         jac_chi = np.zeros(nchi*nspl).reshape((nspl, nchi))
@@ -244,7 +250,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
 
         # find derivatives by hand!
         _k = kraw[:nmue]
-        _m = mu[ie0:iemax+1]
+        _m = mu[iek0:iemax+1]
         for i in range(nspl):
             cval0 = cvals[i]
             cvals[i] = cval0 + cerrs[i]
@@ -271,4 +277,4 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
         if not any(np.isnan(dchi)):
             group.delta_chi = dchi
             group.delta_bkg = 0.0*mu
-            group.delta_bkg[ie0:ie0+len(dbkg)] = dbkg
+            group.delta_bkg[iek0:iek0+len(dbkg)] = dbkg

@@ -2,7 +2,7 @@ import numpy as np
 
 from larch import Group, Make_CallArgs, parse_group_args
 from larch.math import index_of, interp1d, remove_dups
-from .xafsutils import ktoe, etok
+from .xafsutils import ktoe, etok, TINY_ENERGY
 
 @Make_CallArgs(["energy", "mu"])
 def sort_xafs(energy, mu=None, group=None, fix_repeats=True, overwrite=True):
@@ -35,7 +35,7 @@ def sort_xafs(energy, mu=None, group=None, fix_repeats=True, overwrite=True):
     new_mu  = mu[indices]
 
     if fix_repeats:
-        new_energy = remove_dups(new_energy, tiny=2.5e-3)
+        new_energy = remove_dups(new_energy, tiny=TINY_ENERGY)
 
     if not overwrite:
         group.sorted = Group(energy=new_energy, mu=new_mu)

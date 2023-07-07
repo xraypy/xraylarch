@@ -78,7 +78,7 @@ def complex_phase(arr):
     "return phase, modulo 2pi jumps"
     phase = np.arctan2(arr.imag, arr.real)
     d   = np.diff(phase)/np.pi
-    out = 1.0*phase[:]
+    out = phase.copy()
     out[1:] -= np.pi*(np.round(abs(d))*np.sign(d)).cumsum()
     return out
 
@@ -268,6 +268,9 @@ def remove_nans2(a, b):
     return a, b
 
 
+def safe_log(x, extreme=50):
+    return np.log(np.clip(x, np.e**-extreme, np.e**extreme))
+
 def smooth(x, y, sigma=1, gamma=None, xstep=None, npad=None, form='lorentzian'):
     """smooth a function y(x) by convolving wih a lorentzian, gaussian,
     or voigt function.
@@ -411,7 +414,7 @@ def boxcar(data, nrepeats=1):
     -----
       This does a 3-point smoothing, that can be repeated
 
-      out = data[:]
+      out = data.copy()
       for i in range(nrepeats):
           qdat = out/4.0
           left  = 1.0*qdat
@@ -422,7 +425,7 @@ def boxcar(data, nrepeats=1):
     return out
 
     """
-    out = data[:]
+    out = data.copy()
     for i in range(nrepeats):
         qdat = out/4.0
         left  = 1.0*qdat

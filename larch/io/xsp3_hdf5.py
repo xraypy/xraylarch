@@ -55,7 +55,7 @@ def get_counts_carefully(h5link):
     """
     # will usually succeed, of course.
     try:
-        return h5link[:]
+        return h5link[()]
     except OSError:
         pass
 

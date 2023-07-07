@@ -244,7 +244,7 @@ class GSEMCA_File(Group):
         self.counts = self.get_counts()
         self.raw    = self.get_counts(dt_correct=False)
         self.name   = 'mcasum'
-        self.energy = mca0.energy[:]
+        self.energy = mca0.energy.copy()
         self.environ = mca0.environ
         self.real_time = mca0.real_time
         self.live_time = mca0.live_time

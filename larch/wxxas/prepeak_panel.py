@@ -701,8 +701,7 @@ class PrePeakPanel(TaskPanel):
             fname = self.controller.filelist.GetStringSelection()
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
-            if not hasattr(dgroup, 'norm'):
-                self.xasmain.process_normalization(dgroup)
+            self.ensure_xas_processed(dgroup)
             self.fill_form(dgroup)
         except:
             pass # print(" Cannot Fill prepeak panel from group ")

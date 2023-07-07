@@ -21,8 +21,8 @@ larch_version = __version__
 larch_release_version = __release_version__
 # lists of recommended packages that are not installed by default
 # but may be installed if several of the larch apps are run.
-extras_wxgraph = {'wxutils': '0.3.0', 'wxmplot': '0.9.53'}
-extras_epics =  {'pyepics': '3.5.0', 'epicsapps': None, 'psycopg2-binary':None}
+extras_wxgraph = {'wxutils': '0.3.0', 'wxmplot': '0.9.56'}
+extras_epics =  {'pyepics': '3.5.1', 'epicsapps': None, 'psycopg2-binary':None}
 extras_doc   = {'pytest': None, 'sphinx': None, 'numpydoc': None,
                 'sphinxcontrib-bibtex': None, 'sphinxcontrib-argdoc': None}
 extras_qtgraph = {'pyqt5': None, 'pyqtwebengine': None, 'pyqtgraph': None}
@@ -43,7 +43,16 @@ def install_extras(package_dict, timeout=30):
     for pkg, vers in package_dict.items():
         install_needed = pkg not in current
         if pkg in current and vers is not None:
-            install_needed = install_needed or version_ge(vers, current[pkg])
+            curr = current[pkg]
+            currwords = []
+            for s in curr.split('.') + ['0', '0', '0']:
+                try:
+                    a = int(s)
+                    currwords.append(s)
+                except:
+                    pass
+            curr = '.'.join(currwords[:3])
+            install_needed = install_needed or version_ge(vers, curr)
 
     if install_needed:
         command = [sys.executable, '-m', 'pip', 'install', f"{pkg}>={vers}"]

@@ -1031,9 +1031,9 @@ class GSEXRM_MapFile(object):
                     sum_cor = self.xrmmap['roimap/sum_cor']
 
                     detraw = list(row.sisdata[:npts].transpose())
-                    detcor = detraw[:]
-                    sumraw = detraw[:]
-                    sumcor = detraw[:]
+                    detcor = detraw.copy()
+                    sumraw = detraw.copy()
+                    sumcor = detraw.copy()
 
                     if self.roi_slices is None:
                         lims = self.xrmmap['config/rois/limits'][()]
@@ -1063,7 +1063,7 @@ class GSEXRM_MapFile(object):
 
                 else: # version 2.0
                     roigrp = self.xrmmap['roimap']
-                    en  = self.xrmmap['mcasum']['energy'][:]
+                    en  = self.xrmmap['mcasum']['energy'].copy()
                     for roiname in roigrp['mcasum'].keys():
                         en_lim = roigrp['mcasum'][roiname]['limits'][:]
                         roi_slice = slice(np.abs(en-en_lim[0]).argmin(),
@@ -1125,9 +1125,9 @@ class GSEXRM_MapFile(object):
 
                 detraw = list(row.sisdata[:npts].transpose())
 
-                detcor = detraw[:]
-                sumraw = detraw[:]
-                sumcor = detraw[:]
+                detcor = detraw.copy()
+                sumraw = detraw.copy()
+                sumcor = detraw.copy()
 
                 if self.roi_slices is None:
                     lims = self.xrmmap['config/rois/limits'][()]
@@ -1953,7 +1953,7 @@ class GSEXRM_MapFile(object):
             filename = file_str % self.filename
 
         areas = ensure_subgroup('areas', self.xrmmap, dtype='areas')
-        kwargs = {key: val[:] for key, val in areas.items()}
+        kwargs = {key: val.copy() for key, val in areas.items()}
         np.savez(filename, **kwargs)
         return filename
 
@@ -2678,7 +2678,7 @@ class GSEXRM_MapFile(object):
         if version_ge(self.version, '2.0.0'):
             for roi in self.xrmmap['roimap'][dgroup]:
                 emin,emax = self.xrmmap['roimap'][dgroup][roi]['limits'][:]
-                Eaxis = map['energy'][:]
+                Eaxis = map['energy'].copy()
 
                 imin = (np.abs(Eaxis-emin)).argmin()
                 imax = (np.abs(Eaxis-emax)).argmin()
@@ -2928,7 +2928,7 @@ class GSEXRM_MapFile(object):
 
         # print("ADD XRD1D ROI ", detname, xrange, roiname, unit)
         counts = self.xrmmap[detname]['counts']
-        q = self.xrmmap[detname]['q'][:]
+        q = self.xrmmap[detname]['q'].copy()
 
         imin = (np.abs(q-qrange[0])).argmin()
         imax = (np.abs(q-qrange[1])).argmin()+1
@@ -3018,7 +3018,7 @@ class GSEXRM_MapFile(object):
             if unit.startswith('chan'):
                 emin, emax = Erange
             else:
-                en  = mapdat['energy'][:]
+                en  = mapdat['energy'].copy()
                 emin = (np.abs(en-Erange[0])).argmin()
                 emax = (np.abs(en-Erange[1])).argmin()+1
             raw = mapdat['counts'][:, :, emin:emax].sum(axis=2)

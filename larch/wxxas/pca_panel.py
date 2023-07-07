@@ -207,6 +207,7 @@ class PCAPanel(TaskPanel):
         if fname in self.controller.file_groups:
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
+            self.ensure_xas_processed(dgroup)
             self.fill_form(dgroup)
             self.process(dgroup=dgroup)
 
@@ -302,6 +303,7 @@ class PCAPanel(TaskPanel):
         self.larch_eval(cmd)
 
         dgroup = self.controller.get_group()
+        dgroup.update_config(form)
         dgroup.journal.add('pca_fit', cmd)
 
         thisrow = [dgroup.filename,

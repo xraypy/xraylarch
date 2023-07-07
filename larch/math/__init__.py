@@ -3,7 +3,7 @@ __DOC__ = """Mathematical functions for Larch"""
 import numpy as np
 
 from .utils import (linregress, realimag, as_ndarray,
-                    complex_phase, deriv, interp, interp1d,
+                    complex_phase, deriv, interp, interp1d, safe_log,
                     remove_dups, remove_nans, remove_nans2, index_of,
                     index_nearest, savitzky_golay, smooth, boxcar, polyfit)
 
@@ -28,6 +28,7 @@ _larch_builtins = {'_math': dict(linregress=linregress, polyfit=polyfit,
                                  interp=interp, interp1d=interp1d,
                                  remove_dups=remove_dups,
                                  remove_nans2=remove_nans2,
+                                 safe_log=safe_log,
                                  index_of=index_of,
                                  index_nearest=index_nearest,
                                  savitzky_golay=savitzky_golay,

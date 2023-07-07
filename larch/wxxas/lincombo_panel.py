@@ -209,10 +209,10 @@ class LinComboResultFrame(wx.Frame):
 
         pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         pview.SetFont(self.font_fixedwidth)
-        pview.SetMinSize((475, 200))
-        pview.AppendTextColumn(' Parameter ', width=200)
-        pview.AppendTextColumn(' Best-Fit Value', width=120)
-        pview.AppendTextColumn(' Standard Error ', width=120)
+        pview.SetMinSize((500, 200))
+        pview.AppendTextColumn(' Parameter ', width=180)
+        pview.AppendTextColumn(' Best-Fit Value', width=150)
+        pview.AppendTextColumn(' Standard Error ', width=150)
         for col in range(3):
             this = pview.Columns[col]
             isort, align = True, wx.ALIGN_RIGHT
@@ -243,13 +243,13 @@ class LinComboResultFrame(wx.Frame):
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.SetFont(self.font_fixedwidth)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFitStat)
-        sview.AppendTextColumn(' Fit #', width=50)
-        sview.AppendTextColumn(' N_vary', width=60)
-        sview.AppendTextColumn(' N_eval', width=60)
-        sview.AppendTextColumn(' \u03c7\u00B2', width=90)
-        sview.AppendTextColumn(' \u03c7\u00B2_reduced', width=90)
-        sview.AppendTextColumn(' R Factor', width=90)
-        sview.AppendTextColumn(' Akaike Info', width=90)
+        sview.AppendTextColumn(' Fit #', width=65)
+        sview.AppendTextColumn(' N_vary', width=80)
+        sview.AppendTextColumn(' N_eval', width=80)
+        sview.AppendTextColumn(' \u03c7\u00B2', width=100)
+        sview.AppendTextColumn(' \u03c7\u00B2_reduced', width=100)
+        sview.AppendTextColumn(' R Factor', width=100)
+        sview.AppendTextColumn(' Akaike Info', width=100)
 
         for col in range(sview.ColumnCount):
             this = sview.Columns[col]
@@ -362,8 +362,8 @@ class LinComboResultFrame(wx.Frame):
         wview = self.wids['weights'] = dv.DataViewListCtrl(wpan, style=DVSTYLE)
         wview.SetFont(self.font_fixedwidth)
         wview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFitParam)
-        wview.AppendTextColumn(' Fit #', width=50)
-        wview.AppendTextColumn(' E shift', width=75)
+        wview.AppendTextColumn(' Fit #', width=65)
+        wview.AppendTextColumn(' E shift', width=80)
 
         for i, cname in enumerate(form['comp_names']):
             wview.AppendTextColumn(cname, width=100)
@@ -675,7 +675,6 @@ class LinearComboPanel(TaskPanel):
             conf[key]  = form[key]
         self.update_config(conf, dgroup=dgroup)
 
-
     def build_display(self):
         panel = self.panel
         wids = self.wids
@@ -779,8 +778,7 @@ class LinearComboPanel(TaskPanel):
             fname = self.controller.filelist.GetStringSelection()
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
-            if not hasattr(dgroup, 'norm'):
-                self.xasmain.process_normalization(dgroup)
+            self.ensure_xas_processed(dgroup)
             self.fill_form(dgroup)
         except:
             pass # print(" Cannot Fill prepeak panel from group ")
@@ -846,9 +844,8 @@ class LinearComboPanel(TaskPanel):
     def fill_form(self, dgroup):
         """fill in form from a data group"""
         opts = self.get_config(dgroup, with_erange=True)
-        if not hasattr(dgroup, 'norm'):
-            self.xasmain.process_normalization(dgroup)
         self.dgroup = dgroup
+        self.ensure_xas_processed(dgroup)
         defaults = self.get_defaultconfig()
 
         self.skip_process = True
@@ -952,6 +949,9 @@ class LinearComboPanel(TaskPanel):
     def do_fit(self, groupname, form, plot=True):
         """run lincombo fit for a group"""
         form['gname'] = groupname
+        dgroup = self.controller.get_group(groupname)
+        self.ensure_xas_processed(dgroup)
+
         if len(groupname) == 0:
             print("no group to fit?")
             return
@@ -992,6 +992,7 @@ lcf_result = {func:s}({gname:s}, [{comps:s}],
 
         self.skip_process = True
         form = self.read_form()
+        self.update_config(form)
         self.do_fit(form['group'], form)
         self.skip_process = False
 

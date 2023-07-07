@@ -10,7 +10,7 @@ from larch import Group, Make_CallArgs, parse_group_args
 
 from larch.math import (index_of, index_nearest, remove_dups, remove_nans2,
                         interp, smooth, polyfit)
-from .xafsutils import set_xafsGroup
+from .xafsutils import set_xafsGroup, TINY_ENERGY
 
 MODNAME = '_xafs'
 MAX_NNORM = 5
@@ -39,33 +39,41 @@ def find_e0(energy, mu=None, group=None, _larch=None):
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
                                          fcn_name='find_e0')
-    e0 = _finde0(energy, mu)
+    # first find e0 without smoothing, then refine with smoothing
+    e1, ie0, estep = _finde0(energy, mu, estep=None, use_smooth=False)
+    istart = max(1, ie0-75)
+    istop  = min(ie0+75, len(energy)-2)
+    e0, ix, ex = _finde0(energy[istart:istop], mu[istart:istop], estep=estep, use_smooth=True)
     if group is not None:
         group = set_xafsGroup(group, _larch=_larch)
         group.e0 = e0
     return e0
 
 def find_energy_step(energy, frac_ignore=0.01, nave=10):
-    """robustly find energy step in XAS energy array, 
-    ignoring the smallest fraction of energy steps (frac_ignore), 
+    """robustly find energy step in XAS energy array,
+    ignoring the smallest fraction of energy steps (frac_ignore),
     and averaging over the next `nave` values
     """
     ediff = np.diff(energy)
     nskip = int(frac_ignore*len(energy))
     return ediff[np.argsort(ediff)][nskip:nskip+nave].mean()
 
-    
-def _finde0(energy, mu):
 
-    en = remove_dups(energy, tiny=0.005)
+def _finde0(energy, mu, estep=None, use_smooth=True):
+    "internally used by find e0 "
+
+    en = remove_dups(energy, tiny=TINY_ENERGY)
     if len(en.shape) > 1:
         en = en.squeeze()
     if len(mu.shape) > 1:
         mu = mu.squeeze()
-    estep = find_energy_step(en)
+    if estep is None:
+        estep = find_energy_step(en)/2.0
     nmin = max(2, int(len(en)*0.01))
-    dmu = smooth(en, np.gradient(mu)/np.gradient(en), xstep=estep/2.0, sigma=estep)
-
+    if use_smooth:
+        dmu = smooth(en, np.gradient(mu)/np.gradient(en), xstep=estep, sigma=3*estep)
+    else:
+        dmu = np.gradient(mu)/np.gradient(en)
     # find points of high derivative
     dmu[np.where(~np.isfinite(dmu))] = -1.0
     dm_min = dmu[nmin:-nmin].min()
@@ -87,11 +95,10 @@ def _finde0(energy, mu):
             (i+1 in high_deriv_pts) and
             (i-1 in high_deriv_pts)):
             imax, dmax = i, dmu[i]
-    return en[imax]
+    return en[imax], imax, estep
 
 def flat_resid(pars, en, mu):
     return pars['c0'] + en * (pars['c1'] + en * pars['c2']) - mu
-
 
 def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
             pre2=None, norm1=None, norm2=None):
@@ -140,12 +147,12 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
          norm2 = max energy - e0, rounded to 5 eV
          norm1 = roughly min(150, norm2/3.0), rounded to 5 eV
     """
-    energy = remove_dups(energy, tiny=0.005)
+
+    energy = remove_dups(energy, tiny=TINY_ENERGY)
     if energy.size <= 1:
         raise ValueError("energy array must have at least 2 points")
     if e0 is None or e0 < energy[1] or e0 > energy[-2]:
-        e0 = _finde0(energy, mu)
-
+        e0 = find_e0(energy, mu)
     ie0 = index_nearest(energy, e0)
     e0 = energy[ie0]
 
@@ -180,7 +187,6 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
         if norm2-norm1 < 350: nnorm = 1
         if norm2-norm1 <  50: nnorm = 0
     nnorm = max(min(nnorm, MAX_NNORM), 0)
-
     # preedge
     p1 = index_of(energy, pre1+e0)
     p2 = index_nearest(energy, pre2+e0)
@@ -189,10 +195,8 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
 
     omu  = mu*energy**nvict
     ex, mx = remove_nans2(energy[p1:p2], omu[p1:p2])
-
     precoefs = polyfit(ex, mx, 1)
     pre_edge = (precoefs[0] + energy*precoefs[1]) * energy**(-nvict)
-
     # normalization
     p1 = index_of(energy, norm1+e0)
     p2 = index_nearest(energy, norm2+e0)
@@ -280,7 +284,6 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
       5. flattening fits a quadratic curve (no matter nnorm) to the post-edge
          normalized mu(E) and subtracts that curve from it.
     """
-
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
                                          fcn_name='pre_edge')
@@ -292,12 +295,9 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
     energy, mu = remove_nans2(energy, mu)
     if group is not None and e0 is None:
         e0 = getattr(group, 'e0', None)
-        
     pre_dat = preedge(energy, mu, e0=e0, step=step, nnorm=nnorm,
                       nvict=nvict, pre1=pre1, pre2=pre2, norm1=norm1,
                       norm2=norm2)
-
-
     group = set_xafsGroup(group, _larch=_larch)
 
     e0    = pre_dat['e0']
@@ -400,7 +400,6 @@ def energy_align(group, reference, array='dmude', emin=-15, emax=35):
           dmude array will be built for group and reference.
 
     """
-
     if not (hasattr(group, 'energy') and hasattr(group, 'mu')):
         raise ValueError("group must have attributes 'energy' and 'mu'")
 
@@ -419,16 +418,16 @@ def energy_align(group, reference, array='dmude', emin=-15, emax=35):
         en = getattr(reference, 'energy')
         reference.dmude = gradient(mu)/gradient(en)
 
-    xdat = group.energy[:]
-    xref = reference.energy[:]
-    ydat = group.dmude[:]
-    yref = reference.dmude[:]
+    xdat = group.energy.copy()
+    xref = reference.energy.copy()
+    ydat = group.dmude.copy()
+    yref = reference.dmude.copy()
     if array == 'mu':
-        ydat = group.mu[:]
-        yref = reference.mu[:]
+        ydat = group.mu.copy()
+        yref = reference.mu.copy()
     elif array == 'norm':
-        ydat = group.norm[:]
-        yref = reference.norm[:]
+        ydat = group.norm.copy()
+        yref = reference.norm.copy()
     xdat, ydat = remove_nans2(xdat, ydat)
     xref, yref = remove_nans2(xref, yref)
 

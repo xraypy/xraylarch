@@ -60,7 +60,7 @@ PlotCmds = {mu_bkg:  "plot_bkg({group:s}",
 CLAMPLIST = ('0', '1', '2', '5', '10', '20', '50', '100', '200', '500', '1000',
              '2000', '5000', '10000')
 
-autobk_cmd = """autobk({group:s}, rbkg={rbkg: .3f}, e0={e0: .4f},
+autobk_cmd = """autobk({group:s}, rbkg={rbkg: .3f}, ek0={ek0: .4f},
       kmin={bkg_kmin: .3f}, kmax={bkg_kmax: .3f}, kweight={bkg_kweight: .1f},
       clamp_lo={bkg_clamplo: .1f}, clamp_hi={bkg_clamphi: .1f})"""
 
@@ -124,7 +124,12 @@ class EXAFSPanel(TaskPanel):
         wids['plot_win'].SetStringSelection('2')
 
         opts = dict(digits=2, increment=0.1, min_val=0, action=self.onProcess)
-        wids['e0'] = FloatSpin(panel, **opts)
+        wids['ek0'] = FloatSpin(panel, **opts)
+
+        wids['push_e0'] = Button(panel, 'Use as Normalization E0', size=(200, -1),
+                                 action=self.onPushE0)
+        wids['push_e0'].SetToolTip('Use this value for E0 in the Normalization Tab')
+
 
         opts['max_val'] = 6
         opts['action'] = self.onRbkg
@@ -173,7 +178,7 @@ class EXAFSPanel(TaskPanel):
         def CopyBtn(name):
             return Button(panel, 'Copy', size=(60, -1),
                           action=partial(self.onCopyParam, name))
-        copy_all = Button(panel, 'Copy All Parameters', size=(150, -1),
+        copy_all = Button(panel, 'Copy All Parameters', size=(175, -1),
                           action=partial(self.onCopyParam, 'all'))
 
 
@@ -209,10 +214,10 @@ class EXAFSPanel(TaskPanel):
                   style=RIGHT, dcol=3)
 
 
-        add_text('E0: ')
-        panel.Add(wids['e0'])
-        panel.Add((10, 10), dcol=2)
-        panel.Add(CopyBtn('e0'), style=RIGHT)
+        add_text('E k=0: ')
+        panel.Add(wids['ek0'])
+        panel.Add(wids['push_e0'], dcol=2)
+        panel.Add(CopyBtn('ek0'), style=RIGHT)
 
         add_text('R bkg: ')
         panel.Add(wids['rbkg'])
@@ -308,15 +313,21 @@ class EXAFSPanel(TaskPanel):
         if conf is None:
             conf = self.get_defaultconfig()
 
-        e0 = getattr(dgroup, 'e0', None)
-        if e0 is None:
-            e0 = conf.get('e0', None)
-        if e0 is None:
+        ek0 = getattr(dgroup, 'ek0', None)
+        if ek0 is None:
+            ek0 = conf.get('ek0', None)
+        if ek0 is None:
             nconf = getattr(dgroup.config, 'xasnorm', {'e0': None})
-            e0 = nconf.get('e0', None)
-        if e0 is None:
-            e0 = min(dgroup.energy)
-        kmax = etok(max(dgroup.energy) - e0)
+            ek0 = nconf.get('e0', None)
+        if ek0 is None:
+            ek0 = min(dgroup.energy)
+            e0val = getattr(dgroup, 'e0', None)
+            if e0val is not None:
+                ek0 = e0val
+        if getattr(dgroup, 'ek0', None) is None:
+            dgroup.ek0 = ek0
+
+        kmax = etok(max(dgroup.energy) - ek0)
 
         bkg_kmax = conf.get('bkg_kmax', -1)
         if bkg_kmax < 0 or bkg_kmax > kmax:
@@ -342,7 +353,7 @@ class EXAFSPanel(TaskPanel):
 
         self.skip_process = True
         wids = self.wids
-        for attr in ('e0', 'rbkg'):
+        for attr in ('ek0', 'rbkg'):
             val = getattr(dgroup, attr, None)
             if val is None:
                 val = opts.get(attr, -1)
@@ -385,7 +396,6 @@ class EXAFSPanel(TaskPanel):
         "read form, return dict of values"
         skip_save = self.skip_process
         self.skip_process = True
-
         if dgroup is None:
             dgroup = self.controller.get_group()
         self.dgroup = dgroup
@@ -395,7 +405,7 @@ class EXAFSPanel(TaskPanel):
             conf['group'] = dgroup.groupname
 
         wids = self.wids
-        for attr in ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
+        for attr in ('ek0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
                      'bkg_kweight', 'fft_kmin', 'fft_kmax',
                      'fft_kweight', 'fft_dk',  'fft_rmaxout',
                      'fft_rmin', 'fft_rmax', 'fft_dr',
@@ -420,27 +430,35 @@ class EXAFSPanel(TaskPanel):
     def onSaveConfigBtn(self, evt=None):
         self.set_defaultconfig(self.read_form())
 
+    def onPushE0(self, evt=None):
+        conf = self.read_form()
+        dgroup = self.controller.get_group()
+        if dgroup is not None:
+            nconf = getattr(dgroup.config, 'xasnorm', {'e0': None})
+            nconf['auto_e0'] = False
+            nconf['e0'] = dgroup.e0 = conf['ek0']
+
     def onCopyParam(self, name=None, evt=None):
         conf = self.read_form()
         opts = {}
         def copy_attrs(*args):
             return {a: conf[a] for a in args}
         name = str(name)
-        set_e0 = set_rbkg = False
+        set_ek0 = set_rbkg = False
         if name == 'all':
-            opts = copy_attrs( 'e0', 'rbkg', 'bkg_kweight', 'fft_kweight',
+            opts = copy_attrs( 'ek0', 'rbkg', 'bkg_kweight', 'fft_kweight',
                                'bkg_kmin', 'bkg_kmax', 'bkg_clamplo',
                                'bkg_clamphi', 'fft_kmin', 'fft_kmax',
                                'fft_kwindow', 'fft_dk', 'fft_rmin',
                                'fft_rmax', 'fft_rmaxout', 'fft_rwindow',
                                'fft_dr')
-            set_e0 = True
+            set_ek0 = True
             set_rbkg = True
 
-        elif name in ('e0', 'rbkg', 'bkg_kweight', 'fft_kweight'):
+        elif name in ('ek0', 'rbkg', 'bkg_kweight', 'fft_kweight'):
             opts = copy_attrs(name)
-            if name == 'e0':
-                set_e0 = True
+            if name == 'ek0':
+                set_ek0 = True
             elif name == 'rbkg':
                 set_rbkg = True
         elif name == 'bkg_krange':
@@ -463,8 +481,8 @@ class EXAFSPanel(TaskPanel):
             grp = self.controller.get_group(groupname)
             if grp != self.controller.group and not grp.is_frozen:
                 self.update_config(opts, dgroup=grp)
-                if set_e0:
-                    grp.e0 = opts['e0']
+                if set_ek0:
+                    grp.ek0 = opts['ek0']
                 if set_rbkg:
                     grp.rbkg = opts['rbkg']
                 self.process(dgroup=grp, read_form=False)
@@ -477,7 +495,7 @@ class EXAFSPanel(TaskPanel):
         except:
             pass
 
-        for attr in ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax', 'bkg_kweight',
+        for attr in ('ek0', 'rbkg', 'bkg_kmin', 'bkg_kmax', 'bkg_kweight',
                      'fft_kmin', 'fft_kmax', 'fft_kweight', 'fft_dk',
                      'fft_rmin', 'fft_rmax', 'fft_dr',
                      'bkg_clamplo', 'bkg_clamphi', 'fft_kwindow'):
@@ -500,7 +518,7 @@ class EXAFSPanel(TaskPanel):
         self.process(dgroup=self.dgroup, read_form=True)
         self.skip_process = False
         plotter = self.onPlotSel if self.last_plot=='selected' else self.onPlotOne
-        plotter()
+        wx.CallAfter(plotter)
 
     def process(self, dgroup=None, read_form=True, force=False, **kws):
         conf = {}
@@ -517,7 +535,6 @@ class EXAFSPanel(TaskPanel):
         if dgroup is None or 'fft_kwindow' not in conf:
             return
 
-        # if 'group' not in conf:
         conf['group'] = dgroup.groupname
 
         try:
@@ -526,7 +543,7 @@ class EXAFSPanel(TaskPanel):
             conf.update(self.read_form())
 
         bkgpars = []
-        for attr in ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
+        for attr in ('ek0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
                      'bkg_kweight', 'bkg_clamplo', 'bkg_clamphi'):
             val = conf.get(attr, 0.0)
             if val is None:

@@ -27,6 +27,7 @@ from larch.utils.strutils import fix_varname, fix_filename, file2groupname
 from larch.io import look_for_nans,  guess_filereader, is_specfile, sum_fluor_channels
 from larch.utils.physical_constants import PLANCK_HC, DEG2RAD
 from larch.utils import gformat
+from larch.math import safe_log
 from . import FONTSIZE
 
 CEN |=  wx.ALL
@@ -590,6 +591,9 @@ class ColumnDataFileFrame(wx.Frame) :
                               has_yref=False, dtc_config={}, multicol_config={})
         if config is not None:
             self.config.update(config)
+            dtype = config.get('datatype', None)
+            if dtype in ('xas', 'raw'):
+                self.workgroup.datatype = dtype
 
         if self.config['yarr2'] is None and 'i0' in self.array_labels:
             self.config['yarr2'] = 'i0'
@@ -1317,10 +1321,8 @@ def create_arrays(dgroup, datatype='xas', ix=0, xarr='energy', en_units='eV',
         suf = ''
         if opstr in ('-log(', 'log('):
             suf = ')'
-            if opstr == 'log(':
-                arr = np.log(arr)
-            elif opstr == '-log(':
-                arr = -np.log(arr)
+            arr = safe_log(arr)
+            if opstr.startswith('-'): arr = -arr
             arr[np.where(np.isnan(arr))] = 0
         return suf, opstr, arr
 
@@ -1371,8 +1373,8 @@ def create_arrays(dgroup, datatype='xas', ix=0, xarr='energy', en_units='eV',
             dgroup.ydat = ydarr1 / ydarr2
 
     ysuf, ypop, dgroup.ydat = pre_op(ypop, dgroup.ydat)
-
-    exprs['ydat'] = f"{ypop}{exprs['ydat']}{ysuf}"
+    ypopx = ypop.replace('log', 'safe_log')
+    exprs['ydat'] = f"{ypopx}{exprs['ydat']}{ysuf}"
     ylabel = f"{ypop}{ylabel}{ysuf}"
 
     # error
@@ -1431,7 +1433,8 @@ def create_arrays(dgroup, datatype='xas', ix=0, xarr='energy', en_units='eV',
                 dgroup.yref = ydrarr1 / ydrarr2
 
         yrsuf, yprop, dgroup.yref = pre_op(yrpop, dgroup.yref)
-        exprs['yref'] = f"{yrpop}{exprs['yref']}{yrsuf}"
+        yrpopx = yrpop.replace('log', 'safe_log')
+        exprs['yref'] = f"{yrpopx}{exprs['yref']}{yrsuf}"
         yrlabel = f'{yrpop} {yrlabel} {yrsuf}'
         dgroup.yrlabel = yrlabel
 

@@ -297,6 +297,7 @@ class RegressionPanel(TaskPanel):
 
     def onTrainModel(self, event=None):
         form = self.read_form()
+        self.update_config(form)
         varname = form['varname']
         predname = varname + '_predicted'
 
@@ -390,8 +391,7 @@ class RegressionPanel(TaskPanel):
             fname = self.controller.filelist.GetStringSelection()
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
-            if not hasattr(dgroup, 'norm'):
-                self.xasmain.process_normalization(dgroup)
+            self.ensure_xas_processed(dgroup)
             self.fill_form(dgroup)
         except:
             pass # print(" Cannot Fill prepeak panel from group ")

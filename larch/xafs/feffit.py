@@ -247,7 +247,7 @@ class FeffitDataSet(Group):
         self.data = Group(__name__='Feffit DatasSet from %s' % repr(data),
                           groupname=getattr(data, 'groupname', repr(data)),
                           filename=getattr(data, 'filename', repr(data)),
-                          k=data.k[:], chi=data.chi[:])
+                          k=data.k.copy(), chi=data.chi.copy())
         if hasattr(data, 'config'):
             self.data.config = deepcopy(data.config)
         else:
