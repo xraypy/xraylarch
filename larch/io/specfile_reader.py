@@ -13,7 +13,7 @@ Requirements
 """
 
 __author__ = ["Mauro Rovezzi", "Matt Newville"]
-__version__ = "larch_0.9.71"
+__version__ = "2023.1"
 
 import os
 import copy
