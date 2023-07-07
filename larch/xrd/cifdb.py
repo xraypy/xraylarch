@@ -7,8 +7,6 @@ import os
 import requests
 import numpy as np
 from itertools import groupby
-from distutils.version import StrictVersion
-
 import larch
 from .xrd_fitting import peaklocater
 from .xrd_cif import create_xrdcif, SPACEGROUPS
