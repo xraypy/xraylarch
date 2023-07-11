@@ -78,7 +78,7 @@ def complex_phase(arr):
     "return phase, modulo 2pi jumps"
     phase = np.arctan2(arr.imag, arr.real)
     d   = np.diff(phase)/np.pi
-    out = phase.copy()
+    out = phase[:]*1.0
     out[1:] -= np.pi*(np.round(abs(d))*np.sign(d)).cumsum()
     return out
 
@@ -414,7 +414,7 @@ def boxcar(data, nrepeats=1):
     -----
       This does a 3-point smoothing, that can be repeated
 
-      out = data.copy()
+      out = data[:]*1.0
       for i in range(nrepeats):
           qdat = out/4.0
           left  = 1.0*qdat
@@ -425,7 +425,7 @@ def boxcar(data, nrepeats=1):
     return out
 
     """
-    out = data.copy()
+    out = data[:]*1.0
     for i in range(nrepeats):
         qdat = out/4.0
         left  = 1.0*qdat

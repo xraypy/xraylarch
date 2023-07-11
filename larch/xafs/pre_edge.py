@@ -425,16 +425,16 @@ def energy_align(group, reference, array='dmude', emin=-15, emax=35):
         en = getattr(reference, 'energy')
         reference.dmude = gradient(mu)/gradient(en)
 
-    xdat = group.energy.copy()
-    xref = reference.energy.copy()
-    ydat = group.dmude.copy()
-    yref = reference.dmude.copy()
+    xdat = group.energy[:]*1.0
+    xref = reference.energy[:]*1.0
+    ydat = group.dmude[:]*1.0
+    yref = reference.dmude[:]*1.0
     if array == 'mu':
-        ydat = group.mu.copy()
-        yref = reference.mu.copy()
+        ydat = group.mu[:]*1.0
+        yref = reference.mu[:]*1.0
     elif array == 'norm':
-        ydat = group.norm.copy()
-        yref = reference.norm.copy()
+        ydat = group.norm[:]*1.0
+        yref = reference.norm[:]*1.0
     xdat, ydat = remove_nans2(xdat, ydat)
     xref, yref = remove_nans2(xref, yref)
 

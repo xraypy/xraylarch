@@ -170,7 +170,7 @@ def conv(x, y, gammas, e_cut=None, kernel="gaussian"):
     """
     assert e_cut is not None, "starting energy for the convolution not given"
 
-    f = y.copy()
+    f = y[:]*1.0
     z = np.zeros_like(f)
     # ief = index_nearest(x, e_cut)
     ief = np.argmin(np.abs(x - e_cut))
