@@ -2754,6 +2754,52 @@ class GSEXRM_MapFile(object):
         xrd.q = mapdat['q'][()]
         return xrd
 
+    def get_xrd2d_rect(self, xmin, xmax, ymin, ymax, **kws):
+        tshape = self.get_shape()
+
+        if ymax < 0: ymax += tshape[0]
+        if xmax < 0: xmax += tshape[1]
+        nx, ny = (xmax-xmin, ymax-ymin)
+        sx = slice(xmin, xmax)
+        sy = slice(ymin, ymax)
+        xrdgroup = 'xrd2d'
+        xrdgrp = ensure_subgroup('xrd2d', self.xrmmap, dtype='2DXRD')
+
+        xmin, xmax, ymin, ymax = sx.start, sx.stop, sy.start, sy.stop
+
+        xrd_file = os.path.join(self.folder, self.rowdata[0][4])
+        if os.path.exists(xrd_file):
+            print("Reading XRD Patterns for rows %d to %d" %(ymin, ymax-1))
+            data = None
+            for yrow in range(ymin, ymax+1):
+                xrd_file = os.path.join(self.folder, self.rowdata[yrow][4])
+                print(f"read XRD for row {yrow:d}: {xrd_file:s}")
+                h5file = h5py.File(xrd_file, 'r')
+                rowdat = h5file['entry/data/data'][1:,:,:]
+                h5file.close()
+                if (yrow  % 2) == 1:
+                    rowdat = rowdat[::-1, :, :]
+                rowdat = rowdat[sx,:,:].sum(axis=0)
+                if data is None:
+                    data = rowdat*1.0
+                else:
+                    data += rowdat
+
+        aname = f'X[{xmin:d}:{xmax-1:d}]/Y[{ymin:d}:{ymax-1:d}]'
+        bname = f'X{xmin:03d}Y{ymin:03d}'
+        name = f'{xrdgroup:s} {aname:s}'
+        energy = 0.001 * self.get_incident_energy()
+        kws = {'energy': energy,
+               'wavelength': lambda_from_E(energy, E_units='keV')}
+
+        xrd = XRD(data2D=data, name=name, **kws)
+        # print("made xrd ", xrd, kws)
+        xrd.filename = self.fname
+        xrd.areaname = xrd.title = aname
+        xrd.info = f"Data from File '{self.filename}', XRD2D '{aname}'"
+        xrd.ponifile = self.xrdcalfile
+        return xrd
+
     def get_xrd2d_area(self, areaname, callback=None, **kws):
         '''return 2D XRD pattern for a pre-defined area
 
