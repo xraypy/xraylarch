@@ -154,10 +154,8 @@ class HistoryBuffer(object):
             self.filename = filename
         if os.path.exists(self.filename):
             self.clear()
-            with open(self.filename, 'r') as fh:
-                lines = fh.readlines()
-                for hline in lines:
-                    self.add(text=hline[:-1])
+            for hline in read_textfile(filename):
+                self.add(text=hline[:-1])
             self.session_start = len(self.buffer)
 
     def get(self, session_only=False, trim_last=False, maxlines=None):
