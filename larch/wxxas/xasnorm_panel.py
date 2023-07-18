@@ -78,19 +78,20 @@ class XASNormPanel(TaskPanel):
                           action=self.onPlotOne)
 
         self.plotsel_op = Choice(trow, choices=list(PlotSel_Choices.keys()),
-                                 action=self.onPlotSel, size=(250, -1))
+                                 action=self.onPlotSel, size=(300, -1))
         self.plotone_op = Choice(trow, choices=list(PlotOne_Choices.keys()),
-                                 action=self.onPlotOne, size=(250, -1))
+                                 action=self.onPlotOne, size=(300, -1))
 
         self.plot_erange = Choice(trow, choices=list(Plot_EnergyRanges.keys()),
                                  action=self.onPlotEither, size=(175, -1))
 
-        opts = {'digits': 2, 'increment': 0.05, 'value': 0, 'size': (FSIZE, -1)}
+        opts = {'digits': 2, 'increment': 0.05, 'value': 0, 'size': (110, -1)}
         plot_voff = self.add_floatspin('plot_voff',  with_pin=False, parent=trow,
                                        action=self.onVoffset, **opts)
 
         vysize, vxsize = plot_sel.GetBestSize()
-        voff_lab = SimpleText(trow, '  Y Offset:') #, size=(-1, vxsize))
+        voff_lab = wx.StaticText(parent=trow, label='  Y Offset:', size=(80, vxsize),
+                                 style=wx.RIGHT|wx.ALIGN_CENTRE_HORIZONTAL|wx.ST_NO_AUTORESIZE)
 
         self.plot_erange.SetSelection(0)
         self.plotone_op.SetSelection(1)
@@ -99,7 +100,7 @@ class XASNormPanel(TaskPanel):
         tsizer = wx.GridBagSizer(3, 3)
         tsizer.Add(plot_sel,        (0, 0), (1, 1), LEFT, 2)
         tsizer.Add(self.plotsel_op, (0, 1), (1, 1), LEFT, 2)
-        tsizer.Add(voff_lab,        (0, 2), (1, 1), LEFT, 2)
+        tsizer.Add(voff_lab,        (0, 2), (1, 1), RIGHT, 2)
         tsizer.Add(plot_voff,       (0, 3), (1, 1), RIGHT, 2)
         tsizer.Add(plot_one,       (1, 0), (1, 1), LEFT, 2)
         tsizer.Add(self.plotone_op, (1, 1), (1, 1), LEFT, 2)
@@ -184,7 +185,7 @@ class XASNormPanel(TaskPanel):
                           action=partial(self.onCopyParam, 'all'))
 
         add_text = self.add_text
-        HLINEWID = 600
+        HLINEWID = 700
         panel.Add(SimpleText(panel, 'XAS Pre-edge subtraction and Normalization',
                              size=(550, -1), **self.titleopts), style=LEFT, dcol=6)
 
