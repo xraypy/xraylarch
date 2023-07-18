@@ -439,6 +439,7 @@ class TaskPanel(wx.Panel):
 
         self.wids[name] = fspin
 
+        fspin.SetValue(value)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(fspin)
         if pinb is not None:
