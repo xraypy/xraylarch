@@ -719,8 +719,9 @@ class PrePeakPanel(TaskPanel):
 
         self.wids = {}
 
-        fsopts = dict(digits=2, increment=0.1, with_pin=True)
-        # ppeak_e0   = self.add_floatspin('ppeak_e0', value=0, **fsopts)
+        fsopts = dict(digits=2, increment=0.1, min_val=-9999,
+                      max_val=9999, size=(125, -1), with_pin=True)
+        
         ppeak_elo  = self.add_floatspin('ppeak_elo',  value=-13, **fsopts)
         ppeak_ehi  = self.add_floatspin('ppeak_ehi',  value=-3, **fsopts)
         ppeak_emin = self.add_floatspin('ppeak_emin', value=-20, **fsopts)
@@ -744,19 +745,19 @@ class PrePeakPanel(TaskPanel):
         self.fitselected_btn.Disable()
         self.fitmodel_btn.Disable()
 
-        self.array_choice = Choice(pan, size=(175, -1),
+        self.array_choice = Choice(pan, size=(200, -1),
                                    choices=list(PrePeak_ArrayChoices.keys()))
         self.array_choice.SetSelection(0)
 
-        self.bline_choice = Choice(pan, size=(175, -1),
+        self.bline_choice = Choice(pan, size=(200, -1),
                                    choices=BaselineFuncs)
         self.bline_choice.SetSelection(2)
 
-        models_peaks = Choice(pan, size=(150, -1),
+        models_peaks = Choice(pan, size=(200, -1),
                               choices=ModelChoices['peaks'],
                               action=self.addModel)
 
-        models_other = Choice(pan, size=(150, -1),
+        models_other = Choice(pan, size=(200, -1),
                               choices=ModelChoices['other'],
                               action=self.addModel)
 
@@ -862,7 +863,6 @@ class PrePeakPanel(TaskPanel):
         if isinstance(dat, Group):
             if not hasattr(dat, 'norm'):
                 self.xasmain.process_normalization(dat)
-            # self.wids['ppeak_e0'].SetValue(dat.e0)
             if hasattr(dat, 'prepeaks'):
                 self.wids['ppeak_emin'].SetValue(dat.prepeaks.emin)
                 self.wids['ppeak_emax'].SetValue(dat.prepeaks.emax)
@@ -955,6 +955,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})"""
         self.fitselected_btn.Enable()
 
         i1, i2 = self.get_xranges(dgroup.energy)
+
         dgroup.yfit = dgroup.xfit = 0.0*dgroup.energy[i1:i2]
 
         self.onPlot(baseline_only=True)

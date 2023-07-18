@@ -60,7 +60,7 @@ PlotSel_Choices_nonxas = {'Raw Data': 'mu',
                           'Derivative': 'dmude'}
 
 FSIZE = 120
-FSIZEBIG = 150
+FSIZEBIG = 175
 
 class XASNormPanel(TaskPanel):
     """XAS normalization Panel"""
@@ -383,9 +383,6 @@ class XASNormPanel(TaskPanel):
                 if eref in (val, key):
                     self.wids['energy_ref'].SetStringSelection(key)
 
-            print("SET E0 ", self.wids['e0'],  opts.get('e0', -1))
-            print(self.wids['e0'].GetMin(), self.wids['e0'].GetMax(),
-                  self.wids['e0'].GetValue(), self.wids['e0'].GetTextValue())
             self.wids['e0'].SetValue(opts.get('e0', -1))
             edge_step = opts.get('edge_step', 1.0)
 
