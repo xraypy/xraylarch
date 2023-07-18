@@ -59,6 +59,8 @@ PlotSel_Choices_nonxas = {'Raw Data': 'mu',
                           'Scaled Data': 'norm',
                           'Derivative': 'dmude'}
 
+FSIZE = 120
+
 class XASNormPanel(TaskPanel):
     """XAS normalization Panel"""
     def __init__(self, parent, controller=None, **kws):
@@ -68,23 +70,42 @@ class XASNormPanel(TaskPanel):
         panel = self.panel
         self.wids = {}
         self.last_plot_type = 'one'
-        self.plotone_op = Choice(panel, choices=list(PlotOne_Choices.keys()),
-                                 action=self.onPlotOne, size=(275, -1))
-        self.plotsel_op = Choice(panel, choices=list(PlotSel_Choices.keys()),
-                                 action=self.onPlotSel, size=(275, -1))
 
-        self.plot_erange = Choice(panel, choices=list(Plot_EnergyRanges.keys()),
+        trow = wx.Panel(panel)
+        plot_sel = Button(trow, 'Plot Selected Groups', size=(175, -1),
+                          action=self.onPlotSel)
+        plot_one = Button(trow, 'Plot Current Group', size=(175, -1),
+                          action=self.onPlotOne)
+
+        self.plotsel_op = Choice(trow, choices=list(PlotSel_Choices.keys()),
+                                 action=self.onPlotSel, size=(250, -1))
+        self.plotone_op = Choice(trow, choices=list(PlotOne_Choices.keys()),
+                                 action=self.onPlotOne, size=(250, -1))
+
+        self.plot_erange = Choice(trow, choices=list(Plot_EnergyRanges.keys()),
                                  action=self.onPlotEither, size=(175, -1))
+
+        opts = {'digits': 2, 'increment': 0.05, 'value': 0, 'size': (FSIZE, -1)}
+        plot_voff = self.add_floatspin('plot_voff',  with_pin=False, parent=trow,
+                                       action=self.onVoffset, **opts)
+
+        vysize, vxsize = plot_sel.GetBestSize()
+        voff_lab = SimpleText(trow, '  Y Offset:') #, size=(-1, vxsize))
 
         self.plot_erange.SetSelection(0)
         self.plotone_op.SetSelection(1)
         self.plotsel_op.SetSelection(1)
 
-        plot_one = Button(panel, 'Plot Current Group', size=(175, -1),
-                          action=self.onPlotOne)
+        tsizer = wx.GridBagSizer(3, 3)
+        tsizer.Add(plot_sel,        (0, 0), (1, 1), LEFT, 2)
+        tsizer.Add(self.plotsel_op, (0, 1), (1, 1), LEFT, 2)
+        tsizer.Add(voff_lab,        (0, 2), (1, 1), LEFT, 2)
+        tsizer.Add(plot_voff,       (0, 3), (1, 1), RIGHT, 2)
+        tsizer.Add(plot_one,       (1, 0), (1, 1), LEFT, 2)
+        tsizer.Add(self.plotone_op, (1, 1), (1, 1), LEFT, 2)
+        tsizer.Add(self.plot_erange, (1, 2), (1, 2), RIGHT, 2)
 
-        plot_sel = Button(panel, 'Plot Selected Groups', size=(175, -1),
-                          action=self.onPlotSel)
+        pack(trow, tsizer)
 
         e0panel = wx.Panel(panel)
         self.wids['auto_e0'] = Check(e0panel, default=True, label='auto?',
@@ -112,7 +133,7 @@ class XASNormPanel(TaskPanel):
                                     size=(150, -1), action=self.onNormMethod,
                                     default=0)
 
-        opts = {'size': (100, -1), 'digits': 2, 'increment': 5.0,
+        opts = {'size': (FSIZE, -1), 'digits': 2, 'increment': 5.0,
                 'action': self.onSet_Ranges}
 
         defaults = self.get_defaultconfig()
@@ -127,11 +148,8 @@ class XASNormPanel(TaskPanel):
                                        action=self.onSet_XASE0)
 
 
-        opts = {'digits': 2, 'increment': 0.05, 'value': 0}
-        plot_voff = self.add_floatspin('plot_voff',  with_pin=False,
-                                       size=(75, -1),
-                                       action=self.onVoffset, **opts)
-        opts['digits'] = 3
+        opts = {'digits': 3, 'increment': 0.05, 'value': 0, 'size': (FSIZE, -1)}
+
         xas_e0   = self.add_floatspin('e0', action=self.onSet_XASE0Val, **opts)
         opts['digits'] = 4
         xas_step = self.add_floatspin('step', action=self.onSet_XASStep,
@@ -144,7 +162,8 @@ class XASNormPanel(TaskPanel):
                                           size=(150, -1), action=self.onNormMethod)
         self.wids['norm_method'].SetSelection(0)
         self.wids['energy_shift'] = FloatSpin(panel, value=0, digits=3, increment=0.05,
-                                              action=self.onSet_EnergyShift)
+                                              action=self.onSet_EnergyShift,
+                                              size=(FSIZE, -1))
 
         self.wids['atsym']  = Choice(panel, choices=ATSYMS, size=(100, -1))
         self.wids['edge']   = Choice(panel, choices=EDGES, size=(100, -1))
@@ -170,14 +189,7 @@ class XASNormPanel(TaskPanel):
                              size=(550, -1), **self.titleopts), style=LEFT, dcol=6)
 
 
-        panel.Add(plot_sel, newrow=True)
-        panel.Add(self.plotsel_op, dcol=3)
-        panel.Add(SimpleText(panel, 'Y Offset:'), dcol=1, style=RIGHT)
-        panel.Add(plot_voff, style=RIGHT)
-
-        panel.Add(plot_one, newrow=True)
-        panel.Add(self.plotone_op, dcol=3)
-        panel.Add(self.plot_erange, dcol=2, style=RIGHT)
+        panel.Add(trow, dcol=7, newrow=True)
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
         add_text('Non-XAS Data Scale:')
