@@ -422,17 +422,19 @@ class TaskPanel(wx.Panel):
                        dcol=dcol, newrow=newrow)
 
 
-    def add_floatspin(self, name, value, with_pin=True,
+    def add_floatspin(self, name, value, with_pin=True, parent=None,
                       relative_e0=False, **kws):
         """create FloatSpin with Pin button for onSelPoint"""
+        if parent is None:
+            parent = self.panel
         if with_pin:
             pin_action = partial(self.xasmain.onSelPoint, opt=name,
                                  relative_e0=relative_e0,
                                  callback=self.pin_callback)
-            fspin, pinb = FloatSpinWithPin(self.panel, value=value,
+            fspin, pinb = FloatSpinWithPin(parent, value=value,
                                            pin_action=pin_action, **kws)
         else:
-            fspin = FloatSpin(self.panel, value=value, **kws)
+            fspin = FloatSpin(parent, value=value, **kws)
             pinb = None
 
         self.wids[name] = fspin
