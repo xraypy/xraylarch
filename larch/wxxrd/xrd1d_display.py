@@ -22,6 +22,8 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 from wxmplot import PlotPanel
 
+from lmfit.lineshapes import gaussian
+
 import larch
 from larch.larchlib import read_workdir, save_workdir
 from larch.utils import nativepath, get_cwd, gformat, fix_filename
@@ -30,7 +32,7 @@ from larch.xray import XrayBackground
 from larch.xrd import (cifDB, SearchCIFdb, QSTEP, QMIN, QMAX, CATEGORIES,
                        match_database, d_from_q,twth_from_q,q_from_twth,
                        d_from_twth,twth_from_d,q_from_d, lambda_from_E,
-                       E_from_lambda,calc_broadening,
+                       E_from_lambda, calc_broadening,
                        instrumental_fit_uvw,peaklocater,peakfitter,
                        xrd1d, peakfinder_methods,SPACEGROUPS, create_xrdcif,
                        save1D, read_poni)
@@ -42,7 +44,7 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          set_color, CEN, RIGHT, LEFT, FRAMESTYLE, Font,
                          FONTSIZE, FONTSIZE_FW, FileSave, FileOpen,
                          flatnotebook, Popup, FileCheckList,
-                         EditableListBox, ExceptionPopup)
+                         EditableListBox, ExceptionPopup, CIFFrame)
 
 XYWcards = "XY Data File(*.xy)|*.xy|All files (*.*)|*.*"
 PlotWindowChoices = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
@@ -58,10 +60,10 @@ PLOT_CHOICES = list(PLOT_TYPES.keys())
 PLOT_CHOICES_MULTI = [PLOT_CHOICES[0], PLOT_CHOICES[2]]
 
 SCALE_METHODS = {'Max Raw Intensity': 'raw_max',
-                 'Max Background-Subtracted Intensity': 'sub_max',                 
+                 'Max Background-Subtracted Intensity': 'sub_max',
                  'Max Background Intensity': 'bkg_max',
                  'Mean Raw Intensity': 'raw_mean',
-                 'Mean Background-Subtracted Intensity': 'sub_mean',                 
+                 'Mean Background-Subtracted Intensity': 'sub_mean',
                  'Mean Background Intensity': 'bkg_mean'}
 
 def keyof(dictlike, value, default):
@@ -76,7 +78,7 @@ def keyof(dictlike, value, default):
             return key
     return defout
 
-    
+
 def smooth_bruckner(y, smooth_points, iterations):
     y_original = y
     N_data = y.size
@@ -128,19 +130,18 @@ def extract_background(x, y, smooth_width=0.1, iterations=40, cheb_order=40):
     # get cheb input parameters
     x_cheb = 2. * (x - x[0]) / (x[-1] - x[0]) - 1.
     cheb_params = chebfit(x_cheb, y_smooth, cheb_order)
-    return np.polynomial.chebyshev.chebval(x_cheb, cheb_params)        
+    return np.polynomial.chebyshev.chebval(x_cheb, cheb_params)
 
-def calc_bgr(dset, qwid=0.1, nsmooth=40, cheb_order=40):             
+def calc_bgr(dset, qwid=0.1, nsmooth=40, cheb_order=40):
     return extract_background(dset.q, dset.I, smooth_width=qwid,
                               iterations=nsmooth, cheb_order=cheb_order)
-
 
 
 class XRD1DBrowserFrame(wx.Frame):
     """browse 1D XRD patterns"""
 
     def __init__(self, parent=None, wavelength=1.0, ponifile=None, _larch=None, **kws):
-        
+
         wx.Frame.__init__(self, None, -1, title='1D XRD Browser',
                           style=FRAMESTYLE, size=(600, 600), **kws)
         self.parent = parent
@@ -153,11 +154,12 @@ class XRD1DBrowserFrame(wx.Frame):
                 pass
         self.larch = _larch
         self.current_label = None
+        self.cif_browser = None
         self.datasets = {}
         self.form = {}
         self.createMenus()
         self.build()
-        self.set_wavelength(self.wavelength)        
+        self.set_wavelength(self.wavelength)
 
     def createMenus(self):
         fmenu = wx.Menu()
@@ -169,10 +171,15 @@ class XRD1DBrowserFrame(wx.Frame):
                  "Save XRD 1D data to XY FIle",
                  self.onSaveXY)
 
-        fmenu.AppendSeparator()        
+        fmenu.AppendSeparator()
         MenuItem(self, fmenu, "Read PONI Calibration File",
                  "Read PONI Calibration (pyFAI) FIle",
                  self.onReadPONI)
+
+        fmenu.AppendSeparator()
+        MenuItem(self, fmenu, "Browse AmMin Crystal Structures",
+                 "Browse Structures from Am Min Database",
+                 self.onCIFBrowse)
 
         menubar = wx.MenuBar()
         menubar.Append(fmenu, "&File")
@@ -182,7 +189,7 @@ class XRD1DBrowserFrame(wx.Frame):
         sfile = FileOpen(self, 'Read PONI (pyFAI) calibration file',
                          defaultDir=get_cwd(),
                          wildcard="PONI Files(*.poni)|*.poni|All files (*.*)|*.*")
-        
+
         if sfile is not None:
             top, xfile = os.split(sfile)
             try:
@@ -200,7 +207,59 @@ class XRD1DBrowserFrame(wx.Frame):
             top, xfile = os.split(sfile)
             dxrd = xrd1d(file=sfile)
             self.add_data(dxrd, label=xfile)
-           
+
+    def onCIFBrowse(self, event=None):
+        shown = False
+        if self.cif_browser is not None:
+            try:
+                self.cif_browser.Raise()
+                shown = True
+            except:
+                del self.cif_browser
+                shown = False
+        if not shown:
+            self.cif_browser = CIFFrame(usecif_callback=self.onLoadCIF,
+                                        _larch=self.larch)
+            self.cif_browser.Raise()
+
+    def onLoadCIF(self, cif=None):
+        if cif is None:
+            return
+        t0 = time.time()
+        energy = E_from_lambda(self.wavelength)
+
+
+        sfact = cif.get_structure_factors(wavelength=self.wavelength)
+        try:
+            self.cif_browser.cifdb.set_hkls(self.current_cif.ams_id, sfact.hkls)
+        except:
+            pass
+
+        mineral = getattr(cif, 'mineral', None)
+        label = getattr(mineral, 'name', '')
+        if len(label) < 0:
+            label = getattr(cif, 'formula', '')
+        cifid = getattr(cif, 'ams_id', '')
+        if len(label) < 1 and len(cifid) > 0:
+            label = 'CIF:{cifid}'
+        else:
+            label = f'{label}, CIF:{cifid}'
+
+        try:
+            q = self.datasets[self.current_label].q
+        except:
+            q = np.linspace(0, 10, 2048)
+
+        sigma = 2.5*(q[1] - q[0])
+
+        intensity = q*0.0
+        for cen, amp in zip(sfact.q, sfact.intensity):
+            intensity += gaussian(q, amplitude=amp, center=cen, sigma=sigma)
+
+        xdat = xrd1d(label=label, energy=energy, wavelength=self.wavelength)
+        xdat.set_xy_data(np.array([q, intensity/max(intensity)]), 'q')
+        self.add_data(xdat, label=label)
+
 
     def onSaveXY(self, event=None):
         fname = fix_filename(self.current_label.replace('.', '_') + '.xy')
@@ -210,7 +269,7 @@ class XRD1DBrowserFrame(wx.Frame):
 
         label = self.current_label
         dset = self.datasets[label]
-            
+
         xscale = self.wids['xscale'].GetSelection()
         xlabel = self.wids['xscale'].GetStringSelection()
         xdat = dset.twth
@@ -231,8 +290,8 @@ class XRD1DBrowserFrame(wx.Frame):
         buff.append('')
         with open(sfile, 'w') as fh:
             fh.write('\n'.join(buff))
-       
-            
+
+
     def build(self):
         sizer = wx.GridBagSizer(3, 3)
         sizer.SetVGap(3)
@@ -316,9 +375,9 @@ class XRD1DBrowserFrame(wx.Frame):
         wids['bkg_qwid'] = FloatSpin(panel, value=0.1, size=(90, -1), digits=2,
                                      increment=0.01,
                                      min_val=0.001, max_val=5, action=self.on_bkg)
-        wids['bkg_nsmooth'] = FloatSpin(panel, value=30, size=(90, -1), 
+        wids['bkg_nsmooth'] = FloatSpin(panel, value=30, size=(90, -1),
                                         digits=0, min_val=2, max_val=200, action=self.on_bkg)
-        wids['bkg_porder'] = FloatSpin(panel, value=40, size=(90, -1), 
+        wids['bkg_porder'] = FloatSpin(panel, value=40, size=(90, -1),
                                         digits=0, min_val=2, max_val=200, action=self.on_bkg)
 
         def CopyBtn(name):
@@ -327,10 +386,10 @@ class XRD1DBrowserFrame(wx.Frame):
 
         wids['bkg_copy'] = CopyBtn('bkg')
         wids['scale_copy'] = CopyBtn('scale_method')
-        
+
         def slabel(txt):
             return wx.StaticText(panel, label=txt)
-        
+
         panel.Add(title, style=LEFT, dcol=5)
         panel.Add(self.plotsel, newrow=True)
         panel.Add(wids['plotsel'], dcol=2)
@@ -341,7 +400,7 @@ class XRD1DBrowserFrame(wx.Frame):
         panel.Add(wids['plotone'], dcol=2)
         panel.Add(slabel(' Plot Window: '))
         panel.Add(wids['plot_win'])
-        
+
         panel.Add((5, 5))
         panel.Add(HLine(panel, size=(550, 3)), dcol=5, newrow=True)
         panel.Add((5, 5))
@@ -353,7 +412,7 @@ class XRD1DBrowserFrame(wx.Frame):
         panel.Add(slabel(' Scaling Method: '), style=LEFT, newrow=True)
         panel.Add(wids['scale_method'], dcol=3)
         panel.Add(wids['scale_copy'])
-        
+
         panel.Add((5, 5))
         panel.Add(HLine(panel, size=(550, 3)), dcol=5, newrow=True)
         panel.Add((5, 5))
@@ -361,11 +420,11 @@ class XRD1DBrowserFrame(wx.Frame):
         panel.Add(slabel(' Background Subtraction Parameters: '), dcol=2, style=LEFT, newrow=True)
         panel.Add(wids['bkg_copy'])
         panel.Add(slabel(' Q width (\u212B\u207B\u00B9): '), style=LEFT, newrow=True)
-        panel.Add(wids['bkg_qwid'])        
+        panel.Add(wids['bkg_qwid'])
         panel.Add(slabel(' Smoothing Steps: '), style=LEFT, newrow=True)
         panel.Add(wids['bkg_nsmooth'], dcol=2)
         panel.Add(slabel(' Polynomial Order: '), style=LEFT, newrow=False)
-        panel.Add(wids['bkg_porder'])                
+        panel.Add(wids['bkg_porder'])
 
         panel.Add((5, 5))
         panel.Add(HLine(panel, size=(550, 3)), dcol=5, newrow=True)
@@ -379,7 +438,7 @@ class XRD1DBrowserFrame(wx.Frame):
 
 
         panel.Add((5, 5))
-        
+
         panel.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -427,7 +486,7 @@ class XRD1DBrowserFrame(wx.Frame):
                     # print("redo scale for ", label)
                     self.scale_data(dset, with_plot=False)
 
-                
+
     def onSelNone(self, event=None):
         self.filelist.select_none()
 
@@ -451,7 +510,7 @@ class XRD1DBrowserFrame(wx.Frame):
             self.wids['plotone'].SetSelection(1)
         else:
             self.onPlotOne()
-        
+
     def show_dataset(self, event=None, label=None):
         # print('show xd1d ', event, label)
         if label is None and event is not None:
@@ -487,9 +546,9 @@ class XRD1DBrowserFrame(wx.Frame):
         self.wids['bkg_qwid'].SetValue(dset.bkg_qwid)
         self.wids['bkg_nsmooth'].SetValue(dset.bkg_nsmooth)
         self.wids['bkg_porder'].SetValue(dset.bkg_porder)
-        
+
         self.onPlotOne(label=label)
-        
+
     def set_scale(self, event=None, value=-1.0):
         label = self.current_label
         if label not in self.datasets:
@@ -505,13 +564,13 @@ class XRD1DBrowserFrame(wx.Frame):
         dset = self.datasets[label]
         dset.auto_scale = self.wids['auto_scale'].IsChecked()
         self.wids['scale_method'].Enable(dset.auto_scale)
-            
+
         if dset.auto_scale:
             self.scale_data(dset, with_plot=True)
 
     def scale_data(self, dset, with_plot=True):
         meth_name = self.wids['scale_method'].GetStringSelection()
-        
+
         meth = dset.scale_method = SCALE_METHODS[meth_name]
 
         # if not meth.startswith('raw'):
@@ -523,21 +582,21 @@ class XRD1DBrowserFrame(wx.Frame):
         dset.bkg_qwid = qwid
         dset.bkg_nmsooth = nsmooth
         dset.bkg_porder = cheb_order
-                                
+
         scale =  -1
         if meth == 'raw_max':
             scale = dset.I.max()
         elif meth == 'raw_mean':
-            scale = dset.I.mean()                
+            scale = dset.I.mean()
         elif meth == 'sub_max':
-            scale = (dset.I - dset.bkgd).max()                
+            scale = (dset.I - dset.bkgd).max()
         elif meth == 'sub_mean':
             scale = (dset.I - dset.bkgd).mean()
         elif meth == 'bkg_max':
-            scale = (dset.bkgd).max()                
+            scale = (dset.bkgd).max()
         elif meth == 'bkg_mean':
             scale = (dset.bkgd).mean()
-            
+
         if scale > 0:
             self.wids['scale'].SetValue(scale)
             if with_plot:
@@ -584,16 +643,16 @@ class XRD1DBrowserFrame(wx.Frame):
             return
         dset = self.datasets[label]
         self.last_plot_type = 'one'
-        plottype = PLOT_TYPES.get(self.wids['plotone'].GetStringSelection(), 'raw')        
+        plottype = PLOT_TYPES.get(self.wids['plotone'].GetStringSelection(), 'raw')
         self.plot_dset(dset, plottype, newplot=True)
-        wx.CallAfter(self.SetFocus)        
+        wx.CallAfter(self.SetFocus)
 
     def onPlotSel(self, event=None):
         labels = self.filelist.GetCheckedStrings()
         if len(labels) < 1:
             return
         self.last_plot_type = 'multi'
-        plottype = PLOT_TYPES.get(self.wids['plotsel'].GetStringSelection(), 'raw')        
+        plottype = PLOT_TYPES.get(self.wids['plotsel'].GetStringSelection(), 'raw')
         newplot = True
         for label in labels:
             dset = self.datasets.get(label, None)
@@ -601,7 +660,7 @@ class XRD1DBrowserFrame(wx.Frame):
                 self.plot_dset(dset, plottype, newplot=newplot)
                 newplot = False
         wx.CallAfter(self.SetFocus)
-        
+
     def onPlotEither(self, event=None):
         if self.last_plot_type == 'multi':
             self.onPlotSel(event=event)
@@ -617,4 +676,3 @@ class XRD1DBrowserFrame(wx.Frame):
             self.filelist.Append(label)
             self.datasets[label] = dataset
             self.show_dataset(label=label)
-
