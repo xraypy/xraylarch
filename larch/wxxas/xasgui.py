@@ -1118,7 +1118,8 @@ before clearing"""
 
     def onCIFBrowse(self, event=None):
         self.show_subframe('cif_feff', CIFFrame, _larch=self.larch,
-                           path_importer=self.get_nbpage('feffit')[1].add_path)
+                           path_importer=self.get_nbpage('feffit')[1].add_path,
+                           with_feff=True)
 
     def onStructureBrowse(self, event=None):
         self.show_subframe('structure_feff', Structure2FeffFrame, _larch=self.larch,
