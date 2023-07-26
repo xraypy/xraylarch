@@ -145,6 +145,29 @@ def parse_cif_file(filename):
     return dat, formula, symm_xyz
 
 
+# for packing/unpacking H, K, L to 2-character hash
+HKL_ENCODE = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_%'
+def pack_hkl(h, k, l):
+    """pack H, K, L values into 2 character sequence of
+    printable characters for storage and transmission
+
+    H, K, L must be unsigned integers from 0 to 15
+
+    see also unpack_hkl() to reverse the process.
+    """
+    if (h > 15 or k > 15 or l > 15 or
+        h < 0  or k < 0  or l < 0):
+        raise ValueError("hkl values out of range (max=15)")
+    x = h*256 + k*16 + l
+    return HKL_ENCODE[x//64] + HKL_ENCODE[x%64]
+
+def unpack_hkl(hash):
+    """unpack encoded H, K, L integers packed with pack_hkl()"""
+    a, b = HKL_ENCODE.index(hash[0]), HKL_ENCODE.index(hash[1])
+    s = a*64 + b
+    t = s//16
+    return t//16, t%16, s%16
+
 class CifStructure():
     """representation of a Cif Structure
     """
@@ -307,7 +330,7 @@ class CifStructure():
         self._ciftext = '\n'.join(out)
         return self.ciftext
 
-    def get_structure_factors(self, wavelength=None, energy=None, qmin=0.1, qmax=9):
+    def get_structure_factors(self, wavelength=None, energy=None, qmin=0, qmax=10):
         _xrdcif = XRDCIF(text=self.ciftext)
         return  _xrdcif.structure_factors(wavelength=wavelength,
                                           energy=energy,
