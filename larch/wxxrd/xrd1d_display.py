@@ -381,7 +381,7 @@ class XRD1DBrowserFrame(wx.Frame):
                                         digits=0, min_val=2, max_val=200, action=self.on_bkg)
 
         def CopyBtn(name):
-            return Button(panel, 'Copy to Seleceted', size=(100, -1),
+            return Button(panel, 'Copy to Seleceted', size=(150, -1),
                           action=partial(self.onCopyAttr, name))
 
         wids['bkg_copy'] = CopyBtn('bkg')
@@ -393,16 +393,16 @@ class XRD1DBrowserFrame(wx.Frame):
         panel.Add(title, style=LEFT, dcol=5)
         panel.Add(self.plotsel, newrow=True)
         panel.Add(wids['plotsel'], dcol=2)
-        panel.Add(slabel(' X scale: '), style=LEFT)
-        panel.Add(wids['xscale'])
+        panel.Add(slabel(' X scale: '), dcol=2, style=LEFT)
+        panel.Add(wids['xscale'], style=RIGHT)
 
         panel.Add(self.plotone, newrow=True)
         panel.Add(wids['plotone'], dcol=2)
-        panel.Add(slabel(' Plot Window: '))
-        panel.Add(wids['plot_win'])
+        panel.Add(slabel(' Plot Window: '), dcol=2)
+        panel.Add(wids['plot_win'], style=RIGHT)
 
         panel.Add((5, 5))
-        panel.Add(HLine(panel, size=(550, 3)), dcol=5, newrow=True)
+        panel.Add(HLine(panel, size=(550, 3)), dcol=6, newrow=True)
         panel.Add((5, 5))
 
 
@@ -411,30 +411,31 @@ class XRD1DBrowserFrame(wx.Frame):
         panel.Add(wids['auto_scale'])
         panel.Add(slabel(' Scaling Method: '), style=LEFT, newrow=True)
         panel.Add(wids['scale_method'], dcol=3)
-        panel.Add(wids['scale_copy'])
+        panel.Add(wids['scale_copy'], dcol=2, style=RIGHT)
 
         panel.Add((5, 5))
-        panel.Add(HLine(panel, size=(550, 3)), dcol=5, newrow=True)
+        panel.Add(HLine(panel, size=(550, 3)), dcol=6, newrow=True)
         panel.Add((5, 5))
 
-        panel.Add(slabel(' Background Subtraction Parameters: '), dcol=2, style=LEFT, newrow=True)
-        panel.Add(wids['bkg_copy'])
+        panel.Add(slabel(' Background Subtraction Parameters: '), dcol=3, style=LEFT, newrow=True)
+        panel.Add(wids['bkg_copy'], dcol=3, style=RIGHT)
+
         panel.Add(slabel(' Q width (\u212B\u207B\u00B9): '), style=LEFT, newrow=True)
         panel.Add(wids['bkg_qwid'])
         panel.Add(slabel(' Smoothing Steps: '), style=LEFT, newrow=True)
         panel.Add(wids['bkg_nsmooth'], dcol=2)
-        panel.Add(slabel(' Polynomial Order: '), style=LEFT, newrow=False)
+        panel.Add(slabel(' Polynomial Order: '), style=LEFT, newrow=True)
         panel.Add(wids['bkg_porder'])
 
         panel.Add((5, 5))
-        panel.Add(HLine(panel, size=(550, 3)), dcol=5, newrow=True)
+        panel.Add(HLine(panel, size=(550, 3)), dcol=6, newrow=True)
         panel.Add((5, 5))
 
-        panel.Add(slabel(' Calibration, Calculated XRD Patterns: '), dcol=4, style=LEFT, newrow=True)
+        panel.Add(slabel(' Calibration, Calculated XRD Patterns: '), dcol=6, style=LEFT, newrow=True)
         panel.Add(slabel(' X-ray Energy (eV): '), style=LEFT, newrow=True)
         panel.Add(wids['energy_ev'], dcol=1)
         panel.Add(slabel(' Wavelength (\u212B): '), style=LEFT, newrow=False)
-        panel.Add(wids['wavelength'], dcol=1)
+        panel.Add(wids['wavelength'], dcol=2)
 
 
         panel.Add((5, 5))
