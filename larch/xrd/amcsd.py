@@ -231,18 +231,20 @@ class CifStructure():
     """representation of a Cif Structure
     """
 
-    def __init__(self, ams_id=None, publication=None, mineral=None,
+    def __init__(self, ams_id=None, ams_db=None, publication=None, mineral=None,
                  spacegroup=None, hm_symbol=None, formula_title=None,
-                 compound=None, formula=None, pub_title=None, a=None,
-                 b=None, c=None, alpha=None, beta=None, gamma=None, hkls=None,
-                 cell_volume=None, crystal_density=None, atoms_sites='<missing>',
-                 atoms_aniso_label='<missing>', atoms_x=None, atoms_y=None,
-                 atoms_z=None, atoms_occupancy=None, atoms_u_iso=None,
-                 atoms_aniso_u11=None, atoms_aniso_u22=None,
-                 atoms_aniso_u33=None, atoms_aniso_u12=None,
-                 atoms_aniso_u13=None, atoms_aniso_u23=None):
+                 compound=None, formula=None, pub_title=None, a=None, b=None,
+                 c=None, alpha=None, beta=None, gamma=None, hkls=None,
+                 cell_volume=None, crystal_density=None,
+                 atoms_sites='<missing>', atoms_aniso_label='<missing>',
+                 atoms_x=None, atoms_y=None, atoms_z=None,
+                 atoms_occupancy=None, atoms_u_iso=None, atoms_aniso_u11=None,
+                 atoms_aniso_u22=None, atoms_aniso_u33=None,
+                 atoms_aniso_u12=None, atoms_aniso_u13=None,
+                 atoms_aniso_u23=None):
 
         self.ams_id = ams_id
+        self.ams_db = ams_db
         self.publication = publication
         self.mineral = mineral
         self.spacegroup = spacegroup
@@ -274,7 +276,6 @@ class CifStructure():
         self.atoms_aniso_u13 = get_nonzero(atoms_aniso_u13)
         self.atoms_aniso_u23 = get_nonzero(atoms_aniso_u23)
         self.natoms = 0
-        self._xrdcif = None
         self._ciftext = None
         self.pmg_pstruct = None
         self.pmg_cstruct = None
@@ -414,20 +415,18 @@ class CifStructure():
         if ALL_HKLS is None:
             ALL_HKLS = generate_hkl(hmax=15, kmax=15, lmax=15, positive_only=False)
 
-        degen  = []
         hkls = ALL_HKLS[:]
         unitcell = self.get_unitcell()
         qhkls = TAU / d_from_hkl(hkls, **unitcell)
 
         # remove q values outside of range
-        valid_qs = (qhkls < qmax)
-        qhkls = qhkls[valid_qs]
-        hkls = hkls[valid_qs]
-
-        # scale up q values to better find duplicates
-        qscaled = [int(round(q*1.e9)) for q in qhkls]
+        qfilt = (qhkls < qmax)
+        qhkls = qhkls[qfilt]
+        hkls  = hkls[qfilt]
 
         # find duplicate q-values, set degen
+        # scale up q values to better find duplicates
+        qscaled = [int(round(q*1.e9)) for q in qhkls]
         q_unique, q_degen, hkl_unique = [], [], []
         for i, q in enumerate(qscaled):
             if q in q_unique:
@@ -436,43 +435,42 @@ class CifStructure():
                 q_unique.append(q)
                 q_degen.append(1)
                 hkl_unique.append(hkls[i])
+
         qorder = np.argsort(q_unique)
         qhkls  = 1.e-9*np.array(q_unique)[qorder]
         hkls   = abs(np.array(hkl_unique)[qorder])
         degen  = np.array(q_degen)[qorder]
 
+        # note the f2 is calculated here without resonant corrections
         f2 = self.calculate_f2(hkls, qhkls=qhkls, wavelength=None)
 
         # filter out very small structure factors
-        f2filter = (f2 > 1.e-6*max(f2))
-        qhkls = qhkls[f2filter]
-        hkls  = hkls[f2filter]
-        degen = degen[f2filter]
-        f2    = f2[f2filter]
-
-        # sort by q
-        qsort = np.argsort(qhkls)
-        qhkls = qhkls[qsort]
-        hkls  = hkls[qsort]
-        degen = degen[qsort]
-        f2    = f2[qsort]
+        ffilt = (f2 > 1.e-6*max(f2))
+        qhkls = qhkls[ffilt]
+        hkls  = hkls[ffilt]
+        degen = degen[ffilt]
+        f2    = f2[ffilt]
 
         # lorentz and polarization correction
         arad = (TAU/360)*twth_from_q(qhkls, wavelength)
         corr = (1+np.cos(arad)**2)/(np.sin(arad/2)**2*np.cos(arad/2))
 
         intensity = f2 * degen * corr
-        intensity /= max(intensity)
-        ifilter = (intensity > 0.005)
+        ifilt = (intensity > 0.005*max(intensity))
 
-        intensity  = intensity[ifilter]
-        qhkls  = qhkls[ifilter]
-        hkls   =  hkls[ifilter]
-        degen  = degen[ifilter]
+        intensity  = intensity[ifilt] / max(intensity)
+        qhkls  = qhkls[ifilt]
+        hkls   =  hkls[ifilt]
+        degen  = degen[ifilt]
 
+        # indices of peaks in descending order of intensity
         main_peaks = np.argsort(intensity)[::-1][:nmax]
-        self.hkls = pack_hkl_degen(hkls[main_peaks], degen[main_peaks])
-        return hkls[main_peaks], degen[main_peaks]
+
+        hkls_main, degen_main = hkls[main_peaks], degen[main_peaks]
+        if self.ams_db is not None:
+            self.hkls = self.ams_db.set_hkls(self.ams_id, hkls_main, degen_main)
+
+        return hkls_main, degen_main
 
     def get_structure_factors(self, wavelength=0.75):
         """given arrays of HKLs and degeneracies (perhaps from find_hkls(),
@@ -496,6 +494,7 @@ class CifStructure():
         dhkls = d_from_hkl(hkls, **unitcell)
         qhkls = TAU / dhkls
 
+        # sort by q
         qsort = np.argsort(qhkls)
         qhkls = qhkls[qsort]
         dhkls = dhkls[qsort]
@@ -504,17 +503,17 @@ class CifStructure():
 
         energy = E_from_lambda(wavelength, E_units='eV')
 
-        f2 = self.calculate_f2(hkls, qhkls=qhkls, wavelength=wavelength)
+        f2hkl = self.calculate_f2(hkls, qhkls=qhkls, wavelength=wavelength)
 
         # lorentz and polarization correction
         twoth = twth_from_q(qhkls, wavelength)
         arad = (TAU/360)*twoth
         corr = (1+np.cos(arad)**2)/(np.sin(arad/2)**2*np.cos(arad/2))
 
-        intensity = f2 * degen * corr
+        intensity = f2hkl * degen * corr
 
         return StructureFactor(q=qhkls, intensity=intensity, hkl=hkls, d=dhkls,
-                               f2hkl=f2, twotheta=twoth, degen=degen,
+                               f2hkl=f2hkl, twotheta=twoth, degen=degen,
                                lorentz=corr, wavelength=wavelength,
                                energy=energy)
 
@@ -1089,7 +1088,7 @@ class AMCSD():
 
         out = CifStructure(ams_id=cif_id, publication=pub,
                            mineral=mineral, spacegroup=sgroup,
-                           hm_symbol=hm_symbol)
+                           hm_symbol=hm_symbol, ams_db=self)
 
         for attr in ('formula_title', 'compound', 'formula', 'pub_title'):
             setattr(out, attr, getattr(cif, attr, '<missing>'))
@@ -1145,8 +1144,7 @@ class AMCSD():
 
         out.hkls = None
         if hasattr(cif, 'hkls'):
-           if cif.hkls is not None:
-               out.hkls = unpack_hkl_degen(cif.hkls)
+            out.hkls = cif.hkls
 
         return out
 
@@ -1311,9 +1309,9 @@ class AMCSD():
 
     def set_hkls(self, cifid, hkls, degens):
         ctab = self.tables['cif']
-        self.update(ctab, whereclause=(ctab.c.id == cifid),
-                    hkls=pack_hkl_degen(hkls, degens))
-
+        packed_hkls = pack_hkl_degen(hkls, degens)
+        self.update(ctab, whereclause=(ctab.c.id == cifid), hkls=packed_hkls)
+        return packed_hkls
 
 def get_amcsd(download_full=True, timeout=30):
     """return instance of the AMCSD CIF Database
