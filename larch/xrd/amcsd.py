@@ -27,9 +27,11 @@ import os
 import re
 import time
 import json
+from io import StringIO
 from string import ascii_letters
 from base64 import b64encode, b64decode
 from collections import namedtuple
+from gzip import GzipFile
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
@@ -42,25 +44,25 @@ from sqlalchemy.orm import sessionmaker
 
 try:
     from pymatgen.io.cif import CifParser
+    from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
     HAS_CIFPARSER = True
 except IOError:
     HAS_CIFPARSER = False
 
 from xraydb.chemparser import chemparse
+from xraydb import f0, f1_chantler, f2_chantler
 
-from .amcsd_utils import (make_engine, isAMCSD, put_optarray, get_optarray)
-from .xrd_cif import XRDCIF, elem_symbol
+from .amcsd_utils import make_engine, isAMCSD, put_optarray, get_optarray
+from .xrd_tools import generate_hkl, d_from_hkl, twth_from_q, E_from_lambda
 from .cif2feff import cif2feffinp
 from ..utils import isotime
+from ..utils.strutils import version_ge, bytes2str
+from ..utils.physical_constants import TAU
 from ..site_config import user_larchdir
 from .. import logger
-from larch.utils.strutils import version_ge
-
-CifPublication = namedtuple('CifPublication', ('id', 'journalname', 'year',
-                                            'volume', 'page_first',
-                                            'page_last', 'authors'))
 
 _CIFDB = None
+ALL_HKLS = None
 AMCSD_TRIM = 'amcsd_cif1.db'
 AMCSD_FULL = 'amcsd_cif2.db'
 SOURCE_URLS = ('https://docs.xrayabsorption.org/databases/',
@@ -73,6 +75,86 @@ CIF_TEXTCOLUMNS = ('formula', 'compound', 'pub_title', 'formula_title', 'a',
                    'atoms_aniso_label', 'atoms_aniso_u11', 'atoms_aniso_u22',
                    'atoms_aniso_u33', 'atoms_aniso_u12', 'atoms_aniso_u13',
                    'atoms_aniso_u23', 'qdat','url', 'hkls')
+
+
+
+CifPublication = namedtuple('CifPublication', ('id', 'journalname', 'year',
+                                            'volume', 'page_first',
+                                            'page_last', 'authors'))
+
+
+StructureFactor = namedtuple('StructureFactor', ('q', 'intensity', 'hkl',
+                                                 'twotheta', 'd',
+                                                 'wavelength', 'energy',
+                                                 'f2hkl', 'degen', 'lorentz'))
+
+
+elem_symbol = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na', 'Mg', 'Al',
+               'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti', 'V', 'Cr', 'Mn', 'Fe',
+               'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb', 'Sr',
+               'Y', 'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn',
+               'Sb', 'Te', 'I', 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm',
+               'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Hf', 'Ta', 'W',
+               'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn',
+               'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf',
+               'Es', 'Fm', 'Md', 'No', 'Lr', 'Rf', 'Db', 'Sg', 'Bh', 'Hs', 'Mt', 'Ds',
+               'Rg', 'Uub', 'Uut', 'Uuq', 'Uup', 'Uuh', 'Uus', 'Uuo']
+
+
+# for packing/unpacking H, K, L to 2-character hash
+HKL_ENCODE = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_%'
+def pack_hkl(h, k, l):
+    """pack H, K, L values into 2 character sequence of
+    printable characters for storage and transmission
+
+    H, K, L must be unsigned integers from 0 to 15
+
+    see also unpack_hkl() to reverse the process.
+    """
+    if (h > 15 or k > 15 or l > 15 or
+        h < 0  or k < 0  or l < 0):
+        raise ValueError("hkl values out of range (max=15)")
+    x = h*256 + k*16 + l
+    return HKL_ENCODE[x//64] + HKL_ENCODE[x%64]
+
+
+def unpack_hkl(hash):
+    """unpack encoded H, K, L integers packed with pack_hkl()"""
+    a, b = HKL_ENCODE.index(hash[0]), HKL_ENCODE.index(hash[1])
+    s = a*64 + b
+    t = s//16
+    return t//16, t%16, s%16
+
+
+def pack_hkl_degen(hkls, degen):
+    """pack array of H, K, L and degeneracy values into printable
+    string for storage and transmission
+    hkl must be an array or list of list/tuples for H, K, L, with
+    each H, K, L value an unsigned integers from 0 to 15
+
+    hkls and degen must be ndarrays or lists of the same length
+    see also unpack_hkl_degen() to reverse the process.
+    """
+    if len(hkls) != len(degen):
+        raise ValueError("hkls and degen must be the same length in pack_hkl_degen()")
+
+    shkl = [pack_hkl(h, k, l) for h, k, l in hkls]
+    sdegen = json.dumps(degen.tolist()).replace(' ', '')
+    return f"{''.join(shkl)}|{sdegen}"
+
+
+def unpack_hkl_degen(sinp):
+    """pack arrays of h, k, l and degeneracies from string stored by pack_hkl_degen
+    see also pack_hkl_degen()
+    """
+    shkl, sdegen = sinp.split('|')
+    n = len(shkl)//2
+    hkls = []
+    for i in range(n):
+        hkls.append(unpack_hkl(shkl[2*i:2*i+2]))
+    degen = json.loads(sdegen)
+    return np.array(hkls), np.array(degen)
+
 
 
 def select(*args):
@@ -145,29 +227,6 @@ def parse_cif_file(filename):
     return dat, formula, symm_xyz
 
 
-# for packing/unpacking H, K, L to 2-character hash
-HKL_ENCODE = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_%'
-def pack_hkl(h, k, l):
-    """pack H, K, L values into 2 character sequence of
-    printable characters for storage and transmission
-
-    H, K, L must be unsigned integers from 0 to 15
-
-    see also unpack_hkl() to reverse the process.
-    """
-    if (h > 15 or k > 15 or l > 15 or
-        h < 0  or k < 0  or l < 0):
-        raise ValueError("hkl values out of range (max=15)")
-    x = h*256 + k*16 + l
-    return HKL_ENCODE[x//64] + HKL_ENCODE[x%64]
-
-def unpack_hkl(hash):
-    """unpack encoded H, K, L integers packed with pack_hkl()"""
-    a, b = HKL_ENCODE.index(hash[0]), HKL_ENCODE.index(hash[1])
-    s = a*64 + b
-    t = s//16
-    return t//16, t%16, s%16
-
 class CifStructure():
     """representation of a Cif Structure
     """
@@ -217,6 +276,8 @@ class CifStructure():
         self.natoms = 0
         self._xrdcif = None
         self._ciftext = None
+        self.pmg_pstruct = None
+        self.pmg_cstruct = None
         if atoms_sites not in (None, '<missing>'):
             self.natoms = len(atoms_sites)
 
@@ -330,13 +391,231 @@ class CifStructure():
         self._ciftext = '\n'.join(out)
         return self.ciftext
 
-    def get_structure_factors(self, wavelength=None, energy=None, qmin=0, qmax=10):
-        _xrdcif = XRDCIF(text=self.ciftext)
-        return  _xrdcif.structure_factors(wavelength=wavelength,
-                                          energy=energy,
-                                          hkls=self.hkls,
-                                          qmin=qmin,
-                                          qmax=qmax)
+
+    def find_hkls(self, nmax=64, qmax=10, wavelength=0.75):
+        """find the HKLs and degeneracies of the strongest reflections
+
+        this will calculate structure factors, and sort them, but the
+        purpose is really to do a filter to find the strongest HKLs that
+        can then be saved and restored for structure factor calcs using
+        only the most important HKL values.
+
+        returns hkls, degen of the nmax reflections with the highest scattered intensity
+        """
+        self.get_pmg_struct()
+
+        pstruct = self.pmg_pstruct
+        cstruct = self.pmg_cstruct
+        if pstruct is None:
+            print(f"pymatgen could not parse CIF structure for CIF {self.ams_id}")
+            return
+
+        global ALL_HKLS
+        if ALL_HKLS is None:
+            ALL_HKLS = generate_hkl(hmax=15, kmax=15, lmax=15, positive_only=False)
+
+        degen  = []
+        hkls = ALL_HKLS[:]
+        unitcell = self.get_unitcell()
+        qhkls = TAU / d_from_hkl(hkls, **unitcell)
+
+        # remove q values outside of range
+        valid_qs = (qhkls < qmax)
+        qhkls = qhkls[valid_qs]
+        hkls = hkls[valid_qs]
+
+        # scale up q values to better find duplicates
+        qscaled = [int(round(q*1.e9)) for q in qhkls]
+
+        # find duplicate q-values, set degen
+        q_unique, q_degen, hkl_unique = [], [], []
+        for i, q in enumerate(qscaled):
+            if q in q_unique:
+                q_degen[q_unique.index(q)] += 1
+            else:
+                q_unique.append(q)
+                q_degen.append(1)
+                hkl_unique.append(hkls[i])
+        qorder = np.argsort(q_unique)
+        qhkls  = 1.e-9*np.array(q_unique)[qorder]
+        hkls   = abs(np.array(hkl_unique)[qorder])
+        degen  = np.array(q_degen)[qorder]
+
+        f2 = self.calculate_f2(hkls, qhkls=qhkls, wavelength=None)
+
+        # filter out very small structure factors
+        f2filter = (f2 > 1.e-6*max(f2))
+        qhkls = qhkls[f2filter]
+        hkls  = hkls[f2filter]
+        degen = degen[f2filter]
+        f2    = f2[f2filter]
+
+        # sort by q
+        qsort = np.argsort(qhkls)
+        qhkls = qhkls[qsort]
+        hkls  = hkls[qsort]
+        degen = degen[qsort]
+        f2    = f2[qsort]
+
+        # lorentz and polarization correction
+        arad = (TAU/360)*twth_from_q(qhkls, wavelength)
+        corr = (1+np.cos(arad)**2)/(np.sin(arad/2)**2*np.cos(arad/2))
+
+        intensity = f2 * degen * corr
+        intensity /= max(intensity)
+        ifilter = (intensity > 0.005)
+
+        intensity  = intensity[ifilter]
+        qhkls  = qhkls[ifilter]
+        hkls   =  hkls[ifilter]
+        degen  = degen[ifilter]
+
+        main_peaks = np.argsort(intensity)[::-1][:nmax]
+        self.hkls = pack_hkl_degen(hkls[main_peaks], degen[main_peaks])
+        return hkls[main_peaks], degen[main_peaks]
+
+    def get_structure_factors(self, wavelength=0.75):
+        """given arrays of HKLs and degeneracies (perhaps from find_hkls(),
+        return structure factors
+
+        This is a lot like find_hkls(), but with the assumption that HKLs
+        are not to be filtered or altered.
+        """
+        if self.hkls is None:
+            self.find_hkls(nmax=64, qmax=10, wavelength=wavelength)
+
+        hkls, degen = unpack_hkl_degen(self.hkls)
+
+        self.get_pmg_struct()
+        pstruct = self.pmg_pstruct
+        if pstruct is None:
+            print(f"pymatgen could not parse CIF structure for CIF {self.ams_id}")
+            return
+
+        unitcell = self.get_unitcell()
+        dhkls = d_from_hkl(hkls, **unitcell)
+        qhkls = TAU / dhkls
+
+        qsort = np.argsort(qhkls)
+        qhkls = qhkls[qsort]
+        dhkls = dhkls[qsort]
+        hkls  = hkls[qsort]
+        degen = degen[qsort]
+
+        energy = E_from_lambda(wavelength, E_units='eV')
+
+        f2 = self.calculate_f2(hkls, qhkls=qhkls, wavelength=wavelength)
+
+        # lorentz and polarization correction
+        twoth = twth_from_q(qhkls, wavelength)
+        arad = (TAU/360)*twoth
+        corr = (1+np.cos(arad)**2)/(np.sin(arad/2)**2*np.cos(arad/2))
+
+        intensity = f2 * degen * corr
+
+        return StructureFactor(q=qhkls, intensity=intensity, hkl=hkls, d=dhkls,
+                               f2hkl=f2, twotheta=twoth, degen=degen,
+                               lorentz=corr, wavelength=wavelength,
+                               energy=energy)
+
+
+    def calculate_f2(self, hkls, qhkls=None, energy=None, wavelength=None):
+        """calculate F*F'.
+
+        If wavelength (in Ang) or energy (in eV) is not None, then
+        resonant corrections will be included.
+        """
+        if qhkls is None:
+            unitcell = self.get_unitcell()
+            qhkls = TAU / d_from_hkl(hkls, **unitcell)
+        sq = qhkls/(2*TAU)
+        sites = self.get_sites()
+
+        if energy is None and wavelength is not None:
+            energy = E_from_lambda(wavelength, E_units='eV')
+
+        # get f0 and resonant scattering factors
+        f0vals, f1vals, f2vals = {}, {}, {}
+        for elem in sites.keys():
+            if elem not in f0vals:
+                f0vals[elem] = f0(elem, sq)
+                if energy is not None:
+                    f1vals[elem] = f1_chantler(elem, energy)
+                    f2vals[elem] = f2_chantler(elem, energy)
+
+        # and f2
+        f2 = np.zeros(len(hkls))
+        for i, hkl in enumerate(hkls):
+            fsum = 0.
+            for elem in f0vals:
+                fval = f0vals[elem][i]
+                if energy is not None:
+                    fval += f1vals[elem] - 1j*f2vals[elem]
+                for occu, fcoord in sites[elem]:
+                    fsum += fval*occu*np.exp(1j*TAU*(fcoord*hkl).sum())
+            f2[i] = (fsum*fsum.conjugate()).real
+        return f2
+
+
+    def get_pmg_struct(self):
+        if self.pmg_cstruct is not None and self.pmg_pstruct is not None:
+            return
+
+        try:
+            pmcif = CifParser(StringIO(self.ciftext),
+                              occupancy_tolerance=10,
+                              site_tolerance=0.05)
+            self.pmg_cstruct = pmcif.get_structures()[0]
+            self.pmg_pstruct = SpacegroupAnalyzer(self.pmg_cstruct
+                                                  ).get_conventional_standard_structure()
+        except:
+            print(f"pymatgen could not parse CIF structure for CIF {self.ams_id}")
+
+
+    def get_unitcell(self):
+        "unitcell as dict, from PMG structure"
+        self.get_pmg_struct()
+        pstruct = self.pmg_pstruct
+        if pstruct is None:
+            print(f"pymatgen could not parse CIF structure for CIF {self.ams_id}")
+            return
+        pdict = pstruct.as_dict()
+        unitcell = {}
+        for a in ('a', 'b', 'c', 'alpha', 'beta', 'gamma', 'volume'):
+            unitcell[a] = pdict['lattice'][a]
+        return unitcell
+
+    def get_sites(self):
+        "dictionary of sites, from PMG structure"
+        self.get_pmg_struct()
+        pstruct = self.pmg_pstruct
+        if pstruct is None:
+            print(f"pymatgen could not parse CIF structure for CIF {self.ams_id}")
+            return
+
+        sites = {}
+        for site in pstruct.sites:
+            sdat = site.as_dict()
+            fcoords = sdat['abc']
+
+            for spec in sdat['species']:
+                elem = spec['element']
+                if elem == 'Nh': elem = 'N'
+                if elem == 'Og':
+                    elem = 'O'
+                if elem in ('Hs', 'D'):
+                    elem = 'H'
+                if elem.startswith('Dh') or elem.startswith('Dd') or elem.startswith('Dw'):
+                    elem = 'H'
+                if elem == 'Fl':
+                    elem = 'F'
+                occu = spec['occu']
+                if elem not in sites:
+                    sites[elem] = [(occu, fcoords)]
+                else:
+                    sites[elem].append([occu, fcoords])
+        return sites
+
 
 
     def get_feffinp(self, absorber, edge=None, cluster_size=8.0, absorber_site=1,
@@ -858,15 +1137,16 @@ class AMCSD():
                 except:
                     print(f"could not parse CIF entry for {cif_id} '{attr}': {val} ")
 
-        out.qval = None
-        if cif.qdat is not None:
-            out.qval = np.unpackbits(np.array([int(b) for b in b64decode(cif.qdat)],
-                                              dtype='uint8'))
+        # we're now ignoring per-cif qvalues
+        # out.qval = None
+        # if cif.qdat is not None:
+        #     out.qval = np.unpackbits(np.array([int(b) for b in b64decode(cif.qdat)],
+        #                                       dtype='uint8'))
+
         out.hkls = None
         if hasattr(cif, 'hkls'):
            if cif.hkls is not None:
-               tmp = np.array([int(i) for i in b64decode(cif.hkls)])
-               out.hkls = tmp.reshape(len(tmp)//3, 3)
+               out.hkls = unpack_hkl_degen(cif.hkls)
 
         return out
 
@@ -1029,10 +1309,11 @@ class AMCSD():
             matches = matches[:max_matches]
         return [self.get_cif(cid) for cid in matches]
 
-    def set_hkls(self, cifid, hkls):
-        hkldat = b64encode(bytes(hkls[:].flatten().tolist()))
+    def set_hkls(self, cifid, hkls, degens):
         ctab = self.tables['cif']
-        self.update(ctab, whereclause=(ctab.c.id == cifid), hkls=hkldat)
+        self.update(ctab, whereclause=(ctab.c.id == cifid),
+                    hkls=pack_hkl_degen(hkls, degens))
+
 
 def get_amcsd(download_full=True, timeout=30):
     """return instance of the AMCSD CIF Database
