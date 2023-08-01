@@ -13,7 +13,7 @@ Requirements
 """
 
 __author__ = ["Mauro Rovezzi", "Matt Newville"]
-__version__ = "larch_0.9.66"
+__version__ = "2023.1"
 
 import os
 import copy
@@ -140,12 +140,13 @@ def is_specfile(filename, require_multiple_scans=True):
     with open(filename, "rb") as fh:
         topbytes = fh.read(10)
 
-    is_hdf5 = topbytes.startswith(b"\x89HDF\r") # HDF5
-    is_text_one = topbytes.startswith(b"#S ")   # partial Spec file (1 scan)
+    is_hdf5 = topbytes.startswith(b"\x89HDF\r")  # HDF5
+    is_text_one = topbytes.startswith(b"#S ")  # partial Spec file (1 scan)
     is_text_full = topbytes.startswith(b"#F ")  # Full Spec File
 
-    if (not (is_hdf5 or is_text_full or is_text_one)
-        or (is_text_one and require_multiple_scans)):
+    if not (is_hdf5 or is_text_full or is_text_one) or (
+        is_text_one and require_multiple_scans
+    ):
         return False
 
     try:
@@ -572,9 +573,11 @@ class DataSourceSpecH5(object):
         Known types of scans
         --------------------
         Generic: <scan_type> <scan_axis> <start> <end> <npoints> <counting_time>
-        'Escan' (ESRF-BM30/BM16)
-        'Emiscan' (ESRF-BM30/BM16)
-        'fscan' (ESRF-ID26)
+        'Escan'          (ESRF BM30/BM16 Spec -> Energy)
+        'Emiscan'        (ESRF BM30/BM16 Spec -> Emi_Energy)
+        'fscan'          (ESRF ID26 Spec -> mono_energy)
+        'contscan.motor' (ESRF ID24-DCM BLISS 2023-06 -> energy_enc)
+        'scans.exafs*'   (ESRF BM23 BLISS 2023-06 -> energy_cenc)
 
         Returns
         -------
@@ -625,13 +628,16 @@ class DataSourceSpecH5(object):
                 )
             except IndexError:
                 pass
-
-        if _scntype == "Escan":
+        if _scntype == "Escan":  #: ESRF/BM30-BM16 Energy scans with Spec
             iscn.update(dict(scan_axis="Energy"))
-        if _scntype == "Emiscan":
+        if _scntype == "Emiscan":  #: ESRF/BM30-BM16 emission scans with Spec
             iscn.update(dict(scan_axis="Emi_Energy"))
-        if _scntype == "fscan":
+        if _scntype == "fscan":  #: ESRF/ID26 fscan
             iscn.update(dict(scan_axis="mono_energy"))
+        if "scans.exafs" in _scntype:  #: ESRF/BM23 BLISS 2023.06
+            iscn.update(dict(scan_axis="energy_cenc"))
+        if _scntype == "contscan.motor":  #: ESRF/ID24-DCM BLISS 2023.06
+            iscn.update(dict(scan_axis="energy_enc"))
         return iscn
 
     def get_scan_axis(self):
@@ -640,7 +646,7 @@ class DataSourceSpecH5(object):
         _axisout = iscn["scan_axis"]
         _mots, _cnts = self.get_motors(), self.get_counters()
         if not (_axisout in _mots):
-            self._logger.info(f"'{_axisout}' not in (real) motors")
+            self._logger.debug(f"'{_axisout}' not in (real) motors")
         if not (_axisout in _cnts):
             self._logger.info(f"'{_axisout}' not in counters")
             _axisout = _cnts[0]
@@ -884,7 +890,6 @@ class DataSourceSpecH5(object):
             sig_label += "_dgl"
         #: (opt) normalization
         if norm is not None:
-
             norm_meth = norm["method"]
             sig_data = norm1D(sig_data, norm=norm_meth, logger=self._logger)
             if norm_meth is not None:
