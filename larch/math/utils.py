@@ -296,7 +296,8 @@ def smooth(x, y, sigma=1, gamma=None, xstep=None, npad=None, form='lorentzian'):
         xstep = min(np.diff(x))
     if xstep < TINY:
         raise Warning('Cannot smooth data: must be strictly increasing ')
-    npad = 5
+    if npad is None:
+        npad = 5
     xmin = xstep * int( (min(x) - npad*xstep)/xstep)
     xmax = xstep * int( (max(x) + npad*xstep)/xstep)
     npts1 = 1 + int(abs(xmax-xmin+xstep*0.1)/xstep)
