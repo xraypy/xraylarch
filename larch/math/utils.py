@@ -78,7 +78,7 @@ def complex_phase(arr):
     "return phase, modulo 2pi jumps"
     phase = np.arctan2(arr.imag, arr.real)
     d   = np.diff(phase)/np.pi
-    out = phase.copy()
+    out = phase[:]*1.0
     out[1:] -= np.pi*(np.round(abs(d))*np.sign(d)).cumsum()
     return out
 
@@ -296,7 +296,8 @@ def smooth(x, y, sigma=1, gamma=None, xstep=None, npad=None, form='lorentzian'):
         xstep = min(np.diff(x))
     if xstep < TINY:
         raise Warning('Cannot smooth data: must be strictly increasing ')
-    npad = 5
+    if npad is None:
+        npad = 5
     xmin = xstep * int( (min(x) - npad*xstep)/xstep)
     xmax = xstep * int( (max(x) + npad*xstep)/xstep)
     npts1 = 1 + int(abs(xmax-xmin+xstep*0.1)/xstep)
@@ -414,7 +415,7 @@ def boxcar(data, nrepeats=1):
     -----
       This does a 3-point smoothing, that can be repeated
 
-      out = data.copy()
+      out = data[:]*1.0
       for i in range(nrepeats):
           qdat = out/4.0
           left  = 1.0*qdat
@@ -425,7 +426,7 @@ def boxcar(data, nrepeats=1):
     return out
 
     """
-    out = data.copy()
+    out = data[:]*1.0
     for i in range(nrepeats):
         qdat = out/4.0
         left  = 1.0*qdat

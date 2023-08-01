@@ -1031,9 +1031,9 @@ class GSEXRM_MapFile(object):
                     sum_cor = self.xrmmap['roimap/sum_cor']
 
                     detraw = list(row.sisdata[:npts].transpose())
-                    detcor = detraw.copy()
-                    sumraw = detraw.copy()
-                    sumcor = detraw.copy()
+                    detcor = detraw[:]
+                    sumraw = detraw[:]
+                    sumcor = detraw[:]
 
                     if self.roi_slices is None:
                         lims = self.xrmmap['config/rois/limits'][()]
@@ -1063,7 +1063,7 @@ class GSEXRM_MapFile(object):
 
                 else: # version 2.0
                     roigrp = self.xrmmap['roimap']
-                    en  = self.xrmmap['mcasum']['energy'].copy()
+                    en  = self.xrmmap['mcasum']['energy'][:]
                     for roiname in roigrp['mcasum'].keys():
                         en_lim = roigrp['mcasum'][roiname]['limits'][:]
                         roi_slice = slice(np.abs(en-en_lim[0]).argmin(),
@@ -1125,9 +1125,9 @@ class GSEXRM_MapFile(object):
 
                 detraw = list(row.sisdata[:npts].transpose())
 
-                detcor = detraw.copy()
-                sumraw = detraw.copy()
-                sumcor = detraw.copy()
+                detcor = detraw[:]
+                sumraw = detraw[:]
+                sumcor = detraw[:]
 
                 if self.roi_slices is None:
                     lims = self.xrmmap['config/rois/limits'][()]
@@ -1953,7 +1953,7 @@ class GSEXRM_MapFile(object):
             filename = file_str % self.filename
 
         areas = ensure_subgroup('areas', self.xrmmap, dtype='areas')
-        kwargs = {key: val.copy() for key, val in areas.items()}
+        kwargs = {key: val[:] for key, val in areas.items()}
         np.savez(filename, **kwargs)
         return filename
 
@@ -2677,8 +2677,8 @@ class GSEXRM_MapFile(object):
 
         if version_ge(self.version, '2.0.0'):
             for roi in self.xrmmap['roimap'][dgroup]:
-                emin,emax = self.xrmmap['roimap'][dgroup][roi]['limits'][:]
-                Eaxis = map['energy'].copy()
+                emin, emax = self.xrmmap['roimap'][dgroup][roi]['limits'][:]
+                Eaxis = map['energy'][:]
 
                 imin = (np.abs(Eaxis-emin)).argmin()
                 imax = (np.abs(Eaxis-emax)).argmin()
@@ -2752,6 +2752,52 @@ class GSEXRM_MapFile(object):
         fmt = "Data from File '%s', detector '%s', area '%s'"
         xrd.info  =  fmt % (self.filename, mapdat.name, name)
         xrd.q = mapdat['q'][()]
+        return xrd
+
+    def get_xrd2d_rect(self, xmin, xmax, ymin, ymax, **kws):
+        tshape = self.get_shape()
+
+        if ymax < 0: ymax += tshape[0]
+        if xmax < 0: xmax += tshape[1]
+        nx, ny = (xmax-xmin, ymax-ymin)
+        sx = slice(xmin, xmax)
+        sy = slice(ymin, ymax)
+        xrdgroup = 'xrd2d'
+        xrdgrp = ensure_subgroup('xrd2d', self.xrmmap, dtype='2DXRD')
+
+        xmin, xmax, ymin, ymax = sx.start, sx.stop, sy.start, sy.stop
+
+        xrd_file = os.path.join(self.folder, self.rowdata[0][4])
+        if os.path.exists(xrd_file):
+            print("Reading XRD Patterns for rows %d to %d" %(ymin, ymax-1))
+            data = None
+            for yrow in range(ymin, ymax+1):
+                xrd_file = os.path.join(self.folder, self.rowdata[yrow][4])
+                print(f"read XRD for row {yrow:d}: {xrd_file:s}")
+                h5file = h5py.File(xrd_file, 'r')
+                rowdat = h5file['entry/data/data'][1:,:,:]
+                h5file.close()
+                if (yrow  % 2) == 1:
+                    rowdat = rowdat[::-1, :, :]
+                rowdat = rowdat[sx,:,:].sum(axis=0)
+                if data is None:
+                    data = rowdat*1.0
+                else:
+                    data += rowdat
+
+        aname = f'X[{xmin:d}:{xmax-1:d}]/Y[{ymin:d}:{ymax-1:d}]'
+        bname = f'X{xmin:03d}Y{ymin:03d}'
+        name = f'{xrdgroup:s} {aname:s}'
+        energy = 0.001 * self.get_incident_energy()
+        kws = {'energy': energy,
+               'wavelength': lambda_from_E(energy, E_units='keV')}
+
+        xrd = XRD(data2D=data, name=name, **kws)
+        # print("made xrd ", xrd, kws)
+        xrd.filename = self.fname
+        xrd.areaname = xrd.title = aname
+        xrd.info = f"Data from File '{self.filename}', XRD2D '{aname}'"
+        xrd.ponifile = self.xrdcalfile
         return xrd
 
     def get_xrd2d_area(self, areaname, callback=None, **kws):
@@ -2928,7 +2974,7 @@ class GSEXRM_MapFile(object):
 
         # print("ADD XRD1D ROI ", detname, xrange, roiname, unit)
         counts = self.xrmmap[detname]['counts']
-        q = self.xrmmap[detname]['q'].copy()
+        q = self.xrmmap[detname]['q'][:]
 
         imin = (np.abs(q-qrange[0])).argmin()
         imax = (np.abs(q-qrange[1])).argmin()+1
@@ -3018,7 +3064,7 @@ class GSEXRM_MapFile(object):
             if unit.startswith('chan'):
                 emin, emax = Erange
             else:
-                en  = mapdat['energy'].copy()
+                en  = mapdat['energy'][:]
                 emin = (np.abs(en-Erange[0])).argmin()
                 emax = (np.abs(en-Erange[1])).argmin()+1
             raw = mapdat['counts'][:, :, emin:emax].sum(axis=2)

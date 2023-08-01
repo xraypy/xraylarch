@@ -11,10 +11,11 @@ import sys
 import os
 import logging
 import pkg_resources
+from packaging.version import parse as version_parse
 from subprocess import check_call, CalledProcessError, TimeoutExpired
 
 from .utils import (uname, get_homedir, nativepath, unixpath,
-                    log_warning, log_error, version_ge)
+                    log_warning, log_error)
 from .version import __version__, __release_version__
 
 larch_version = __version__
@@ -40,26 +41,19 @@ def update_larch():
 
 def install_extras(package_dict, timeout=30):
     current = {pkg.key: pkg.version for pkg in pkg_resources.working_set}
-    for pkg, vers in package_dict.items():
-        install_needed = pkg not in current
-        if pkg in current and vers is not None:
-            curr = current[pkg]
-            currwords = []
-            for s in curr.split('.') + ['0', '0', '0']:
-                try:
-                    a = int(s)
-                    currwords.append(s)
-                except:
-                    pass
-            curr = '.'.join(currwords[:3])
-            install_needed = install_needed or version_ge(vers, curr)
-
-    if install_needed:
-        command = [sys.executable, '-m', 'pip', 'install', f"{pkg}>={vers}"]
-        try:
-            check_call(command, timeout=timeout)
-        except (CalledProcessError, TimeoutExpired):
-            log_warning(f"could not pip install packages: {missing}")
+    for pkg, vers_required in package_dict.items():
+        vers_installed = current.get(pkg, None)
+        if ((vers_installed is None)
+            or (vers_required is not None
+                and
+                ((version_parse(vers_installed) <
+                  version_parse(vers_required))))):
+            command = [sys.executable, '-m', 'pip', 'install', f"{pkg}>={vers_required}"]
+            print(command)
+            try:
+                check_call(command, timeout=timeout)
+            except (CalledProcessError, TimeoutExpired):
+                log_warning(f"could not pip install packages: {missing}")
 
 ##
 # set system-wide and local larch folders

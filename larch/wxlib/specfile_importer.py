@@ -209,6 +209,9 @@ class SpecfileImporter(wx.Frame) :
         self.yarr2.SetSelection(iy2sel)
         self.yerr_arr.SetSelection(iyesel)
 
+        self.info_message = SimpleText(panel, '    ', font=Font(12),
+                                       colour=wx.Colour(100, 10, 10), style=LEFT)
+
         bpanel = wx.Panel(panel)
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
         self.multi_sel = Button(bpanel, 'Select Multilple Columns',  action=self.onMultiColumn)

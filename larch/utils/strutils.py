@@ -10,7 +10,8 @@ import uuid
 import hashlib
 from base64 import b64encode, b32encode
 import random
-from distutils.version import StrictVersion
+
+from packaging import version as pkg_version
 
 def bytes2str(s):
     if isinstance(s, str):
@@ -234,8 +235,7 @@ def find_delims(s, delim='"',match=None):
 
 def version_ge(v1, v2):
     "returns whether version string 1 >= version_string2"
-    return StrictVersion(bytes2str(v1)) >= StrictVersion(bytes2str(v2))
-
+    return pkg_version.parse(v1) >= pkg_version.parse(v2)
 
 def b32hash(s):
     """return a base32 hash of a string"""

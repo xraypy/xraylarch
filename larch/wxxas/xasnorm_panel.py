@@ -59,6 +59,9 @@ PlotSel_Choices_nonxas = {'Raw Data': 'mu',
                           'Scaled Data': 'norm',
                           'Derivative': 'dmude'}
 
+FSIZE = 120
+FSIZEBIG = 175
+
 class XASNormPanel(TaskPanel):
     """XAS normalization Panel"""
     def __init__(self, parent, controller=None, **kws):
@@ -68,41 +71,89 @@ class XASNormPanel(TaskPanel):
         panel = self.panel
         self.wids = {}
         self.last_plot_type = 'one'
-        self.plotone_op = Choice(panel, choices=list(PlotOne_Choices.keys()),
-                                 action=self.onPlotOne, size=(275, -1))
-        self.plotsel_op = Choice(panel, choices=list(PlotSel_Choices.keys()),
-                                 action=self.onPlotSel, size=(275, -1))
 
-        self.plot_erange = Choice(panel, choices=list(Plot_EnergyRanges.keys()),
+        trow = wx.Panel(panel)
+        plot_sel = Button(trow, 'Plot Selected Groups', size=(175, -1),
+                          action=self.onPlotSel)
+        plot_one = Button(trow, 'Plot Current Group', size=(175, -1),
+                          action=self.onPlotOne)
+
+        self.plotsel_op = Choice(trow, choices=list(PlotSel_Choices.keys()),
+                                 action=self.onPlotSel, size=(300, -1))
+        self.plotone_op = Choice(trow, choices=list(PlotOne_Choices.keys()),
+                                 action=self.onPlotOne, size=(300, -1))
+
+        self.plot_erange = Choice(trow, choices=list(Plot_EnergyRanges.keys()),
                                  action=self.onPlotEither, size=(175, -1))
+
+        opts = {'digits': 2, 'increment': 0.05, 'value': 0, 'size': (FSIZE, -1)}
+        plot_voff = self.add_floatspin('plot_voff', with_pin=False,
+                                       parent=trow,
+                                       action=self.onVoffset,
+                                       max_val=10000, min_val=-10000,
+                                       **opts)
+
+        vysize, vxsize = plot_sel.GetBestSize()
+        voff_lab = wx.StaticText(parent=trow, label='  Y Offset:', size=(80, vxsize),
+                                 style=wx.RIGHT|wx.ALIGN_CENTRE_HORIZONTAL|wx.ST_NO_AUTORESIZE)
 
         self.plot_erange.SetSelection(0)
         self.plotone_op.SetSelection(1)
         self.plotsel_op.SetSelection(1)
 
-        plot_one = Button(panel, 'Plot Current Group', size=(175, -1),
-                          action=self.onPlotOne)
+        tsizer = wx.GridBagSizer(3, 3)
+        tsizer.Add(plot_sel,        (0, 0), (1, 1), LEFT, 2)
+        tsizer.Add(self.plotsel_op, (0, 1), (1, 1), LEFT, 2)
+        tsizer.Add(voff_lab,        (0, 2), (1, 1), RIGHT, 2)
+        tsizer.Add(plot_voff,       (0, 3), (1, 1), RIGHT, 2)
+        tsizer.Add(plot_one,       (1, 0), (1, 1), LEFT, 2)
+        tsizer.Add(self.plotone_op, (1, 1), (1, 1), LEFT, 2)
+        tsizer.Add(self.plot_erange, (1, 2), (1, 2), RIGHT, 2)
 
-        plot_sel = Button(panel, 'Plot Selected Groups', size=(175, -1),
-                          action=self.onPlotSel)
+        pack(trow, tsizer)
 
-        e0panel = wx.Panel(panel)
-        self.wids['auto_e0'] = Check(e0panel, default=True, label='auto?',
+        # atom row
+        atpanel = wx.Panel(panel)
+        self.wids['atsym']  = Choice(atpanel, choices=ATSYMS, size=(100, -1))
+        self.wids['edge']   = Choice(atpanel, choices=EDGES, size=(100, -1))
+        sat = wx.BoxSizer(wx.HORIZONTAL)
+        sat.Add(self.wids['atsym'], 0, LEFT, 4)
+        sat.Add(self.wids['edge'], 0, LEFT, 4)
+        pack(atpanel, sat)
+
+        # e0 row
+        e0_panel = wx.Panel(panel)
+        xas_e0   = self.add_floatspin('e0', action=self.onSet_XASE0Val,
+                                      min_val=-1000, max_val=1e7, digits=3,
+                                      increment=0.05, value=0, size=(FSIZEBIG, -1),
+                                      parent=e0_panel)
+
+        self.wids['auto_e0'] = Check(e0_panel, default=True, label='auto?',
                                     action=self.onAuto_XASE0)
-        self.wids['show_e0'] = Check(e0panel, default=True, label='show?',
+        self.wids['show_e0'] = Check(e0_panel, default=True, label='show?',
                                      action=self.onSet_XASE0)
 
         sx = wx.BoxSizer(wx.HORIZONTAL)
+        sx.Add(xas_e0, 0, LEFT, 4)
         sx.Add(self.wids['auto_e0'], 0, LEFT, 4)
         sx.Add(self.wids['show_e0'], 0, LEFT, 4)
-        pack(e0panel, sx)
+        pack(e0_panel, sx)
 
+        # step row
+        step_panel = wx.Panel(panel)
+        xas_step = self.add_floatspin('step', action=self.onSet_XASStep, with_pin=False,
+                                      min_val=-1000.0, max_val=1e7, digits=4, increment=0.05,
+                                      value=0.1, size=(FSIZEBIG, -1), parent=step_panel)
+        self.wids['auto_step'] = Check(step_panel, default=True, label='auto?',
+                                       action=self.onNormMethod)
+        sx = wx.BoxSizer(wx.HORIZONTAL)
+        sx.Add(xas_step, 0, LEFT, 4)
+        sx.Add(self.wids['auto_step'], 0, LEFT, 4)
+        pack(step_panel, sx)
 
+        
         self.wids['energy_ref'] = Choice(panel, choices=['None'],
                                          action=self.onEnergyRef, size=(300, -1))
-
-        self.wids['auto_step'] = Check(panel, default=True, label='auto?',
-                                      action=self.onNormMethod)
 
         self.wids['nvict'] = Choice(panel, choices=('0', '1', '2', '3'),
                                     size=(100, -1), action=self.onNormMethod,
@@ -112,30 +163,38 @@ class XASNormPanel(TaskPanel):
                                     size=(150, -1), action=self.onNormMethod,
                                     default=0)
 
-        opts = {'size': (100, -1), 'digits': 2, 'increment': 5.0,
-                'action': self.onSet_Ranges}
-
+        opts = {'size': (FSIZE, -1), 'digits': 2, 'increment': 5.0, 'action': self.onSet_Ranges,
+                'min_val':-99000, 'max_val':99000}
         defaults = self.get_defaultconfig()
-        xas_pre1 = self.add_floatspin('pre1', value=defaults['pre1'], **opts)
-        xas_pre2 = self.add_floatspin('pre2', value=defaults['pre2'], **opts)
-        xas_norm1 = self.add_floatspin('norm1', value=defaults['norm1'], **opts)
-        xas_norm2 = self.add_floatspin('norm2', value=defaults['norm2'], **opts)
 
-        self.wids['show_pre'] = Check(panel, default=False, label='show?',
+        pre_panel = wx.Panel(panel)
+        xas_pre1 = self.add_floatspin('pre1', value=defaults['pre1'], parent=pre_panel, **opts)
+        xas_pre2 = self.add_floatspin('pre2', value=defaults['pre2'], parent=pre_panel, **opts)
+        self.wids['show_pre'] = Check(pre_panel, default=False, label='show?',
                                       action=self.onSet_XASE0)
-        self.wids['show_norm'] = Check(panel, default=False, label='show?',
+
+        sx = wx.BoxSizer(wx.HORIZONTAL)
+        sx.Add(xas_pre1, 0, LEFT, 4)
+        sx.Add(SimpleText(pre_panel, ' : '), 0, LEFT, 4)
+        sx.Add(xas_pre2, 0, LEFT, 4)
+        sx.Add(self.wids['show_pre'], 0, LEFT, 4)        
+        pack(pre_panel, sx)
+
+        nor_panel = wx.Panel(panel)
+        xas_norm1 = self.add_floatspin('norm1', value=defaults['norm1'], parent=nor_panel, **opts)
+        xas_norm2 = self.add_floatspin('norm2', value=defaults['norm2'], parent=nor_panel, **opts)
+
+        self.wids['show_norm'] = Check(nor_panel, default=False, label='show?',
                                        action=self.onSet_XASE0)
+        sx = wx.BoxSizer(wx.HORIZONTAL)
+        sx.Add(xas_norm1, 0, LEFT, 4)
+        sx.Add(SimpleText(nor_panel, ' : '), 0, LEFT, 4)
+        sx.Add(xas_norm2, 0, LEFT, 4)
+        sx.Add(self.wids['show_norm'], 0, LEFT, 4)                
+        pack(nor_panel, sx)
 
 
-        opts = {'digits': 2, 'increment': 0.05, 'value': 0}
-        plot_voff = self.add_floatspin('plot_voff',  with_pin=False,
-                                       size=(75, -1),
-                                       action=self.onVoffset, **opts)
-        opts['digits'] = 3
-        xas_e0   = self.add_floatspin('e0', action=self.onSet_XASE0Val, **opts)
-        opts['digits'] = 4
-        xas_step = self.add_floatspin('step', action=self.onSet_XASStep,
-                                      with_pin=False, min_val=0.0, **opts)
+        opts = {'digits': 3, 'increment': 0.05, 'value': 0, 'size': (FSIZEBIG, -1)}
 
         opts.update({'value': 1.0, 'digits': 3})
         scale = self.add_floatspin('scale', action=self.onSet_Scale, **opts)
@@ -144,11 +203,11 @@ class XASNormPanel(TaskPanel):
                                           size=(150, -1), action=self.onNormMethod)
         self.wids['norm_method'].SetSelection(0)
         self.wids['energy_shift'] = FloatSpin(panel, value=0, digits=3, increment=0.05,
-                                              action=self.onSet_EnergyShift)
+                                              min_val=-99000, max_val=99000,
+                                              action=self.onSet_EnergyShift,
+                                              size=(FSIZEBIG, -1))
 
-        self.wids['atsym']  = Choice(panel, choices=ATSYMS, size=(100, -1))
-        self.wids['edge']   = Choice(panel, choices=EDGES, size=(100, -1))
-
+        
         self.wids['is_frozen'] = Check(panel, default=False, label='Freeze Group',
                                        action=self.onFreezeGroup)
 
@@ -165,87 +224,65 @@ class XASNormPanel(TaskPanel):
                           action=partial(self.onCopyParam, 'all'))
 
         add_text = self.add_text
-        HLINEWID = 600
+        HLINEWID = 700
         panel.Add(SimpleText(panel, 'XAS Pre-edge subtraction and Normalization',
-                             size=(550, -1), **self.titleopts), style=LEFT, dcol=6)
+                             size=(650, -1), **self.titleopts), style=LEFT, dcol=4)
+        panel.Add(trow, dcol=4, newrow=True)
 
-
-        panel.Add(plot_sel, newrow=True)
-        panel.Add(self.plotsel_op, dcol=3)
-        panel.Add(SimpleText(panel, 'Y Offset:'), dcol=1, style=RIGHT)
-        panel.Add(plot_voff, style=RIGHT)
-
-        panel.Add(plot_one, newrow=True)
-        panel.Add(self.plotone_op, dcol=3)
-        panel.Add(self.plot_erange, dcol=2, style=RIGHT)
-
-        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
+        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=4, newrow=True)
         add_text('Non-XAS Data Scale:')
-        panel.Add(scale, dcol=2)
-        panel.Add(SimpleText(panel, 'Copy to Selected Groups:'),
-                  style=RIGHT, dcol=3)
+        panel.Add(scale)
+        panel.Add(SimpleText(panel, 'Copy to Selected Groups:'), style=RIGHT, dcol=2)
 
-
-        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
+        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=4, newrow=True)
         add_text('XAS Data:')
-        panel.Add(use_auto, dcol=4)
+        panel.Add(use_auto, dcol=2)
         panel.Add(copy_auto, dcol=1, style=RIGHT)
 
         add_text('Element and Edge: ', newrow=True)
-        panel.Add(self.wids['atsym'])
-        panel.Add(self.wids['edge'], dcol=3)
-        panel.Add(CopyBtn('atsym'), dcol=1, style=RIGHT)
+        panel.Add(atpanel, dcol=2)
 
         add_text('Energy Reference : ')
-        panel.Add(self.wids['energy_ref'], dcol=4)
+        panel.Add(self.wids['energy_ref'], dcol=2)
         panel.Add(CopyBtn('energy_ref'), dcol=1, style=RIGHT)
 
         add_text('Energy Shift : ')
-        panel.Add(self.wids['energy_shift'], dcol=4)
+        panel.Add(self.wids['energy_shift'], dcol=2)
         panel.Add(CopyBtn('energy_shift'), dcol=1, style=RIGHT)
 
         add_text('E0 : ')
-        panel.Add(xas_e0)
-        panel.Add(e0panel, dcol=3)
+        panel.Add(e0_panel, dcol=2)
         panel.Add(CopyBtn('xas_e0'), dcol=1, style=RIGHT)
 
         add_text('Edge Step: ')
-        panel.Add(xas_step)
-        panel.Add(self.wids['auto_step'], dcol=3)
+        panel.Add(step_panel, dcol=2)
         panel.Add(CopyBtn('xas_step'), dcol=1, style=RIGHT)
 
         panel.Add((5, 5), newrow=True)
-        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
+        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=4, newrow=True)
 
         add_text('Pre-edge range: ')
-        panel.Add(xas_pre1)
-        add_text(' : ', newrow=False)
-        panel.Add(xas_pre2)
-        panel.Add(self.wids['show_pre'])
+        panel.Add(pre_panel, dcol=2)
         panel.Add(CopyBtn('xas_pre'), dcol=1, style=RIGHT)
 
         panel.Add(SimpleText(panel, 'Victoreen order:'), newrow=True)
-        panel.Add(self.wids['nvict'], dcol=4)
+        panel.Add(self.wids['nvict'], dcol=2)
 
         panel.Add((5, 5), newrow=True)
-        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
+        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=4, newrow=True)
 
         add_text('Normalization : ')
-        panel.Add(self.wids['norm_method'], dcol=3)
-        panel.Add(CopyBtn('xas_norm'), dcol=2, style=RIGHT)
+        panel.Add(self.wids['norm_method'], dcol=2)
+        panel.Add(CopyBtn('xas_norm'), dcol=1, style=RIGHT)
 
         add_text('Norm Energy range: ')
-        panel.Add(xas_norm1)
-        add_text(' : ', newrow=False)
-        panel.Add(xas_norm2)
-        panel.Add(self.wids['show_norm'])
+        panel.Add(nor_panel, dcol=2)
         panel.Add(SimpleText(panel, 'Polynomial Type:'), newrow=True)
         panel.Add(self.wids['nnorm'], dcol=3)
 
-        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
-        panel.Add((5, 5), newrow=True)
+        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=4, newrow=True)
         panel.Add(self.wids['is_frozen'], newrow=True)
-        panel.Add(copy_all, dcol=5, style=RIGHT)
+        panel.Add(copy_all, dcol=3, style=RIGHT)
 
         panel.pack()
 

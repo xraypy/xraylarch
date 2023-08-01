@@ -2,7 +2,6 @@
 
 import os
 import sys
-import copy
 import time
 import gc
 
@@ -369,8 +368,8 @@ class EscanData:
             while len(s) < nsums:  s.append(-1)
 
         # finally, icr/ocr corrected sums
-        self.det_corr  = self.det.copy()
-        self.sums_corr = self.sums.copy()
+        self.det_corr  = self.det[:]*1.0
+        self.sums_corr = self.sums[:]*1.0
 
         if self.correct_deadtime:
             idet = -1

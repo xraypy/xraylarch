@@ -41,9 +41,11 @@ def find_e0(energy, mu=None, group=None, _larch=None):
                                          fcn_name='find_e0')
     # first find e0 without smoothing, then refine with smoothing
     e1, ie0, estep = _finde0(energy, mu, estep=None, use_smooth=False)
-    istart = max(1, ie0-75)
+    istart = max(2, ie0-75)
     istop  = min(ie0+75, len(energy)-2)
     e0, ix, ex = _finde0(energy[istart:istop], mu[istart:istop], estep=estep, use_smooth=True)
+    if ix < 1 :
+        e0 = energy[istart+2]
     if group is not None:
         group = set_xafsGroup(group, _larch=_larch)
         group.e0 = e0
@@ -80,12 +82,17 @@ def _finde0(energy, mu, estep=None, use_smooth=True):
     dm_ptp = max(1.e-10, dmu[nmin:-nmin].ptp())
     dmu = (dmu - dm_min)/dm_ptp
 
-    dhigh = 0.6
+    dhigh = 0.60 if len(en) > 20 else 0.30
     high_deriv_pts = np.where(dmu > dhigh)[0]
     if len(high_deriv_pts) < 3:
-        dhigh = dhigh - 0.2
-        while len(high_deriv_pts) < 3:
+        for _ in range(2):
+            if len(high_deriv_pts) > 3:
+                break
+            dhigh *= 0.5
             high_deriv_pts = np.where(dmu > dhigh)[0]
+
+    if len(high_deriv_pts) < 3:
+        high_deriv_pts = np.where(np.isfinite(dmu))[0]
 
     imax, dmax = 0, 0
     for i in high_deriv_pts:
@@ -418,16 +425,16 @@ def energy_align(group, reference, array='dmude', emin=-15, emax=35):
         en = getattr(reference, 'energy')
         reference.dmude = gradient(mu)/gradient(en)
 
-    xdat = group.energy.copy()
-    xref = reference.energy.copy()
-    ydat = group.dmude.copy()
-    yref = reference.dmude.copy()
+    xdat = group.energy[:]*1.0
+    xref = reference.energy[:]*1.0
+    ydat = group.dmude[:]*1.0
+    yref = reference.dmude[:]*1.0
     if array == 'mu':
-        ydat = group.mu.copy()
-        yref = reference.mu.copy()
+        ydat = group.mu[:]*1.0
+        yref = reference.mu[:]*1.0
     elif array == 'norm':
-        ydat = group.norm.copy()
-        yref = reference.norm.copy()
+        ydat = group.norm[:]*1.0
+        yref = reference.norm[:]*1.0
     xdat, ydat = remove_nans2(xdat, ydat)
     xref, yref = remove_nans2(xref, yref)
 
