@@ -25,18 +25,22 @@ from pymatgen.analysis.chemenv.coordination_environments.structure_environments 
     LightStructureEnvironments,
 )
 from pymatgen.analysis.chemenv.coordination_environments.chemenv_strategies import (
-    #SimplestChemenvStrategy,
+    # SimplestChemenvStrategy,
     MultiWeightsChemenvStrategy,
-    #WeightedNbSetChemenvStrategy,
+    # WeightedNbSetChemenvStrategy,
 )
 
 from pymatgen.ext.matproj import _MPResterLegacy
 
-# others
-import py3Dmol
 from larch.math import convolution1D
 from larch.io import read_ascii
 
+try:
+    import py3Dmol
+
+    HAS_PY3DMOL = True
+except ImportError:
+    HAS_PY3DMOL = False
 
 __author__ = ["Beatriz G. Foschiani", "Mauro Rovezzi"]
 __email__ = ["beatrizgfoschiani@gmail.com", "mauro.rovezzi@esrf.fr"]
@@ -509,7 +513,7 @@ class Struct2XAS:
 
             dist_1st_shell = se.voronoi.neighbors_distances[idx_abs_site][0]["max"]
             logger.debug(dist_1st_shell)
-            #atom_coord = lgf.compute_coordination_environments(self.struct)
+            # atom_coord = lgf.compute_coordination_environments(self.struct)
             strategy = MultiWeightsChemenvStrategy.stats_article_weights_parameters()
             # strategy = SimplestChemenvStrategy(distance_cutoff=1.1, angle_cutoff=0.3)
             lse = LightStructureEnvironments.from_structure_environments(
@@ -596,7 +600,7 @@ class Struct2XAS:
             radius for fdmnes calculation in Angstrom
         parent_path (str) [None]
             path to the parent directory where the input files are stored
-            if None it will create a temporary directory    
+            if None it will create a temporary directory
         template (str) [None]
             full path to the template file
         green (boolean):
@@ -622,7 +626,14 @@ class Struct2XAS:
         if parent_path is None:
             parent_path = tempfile.mkdtemp(prefix="struct2xas-")
         self.parent_path = parent_path
-        self.outdir = os.path.join(self.parent_path, "fdmnes", self.file_name, self.abs_atom, f"frame{self.frame}", f"site{self.abs_site}")
+        self.outdir = os.path.join(
+            self.parent_path,
+            "fdmnes",
+            self.file_name,
+            self.abs_atom,
+            f"frame{self.frame}",
+            f"site{self.abs_site}",
+        )
 
         if green:
             method = "green"
@@ -820,7 +831,7 @@ class Struct2XAS:
                 radius for feff calculation [Angstrom].
             parent_path (str) [None]
                 path to the parent directory where the input files are stored
-                if None it will create a temporary directory        
+                if None it will create a temporary directory
             template (str) [None]
                 full path to the template file
             feff_coment (str)
@@ -846,7 +857,14 @@ class Struct2XAS:
         if parent_path is None:
             parent_path = tempfile.mkdtemp(prefix="struct2xas-")
         self.parent_path = parent_path
-        self.outdir = os.path.join(self.parent_path, "feff", self.file_name, self.abs_atom, f"frame{self.frame}", f"site{self.abs_site}")
+        self.outdir = os.path.join(
+            self.parent_path,
+            "feff",
+            self.file_name,
+            self.abs_atom,
+            f"frame{self.frame}",
+            f"site{self.abs_site}",
+        )
 
         if template is None:
             template = os.path.join(
@@ -1042,6 +1060,10 @@ class Struct2XAS:
 
         return 3D structure visualization from py3Dmol.
         """
+        if HAS_PY3DMOL is False:
+            logger.error("py3Dmol not installed! -> run `pip install py3Dmol`")
+            return
+
         radius = self._round_up(radius)
 
         xyz, elems = self._get_xyz_and_elements(radius)
