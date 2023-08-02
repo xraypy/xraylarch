@@ -1191,25 +1191,36 @@ def convolve_data(
     return group
 
 
-def get_cif_from_mp(api_key, material_id):
+def save_cif_from_mp(api_key, material_id, parent_path=None):
     """Collect a CIF file from the Materials Project Database, given the material id
 
-    Parameters:
-        api_key (str): api-key from Materials Project
-        material id (str): material id (format mp-xxxx) from Materials Project
+    Parameters
+    ----------
+    api_key : str
+        api-key from Materials Project
+    material id : str
+        material id (format mp-xxxx) from Materials Project
+    parent_path : str
+        path where to store the CIF files
+        if None, a temporary one is created
+
+    Returns
+    -------
+        str : CIF file name with full path
 
     """
+    if parent_path is None:
+        parent_path = tempfile.mkdtemp(prefix="mp-cifs-")
+    #
     cif = _MPResterLegacy(api_key).get_data(material_id, prop="cif")
     pf = _MPResterLegacy(api_key).get_data(material_id, prop="pretty_formula")[0][
         "pretty_formula"
     ]
-    try:
-        os.makedirs("mp-cifs", mode=0o755)
-    except FileExistsError:
-        pass
+    outfn = f"{parent_path}{os.sep}{pf}_{material_id}.cif"
     with open(
-        file=f"mp-cifs/{pf}_{material_id}.cif",
+        file=outfn,
         mode="w",
     ) as f:
         f.write(cif[0]["cif"])
-        return print(f"written cif in mp-cifs/{pf}_{material_id}.cif")
+        print(f"mp: {material_id} -> cif: {outfn}")
+    return outfn
