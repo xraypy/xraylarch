@@ -44,6 +44,7 @@ from .specfile_reader import (str2rng_larch, read_specfile, open_specfile,
                               is_specfile)
 from .stepscan_file import read_stepscan
 
+from .nexus_xas import NXxasFile
 
 def read_tiff(fname, _larch=None, *args, **kws):
     """read image data from a TIFF file as an array"""
