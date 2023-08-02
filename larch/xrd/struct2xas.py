@@ -1206,7 +1206,7 @@ def save_cif_from_mp(api_key, material_id, parent_path=None):
 
     Returns
     -------
-        str : CIF file name with full path
+        [str, str] : parent_path, CIF file name
 
     """
     if parent_path is None:
@@ -1216,11 +1216,11 @@ def save_cif_from_mp(api_key, material_id, parent_path=None):
     pf = _MPResterLegacy(api_key).get_data(material_id, prop="pretty_formula")[0][
         "pretty_formula"
     ]
-    outfn = f"{parent_path}{os.sep}{pf}_{material_id}.cif"
+    outfn = f"{pf}_{material_id}.cif"
     with open(
-        file=outfn,
+        file=os.path.join(parent_path, outfn),
         mode="w",
     ) as f:
         f.write(cif[0]["cif"])
-        print(f"mp: {material_id} -> cif: {outfn}")
-    return outfn
+        logger.info(f"{material_id} -> {outfn}")
+    return [parent_path, outfn]
