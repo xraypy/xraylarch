@@ -3,9 +3,6 @@ Struct2XAS: convert CIFs and XYZs files to FDMNES and FEFF inputs
 """
 # main imports
 import os
-
-# import logging
-import larch.utils.logging as logging
 import time
 import tempfile
 import numpy as np
@@ -29,9 +26,9 @@ from pymatgen.analysis.chemenv.coordination_environments.chemenv_strategies impo
     MultiWeightsChemenvStrategy,
     # WeightedNbSetChemenvStrategy,
 )
-
 from pymatgen.ext.matproj import _MPResterLegacy
 
+import larch.utils.logging as logging
 from larch.math import convolution1D
 from larch.io import read_ascii
 
@@ -699,10 +696,10 @@ class Struct2XAS:
                             f"{e.Z:>2d} {site.a:12.8f} {site.b:12.8f} {site.c:12.8f} {occu}"
                             f" {str(e):>4s}"
                         )
-            l = structure.lattice
+            lat = structure.lattice
             replacements["lattice"] = (
-                f"{l.a:<12.8f} {l.b:12.8f} {l.c:12.8f} "
-                f"{l.alpha:12.8f} {l.beta:12.8f} {l.gamma:12.8f}"
+                f"{lat.a:<12.8f} {lat.b:12.8f} {lat.c:12.8f} "
+                f"{lat.alpha:12.8f} {lat.beta:12.8f} {lat.gamma:12.8f}"
             )
 
             absorber = f"{absorber}"
@@ -779,10 +776,10 @@ class Struct2XAS:
 
             replacements["group"] = ""
 
-            l = self.struct.lattice
+            lat = self.struct.lattice
             replacements["lattice"] = (
-                f"{l.a:<12.8f} {l.b:12.8f} {l.c:12.8f} "
-                f"{l.alpha:12.8f} {l.beta:12.8f} {l.gamma:12.8f}"
+                f"{lat.a:<12.8f} {lat.b:12.8f} {lat.c:12.8f} "
+                f"{lat.alpha:12.8f} {lat.beta:12.8f} {lat.gamma:12.8f}"
             )
 
             comment = (
