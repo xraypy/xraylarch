@@ -37,7 +37,11 @@ R_ELECTRON_CM  = 100.0 * consts.physical_constants['classical electron radius'][
 R_ELECTRON_ANG = 1.e8 * R_ELECTRON_CM
 
 
+# a few standard lattice constants
+STD_LATTICE_CONSTANTS = {'Si': 5.4310205, 'C': 3.567095, 'Ge': 5.64613}
 
+
+# will be able to import these from xraydb when v 4.5.1 is required
 ATOM_SYMS = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na', 'Mg',
            'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti', 'V', 'Cr',
            'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se', 'Br',
