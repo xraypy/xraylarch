@@ -47,7 +47,7 @@ __version__ = "2023.1.dev"
 logger = logging.getLogger("struct2xas", level="INFO")
 
 
-def get_timestamp() -> str:
+def _get_timestamp() -> str:
     """return a custom time stamp string: YYY-MM-DD_HHMM"""
     return "{0:04d}-{1:02d}-{2:02d}_{3:02d}{4:02d}".format(*time.localtime())
 
@@ -580,6 +580,43 @@ class Struct2XAS:
         )
         return coord_sym, df
 
+    def make_cluster(self, radius):
+        """Create a cluster with absorber atom site at the center.
+
+        Arguments
+        ---------
+        radius :float
+            cluster radius [Angstrom]
+
+        Returns
+        -------
+        atoms : list
+            species and coords for the new cluster structure
+        """
+
+        selected_site = self.get_abs_sites()[self.abs_site]
+        cluster = self.mol.get_sites_in_sphere(selected_site[-3], radius)
+
+        # showing and storing cartesian coords and species
+        atoms = []
+
+        # abs_atom at the cluster center
+        for i in range((len(cluster))):
+            try:
+                species = round(Element((cluster[i].specie).element).Z)
+            except AttributeError:
+                species = round(Element(cluster[i].specie).Z)
+
+            # getting species, after atomic number() and rounding
+            coords = (
+                cluster[i].coords - selected_site[2]
+            )  # cartesial coords and ""frac_coords"" are the same for molecule structure (a = b = c = 1)
+            coords = np.around(coords, 5)
+            dist = round(np.linalg.norm(coords - [0, 0, 0]), 5)
+            atoms.append((species, coords, dist))
+        atoms = sorted(atoms, key=lambda x: x[2])
+        return atoms
+
     def make_input_fdmnes(
         self,
         radius=7,
@@ -715,64 +752,25 @@ class Struct2XAS:
             # replacements["absorber"] = f"Z_absorber\n{round(Element(elem).Z)}"
 
             comment = (
-                f"cif file name: {self.file_name}\ncreation date:{get_timestamp()}"
+                f"cif file name: {self.file_name}\ncreation date:{_get_timestamp()}"
             )
 
         if self.is_xyz:
-            absorber = ""
-            crystal = ""
-            occupancy = ""
-
-            def make_cluster(radius):
-                """
-                Create a cluster with absorber atom site at the center.
-
-                Args:
-                    > radius (float): Cluster radius [Angstrom].
-
-                return the species and coords for the new cluster structure
-
-                """
-
-                selected_site = self.get_abs_sites()[self.abs_site]
-                cluster = self.mol.get_sites_in_sphere(selected_site[-3], radius)
-
-                # showing and storing cartesian coords and species
-                atoms = []
-
-                # abs_atom at the cluster center
-                for i in range((len(cluster))):
-                    try:
-                        species = round(Element((cluster[i].specie).element).Z)
-                    except AttributeError:
-                        species = round(Element(cluster[i].specie).Z)
-
-                    # getting species, after atomic number() and rounding
-                    coords = (
-                        cluster[i].coords - selected_site[2]
-                    )  # cartesial coords and ""frac_coords"" are the same for molecule structure (a = b = c = 1)
-                    coords = np.around(coords, 5)
-                    dist = round(np.linalg.norm(coords - [0, 0, 0]), 5)
-                    atoms.append((species, coords, dist))
-                atoms = sorted(atoms, key=lambda x: x[2])
-                return atoms
-
-            crystal = f"{crystal}"
             replacements["crystal"] = "molecule"
 
-            a = make_cluster(radius=radius)
+            atoms = self.make_cluster(radius=radius)
             sites = str()
-            for i in range(len(a)):
-                e = a[i][0]
-                c = a[i][1]
+            for i in range(len(atoms)):
+                e = atoms[i][0]
+                c = atoms[i][1]
                 sites += "\n" + (
                     f"{e:>2d} {c[0]:12.8f} {c[1]:12.8f} {c[2]:12.8f}"
                     f" {Element.from_Z(e).name}"
                 )
 
             absorber = f"{absorber}"
-            for i in range(len(a)):
-                if np.allclose(a[i][1], [0, 0, 0], atol=0.01) is True:
+            for i in range(len(atoms)):
+                if np.allclose(atoms[i][1], [0, 0, 0], atol=0.01) is True:
                     replacements["absorber"] = f"absorber\n{i+1}"
 
             replacements["group"] = ""
@@ -784,7 +782,7 @@ class Struct2XAS:
             )
 
             comment = (
-                f"xyz file name: {self.file_name}\ncreation date:{get_timestamp()}"
+                f"xyz file name: {self.file_name}\ncreation date:{_get_timestamp()}"
             )
 
         replacements["sites"] = sites
@@ -981,7 +979,7 @@ class Struct2XAS:
                     f"{at[i][0][0]:10.6f} {at[i][0][1]:10.6f} {at[i][0][2]:10.6f} {ipot[choice]}  {choice:>5} {at[i][3]:10.5f} *{at[i][4]}"
                 )
 
-        title = f"TITLE {self.file_name}\nTITLE {get_timestamp()}\nTITLE site {self.abs_site}"
+        title = f"TITLE {self.file_name}\nTITLE {_get_timestamp()}\nTITLE site {self.abs_site}"
 
         replacements["feff_comment"] = feff_comment
         replacements["edge"] = edge
