@@ -582,7 +582,7 @@ class Struct2XAS:
 
     def make_input_fdmnes(
         self,
-        radius,
+        radius=7,
         parent_path=None,
         template=None,
         green=True,
@@ -593,18 +593,19 @@ class Struct2XAS:
 
         Arguments
         ---------
-        radius (float)
+        radius : float, [7]
             radius for fdmnes calculation in Angstrom
-        parent_path (str) [None]
+        parent_path : str, [None]
             path to the parent directory where the input files are stored
             if None it will create a temporary directory
-        template (str) [None]
+        template : str, [None]
             full path to the template file
-        green (boolean):
-                    if True, both green AND SCF methods are used.
-                    if False, just the SCF method is used (more time for calculation).
+        green : boolean [True]
+            True: use `Green` (muffin-tin potentials, faster)
+            False: use finite-difference method (slower)
 
-        ..note: for further information about FDMNES keywords, search for "FDMNES user's guide"
+        ..note:: SCF is always used
+        ..note:: for further information about FDMNES keywords, search for "FDMNES user's guide"
 
         Returns
         -------
@@ -645,7 +646,7 @@ class Struct2XAS:
             try:
                 selected_site = self.get_abs_sites()[self.abs_site]
             except IndexError:
-                print("IndexError: check if abs_atom is correct")
+                logger.error("IndexError: check if abs_atom is correct")
 
             if not selected_site[-2] == 1:
                 logger.warning("the selected site does not have full occupancy!")
@@ -811,7 +812,7 @@ class Struct2XAS:
 
     def make_input_feff(
         self,
-        radius,
+        radius=7,
         parent_path=None,
         template=None,
         feff_comment="*",
@@ -824,26 +825,26 @@ class Struct2XAS:
 
         Arguments
         ---------
-            radius (float)
-                radius for feff calculation [Angstrom].
-            parent_path (str) [None]
-                path to the parent directory where the input files are stored
-                if None it will create a temporary directory
-            template (str) [None]
-                full path to the template file
-            feff_coment (str)
-                comment for input file.
-            sig2 (float or None)
-                SIG2 keywork, if None it will be commented
-            debye (list of two floats or None)
-                DEBYE keyword, if None it will be commented, otherwise:
-                debye=[temperature, debye_temperature]
-                    temperatue (float):
-                        temperature at which the Debye-Waller factors are calculate [Kelvin].
-                    debye_temperature (float):
-                        Debye Temperature of the material [Kelvin].
+        radius : float, [7]
+            radius for feff calculation [Angstrom].
+        parent_path : str, [None]
+            path to the parent directory where the input files are stored
+            if None it will create a temporary directory
+        template : str, [None]
+            full path to the template file
+        feff_coment : str, ["*"]
+            comment character used in the input file
+        sig2 : float or None, [None]
+            SIG2 keywork, if None it will be commented
+        debye : list of two floats or None, [None]
+            DEBYE keyword, if None it will be commented, otherwise:
+            debye=[temperature, debye_temperature]
+                temperatue : float
+                    temperature at which the Debye-Waller factors are calculated [Kelvin].
+                debye_temperature : float
+                    Debye Temperature of the material [Kelvin].
 
-            NOTE: for further information about FEFF keywords, search for "FEFF user's guide"
+        ..note:: refer to [FEFF documentation](https://feff.phys.washington.edu/feffproject-feff-documentation.html)
 
         Returns
         -------
