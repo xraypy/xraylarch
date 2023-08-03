@@ -2,17 +2,14 @@ import numpy as np
 import h5py
 from larch.io import read_xdi
 from larch.utils.strutils import bytes2str
+from larch.math.utils import safe_log
+from larch.utils.physical_constants import STD_LATTICE_CONSTANTS
 
 NXXAS_URL = 'https://download.nexusformat.org/doc/html/classes/applications/NXxas.html'
 
-LATTICE_CONSTANTS = {'Si': 5.4310205, 'C': 3.567095, 'Ge': 5.64613}
-
-def safe_log(x, extreme=50):
-    return np.log(np.clip(x, np.e**-extreme, np.e**extreme))
-
 def parse_mono_reflection(refl):
-    refl = refl.replace(',', ' ')
-    if refl.startswith('(') and refl.startswith(')'):
+    refl = refl.replace(',', ' ').strip()
+    if refl.startswith('(') and refl.endswith(')'):
         refl = refl[1:-1]
     if len(refl) == 3:
         return tuple([int(refl[0]), int(refl[1]), int(refl[2])])
@@ -86,7 +83,7 @@ def xdi2NXxas(xdidata, h5root, name='entry', compress=None):
     except:
         source_energy, units = 0, 'Unknown'
     s = isource.create_dataset('energy', data=source_energy)
-    s.attrs['sunits'] = units
+    s.attrs['units'] = units
     isource.create_dataset('type', data='X-ray Source')
     isource.create_dataset('probe', data='X-ray')
     for key, val in xdi_facil.items():
@@ -118,12 +115,11 @@ def xdi2NXxas(xdidata, h5root, name='entry', compress=None):
         mono_chem, mono_refl = 'Si', '111'
     mono_chem = mono_chem.title()
     mono_refl = parse_mono_reflection(mono_refl)
-
     mono_dspacing = xdi_mono.get('d_spacing', None)
     if mono_dspacing is None:
         mono_dspacing = 0.0
-        if mono_chem in LATTICE_CONSTANTS:
-            latt_c  = LATTICE_CONSTANTS[mono_chem]
+        if mono_chem in STD_LATTICE_CONSTANTS:
+            latt_c  = STD_LATTICE_CONSTANTS[mono_chem]
             hkl2 = mono_refl[0]**2 + mono_refl[1]**2 + mono_refl[2]**2
             mono_dspacing = latt_c / np.sqrt(hkl2)
     else:
@@ -194,11 +190,11 @@ def xdi2NXxas(xdidata, h5root, name='entry', compress=None):
     scan.attrs['NX_class']  = 'NXscan'
     for key, val in xdi_scan.items():
         sample.create_dataset(key, data=val)
-    ncol, np = xdidata.data.shape
-    scan.create_dataset('nP', data=np)
+    ncol, nrow = xdidata.data.shape
+    scan.create_dataset('nP', data=nrow)
     scan.create_dataset('nCol', data=ncol)
 
-    xedge = sample.create_group('xrayedge')
+    xedge = scan.create_group('xrayedge')
     xedge.attrs['NX_class'] = 'NXxrayedge'
     xedge.create_dataset('element', data=xdidata.element)
     xedge.create_dataset('edge', data=xdidata.edge)
