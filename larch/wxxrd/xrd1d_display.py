@@ -7,7 +7,7 @@ import os
 from os.path import expanduser
 
 import numpy as np
-from numpy.polynomial.chebyshev import chebfit
+from numpy.polynomial.chebyshev import chebfit, chebval
 import sys
 import time
 import re
@@ -130,11 +130,72 @@ def extract_background(x, y, smooth_width=0.1, iterations=40, cheb_order=40):
     # get cheb input parameters
     x_cheb = 2. * (x - x[0]) / (x[-1] - x[0]) - 1.
     cheb_params = chebfit(x_cheb, y_smooth, cheb_order)
-    return np.polynomial.chebyshev.chebval(x_cheb, cheb_params)
+    return chebval(x_cheb, cheb_params)
 
 def calc_bgr(dset, qwid=0.1, nsmooth=40, cheb_order=40):
     return extract_background(dset.q, dset.I, smooth_width=qwid,
                               iterations=nsmooth, cheb_order=cheb_order)
+
+class WavelengthDialog(wx.Dialog):
+    """dialog for smoothing data"""
+    def __init__(self, parent, wavelength, callback=None):
+
+        self.parent = parent
+        self.callback = callback
+
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
+                           title="Set Wavelength / Energy")
+        self.SetFont(Font(FONTSIZE))
+        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
+
+        self.wids = wids = {}
+
+        opts  = dict(size=(90, -1), act_on_losefocus=True)
+        wids['wavelength'] = FloatCtrl(panel, value=wavelength, precision=7,
+                                       minval=1.0e-4, maxval=100, **opts)
+
+        en_ev = PLANCK_HC/wavelength
+        wids['energy'] = FloatCtrl(panel, value=en_ev, precision=2,
+                                   minval=50, maxval=5.e5, **opts)
+
+
+        wids['wavelength'].SetAction(self.set_wavelength)
+        wids['energy'].SetAction(self.set_energy)
+
+        panel.Add(SimpleText(panel, 'Wavelength(\u212B): '),
+                  dcol=1, newrow=False)
+        panel.Add(wids['wavelength'], dcol=1)
+        panel.Add(SimpleText(panel, 'Energy (eV): '),
+                  dcol=1, newrow=True)
+        panel.Add(wids['energy'], dcol=1)
+
+        panel.Add((10, 10), newrow=True)
+
+        panel.Add(Button(panel, 'Done', size=(150, -1),
+                         action=self.onDone),  newrow=True)
+        panel.pack()
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(panel, 1, LEFT, 5)
+        pack(self, sizer)
+        self.Fit()
+
+        w0, h0 = self.GetSize()
+        w1, h1 = self.GetBestSize()
+        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+
+    def onDone(self, event=None):
+        if callable(self.callback):
+            self.callback(self.wids['wavelength'].GetValue())
+        self.Destroy()
+
+    def set_wavelength(self, value=1, event=None):
+        w = self.wids['wavelength'].GetValue()
+
+        self.wids['energy'].SetValue(PLANCK_HC/w, act=False)
+
+    def set_energy(self, value=10000, event=None):
+        w = self.wids['energy'].GetValue()
+        self.wids['wavelength'].SetValue(PLANCK_HC/w, act=False)
 
 
 class XRD1DFrame(wx.Frame):
@@ -189,6 +250,10 @@ class XRD1DFrame(wx.Frame):
         MenuItem(self, cmenu, "Browse AmMin Crystal Structures",
                  "Browse Structures from Am Min Database",
                  self.onCIFBrowse)
+        fmenu.AppendSeparator()
+        MenuItem(self, cmenu, "Set Energy / Wavelength",
+                 "Set Energy and Wavelength",
+                 self.onSetWavelength)
 
         MenuItem(self, cmenu, "Read PONI Calibration File",
                  "Read PONI Calibration (pyFAI) FIle",
@@ -199,6 +264,11 @@ class XRD1DFrame(wx.Frame):
         menubar.Append(cmenu, "&XRD and CIF Structures")
 
         self.SetMenuBar(menubar)
+
+    def onSetWavelength(self, event=None):
+        WavelengthDialog(self, self.wavelength, self.set_wavelength).Show()
+
+
 
     def onReadPONI(self, event=None):
         sfile = FileOpen(self, 'Read PONI (pyFAI) calibration file',
@@ -223,7 +293,7 @@ class XRD1DFrame(wx.Frame):
                          wildcard=XYWcards)
         if sfile is not None:
             top, xfile = os.path.split(sfile)
-            dxrd = xrd1d(file=sfile)
+            dxrd = xrd1d(file=sfile, wavelength=self.wavelength)
             self.add_data(dxrd, label=xfile)
 
     def onCIFBrowse(self, event=None):
@@ -244,8 +314,8 @@ class XRD1DFrame(wx.Frame):
         if cif is None:
             return
         t0 = time.time()
-        energy = E_from_lambda(self.wavelength)
 
+        energy = E_from_lambda(self.wavelength)
 
         sfact = cif.get_structure_factors(wavelength=self.wavelength)
         try:
@@ -394,9 +464,9 @@ class XRD1DFrame(wx.Frame):
                                      increment=0.01,
                                      min_val=0.001, max_val=5, action=self.on_bkg)
         wids['bkg_nsmooth'] = FloatSpin(panel, value=30, size=(90, -1),
-                                        digits=0, min_val=2, max_val=200, action=self.on_bkg)
+                                        digits=0, min_val=2, max_val=100, action=self.on_bkg)
         wids['bkg_porder'] = FloatSpin(panel, value=40, size=(90, -1),
-                                        digits=0, min_val=2, max_val=200, action=self.on_bkg)
+                                        digits=0, min_val=2, max_val=100, action=self.on_bkg)
 
         def CopyBtn(name):
             return Button(panel, 'Copy to Seleceted', size=(150, -1),
@@ -477,9 +547,12 @@ class XRD1DFrame(wx.Frame):
         self.Show()
         self.Raise()
 
-    def set_wavelength(self, w):
-        self.wids['wavelength'].SetLabel("%.6f" % w)
-        self.wids['energy_ev'].SetLabel("%.1f" % (PLANCK_HC/w))
+    def set_wavelength(self, value):
+        self.wavelength = value
+        self.wids['wavelength'].SetLabel("%.6f" % value)
+        self.wids['energy_ev'].SetLabel("%.1f" % (PLANCK_HC/value))
+        for key, dset in self.datasets.items():
+            dset.set_wavelength(value)
 
     def onCopyAttr(self, name=None, event=None):
         # print("Copy ", name, event)
@@ -641,13 +714,13 @@ class XRD1DFrame(wx.Frame):
         dlg.Destroy()
 
         if res.ok:
-            all_names = self.filelist.GetItems()
+            all = self.filelist.GetItems()
             for dname in sel:
                 self.datasets.pop(dname)
-                all_fnames.remove(dname)
+                all.remove(dname)
 
             filelist.Clear()
-            for name in all_names:
+            for name in all:
                 filelist.Append(name)
 
     def get_display(self, win=1, stacked=False):
@@ -658,28 +731,31 @@ class XRD1DFrame(wx.Frame):
     def plot_dset(self, dset, plottype, newplot=True):
         win    = int(self.wids['plot_win'].GetStringSelection())
         xscale = self.wids['xscale'].GetSelection()
-        xlabel = self.wids['xscale'].GetStringSelection()
+        opts = {'show_legend': True, 'xmax': None,
+                'xlabel':  self.wids['xscale'].GetStringSelection(),
+                'ylabel':'Scaled Intensity',
+                'label': dset.label}
+
         xdat = dset.q
         if xscale == 2:
            xdat = dset.d
+           opts['xmax'] = min(12.0, max(xdat))
         elif xscale == 1:
             xdat = dset.twth
 
         ydat = 1.0*dset.I/dset.scale
-        ylabel = 'Scaled Intensity'
         if plottype == 'sub':
             ydat = 1.0*(dset.I-dset.bkgd)/dset.scale
-            ylabel = 'Scaled (Intensity - Background)'
+            opts['ylabel'] = 'Scaled (Intensity - Background)'
 
         pframe = self.get_display(win=win)
         plot = pframe.plot if newplot else pframe.oplot
-        plot(xdat, ydat, xlabel=xlabel, ylabel=ylabel,
-             label=dset.label, show_legend=True)
+        plot(xdat, ydat, **opts)
         if plottype == 'raw+bkg':
             y2dat = 1.0*dset.bkgd/dset.scale
-            ylabel = 'Scaled Intensity with Background'
-            pframe.oplot(xdat, y2dat, xlabel=xlabel, ylabel=ylabel,
-                         label='background', show_legend=True)
+            opts['ylabel'] = 'Scaled Intensity with Background'
+            opts['label'] = 'background'
+            pframe.oplot(xdat, y2dat, **opts)
 
     def onPlotOne(self, event=None, label=None):
         if label is None:
