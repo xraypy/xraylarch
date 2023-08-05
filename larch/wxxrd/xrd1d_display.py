@@ -29,13 +29,13 @@ from larch.larchlib import read_workdir, save_workdir
 from larch.utils import nativepath, get_cwd, gformat, fix_filename
 from larch.utils.physical_constants import PLANCK_HC
 from larch.xray import XrayBackground
-from larch.xrd import (cifDB, SearchCIFdb, QSTEP, QMIN, QMAX, CATEGORIES,
-                       match_database, d_from_q,twth_from_q,q_from_twth,
+from larch.wxxas import RemoveDialog
+
+from larch.xrd import (d_from_q,twth_from_q,q_from_twth,
                        d_from_twth,twth_from_d,q_from_d, lambda_from_E,
                        E_from_lambda, calc_broadening,
-                       instrumental_fit_uvw,peaklocater,peakfitter,
-                       xrd1d, peakfinder_methods,SPACEGROUPS, create_xrdcif,
-                       save1D, read_poni)
+                       instrumental_fit_uvw,peaklocater,peakfitter, xrd1d,
+                       peakfinder_methods, save1D, read_poni)
 
 
 from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
@@ -44,7 +44,8 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          set_color, CEN, RIGHT, LEFT, FRAMESTYLE, Font,
                          FONTSIZE, FONTSIZE_FW, FileSave, FileOpen,
                          flatnotebook, Popup, FileCheckList,
-                         EditableListBox, ExceptionPopup, CIFFrame)
+                         EditableListBox, ExceptionPopup, CIFFrame,
+                         LarchFrame, LarchWxApp)
 
 XYWcards = "XY Data File(*.xy)|*.xy|All files (*.*)|*.*"
 PlotWindowChoices = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
@@ -125,7 +126,6 @@ def extract_background(x, y, smooth_width=0.1, iterations=40, cheb_order=40):
     :return: vector of extracted y background
     """
     smooth_points = int((float(smooth_width) / (x[1] - x[0])))
-    # print('bkg ', smooth_points, iterations,cheb_order)
     y_smooth = smooth_bruckner(y, abs(smooth_points), iterations)
     # get cheb input parameters
     x_cheb = 2. * (x - x[0]) / (x[-1] - x[0]) - 1.
@@ -137,7 +137,7 @@ def calc_bgr(dset, qwid=0.1, nsmooth=40, cheb_order=40):
                               iterations=nsmooth, cheb_order=cheb_order)
 
 
-class XRD1DBrowserFrame(wx.Frame):
+class XRD1DFrame(wx.Frame):
     """browse 1D XRD patterns"""
 
     def __init__(self, parent=None, wavelength=1.0, ponifile=None, _larch=None, **kws):
@@ -153,6 +153,15 @@ class XRD1DBrowserFrame(wx.Frame):
             except:
                 pass
         self.larch = _larch
+        if self.larch is None:
+            self.larch_buffer = LarchFrame(_larch=None, parent=self,
+                                           is_standalone=False,
+                                           with_raise=False,
+                                           exit_on_close=False)
+
+            self.larch = self.larch_buffer.larchshell
+
+
         self.current_label = None
         self.cif_browser = None
         self.datasets = {}
@@ -163,6 +172,7 @@ class XRD1DBrowserFrame(wx.Frame):
 
     def createMenus(self):
         fmenu = wx.Menu()
+        cmenu = wx.Menu()
         MenuItem(self, fmenu, "Read XY File",
                  "Read XRD 1D data from XY FIle",
                  self.onReadXY)
@@ -172,39 +182,47 @@ class XRD1DBrowserFrame(wx.Frame):
                  self.onSaveXY)
 
         fmenu.AppendSeparator()
-        MenuItem(self, fmenu, "Read PONI Calibration File",
-                 "Read PONI Calibration (pyFAI) FIle",
-                 self.onReadPONI)
+        MenuItem(self, fmenu, "Remove Selected Patterns",
+                 "Remove Selected Patterns",
+                 self.remove_selected_datasets)
 
-        fmenu.AppendSeparator()
-        MenuItem(self, fmenu, "Browse AmMin Crystal Structures",
+        MenuItem(self, cmenu, "Browse AmMin Crystal Structures",
                  "Browse Structures from Am Min Database",
                  self.onCIFBrowse)
 
+        MenuItem(self, cmenu, "Read PONI Calibration File",
+                 "Read PONI Calibration (pyFAI) FIle",
+                 self.onReadPONI)
+
         menubar = wx.MenuBar()
         menubar.Append(fmenu, "&File")
+        menubar.Append(cmenu, "&XRD and CIF Structures")
+
         self.SetMenuBar(menubar)
 
     def onReadPONI(self, event=None):
         sfile = FileOpen(self, 'Read PONI (pyFAI) calibration file',
-                         defaultDir=get_cwd(),
+                         default_file='XRD.poni',
+                         default_dir=get_cwd(),
                          wildcard="PONI Files(*.poni)|*.poni|All files (*.*)|*.*")
 
         if sfile is not None:
-            top, xfile = os.split(sfile)
             try:
-                self.poni.update(read_poni(path))
+                self.poni.update(read_poni(sfile))
             except:
-                pass
-        self.set_wavelength(self.poni[wavelength]*1.e10)
+                title = "Could not read PONI File"
+                message = [f"Could not read PONI file {sfile}"]
+                ExceptionPopup(self, title, message)
+
+        self.set_wavelength(self.poni['wavelength']*1.e10)
 
     def onReadXY(self, event=None):
         sfile = FileOpen(self, 'Read XY Data',
-                         defaultDir=get_cwd(),
+                         default_file='XRD.xy',
+                         default_dir=get_cwd(),
                          wildcard=XYWcards)
         if sfile is not None:
-            print(' would read ', sfile)
-            top, xfile = os.split(sfile)
+            top, xfile = os.path.split(sfile)
             dxrd = xrd1d(file=sfile)
             self.add_data(dxrd, label=xfile)
 
@@ -603,8 +621,34 @@ class XRD1DBrowserFrame(wx.Frame):
             if with_plot:
                 self.onPlotOne()
 
-    def remove_dataset(self, event=None):
-        print('remove dataset ', event.GetString())
+    def remove_dataset(self, dname=None, event=None):
+        if dname in self.datasets:
+            self.datasets.pop(dname)
+
+        self.filelist.Clear()
+        for name in self.datasets:
+            self.filelist.Append(name)
+
+    def remove_selected_datasets(self, event=None):
+        sel = []
+        for checked in self.filelist.GetCheckedStrings():
+            sel.append(str(checked))
+        if len(sel) < 1:
+            return
+
+        dlg = RemoveDialog(self, sel)
+        res = dlg.GetResponse()
+        dlg.Destroy()
+
+        if res.ok:
+            all_names = self.filelist.GetItems()
+            for dname in sel:
+                self.datasets.pop(dname)
+                all_fnames.remove(dname)
+
+            filelist.Clear()
+            for name in all_names:
+                filelist.Append(name)
 
     def get_display(self, win=1, stacked=False):
         wintitle='XRD Plot Window %i' % win
@@ -672,8 +716,18 @@ class XRD1DBrowserFrame(wx.Frame):
         if label is None:
             label = 'XRD pattern'
         if label in self.datasets:
-            print('label alread in datasets: ', label )
+            print('label already in datasets: ', label )
         else:
             self.filelist.Append(label)
             self.datasets[label] = dataset
             self.show_dataset(label=label)
+
+class XRD1DApp(LarchWxApp):
+    def __init__(self, **kws):
+        LarchWxApp.__init__(self)
+
+    def createApp(self):
+        frame = XRD1DFrame()
+        frame.Show()
+        self.SetTopWindow(frame)
+        return True
