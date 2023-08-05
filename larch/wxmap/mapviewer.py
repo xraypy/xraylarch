@@ -61,8 +61,8 @@ from .mapmathpanel import MapMathPanel
 from .maptomopanel import TomographyPanel
 from .mapxrfpanel import XRFAnalysisPanel
 
-from ..wxxrd import XRD1DViewerFrame, XRD2DViewerFrame
-from ..wxxrd.xrd1d_display import XRD1DBrowserFrame
+from ..wxxrd import XRD2DViewerFrame
+from ..wxxrd.xrd1d_display import XRD1DFrame
 
 def timestring():
     return datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')
@@ -1780,11 +1780,12 @@ class MapViewerFrame(wx.Frame):
         xdat = xrd1d(label=label, energy=energy, wavelength=wavelength)
         xdat.set_xy_data(np.array([q, counts]), 'q')
         if self.xrddisplay1D is None:
-            self.xrddisplay1D = XRD1DBrowserFrame(wavelength=wavelength, _larch=self.larch)
+            self.xrddisplay1D = XRD1DFrame(wavelength=wavelength,
+                                           _larch=self.larch)
         try:
             self.xrddisplay1D.add_data(xdat, label=label)
         except:
-            self.xrddisplay1D = XRD1DBrowserFrame(_larch=self.larch)
+            self.xrddisplay1D = XRD1DFrame(_larch=self.larch)
             self.xrddisplay1D.add_data(xdat, label=label)
 
         self.xrddisplay1D.Show()

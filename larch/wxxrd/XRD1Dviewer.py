@@ -31,13 +31,14 @@ from larch.larchlib import read_workdir, save_workdir
 from larch.utils import nativepath, get_cwd
 from larch.wxlib import PeriodicTablePanel, Choice, LarchWxApp
 
-from larch.xrd import (cifDB, SearchCIFdb, QSTEP, QMIN, QMAX, CATEGORIES,
-                       match_database, d_from_q,twth_from_q,q_from_twth,
+from larch.xrd.cifdb import (cifDB, SearchCIFdb, QSTEP, QMIN, QMAX, CATEGORIES,
+                             match_database, SPACEGROUPS, create_xrdcif)
+
+from larch.xrd import (d_from_q,twth_from_q,q_from_twth,
                        d_from_twth,twth_from_d,q_from_d, lambda_from_E,
                        E_from_lambda,calc_broadening,
-                       instrumental_fit_uvw,peaklocater,peakfitter,
-                       xrd1d, peakfinder_methods,SPACEGROUPS, create_xrdcif,
-                       save1D)
+                       instrumental_fit_uvw,peaklocater,peakfitter, xrd1d,
+                       peakfinder_methods, save1D)
 
 ###################################
 
