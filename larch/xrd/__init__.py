@@ -18,10 +18,6 @@ from .xrd_tools import (d_from_q, d_from_twth, twth_from_d, twth_from_q,
                         q_from_twth, qv_from_hkl, d_from_hkl,
                         unit_cell_volume, generate_hkl)
 
-from .xrd_cif import (SPACEGROUPS, create_xrdcif, check_elemsym, SPGRP_SYMM)
-
-from .cifdb import (get_cifdb, cifDB, cif_match, read_cif, SearchCIFdb,
-                    match_database, CATEGORIES, QSTEP, QMIN, QMAX, QAXIS)
 
 from .amcsd import CifStructure, get_amcsd, get_cif, find_cifs, parse_cif_file
 
@@ -56,9 +52,7 @@ _larch_builtins = {'_xrd':  {'d_from_q': d_from_q,
                              'generate_hkl': generate_hkl,
                              'xrd_background': xrd_background,
                              'integrate_xrd': integrate_xrd,
-                             'cif_match': cif_match,
-                             'get_cifdb': get_cifdb,
-                             'read_cif': read_cif,
+
                              'create_xrd': create_xrd,
                              'create_xrd1d': create_xrd1d,
                              'peakfinder': peakfinder,
@@ -73,6 +67,13 @@ _larch_builtins = {'_xrd':  {'d_from_q': d_from_q,
                              'find_cifs': find_cifs,
                              }}
 
+
+### from .xrd_cif import (SPACEGROUPS, create_xrdcif, check_elemsym, SPGRP_SYMM)
+# from .cifdb import (get_cifdb, cifDB, cif_match, read_cif, SearchCIFdb,
+#                     match_database, CATEGORIES, QSTEP, QMIN, QMAX, QAXIS)
+                             # 'cif_match': cif_match,
+                             # 'get_cifdb': get_cifdb,
+                             # 'read_cif': read_cif,
 #                      'data_gaussian_fit': data_gaussian_fit,
 #                      'gaussian': gaussian,
 #                      'doublegaussian': doublegaussian,
