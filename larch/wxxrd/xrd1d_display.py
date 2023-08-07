@@ -4,17 +4,13 @@ GUI for displaying 1D XRD images
 
 '''
 import os
-from os.path import expanduser
+import sys
+import time
+
+from functools import partial
 
 import numpy as np
 from numpy.polynomial.chebyshev import chebfit, chebval
-import sys
-import time
-import re
-import math
-
-from threading import Thread
-from functools import partial
 
 import pyFAI.units
 
@@ -36,7 +32,6 @@ from larch.xrd import (d_from_q,twth_from_q,q_from_twth,
                        E_from_lambda, calc_broadening,
                        instrumental_fit_uvw,peaklocater,peakfitter, xrd1d,
                        peakfinder_methods, save1D, read_poni)
-
 
 from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          SetTip, GridPanel, get_icon, SimpleText, pack,
@@ -279,6 +274,8 @@ class XRD1DFrame(wx.Frame):
         if sfile is not None:
             try:
                 self.poni.update(read_poni(sfile))
+                top, xfile = os.path.split(sfile)
+                os.chdir(top)
             except:
                 title = "Could not read PONI File"
                 message = [f"Could not read PONI file {sfile}"]
@@ -293,6 +290,7 @@ class XRD1DFrame(wx.Frame):
                          wildcard=XYWcards)
         if sfile is not None:
             top, xfile = os.path.split(sfile)
+            os.chdir(top)
             dxrd = xrd1d(file=sfile, wavelength=self.wavelength)
             self.add_data(dxrd, label=xfile)
 
