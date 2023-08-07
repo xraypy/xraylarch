@@ -3,8 +3,8 @@ import h5py
 from larch.io import read_xdi
 from larch.utils.strutils import bytes2str
 from larch.math.utils import safe_log
-from larch.utils.physical_constants import STD_LATTICE_CONSTANTS
-
+from larch.utils.physical_constants import (STD_LATTICE_CONSTANTS,
+                                            DEG2RAD, PLANCK_HC)
 NXXAS_URL = 'https://download.nexusformat.org/doc/html/classes/applications/NXxas.html'
 
 def parse_mono_reflection(refl):
@@ -14,6 +14,14 @@ def parse_mono_reflection(refl):
     if len(refl) == 3:
         return tuple([int(refl[0]), int(refl[1]), int(refl[2])])
     return tuple([int(r) for r in refl.split()])
+
+
+NXXAS_LINKS = {'element': 'scan/xrayedge/element',
+               'edge':    'scan/xrayedge/edge',
+               'energy':  'instrument/monochromator/energy',
+               'rawdata': 'scan/data',
+               'column_labels': '/scan/column_labels',
+               'i0':      'instrument/i0/data'}
 
 
 def xdi2NXxas(xdidata, h5root, name='entry', compress=None):
@@ -95,16 +103,6 @@ def xdi2NXxas(xdidata, h5root, name='entry', compress=None):
     imono = instrument.create_group('monochromator')
     imono.attrs['NX_class'] = 'NXmonochromator'
 
-    ien = xdidata.array_labels.index('energy')
-    en_units = 'unknown'
-    if ien > -1:
-        en_units = xdidata.array_units[ien]
-    s = imono.create_dataset('energy', data=xdidata.energy, **compress)
-    s.attrs['units'] = en_units
-    if hasattr(xdidata, 'angle'):
-        s = imono.create_dataset('angle', data=xdidata.angle, **compress)
-        s.attrs['units'] = 'degrees'
-
     # instrument/mono/crystal
     imonoxtal = imono.create_group('crystal')
     imonoxtal.attrs['NX_class'] = 'NXcrystal'
@@ -124,6 +122,23 @@ def xdi2NXxas(xdidata, h5root, name='entry', compress=None):
             mono_dspacing = latt_c / np.sqrt(hkl2)
     else:
          mono_dspacing = float(mono_dspacing)
+
+    if not hasattr(xdidata, 'energy') and hasattr(xdidata, 'angle'):
+        omega = PLANCK_HC/(2*mono_dspacing)
+        xdidata.energy = omega/np.sin(xdidata.angle*DEG2RAD)
+        en_units = 'eV'
+    else:
+        ien = xdidata.array_labels.index('energy')
+        en_units = 'eV'
+        if ien > -1:
+            en_units = xdidata.array_units[ien]
+
+    s = imono.create_dataset('energy', data=xdidata.energy, **compress)
+    s.attrs['units'] = en_units
+    if hasattr(xdidata, 'angle'):
+        s = imono.create_dataset('angle', data=xdidata.angle, **compress)
+        s.attrs['units'] = 'degrees'
+
 
     imonoxtal.create_dataset('chemical_formula', data=mono_chem)
     imonoxtal.create_dataset('reflection', data=mono_refl)
@@ -189,7 +204,8 @@ def xdi2NXxas(xdidata, h5root, name='entry', compress=None):
     scan = xas.create_group('scan')
     scan.attrs['NX_class']  = 'NXscan'
     for key, val in xdi_scan.items():
-        sample.create_dataset(key, data=val)
+        scan.create_dataset(key, data=val)
+
     ncol, nrow = xdidata.data.shape
     scan.create_dataset('nP', data=nrow)
     scan.create_dataset('nCol', data=ncol)
@@ -210,32 +226,29 @@ def xdi2NXxas(xdidata, h5root, name='entry', compress=None):
     if not hasattr(xdidata, 'itrans') and hasattr(xdidata, 'ifluor'):
         mode = 'Fluorescence'
     dat.create_dataset('mode', data=mode)
-    dat['element'] = h5py.SoftLink(f'/{entry_name}/scan/xrayedge/element')
-    dat['edge'] = h5py.SoftLink(f'/{entry_name}/scan/xrayedge/edge')
 
-    dat['column_labels'] = h5py.SoftLink(f'/{entry_name}/scan/column_labels')
-    # dat['rawdata'] = h5py.SoftLink(f'/{entry_name}/scan/data')
+    slinks = {k: v for k,v in NXXAS_LINKS.items()}
 
-    dat['energy'] = h5py.SoftLink(f'/{entry_name}/instrument/monochromator/energy')
-    dat['i0'] = h5py.SoftLink(f'/{entry_name}/instrument/i0/data')
     if hasattr(xdidata, 'itrans'):
-        dat['itrans'] = h5py.SoftLink(f'/{entry_name}/instrument/itrans/data')
+        slinks['itrans'] = 'instrument/itrans/data'
         mutrans = -safe_log(xdidata.itrans/xdidata.i0)
         dat.create_dataset('mutrans', data=mutrans, **compress)
 
     if hasattr(xdidata, 'ifluor'):
-        dat['ifluor'] = h5py.SoftLink(f'/{entry_name}/instrument/ifluor/data')
+        slink['ifluor'] = 'instrument/ifluor/data'
         mufluor = xdidata.ifluor/xdidata.i0
         dat.create_dataset('mufluor', data=mufluor, **compress)
 
     if hasattr(xdidata, 'irefer'):
-        dat['irefer'] = h5py.SoftLink(f'/{entry_name}/instrument/irefer/data')
+        slink['irefer'] = 'instrument/irefer/data'
         if refmode.startswith('Fluo'):
             muref = xdidata.irefer/xdidata.i0
         else:
             muref = -safe_log(xdidata.irefer/xdidata.itrans)
         dat.create_dataset('murefer', data=murefer, **compress)
 
+    for dest, source in slinks.items():
+        dat[dest] =  h5py.SoftLink(f'/{entry_name}/{source}')
 
 class NXxasFile(object):
     """
