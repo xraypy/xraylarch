@@ -57,7 +57,7 @@ from .xrd_tools import generate_hkl, d_from_hkl, twth_from_q, E_from_lambda
 from .cif2feff import cif2feffinp
 from ..utils import isotime
 from ..utils.strutils import version_ge, bytes2str
-from ..utils.physical_constants import TAU
+from ..utils.physical_constants import TAU, ATOM_SYMS
 from ..site_config import user_larchdir
 from .. import logger
 
@@ -87,18 +87,6 @@ StructureFactor = namedtuple('StructureFactor', ('q', 'intensity', 'hkl',
                                                  'twotheta', 'd',
                                                  'wavelength', 'energy',
                                                  'f2hkl', 'degen', 'lorentz'))
-
-
-elem_symbol = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na', 'Mg', 'Al',
-               'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti', 'V', 'Cr', 'Mn', 'Fe',
-               'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb', 'Sr',
-               'Y', 'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn',
-               'Sb', 'Te', 'I', 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm',
-               'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Hf', 'Ta', 'W',
-               'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn',
-               'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf',
-               'Es', 'Fm', 'Md', 'No', 'Lr', 'Rf', 'Db', 'Sg', 'Bh', 'Hs', 'Mt', 'Ds',
-               'Rg', 'Uub', 'Uut', 'Uuq', 'Uup', 'Uuh', 'Uus', 'Uuo']
 
 
 # for packing/unpacking H, K, L to 2-character hash
@@ -1273,7 +1261,7 @@ class AMCSD():
                 matches = new_matches
 
             if strict_contains:
-                excludes_elements = elem_symbol[:]
+                excludes_elements = ATOM_SYMS[:]
                 for c in contains_elements:
                     if c in excludes_elements:
                         excludes_elements.remove(c)

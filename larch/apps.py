@@ -75,15 +75,16 @@ class LarchApp:
         make_shortcut(script, name=self.name, icon=icon,
                       terminal=self.terminal, folder='Larch')
 
-APPS = (LarchApp('Larch CLI', 'larch', terminal=True),
-        LarchApp('Larch GUI', 'larch --wxgui'),
-        LarchApp('XAS Viewer',  'xas_viewer',  icon='onecone'),
+APPS = (LarchApp('Larch CLI',  'larch', terminal=True),
+        LarchApp('Larch GUI',  'larch --wxgui'),
+        LarchApp('XAS Viewer', 'xas_viewer',  icon='onecone'),
+        LarchApp('Larix',       'xas_viewer',  icon='onecone'),
         LarchApp('GSE MapViewer', 'gse_mapviewer',  icon='gse_xrfmap'),
-        LarchApp('XRF Display',  'xrfdisplay',  icon='ptable'),
+        LarchApp('XRF Viewer',  'larch_xrf',  icon='ptable'),
+        LarchApp('XRD1D Viewer', 'larch_xrd1d')
         # LarchApp('GSE DTCorrect', 'gse_dtcorrect'),
         # LarchApp('Dioptas', 'dioptas_larch', icon='dioptas'),
         # LarchApp('2D XRD Viewer', 'xrd2d_viewer'),
-        # LarchApp('1D XRD Viewer', 'xrd1d_viewer')
         )
 
 
@@ -97,7 +98,6 @@ def make_desktop_shortcuts():
         app.create_shortcut()
     updater = LarchApp('Larch Updater',  '_ -m pip install --upgrade xraylarch', terminal=True)
     updater.create_shortcut()
-
 
 
 def make_cli(description='run larch program', filedesc='data file'):
@@ -140,7 +140,7 @@ def run_xas_viewer():
     kwargs = make_cli(description="Larch's XAS Viewer and Analysis Program")
     XASViewer(check_version=True, **kwargs).MainLoop()
 
-def run_xrfdisplay():
+def run_larch_xrf():
     """ XRF Display"""
     set_locale()
     use_mpl_wxagg()
@@ -151,7 +151,7 @@ def run_xrfdisplay():
                     filedesc='MCA File (.mca)')
     XRFApp(**kwargs).MainLoop()
 
-def run_xrfdisplay_epics():
+def run_epics_xrf():
     """XRF Display for Epics Detectors"""
     set_locale()
     use_mpl_wxagg()
@@ -160,12 +160,12 @@ def run_xrfdisplay_epics():
     from larch.epics import EpicsXRFApp
     EpicsXRFApp().MainLoop()
 
-def run_xrd1d_viewer():
+def run_larch_xrd1d():
     """XRD Display for 1D patternss"""
     set_locale()
     use_mpl_wxagg()
-    from larch.wxxrd import XRD1DViewer
-    XRD1DViewer().MainLoop()
+    from larch.wxxrd import XRD1DApp
+    XRD1DApp().MainLoop()
 
 def run_xrd2d_viewer():
     """XRD Display for 2D patternss"""

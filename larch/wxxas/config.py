@@ -2,9 +2,9 @@ import wxmplot
 
 from larch.site_config import get_homedir
 from larch.xafs.xafsutils import FT_WINDOWS
-from larch.xray import atomic_symbols
+from larch.utils.physical_constants import ATOM_SYMS
 
-ATSYMS = ['?'] + atomic_symbols
+ATSYMS = ['?'] + ATOM_SYMS[:98]
 EDGES  = ['K', 'L3', 'L2', 'L1', 'M5', 'M4', 'M3', 'N7']
 CONF_FILE = 'xas_viewer.conf'
 

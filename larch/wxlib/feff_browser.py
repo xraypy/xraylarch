@@ -18,9 +18,9 @@ from larch.wxlib import (GridPanel, GUIColors, Button, pack, SimpleText,
                          LarchWxApp)
 
 from larch.xafs import get_feff_pathinfo
-from larch.xray import atomic_symbols
+from larch.utils.physical_constants import ATOM_SYMS
 
-ATSYMS = ['< All Atoms>'] + atomic_symbols
+ATSYMS = ['< All Atoms>'] + ATOM_SYMS[:96]
 EDGES  = ['< All Edges>', 'K', 'L3', 'L2', 'L1', 'M5']
 
 
@@ -143,7 +143,7 @@ class RemoveFeffCalcDialog(wx.Dialog):
 
 class FeffResultsPanel(wx.Panel):
     """ present Feff results """
-    def __init__(self, parent=None, feffresult=None, path_importer=None, 
+    def __init__(self, parent=None, feffresult=None, path_importer=None,
                  _larch=None):
         wx.Panel.__init__(self, parent, -1, size=(700, 500))
         self.parent = parent

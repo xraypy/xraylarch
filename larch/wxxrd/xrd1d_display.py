@@ -7,7 +7,7 @@ import os
 from os.path import expanduser
 
 import numpy as np
-from numpy.polynomial.chebyshev import chebfit
+from numpy.polynomial.chebyshev import chebfit, chebval
 import sys
 import time
 import re
@@ -29,13 +29,13 @@ from larch.larchlib import read_workdir, save_workdir
 from larch.utils import nativepath, get_cwd, gformat, fix_filename
 from larch.utils.physical_constants import PLANCK_HC
 from larch.xray import XrayBackground
-from larch.xrd import (cifDB, SearchCIFdb, QSTEP, QMIN, QMAX, CATEGORIES,
-                       match_database, d_from_q,twth_from_q,q_from_twth,
+from larch.wxxas import RemoveDialog
+
+from larch.xrd import (d_from_q,twth_from_q,q_from_twth,
                        d_from_twth,twth_from_d,q_from_d, lambda_from_E,
                        E_from_lambda, calc_broadening,
-                       instrumental_fit_uvw,peaklocater,peakfitter,
-                       xrd1d, peakfinder_methods,SPACEGROUPS, create_xrdcif,
-                       save1D, read_poni)
+                       instrumental_fit_uvw,peaklocater,peakfitter, xrd1d,
+                       peakfinder_methods, save1D, read_poni)
 
 
 from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
@@ -44,7 +44,8 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          set_color, CEN, RIGHT, LEFT, FRAMESTYLE, Font,
                          FONTSIZE, FONTSIZE_FW, FileSave, FileOpen,
                          flatnotebook, Popup, FileCheckList,
-                         EditableListBox, ExceptionPopup, CIFFrame)
+                         EditableListBox, ExceptionPopup, CIFFrame,
+                         LarchFrame, LarchWxApp)
 
 XYWcards = "XY Data File(*.xy)|*.xy|All files (*.*)|*.*"
 PlotWindowChoices = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
@@ -125,19 +126,79 @@ def extract_background(x, y, smooth_width=0.1, iterations=40, cheb_order=40):
     :return: vector of extracted y background
     """
     smooth_points = int((float(smooth_width) / (x[1] - x[0])))
-    # print('bkg ', smooth_points, iterations,cheb_order)
     y_smooth = smooth_bruckner(y, abs(smooth_points), iterations)
     # get cheb input parameters
     x_cheb = 2. * (x - x[0]) / (x[-1] - x[0]) - 1.
     cheb_params = chebfit(x_cheb, y_smooth, cheb_order)
-    return np.polynomial.chebyshev.chebval(x_cheb, cheb_params)
+    return chebval(x_cheb, cheb_params)
 
 def calc_bgr(dset, qwid=0.1, nsmooth=40, cheb_order=40):
     return extract_background(dset.q, dset.I, smooth_width=qwid,
                               iterations=nsmooth, cheb_order=cheb_order)
 
+class WavelengthDialog(wx.Dialog):
+    """dialog for smoothing data"""
+    def __init__(self, parent, wavelength, callback=None):
 
-class XRD1DBrowserFrame(wx.Frame):
+        self.parent = parent
+        self.callback = callback
+
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
+                           title="Set Wavelength / Energy")
+        self.SetFont(Font(FONTSIZE))
+        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
+
+        self.wids = wids = {}
+
+        opts  = dict(size=(90, -1), act_on_losefocus=True)
+        wids['wavelength'] = FloatCtrl(panel, value=wavelength, precision=7,
+                                       minval=1.0e-4, maxval=100, **opts)
+
+        en_ev = PLANCK_HC/wavelength
+        wids['energy'] = FloatCtrl(panel, value=en_ev, precision=2,
+                                   minval=50, maxval=5.e5, **opts)
+
+
+        wids['wavelength'].SetAction(self.set_wavelength)
+        wids['energy'].SetAction(self.set_energy)
+
+        panel.Add(SimpleText(panel, 'Wavelength(\u212B): '),
+                  dcol=1, newrow=False)
+        panel.Add(wids['wavelength'], dcol=1)
+        panel.Add(SimpleText(panel, 'Energy (eV): '),
+                  dcol=1, newrow=True)
+        panel.Add(wids['energy'], dcol=1)
+
+        panel.Add((10, 10), newrow=True)
+
+        panel.Add(Button(panel, 'Done', size=(150, -1),
+                         action=self.onDone),  newrow=True)
+        panel.pack()
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(panel, 1, LEFT, 5)
+        pack(self, sizer)
+        self.Fit()
+
+        w0, h0 = self.GetSize()
+        w1, h1 = self.GetBestSize()
+        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+
+    def onDone(self, event=None):
+        if callable(self.callback):
+            self.callback(self.wids['wavelength'].GetValue())
+        self.Destroy()
+
+    def set_wavelength(self, value=1, event=None):
+        w = self.wids['wavelength'].GetValue()
+
+        self.wids['energy'].SetValue(PLANCK_HC/w, act=False)
+
+    def set_energy(self, value=10000, event=None):
+        w = self.wids['energy'].GetValue()
+        self.wids['wavelength'].SetValue(PLANCK_HC/w, act=False)
+
+
+class XRD1DFrame(wx.Frame):
     """browse 1D XRD patterns"""
 
     def __init__(self, parent=None, wavelength=1.0, ponifile=None, _larch=None, **kws):
@@ -153,6 +214,15 @@ class XRD1DBrowserFrame(wx.Frame):
             except:
                 pass
         self.larch = _larch
+        if self.larch is None:
+            self.larch_buffer = LarchFrame(_larch=None, parent=self,
+                                           is_standalone=False,
+                                           with_raise=False,
+                                           exit_on_close=False)
+
+            self.larch = self.larch_buffer.larchshell
+
+
         self.current_label = None
         self.cif_browser = None
         self.datasets = {}
@@ -163,6 +233,7 @@ class XRD1DBrowserFrame(wx.Frame):
 
     def createMenus(self):
         fmenu = wx.Menu()
+        cmenu = wx.Menu()
         MenuItem(self, fmenu, "Read XY File",
                  "Read XRD 1D data from XY FIle",
                  self.onReadXY)
@@ -172,40 +243,57 @@ class XRD1DBrowserFrame(wx.Frame):
                  self.onSaveXY)
 
         fmenu.AppendSeparator()
-        MenuItem(self, fmenu, "Read PONI Calibration File",
+        MenuItem(self, fmenu, "Remove Selected Patterns",
+                 "Remove Selected Patterns",
+                 self.remove_selected_datasets)
+
+        MenuItem(self, cmenu, "Browse AmMin Crystal Structures",
+                 "Browse Structures from Am Min Database",
+                 self.onCIFBrowse)
+        fmenu.AppendSeparator()
+        MenuItem(self, cmenu, "Set Energy / Wavelength",
+                 "Set Energy and Wavelength",
+                 self.onSetWavelength)
+
+        MenuItem(self, cmenu, "Read PONI Calibration File",
                  "Read PONI Calibration (pyFAI) FIle",
                  self.onReadPONI)
 
-        fmenu.AppendSeparator()
-        MenuItem(self, fmenu, "Browse AmMin Crystal Structures",
-                 "Browse Structures from Am Min Database",
-                 self.onCIFBrowse)
-
         menubar = wx.MenuBar()
         menubar.Append(fmenu, "&File")
+        menubar.Append(cmenu, "&XRD and CIF Structures")
+
         self.SetMenuBar(menubar)
+
+    def onSetWavelength(self, event=None):
+        WavelengthDialog(self, self.wavelength, self.set_wavelength).Show()
+
+
 
     def onReadPONI(self, event=None):
         sfile = FileOpen(self, 'Read PONI (pyFAI) calibration file',
-                         defaultDir=get_cwd(),
+                         default_file='XRD.poni',
+                         default_dir=get_cwd(),
                          wildcard="PONI Files(*.poni)|*.poni|All files (*.*)|*.*")
 
         if sfile is not None:
-            top, xfile = os.split(sfile)
             try:
-                self.poni.update(read_poni(path))
+                self.poni.update(read_poni(sfile))
             except:
-                pass
-        self.set_wavelength(self.poni[wavelength]*1.e10)
+                title = "Could not read PONI File"
+                message = [f"Could not read PONI file {sfile}"]
+                ExceptionPopup(self, title, message)
+
+        self.set_wavelength(self.poni['wavelength']*1.e10)
 
     def onReadXY(self, event=None):
         sfile = FileOpen(self, 'Read XY Data',
-                         defaultDir=get_cwd(),
+                         default_file='XRD.xy',
+                         default_dir=get_cwd(),
                          wildcard=XYWcards)
         if sfile is not None:
-            print(' would read ', sfile)
-            top, xfile = os.split(sfile)
-            dxrd = xrd1d(file=sfile)
+            top, xfile = os.path.split(sfile)
+            dxrd = xrd1d(file=sfile, wavelength=self.wavelength)
             self.add_data(dxrd, label=xfile)
 
     def onCIFBrowse(self, event=None):
@@ -226,8 +314,8 @@ class XRD1DBrowserFrame(wx.Frame):
         if cif is None:
             return
         t0 = time.time()
-        energy = E_from_lambda(self.wavelength)
 
+        energy = E_from_lambda(self.wavelength)
 
         sfact = cif.get_structure_factors(wavelength=self.wavelength)
         try:
@@ -376,9 +464,9 @@ class XRD1DBrowserFrame(wx.Frame):
                                      increment=0.01,
                                      min_val=0.001, max_val=5, action=self.on_bkg)
         wids['bkg_nsmooth'] = FloatSpin(panel, value=30, size=(90, -1),
-                                        digits=0, min_val=2, max_val=200, action=self.on_bkg)
+                                        digits=0, min_val=2, max_val=100, action=self.on_bkg)
         wids['bkg_porder'] = FloatSpin(panel, value=40, size=(90, -1),
-                                        digits=0, min_val=2, max_val=200, action=self.on_bkg)
+                                        digits=0, min_val=2, max_val=100, action=self.on_bkg)
 
         def CopyBtn(name):
             return Button(panel, 'Copy to Seleceted', size=(150, -1),
@@ -459,9 +547,12 @@ class XRD1DBrowserFrame(wx.Frame):
         self.Show()
         self.Raise()
 
-    def set_wavelength(self, w):
-        self.wids['wavelength'].SetLabel("%.6f" % w)
-        self.wids['energy_ev'].SetLabel("%.1f" % (PLANCK_HC/w))
+    def set_wavelength(self, value):
+        self.wavelength = value
+        self.wids['wavelength'].SetLabel("%.6f" % value)
+        self.wids['energy_ev'].SetLabel("%.1f" % (PLANCK_HC/value))
+        for key, dset in self.datasets.items():
+            dset.set_wavelength(value)
 
     def onCopyAttr(self, name=None, event=None):
         # print("Copy ", name, event)
@@ -603,8 +694,34 @@ class XRD1DBrowserFrame(wx.Frame):
             if with_plot:
                 self.onPlotOne()
 
-    def remove_dataset(self, event=None):
-        print('remove dataset ', event.GetString())
+    def remove_dataset(self, dname=None, event=None):
+        if dname in self.datasets:
+            self.datasets.pop(dname)
+
+        self.filelist.Clear()
+        for name in self.datasets:
+            self.filelist.Append(name)
+
+    def remove_selected_datasets(self, event=None):
+        sel = []
+        for checked in self.filelist.GetCheckedStrings():
+            sel.append(str(checked))
+        if len(sel) < 1:
+            return
+
+        dlg = RemoveDialog(self, sel)
+        res = dlg.GetResponse()
+        dlg.Destroy()
+
+        if res.ok:
+            all = self.filelist.GetItems()
+            for dname in sel:
+                self.datasets.pop(dname)
+                all.remove(dname)
+
+            filelist.Clear()
+            for name in all:
+                filelist.Append(name)
 
     def get_display(self, win=1, stacked=False):
         wintitle='XRD Plot Window %i' % win
@@ -614,28 +731,31 @@ class XRD1DBrowserFrame(wx.Frame):
     def plot_dset(self, dset, plottype, newplot=True):
         win    = int(self.wids['plot_win'].GetStringSelection())
         xscale = self.wids['xscale'].GetSelection()
-        xlabel = self.wids['xscale'].GetStringSelection()
+        opts = {'show_legend': True, 'xmax': None,
+                'xlabel':  self.wids['xscale'].GetStringSelection(),
+                'ylabel':'Scaled Intensity',
+                'label': dset.label}
+
         xdat = dset.q
         if xscale == 2:
            xdat = dset.d
+           opts['xmax'] = min(12.0, max(xdat))
         elif xscale == 1:
             xdat = dset.twth
 
         ydat = 1.0*dset.I/dset.scale
-        ylabel = 'Scaled Intensity'
         if plottype == 'sub':
             ydat = 1.0*(dset.I-dset.bkgd)/dset.scale
-            ylabel = 'Scaled (Intensity - Background)'
+            opts['ylabel'] = 'Scaled (Intensity - Background)'
 
         pframe = self.get_display(win=win)
         plot = pframe.plot if newplot else pframe.oplot
-        plot(xdat, ydat, xlabel=xlabel, ylabel=ylabel,
-             label=dset.label, show_legend=True)
+        plot(xdat, ydat, **opts)
         if plottype == 'raw+bkg':
             y2dat = 1.0*dset.bkgd/dset.scale
-            ylabel = 'Scaled Intensity with Background'
-            pframe.oplot(xdat, y2dat, xlabel=xlabel, ylabel=ylabel,
-                         label='background', show_legend=True)
+            opts['ylabel'] = 'Scaled Intensity with Background'
+            opts['label'] = 'background'
+            pframe.oplot(xdat, y2dat, **opts)
 
     def onPlotOne(self, event=None, label=None):
         if label is None:
@@ -672,8 +792,18 @@ class XRD1DBrowserFrame(wx.Frame):
         if label is None:
             label = 'XRD pattern'
         if label in self.datasets:
-            print('label alread in datasets: ', label )
+            print('label already in datasets: ', label )
         else:
             self.filelist.Append(label)
             self.datasets[label] = dataset
             self.show_dataset(label=label)
+
+class XRD1DApp(LarchWxApp):
+    def __init__(self, **kws):
+        LarchWxApp.__init__(self)
+
+    def createApp(self):
+        frame = XRD1DFrame()
+        frame.Show()
+        self.SetTopWindow(frame)
+        return True

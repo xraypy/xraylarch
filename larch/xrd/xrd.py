@@ -127,7 +127,7 @@ class xrd1d(larch.Group):
     def xrd_from_2d(self,xy,xtype,verbose=True):
         self.set_xy_data(xy, xtype)
 
-    def xrd_from_file(self, filename, verbose=True):
+    def xrd_from_file(self, filename, verbose=False):
 
         try:
             from ..xrmmap.asciifiles import read1DXRDFile
@@ -192,6 +192,11 @@ class xrd1d(larch.Group):
             self.imin,self.imax = 0,len(self.q)
             self.bkgd = np.zeros(np.shape(self.I))
 
+    def set_wavelength(self, wavelength):
+        self.wavelength = wavelength
+        self.energy = E_from_lambda(self.wavelength)
+        self.q, self.twth, self.d = calculate_xvalues(self.q, 'q', self.wavelength)
+
     def plot(self,reset=False,bkgd=False):
 
         if reset: self.imin,self.imax = 0,len(self.I)
@@ -210,7 +215,7 @@ class xrd1d(larch.Group):
     def reset_bkgd(self):
          self.bkgd = np.zeros(np.shape(self.I))
 
-    def slct_xaxis(self,xtype='',xi=None):
+    def slct_xaxis(self, xtype='', xi=None):
 
         if xtype.startswith('q') or xi == 0:
             x = self.q
@@ -422,7 +427,7 @@ class XRD(larch.Group):
 ##########################################################################
 # FUNCTIONS
 
-def calculate_xvalues(x,xtype,wavelength):
+def calculate_xvalues(x, xtype, wavelength):
     '''
     projects given x-axis onto q-, 2theta-, and d-axes
 
@@ -435,7 +440,6 @@ def calculate_xvalues(x,xtype,wavelength):
 
     x = np.array(x).squeeze()
     if xtype.startswith('q'):
-
         q = x
         d = d_from_q(q)
         if wavelength is not None:
@@ -444,7 +448,6 @@ def calculate_xvalues(x,xtype,wavelength):
             twth = np.zeros(len(q))
 
     elif xtype.startswith('2th'):
-
         twth = x
         if wavelength is not None:
             q = q_from_twth(twth,wavelength)

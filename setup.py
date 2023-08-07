@@ -107,7 +107,7 @@ if uname == 'win':
 
 # list of top level scripts to add to Python's bin/
 scripts = ['larch', 'larch_server', 'feff6l', 'feff8l', 'xas_viewer',
-           'gse_mapviewer', 'xrfdisplay', 'xrfdisplay_epics']
+           'gse_mapviewer', 'larch_xrf', 'epics_xrf', 'larch_xrd1d']
 
 larch_apps = ['{0:s} = larch.apps:run_{0:s}'.format(n) for n in scripts]
 

@@ -9,7 +9,7 @@ from sqlalchemy.sql import select
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import SingletonThreadPool
 
-
+from larch.utils.physical_constants import ATOM_SYMS, ATOM_NAMES
 
 __version__ = '1'
 
@@ -173,39 +173,6 @@ schema = (
     )
 
 
-atsyms = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na', 'Mg',
-        'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti', 'V',
-        'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se',
-        'Br', 'Kr', 'Rb', 'Sr', 'Y', 'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh',
-        'Pd', 'Ag', 'Cd', 'In', 'Sn', 'Sb', 'Te', 'I', 'Xe', 'Cs', 'Ba',
-        'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho',
-        'Er', 'Tm', 'Yb', 'Lu', 'Hf', 'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt',
-        'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac',
-        'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm',
-        'Md', 'No', 'Lr', 'D']
-
-
-atnames = ['hydrogen', 'helium', 'lithium', 'beryllium',
-         'boron', 'carbon', 'nitrogen', 'oxygen', 'fluorine', 'neon',
-         'sodium', 'magnesium', 'aluminum', 'silicon', 'phosphorus',
-         'sulfur', 'chlorine', 'argon', 'potassium', 'calcium', 'scandium',
-         'titanium', 'vanadium', 'chromium', 'manganese', 'iron', 'cobalt',
-         'nickel', 'copper', 'zinc', 'gallium', 'germanium', 'arsenic',
-         'selenium', 'bromine', 'krypton', 'rubidium', 'strontium',
-         'yttrium', 'zirconium', 'niobium', 'molybdenum', 'technetium',
-         'ruthenium', 'rhodium', 'palladium', 'silver', 'cadmium',
-         'indium', 'tin', 'antimony', 'tellurium', 'iodine', 'xenon',
-         'cesium', 'barium', 'lanthanum', 'cerium', 'praseodymium',
-         'neodymium', 'promethium', 'samarium', 'europium', 'gadolinium',
-         'terbium', 'dysprosium', 'holmium', 'erbium', 'thulium',
-         'ytterbium', 'lutetium', 'hafnium', 'tantalum', 'tungsten',
-         'rhenium', 'osmium', 'iridium', 'platinum', 'gold', 'mercury',
-         'thallium', 'lead', 'bismuth', 'polonium', 'astatine', 'radon',
-         'francium', 'radium', 'actinium', 'thorium', 'protactinium',
-         'uranium', 'neptunium', 'plutonium', 'americium', 'curium',
-         'berkelium', 'californium', 'einsteinium', 'fermium',
-         'mendelevium', 'nobelium', 'lawrencium', 'deuterium' ]
-
 def create_amcsd(dbname='test.db'):
     if os.path.exists(dbname):
         os.unlink(dbname)
@@ -219,7 +186,7 @@ def create_amcsd(dbname='test.db'):
                    ('0', 'in progress', 'today', 'in progress'))
 
     atz, i = 0, 0
-    for sym, name in zip(atsyms, atnames):
+    for sym, name in zip(ATOM_SYMS, ATOM_NAMES):
         i += 1
         atz += 1
         if sym == 'D':

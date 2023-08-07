@@ -24,22 +24,11 @@ from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl, FloatSpin,
                          get_zoomlimits, set_zoomlimits)
 
 from larch.xafs import etok, ktoe, find_energy_step
-from larch.utils.physical_constants import PI, DEG2RAD, PLANCK_HC
+from larch.utils.physical_constants import PI, DEG2RAD, PLANCK_HC, ATOM_SYMS
 from larch.math import smooth
 
 Plot_Choices = {'Normalized': 'norm', 'Derivative': 'dmude'}
 
-
-ELEM_LIST = ('H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na',
-             'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti',
-             'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge',
-             'As', 'Se', 'Br', 'Kr', 'Rb', 'Sr', 'Y', 'Zr', 'Nb', 'Mo',
-             'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn', 'Sb', 'Te',
-             'I', 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm',
-             'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Hf',
-             'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb',
-             'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U',
-             'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf')
 
 EDGE_LIST = ('K', 'L3', 'L2', 'L1', 'M5', 'M4', 'M3')
 
@@ -115,7 +104,7 @@ class OverAbsorptionDialog(wx.Dialog):
         wids['phi_in']  = FloatSpin(panel, **fs_opts)
         wids['phi_out'] = FloatSpin(panel, **fs_opts)
 
-        wids['elem'] = Choice(panel, choices=ELEM_LIST, size=(50, -1))
+        wids['elem'] = Choice(panel, choices=ATOM_SYMS[:98], size=(50, -1))
         wids['edge'] = Choice(panel, choices=EDGE_LIST, size=(50, -1))
 
         wids['formula'] = wx.TextCtrl(panel, -1, '', size=(250, -1))
