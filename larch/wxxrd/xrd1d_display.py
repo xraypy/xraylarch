@@ -12,6 +12,7 @@ from functools import partial
 import numpy as np
 from numpy.polynomial.chebyshev import chebfit, chebval
 
+from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 import pyFAI.units
 
 import wx
@@ -26,12 +27,13 @@ from larch.utils import nativepath, get_cwd, gformat, fix_filename
 from larch.utils.physical_constants import PLANCK_HC
 from larch.xray import XrayBackground
 from larch.wxxas import RemoveDialog
+from larch.io import tifffile 
 
 from larch.xrd import (d_from_q,twth_from_q,q_from_twth,
-                       d_from_twth,twth_from_d,q_from_d, lambda_from_E,
-                       E_from_lambda, calc_broadening,
-                       instrumental_fit_uvw,peaklocater,peakfitter, xrd1d,
-                       peakfinder_methods, save1D, read_poni)
+                       d_from_twth,twth_from_d,q_from_d,
+                       lambda_from_E, E_from_lambda, calc_broadening,
+                       instrumental_fit_uvw,peaklocater,peakfitter,
+                       xrd1d, peakfinder_methods, save1D, read_poni)
 
 from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          SetTip, GridPanel, get_icon, SimpleText, pack,
@@ -42,7 +44,11 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          EditableListBox, ExceptionPopup, CIFFrame,
                          LarchFrame, LarchWxApp)
 
+MAXVAL = 2**32 - 2**15
+MAXVAL_INT16 = 2**16 - 8
+
 XYWcards = "XY Data File(*.xy)|*.xy|All files (*.*)|*.*"
+TIFFWcards = "TIF Files(*.tif)|*.tif|TIFF Files(*.tiff)|*.tiff|All files (*.*)|*.*"
 PlotWindowChoices = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
 
 X_SCALES = [u'q (\u212B\u207B\u00B9)', u'2\u03B8 (\u00B0)', u'd (\u212B)']
@@ -196,18 +202,25 @@ class WavelengthDialog(wx.Dialog):
 class XRD1DFrame(wx.Frame):
     """browse 1D XRD patterns"""
 
-    def __init__(self, parent=None, wavelength=1.0, ponifile=None, _larch=None, **kws):
+    def __init__(self, parent=None, wavelength=1.0, ponifile=None,
+                 _larch=None, **kws):
 
         wx.Frame.__init__(self, None, -1, title='1D XRD Browser',
                           style=FRAMESTYLE, size=(600, 600), **kws)
         self.parent = parent
         self.wavelength = wavelength
         self.poni = {'wavelength': 1.e-10*self.wavelength} # ! meters!
+        self.pyfai_integrator = None
         if ponifile is not None:
             try:
                 self.poni.update(read_poni(ponifile))
             except:
                 pass
+            try:
+                self.pyfai_integrator = AzimuthalIntegrator(**self.poni)
+            except:
+                self.pyfai_integrator = None
+            
         self.larch = _larch
         if self.larch is None:
             self.larch_buffer = LarchFrame(_larch=None, parent=self,
@@ -229,6 +242,7 @@ class XRD1DFrame(wx.Frame):
     def createMenus(self):
         fmenu = wx.Menu()
         cmenu = wx.Menu()
+        smenu = wx.Menu()
         MenuItem(self, fmenu, "Read XY File",
                  "Read XRD 1D data from XY FIle",
                  self.onReadXY)
@@ -237,33 +251,60 @@ class XRD1DFrame(wx.Frame):
                  "Save XRD 1D data to XY FIle",
                  self.onSaveXY)
 
+        self.tiff_reader = MenuItem(self, fmenu, "Read TIFF XRD Image",
+                                    "Read XRD 2D image to be integrated", 
+                                    self.onReadTIFF)
+        self.tiff_reader.Enable(self.poni.get('dist', -1) > 0)
         fmenu.AppendSeparator()
+        
         MenuItem(self, fmenu, "Remove Selected Patterns",
                  "Remove Selected Patterns",
                  self.remove_selected_datasets)
 
-        MenuItem(self, cmenu, "Browse AmMin Crystal Structures",
+        fmenu.AppendSeparator()
+        MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
+        
+        MenuItem(self, smenu, "Browse AmMin Crystal Structures",
                  "Browse Structures from Am Min Database",
                  self.onCIFBrowse)
-        fmenu.AppendSeparator()
-        MenuItem(self, cmenu, "Set Energy / Wavelength",
-                 "Set Energy and Wavelength",
-                 self.onSetWavelength)
 
         MenuItem(self, cmenu, "Read PONI Calibration File",
                  "Read PONI Calibration (pyFAI) FIle",
                  self.onReadPONI)
 
+
+        MenuItem(self, cmenu, "Set Energy / Wavelength",
+                 "Set Energy and Wavelength",
+                 self.onSetWavelength)
+
         menubar = wx.MenuBar()
         menubar.Append(fmenu, "&File")
-        menubar.Append(cmenu, "&XRD and CIF Structures")
+        menubar.Append(cmenu, "&Calibration")
+        menubar.Append(smenu, "&Search CIF Structures")
 
         self.SetMenuBar(menubar)
 
+
+    def onClose(self, event=None):
+        try:
+            if self.panel is not None:
+                self.panel.win_config.Close(True)
+            if self.panel is not None:
+                self.panel.win_config.Destroy()
+        except:
+            pass
+
+        if hasattr(self.larch.symtable, '_plotter'):
+            wx.CallAfter(self.larch.symtable._plotter.close_all_displays)
+
+        for name, wid in self.subframes.items():
+            if hasattr(wid, 'Destroy'):
+                wx.CallAfter(wid.Destroy)
+        self.Destroy()
+
+        
     def onSetWavelength(self, event=None):
         WavelengthDialog(self, self.wavelength, self.set_wavelength).Show()
-
-
 
     def onReadPONI(self, event=None):
         sfile = FileOpen(self, 'Read PONI (pyFAI) calibration file',
@@ -274,13 +315,22 @@ class XRD1DFrame(wx.Frame):
         if sfile is not None:
             try:
                 self.poni.update(read_poni(sfile))
-                top, xfile = os.path.split(sfile)
-                os.chdir(top)
             except:
                 title = "Could not read PONI File"
                 message = [f"Could not read PONI file {sfile}"]
                 ExceptionPopup(self, title, message)
 
+            top, xfile = os.path.split(sfile)
+            os.chdir(top)
+
+            try:
+                self.pyfai_integrator = AzimuthalIntegrator(**self.poni)
+            except:
+                self.pyfai_integrator = None
+
+            self.tiff_reader.Enable(self.pyfai_integrator is not None)
+
+                
         self.set_wavelength(self.poni['wavelength']*1.e10)
 
     def onReadXY(self, event=None):
@@ -293,7 +343,47 @@ class XRD1DFrame(wx.Frame):
             os.chdir(top)
             dxrd = xrd1d(file=sfile, wavelength=self.wavelength)
             self.add_data(dxrd, label=xfile)
+            
+    def onReadTIFF(self, event=None):
+        sfile = FileOpen(self, 'Read TIFF XRD Image',
+                         default_file='XRD.tiff',
+                         default_dir=get_cwd(),
+                         wildcard=TIFFWcards)
+        if sfile is not None:
+            if self.pyfai_integrator is None:
+                try:
+                    self.pyfai_integrator = AzimuthalIntegrator(**self.poni)
+                except:
+                    title = "Could not create pyFAI integrator: bad PONI data?"
+                    message = [f"Could not create pyFAI integrator"]
+                    ExceptionPopup(self, title, message)
+            if self.pyfai_integrator is None:
+                return
+            
+            img =  tifffile.imread(sfile)
+            img = img[::-1, :]
+            if (img.max() > MAXVAL_INT16) and (img.max() < MAXVAL_INT16 + 64):
+                #probably really 16bit data
+                img[np.where(img>MAXVAL_INT16)] = 0
+            else:
+                img[np.where(img>MAXVAL)] = 0
+            img[np.where(img<-1)] = -1
+            # print("read tiff ", img.shape, img.min(), img.max())
 
+            imd = self.get_imdisplay()
+            imd.display(img, colomap='gray', auto_contrast=True)
+
+            integrate = self.pyfai_integrator.integrate1d
+            q, ix = integrate(img, 2048, method='csr', unit='q_A^-1',
+                              correctSolidAngle=True,
+                              polarization_factor=0.999)
+
+            top, fname = os.path.split(sfile)
+            dxrd = xrd1d(label=fname, x=q, I=ix, xtype='q', wavelength=self.wavelength)
+            dxrd.file = fname
+            self.add_data(dxrd, label=fname)
+
+            
     def onCIFBrowse(self, event=None):
         shown = False
         if self.cif_browser is not None:
@@ -540,7 +630,7 @@ class XRD1DFrame(wx.Frame):
         mainsizer = wx.BoxSizer(wx.VERTICAL)
         mainsizer.Add(splitter, 1, wx.GROW|wx.ALL, 5)
         pack(self, mainsizer)
-        self.SetSize( (850, 400))
+        self.SetSize((875, 450))
 
         self.Show()
         self.Raise()
@@ -721,6 +811,11 @@ class XRD1DFrame(wx.Frame):
             for name in all:
                 filelist.Append(name)
 
+    def get_imdisplay(self, win=1):
+        wintitle='XRD Image Window %i' % win
+        opts = dict(wintitle=wintitle, win=win, image=True)
+        return self.larch.symtable._plotter.get_display(**opts)
+                                
     def get_display(self, win=1, stacked=False):
         wintitle='XRD Plot Window %i' % win
         opts = dict(wintitle=wintitle, stacked=stacked, win=win, linewidth=3)
