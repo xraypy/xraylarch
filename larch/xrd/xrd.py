@@ -69,7 +69,6 @@ class xrd1d(larch.Group):
 
     mkak 2017.03.15
     '''
-
     def __init__(self, file=None, label=None, x=None, xtype=None, I=None,
                  wavelength=None, energy=None):
 
@@ -98,7 +97,7 @@ class xrd1d(larch.Group):
             self.normalization = None
 
             if I is not None and x is not None:
-                self.xrd_from_2d([x,I],xtype)
+                self.xrd_from_2d([x,I], xtype)
                 self.bkgd = np.zeros(np.shape(self.I))
             else:
                 self.q    = None
@@ -124,7 +123,7 @@ class xrd1d(larch.Group):
         larch.Group.__init__(self)
 
 
-    def xrd_from_2d(self,xy,xtype,verbose=True):
+    def xrd_from_2d(self,xy, xtype, verbose=True):
         self.set_xy_data(xy, xtype)
 
     def xrd_from_file(self, filename, verbose=False):
@@ -177,7 +176,7 @@ class xrd1d(larch.Group):
                 xtype = line.split()[1]
 
         ## data
-        self.set_xy_data(dat,xtype)
+        self.set_xy_data(dat, xtype)
 
     def set_xy_data(self, xy, xtype):
         if xy is not None:
