@@ -138,7 +138,7 @@ def calc_bgr(dset, qwid=0.1, nsmooth=40, cheb_order=40):
                               iterations=nsmooth, cheb_order=cheb_order)
 
 class WavelengthDialog(wx.Dialog):
-    """dialog for smoothing data"""
+    """dialog for wavelength/energy"""
     def __init__(self, parent, wavelength, callback=None):
 
         self.parent = parent
@@ -198,6 +198,41 @@ class WavelengthDialog(wx.Dialog):
         w = self.wids['energy'].GetValue()
         self.wids['wavelength'].SetValue(PLANCK_HC/w, act=False)
 
+class RenameDialog(wx.Dialog):
+    """dialog for renaming a pattern"""
+    def __init__(self, parent, name, callback=None):
+
+        self.parent = parent
+        self.callback = callback
+
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
+                           title="Rename dataset")
+        self.SetFont(Font(FONTSIZE))
+        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
+
+        self.wids = wids = {}
+        wids['newname'] = wx.TextCtrl(panel, value=name, size=(150, -1))
+        
+        panel.Add(SimpleText(panel, 'New Name: '),  dcol=1, newrow=False)
+        panel.Add(wids['newname'], dcol=1)
+        panel.Add((10, 10), newrow=True)
+
+        panel.Add(Button(panel, 'Done', size=(150, -1),
+                         action=self.onDone),  newrow=True)
+        panel.pack()
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(panel, 1, LEFT, 5)
+        pack(self, sizer)
+        self.Fit()
+
+        w0, h0 = self.GetSize()
+        w1, h1 = self.GetBestSize()
+        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+
+    def onDone(self, event=None):
+        if callable(self.callback):
+            self.callback(self.wids['newname'].GetValue())
+        self.Destroy()
 
 class XRD1DFrame(wx.Frame):
     """browse 1D XRD patterns"""
@@ -214,6 +249,7 @@ class XRD1DFrame(wx.Frame):
         if ponifile is not None:
             try:
                 self.poni.update(read_poni(ponifile))
+                self.set_wavelength(self.poni['wavelength']*1.e10)                
             except:
                 pass
             try:
@@ -257,6 +293,10 @@ class XRD1DFrame(wx.Frame):
         self.tiff_reader.Enable(self.poni.get('dist', -1) > 0)
         fmenu.AppendSeparator()
         
+        MenuItem(self, fmenu, "Change Label for Current Pattern",
+                 "Rename Current Pattern",
+                 self.onRenameDataset)
+        
         MenuItem(self, fmenu, "Remove Selected Patterns",
                  "Remove Selected Patterns",
                  self.remove_selected_datasets)
@@ -281,7 +321,6 @@ class XRD1DFrame(wx.Frame):
         menubar.Append(fmenu, "&File")
         menubar.Append(cmenu, "&Calibration")
         menubar.Append(smenu, "&Search CIF Structures")
-
         self.SetMenuBar(menubar)
 
 
@@ -297,11 +336,7 @@ class XRD1DFrame(wx.Frame):
         if hasattr(self.larch.symtable, '_plotter'):
             wx.CallAfter(self.larch.symtable._plotter.close_all_displays)
 
-        for name, wid in self.subframes.items():
-            if hasattr(wid, 'Destroy'):
-                wx.CallAfter(wid.Destroy)
         self.Destroy()
-
         
     def onSetWavelength(self, event=None):
         WavelengthDialog(self, self.wavelength, self.set_wavelength).Show()
@@ -330,7 +365,6 @@ class XRD1DFrame(wx.Frame):
 
             self.tiff_reader.Enable(self.pyfai_integrator is not None)
 
-                
         self.set_wavelength(self.poni['wavelength']*1.e10)
 
     def onReadXY(self, event=None):
@@ -782,6 +816,21 @@ class XRD1DFrame(wx.Frame):
             if with_plot:
                 self.onPlotOne()
 
+    def rename_dataset(self, newlabel):
+        dset = self.datasets.pop(self.current_label)
+        dset.label = newlabel
+        self.datasets[newlabel] = dset
+        self.current_label = newlabel
+
+        self.filelist.Clear()
+        for name in self.datasets:
+            self.filelist.Append(name)
+
+        
+    def onRenameDataset(self, event=None):
+        RenameDialog(self, self.current_label, self.rename_dataset).Show()        
+        
+
     def remove_dataset(self, dname=None, event=None):
         if dname in self.datasets:
             self.datasets.pop(dname)
@@ -790,6 +839,7 @@ class XRD1DFrame(wx.Frame):
         for name in self.datasets:
             self.filelist.Append(name)
 
+            
     def remove_selected_datasets(self, event=None):
         sel = []
         for checked in self.filelist.GetCheckedStrings():
@@ -807,9 +857,9 @@ class XRD1DFrame(wx.Frame):
                 self.datasets.pop(dname)
                 all.remove(dname)
 
-            filelist.Clear()
+            self.filelist.Clear()
             for name in all:
-                filelist.Append(name)
+                self.filelist.Append(name)
 
     def get_imdisplay(self, win=1):
         wintitle='XRD Image Window %i' % win
