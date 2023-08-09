@@ -59,8 +59,19 @@ def _get_timestamp() -> str:
 def xyz2struct(molecule):
     """Convert pymatgen molecule to dummy pymatgen structure"""
 
+    alat, blat, clat = 1, 1, 1
+
     # Set the lattice dimensions in each direction
-    lattice = Lattice.from_parameters(a=1, b=1, c=1, alpha=90, beta=90, gamma=90)
+    for i in range(len(molecule)-1):
+        if molecule.cart_coords[i][0] > molecule.cart_coords[i+1][0]:
+            alat = molecule.cart_coords[i][0] 
+        if molecule.cart_coords[i][1] > molecule.cart_coords[i+1][1]:
+            blat = molecule.cart_coords[i][1]
+        if molecule.cart_coords[i][2] > molecule.cart_coords[i+1][2]:
+            clat = molecule.cart_coords[i][2]
+
+    # Set the lattice dimensions in each direction
+    lattice = Lattice.from_parameters(a=alat, b=blat, c=clat, alpha=90, beta=90, gamma=90)
 
     # Create a list of species
     species = [Element(sym) for sym in molecule.species]
@@ -205,7 +216,7 @@ class Struct2XAS:
             self.mol = None
             self.nframes = 1
             self.struct = Structure.from_file(self.file)
-            logger.debug("structure creation from a CIF file")
+            logger.debug("structure created from a CIF file")
         elif ext == ".xyz":
             self.is_xyz = True
             self.xyz = XYZ.from_file(self.file)
@@ -213,44 +224,47 @@ class Struct2XAS:
             self.mol = self.molecules[self.frame]
             self.nframes = len(self.molecules)
             self.struct = xyz2struct(self.mol)
-            logger.debug("structure creation from a XYZ file")
+            logger.debug("structure created from a XYZ file")
         else:
             errmsg = "only CIF and XYZ files are currently supported"
             logger.error(errmsg)
             raise NotImplementedError(errmsg)
 
     def get_abs_sites(self):
-        """Get information about the possible absorbing sites present in the structure.
-        If the structure has a readable symmetry given by a cif fichier, the method will return
-        just equivalent sites.
-        If the structure does not have symmetry or the symmetry is not explicit in the files, this
-        method will return
-        all possible sites for absorber atoms.
+        """
+        Get information about the possible absorbing sites present of the
+        structure.
 
-        return a list of lists. The lists inside the list contain the following respective
-        information:
-
-            > absorber index:   The absorber index is the index that identifies the absorber site.
-                                To change the absorber site being analyzed,
-                                the absorber index must be set using the method set_abs_site().
-
-            > specie:           The specie for absorber sites.
-
-            > frac. coord.:     Fractionnal coodinatite position for absorber sites.
-                                If the structure was created using xyz file, the frac. coords.
-                                are arbitrary and the lattice parameters are based on the molecule
-                                size.
-
-            > wyckoff site:     Wyckoff site for absorber sites. For structures created from xyz
-                                files, Wyckoff sites are always equal to 1a. (No symmetry)
-
-            > cart_coords:      Cartesian coordinate position for absorber sites.
-
-            > occupancy:        Occupancy for absorber sites. For structures created from xyz files,
-                                occupancy are always equal to 1.
-
-            > structure index:  Original index for absorber atoms in pymatgen structure. (Not
-                                necessary for public methods)
+        ..note:: If the structure has a readable symmetry given by a cif file,
+        the method will return just equivalent sites. If the structure does not
+        have symmetry or the symmetry is not explicit in the files, this method
+        will return all possible sites for absorber atoms.
+        
+        Returns
+        -------
+        abs_sites : list of lists
+            The lists inside the list contain the following respective
+            information:
+            [absorber index, # The absorber index is the index that identifies
+                             #  the absorber site.
+                             #  To change the absorber site being analyzed, the
+                             #  absorber index must be set using the method
+                             #  set_abs_site().
+           specie,           #  The specie for absorber sites.
+           frac. coord,      # Fractional coordinate position
+                             #   If the structure was created using xyz file,
+                             #   the frac. coords. are arbitrary and the lattice
+                             #   parameters are based on the molecule size.
+            wyckoff site,    # Wyckoff site for absorber sites.
+                             #      For structures created from xyz
+                             #      files, Wyckoff sites are always equal to 1a.
+                             #      (No symmetry)
+            cart_coords,     # Cartesian coordinate position
+            occupancy,       # Occupancy for absorber sites. For structures
+                             #      created from xyz files,
+                             #      occupancy are always equal to 1.
+            structure index  # Original index in the pymatgen structure
+                             #  (private usage)
         """
 
         abs_sites = []
