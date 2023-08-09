@@ -296,9 +296,9 @@ class Struct2XAS:
 
             # Get multiples sites for absorber atom
             for idx, sites in enumerate(sym_struct.equivalent_sites):
-                sites = sorted(
-                    sites, key=lambda s: tuple(abs(x) for x in s.frac_coords)
-                )
+                #sites = sorted(
+                #    sites, key=lambda s: tuple(abs(x) for x in s.frac_coords)
+                #)
                 site = sites[0]
                 abs_row = [idx, site.species_string]
                 abs_row.append([j for j in np.round(site.frac_coords, 4)])
@@ -341,32 +341,7 @@ class Struct2XAS:
         return abs_sites
 
     def get_abs_sites_info(self):
-        """Get abs sites info and return pandas.DataFrame.
-
-        return pandas.DataFrame:
-
-            > idx_abs:      The absorber index is the index that identifies the absorber site.
-                            To change the absorber site being analyzed, the absorber index must
-                            be set using the method set_abs_site().
-
-            > specie:       The specie for absorber sites.
-
-            > frac_coords.: Fractionnal coodinatite position for absorber sites.
-                            If the structure was created using xyz file, the frac. coords. are
-                            arbitrary and the lattice param are is a=b=c=1
-
-
-            > wyckoff_site: Wyckoff site for absorber sites. For structures created from xyz
-                            files, Wyckoff sites are always equal to 1a. (No symmetry)
-
-            > cart_coords:  Cartesian coordinate position for absorber sites.
-
-            > occupancy:    Occupancy for absorber sites. For structures created from xyz files,
-                            occupancy are always equal to 1.
-
-            > idx_struct:   Original index for absorber atoms in pymatgen structure. (Not necessary
-                            for public methods)
-        """
+        """pretty print for self.get_abs_sites()"""
         header = ["idx_abs", "specie", "frac_coords", "wyckoff_site", "cart_coords", "occupancy", "idx_in_struct"]
         abs_sites = self.get_abs_sites()
         if HAS_PANDAS:
@@ -765,9 +740,9 @@ class Struct2XAS:
 
             unique_sites = []
             for sites in analyzer.get_symmetrized_structure().equivalent_sites:
-                sites = sorted(
-                    sites, key=lambda s: tuple(abs(x) for x in s.frac_coords)
-                )
+                #sites = sorted(
+                #    sites, key=lambda s: tuple(abs(x) for x in s.frac_coords)
+                #)
                 unique_sites.append((sites[0], len(sites)))
                 sites = str()
             if self.full_occupancy:
