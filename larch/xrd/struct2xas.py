@@ -79,36 +79,43 @@ class Struct2XAS:
     def __init__(self, file, abs_atom) -> None:
         """
 
-        Args:
-        file (str)  : Path to cif or xyz files.
+        Arguments
+        ---------
+        file : str
+            full path string to cif or xyz file
+        abs_atom : str
+            Absorber element in the structure, e.g.: "Fe", "Ni".
 
-        abs_atom (str): Absorber element in the structure considering XANES/EXAFS analysis.
-                        e.g.: "Fe", "Ni".
+        Returns
+        -------
+        None
 
-        radius (float)  : Cluster radius [Angstrom] to perform FDMNES simulation.
+        ..note::
 
-
-        *NOTES*
         --> IMPORTANT: <--
 
         for xyz files:
-            Structures from xyz files are always consider no-symmetric for the lack of information.
-            For creating the object from an XYZ file, a no-symmetry pymatgen structure is generated
-            (spacegroup: P1).
-            The lattice parameters chosen for this structure are arbitrary and are based on the size
-            of the molecule, as are the fractional coordinates.
-            Therefore, the analysis of this structure is limited to the central atoms and is not
-            valid for atoms near the edges of the molecule.
+            Structures from xyz files are always considered non-symmetric for
+            the lack of lattice information. For creating the object from an
+            XYZ file, a non-symmetric `structure` object from pymatgen is
+            generated (spacegroup: P1) from a `molecule` one via
+            :func:`xyz2struct`. The lattice parameters chosen for this
+            structure are arbitrary and are based on the size of the molecule,
+            as are the fractional coordinates. Therefore, the analysis of this
+            structure is limited to the central atoms and is not valid for
+            atoms at the border of the molecule.
 
         for cif files:
-            For creating the object from cif file, a pymatgen structure is generated with symmetry
-            infomation from cif file.
+            For creating the object from cif file, a pymatgen structure is
+            generated with symmetry information from cif file.
         """
 
         self.file = file
         self.abs_atom = abs_atom
         self.frame = 0
         self.abs_site = 0
+        self.is_cif = False
+        self.is_xyz = False
         self._structure_reader()
         self.nabs_sites = len(self.get_abs_sites())
         self.elems = self._get_elems()
@@ -179,10 +186,6 @@ class Struct2XAS:
 
     def _structure_reader(self):
         """Reader to initialize the structure/molecule from the input file"""
-
-        self.is_cif = False
-        self.is_xyz = False
-
         # Split the file name and extension
         if os.path.isfile(self.file):
             # file_dirname = os.path.dirname(file)
