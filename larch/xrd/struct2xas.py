@@ -9,8 +9,6 @@ import os
 import time
 import tempfile
 import numpy as np
-import pandas as pd
-from pandas.io.formats.style import Styler
 
 # pymatgen
 from pymatgen.core import Structure, Element, Lattice
@@ -36,6 +34,14 @@ from larch.math import convolution1D
 from larch.io import read_ascii
 
 try:
+    import pandas as pd
+    from pandas.io.formats.style import Styler
+
+    HAS_PANDAS = True
+except ImportError:
+    HAS_PANDAS = False
+
+try:
     import py3Dmol
 
     HAS_PY3DMOL = True
@@ -54,6 +60,18 @@ logger = logging.getLogger("struct2xas", level="INFO")
 def _get_timestamp() -> str:
     """return a custom time stamp string: YYY-MM-DD_HHMM"""
     return "{0:04d}-{1:02d}-{2:02d}_{3:02d}{4:02d}".format(*time.localtime())
+
+def _pprint(matrix):
+    """pretty print a list of lists (in case Pandas is not available)
+    from: https://stackoverflow.com/questions/13214809/pretty-print-2d-list
+    an alternative could be: https://pypi.org/project/tabulate/
+    """
+    s = [[str(e) for e in row] for row in matrix]
+    lens = [max(map(len, col)) for col in zip(*s)]
+    fmt = '\t'.join('{{:{}}}'.format(x) for x in lens)
+    table = [fmt.format(*row) for row in s]
+    print('\n'.join(table))
+
 
 
 def xyz2struct(molecule):
@@ -245,17 +263,15 @@ class Struct2XAS:
         abs_sites : list of lists
             The lists inside the list contain the following respective
             information:
-            [absorber index, # The absorber index is the index that identifies
-                             #  the absorber site.
-                             #  To change the absorber site being analyzed, the
-                             #  absorber index must be set using the method
-                             #  set_abs_site().
-           specie,           #  The specie for absorber sites.
-           frac. coord,      # Fractional coordinate position
+            [
+            abs_idx,        # index identifier of the absorber site
+                             #     used by self.set_abs_site().
+            species_string,  #  The specie for absorber sites.
+            frac_coords,     # Fractional coordinate position
                              #   If the structure was created using xyz file,
                              #   the frac. coords. are arbitrary and the lattice
                              #   parameters are based on the molecule size.
-            wyckoff site,    # Wyckoff site for absorber sites.
+            wyckoff_symbols, # Wyckoff site for absorber sites.
                              #      For structures created from xyz
                              #      files, Wyckoff sites are always equal to 1a.
                              #      (No symmetry)
@@ -265,6 +281,7 @@ class Struct2XAS:
                              #      occupancy are always equal to 1.
             structure index  # Original index in the pymatgen structure
                              #  (private usage)
+            ]
         """
 
         abs_sites = []
@@ -318,8 +335,9 @@ class Struct2XAS:
                     ]
                     k += 1
         if len(abs_sites) == 0:
-            logger.error(" ---- Absorber site not found ---- ")
-            raise AttributeError("Absorber atom not found in structure")
+            _errmsg = f"---- Absorber {self.abs_atom} not found ----"
+            logger.error(_errmsg)
+            raise AttributeError(_errmsg)
         return abs_sites
 
     def get_abs_sites_info(self):
@@ -349,22 +367,20 @@ class Struct2XAS:
             > idx_struct:   Original index for absorber atoms in pymatgen structure. (Not necessary
                             for public methods)
         """
-
+        header = ["idx_abs", "specie", "frac_coords", "wyckoff_site", "cart_coords", "occupancy", "idx_in_struct"]
         abs_sites = self.get_abs_sites()
-        df = pd.DataFrame(
-            abs_sites,
-            columns=[
-                "idx_abs",
-                "specie",
-                "frac_coords",
-                "wyckoff_site",
-                "cart_coords",
-                "occupancy_abs_atom",
-                "idx_struct",
-            ],
-        )
-        df = Styler(df).hide(axis="index")
-        return df
+        if HAS_PANDAS:
+            df = pd.DataFrame(
+                abs_sites,
+                columns=header,
+            )
+            df = Styler(df).hide(axis="index")
+            return df
+        else:
+            matrix = [header]
+            matrix.extend(abs_sites)
+            _pprint(matrix)
+
 
     def get_atoms_from_abs(self, radius):
         """Get atoms in sphere from absorbing atom with certain radius"""
@@ -606,11 +622,18 @@ class Struct2XAS:
                     )
                 )
         elems_dist = sorted(elems_dist, key=lambda x: x[1])
-        df = pd.DataFrame(data=elems_dist, columns=["Element", "Distance"])
         print(
-            f"Coord. Env. from absorber atom: {self.abs_atom} at site {self.get_abs_site()}\n(For more details use get_coord_envs() method) "
+            f"Coord. Env. from absorber atom: {self.abs_atom} at site {self.get_abs_site()}"
         )
-        return coord_sym, df
+        print(coord_sym)
+        header = ["Element", "Distance"]
+        if HAS_PANDAS:
+            df = pd.DataFrame(data=elems_dist, columns=header)
+            return df
+        else:
+            matrix = [header]
+            matrix.extend(elems_dist)
+            _pprint(matrix)
 
     def make_cluster(self, radius):
         """Create a cluster with absorber atom site at the center.
