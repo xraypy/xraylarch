@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
 Struct2XAS: convert CIFs and XYZs files to FDMNES and FEFF inputs
 """
@@ -41,7 +44,8 @@ except ImportError:
 
 __author__ = ["Beatriz G. Foschiani", "Mauro Rovezzi"]
 __email__ = ["beatrizgfoschiani@gmail.com", "mauro.rovezzi@esrf.fr"]
-__version__ = "2023.1.dev"
+__credits__ = ["Jade Chongsathapornpong", "Marius Retegan"]
+__version__ = "2023.2.dev"
 
 # initialize the logger
 logger = logging.getLogger("struct2xas", level="INFO")
