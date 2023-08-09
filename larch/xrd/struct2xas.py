@@ -17,7 +17,7 @@ from pymatgen.core import Structure, Element, Lattice
 from pymatgen.io.xyz import XYZ
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.analysis.bond_valence import BVAnalyzer
-from pymatgen.analysis.local_env import BrunnerNN_real  # ,CutOffDictNN,
+from pymatgen.analysis.local_env import CrystalNN  #previously used: BrunnerNN_real, CutOffDictNN,
 from pymatgen.analysis.chemenv.coordination_environments.coordination_geometry_finder import (
     LocalGeometryFinder,
 )
@@ -416,54 +416,64 @@ class Struct2XAS:
 
     def get_coord_envs(self):
         """
-        For structures from cif files, this method will try to find the coordination environment
-        type and return the elements and the coordination env. symbol from the first using the
-        classes from pymatgen as LocalGeometryFinder(), BVAnalyzer(), MultiWeightsChemenvStrategy()
+        For structures from cif files, this method will try to find the
+        coordination environment type and return the elements and the
+        coordination env. symbol from the first using the classes from pymatgen
+        as LocalGeometryFinder(), BVAnalyzer(), MultiWeightsChemenvStrategy()
         and LightStructureEnvironments() .
 
             > coordination env. symbol.
-                        S:4 - Square Plane
-                        T:4 - Tetrahedral
-                        T:5 - Trigonal bipyramid
-                        S:5 - Square pyramidal
-                        O:6 - Octahedral
-                        T:6 - Trigonal prism
+                        - `S:4` - Square Plane
+                        - `T:4` - Tetrahedral
+                        - `T:5` - Trigonal bipyramid
+                        - `S:5` - Square pyramidal
+                        - `O:6` - Octahedral
+                        - `T:6` - Trigonal prism
             > ce_fraction:
-                        probability for given coordination env. (between 0 and 1)
+                        probability for given coordination env. (between 0 and
+                        1)
 
             > CSM:
-                        a measure of the degree of symmetry in the coordination environment.
-                        It is based on the idea that symmetric environments are more stable
-                        than asymmetric ones, and is calculated using a formula that takes
-                        into account the distances and angles between the coordinating atoms.
-                        The CSM can be understood as a distance to a shape and can take values
-                        between 0.0 (if a given environment is perfect) and 100.0 (if a given
-                        environment is very distorted). The environment of the atom is then
-                        the model polyhedron for which the similarity is the highest, that is,
-                        for which the CSM is the lowest.
+                        a measure of the degree of symmetry in the coordination
+                        environment. It is based on the idea that symmetric
+                        environments are more stable than asymmetric ones, and
+                        is calculated using a formula that takes into account
+                        the distances and angles between the coordinating
+                        atoms. The CSM can be understood as a distance to a
+                        shape and can take values between 0.0 (if a given
+                        environment is perfect) and 100.0 (if a given
+                        environment is very distorted). The environment of the
+                        atom is then the model polyhedron for which the
+                        similarity is the highest, that is, for which the CSM
+                        is the lowest.
 
             > permutation:
-                        possible permutation of atoms surrounding the central atom.
-                        This is a list that indicates the order in which the neighboring atoms
-                        are arranged around the central atom in the coordination environment.
-                        The numbering starts from 0, and the list indicates the indices of the
-                        neighboring atoms in this order. For example, in the second entry of the
-                        list above, the permutation [0, 2, 3, 1, 4] means that the first
-                        neighboring atom is in position 0, the second is in position 2, the
-                        third is in position 3, the fourth is in position 1, and the fifth is
-                        in position 4. The permutation is used to calculate the csm value.
+                        possible permutation of atoms surrounding the central
+                        atom. This is a list that indicates the order in which
+                        the neighboring atoms are arranged around the central
+                        atom in the coordination environment. The numbering
+                        starts from 0, and the list indicates the indices of
+                        the neighboring atoms in this order. For example, in
+                        the second entry of the list above, the permutation [0,
+                        2, 3, 1, 4] means that the first neighboring atom is in
+                        position 0, the second is in position 2, the third is
+                        in position 3, the fourth is in position 1, and the
+                        fifth is in position 4. The permutation is used to
+                        calculate the csm value.
 
             > site:
-                        element in the coordination environment and its coordinates (cartesian and
-                        fractional).
+                        element in the coordination environment and its
+                        coordinates (cartesian and fractional).
 
             > site_index:
                         structure index for the coordinated atom.
 
 
-        For structures from the xyz file the methods will try to return the elements (but not the
-        coord. env. symbol) for the first coordination env. shell
-        using the the class BrunnerNN_real() from pymatgen.
+        For structures from the xyz file the methods will try to return the
+        elements (but not the coord. env. symbol) for the first coordination
+        env. shell using the the class CrystalNN from pymatgen, which gives
+        better results than BrunnerNN_real and CutOffDictNN (as previously
+        tested)
 
         List of lists:
 
@@ -473,18 +483,19 @@ class Struct2XAS:
 
             [2]: Info about coord. env.
                 > site:
-                    element in the coordination environment and its coordinates (cartesian and
-                    fractional).
+                    element in the coordination environment and its coordinates
+                    (cartesian and fractional).
 
                 > image:
-                    image is defined as displacement from original site in structure to a given site.
-                    i.e. if structure has a site at (-0.1, 1.0, 0.3), then (0.9, 0, 2.3) ->
-                    jimage = (1, -1, 2).
-                    Note that this method takes O(number of sites) due to searching an original site.
+                    image is defined as displacement from original site in
+                    structure to a given site. i.e. if structure has a site at
+                    (-0.1, 1.0, 0.3), then (0.9, 0, 2.3) -> jimage = (1, -1,
+                    2). Note that this method takes O(number of sites) due to
+                    searching an original site.
 
                 > weight:
-                    quantifies the significance or contribution of each coordinated site to the
-                    central site's coordination.
+                    quantifies the significance or contribution of each
+                    coordinated site to the central site's coordination.
 
                 > site_index:
                     structure index for the coerdinated atom.
@@ -531,7 +542,7 @@ class Struct2XAS:
             )
 
         if self.is_xyz:
-            obj = BrunnerNN_real()
+            obj = CrystalNN()
             coord_env_list = []
             coord_env = obj.get_nn_info(self.struct, idx_abs_site)
             for site in coord_env:
