@@ -14,24 +14,8 @@ import numpy as np
 from pymatgen.core import Structure, Element, Lattice
 from pymatgen.io.xyz import XYZ
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
-from pymatgen.analysis.bond_valence import BVAnalyzer
-from pymatgen.analysis.local_env import CrystalNN  #previously used: BrunnerNN_real, CutOffDictNN,
-from pymatgen.analysis.chemenv.coordination_environments.coordination_geometry_finder import (
-    LocalGeometryFinder,
-)
-from pymatgen.analysis.chemenv.coordination_environments.structure_environments import (
-    LightStructureEnvironments,
-)
-from pymatgen.analysis.chemenv.coordination_environments.chemenv_strategies import (
-    # SimplestChemenvStrategy,
-    MultiWeightsChemenvStrategy,
-    # WeightedNbSetChemenvStrategy,
-)
-from pymatgen.ext.matproj import _MPResterLegacy
 
 import larch.utils.logging as logging
-from larch.math import convolution1D
-from larch.io import read_ascii
 
 try:
     import pandas as pd
@@ -61,6 +45,7 @@ def _get_timestamp() -> str:
     """return a custom time stamp string: YYY-MM-DD_HHMM"""
     return "{0:04d}-{1:02d}-{2:02d}_{3:02d}{4:02d}".format(*time.localtime())
 
+
 def _pprint(matrix):
     """pretty print a list of lists (in case Pandas is not available)
     from: https://stackoverflow.com/questions/13214809/pretty-print-2d-list
@@ -68,10 +53,9 @@ def _pprint(matrix):
     """
     s = [[str(e) for e in row] for row in matrix]
     lens = [max(map(len, col)) for col in zip(*s)]
-    fmt = '\t'.join('{{:{}}}'.format(x) for x in lens)
+    fmt = "\t".join("{{:{}}}".format(x) for x in lens)
     table = [fmt.format(*row) for row in s]
-    print('\n'.join(table))
-
+    print("\n".join(table))
 
 
 def xyz2struct(molecule):
@@ -80,16 +64,18 @@ def xyz2struct(molecule):
     alat, blat, clat = 1, 1, 1
 
     # Set the lattice dimensions in each direction
-    for i in range(len(molecule)-1):
-        if molecule.cart_coords[i][0] > molecule.cart_coords[i+1][0]:
-            alat = molecule.cart_coords[i][0] 
-        if molecule.cart_coords[i][1] > molecule.cart_coords[i+1][1]:
+    for i in range(len(molecule) - 1):
+        if molecule.cart_coords[i][0] > molecule.cart_coords[i + 1][0]:
+            alat = molecule.cart_coords[i][0]
+        if molecule.cart_coords[i][1] > molecule.cart_coords[i + 1][1]:
             blat = molecule.cart_coords[i][1]
-        if molecule.cart_coords[i][2] > molecule.cart_coords[i+1][2]:
+        if molecule.cart_coords[i][2] > molecule.cart_coords[i + 1][2]:
             clat = molecule.cart_coords[i][2]
 
     # Set the lattice dimensions in each direction
-    lattice = Lattice.from_parameters(a=alat, b=blat, c=clat, alpha=90, beta=90, gamma=90)
+    lattice = Lattice.from_parameters(
+        a=alat, b=blat, c=clat, alpha=90, beta=90, gamma=90
+    )
 
     # Create a list of species
     species = [Element(sym) for sym in molecule.species]
@@ -257,7 +243,7 @@ class Struct2XAS:
         the method will return just equivalent sites. If the structure does not
         have symmetry or the symmetry is not explicit in the files, this method
         will return all possible sites for absorber atoms.
-        
+
         Returns
         -------
         abs_sites : list of lists
@@ -296,9 +282,9 @@ class Struct2XAS:
 
             # Get multiples sites for absorber atom
             for idx, sites in enumerate(sym_struct.equivalent_sites):
-                #sites = sorted(
+                # sites = sorted(
                 #    sites, key=lambda s: tuple(abs(x) for x in s.frac_coords)
-                #)
+                # )
                 site = sites[0]
                 abs_row = [idx, site.species_string]
                 abs_row.append([j for j in np.round(site.frac_coords, 4)])
@@ -342,7 +328,15 @@ class Struct2XAS:
 
     def get_abs_sites_info(self):
         """pretty print for self.get_abs_sites()"""
-        header = ["idx_abs", "specie", "frac_coords", "wyckoff_site", "cart_coords", "occupancy", "idx_in_struct"]
+        header = [
+            "idx_abs",
+            "specie",
+            "frac_coords",
+            "wyckoff_site",
+            "cart_coords",
+            "occupancy",
+            "idx_in_struct",
+        ]
         abs_sites = self.get_abs_sites()
         if HAS_PANDAS:
             df = pd.DataFrame(
@@ -355,7 +349,6 @@ class Struct2XAS:
             matrix = [header]
             matrix.extend(abs_sites)
             _pprint(matrix)
-
 
     def get_atoms_from_abs(self, radius):
         """Get atoms in sphere from absorbing atom with certain radius"""
@@ -514,6 +507,19 @@ class Struct2XAS:
         idx_abs_site = abs_sites[self.abs_site][-1]
 
         if self.is_cif:
+            from pymatgen.analysis.bond_valence import BVAnalyzer
+            from pymatgen.analysis.chemenv.coordination_environments.coordination_geometry_finder import (
+                LocalGeometryFinder,
+            )
+            from pymatgen.analysis.chemenv.coordination_environments.structure_environments import (
+                LightStructureEnvironments,
+            )
+            from pymatgen.analysis.chemenv.coordination_environments.chemenv_strategies import (
+                # SimplestChemenvStrategy,
+                MultiWeightsChemenvStrategy,
+                # WeightedNbSetChemenvStrategy,
+            )
+
             lgf = LocalGeometryFinder()
             lgf.setup_structure(self.struct)
 
@@ -550,6 +556,10 @@ class Struct2XAS:
             )
 
         if self.is_xyz:
+            from pymatgen.analysis.local_env import (
+                CrystalNN,
+            )  # previously used: BrunnerNN_real, CutOffDictNN,
+
             obj = CrystalNN()
             coord_env_list = []
             coord_env = obj.get_nn_info(self.struct, idx_abs_site)
@@ -740,9 +750,9 @@ class Struct2XAS:
 
             unique_sites = []
             for sites in analyzer.get_symmetrized_structure().equivalent_sites:
-                #sites = sorted(
+                # sites = sorted(
                 #    sites, key=lambda s: tuple(abs(x) for x in s.frac_coords)
-                #)
+                # )
                 unique_sites.append((sites[0], len(sites)))
                 sites = str()
             if self.full_occupancy:
@@ -1185,6 +1195,7 @@ def get_fdmnes_info(file, labels=("energy", "mu")):
     Obs: The INPUT file must have the "Header" keyword to use this function in the OUTPUT file
 
     """
+    from larch.io import read_ascii
 
     group = read_ascii(file, labels=labels)
 
@@ -1232,9 +1243,10 @@ def convolve_data(
     .. [GP1202] <http://glowingpython.blogspot.fr/2012/02/convolution-with-numpy.html>
 
     """
-    conv = convolution1D
-    gamma_e = conv.lin_gamma(energy, fwhm=fwhm, linbroad=linbroad)
-    mu_conv = conv.conv(energy, mu, kernel=kernel, fwhm_e=gamma_e, efermi=efermi)
+    from larch.math.convolution1D import lin_gamma, conv
+
+    gamma_e = lin_gamma(energy, fwhm=fwhm, linbroad=linbroad)
+    mu_conv = conv(energy, mu, kernel=kernel, fwhm_e=gamma_e, efermi=efermi)
     group.conv = mu_conv
     return group
 
@@ -1260,6 +1272,8 @@ def save_cif_from_mp(api_key, material_id, parent_path=None):
     if parent_path is None:
         parent_path = tempfile.mkdtemp(prefix="mp-cifs-")
     #
+    from pymatgen.ext.matproj import _MPResterLegacy
+
     cif = _MPResterLegacy(api_key).get_data(material_id, prop="cif")
     pf = _MPResterLegacy(api_key).get_data(material_id, prop="pretty_formula")[0][
         "pretty_formula"
