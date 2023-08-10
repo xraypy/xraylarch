@@ -34,7 +34,7 @@ from collections import namedtuple
 from gzip import GzipFile
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
-
+import atexit
 import numpy as np
 
 from sqlalchemy import MetaData, create_engine, func, text, and_, Table
@@ -665,7 +665,7 @@ class AMCSD():
             raise ValueError("'%s' is not a valid AMCSD Database!" % dbname)
 
         self.connect(dbname, read_only=read_only)
-
+        atexit.register(self.finalize_amcsd)
         ciftab = self.tables['cif']
         for colname in CIF_TEXTCOLUMNS:
             if colname not in ciftab.columns and not read_only:
@@ -676,7 +676,11 @@ class AMCSD():
                 self.insert('version', tag=f'with {colname}', date=isotime(),
                             notes=f'added {colname} column to cif table')
 
-
+    def finalize_amcsd(self):
+        conn = getattr(self, 'conn', None)
+        if conn is not None:
+            conn.close()
+        
     def connect(self, dbname, read_only=False):
         self.dbname = dbname
         self.engine = make_engine(dbname)
