@@ -13,6 +13,7 @@ import numpy as np
 # pymatgen
 from pymatgen.core import Structure, Element, Lattice
 from pymatgen.io.xyz import XYZ
+from pymatgen.io.cif import CifParser
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
 import larch.utils.logging as logging
@@ -219,10 +220,13 @@ class Struct2XAS:
             self.molecules = None
             self.mol = None
             self.nframes = 1
-            self.struct = Structure.from_file(self.file)
+            self.cif = CifParser(self.file)
+            # self.struct = Structure.from_file(self.file)
+            self.struct = self.cif.get_structures()[0]
             logger.debug("structure created from a CIF file")
         elif ext == ".xyz":
             self.is_xyz = True
+            self.cif = None
             self.xyz = XYZ.from_file(self.file)
             self.molecules = self.xyz.all_molecules
             self.mol = self.molecules[self.frame]
@@ -233,6 +237,64 @@ class Struct2XAS:
             errmsg = "only CIF and XYZ files are currently supported"
             logger.error(errmsg)
             raise NotImplementedError(errmsg)
+
+    def _get_atom_sites(self):
+        """get atomic positions from the cif file
+
+        Returns
+        -------
+        atom_sites : list of list
+            same output as self.get_abs_sites()
+        """
+        if not self.is_cif:
+            errmsg = "not a CIF file!"
+            logger.error(errmsg)
+            raise NotImplementedError(errmsg)
+        cf = self.cif.as_dict()
+        cf = cf[list(cf.keys())[0]]
+
+        atom_lists = []
+        try:
+            labels = cf["_atom_site_label"]
+            natoms = len(labels)
+            atom_lists.append(labels)
+            atom_lists.append(cf["_atom_site_fract_x"])
+            atom_lists.append(cf["_atom_site_fract_y"])
+            atom_lists.append(cf["_atom_site_fract_z"])
+            atom_lists.append(cf["_atom_site_occupancy"])
+        except KeyError:
+            errmsg = (
+                "the CIF file does not contain all required `_atom_site_*` information"
+            )
+            logger.error(errmsg)
+            raise KeyError(errmsg)
+        try:
+            atom_lists.append(cf["_atom_site_symmetry_multiplicity"])
+            atom_lists.append(cf["_atom_site_Wyckoff_symbol"])
+        except KeyError:
+            atom_lists.append(["?"] * natoms)
+            atom_lists.append(["?"] * natoms)
+
+        atom_sites = []
+        for ikey, key in enumerate(zip(*atom_lists)):
+            atom_row = [
+                ikey,
+                key[0],
+                np.array([key[1], key[2], key[3]], dtype=float),
+                key[5] + key[6],
+                np.array([None, None, None]),
+                float(key[4]),
+                None,
+            ]
+            atom_sites.append(atom_row)
+
+        # atom_site_keys = [key for key in cf.keys() if '_atom_site' in key]
+        # atom_lists = [cf[key] for key in atom_site_keys]
+        # atom_sites = []
+        # for ikey, key in enumerate(zip(*atom_lists)):
+        #    atom_row = [ikey, key[1], np.array([key[4], key[5], key[6]], dtype=float), key[2] + key[3], np.array([None, None, None]), float(key[8]), None]
+        #    atom_sites.append(atom_row)
+        return atom_sites
 
     def get_abs_sites(self):
         """
