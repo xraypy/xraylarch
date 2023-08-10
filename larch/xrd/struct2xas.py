@@ -257,7 +257,15 @@ class Struct2XAS:
         try:
             labels = cf["_atom_site_label"]
             natoms = len(labels)
-            atom_lists.append(labels)
+            try:
+                type_symbols = cf["_atom_site_type_symbol"]
+            except KeyError:
+                type_symbols = None
+                pass
+            if type_symbols is None:
+                atom_lists.append(labels)
+            else:
+                atom_lists.append(type_symbols)
             atom_lists.append(cf["_atom_site_fract_x"])
             atom_lists.append(cf["_atom_site_fract_y"])
             atom_lists.append(cf["_atom_site_fract_z"])
@@ -280,7 +288,10 @@ class Struct2XAS:
             atom_row = [
                 ikey,
                 key[0],
-                np.array([key[1], key[2], key[3]], dtype=float),
+                np.array(
+                    [key[1].split("(")[0], key[2].split("(")[0], key[3].split("(")[0]],
+                    dtype=float,
+                ),
                 key[5] + key[6],
                 np.array([None, None, None]),
                 float(key[4]),
@@ -295,6 +306,16 @@ class Struct2XAS:
         #    atom_row = [ikey, key[1], np.array([key[4], key[5], key[6]], dtype=float), key[2] + key[3], np.array([None, None, None]), float(key[8]), None]
         #    atom_sites.append(atom_row)
         return atom_sites
+
+    def _get_idx_struct(self, atom_coords):
+        """get the index of the pymatgen Structure corresponding to the given atomic coordinates"""
+        for idx, atom in enumerate(self.struct):
+            if np.allclose(atom.coords, atom_coords, atol=0.001) is True:
+                return idx
+        errmsg = f"atomic coordinates {atom_coords} not found in self.struct"
+        logger.error(errmsg)
+        # raise IndexError(errmsg)
+        return None
 
     def get_abs_sites(self):
         """
@@ -336,12 +357,6 @@ class Struct2XAS:
         if self.is_cif:
             sym_struct = SpacegroupAnalyzer(self.struct).get_symmetrized_structure()
 
-            def _get_idx_struct(sym_site):
-                """get the index of the absorbing atom corresponding to the list of atoms in struct"""
-                for idx, atom in enumerate(self.struct):
-                    if np.allclose(atom.coords, sym_site[4], atol=0.01) is True:
-                        return idx
-
             # Get multiples sites for absorber atom
             for idx, sites in enumerate(sym_struct.equivalent_sites):
                 # sites = sorted(
@@ -362,7 +377,7 @@ class Struct2XAS:
                         occupancy = 1
                         self.full_occupancy = True
                     abs_row.append(occupancy)
-                    abs_row.append(_get_idx_struct(abs_row))
+                    abs_row.append(self._get_idx_struct(abs_row[4]))
                     abs_sites.append(abs_row)
 
         if self.is_xyz:
