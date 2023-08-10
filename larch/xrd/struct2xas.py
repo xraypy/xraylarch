@@ -36,7 +36,7 @@ except ImportError:
 __author__ = ["Beatriz G. Foschiani", "Mauro Rovezzi"]
 __email__ = ["beatrizgfoschiani@gmail.com", "mauro.rovezzi@esrf.fr"]
 __credits__ = ["Jade Chongsathapornpong", "Marius Retegan"]
-__version__ = "2023.2.dev"
+__version__ = "2023.2.0"
 
 # initialize the logger
 logger = logging.getLogger("struct2xas", level="INFO")
