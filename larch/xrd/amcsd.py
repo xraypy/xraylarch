@@ -42,17 +42,14 @@ from sqlalchemy import __version__ as sqla_version
 from sqlalchemy.sql import select as sqla_select
 from sqlalchemy.orm import sessionmaker
 
-try:
-    from pymatgen.io.cif import CifParser
-    from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
-    HAS_CIFPARSER = True
-except IOError:
-    HAS_CIFPARSER = False
+
+from .amcsd_utils import (make_engine, isAMCSD, put_optarray, get_optarray,
+                          PMG_CIF_OPTS, CifParser, SpacegroupAnalyzer)
 
 from xraydb.chemparser import chemparse
 from xraydb import f0, f1_chantler, f2_chantler
 
-from .amcsd_utils import make_engine, isAMCSD, put_optarray, get_optarray
+
 from .xrd_tools import generate_hkl, d_from_hkl, twth_from_q, E_from_lambda
 from .cif2feff import cif2feffinp
 from ..utils import isotime
@@ -65,6 +62,7 @@ _CIFDB = None
 ALL_HKLS = None
 AMCSD_TRIM = 'amcsd_cif1.db'
 AMCSD_FULL = 'amcsd_cif2.db'
+
 SOURCE_URLS = ('https://docs.xrayabsorption.org/databases/',
                'https://millenia.cars.aps.anl.gov/xraylarch/downloads/')
 
@@ -175,17 +173,21 @@ def parse_cif_file(filename):
         must have spacegroup
     returns dat, formula, json-dumped symm_xyz
     """
-    if not HAS_CIFPARSER:
+    if CifParser is None:
         raise ValueError("CifParser from pymatgen not available. Try 'pip install pymatgen'.")
 
-    cif = CifParser(filename)
+    cif = CifParser(filename, **PMG_CIF_OPTS)
     cifkey = list(cif._cif.data.keys())[0]
     dat = cif._cif.data[cifkey].data
 
     formula = None
     for formname in ('_chemical_formula_sum', '_chemical_formula_moiety'):
         if formname in dat:
-            formula = dat[formname]
+            try:
+                parsed_formula = chemparse(dat[formname])
+                formula = dat[formname]
+            except:
+                pass
     if formula is None and '_atom_site_type_symbol' in dat:
         comps = {}
         complist = dat['_atom_site_type_symbol']
@@ -549,9 +551,7 @@ class CifStructure():
             return
 
         try:
-            pmcif = CifParser(StringIO(self.ciftext),
-                              occupancy_tolerance=10,
-                              site_tolerance=0.05)
+            pmcif = CifParser(StringIO(self.ciftext), **PMG_CIF_OPTS)
             self.pmg_cstruct = pmcif.get_structures()[0]
             self.pmg_pstruct = SpacegroupAnalyzer(self.pmg_cstruct
                                                   ).get_conventional_standard_structure()
@@ -680,7 +680,7 @@ class AMCSD():
         conn = getattr(self, 'conn', None)
         if conn is not None:
             conn.close()
-        
+
     def connect(self, dbname, read_only=False):
         self.dbname = dbname
         self.engine = make_engine(dbname)
@@ -902,7 +902,7 @@ class AMCSD():
 
     def add_ciffile(self, filename, cif_id=None, url='', debug=False):
 
-        if not HAS_CIFPARSER:
+        if CifParser is None:
             raise ValueError("CifParser from pymatgen not available. Try 'pip install pymatgen'.")
         try:
             dat, formula, symm_xyz = parse_cif_file(filename)
