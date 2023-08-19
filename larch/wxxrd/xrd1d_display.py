@@ -269,6 +269,8 @@ class XRD1DFrame(wx.Frame):
 
         self.current_label = None
         self.cif_browser = None
+        self.img_display = None
+        self.plot_display = None
         self.datasets = {}
         self.form = {}
         self.createMenus()
@@ -333,6 +335,14 @@ class XRD1DFrame(wx.Frame):
         except:
             pass
 
+        for attr in ('cif_browser', 'img_display', 'plot_display'):
+            winx = getattr(self, attr, None)
+            if winx is not None:
+                try:
+                    winx.Destroy()
+                except:
+                    pass
+            
         if hasattr(self.larch.symtable, '_plotter'):
             wx.CallAfter(self.larch.symtable._plotter.close_all_displays)
 
@@ -864,12 +874,14 @@ class XRD1DFrame(wx.Frame):
     def get_imdisplay(self, win=1):
         wintitle='XRD Image Window %i' % win
         opts = dict(wintitle=wintitle, win=win, image=True)
-        return self.larch.symtable._plotter.get_display(**opts)
+        self.img_display = self.larch.symtable._plotter.get_display(**opts)
+        return self.img_display
                                 
     def get_display(self, win=1, stacked=False):
         wintitle='XRD Plot Window %i' % win
         opts = dict(wintitle=wintitle, stacked=stacked, win=win, linewidth=3)
-        return self.larch.symtable._plotter.get_display(**opts)
+        self.plot_display = self.larch.symtable._plotter.get_display(**opts)
+        return self.plot_display
 
     def plot_dset(self, dset, plottype, newplot=True):
         win    = int(self.wids['plot_win'].GetStringSelection())
