@@ -919,15 +919,7 @@ class XRD2DViewerFrame(wx.Frame):
         save_workdir('gsemap.dat')
         dlg.Destroy()
 
-    def onExit(self, event=None):
-
-        dlg = wx.MessageDialog(None, 'Really Quit?', 'Question',
-                               wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
-
-        ret = dlg.ShowModal()
-        if ret != wx.ID_YES:
-            return
-
+    def onClose(self, event=None):
         for image in self.open_image:
             try:
                 image.h5file.close()
@@ -938,6 +930,17 @@ class XRD2DViewerFrame(wx.Frame):
             self.Destroy()
         except:
             pass
+
+       
+    def onExit(self, event=None):
+        dlg = wx.MessageDialog(None, 'Really Quit?', 'Question',
+                               wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+
+        ret = dlg.ShowModal()
+        if ret != wx.ID_YES:
+            return
+        self.onClose()
+
 
 ##############################################
 #### PANEL DEFINITIONS
