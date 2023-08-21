@@ -17,6 +17,11 @@ from larch.io import (nativepath, new_filename, read_xrf_netcdf,
                       read_xsp3_hdf5, read_xrd_netcdf, read_xrd_hdf5)
 
 from larch.xrf import MCA, ROI
+from larch.xrd import (XRD, E_from_lambda, integrate_xrd_row, q_from_twth,
+                       q_from_d, lambda_from_E, read_xrd_data, read_poni)
+
+from larch.math.tomography import tomo_reconstruction, reshape_sinogram, trim_sinogram
+
 from .configfile import FastMapConfig
 from .asciifiles import (readASCII, readMasterFile, readROIFile,
                          readEnvironFile, parseEnviron)
@@ -24,10 +29,6 @@ from .asciifiles import (readASCII, readMasterFile, readROIFile,
 from .gsexrm_utils import (GSEXRM_MCADetector, GSEXRM_Area, GSEXRM_Exception,
                            GSEXRM_MapRow, GSEXRM_FileStatus)
 
-from ..xrd import (XRD, E_from_lambda, integrate_xrd_row, q_from_twth,
-                   q_from_d, lambda_from_E, read_xrd_data)
-
-from larch.math.tomography import tomo_reconstruction, reshape_sinogram, trim_sinogram
 
 DEFAULT_XRAY_ENERGY = 39987.0  # probably means x-ray energy was not found in meta data
 NINIT = 64
@@ -865,15 +866,13 @@ class GSEXRM_MapFile(object):
             if os.path.exists(calfile):
                 self.xrdcalfile = calfile
 
-            
         scan_version = getattr(self, 'scan_version', 1.00)
         print(" read row data, scan version  ", scan_version, self.xrdcalfile)
-
         xrdcal_dat = bytes2str(self.xrmmap['xrd1d'].attrs.get('caldata','{}'))
         if self.xrdcalfile is not None and len(xrdcal_dat) < 10:
-            xrdcal_dat = read_ponit(self.xrdcalfile)
-            self.xrmmap['xrd1d'].attrs.get('caldata', json.dumps(xrdcal_dat))
-            
+            xrdcal_dat = read_poni(self.xrdcalfile)
+            self.xrmmap['xrd1d'].attrs['caldata'] = json.dumps(xrdcal_dat)
+
         # if not self.has_xrf and not self.has_xrd2d and not self.has_xrd1d:
         #    raise IOError('No XRF or XRD flags provided.')
         #    return
