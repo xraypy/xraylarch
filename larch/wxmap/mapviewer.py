@@ -1952,6 +1952,11 @@ class MapViewerFrame(wx.Frame):
             except KeyError:
                 pass
 
+        try:
+            self.larch.symtable._plotter.close_all_displays()
+        except:
+            pass
+        
         ## Closes maps, 2D XRD image
         for disp in self.im_displays + self.plot_displays + self.tomo_displays:
             try:
@@ -1962,11 +1967,9 @@ class MapViewerFrame(wx.Frame):
         for key, wid in self.subframes.items():
             if wid is not None:
                 try:
-                    wid.Destroy()
+                    wid.onClose()
                 except:
                     pass
-
-        self.larch.symtable._plotter.close_all_displays()
         if self.larch_buffer is not None:
             self.larch_buffer.exit_on_close = True
             self.larch_buffer.onExit(force=True, with_sysexit=False)
