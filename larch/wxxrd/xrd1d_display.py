@@ -246,16 +246,6 @@ class XRD1DFrame(wx.Frame):
         self.wavelength = wavelength
         self.poni = {'wavelength': 1.e-10*self.wavelength} # ! meters!
         self.pyfai_integrator = None
-        if ponifile is not None:
-            try:
-                self.poni.update(read_poni(ponifile))
-                self.set_wavelength(self.poni['wavelength']*1.e10)                
-            except:
-                pass
-            try:
-                self.pyfai_integrator = AzimuthalIntegrator(**self.poni)
-            except:
-                self.pyfai_integrator = None
             
         self.larch = _larch
         if self.larch is None:
@@ -266,7 +256,6 @@ class XRD1DFrame(wx.Frame):
 
             self.larch = self.larch_buffer.larchshell
 
-
         self.current_label = None
         self.cif_browser = None
         self.img_display = None
@@ -276,6 +265,8 @@ class XRD1DFrame(wx.Frame):
         self.createMenus()
         self.build()
         self.set_wavelength(self.wavelength)
+        if ponifile is not None:
+            self.set_ponifile(ponifile)
 
     def createMenus(self):
         fmenu = wx.Menu()
@@ -679,6 +670,28 @@ class XRD1DFrame(wx.Frame):
         self.Show()
         self.Raise()
 
+    def set_ponifile(self, ponifile):
+        "set poni from datafile"        
+        try:
+            self.set_poni(read_poni(ponifile))
+        except:
+            pass
+
+    def set_poni(self, poni):        
+        "set poni from dict"
+        try:
+            self.poni.update(poni)
+            self.set_wavelength(self.poni['wavelength']*1.e10)                
+            self.tiff_reader.Enable(self.poni.get('dist', -1) > 0)
+        except:
+            pass
+        
+        try:
+            self.pyfai_integrator = AzimuthalIntegrator(**self.poni)
+        except:
+            self.pyfai_integrator = None
+            
+            
     def set_wavelength(self, value):
         self.wavelength = value
         self.wids['wavelength'].SetLabel("%.6f" % value)
