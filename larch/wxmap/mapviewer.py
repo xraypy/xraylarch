@@ -50,7 +50,7 @@ from larch.io import nativepath
 from larch.site_config import icondir
 from larch.version import check_larchversion
 
-from ..xrd import lambda_from_E, xrd1d, save1D, calculate_xvalues
+from ..xrd import lambda_from_E, xrd1d, save1D, calculate_xvalues, read_poni
 from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup, DEFAULT_XRAY_ENERGY
 from ..apps import check_larchversion, update_larch
 from ..epics import pv_fullname
@@ -1760,7 +1760,8 @@ class MapViewerFrame(wx.Frame):
         '''
         displays 2D XRD pattern in diFFit viewer
         '''
-        ponifile = bytes2str(self.current_file.xrmmap['xrd1d'].attrs.get('calfile',''))
+        xrmfile = self.current_file
+        ponifile = bytes2str(xrmfile.xrmmap['xrd1d'].attrs.get('calfile',''))
         if len(ponifile) < 2 or not os.path.exists(ponifile):
             t_ponifile = os.path.join(xrmfile.folder, 'XRD.poni')
             if os.path.exists(t_ponifile):
@@ -1779,12 +1780,27 @@ class MapViewerFrame(wx.Frame):
         '''
         displays 1D XRD pattern in diFFit viewer
         '''
-       
         wavelength = lambda_from_E(energy, E_units='keV')
         xdat = xrd1d(label=label, energy=energy, wavelength=wavelength)
         xdat.set_xy_data(np.array([q, counts]), 'q')
+
+        xrmfile = self.current_file
+        ponidata = json.loads(bytes2str(xrmfile.xrmmap['xrd1d'].attrs.get('caldata','{}')))
+        if 'rot1' not in ponidata:  # invalid poni data
+            ponifile = bytes2str(xrmfile.xrmmap['xrd1d'].attrs.get('calfile',''))
+            if len(ponifile) < 2 or not os.path.exists(ponifile):
+                t_ponifile = os.path.join(xrmfile.folder, 'XRD.poni')
+                if os.path.exists(t_ponifile):
+                    ponifile = t_ponifile
+            if len(ponifile) > 1:
+                ponidata = read_poni(ponifile)
+            if 'rot1' in ponidata:
+                xrmfile.xrmmap['xrd1d'].attrs['caldata'] = json.dumps(ponidata)
         self.show_XRD1D()
         self.subframes['xrd1d'].set_wavelength(wavelength)
+        if 'rot1' in ponidata:            
+            self.subframes['xrd1d'].set_poni(ponidata)
+            
         self.subframes['xrd1d'].add_data(xdat, label=label)
         self.subframes['xrd1d'].Show()
 
