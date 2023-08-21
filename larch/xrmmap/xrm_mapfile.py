@@ -865,9 +865,15 @@ class GSEXRM_MapFile(object):
             if os.path.exists(calfile):
                 self.xrdcalfile = calfile
 
+            
         scan_version = getattr(self, 'scan_version', 1.00)
         print(" read row data, scan version  ", scan_version, self.xrdcalfile)
 
+        xrdcal_dat = bytes2str(self.xrmmap['xrd1d'].attrs.get('caldata','{}'))
+        if self.xrdcalfile is not None and len(xrdcal_dat) < 10:
+            xrdcal_dat = read_ponit(self.xrdcalfile)
+            self.xrmmap['xrd1d'].attrs.get('caldata', json.dumps(xrdcal_dat))
+            
         # if not self.has_xrf and not self.has_xrd2d and not self.has_xrd1d:
         #    raise IOError('No XRF or XRD flags provided.')
         #    return
@@ -1566,9 +1572,7 @@ class GSEXRM_MapFile(object):
 
         self.h5root.flush()
 
-
     def add_xrd1d(self, qstps=None):
-
         xrd1dgrp = ensure_subgroup('xrd1d',self.xrmmap)
         xrdcalfile = bytes2str(xrd1dgrp.attrs.get('calfile', ''))
         if os.path.exists(xrdcalfile):
