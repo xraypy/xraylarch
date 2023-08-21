@@ -19,6 +19,7 @@ Plotting macros for XAFS data sets and fits
 """
 
 import os
+import numpy as np
 import time
 import logging
 from copy import deepcopy
@@ -255,7 +256,7 @@ class PlotlyFigure:
         if self.two_yaxis:
             trace_opts['secondary_y'] = (side.lower().startswith('l'))
 
-        lineopts = dict(color=color, width=3)
+        lineopts = dict(color=color, width=linewidth)
         trace = pgo.Scatter(x=x, y=y, name=label, line=lineopts)
 
         self.traces.append(trace)
@@ -278,6 +279,95 @@ class PlotlyFigure:
 
     def show(self):
         self.fig.show()
+
+def plot(xdata, ydata, dy=None, new=False, label=None, xlabel=None,
+         ylabel=None, y2label=None, title=None, side='left', ylog_scale=None,
+         xlog_scale=None, grid=None, xmin=None, xmax=None, ymin=None,
+         ymax=None, color=None, style='solid', alpha=None, fill=False,
+         drawstyle=None, linewidth=2, marker=None, markersize=None,
+         show_legend=None, bgcolor=None, framecolor=None, gridcolor=None,
+         textcolor=None, labelfontsize=None, titlefontsize=None,
+         legendfontsize=None, fullbox=None, axes_style=None, zorder=None,
+         delay_draw=False, **kws):
+
+    """emulate wxmplot plot() function, probably incompletely"""
+
+    fig = PlotlyFigure(two_yaxis=(side=='right'))
+    if new:
+        fig.clear()
+
+    fig.add_plot(xdata, ydata, label=label, color=color, linewidth=linewidth,
+                 style=style, marker=marker, side=side)
+
+    fig.set_style(title=title, xaxis_title=xlabel, yaxis_title=ylabel)
+    if xmin is not None or xmax is not None:
+        fig.set_xrange(xmin, xmax)
+    if ymin is not None or ymax is not None:
+        fig.set_yrange(ymin, ymax)
+
+    fig.show()
+    return fig
+
+
+def multi_plot(plotsets):
+    """plot multiple traces with an array of dictionaries emulating
+    multiplot calls to plot:
+
+    instead of
+
+    >>>  plot(x1, y1, label='thing1', color='blue')
+    >>>  plot(x2, y2, label='thing2', color='red')
+
+    you can do
+
+    >>> multi_plot([dict(xdata=x1, ydata=y1, label='thing1', color='blue'),
+                    dict(xdata=x2, ydata=y2, label='thing2', color='red')])
+
+    """
+    two_axis = False
+    for pset in plotsets[:]:
+        side = pset.get('side', None)
+        if side == 'right':
+            two_axis = True
+
+
+    fig = PlotlyFigure(two_yaxis=two_axis)
+    fig.clear()
+
+    sopts = dict(title=None, xlabel=None, ylabel=None,
+                xmin=None, xmax=None, ymin=None, ymax=None)
+
+    for pset in plotsets[:]:
+        xdata = pset['xdata']
+        ydata = pset['ydata']
+        popts = dict(label=None, color=None, side='left', style=None,
+                    linewidth=3, marker=None)
+        for w in ('label', 'color', 'style', 'linewidth', 'marker', 'side'):
+            if w in pset:
+                popts[w] = pset[w]
+        for w in ('xmin', 'xmax', 'ymin', 'ymax', 'title', 'xlabel', 'ylabel'):
+            if w in pset:
+                sopts[w] = pset[w]
+
+        fig.add_plot(xdata, ydata, **popts)
+
+    xmin = sopts.pop('xmin')
+    xmax = sopts.pop('xmax')
+    ymin = sopts.pop('ymin')
+    ymax = sopts.pop('ymax')
+
+    sopts['xaxis_title'] = sopts.pop('xlabel')
+    sopts['yaxis_title'] = sopts.pop('ylabel')
+    fig.set_style(**sopts)
+
+    if xmin is not None or xmax is not None:
+        fig.set_xrange(xmin, xmax)
+    if ymin is not None or ymax is not None:
+        fig.set_yrange(ymin, ymax)
+    fig.show()
+    return fig
+
+
 
 def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
             show_pre=False, show_post=False, show_e0=False, with_deriv=False,
@@ -333,16 +423,16 @@ def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
     #endif
     if show_deriv:
         mu = dgroup.dmude
-        ylabel = "%s (deriv)" % ylabel
+        ylabel = f"{ylabel} (deriv)"
         dlabel = plotlabels.dmude
     elif show_norm:
         mu = dgroup.norm
-        ylabel = "%s (norm)" % ylabel
+        ylabel = f"{ylabel} (norm)"
         dlabel = plotlabels.norm
     #endif
     elif show_flat:
         mu = dgroup.flat
-        ylabel = "%s (flat)" % ylabel
+        ylabel = f"{ylabel} (flat)"
         dlabel = plotlabels.flat
     #endif
     emin, emax = _get_erange(dgroup, emin, emax)
@@ -353,7 +443,7 @@ def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
     fig.add_plot(dgroup.energy, mu+offset, label=label)
 
     if with_deriv:
-        fig.add_plot(dgroup.energy, dgroup.dmude+offset, label='%s (deriv)' % label, side='right')
+        fig.add_plot(dgroup.energy, dgroup.dmude+offset, label=f"{ylabel} (deriv)", side='right')
 
     else:
         if not show_norm and show_pre:
@@ -414,8 +504,8 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
     if norm:
         mu  = dgroup.norm
         bkg = (dgroup.bkg - dgroup.pre_edge) / dgroup.edge_step
-        ylabel = "%s (norm)" % ylabel
-        label = "%s (norm)" % label
+        ylabel = f"{ylabel} (norm)"
+        label = f"{ylabel} (norm)"
     #endif
     title = _get_title(dgroup, title=title)
 
@@ -486,7 +576,7 @@ def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
         if ex < 0:
             s = ''
         else:
-            s = '\n[%.2f]' % (etok(ex))
+            s = f"\n[{etok(ex):.2f}]"
         return r"%1.4g%s" % (x, s)
 
     fig = PlotlyFigure(two_yaxis=False)
@@ -607,14 +697,14 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
     #endif
     fig = PlotlyFigure(two_yaxis=False)
     if show_mag:
-        fig.add_plot(dgroup.r, dgroup.chir_mag+offset, label='%s (mag)' % label)
+        fig.add_plot(dgroup.r, dgroup.chir_mag+offset, label=f'{label} (mag)')
     #endif
     if show_real:
-        fig.add_plot(dgroup.r, dgroup.chir_re+offset, label='%s (real)' % label)
+        fig.add_plot(dgroup.r, dgroup.chir_re+offset, label=f'{label} (real)')
         opts['new'] = False
     #endif
     if show_imag:
-        fig.add_plot(dgroup.r, dgroup.chir_im+offset, label='%s (imag)' % label)
+        fig.add_plot(dgroup.r, dgroup.chir_im+offset, label=f'{label} (imag)')
     #endif
     if show_window and hasattr(dgroup, 'rwin'):
         rwin = dgroup.rwin * max(dgroup.chir_mag)
@@ -758,16 +848,17 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
     if kweight is None:
         kweight = dataset.transform.kweight
     #endif
-    if isinstance(kweight, (list, tuple, ndarray)): kweight=kweight[0]
+    if isinstance(kweight, (list, tuple, np.ndarray)): kweight=kweight[0]
 
     data_chik  = dataset.data.chi * dataset.data.k**kweight
     model_chik = dataset.model.chi * dataset.model.k**kweight
 
     title = _get_title(dataset, title=title)
 
-    opts=dict(labelfontsize=10, legendfontsize=10, linewidth=3,
-              show_legend=True, delay_draw=True, win=win, title=title,
-              _larch=_larch)
+#     opts=dict(labelfontsize=10, legendfontsize=10, linewidth=3,
+#               show_legend=True, delay_draw=True, win=win, title=title,
+#               _larch=_larch)
+    fig = PlotlyFigure(two_yaxis=False)
 
     # k-weighted chi(k) in first plot window
     _plot(dataset.data.k, data_chik+offset, xmin=kmin, xmax=kmax,
