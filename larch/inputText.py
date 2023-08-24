@@ -154,8 +154,10 @@ class HistoryBuffer(object):
             self.filename = filename
         if os.path.exists(self.filename):
             self.clear()
-            for hline in read_textfile(filename):
-                self.add(text=hline[:-1])
+            text = read_textfile(filename).split('\n')
+            for hline in text:
+                if not hline.startswith("# larch history"):
+                    self.add(text=hline)
             self.session_start = len(self.buffer)
 
     def get(self, session_only=False, trim_last=False, maxlines=None):
