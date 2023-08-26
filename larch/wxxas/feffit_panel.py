@@ -772,24 +772,28 @@ class FeffitPanel(TaskPanel):
         fit_rmin = self.add_floatspin('fit_rmin',  value=1, **fsopts)
         fit_rmax = self.add_floatspin('fit_rmax',  value=5, **fsopts)
 
-        wids['fit_kwstring'] = Choice(pan, size=(125, -1),
+        wids['fit_kwstring'] = Choice(pan, size=(150, -1),
                                      choices=list(Feffit_KWChoices.keys()))
         wids['fit_kwstring'].SetSelection(1)
 
-        wids['fit_kwindow'] = Choice(pan, choices=list(FT_WINDOWS), size=(125, -1))
+        wids['fit_kwindow'] = Choice(pan, choices=list(FT_WINDOWS), size=(150, -1))
 
         wids['fit_space'] = Choice(pan, choices=list(Feffit_SpaceChoices.keys()),
-                                   size=(125, -1))
+                                   size=(150, -1))
 
         wids['plotone_op'] = Choice(pan, choices=list(PlotOne_Choices.keys()),
-                                    action=self.onPlot, size=(125, -1))
+                                    action=self.onPlot, size=(150, -1))
         wids['plotone_op'].SetSelection(1)
         wids['plotalt_op'] = Choice(pan, choices=list(PlotAlt_Choices.keys()),
-                                    action=self.onPlot, size=(125, -1))
+                                    action=self.onPlot, size=(150, -1))
 
         wids['plot_win'] = Choice(pan, choices=PlotWindowChoices,
                                   action=self.onPlot, size=(60, -1))
         wids['plot_win'].SetStringSelection('2')
+
+        wids['plot_voffset'] =  FloatSpin(pan, value=0, digits=2, increment=0.25,
+                                          size=(100, -1), action=self.onPlot)
+
 
         ppanel = wx.Panel(pan)
         ppanel.SetMinSize((450, 20))
@@ -799,21 +803,18 @@ class FeffitPanel(TaskPanel):
         wids['plot_ftwindows'] = Check(ppanel, default=False, label='Plot FT Windows',
                                        action=self.onPlot)
 
-        wids['plot_voffset'] =  FloatSpin(ppanel, value=0, digits=2, increment=0.25,
-                                          size=(100, -1), action=self.onPlot)
-
         psizer = wx.BoxSizer(wx.HORIZONTAL)
         psizer.Add(wids['plot_paths'],  0, LEFT, 2)
         psizer.Add(wids['plot_ftwindows'], 0, LEFT, 2)
-        psizer.Add(SimpleText(ppanel, '  Offset ', size=(100, -1) ), 0, LEFT, 2)
-        psizer.Add(wids['plot_voffset'], 0, LEFT, 2)
+        #psizer.Add(SimpleText(ppanel, '  Offset ', size=(100, -1) ), 0, LEFT, 2)
+        #psizer.Add(wids['plot_voffset'], 0, LEFT, 2)
         pack(ppanel, psizer)
         wids['plot_current']  = Button(pan,'Plot Current Model',
-                                     action=self.onPlot,  size=(150, -1))
+                                     action=self.onPlot,  size=(175, -1))
         wids['do_fit']        = Button(pan, 'Fit Data to Model',
-                                      action=self.onFitModel,  size=(150, -1))
+                                      action=self.onFitModel,  size=(175, -1))
         wids['show_results']  = Button(pan, 'Show Fit Results',
-                                      action=self.onShowResults,  size=(150, -1))
+                                      action=self.onShowResults,  size=(175, -1))
         wids['show_results'].Disable()
 
 #         wids['do_fit_sel']= Button(pan, 'Fit Selected Groups',
@@ -853,8 +854,11 @@ class FeffitPanel(TaskPanel):
         pan.Add(wids['plot_current'], dcol=1, newrow=True)
         pan.Add(wids['plotone_op'], dcol=1)
         pan.Add(ppanel, dcol=4)
-        # pan.Add(wids['plot_ftwindows'], dcol=2)
-        add_text('Add Second Plot: ', newrow=True)
+        add_text('  ', dcol=2, newrow=True)
+        add_text('Vertical Offset' , newrow=False)
+        pan.Add(wids['plot_voffset'])
+
+        add_text('Second Plot: ', newrow=True)
         pan.Add(wids['plotalt_op'], dcol=1)
         add_text('Plot Window: ', newrow=False)
         pan.Add(wids['plot_win'], dcol=1)
