@@ -151,7 +151,7 @@ class XASNormPanel(TaskPanel):
         sx.Add(self.wids['auto_step'], 0, LEFT, 4)
         pack(step_panel, sx)
 
-        
+
         self.wids['energy_ref'] = Choice(panel, choices=['None'],
                                          action=self.onEnergyRef, size=(300, -1))
 
@@ -177,7 +177,7 @@ class XASNormPanel(TaskPanel):
         sx.Add(xas_pre1, 0, LEFT, 4)
         sx.Add(SimpleText(pre_panel, ' : '), 0, LEFT, 4)
         sx.Add(xas_pre2, 0, LEFT, 4)
-        sx.Add(self.wids['show_pre'], 0, LEFT, 4)        
+        sx.Add(self.wids['show_pre'], 0, LEFT, 4)
         pack(pre_panel, sx)
 
         nor_panel = wx.Panel(panel)
@@ -190,7 +190,7 @@ class XASNormPanel(TaskPanel):
         sx.Add(xas_norm1, 0, LEFT, 4)
         sx.Add(SimpleText(nor_panel, ' : '), 0, LEFT, 4)
         sx.Add(xas_norm2, 0, LEFT, 4)
-        sx.Add(self.wids['show_norm'], 0, LEFT, 4)                
+        sx.Add(self.wids['show_norm'], 0, LEFT, 4)
         pack(nor_panel, sx)
 
 
@@ -207,7 +207,7 @@ class XASNormPanel(TaskPanel):
                                               action=self.onSet_EnergyShift,
                                               size=(FSIZEBIG, -1))
 
-        
+
         self.wids['is_frozen'] = Check(panel, default=False, label='Freeze Group',
                                        action=self.onFreezeGroup)
 
@@ -792,7 +792,7 @@ class XASNormPanel(TaskPanel):
         self.onPlotEither()
 
 
-    def process(self, dgroup=None, force_mback=False, force=False, **kws):
+    def process(self, dgroup=None, force_mback=False, force=False, use_form=True, **kws):
         """ handle process (pre-edge/normalize) of XAS data from XAS form
         """
 
@@ -807,6 +807,9 @@ class XASNormPanel(TaskPanel):
 
         conf = self.get_config(dgroup)
         form = self.read_form()
+        if not use_form:
+            form.update(self.get_defaultconfig())
+
         form['group'] = dgroup.groupname
         groupnames = list(self.controller.file_groups.keys())
         self.wids['energy_ref'].SetChoices(groupnames)
@@ -881,7 +884,7 @@ class XASNormPanel(TaskPanel):
             copts.append("step=%s" % gformat(float(edge_step)))
 
         for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
-            if form[attr] is None:
+            if form[attr] is None or form[attr] == 'auto':
                 copts.append("%s=None" % attr)
             else:
                 fmt = "%s=%d" if attr in ('nvict', 'nnorm') else "%s=%.2f"
