@@ -540,7 +540,7 @@ class RebinDataDialog(wx.Dialog):
         xmin = min(self.dgroup.energy)
         xmax = max(self.dgroup.energy)
         e0val = getattr(self.dgroup, 'e0', xmin)
-        xanes_step = 0.05 * max(1, int(e0val / 1250.0))  # E0/25000, round down to 0.05
+        xanes_step = 0.05 * (1 + max(1, int(e0val / 2000.0)))
         self.data = [self.dgroup.energy[:], self.dgroup.mu[:],
                      self.dgroup.mu*0, e0val]
 
