@@ -134,7 +134,7 @@ def save_session(fname=None, _larch=None):
         if attr in core_groups:
             continue
         buff.append('<:%s:>' % attr)
-        buff.append('%s' % json.dumps(encode4js(getattr(symtab, attr))))
+        buff.append(json.dumps(encode4js(getattr(symtab, attr))))
 
     buff.append("##</Symbols>")
     buff.append("")
@@ -210,10 +210,9 @@ def read_session(fname):
                 symname = line.replace('<:', '').replace(':>', '')
             else:
                 try:
-                    v = decode4js(json.loads(line))
-                    symbols[symname] = v
+                    symbols[symname] = decode4js(json.loads(line))
                 except:
-                    print("decode failed SS:: ", symname, line[:150])
+                    print("decode failed:: ", symname, line[:150])
 
         else:
             if line.startswith('##') and ':' in line:
@@ -309,13 +308,9 @@ def load_session(fname, ignore_groups=None, include_xasgroups=None, _larch=None,
 
         if verbose and hasattr(symtab, sym):
             print(f"warning overwriting '{sym}'")
-
         setattr(symtab, sym, val)
 
     symtab._xasgroups.update(s_xasgroups)
     symtab._feffpaths.update(s_feffpaths)
     for name in ('paths', 'runs'):
         symtab._feffcache[name].update(s_feffcache[name])
-#
-#             if dat not in symtab._feffcache[name]:
-#                 print('FEFFCACHE ' , name, type(   symtab._feffcache[name]), type(dat))
