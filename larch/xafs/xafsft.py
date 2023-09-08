@@ -224,7 +224,7 @@ def xftr(r, chir=None, group=None, rmin=0, rmax=20, with_phase=False,
 @Make_CallArgs(["k", "chi"])
 def xftf(k, chi=None, group=None, kmin=0, kmax=20, kweight=None,
          dk=1, dk2=None, with_phase=False, window='kaiser', rmax_out=10,
-         nfft=2048, kstep=0.05, _larch=None, **kws):
+         nfft=2048, kstep=None, _larch=None, **kws):
     """
     forward XAFS Fourier transform, from chi(k) to chi(R), using
     common XAFS conventions.
@@ -242,7 +242,7 @@ def xftf(k, chi=None, group=None, kmin=0, kmax=20, kweight=None,
       dk2:      second tapering parameter for FT Window
       window:   name of window type
       nfft:     value to use for N_fft (2048).
-      kstep:    value to use for delta_k (0.05 Ang^-1).
+      kstep:    value to use for delta_k (k[1]-k[0] Ang^-1).
       with_phase: output the phase as well as magnitude, real, imag  [False]
 
     Returns:
@@ -272,6 +272,9 @@ def xftf(k, chi=None, group=None, kmin=0, kmax=20, kweight=None,
     k, chi, group = parse_group_args(k, members=('k', 'chi'),
                                      defaults=(chi,), group=group,
                                      fcn_name='xftf')
+
+    if kstep is None:
+        kstep = k[1] - k[0]
 
     cchi, win  = xftf_prep(k, chi, kmin=kmin, kmax=kmax, kweight=kweight,
                                dk=dk, dk2=dk2, nfft=nfft, kstep=kstep,
