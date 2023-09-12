@@ -2961,7 +2961,7 @@ class GSEXRM_MapFile(object):
 
         if self.incident_energy is None:
             self.incident_energy = self.get_incident_energy()
-
+        xrange = np.array(xrange)
         if unit.startswith('2th'): ## 2th to 1/A
             qrange = q_from_twth(xrange,
                                  lambda_from_E(self.incident_energy, E_units='eV'))
@@ -2975,7 +2975,6 @@ class GSEXRM_MapFile(object):
         if roiname in roigroup[detname]:
             raise ValueError("Name '%s' exists in 'roimap/%s' arrays." % (roiname, detname))
 
-        # print("ADD XRD1D ROI ", detname, xrange, roiname, unit)
         counts = self.xrmmap[detname]['counts']
         q = self.xrmmap[detname]['q'][:]
 
@@ -2989,8 +2988,7 @@ class GSEXRM_MapFile(object):
             bkglo = counts[:,:,ibkglo:imin].sum(axis=2)/(imin-ibkglo)
             bkghi = counts[:,:,imax::ibkghi].sum(axis=2)/(ibkghi-imax)
             xrd1d_cor -=  (imax-imin)* (bkglo + bkghi)/2.0
-        # print("ADD XRD1D ROI ", roiname, detname,
-        #       xrd1d_sum.sum(), xrd1d_sum.mean())
+
         self.save_roi(roiname, detname, xrd1d_sum, xrd1d_cor,
                       qrange,'q', '1/A')
         self.get_roi_list(detname, force=True)
