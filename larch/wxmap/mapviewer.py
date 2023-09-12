@@ -13,7 +13,7 @@ import socket
 import datetime
 from functools import partial
 from threading import Thread
-from collections import OrderedDict, namedtuple
+from collections import namedtuple
 
 import wx
 from wx.adv import AboutBox, AboutDialogInfo
@@ -1445,7 +1445,7 @@ class MapViewerFrame(wx.Frame):
 
         self.SetBackgroundColour('#F0F0E8')
 
-        nbpanels = OrderedDict()
+        nbpanels = {}
         for panel in (MapPanel, MapInfoPanel, MapAreaPanel, MapMathPanel,
                       TomographyPanel, XRFAnalysisPanel):
             nbpanels[panel.label] = panel
@@ -1569,7 +1569,7 @@ class MapViewerFrame(wx.Frame):
         self.show_subframe('xrfdisplay', XRFDisplayFrame,
                            parent=self.larch_buffer,
                            roi_callback=self.UpdateROI)
-        
+
         self.subframes['xrfdisplay'].Show()
         if do_raise:
             self.subframes['xrfdisplay'].Raise()
@@ -1798,9 +1798,9 @@ class MapViewerFrame(wx.Frame):
                 xrmfile.xrmmap['xrd1d'].attrs['caldata'] = json.dumps(ponidata)
         self.show_XRD1D()
         self.subframes['xrd1d'].set_wavelength(wavelength)
-        if 'rot1' in ponidata:            
+        if 'rot1' in ponidata:
             self.subframes['xrd1d'].set_poni(ponidata)
-            
+
         self.subframes['xrd1d'].add_data(xdat, label=label)
         self.subframes['xrd1d'].Show()
 
@@ -1972,7 +1972,7 @@ class MapViewerFrame(wx.Frame):
             self.larch.symtable._plotter.close_all_displays()
         except:
             pass
-        
+
         ## Closes maps, 2D XRD image
         for disp in self.im_displays + self.plot_displays + self.tomo_displays:
             try:
@@ -2489,6 +2489,7 @@ class ROIDialog(wx.Dialog):
         units  = self.roi_units.GetStringSelection()
         if rtype == '1DXRD':
             units = ['q', '2th', 'd'][self.roi_units.GetSelection()]
+
 
         self.owner.message(f'Building ROI data for: {name:s}')
         if self.roi_callback is not None:

@@ -9,7 +9,7 @@ import gc
 
 import numpy as np
 from .. import Group
-from ..utils import OrderedDict, read_textfile
+from ..utils import read_textfile
 from ..utils.strutils import bytes2str
 
 from . import XDIFile, XDIFileException
@@ -135,7 +135,7 @@ def read_gsexdi(fname, _larch=None, nmca=128, bad=None, **kws):
         group.dtc_taus = dtc_taus
 
     labels = []
-    sums = OrderedDict()
+    sums = {}
     for i, arrname in enumerate(xdi.array_labels):
         dat = getattr(xdi, arrname)
         if arrname.lower() == 'data':
@@ -275,15 +275,14 @@ def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected',
 
     buff =  ['# XDI/1.0  GSE/1.0']
 
-    header = OrderedDict()
-
+    header = {}
     hgroups = ['beamline', 'facility', 'mono', 'undulator', 'detectors',
                'scaler', 'detectorstage', 'samplestage', 'scan', 'scanparameters']
     hskip = ['scanparameters.end', 'scanparameters.start']
     for agroup in hgroups:
         attrs = xdi._xdi.attrs.get(agroup, {})
         if agroup == 'mono': agroup = 'monochromator'
-        header[agroup] = OrderedDict()
+        header[agroup] = {}
         for sname in sorted(attrs.keys()):
             if "%s.%s" %( agroup, sname) not in hskip:
                 header[agroup][sname] = attrs[sname]
@@ -302,7 +301,7 @@ def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected',
         mono_cut = 'Si(311)'
     header['monochromator']['name'] = "%s, LN2 cooled"  % mono_cut
 
-    out_arrays = OrderedDict()
+    out_arrays = {}
     out_arrays[col0_name]  = (col0_name, col0_units)
     out_arrays['mufluor'] = ('mufluor', None)
     if hasattr(out, 'i1'):

@@ -5,7 +5,7 @@ import time
 from configparser import ConfigParser
 
 from epics import Device, caget, caput, poll
-from epics.devices.mca import MCA, ROI, OrderedDict
+from epics.devices.mca import MCA, ROI
 from .ad_mca import ADMCA, ADMCAROI
 
 MAX_ROIS = 48

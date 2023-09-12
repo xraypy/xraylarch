@@ -12,7 +12,6 @@ import json
 import platform
 from fnmatch import fnmatch
 from gzip import GzipFile
-from collections import OrderedDict
 from copy import deepcopy
 import numpy as np
 from numpy.random import randint
@@ -601,22 +600,22 @@ class AthenaGroup(Group):
 
         if isinstance(key, int):
             raise IndexError("AthenaGroup does not support integer indexing")
-        
+
         return getattr(self, key)
 
     def __setitem__(self, key, value):
 
         if isinstance(key, int):
             raise IndexError("AthenaGroup does not support integer indexing")
-        
+
         return setattr(self, key, value)
-    
+
     def keys(self):
         return list(self.groups.keys())
-    
+
     def values(self):
         return list(self.groups.values())
-    
+
     def items(self):
         return list(self.groups.items())
 
@@ -636,7 +635,7 @@ class AthenaProject(object):
 
     def __init__(self, filename=None, _larch=None):
         self._larch = _larch
-        self.groups = OrderedDict()
+        self.groups = {}
         self.header = None
         self.journal = None
         self.filename = filename

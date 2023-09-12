@@ -6,8 +6,6 @@ from collections import namedtuple
 
 from gzip import GzipFile
 
-from collections import OrderedDict
-
 from lmfit import Parameter, Parameters
 # from lmfit.model import Model, ModelResult
 # from lmfit.minimizer import Minimizer, MinimizerResult

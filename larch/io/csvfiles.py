@@ -9,7 +9,6 @@ import time
 import json
 import platform
 import csv
-from collections import OrderedDict
 
 import numpy as np
 from dateutil.parser import parse as dateparse

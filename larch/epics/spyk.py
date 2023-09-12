@@ -26,7 +26,6 @@ import os
 import sys
 import time
 import numpy as np
-from collections import OrderedDict
 from io import StringIO
 from configparser import ConfigParser
 
@@ -60,12 +59,8 @@ class SpykConfig(object):
     DET_LEGEND = '# index = label || DetectorPV || options '
     SPYK_DIR   = '.spyk'
     SPYK_INI   = 'spyk.ini'
-    #  sections            name      ordered?
-    __sects = OrderedDict((('setup',     False),
-                           ('motors',    True),
-                           ('detectors', True),
-                           ('extra_pvs', True),
-                           ('counters',  True)))
+
+    __sects = ('setup', 'motors', 'detectors', 'extra_pvs', 'counters')
 
     def __init__(self, filename=None, text=None):
         for s in self.__sects:
@@ -92,10 +87,10 @@ class SpykConfig(object):
             ret = self._cp.read(fname)
         self.filename = fname
         # process sections
-        for sect, ordered in self.__sects.items():
+        for sect in self.__sects:
             if not self._cp.has_section(sect):
                 continue
-            thissect = OrderedDict() if ordered else {}
+            thissect = {}
             for opt in self._cp.options(sect):
                 val = self._cp.get(sect, opt)
                 if '||' in val:
@@ -119,7 +114,7 @@ class SpykConfig(object):
                 os.makedirs(path, mode=755)
 
         out = ['###Spyke Configuration: %s'  % (get_timestamp())]
-        for sect, ordered in self.__sects.items():
+        for sect in self.__sects:
             out.append('#-----------------------#\n[%s]' % sect)
             if sect == 'setup':
                 for name, val in self.setup.items():

@@ -9,7 +9,6 @@ import json
 import copy
 
 from itertools import combinations
-from collections import OrderedDict
 from glob import glob
 
 import numpy as np
@@ -186,8 +185,8 @@ def lincombo_fit(group, components, weights=None, minvals=None,
     result = lmfit.minimize(lincombo_resid, params, args=(xdat, ydat, ycomps))
 
     # gather results
-    weights, weights_lstsq = OrderedDict(), OrderedDict()
-    params, fcomps = OrderedDict(), OrderedDict()
+    weights, weights_lstsq = {}, {}
+    params, fcomps = {}, {}
     params['e0_shift'] = copy.deepcopy(result.params['e0_shift'])
     for i in range(ncomps):
         label = get_label(components[i])
