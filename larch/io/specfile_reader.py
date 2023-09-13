@@ -13,7 +13,7 @@ Requirements
 """
 
 __author__ = ["Mauro Rovezzi", "Matt Newville"]
-__version__ = "2023.1"
+__version__ = "2023.2"
 
 import os
 import copy
@@ -312,15 +312,18 @@ class DataSourceSpecH5(object):
             except Exception as e:
                 self._logger.error(e)
         except OSError:
-            self._logger.error(f"cannot open {self._fname}")
+            _errmsg = f"cannot open {self._fname}"
+            self._logger.error(_errmsg)
+            raise OSError(_errmsg)
 
     def open(self, mode="r"):
         """Open the source file object with h5py in given mode"""
         try:
             self._sourcefile = h5py.File(self._fname, mode)
         except OSError:
-            self._logger.error(f"cannot open {self._fname}")
-            pass
+            _errmsg = f"cannot open {self._fname}"
+            self._logger.error(_errmsg)
+            raise OSError(_errmsg)
 
     def close(self):
         """Close source file silx.io.spech5.SpecH5"""
@@ -408,8 +411,9 @@ class DataSourceSpecH5(object):
                     scan_n = int(scan_n)
                     scan_idx = int(scan_idx)
                 except ValueError:
-                    self._logger.error("scan not selected, wrong 'scan' parameter!")
-                    return
+                    _errmsg = "scan not selected, wrong 'scan' parameter!"
+                    self._logger.error(_errmsg)
+                    raise ValueError(_errmsg)
             assert isinstance(scan_n, int), "'scan_n' must be an integer"
             assert isinstance(scan_idx, int), "'scan_idx' must be an integer"
             self._scan_n = scan_n
@@ -418,8 +422,9 @@ class DataSourceSpecH5(object):
             elif self._urls_fmt == "spec2nexus":
                 self._scan_str = f"S{scan_n}"
             else:
-                self._logger.error("wrong 'urls_fmt'")
-                return
+                _errmsg = "wrong 'urls_fmt'"
+                self._logger.error(_errmsg)
+                raise ValueError(_errmsg)
         if group_url is not None:
             self.set_group(group_url)
         if self._group_url is not None:
@@ -436,7 +441,9 @@ class DataSourceSpecH5(object):
         except KeyError:
             self._scangroup = None
             self._scan_title = None
-            self._logger.error(f"'{self._scan_url}' is not valid")
+            _errmsg = f"'{self._scan_url}' is not valid"
+            self._logger.error(_errmsg)
+            raise KeyError(_errmsg)
 
     def _list_from_url(self, url_str):
         """Utility method to get a list from a scan url
@@ -447,7 +454,9 @@ class DataSourceSpecH5(object):
         try:
             return [i for i in self.get_scangroup()[url_str].keys()]
         except Exception:
-            self._logger.error(f"'{url_str}' not found -> use 'set_scan' method first")
+            _errmsg = f"'{url_str}' not found -> use 'set_scan' method first"
+            self._logger.error(_errmsg)
+            raise ValueError(_errmsg)
 
     # ================== #
     #: READ DATA METHODS
