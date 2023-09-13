@@ -44,21 +44,35 @@ except Exception:
 
 def _str2rng(rngstr, keeporder=True, rebin=None):
     """simple utility to convert a generic string representing a compact
-    list of scans to a sorted list of integers
+    list of scans to a (sorted) list of integers
 
     Parameters
     ----------
-    rngstr : string with given syntax (see Example below)
-    keeporder : boolean [True], to keep the original order
-                keeporder=False turn into a sorted list
-    rebin : integer [None], force rebinning of the final range
+    rngstr : string
+        with given syntax (see Example below)
+    keeporder : boolean [True]
+        to keep the original order
+        keeporder=False turn into a sorted list
+    rebin : integer [None]
+        force rebinning of the final range
 
     Example
     -------
     > _str2rng('100, 7:9, 130:140:5, 14, 16:18:1')
     > [7, 8, 9, 14, 16, 17, 18, 100, 130, 135, 140]
 
+    the string can also have file index prefix 
+
+    > _str2rng('00019/100, 7:9, 130:140:5, 14, 16:18:1')
+    > ('0019', [7, 8, 9, 14, 16, 17, 18, 100, 130, 135, 140])
+
     """
+
+    try:
+        file_idx, scan_str = rngstr.split("/")
+        return file_idx, _str2rng(scan_str)
+    except Exception:
+        pass
     _rng = []
     for _r in rngstr.split(", "):  # the space is important!
         if len(_r.split(",")) > 1:
