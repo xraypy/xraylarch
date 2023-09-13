@@ -582,11 +582,12 @@ class DataSourceSpecH5(object):
         Known types of scans
         --------------------
         Generic: <scan_type> <scan_axis> <start> <end> <npoints> <counting_time>
-        'Escan'          (ESRF BM30/BM16 Spec -> Energy)
-        'Emiscan'        (ESRF BM30/BM16 Spec -> Emi_Energy)
-        'fscan'          (ESRF ID26 Spec -> mono_energy)
-        'contscan.motor' (ESRF ID24-DCM BLISS 2023-06 -> energy_enc)
-        'scans.exafs*'   (ESRF BM23 BLISS 2023-06 -> energy_cenc)
+        'Escan'               (ESRF BM30/BM16 Spec -> Energy)
+        'Emiscan'             (ESRF BM30/BM16 Spec -> Emi_Energy)
+        'fscan'               (ESRF ID26 Spec -> mono_energy)
+        'contscan.motor'      (ESRF ID24-DCM BLISS 2023-06 -> energy_enc)
+        'contscan.EnergyCont' (ESRF BM16 BLISS 2023-09 -> energy_enc)
+        'scans.exafs*'        (ESRF BM23 BLISS 2023-06 -> energy_cenc)
 
         Returns
         -------
@@ -598,6 +599,7 @@ class DataSourceSpecH5(object):
              scan_end : "",
              scan_pts : "",
              scan_ct : "",
+             scan_info : ""
             }
         """
         iscn = dict(
@@ -607,6 +609,7 @@ class DataSourceSpecH5(object):
             scan_end=None,
             scan_pts=None,
             scan_ct=None,
+            scan_info=None,
         )
 
         _title = self.get_title()
@@ -637,16 +640,27 @@ class DataSourceSpecH5(object):
                 )
             except IndexError:
                 pass
-        if _scntype == "Escan":  #: ESRF/BM30-BM16 Energy scans with Spec
+
+        # === CUSTOM SCANS -> TODO(move to NeXus)
+        if _scntype == "Escan": 
             iscn.update(dict(scan_axis="Energy"))
-        if _scntype == "Emiscan":  #: ESRF/BM30-BM16 emission scans with Spec
+            iscn.update(dict(scan_info="ESRF/BM30-BM16 Energy scans with Spec"))
+        if _scntype == "Emiscan":
             iscn.update(dict(scan_axis="Emi_Energy"))
-        if _scntype == "fscan":  #: ESRF/ID26 fscan
+            iscn.update(dict(scan_info="ESRF/BM30-BM16 emission scans with Spec"))
+        if _scntype == "fscan":
             iscn.update(dict(scan_axis="mono_energy"))
-        if "scans.exafs" in _scntype:  #: ESRF/BM23 BLISS 2023.06
+            iscn.update(dict(scan_info="ESRF/ID26 fscan"))
+        if "scans.exafs" in _scntype:
             iscn.update(dict(scan_axis="energy_cenc"))
-        if _scntype == "contscan.motor":  #: ESRF/ID24-DCM BLISS 2023.06
+            iscn.update(dict(scan_info="ESRF/BM23 BLISS 2023-June"))
+        if _scntype == "contscan.motor":
             iscn.update(dict(scan_axis="energy_enc"))
+            iscn.update(dict(scan_info="ESRF/ID24-DCM BLISS 2023-June"))
+        if _scntype == "contscan.EnergyCont":
+            iscn.update(dict(scan_axis="energy_enc"))
+            iscn.update(dict(scan_info="ESRF/BM16 BLISS 2023-Sept"))
+
         return iscn
 
     def get_scan_axis(self):
