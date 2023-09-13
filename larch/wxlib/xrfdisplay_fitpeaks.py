@@ -7,8 +7,6 @@ import sys
 import time
 import copy
 from functools import partial
-from collections import OrderedDict
-
 from threading import Thread
 
 import json
@@ -49,7 +47,7 @@ from .xrfdisplay_utils import (XRFGROUP, mcaname, XRFRESULTS_GROUP,
 def read_filterdata(flist, _larch):
     """ read filters data"""
     materials = _larch.symtable.get_symbol('_xray._materials')
-    out = OrderedDict()
+    out = {}
     out['None'] = ('', 0)
     for name in flist:
         if name in materials:
