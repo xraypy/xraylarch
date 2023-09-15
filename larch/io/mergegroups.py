@@ -216,7 +216,7 @@ def avg_arrays_1d(data, axis=None, weights=None, **kws):
     data_fmt : str
         define data format
         - "curves" -> :func:`curves_to_matrix`
-        - "lists" -> :func:`curves_to_matrix`
+        - "lists" -> :func:`lists_to_matrix`
     weights : None or array
         weights for the average
 
