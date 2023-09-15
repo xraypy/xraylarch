@@ -23,6 +23,7 @@ import collections
 import numpy as np
 import h5py
 from silx.io.utils import open as silx_open
+from silx.io.h5py_utils import File as silx_h5py_file
 from silx.io.convert import write_to_h5
 
 # from scipy.interpolate import interp1d
@@ -304,11 +305,31 @@ class DataSourceSpecH5(object):
         if self._fname is not None:
             self._init_source_file()
 
+    def __enter__(self):
+        """enter method for with statement"""
+        if h5py.is_hdf5(self._fname):
+            self._sourcefile = silx_h5py_file(self._fname, mode="r")
+        else:
+            self._sourcefile = silx_open(self._fname)
+        return self
+
+    def __exit__(self):
+        """exit method for with statement"""
+        self.close()
+        return self
+
     def _init_source_file(self):
         """init source file object"""
         #: source file object (h5py-like)
+        if not os.path.exists(self._fname):
+            _errmsg = f"{self._fname} does not exist"
+            self._logger.error(_errmsg)
+            raise FileNotFoundError(_errmsg)
         try:
-            self._sourcefile = silx_open(self._fname)
+            if h5py.is_hdf5(self._fname):
+                self._sourcefile = silx_h5py_file(self._fname, mode="r")
+            else:
+                self._sourcefile = silx_open(self._fname)
             for ft in self._file_types:
                 if ft in str(self._sourcefile):
                     self._sourcefile_type = ft
@@ -325,6 +346,7 @@ class DataSourceSpecH5(object):
                     self.set_scan(self._scans[_iscn][0])
             except Exception as e:
                 self._logger.error(e)
+            #self.close()
         except OSError:
             _errmsg = f"cannot open {self._fname}"
             self._logger.error(_errmsg)
@@ -333,14 +355,19 @@ class DataSourceSpecH5(object):
     def open(self, mode="r"):
         """Open the source file object with h5py in given mode"""
         try:
-            self._sourcefile = h5py.File(self._fname, mode)
+            if h5py.is_hdf5(self._fname):
+                self._sourcefile = silx_h5py_file(self._fname, mode)
+            else:
+                _errmsg = f"{self._fname} is not and HDF5 file"
+                self._logger.error(_errmsg)
+                raise ValueError(_errmsg)
         except OSError:
             _errmsg = f"cannot open {self._fname}"
             self._logger.error(_errmsg)
             raise OSError(_errmsg)
 
     def close(self):
-        """Close source file silx.io.spech5.SpecH5"""
+        """Close the source file"""
         self._sourcefile.close()
         self._sourcefile = None
 
