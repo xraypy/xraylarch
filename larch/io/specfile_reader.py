@@ -252,7 +252,7 @@ class DataSourceSpecH5(object):
         if logger is None:
             from larch.utils.logging import getLogger
 
-            _logger_name = "larch.io.specfile_reader.DataSourceSpecH5"
+            _logger_name = "DataSourceSpecH5"
             self._logger = getLogger(_logger_name, level="WARNING")
         else:
             self._logger = logger
@@ -264,6 +264,7 @@ class DataSourceSpecH5(object):
             self._logger.setLevel("DEBUG")
 
         self._fname = fname
+        self._fn = self._fname
         self._sourcefile = None
         self._sourcefile_type = None
         self._scans = None
@@ -328,6 +329,7 @@ class DataSourceSpecH5(object):
         try:
             if h5py.is_hdf5(self._fname):
                 self._sourcefile = silx_h5py_file(self._fname, mode="r")
+                self._logger.debug("HDF5 open with silx.io.h5py_utils")
             else:
                 self._sourcefile = silx_open(self._fname)
             for ft in self._file_types:
@@ -351,6 +353,11 @@ class DataSourceSpecH5(object):
             _errmsg = f"cannot open {self._fname}"
             self._logger.error(_errmsg)
             raise OSError(_errmsg)
+        try:
+            self._fn = self._fname.split(os.sep)[-1]
+        except Exception:
+            self._logger.debug(f"cannot split {self._fname}")
+            pass
 
     def open(self, mode="r"):
         """Open the source file object with h5py in given mode"""
@@ -358,7 +365,7 @@ class DataSourceSpecH5(object):
             if h5py.is_hdf5(self._fname):
                 self._sourcefile = silx_h5py_file(self._fname, mode)
             else:
-                _errmsg = f"{self._fname} is not and HDF5 file"
+                _errmsg = f"{self._fname} is not HDF5 file"
                 self._logger.error(_errmsg)
                 raise ValueError(_errmsg)
         except OSError:
@@ -495,9 +502,9 @@ class DataSourceSpecH5(object):
         try:
             return [i for i in self.get_scangroup()[url_str].keys()]
         except Exception:
-            _errmsg = f"'{url_str}' not found -> use 'set_scan' method first"
+            _errmsg = f"[{self._fn}//{self._scan_n}] '{url_str}' not found"
             self._logger.error(_errmsg)
-            raise ValueError(_errmsg)
+            #raise ValueError(_errmsg)
 
     # ================== #
     #: READ DATA METHODS
@@ -738,7 +745,7 @@ class DataSourceSpecH5(object):
             sel_cnt = f"{self._cnts_url}/{cnt}"
             return copy.deepcopy(sg[sel_cnt][()])
         else:
-            errmsg = f"'{cnt}' not found in available counters: {cnts}"
+            errmsg = f"[{self._fn}//{self._scan_n}] '{cnt}' not found in available counters"
             self._logger.error(errmsg)
             raise ValueError(errmsg)
 
@@ -763,7 +770,7 @@ class DataSourceSpecH5(object):
             sel_mot = f"{self._mots_url}/{mot}"
             return copy.deepcopy(sg[sel_mot][()])
         else:
-            self._logger.error(f"'{mot}' not found in available motors: {mots}")
+            self._logger.error(f"[{self._fn}//{self._scan_n}] '{mot}' not found in available motors")
             return None
 
     def get_scan(self, scan=None, datatype=None):
