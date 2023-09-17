@@ -1,22 +1,22 @@
+"""
+main Larch Applications
+"""
 import os
 import sys
 import locale
-import numpy
-import time
-
-from argparse import ArgumentParser
-import pkg_resources
-from subprocess import check_call, Popen
 
 import shutil
 from argparse import ArgumentParser
 
+import matplotlib
 from pyshortcuts import make_shortcut, ico_ext, get_desktop
-from .site_config import (icondir, home_dir, uname, install_extras,
-                          update_larch, extras_wxgraph, extras_qtgraph,
-                          extras_epics, extras_doc, extras_plotly)
+from .site_config import (icondir, uname, install_extras,
+                          update_larch, extras_wxgraph,
+                          extras_epics)
 
 from .shell import Shell
+from .xmlrpc_server import larch_server_cli, LarchServer
+from .xafs.feffrunner import feff6l_cli, feff8l_cli
 
 from .version import __date__, make_banner, check_larchversion
 
@@ -31,12 +31,18 @@ if HAS_WXPYTHON:
     # note: this will be needed for some macOS builds until wxPython 4.2.1 is released.
     if uname == 'darwin':
         wx.PyApp.IsDisplayAvailable = lambda _: True
+    from .wxmap import MapViewer, DTViewer
+    from .wxxas import XASViewer
+    from .wxlib.xrfdisplay import XRFApp
+    from .wxlib.larchframe import LarchApp
+    from .epics import EpicsXRFApp
+    from .wxxrd import XRD1DApp, XRD2DViewer
+
 
 def use_mpl_wxagg():
     """import matplotlib, set backend to wxAgg"""
     if HAS_WXPYTHON:
         try:
-            import matplotlib
             matplotlib.use('WXAgg', force=True)
             return True
         except ImportError:
@@ -48,67 +54,45 @@ def set_locale():
     may need some improvement!!"""
     locale.setlocale(locale.LC_ALL, 'C')
 
-class LarchApp:
-    """
-    wrapper for Larch Application
-    """
-    def __init__(self, name, script, icon='larch', terminal=False):
-        self.name = name
-        self.script = script
-        self.terminal = terminal
-        self.icon = icon
-        bindir = 'Scripts' if uname == 'win' else 'bin'
-        self.bindir = os.path.join(sys.prefix, bindir)
-
-    def create_shortcut(self):
-        if self.script.startswith('_'):
-            script = self.script
-        else:
-            script = os.path.normpath(os.path.join(self.bindir, self.script))
-
-        icon = os.path.join(icondir, self.icon)
-        if isinstance(ico_ext, (list, tuple)):
-            for ext in ico_ext:
-                ticon = "{:s}.{:s}".format(icon, ext)
-                if os.path.exists(ticon):
-                    icon = ticon
-        make_shortcut(script, name=self.name, icon=icon,
-                      terminal=self.terminal, folder='Larch')
-
-APPS = (LarchApp('Larch CLI',  'larch', terminal=True),
-        LarchApp('Larch GUI',  'larch --wxgui'),
-        LarchApp('XAS Viewer', 'xas_viewer',  icon='onecone'),
-        LarchApp('Larix',       'xas_viewer',  icon='onecone'),
-        LarchApp('GSE MapViewer', 'gse_mapviewer',  icon='gse_xrfmap'),
-        LarchApp('XRF Viewer',  'larch_xrf',  icon='ptable'),
-        LarchApp('XRD1D Viewer', 'larch_xrd1d')
-        # LarchApp('GSE DTCorrect', 'gse_dtcorrect'),
-        # LarchApp('Dioptas', 'dioptas_larch', icon='dioptas'),
-        # LarchApp('2D XRD Viewer', 'xrd2d_viewer'),
-        )
-
+#             App Name,       icon,        terminal,  Script / pyshortcuts command
+MainApps = (('Larch CLI',     'larch',       True,  'larch'),
+            ('Larch Updater', 'larch',       True,  '_ -m pip install --upgrade xraylarch'),
+            ('Larch GUI',     'larch',       False, 'larch --wxgui'),
+            ('XAS Viewer',    'onecone',     False, 'xas_viewer'),
+            ('Larix',         'onecene',     False, 'xas_viewer'),
+            ('GSE MapViewer', 'gse_xrfmap',  False, 'gse_mapviewer'),
+            ('XRF Viewer',    'ptable',      False, 'larch_xrf'),
+            ('XRD1D Viewer',  'larch',       False, 'larch_xrd1d') )
 
 def make_desktop_shortcuts():
-    """make desktop shortcuts for Larch apps,
-    first clearing any existing shortcuts"""
+    """(re)make desktop shortcuts for Larch apps"""
     larchdir = os.path.join(get_desktop(), 'Larch')
     if os.path.exists(larchdir):
         shutil.rmtree(larchdir)
-    for app in APPS:
-        app.create_shortcut()
-    updater = LarchApp('Larch Updater',  '_ -m pip install --upgrade xraylarch', terminal=True)
-    updater.create_shortcut()
 
+    bindir = 'Scripts' if uname == 'win' else 'bin'
+    bindir = os.path.join(sys.prefix, bindir)
+    for appname, icon, term, script in MainApps:
+        kwargs = {'folder': 'Larch', 'terminal': term, 'name': appname}
+        if not script.startswith('_'):
+            script = os.path.normpath(os.path.join(bindir, script))
+        icon = os.path.join(icondir, icon)
+        if isinstance(ico_ext, (list, tuple)):
+            for ext in ico_ext:
+                ticon = f"{icon:s}.{ext:s}"
+                if os.path.exists(ticon):
+                    icon = ticon
+        make_shortcut(script, icon=icon, **kwargs)
 
 def make_cli(description='run larch program', filedesc='data file'):
-    usage = "usage: %prog [options] file"
+    "make commandline apps"
     parser = ArgumentParser(description=description)
     parser.add_argument('filename', nargs='?',  help=filedesc)
     args = parser.parse_args()
     filename = None
     if 'filename' in args and args.filename is not None:
         filename = os.path.abspath(args.filename)
-    return dict(filename=filename)
+    return {'filename': filename}
 
 # entry points:
 def run_gse_mapviewer():
@@ -117,7 +101,6 @@ def run_gse_mapviewer():
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
     install_extras(extras_epics)
-    from larch.wxmap import MapViewer
     kwargs = make_cli(description="Larch's XRM Map Viewer and Analysis Program",
                       filedesc='XRM Map File (.h5)')
     MapViewer(check_version=True, **kwargs).MainLoop()
@@ -128,7 +111,6 @@ def run_gse_dtcorrect():
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
     install_extras(extras_epics)
-    from larch.wxmap import DTViewer
     DTViewer().MainLoop()
 
 def run_xas_viewer():
@@ -136,7 +118,6 @@ def run_xas_viewer():
     set_locale()
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
-    from larch.wxxas import XASViewer
     kwargs = make_cli(description="Larch's XAS Viewer and Analysis Program")
     XASViewer(check_version=True, **kwargs).MainLoop()
 
@@ -146,7 +127,6 @@ def run_larch_xrf():
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
     install_extras(extras_epics)
-    from larch.wxlib.xrfdisplay import XRFApp
     kwargs = make_cli(description="Larch's XRF Viewer and Analysis Program",
                     filedesc='MCA File (.mca)')
     XRFApp(**kwargs).MainLoop()
@@ -157,14 +137,12 @@ def run_epics_xrf():
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
     install_extras(extras_epics)
-    from larch.epics import EpicsXRFApp
     EpicsXRFApp().MainLoop()
 
 def run_larch_xrd1d():
     """XRD Display for 1D patternss"""
     set_locale()
     use_mpl_wxagg()
-    from larch.wxxrd import XRD1DApp
     XRD1DApp().MainLoop()
 
 def run_xrd2d_viewer():
@@ -173,27 +151,19 @@ def run_xrd2d_viewer():
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
     install_extras(extras_epics)
-    from larch.wxxrd import XRD2DViewer
     XRD2DViewer().MainLoop()
 
-def run_dioptas_larch():
-    """XRD Display for 2D patternss"""
-    from dioptas import main
-    main()
 
 def run_feff6l():
     "run feff6l"
-    from larch.xafs.feffrunner import feff6l_cli
     feff6l_cli()
 
 def run_feff8l():
     "run feff8l"
-    from larch.xafs.feffrunner import feff8l_cli
     feff8l_cli()
 
 def run_larch_server():
     "run larch XMLRPC server"
-    from .xmlrpc_server import larch_server_cli
     larch_server_cli()
 
 ## main larch cli or wxgui
@@ -202,7 +172,6 @@ def run_larch():
     main larch application launcher, running either
     commandline repl program or wxgui
     """
-    usage = "usage: %prog [options] file(s)"
     parser = ArgumentParser(description='run main larch program')
 
     parser.add_argument('-v', '--version', dest='version', action='store_true',
@@ -263,8 +232,6 @@ def run_larch():
         vinfo = check_larchversion()
         if vinfo.update_available:
             print(vinfo.message)
-
-        from larch.xmlrpc_server import LarchServer
         server = LarchServer(host='localhost', port=int(args.port))
         server.run()
 
@@ -274,7 +241,6 @@ def run_larch():
         use_mpl_wxagg()
         install_extras(extras_wxgraph)
         install_extras(extras_epics)
-        from larch.wxlib.larchframe import LarchApp
         LarchApp(with_inspection=True).MainLoop()
 
     # run wx Larch CLI
@@ -285,7 +251,7 @@ def run_larch():
         try:
             install_extras(extras_wxgraph)
             install_extras(extras_epics)
-        except:
+        except ImportError:
             pass
         vinfo = check_larchversion()
         if vinfo.update_available:
@@ -296,9 +262,9 @@ def run_larch():
         if args.scripts is not None:
             for script in args.scripts:
                 if script.endswith('.py'):
-                    cmd = "import %s" %  script[:-3]
+                    cmd = f"import {script[:-3]}"
                 else:
-                    cmd = "run('%s')" % script
+                    cmd = f"run('{script}')"
                 cli.default(cmd)
         # if interactive, start command loop
         if not args.noshell:
