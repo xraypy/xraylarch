@@ -65,7 +65,7 @@ MainApps = (('Larch CLI',     'larch',       True,  'larch'),
             ('XRD1D Viewer',  'larch',       False, 'larch_xrd1d') )
 
 def make_desktop_shortcuts():
-    """(re)make desktop shortcuts for Larch apps"""
+    """make (or remake) desktop shortcuts for Larch apps"""
     larchdir = os.path.join(get_desktop(), 'Larch')
     if os.path.exists(larchdir):
         shutil.rmtree(larchdir)
