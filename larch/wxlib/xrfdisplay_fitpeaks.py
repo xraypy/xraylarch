@@ -90,6 +90,9 @@ FitSteps = ['1.e-2', '3.e-3', '1.e-3', '3.e-4', '1.e-4', '3.e-5', '1.e-5',
 FitMaxNFevs = ['200', '500', '1000', '1500', '2000', '3000', '5000', '10000']
 
 xrfmod_setup = """### XRF Model: {mca_label:s}  @ {datetime:s}
+# mca data group to be fit:
+_xrf_data = copy({mca_group})
+
 # setup XRF Model:
 _xrfmodel = xrf_model(xray_energy={en_xray:.2f}, count_time={count_time:.5f},
                       energy_min={en_min:.2f}, energy_max={en_max:.2f})
@@ -112,7 +115,11 @@ _xrfmodel.add_scatter_peak(name='{peakname:s}', center={_cen:.2f},
 
 xrfmod_fitscript = """
 # run XRF fit, save results
-_xrffitresult = _xrfmodel.fit_spectrum({group:s}, energy_min={emin:.2f}, energy_max={emax:.2f}, fit_toler={fit_toler:.6g}, fit_step={fit_step:.6g}, max_nfev={max_nfev:d})
+_xrffitresult = _xrfmodel.fit_spectrum(_xrf_data, energy_min={emin:.2f}, energy_max={emax:.2f},
+                                       fit_toler={fit_toler:.6g}, fit_step={fit_step:.6g}, max_nfev={max_nfev:d})
+# or
+#_xrffitresult = _xrfmodel.fit_spectrum({group:s}, energy_min={emin:.2f}, energy_max={emax:.2f},
+#                                       fit_toler={fit_toler:.6g}, fit_step={fit_step:.6g}, max_nfev={max_nfev:d})
 _xrfresults.insert(0, _xrffitresult)
 ########
 """
@@ -1154,6 +1161,7 @@ class FitSpectraFrame(wx.Frame):
             opts['count_time'] = 1.0
         opts['datetime'] = time.ctime()
         opts['mca_label'] = self.mca_label
+        opts['mca_group'] = self.mca_group
         script = [xrfmod_setup.format(**opts)]
 
         for peakname in ('Elastic', 'Compton1', 'Compton2'):
@@ -1209,7 +1217,11 @@ class FitSpectraFrame(wx.Frame):
         syms = ["'%s'" % self.ptable.syms[iz-1] for iz in elemz]
         syms = '[%s]' % (', '.join(syms))
         script.append(xrfmod_elems.format(elemlist=syms))
-        script.append("{group:s}.xrf_init = _xrfmodel.calc_spectrum({group:s}.energy)")
+
+        script.append("# set initial estimate of xrf intensity")
+        script.append("_xrf_data.xrf_init = _xrfmodel.calc_spectrum(_xrf_data.energy)")
+        script.append("# or use ")
+        script.append("# {group:s}.xrf_init = _xrfmodel.calc_spectrum({group:s}.energy)")
         script = '\n'.join(script)
         self.model_script = script.format(group=self.mcagroup)
 
