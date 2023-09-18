@@ -90,8 +90,8 @@ FitSteps = ['1.e-2', '3.e-3', '1.e-3', '3.e-4', '1.e-4', '3.e-5', '1.e-5',
 FitMaxNFevs = ['200', '500', '1000', '1500', '2000', '3000', '5000', '10000']
 
 xrfmod_setup = """### XRF Model: {mca_label:s}  @ {datetime:s}
-# mca data group to be fit:
-_xrf_mcagroup = copy({mcagroup})
+# mca data group for fit:
+{XRFGROUP}.workmca = {mcagroup}
 
 # setup XRF Model:
 _xrfmodel = xrf_model(xray_energy={en_xray:.2f}, count_time={count_time:.5f},
@@ -115,11 +115,8 @@ _xrfmodel.add_scatter_peak(name='{peakname:s}', center={_cen:.2f},
 
 xrfmod_fitscript = """
 # run XRF fit, save results
-_xrffitresult = _xrfmodel.fit_spectrum(_xrf_mcagroup, energy_min={emin:.2f}, energy_max={emax:.2f},
+_xrffitresult = _xrfmodel.fit_spectrum({XRFGROUP}.workmca, energy_min={emin:.2f}, energy_max={emax:.2f},
                                        fit_toler={fit_toler:.6g}, fit_step={fit_step:.6g}, max_nfev={max_nfev:d})
-# or
-#_xrffitresult = _xrfmodel.fit_spectrum({group:s}, energy_min={emin:.2f}, energy_max={emax:.2f},
-#                                       fit_toler={fit_toler:.6g}, fit_step={fit_step:.6g}, max_nfev={max_nfev:d})
 _xrfresults.insert(0, _xrffitresult)
 ########
 """
@@ -1219,9 +1216,7 @@ class FitSpectraFrame(wx.Frame):
         script.append(xrfmod_elems.format(elemlist=syms))
 
         script.append("# set initial estimate of xrf intensity")
-        script.append("_xrf_mcagroup.xrf_init = _xrfmodel.calc_spectrum(_xrf_mcagroup.energy)")
-        script.append("# or use ")
-        script.append("# {group:s}.xrf_init = _xrfmodel.calc_spectrum({group:s}.energy)")
+        script.append("{XRFGROUP}.workmca.xrf_init = _xrfmodel.calc_spectrum({XRFGROUP}.workmca.energy)")
         script = '\n'.join(script)
         self.model_script = script.format(group=self.mcagroup)
 
