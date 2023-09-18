@@ -91,7 +91,7 @@ FitMaxNFevs = ['200', '500', '1000', '1500', '2000', '3000', '5000', '10000']
 
 xrfmod_setup = """### XRF Model: {mca_label:s}  @ {datetime:s}
 # mca data group to be fit:
-_xrf_data = copy({mca_group})
+_xrf_mcagroup = copy({mcagroup})
 
 # setup XRF Model:
 _xrfmodel = xrf_model(xray_energy={en_xray:.2f}, count_time={count_time:.5f},
@@ -115,7 +115,7 @@ _xrfmodel.add_scatter_peak(name='{peakname:s}', center={_cen:.2f},
 
 xrfmod_fitscript = """
 # run XRF fit, save results
-_xrffitresult = _xrfmodel.fit_spectrum(_xrf_data, energy_min={emin:.2f}, energy_max={emax:.2f},
+_xrffitresult = _xrfmodel.fit_spectrum(_xrf_mcagroup, energy_min={emin:.2f}, energy_max={emax:.2f},
                                        fit_toler={fit_toler:.6g}, fit_step={fit_step:.6g}, max_nfev={max_nfev:d})
 # or
 #_xrffitresult = _xrfmodel.fit_spectrum({group:s}, energy_min={emin:.2f}, energy_max={emax:.2f},
@@ -1161,7 +1161,7 @@ class FitSpectraFrame(wx.Frame):
             opts['count_time'] = 1.0
         opts['datetime'] = time.ctime()
         opts['mca_label'] = self.mca_label
-        opts['mca_group'] = self.mca_group
+        opts['mcagroup'] = self.mcagroup
         script = [xrfmod_setup.format(**opts)]
 
         for peakname in ('Elastic', 'Compton1', 'Compton2'):
@@ -1219,7 +1219,7 @@ class FitSpectraFrame(wx.Frame):
         script.append(xrfmod_elems.format(elemlist=syms))
 
         script.append("# set initial estimate of xrf intensity")
-        script.append("_xrf_data.xrf_init = _xrfmodel.calc_spectrum(_xrf_data.energy)")
+        script.append("_xrf_mcagroup.xrf_init = _xrfmodel.calc_spectrum(_xrf_mcagroup.energy)")
         script.append("# or use ")
         script.append("# {group:s}.xrf_init = _xrfmodel.calc_spectrum({group:s}.energy)")
         script = '\n'.join(script)
