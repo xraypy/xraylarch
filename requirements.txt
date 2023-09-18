@@ -38,3 +38,4 @@ pyfai
 numexpr==2.8.4
 pycifrw
 importlib_metadata; python_version < '3.8'
+pyopencl
