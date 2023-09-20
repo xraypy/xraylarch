@@ -53,7 +53,7 @@ def guess_energy_units(e):
     return units
 
 def set_xafsGroup(group, _larch=None):
-    """set _sys.xafsGroup to the s<upplied group (if not None)
+    """set _sys.xafsGroup to the supplied group (if not None)
 
     return _sys.xafsGroup.
 

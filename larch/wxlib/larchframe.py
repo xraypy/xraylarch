@@ -63,11 +63,13 @@ class LarchWxShell(object):
         self.input  = input
         self.output = output
 
+        print("LARCH WX Shell ", _larch, writer)
         if _larch is None:
             self._larch  = larch.Interpreter(historyfile=historyfile,
                                              writer=self)
             self._larch.run_init_scripts()
         self.writer  = self._larch.writer
+        print("LARCH WX Shell writer : ", self._larch, self.writer)
         self.symtable = self._larch.symtable
 
         self.objtree = wxparent.objtree

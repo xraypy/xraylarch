@@ -27,10 +27,7 @@ class AthenaImporter(wx.Frame) :
                  size=(725, 450)):
         self.parent = parent
         self.filename = filename
-        _larch = None
         self.controller = controller
-        if controller is not None:
-            _larch = controller.larch
         self.read_ok_cb = read_ok_cb
 
         wx.Frame.__init__(self, parent, -1,   size=size, style=FRAMESTYLE)
@@ -47,7 +44,6 @@ class AthenaImporter(wx.Frame) :
         self.select_imported = sel_imp
         self.grouplist = FileCheckList(leftpanel, select_action=self.onShowGroup)
         set_color(self.grouplist, 'list_fg', bg='list_bg')
-
 
         tsizer = wx.GridBagSizer(2, 2)
         tsizer.Add(sel_all, (0, 0), (1, 1), LEFT, 0)
@@ -86,8 +82,7 @@ class AthenaImporter(wx.Frame) :
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
 
-        self.a_project = read_athena(self.filename, do_bkg=False, do_fft=False,
-                                     _larch=_larch)
+        self.a_project = read_athena(self.filename, do_bkg=False, do_fft=False)
         self.allgroups = {}
         for sname, grp in self.a_project._athena_groups.items():
             if hasattr(grp, 'energy') and hasattr(grp, 'mu'):
