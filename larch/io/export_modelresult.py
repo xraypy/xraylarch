@@ -9,7 +9,7 @@ from larch.utils  import gformat, getfloat_attr
 
 def export_modelresult(result, filename='fitresult.xdi',
                        datafile=None, ydata=None, yerr=None,
-                       _larch=None, **kwargs):
+                       **kwargs):
     """
     export an lmfit ModelResult to an XDI data file
 

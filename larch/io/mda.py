@@ -6,42 +6,16 @@
 # - supports reading, writing, and arithmetic operations for
 #   up to 4-dimensional MDA files.
 
-from __future__ import print_function
-
 __version__ = '2.1'
-
 import sys
 import os
 import string
-
 import numpy
-
-
-have_fast_xdr = False
-try:
-    import f_xdrlib as xdr
-    have_fast_xdr = True
-except:
-    import xdrlib as xdr
-
-try:
-    import Tkinter
-    have_Tkinter = True
-except:
-    have_Tkinter = False
-#     try:
-#         import wx
-#         have_wx = True
-#     except:
-#         have_wx = False
-
-if have_Tkinter:
-    import tkFileDialog
-
-# If we can import numpy, and if caller asks us to use it, we'll
-# return data in numpy arrays.  Otherwise, we'll return data in lists.
+from xdrlib import Packer, Unpacker
 
 import copy
+from larch import Group
+
 
 ################################################################################
 # classes
@@ -202,7 +176,7 @@ def readScan(scanFile, verbose=0, out=sys.stdout, unpacker=None):
     scan = scanDim()    # data structure to hold scan info and data
     buf = scanFile.read(10000) # enough to read scan header
     if unpacker == None:
-        u = xdr.Unpacker(buf)
+        u = Unpacker(buf)
     else:
         u = unpacker
         u.reset(buf)
@@ -222,10 +196,7 @@ def readScan(scanFile, verbose=0, out=sys.stdout, unpacker=None):
     if (scan.rank > 1):
         # if curr_pt < npts, plower_scans will have garbage for pointers to
         # scans that were planned for but not written
-        if have_fast_xdr:
-            scan.plower_scans = u.unpack_farray_int(scan.npts)
-        else:
-            scan.plower_scans = u.unpack_farray(scan.npts, u.unpack_int)
+        scan.plower_scans = u.unpack_farray(scan.npts, u.unpack_int)
         if verbose:
                         print("scan.plower_scans = ", scan.plower_scans)
     namelength = u.unpack_int()
@@ -332,10 +303,7 @@ def readScan(scanFile, verbose=0, out=sys.stdout, unpacker=None):
     buf = scanFile.read(scan.npts * (scan.np * 8 + scan.nd *4))
     u.reset(buf)
 
-    if have_fast_xdr:
-        data = u.unpack_farray_double(scan.npts*scan.np)
-    else:
-        data = u.unpack_farray(scan.npts*scan.np, u.unpack_double)
+    data = u.unpack_farray(scan.npts*scan.np, u.unpack_double)
     start = 0
     end = scan.npts
     for j in range(scan.np):
@@ -345,10 +313,7 @@ def readScan(scanFile, verbose=0, out=sys.stdout, unpacker=None):
         end += scan.npts
 
     # detectors
-    if have_fast_xdr:
-        data = u.unpack_farray_float(scan.npts*scan.nd)
-    else:
-        data = u.unpack_farray(scan.npts*scan.nd, u.unpack_float)
+    data = u.unpack_farray(scan.npts*scan.nd, u.unpack_float)
     start = 0
     end = scan.npts
     for j in range(scan.nd):
@@ -364,8 +329,8 @@ def readScanQuick(scanFile, unpacker=None, detToDat_offset=None):
 
     scan = scanDim()    # data structure to hold scan info and data
     buf = scanFile.read(10000) # enough to read scan header
-    if unpacker == None:
-        u = xdr.Unpacker(buf)
+    if unpacker is None:
+        u = Unpacker(buf)
     else:
         u = unpacker
         u.reset(buf)
@@ -379,10 +344,7 @@ def readScanQuick(scanFile, unpacker=None, detToDat_offset=None):
     scan.curr_pt = u.unpack_int()
 
     if (scan.rank > 1):
-        if have_fast_xdr:
-            scan.plower_scans = u.unpack_farray_int(scan.npts)
-        else:
-            scan.plower_scans = u.unpack_farray(scan.npts, u.unpack_int)
+        scan.plower_scans = u.unpack_farray(scan.npts, u.unpack_int)
 
     namelength = u.unpack_int()
     scan.name = u.unpack_string()
@@ -448,19 +410,13 @@ def readScanQuick(scanFile, unpacker=None, detToDat_offset=None):
     buf = scanFile.read(scan.npts * (scan.np * 8 + scan.nd *4))
     u.reset(buf)
 
-    if have_fast_xdr:
-        data = u.unpack_farray_double(scan.npts*scan.np)
-    else:
-        data = u.unpack_farray(scan.npts*scan.np, u.unpack_double)
+    data = u.unpack_farray(scan.npts*scan.np, u.unpack_double)
     for j in range(scan.np):
         start = j*scan.npts
         scan.p[j].data = data[j*scan.npts : (j+1)*scan.npts]
 
     # detectors
-    if have_fast_xdr:
-        data = u.unpack_farray_float(scan.npts*scan.nd)
-    else:
-        data = u.unpack_farray(scan.npts*scan.nd, u.unpack_float)
+    data = u.unpack_farray(scan.npts*scan.nd, u.unpack_float)
     for j in range(scan.nd):
         scan.d[j].data = data[j*scan.npts : (j+1)*scan.npts]
 
@@ -510,17 +466,14 @@ def EPICS_types(n):
     else:
         return ("Unexpected type %d" % n)
 
-def readMDA(fname=None, maxdim=4, verbose=0, showHelp=0, outFile=None, useNumpy=None, readQuick=False):
-    """usage readMDA(fname=None, maxdim=4, verbose=0, showHelp=0, outFile=None, readQuick=False)"""
-
-
+def readMDA(fname=None, maxdim=4, verbose=0, showHelp=0, outFile=None,
+            useNumpy=None, readQuick=False):
+    """usage readMDA(fname=None, maxdim=4, verbose=0, showHelp=0,
+    outFile=None, readQuick=False)"""
     dim = []
     if fname is None:
-        if have_Tkinter:
-            fname = tkFileDialog.Open().show()
-        else:
-            print("No file specified, and no file dialog could be opened")
-            return None
+        print("No file specified, and no file dialog could be opened")
+        return None
     if (not os.path.isfile(fname)):
         if (not fname.endswith('.mda')):
             fname = fname + '.mda'
@@ -536,7 +489,7 @@ def readMDA(fname=None, maxdim=4, verbose=0, showHelp=0, outFile=None, useNumpy=
     scanFile = open(fname, 'rb')
     if verbose: out.write("verbose=%d output for MDA file '%s'\n" % (verbose, fname))
     buf = scanFile.read(100)        # to read header for scan of up to 5 dimensions
-    u = xdr.Unpacker(buf)
+    u = Unpacker(buf)
 
     # read file header
     version = u.unpack_float()
@@ -820,7 +773,7 @@ def skimScan(dataFile):
     """usage: skimScan(dataFile)"""
     scan = scanDim()    # data structure to hold scan info and data
     buf = dataFile.read(10000) # enough to read scan header
-    u = xdr.Unpacker(buf)
+    u = Unpacker(buf)
     scan.rank = u.unpack_int()
     if (scan.rank > 20) or (scan.rank < 0):
         print("* * * skimScan('%s'): rank > 20.  probably a corrupt file" % dataFile.name)
@@ -831,10 +784,7 @@ def skimScan(dataFile):
         #print("mda:skimScan: curr_pt = 0")
         return None
     if (scan.rank > 1):
-        if have_fast_xdr:
-            scan.plower_scans = u.unpack_farray_int(scan.npts)
-        else:
-            scan.plower_scans = u.unpack_farray(scan.npts, u.unpack_int)
+        scan.plower_scans = u.unpack_farray(scan.npts, u.unpack_int)
     namelength = u.unpack_int()
     scan.name = u.unpack_string()
     timelength = u.unpack_int()
@@ -865,7 +815,7 @@ def skimMDA(fname=None, verbose=False):
         return None
 
     buf = dataFile.read(100)        # to read header for scan of up to 5 dimensions
-    u = xdr.Unpacker(buf)
+    u = Unpacker(buf)
 
     # read file header
     version = u.unpack_float()
@@ -940,7 +890,7 @@ def packScanHead(scan):
     s.npts = scan.npts
 
     # preamble
-    p = xdr.Packer()
+    p = Packer()
     p.pack_int(scan.rank)
     p.pack_int(scan.npts)
     p.pack_int(scan.curr_pt)
@@ -1009,7 +959,7 @@ def packScanHead(scan):
     return s
 
 def packScanData(scan, cpt):
-    p = xdr.Packer()
+    p = Packer()
     if (len(cpt) == 0): # 1D array
         for i in range(scan.np):
             p.pack_farray(scan.npts, scan.p[i].data, p.pack_double)
@@ -1035,7 +985,7 @@ def packScanData(scan, cpt):
 
 def writeMDA(dim, fname=None):
     m = mdaBuf()
-    p = xdr.Packer()
+    p = Packer()
 
     p.reset()
     if (type(dim) != type([])): print("writeMDA: first arg must be a scan")
@@ -1566,7 +1516,7 @@ def opMDA(op, d1, d2):
     return s
 
 
-def read_mda(fname, maxdim=3, verbose=False, _larch=None):
+def read_mda(fname, maxdim=3, verbose=False):
     """read an MDA file from the Epics Scan Record
 
     Arguments
@@ -1583,10 +1533,9 @@ def read_mda(fname, maxdim=3, verbose=False, _larch=None):
     not very well tested for scans of dimension > 2
 
     """
+    print("WARNING: support for MDA files will expire in 2024")
     out = readMDA(fname, maxdim=maxdim, verbose=verbose)
-    if _larch is None:
-        return out
-    group = _larch.symtable.create_group(name='MDA_file %s' % fname)
+    group = Group(name=f'MDA_file {fname}')
     group.extra_pvs = out[0]
     group.scan1 = out[1]
     group.dimension = dim = len(out) - 1

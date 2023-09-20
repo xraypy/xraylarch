@@ -12,9 +12,7 @@ import os
 from .. import Group
 
 # Default tau values for xspress3
-
-## XSPRESS3_TAUS = [109.e-9, 91.e-9, 99.e-9, 98.e-9]
-XSPRESS3_TAUS = [100.e-9, 100.e-9, 100.e-9, 100.e-9]
+XSPRESS3_TAU = 80.e-9
 
 def estimate_icr(ocr, tau, niter=3):
     "estimate icr from ocr and tau"
@@ -113,12 +111,11 @@ def get_counts_carefully(h5link):
 
 
 def read_xsp3_hdf5(fname, npixels=None, verbose=False,
-                   estimate_dtc=False, _larch=None):
-    # Reads a HDF5 file created with the DXP xMAP driver
-    # with the netCDF plugin buffers
+                   estimate_dtc=False, **kws):
+    # Reads a HDF5 file created with the Xspress3 driver
     npixels = None
 
-    clockrate = 12.5e-3   # microseconds per clock tick: 80MHz clock
+    clockrate = 12.5e-3  # microseconds per clock tick: 80MHz clock
     t0 = time.time()
     h5file = h5py.File(fname, 'r')
 
@@ -160,9 +157,7 @@ def read_xsp3_hdf5(fname, npixels=None, verbose=False,
         out.counts = counts
 
     if estimate_dtc:
-        dtc_taus = XSPRESS3_TAUS
-        if _larch is not None and _larch.symtable.has_symbol('_sys.gsecars.xspress3_taus'):
-            dtc_taus = _larch.symtable._sys.gsecars.xspress3_taus
+        dtc_taus = [XSPRESS3_TAU]*ndet
 
     for i in range(ndet):
         chan = "CHAN%i" %(i+1)

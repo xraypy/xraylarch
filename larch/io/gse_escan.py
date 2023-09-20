@@ -776,7 +776,7 @@ TWO_THETA:   10.0000000 10.0000000 10.0000000 10.0000000"""
         fout.close()
 
 
-def gsescan_group(fname, _larch=None, bad=None, **kws):
+def gsescan_group(fname, bad=None, **kws):
     """simple mapping of EscanData file to larch groups"""
     escan = EscanData(fname, bad=bad)
     if escan.status is not None:
@@ -825,7 +825,7 @@ GSE_header_BMD = ['# XDI/1.0  GSE/1.0',
 
 
 def gsescan_deadtime_correct(fname, channelname, subdir='DT_Corrected',
-                             bad=None, _larch=None):
+                             bad=None):
     """convert GSE ESCAN fluorescence XAFS scans to dead time corrected files"""
     try:
        sg = gsescan_group(fname, bad=bad)

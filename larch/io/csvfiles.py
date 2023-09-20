@@ -19,7 +19,7 @@ from larch.utils import bytes2str, fix_varname, gformat
 maketrans = str.maketrans
 
 def groups2csv(grouplist, filename, delim=',',
-               x='energy', y='norm', individual=False, _larch=None):
+               x='energy', y='norm', individual=False):
     """save data from a list of groups to a CSV file
 
     Arguments

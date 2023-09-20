@@ -403,6 +403,6 @@ class GSEMCA_File(Group):
         fp.close()
 
 
-def gsemca_group(filename=None, text=None, _larch=None, **kws):
+def gsemca_group(filename=None, text=None, **kws):
     """read GSECARS MCA file to larch group"""
     return GSEMCA_File(filename=filename, text=text)

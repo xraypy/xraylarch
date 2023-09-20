@@ -10,7 +10,7 @@ import os
 
 from larch import Group
 
-def read_xrd_hdf5(fname, verbose=False, _larch=None):
+def read_xrd_hdf5(fname, verbose=False):
     # Reads a HDF5 file created for XRD mapping
     h5file = h5py.File(fname, 'r')
 
