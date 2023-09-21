@@ -16,12 +16,12 @@ from scipy.optimize import leastsq as scipy_leastsq
 from lmfit import Parameters, Parameter, Minimizer, fit_report
 
 from larch import Group, isNamedClass
-from larch.utils import fix_varname, gformat
+from larch.utils import fix_varname
 from ..math import index_of, realimag, complex_phase, remove_nans
 from ..fitting import (correlated_values, eval_stderr, ParameterGroup,
                        group2params, params2group, isParameter)
 
-from .xafsutils import set_xafsGroup
+from .xafsutils import set_xafsGroup, gfmt
 from .xafsft import xftf_fast, xftr_fast, ftwindow
 from .feffdat import FeffPathGroup, ff2chi
 
@@ -720,11 +720,11 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
     out.append('   nvarys, npts       =  %i, %i' % (result.nvarys,
                                                    result.ndata))
     out.append('   n_independent      =  %.3f'  % (result.n_independent))
-    out.append('   chi_square         = %s'  % gformat(result.chi_square))
-    out.append('   reduced chi_square = %s'  % gformat(result.chi2_reduced))
-    out.append('   r-factor           = %s'  % gformat(result.rfactor))
-    out.append('   Akaike info crit   = %s'  % gformat(result.aic))
-    out.append('   Bayesian info crit = %s'  % gformat(result.bic))
+    out.append('   chi_square         = %s'  % gfmt(result.chi_square))
+    out.append('   reduced chi_square = %s'  % gfmt(result.chi2_reduced))
+    out.append('   r-factor           = %s'  % gfmt(result.rfactor))
+    out.append('   Akaike info crit   = %s'  % gfmt(result.aic))
+    out.append('   Bayesian info crit = %s'  % gfmt(result.bic))
     out.append(' ')
 
     if len(datasets) == 1:
@@ -741,20 +741,20 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
             if isinstance(ds.epsilon_k[0], np.ndarray):
                 msg = []
                 for eps in ds.epsilon_k:
-                    msg.append('Array(mean=%s, std=%s)' % (gformat(eps.mean()).strip(),
-                                                           gformat(eps.std()).strip()))
+                    msg.append('Array(mean=%s, std=%s)' % (gfmt(eps.mean()).strip(),
+                                                           gfmt(eps.std()).strip()))
                 eps_k = ', '.join(msg)
             else:
-                eps_k = ', '.join([gformat(eps).strip() for eps in ds.epsilon_k])
-            eps_r = ', '.join([gformat(eps).strip() for eps in ds.epsilon_r])
+                eps_k = ', '.join([gfmt(eps).strip() for eps in ds.epsilon_k])
+            eps_r = ', '.join([gfmt(eps).strip() for eps in ds.epsilon_r])
             kweigh = ', '.join(['%i' % kwe for kwe in tr.kweight])
         else:
             if isinstance(ds.epsilon_k, np.ndarray):
-                eps_k = 'Array(mean=%s, std=%s)' % (gformat(ds.epsilon_k.mean()).strip(),
-                                                    gformat(ds.epsilon_k.std()).strip())
+                eps_k = 'Array(mean=%s, std=%s)' % (gfmt(ds.epsilon_k.mean()).strip(),
+                                                    gfmt(ds.epsilon_k.std()).strip())
             else:
-                eps_k = gformat(ds.epsilon_k)
-            eps_r = gformat(ds.epsilon_r).strip()
+                eps_k = gfmt(ds.epsilon_k)
+            eps_r = gfmt(ds.epsilon_r).strip()
             kweigh = '%i' % tr.kweight
         out.append('   fit space          = \'%s\''  % (tr.fitspace))
         out.append('   r-range            = %.3f, %.3f' % (tr.rmin, tr.rmax))
@@ -782,18 +782,18 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
             if par.vary:
                 stderr = 'unknown'
                 if par.stderr is not None:
-                    stderr = gformat(par.stderr)
-                out.append(varformat % (name, gformat(par.value),
-                                        stderr, gformat(par.init_value)))
+                    stderr = gfmt(par.stderr)
+                out.append(varformat % (name, gfmt(par.value),
+                                        stderr, gfmt(par.init_value)))
 
             elif par.expr is not None:
                 stderr = 'unknown'
                 if par.stderr is not None:
-                    stderr = gformat(par.stderr)
-                out.append(exprformat % (name, gformat(par.value),
+                    stderr = gfmt(par.stderr)
+                out.append(exprformat % (name, gfmt(par.value),
                                          stderr, par.expr))
             else:
-                out.append(fixformat % (name, gformat(par.value)))
+                out.append(fixformat % (name, gfmt(par.value)))
 
     covar_vars = result.var_names
     if len(covar_vars) > 0:

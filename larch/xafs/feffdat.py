@@ -23,8 +23,7 @@ from xraydb import atomic_mass, atomic_symbol
 from larch import Group, isNamedClass
 from larch.utils.strutils import fix_varname, b32hash
 from larch.fitting import group2params, dict2params, isParameter, param_value
-from larch.utils import gformat
-from .xafsutils import ETOK, ktoe, set_xafsGroup
+from .xafsutils import ETOK, ktoe, set_xafsGroup, gfmt
 from .sigma2_models import add_sigma2funcs
 
 SMALL_ENERGY = 1.e-6
@@ -459,7 +458,7 @@ class FeffPathGroup(Group):
 
         stderrs = {}
         out.append('     {:7s}= {:s}'.format('reff',
-                                              gformat(self._feffdat.reff)))
+                                              gfmt(self._feffdat.reff)))
 
         for pname in ('degen', 's02', 'e0', 'r',
                       'deltar', 'sigma2', 'third', 'fourth', 'ei'):
@@ -482,9 +481,9 @@ class FeffPathGroup(Group):
                         std = par.stderr
 
             if std is None  or std <= 0:
-                svalue = gformat(val)
+                svalue = gfmt(val)
             else:
-                svalue = "{:s} +/-{:s}".format(gformat(val), gformat(std))
+                svalue = "{:s} +/-{:s}".format(gfmt(val), gfmt(std))
             if pname == 's02':
                 pname = 'n*s02'
 
