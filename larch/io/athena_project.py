@@ -387,6 +387,8 @@ def parse_perlathena(text, filename):
                 else:
                     setattr(this.athena_params, key, asfloat(val))
         this.__doc__ = """Athena Group Name %s (key='%s')""" % (label, dat['name'])
+        if label.startswith(' '):
+            label = 'd_' + label.strip()
         name = fix_varname(label)
         if name.startswith('_'):
             name = 'd' + name
@@ -812,6 +814,7 @@ class AthenaProject(object):
                     continue
             this = getattr(data, gname)
 
+            this.athena_id = this.athena_params.id
             if use_hashkey:
                 oname = this.athena_params.id
             is_xmu = bool(int(getattr(this.athena_params, 'is_xmu', 1.0)))
