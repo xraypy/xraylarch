@@ -382,16 +382,15 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         btnpanel = wx.Panel(pane, name='buttons')
         btnsizer = wx.GridBagSizer(1, 1)
         btns = {}
-        sx = 30
+        sx = 36
         sy = int(sx/2)
         for i in range(1, self.nmca+1):
-            b = Button(btnpanel, '%d' % i, size=(sx, sx),
+            b = Button(btnpanel, f'{i}', size=(sx, sx),
                        action=partial(self.onSelectDet, index=i))
-            b.SetFont(Font(10))
+            b.SetFont(Font(9))
             self.wids['det%i' % i] = b
             btns[i] = b
         dtype = self.det_type.lower().replace('-', '').replace(' ', '').replace('_', '')
-
         if dtype.startswith('sxd7') and self.nmca == 7:
             btnsizer.Add((sx, sy), (0, 0), (1, 2), wx.ALIGN_LEFT, 1)
             btnsizer.Add(btns[6],  (1, 0), (2, 2), wx.ALIGN_LEFT, 1)
