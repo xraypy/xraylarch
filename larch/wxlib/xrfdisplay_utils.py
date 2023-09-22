@@ -4,7 +4,6 @@ utilities for XRF display
 """
 import copy
 from functools import partial
-from collections import OrderedDict
 import time
 import numpy as np
 

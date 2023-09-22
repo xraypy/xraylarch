@@ -1,13 +1,7 @@
 import os
 import random
 
-HAS_PYMATGEN = False
-try:
-    from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
-    from pymatgen.core import Molecule, IMolecule, IStructure
-    HAS_PYMATGEN = True
-except:
-    HAS_PYMATGEN = False
+from .amcsd_utils import (SpacegroupAnalyzer, Molecule, IMolecule, IStructure)
 
 from xraydb import atomic_symbol, atomic_number, xray_edge
 from larch.utils.strutils import fix_varname, strict_ascii
@@ -43,8 +37,8 @@ def read_structure(structure_text, fmt="cif"):
     -------
       pymatgen Structure object or Molecule object
     """
-    if not HAS_PYMATGEN:
-        raise ImportError('pymatgen required')
+    if Molecule is None:
+        raise ImportError("pymatgen required. Try 'pip install pymatgen'.")
     try:
         if fmt.lower() in ('cif', 'poscar', 'contcar', 'chgcar', 'locpot', 'cssr', 'vasprun.xml'):
             struct = IStructure.from_str(structure_text, fmt, merge_tol=5.e-4)
@@ -52,7 +46,7 @@ def read_structure(structure_text, fmt="cif"):
             struct = IMolecule.from_str(structure_text, fmt)
         parse_ok = True
         file_found = True
-        
+
     except:
         parse_ok = False
         file_found = False
@@ -100,9 +94,9 @@ def parse_structure(structure_text, fmt='cif', fname="default.filename"):
         struct = read_structure(structure_text, fmt=fmt)
     except ValueError:
         return '# could not read structure file'
-    
+
     return {'formula': struct.composition.reduced_formula, 'sites': struct.sites, 'structure_text': structure_text, 'fmt': fmt, 'fname': fname}
-    
+
 
 def structure2feffinp(structure_text, absorber, edge=None, cluster_size=8.0, absorber_site=1,
                       site_index=None, extra_titles=None, with_h=False, version8=True, fmt='cif'):
@@ -146,16 +140,16 @@ def structure2feffinp(structure_text, absorber, edge=None, cluster_size=8.0, abs
         struct = read_structure(structure_text, fmt=fmt)
     except ValueError:
         return '# could not read structure file'
-  
+
     is_molecule = False
-  
+
     if isinstance(struct, IStructure):
         sgroup = SpacegroupAnalyzer(struct).get_symmetry_dataset()
         space_group = sgroup["international"]
     else:
         space_group = 'Molecule'
         is_molecule = True
-        
+
 
     if isinstance(absorber, int):
         absorber   = atomic_symbol(absorber_z)
@@ -236,7 +230,7 @@ def structure2feffinp(structure_text, absorber, edge=None, cluster_size=8.0, abs
     out_text.append(f'*     using absorber at site {1+absorber_index:d} in the list below')
     out_text.append(f'*     selected as absorber="{absorber:s}", absorber_site={absorber_site:d}')
     out_text.append('* index   X        Y        Z      species')
-    
+
     for i, site in enumerate(struct):
         # The method of obtaining the cooridanates depends on whether the structure is a molecule or not
         if is_molecule:

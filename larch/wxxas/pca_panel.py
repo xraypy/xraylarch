@@ -11,7 +11,6 @@ import wx.dataview as dv
 import numpy as np
 
 from functools import partial
-from collections import OrderedDict
 
 from larch import Group
 from larch.math import index_of

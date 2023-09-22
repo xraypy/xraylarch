@@ -13,7 +13,7 @@ import socket
 import datetime
 from functools import partial
 from threading import Thread
-from collections import OrderedDict, namedtuple
+from collections import namedtuple
 
 import wx
 from wx.adv import AboutBox, AboutDialogInfo
@@ -50,7 +50,7 @@ from larch.io import nativepath
 from larch.site_config import icondir
 from larch.version import check_larchversion
 
-from ..xrd import lambda_from_E, xrd1d, save1D, calculate_xvalues
+from ..xrd import lambda_from_E, xrd1d, save1D, calculate_xvalues, read_poni
 from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup, DEFAULT_XRAY_ENERGY
 from ..apps import check_larchversion, update_larch
 from ..epics import pv_fullname
@@ -524,7 +524,7 @@ class MapPanel(GridPanel):
         self._mca.npixels = my*mx
         self.owner.message("Plotting Full XRF Spectra (%d x %d) for '%s'" % (mx, my, fname))
 
-        self.owner.xrfdisplay.add_mca(self._mca, label=fname, plot=True)
+        self.owner.subframes['xrfdisplay'].add_mca(self._mca, label=fname, plot=True)
 
 
     def set_det_choices(self):
@@ -1228,10 +1228,10 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self._mca.title = label
         self._mca.npixels = npix
         self.owner.message("Plotting XRF Spectra for area '%s'..." % aname)
-        self.owner.xrfdisplay.add_mca(self._mca, label="%s:%s" % (fname, label),
-                                      plot=not as_mca2)
+        self.owner.subframes['xrfdisplay'].add_mca(self._mca, label="%s:%s" % (fname, label),
+                                                   plot=not as_mca2)
         if as_mca2:
-            self.owner.xrfdisplay.swap_mcas()
+            self.owner.subframes['xrfdisplay'].swap_mcas()
 
     def onXRD(self, event=None, save=False, show=False,
               xrd1d=False, xrd2d=False, verbose=True):
@@ -1355,10 +1355,9 @@ class MapViewerFrame(wx.Frame):
 
         self.larch = self.larch_buffer.larchshell
 
-        self.xrfdisplay = None
-        self.xrddisplay1D = None
-        self.xrddisplay2D = None
-
+        self.subframes = {'xrfdisplay': None,
+                          'xrd1d': None,
+                          'xrd2d': None}
         self.watch_files = False
 
         self.files_in_progress = []
@@ -1446,7 +1445,7 @@ class MapViewerFrame(wx.Frame):
 
         self.SetBackgroundColour('#F0F0E8')
 
-        nbpanels = OrderedDict()
+        nbpanels = {}
         for panel in (MapPanel, MapInfoPanel, MapAreaPanel, MapMathPanel,
                       TomographyPanel, XRFAnalysisPanel):
             nbpanels[panel.label] = panel
@@ -1533,9 +1532,9 @@ class MapViewerFrame(wx.Frame):
                 self.sel_mca.npixels = 0
             self.sel_mca.filename = fname
             self.sel_mca.title = aname
-            self.xrfdisplay.add_mca(self.sel_mca, label='%s:%s'% (fname, aname),
+            self.subframes['xrfdisplay'].add_mca(self.sel_mca, label='%s:%s'% (fname, aname),
                                     plot=True)
-            self.xrfdisplay.roi_callback = self.UpdateROI
+            self.subframes['xrfdisplay'].roi_callback = self.UpdateROI
             update_xrmmap = getattr(self.nb.GetCurrentPage(), 'update_xrmmap', None)
             if callable(update_xrmmap):
                 update_xrmmap(xrmfile=self.current_file)
@@ -1545,27 +1544,38 @@ class MapViewerFrame(wx.Frame):
                 if hasattr(page, 'onXRD'):
                     page.onXRD(show=True, xrd1d=True,verbose=False)
 
+    def show_subframe(self, name, frameclass, **opts):
+        shown = False
+        if name in self.subframes:
+            try:
+                self.subframes[name].Raise()
+                shown = True
+            except:
+                del self.subframes[name]
+        if not shown:
+            self.subframes[name] = frameclass(self, **opts)
+
+    def show_XRD1D(self, event=None):
+        self.show_subframe('xrd1d', XRD1DFrame, _larch=self.larch)
+
+    def show_XRD2D(self, event=None):
+        self.show_subframe('xrd2d', XRD1DFrame, _larch=self.larch)
+
+
     def show_XRFDisplay(self, do_raise=True, clear=True, xrmfile=None):
         'make sure XRF plot frame is enabled and visible'
         if xrmfile is None:
             xrmfile = self.current_file
-        if self.xrfdisplay is None:
-            self.xrfdisplay = XRFDisplayFrame(parent=self.larch_buffer,
-                                              _larch=self.larch,
-                                              roi_callback=self.UpdateROI)
-        try:
-            self.xrfdisplay.Show()
-        except:
-            self.xrfdisplay = XRFDisplayFrame(parent=self.larch_buffer,
-                                              _larch=self.larch,
-                                              roi_callback=self.UpdateROI)
-            self.xrfdisplay.Show()
+        self.show_subframe('xrfdisplay', XRFDisplayFrame,
+                           parent=self.larch_buffer,
+                           roi_callback=self.UpdateROI)
 
+        self.subframes['xrfdisplay'].Show()
         if do_raise:
-            self.xrfdisplay.Raise()
+            self.subframes['xrfdisplay'].Raise()
         if clear:
-            self.xrfdisplay.panel.clear()
-            self.xrfdisplay.panel.reset_config()
+            self.subframes['xrfdisplay'].panel.clear()
+            self.subframes['xrfdisplay'].panel.reset_config()
 
     def onMoveToPixel(self, xval, yval):
         if not HAS_EPICS:
@@ -1750,9 +1760,8 @@ class MapViewerFrame(wx.Frame):
         '''
         displays 2D XRD pattern in diFFit viewer
         '''
-        flptyp = 'vertical' if flip is True else False
-
-        ponifile = bytes2str(self.current_file.xrmmap['xrd1d'].attrs.get('calfile',''))
+        xrmfile = self.current_file
+        ponifile = bytes2str(xrmfile.xrmmap['xrd1d'].attrs.get('calfile',''))
         if len(ponifile) < 2 or not os.path.exists(ponifile):
             t_ponifile = os.path.join(xrmfile.folder, 'XRD.poni')
             if os.path.exists(t_ponifile):
@@ -1760,17 +1769,12 @@ class MapViewerFrame(wx.Frame):
         if os.path.exists(ponifile):
             self.current_file.xrmmap['xrd1d'].attrs['calfile'] = ponifile
 
-        if self.xrddisplay2D is None:
-            self.xrddisplay2D = XRD2DViewerFrame(_larch=self.larch, flip=flptyp,
-                                                 xrd1Dviewer=self.xrddisplay1D,
-                                                 ponifile=ponifile)
-        try:
-            self.xrddisplay2D.plot2Dxrd(label,map)
-        except:
-            self.xrddisplay2D = XRD2DViewerFrame(_larch=self.larch,flip=flptyp,
-                                                 xrd1Dviewer=self.xrddisplay1D)
-            self.xrddisplay2D.plot2Dxrd(label,map)
-        self.xrddisplay2D.Show()
+        self.show_XRD2D()
+        self.show_XRD1D()
+        self.subframes['xrd2d'].flip = 'vertical' if flip is True else False
+        self.subframes['xrd2d'].calfile = ponifile
+        self.subframes['xrd2d'].plot2Dxrd(label, map)
+        self.subframes['xrd2d'].Show()
 
     def display_xrd1d(self, counts, q, energy, label='dataset 0', xrmfile=None):
         '''
@@ -1779,16 +1783,26 @@ class MapViewerFrame(wx.Frame):
         wavelength = lambda_from_E(energy, E_units='keV')
         xdat = xrd1d(label=label, energy=energy, wavelength=wavelength)
         xdat.set_xy_data(np.array([q, counts]), 'q')
-        if self.xrddisplay1D is None:
-            self.xrddisplay1D = XRD1DFrame(wavelength=wavelength,
-                                           _larch=self.larch)
-        try:
-            self.xrddisplay1D.add_data(xdat, label=label)
-        except:
-            self.xrddisplay1D = XRD1DFrame(_larch=self.larch)
-            self.xrddisplay1D.add_data(xdat, label=label)
 
-        self.xrddisplay1D.Show()
+        xrmfile = self.current_file
+        ponidata = json.loads(bytes2str(xrmfile.xrmmap['xrd1d'].attrs.get('caldata','{}')))
+        if 'rot1' not in ponidata:  # invalid poni data
+            ponifile = bytes2str(xrmfile.xrmmap['xrd1d'].attrs.get('calfile',''))
+            if len(ponifile) < 2 or not os.path.exists(ponifile):
+                t_ponifile = os.path.join(xrmfile.folder, 'XRD.poni')
+                if os.path.exists(t_ponifile):
+                    ponifile = t_ponifile
+            if len(ponifile) > 1:
+                ponidata = read_poni(ponifile)
+            if 'rot1' in ponidata:
+                xrmfile.xrmmap['xrd1d'].attrs['caldata'] = json.dumps(ponidata)
+        self.show_XRD1D()
+        self.subframes['xrd1d'].set_wavelength(wavelength)
+        if 'rot1' in ponidata:
+            self.subframes['xrd1d'].set_poni(ponidata)
+
+        self.subframes['xrd1d'].add_data(xdat, label=label)
+        self.subframes['xrd1d'].Show()
 
     def init_larch(self):
         self.SetStatusText('ready')
@@ -1954,29 +1968,24 @@ class MapViewerFrame(wx.Frame):
             except KeyError:
                 pass
 
+        try:
+            self.larch.symtable._plotter.close_all_displays()
+        except:
+            pass
+
         ## Closes maps, 2D XRD image
         for disp in self.im_displays + self.plot_displays + self.tomo_displays:
             try:
                 disp.Destroy()
             except:
                 pass
-        try:
-            self.xrfdisplay.Destroy()
-        except:
-            pass
 
-        try:
-            self.xrddisplay1D.Destroy()
-        except:
-            pass
-
-        try:
-            self.xrddisplay2D.Destroy()
-        except:
-            pass
-
-
-        self.larch.symtable._plotter.close_all_displays()
+        for key, wid in self.subframes.items():
+            if wid is not None:
+                try:
+                    wid.onClose()
+                except:
+                    pass
         if self.larch_buffer is not None:
             self.larch_buffer.exit_on_close = True
             self.larch_buffer.onExit(force=True, with_sysexit=False)
@@ -2480,6 +2489,7 @@ class ROIDialog(wx.Dialog):
         units  = self.roi_units.GetStringSelection()
         if rtype == '1DXRD':
             units = ['q', '2th', 'd'][self.roi_units.GetSelection()]
+
 
         self.owner.message(f'Building ROI data for: {name:s}')
         if self.roi_callback is not None:

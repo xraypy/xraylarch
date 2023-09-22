@@ -585,10 +585,11 @@ class ColumnDataFileFrame(wx.Frame) :
 
         self.read_ok_cb = read_ok_cb
         self.config = dict(xarr=None, yarr1=None, yarr2=None, yop='/',
-                              ypop='', monod=3.1355316, en_units=en_units,
-                              yerr_op='constant', yerr_val=1, yerr_arr=None,
-                              yrpop='', yrop='/', yref1='', yref2='',
-                              has_yref=False, dtc_config={}, multicol_config={})
+                           ypop='', monod=3.1355316, en_units=en_units,
+                           yerr_op='constant', yerr_val=1, yerr_arr=None,
+                           yrpop='', yrop='/', yref1='', yref2='',
+                           is_trans=False,
+                           has_yref=False, dtc_config={}, multicol_config={})
         if config is not None:
             self.config.update(config)
             dtype = config.get('datatype', None)
@@ -654,6 +655,10 @@ class ColumnDataFileFrame(wx.Frame) :
         self.yop =  Choice(panel, choices=ARR_OPS, action=self.onUpdate, size=(100, -1))
         self.yerr_op = Choice(panel, choices=YERR_OPS, action=self.onYerrChoice, size=(100, -1))
         self.yerr_op.SetSelection(0)
+
+        self.is_trans = Check(panel, label='is transmission data?',
+                              default=self.config['is_trans'],
+                              action=self.onTransCheck)
 
         self.yerr_val = FloatCtrl(panel, value=1, precision=4, size=(75, -1))
         self.monod_val  = FloatCtrl(panel, value=3.1355316, precision=7, size=(75, -1))
@@ -724,6 +729,7 @@ class ColumnDataFileFrame(wx.Frame) :
         self.wid_refgroupname = wx.TextCtrl(panel, value=group.groupname + '_ref',
                                          size=(150, -1))
 
+        self.onTransCheck(is_trans=self.config['is_trans'])
         self.onYrefCheck(has_yref=self.config['has_yref'])
 
 
@@ -769,8 +775,9 @@ class ColumnDataFileFrame(wx.Frame) :
         sizer.Add(self.monod_val,(ir, 4), (1, 1), LEFT, 0)
 
         ir += 1
-        sizer.Add(subtitle(' Y [\u03BC(E)] Array:'), (ir, 0), (1, 2), LEFT, 0)
-        sizer.Add(self.dtc_button,                   (ir, 2), (1, 3), RIGHT, 0)
+        sizer.Add(subtitle(' Y [\u03BC(E)] Array:'), (ir, 0), (1, 1), LEFT, 0)
+        sizer.Add(self.is_trans,                     (ir, 1), (1, 2), LEFT, 0)
+        sizer.Add(self.dtc_button,                   (ir, 3), (1, 2), RIGHT, 0)
         ir += 1
         sizer.Add(ylab,       (ir, 0), (1, 1), LEFT, 0)
         sizer.Add(self.ypop,  (ir, 1), (1, 1), LEFT, 0)
@@ -1141,6 +1148,18 @@ class ColumnDataFileFrame(wx.Frame) :
         elif 'array' in yerr_choice.lower():
             self.yerr_arr.Enable()
         # self.onUpdate()
+
+    def onTransCheck(self, evt=None, is_trans=False):
+        if evt is not None:
+            is_trans = evt.IsChecked()
+        if is_trans:
+            self.ypop.SetStringSelection('-log(')
+        else:
+            self.ypop.SetStringSelection('')
+        try:
+            self.onUpdate()
+        except:
+            pass
 
     def onYrefCheck(self, evt=None, has_yref=False):
         if evt is not None:

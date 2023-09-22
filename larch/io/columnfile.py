@@ -441,7 +441,7 @@ def read_ascii(filename, labels=None, simple_labels=False,
     return group
 
 def set_array_labels(group, labels=None, simple_labels=False,
-                     save_oldarrays=False, _larch=None):
+                     save_oldarrays=False):
 
     """set array names for a group from its 2D `data` array.
 
@@ -473,8 +473,6 @@ def set_array_labels(group, labels=None, simple_labels=False,
 
     """
     write = sys.stdout.write
-    if _larch is not None:
-        write = _larch.writer.write
     if not hasattr(group, 'data'):
         write("cannot set array labels for group '%s': no `data`\n" % repr(group))
         return
@@ -541,7 +539,7 @@ def set_array_labels(group, labels=None, simple_labels=False,
     return group
 
 
-def write_ascii(filename, *args, commentchar='#', label=None, header=None,  _larch=None):
+def write_ascii(filename, *args, commentchar='#', label=None, header=None):
     """
     write a list of items to an ASCII column file
 
@@ -560,9 +558,6 @@ def write_ascii(filename, *args, commentchar='#', label=None, header=None,  _lar
     """
     ARRAY_MINLEN = 2
     write = sys.stdout.write
-    if _larch is not None:
-        write = _larch.writer.write
-
     com = commentchar
     label = label
     if header is None:
@@ -602,24 +597,15 @@ def write_ascii(filename, *args, commentchar='#', label=None, header=None,  _lar
     for i in range(arraylen):
         w = [" %s" % lformat(val[i], length=14) for val in arrays]
         buff.append('  '.join(w))
+    buff.append('')
 
-    try:
-        fout = open(filename, 'w', encoding=sys.getdefaultencoding())
-    except:
-        write("cannot open file %s'\n" % filename)
-        return
-
-    try:
+    with open(filename, 'w', encoding=sys.getdefaultencoding()) as fout:
         fout.write('\n'.join(buff))
-        fout.write('\n')
-    except:
-        write("cannot write to file %s'\n" % filename)
-        return
-    write("wrote to file '%s'\n" % filename)
+    sys.stdout.write("wrote to file '%s'\n" % filename)
 
 
 def write_group(filename, group, scalars=None, arrays=None,
-                arrays_like=None, commentchar='#', _larch=None):
+                arrays_like=None, commentchar='#'):
     """(deprecated) write components of a group to an ASCII column file
 
 
@@ -661,7 +647,7 @@ def write_group(filename, group, scalars=None, arrays=None,
             args.append(getattr(group, name))
 
     write_ascii(filename, *args, commentchar=commentchar,
-                label=label, header=header, _larch=_larch)
+                label=label, header=header)
 
 
 def read_fdmnes(filename, **kwargs):

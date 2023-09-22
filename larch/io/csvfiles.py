@@ -9,7 +9,6 @@ import time
 import json
 import platform
 import csv
-from collections import OrderedDict
 
 import numpy as np
 from dateutil.parser import parse as dateparse
@@ -20,7 +19,7 @@ from larch.utils import bytes2str, fix_varname, gformat
 maketrans = str.maketrans
 
 def groups2csv(grouplist, filename, delim=',',
-               x='energy', y='norm', individual=False, _larch=None):
+               x='energy', y='norm', individual=False):
     """save data from a list of groups to a CSV file
 
     Arguments

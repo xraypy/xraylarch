@@ -17,6 +17,11 @@ from larch.io import (nativepath, new_filename, read_xrf_netcdf,
                       read_xsp3_hdf5, read_xrd_netcdf, read_xrd_hdf5)
 
 from larch.xrf import MCA, ROI
+from larch.xrd import (XRD, E_from_lambda, integrate_xrd_row, q_from_twth,
+                       q_from_d, lambda_from_E, read_xrd_data, read_poni)
+
+from larch.math.tomography import tomo_reconstruction, reshape_sinogram, trim_sinogram
+
 from .configfile import FastMapConfig
 from .asciifiles import (readASCII, readMasterFile, readROIFile,
                          readEnvironFile, parseEnviron)
@@ -24,10 +29,6 @@ from .asciifiles import (readASCII, readMasterFile, readROIFile,
 from .gsexrm_utils import (GSEXRM_MCADetector, GSEXRM_Area, GSEXRM_Exception,
                            GSEXRM_MapRow, GSEXRM_FileStatus)
 
-from ..xrd import (XRD, E_from_lambda, integrate_xrd_row, q_from_twth,
-                   q_from_d, lambda_from_E, read_xrd_data)
-
-from larch.math.tomography import tomo_reconstruction, reshape_sinogram, trim_sinogram
 
 DEFAULT_XRAY_ENERGY = 39987.0  # probably means x-ray energy was not found in meta data
 NINIT = 64
@@ -867,6 +868,10 @@ class GSEXRM_MapFile(object):
 
         scan_version = getattr(self, 'scan_version', 1.00)
         print(" read row data, scan version  ", scan_version, self.xrdcalfile)
+        xrdcal_dat = bytes2str(self.xrmmap['xrd1d'].attrs.get('caldata','{}'))
+        if self.xrdcalfile is not None and len(xrdcal_dat) < 10:
+            xrdcal_dat = read_poni(self.xrdcalfile)
+            self.xrmmap['xrd1d'].attrs['caldata'] = json.dumps(xrdcal_dat)
 
         # if not self.has_xrf and not self.has_xrd2d and not self.has_xrd1d:
         #    raise IOError('No XRF or XRD flags provided.')
@@ -1566,9 +1571,7 @@ class GSEXRM_MapFile(object):
 
         self.h5root.flush()
 
-
     def add_xrd1d(self, qstps=None):
-
         xrd1dgrp = ensure_subgroup('xrd1d',self.xrmmap)
         xrdcalfile = bytes2str(xrd1dgrp.attrs.get('calfile', ''))
         if os.path.exists(xrdcalfile):
@@ -2958,7 +2961,7 @@ class GSEXRM_MapFile(object):
 
         if self.incident_energy is None:
             self.incident_energy = self.get_incident_energy()
-
+        xrange = np.array(xrange)
         if unit.startswith('2th'): ## 2th to 1/A
             qrange = q_from_twth(xrange,
                                  lambda_from_E(self.incident_energy, E_units='eV'))
@@ -2972,7 +2975,6 @@ class GSEXRM_MapFile(object):
         if roiname in roigroup[detname]:
             raise ValueError("Name '%s' exists in 'roimap/%s' arrays." % (roiname, detname))
 
-        # print("ADD XRD1D ROI ", detname, xrange, roiname, unit)
         counts = self.xrmmap[detname]['counts']
         q = self.xrmmap[detname]['q'][:]
 
@@ -2986,8 +2988,7 @@ class GSEXRM_MapFile(object):
             bkglo = counts[:,:,ibkglo:imin].sum(axis=2)/(imin-ibkglo)
             bkghi = counts[:,:,imax::ibkghi].sum(axis=2)/(ibkghi-imax)
             xrd1d_cor -=  (imax-imin)* (bkglo + bkghi)/2.0
-        # print("ADD XRD1D ROI ", roiname, detname,
-        #       xrd1d_sum.sum(), xrd1d_sum.mean())
+
         self.save_roi(roiname, detname, xrd1d_sum, xrd1d_cor,
                       qrange,'q', '1/A')
         self.get_roi_list(detname, force=True)

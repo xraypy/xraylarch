@@ -15,7 +15,7 @@ from xraydb.xray import XrayLine
 from .. import Group
 from ..math import index_of, interp, savitzky_golay, hypermet, erfc
 from ..xafs import ftwindow
-from ..utils import group2dict, json_dump, json_load, gformat
+from ..utils import group2dict, json_dump, json_load, gformat, unixpath
 
 xrf_prediction = namedtuple("xrf_prediction", ("weights", "total"))
 xrf_peak = namedtuple('xrf_peak', ('name', 'amplitude', 'center', 'step',
@@ -656,7 +656,7 @@ class XRFFitResult(Group):
             if key == 'mca':
                 val = val.dump_mcafile()
             tmp[key] = val
-        json_dump(tmp, filename)
+        json_dump(tmp, unixpath(filename))
 
     def load(self, filename):
         from ..io import GSEMCA_File

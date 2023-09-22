@@ -9,9 +9,20 @@ from sqlalchemy.sql import select
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import SingletonThreadPool
 
+try:
+    from pymatgen.io.cif import CifParser
+    from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+    from pymatgen.core import Molecule, IMolecule, IStructure
+except:
+    CifParser = SpacegroupAnalyzer = None
+    Molecule = IMolecule = IStructure = None
+
 from larch.utils.physical_constants import ATOM_SYMS, ATOM_NAMES
 
 __version__ = '1'
+
+PMG_CIF_OPTS = dict(occupancy_tolerance=10, site_tolerance=5e-3)
+
 
 def make_engine(dbname):
     "create engine for sqlite connection"

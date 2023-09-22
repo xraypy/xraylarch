@@ -353,6 +353,8 @@ class EnergyCalibrateDialog(wx.Dialog):
             eref = None
         if eref is None:
             eref = dgroup.groupname
+
+
         for key, val in self.controller.file_groups.items():
             if dgroup.groupname == val:
                 continue
@@ -361,7 +363,8 @@ class EnergyCalibrateDialog(wx.Dialog):
                 geref = g.config.xasnorm.get('energy_ref', None)
             except:
                 geref = None
-            if geref == eref:
+            # print(key, val, geref, geref == ref_filename)
+            if geref == eref or geref == dgroup.filename:
                 sharedrefs.append(key)
         self.wids['sharedref_msg'].SetLabel(f" {len(sharedrefs):d} groups share this energy reference")
         return sharedrefs
@@ -394,7 +397,7 @@ class EnergyCalibrateDialog(wx.Dialog):
             newx = dat.xdat + pars['eshift'].value
             scale = pars['scale'].value
             y = interp(newx, dat.dmude, ref.xdat, kind='cubic')
-            return smooth(newx, y*scale-ref.dmude, xstep=estep, sigma=0.50)[i1:i2]
+            return smooth(ref.xdat, y*scale-ref.dmude, xstep=estep, sigma=0.50)[i1:i2]
 
         params = Parameters()
         params.add('eshift', value=ref.e0-dat.e0, min=-50, max=50)
@@ -537,7 +540,7 @@ class RebinDataDialog(wx.Dialog):
         xmin = min(self.dgroup.energy)
         xmax = max(self.dgroup.energy)
         e0val = getattr(self.dgroup, 'e0', xmin)
-        xanes_step = 0.05 * max(1, int(e0val / 1250.0))  # E0/25000, round down to 0.05
+        xanes_step = 0.05 * (1 + max(1, int(e0val / 2000.0)))
         self.data = [self.dgroup.energy[:], self.dgroup.mu[:],
                      self.dgroup.mu*0, e0val]
 

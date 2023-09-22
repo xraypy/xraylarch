@@ -9,14 +9,14 @@ import gc
 
 import numpy as np
 from .. import Group
-from ..utils import OrderedDict, read_textfile
+from ..utils import read_textfile
 from ..utils.strutils import bytes2str
 
 from . import XDIFile, XDIFileException
 
-from .xsp3_hdf5 import XSPRESS3_TAUS, estimate_icr
+from .xsp3_hdf5 import XSPRESS3_TAU, estimate_icr
 
-def read_gsexdi(fname, _larch=None, nmca=128, bad=None, **kws):
+def read_gsexdi(fname, nmca=128, bad=None, **kws):
     """Read GSE XDI Scan Data to larch group,
     summing ROI data for MCAs and apply deadtime corrections
     """
@@ -80,11 +80,6 @@ def read_gsexdi(fname, _larch=None, nmca=128, bad=None, **kws):
 
     is_old_xsp3 = any(['13QX4' in a[1] for a in xdi.attrs['column'].items()])
 
-    dtc_taus = XSPRESS3_TAUS
-    if (_larch is not None and
-        _larch.symtable.has_symbol('_sys.gsecars.xspress3_taus')):
-        dtc_taus = _larch.symtable._sys.gsecars.xspress3_taus
-
     dtc_mode = 'icr/ocr'
     for i in range(MAX_MCAS):
         mca = "mca%i" % (i+1)
@@ -122,20 +117,14 @@ def read_gsexdi(fname, _larch=None, nmca=128, bad=None, **kws):
         # finally estimate from measured values of tau:
         if icr is None:
             icr = 1.0*ocr
-            dtc_mode = 'none'
             if is_old_xsp3:
-                tau = dtc_taus[i]
-                icr = estimate_icr(ocr*1.00, tau, niter=7)
-                dtc_mode = 'saved_taus'
+                icr = estimate_icr(ocr*1.00, XSPRESS3_TAU, niter=7)
         ocrs.append(ocr)
         icrs.append(icr)
 
     group.dtc_mode =  dtc_mode
-    if dtc_mode == 'saved_taus':
-        group.dtc_taus = dtc_taus
-
     labels = []
-    sums = OrderedDict()
+    sums = {}
     for i, arrname in enumerate(xdi.array_labels):
         dat = getattr(xdi, arrname)
         if arrname.lower() == 'data':
@@ -208,7 +197,7 @@ def is_GSEXDI(filename):
     return (line1.startswith('#XDI/1') and 'Epics StepScan File' in line1)
 
 def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected',
-                            bad=None, _larch=None):
+                            bad=None):
     """convert GSE XDI fluorescence XAFS scans to dead time corrected files"""
     if not is_GSEXDI(fname):
         print("'%s' is not a GSE XDI scan file\n" % fname)
@@ -217,7 +206,7 @@ def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected',
     out = Group()
     out.orig_filename = fname
     try:
-        xdi = read_gsexdi(fname, bad=bad, _larch=_larch)
+        xdi = read_gsexdi(fname, bad=bad)
     except:
         print('Could not read XDI file ', fname)
         return
@@ -275,15 +264,14 @@ def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected',
 
     buff =  ['# XDI/1.0  GSE/1.0']
 
-    header = OrderedDict()
-
+    header = {}
     hgroups = ['beamline', 'facility', 'mono', 'undulator', 'detectors',
                'scaler', 'detectorstage', 'samplestage', 'scan', 'scanparameters']
     hskip = ['scanparameters.end', 'scanparameters.start']
     for agroup in hgroups:
         attrs = xdi._xdi.attrs.get(agroup, {})
         if agroup == 'mono': agroup = 'monochromator'
-        header[agroup] = OrderedDict()
+        header[agroup] = {}
         for sname in sorted(attrs.keys()):
             if "%s.%s" %( agroup, sname) not in hskip:
                 header[agroup][sname] = attrs[sname]
@@ -302,7 +290,7 @@ def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected',
         mono_cut = 'Si(311)'
     header['monochromator']['name'] = "%s, LN2 cooled"  % mono_cut
 
-    out_arrays = OrderedDict()
+    out_arrays = {}
     out_arrays[col0_name]  = (col0_name, col0_units)
     out_arrays['mufluor'] = ('mufluor', None)
     if hasattr(out, 'i1'):

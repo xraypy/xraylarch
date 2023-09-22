@@ -560,12 +560,10 @@ class CIFFrame(wx.Frame):
             fh.write(strict_ascii(fefftext))
 
         if cif_fname is not None:
-            cname = unixpath(os.path.join(folder, cif_fname))
+            cname = unixpath(os.path.join(folder, fix_filename(cif_fname)))
             with open(cname, 'w', encoding=sys.getdefaultencoding()) as fh:
                 fh.write(strict_ascii(ciftext))
-
         wx.CallAfter(self.run_feff, folder, version8=version8)
-
 
     def run_feff(self, folder=None, version8=True):
         _, dname = os.path.split(folder)

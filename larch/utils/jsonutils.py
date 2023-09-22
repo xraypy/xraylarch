@@ -83,9 +83,14 @@ def encode4js(obj):
     elif isinstance(obj,(complex, np.complex128)):
         return {'__class__': 'Complex', 'value': (obj.real, obj.imag)}
     elif isinstance(obj, io.IOBase):
-        return {'__class__':  'IOBase', 'class': obj.__class__.__name__,
-                'name': obj.name, 'closed': obj.closed,
-                'readable': obj.readable()}
+        out ={'__class__':  'IOBase', 'class': obj.__class__.__name__,
+              'name': obj.name, 'closed': obj.closed,
+              'readable': obj.readable(), 'writable': False}
+        try:
+            out['writable'] = obj.writable()
+        except ValueError:
+            out['writable'] = False
+        return out
     elif isinstance(obj, h5py.File):
         return {'__class__': 'HDF5File',
                 'value': (obj.name, obj.filename, obj.mode, obj.libver),
@@ -224,6 +229,17 @@ def decode4js(obj):
             out[key] = decode4js(val)
     elif classname == 'Datetime':
         obj = datetime.fromisoformat(obj['isotime'])
+
+    elif classname == 'IOBase':
+        mode = 'r'
+        if obj['readable']  and obj['writable']:
+            mode = 'a'
+        elif not obj['readable']  and obj['writable']:
+            mode = 'w'
+        out = open(obj['name'], mode=mode)
+        if obj['closed']:
+            out.close()
+
     elif classname == 'Parameters':
         out = Parameters()
         out.clear()
@@ -271,7 +287,12 @@ def decode4js(obj):
                 pass  # ignore class methods for subclassed Groups
             else:
                 out[key] = decode4js(val)
-        out = LarchGroupTypes[classname](**out)
+        if classname == 'FeffDatFile':
+            path = FeffDatFile()
+            path._set_from_dict(**out)
+            out = path
+        else:
+            out = LarchGroupTypes[classname](**out)
     elif classname == 'Method':
         mname = obj.get('__name__', '')
         if 'ufunc' in mname:
