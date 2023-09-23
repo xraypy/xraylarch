@@ -13,34 +13,16 @@ from functools import partial
 import wx
 import wx.lib.mixins.inspection
 import wx.lib.scrolledpanel as scrolled
-try:
-    from wx._core import PyDeadObjectError
-except:
-    PyDeadObjectError = Exception
+import wx.dataview as dv
 
-import wx.lib.colourselect  as csel
 import numpy as np
 import matplotlib
 
-HAS_PLOT = False
-try:
-    from wxmplot import PlotPanel
-    HAS_PLOT = True
-except ImportError:
-    HAS_PLOT = False
-
-HAS_DV = False
-try:
-    import wx.dataview as dv
-    HAS_DV = True
-except:
-    pass
-
+from wxmplot import PlotPanel
 from wxutils import (SimpleText, EditableListBox, Font, FloatCtrl,
                      pack, Popup, Button, get_icon, Check, MenuItem,
                      Choice, FileOpen, FileSave, fix_filename, HLine,
                      GridPanel, CEN, LEFT, RIGHT)
-
 
 import larch
 from larch.site_config import icondir
