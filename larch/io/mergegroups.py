@@ -333,10 +333,11 @@ def rebin_piecewise_constant(x1, y1, x2):
     return y2
 
 
-def reject_outliers(data, m=2.0, return_mask=False):
+def reject_outliers(data, m=5.189, return_ma=False):
     """Reject outliers
 
     Modified from: https://stackoverflow.com/questions/11686720/is-there-a-numpy-builtin-to-reject-outliers-from-a-list
+    See also: https://www.itl.nist.gov/div898/handbook/eda/section3/eda35h.htm
     """
     if not isinstance(data, np.ndarray):
         data = np.array(data)
@@ -344,7 +345,8 @@ def reject_outliers(data, m=2.0, return_mask=False):
     mdev = np.median(d)
     s = d / (mdev if mdev else 1.0)
     mask = s < m
-    if return_mask:
-        return data[mask], mask
+    if return_ma:
+        imask = s > m
+        return np.ma.masked_array(data=data, mask=imask)
     else:
         return data[mask]
