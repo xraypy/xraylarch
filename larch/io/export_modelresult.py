@@ -4,13 +4,12 @@
 #
 import sys
 import numpy as np
-from collections import OrderedDict
 from lmfit.model import ModelResult
 from larch.utils  import gformat, getfloat_attr
 
 def export_modelresult(result, filename='fitresult.xdi',
                        datafile=None, ydata=None, yerr=None,
-                       _larch=None, **kwargs):
+                       **kwargs):
     """
     export an lmfit ModelResult to an XDI data file
 
@@ -43,7 +42,7 @@ def export_modelresult(result, filename='fitresult.xdi',
         hadd(" Datafile.name: <unknnown>")
 
     ndata = len(result.best_fit)
-    columns = OrderedDict()
+    columns = {}
     for aname in result.model.independent_vars:
         val = kwargs.get(aname, None)
         if val is not None and len(val) == ndata:

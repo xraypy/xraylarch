@@ -9,6 +9,7 @@ mkak 2017.03.14
 # IMPORT PYTHON PACKAGES
 import os
 import numpy as np
+import json
 
 HAS_pyFAI = False
 try:
@@ -25,18 +26,33 @@ from larch.io import tifffile
 
 def read_poni(fname):
     """read pyFAI PONI file to dict"""
-    conf = {}
+    conf = dict(dist=None, wavelength=None, pixel1=None, pixel2=None,
+                poni1=None, poni2=None, rot1=None, rot2=None, rot3=None)
     with open(fname, 'r') as fh:
         for line in fh.readlines():
             line = line[:-1].strip()
             if line.startswith('#'):
                 continue
-            key, val = [a.strip() for a in line.split(':')]
-            key = key.lower()
-            if key == 'distance': key='dist'
-            if key == 'pixelsize1': key='pixel1'
-            if key == 'pixelsize2': key='pixel2'
-            conf[key] = float(val)
+            try:
+                key, val = [a.strip() for a in line.split(':', 1)]
+                key = key.lower()
+            except:
+                continue
+            if key == 'detector_config':
+                confdict = json.loads(val)
+                for k, v in confdict.items():
+                    k = k.lower()
+                    if k in conf:
+                        conf[k] = float(v)
+                        
+            if key == 'distance':
+                key='dist'
+            elif key == 'pixelsize1':
+                key='pixel1'
+            elif key == 'pixelsize2':
+                key='pixel2'
+            if key in conf:
+                conf[key] = float(val)
     return conf
 
 def write_poni(filename, calname='', pixel1=0, pixel2=0,

@@ -3,7 +3,6 @@ import sys
 from traceback import format_tb
 import time
 from datetime import datetime
-from collections import OrderedDict
 from gzip import GzipFile
 import io
 import copy

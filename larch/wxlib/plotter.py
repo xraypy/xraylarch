@@ -921,7 +921,10 @@ def _closeDisplays(_larch=None, **kws):
     for display in (PLOT_DISPLAYS, IMG_DISPLAYS,
                     FITPLOT_DISPLAYS, XRF_DISPLAYS):
         for win in display.values():
-            win.Destroy()
+            try:
+                win.Destroy()
+            except:
+                pass
 
 def get_zoomlimits(plotpanel, dgroup):
     """save current zoom limits, to be reapplied with set_zoomlimits()"""

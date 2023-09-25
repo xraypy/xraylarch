@@ -7,7 +7,6 @@ import sys
 import time
 import json
 from itertools import combinations
-from collections import OrderedDict
 
 import numpy as np
 from numpy.random import randint

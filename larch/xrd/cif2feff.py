@@ -2,17 +2,11 @@ import os
 import random
 from io import StringIO
 
-HAS_PYMATGEN = False
-try:
-    from pymatgen.io.cif import CifParser
-    from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
-    from pymatgen.core import Molecule
-    HAS_PYMATGEN = True
-except:
-    HAS_PYMATGEN = False
 
 from xraydb import atomic_symbol, atomic_number, xray_edge
 from larch.utils import fix_varname, strict_ascii, gformat
+
+from .amcsd_utils import PMG_CIF_OPTS, CifParser, Molecule, SpacegroupAnalyzer
 
 def get_atom_map(structure):
     """generalization of pymatgen atom map
@@ -43,10 +37,10 @@ def read_cif_structure(ciftext):
     -------
       pymatgen Structure object
     """
-    if not HAS_PYMATGEN:
-        raise ImportError('pymatgen required')
+    if CifParser is None:
+        raise ValueError("CifParser from pymatgen not available. Try 'pip install pymatgen'.")
     try:
-        cifstructs = CifParser(StringIO(ciftext), site_tolerance=5.e-4)
+        cifstructs = CifParser(StringIO(ciftext), **PMG_CIF_OPTS)
         parse_ok = True
         file_found = True
     except:
@@ -55,7 +49,7 @@ def read_cif_structure(ciftext):
         if os.path.exists(ciftext):
             file_found = True
             try:
-                cifstructs = CifParser(ciftext, site_tolerance=5.e-4)
+                cifstructs = CifParser(ciftext, **PMG_CIF_OPTS)
                 parse_ok = True
             except:
                 parse_ok = False

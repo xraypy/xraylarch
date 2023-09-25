@@ -8,7 +8,7 @@ from . import utils
 from .utils.show import _larch_builtins as show_builtins
 
 from .larchlib import parse_group_args, Journal
-from .symboltable import isgroup as sym_isgroup
+from .symboltable import Group
 from .version import show_version
 
 from . import math
@@ -142,15 +142,15 @@ for pconst_name in ('PLANCK_HC', 'AVOGADRO', 'AMU',
 
 ## More builtin commands, to set up the larch language:
 
-def _group(_larch=None, **kws):
-    """create a group"""
-    if _larch is None:
-        raise Warning("cannot create group -- larch broken?")
-
-    group = _larch.symtable.create_group()
-    for key, val in kws.items():
-        setattr(group, key, val)
-    return group
+# def _group(_larch=None, **kws):
+#     """create a group"""
+#     if _larch is None:
+#         _larch = Group()
+#     else:
+#         group = _larch.symtable.create_group()
+#     for key, val in kws.items():
+#         setattr(group, key, val)
+#     return group
 
 def _eval(text, filename=None, _larch=None):
     """evaluate a string of larch text
@@ -208,25 +208,19 @@ def _journal(*args, **kws):
 
 def _dir(obj=None, _larch=None):
     "return directory of an object -- thin wrapper about python builtin"
-    if _larch is None:
-        raise Warning("cannot run dir() -- larch broken?")
-    if obj is None:
+    if obj is None and _larch is not None:
         obj = _larch.symtable
     return dir(obj)
 
-def _subgroups(obj, _larch=None):
+def _subgroups(obj):
     "return list of subgroups"
-    if _larch is None:
-        raise Warning("cannot run subgroups() -- larch broken?")
-    if sym_isgroup(obj):
+    if isinstance(obj, Group):
         return obj._subgroups()
     raise Warning("subgroups() argument must be a group")
 
-def _groupitems(obj, _larch=None):
+def _groupitems(obj):
     "returns group items as if items() method of a dict"
-    if _larch is None:
-        raise Warning("cannot run subgroups() -- larch broken?")
-    if sym_isgroup(obj):
+    if isinstance(obj, Group):
         return obj._members().items()
     raise Warning("group_items() argument must be a group")
 
@@ -267,12 +261,11 @@ def _isgroup(obj, _larch=None):
         False
 
     """
-    if _larch is None:
-        raise Warning("cannot run isgroup() -- larch broken?")
-    stable = _larch.symtable
-    if isinstance(obj, str) and stable.has_symbol(obj):
-        obj = stable.get_symbol(obj)
-    return sym_isgroup(obj)
+    if (_larch is not None and
+        isinstance(obj, str) and
+        _larch.symtable.has_symbol(obj)):
+        obj = _larch.symtable.get_symbol(obj)
+    return isinstance(obj, Group)
 
 
 def _pause(msg='Hit return to continue', _larch=None):
@@ -318,7 +311,7 @@ def init_display_group(_larch):
         display.terminal = 'xterm'
 
 
-_main_builtins = dict(group=_group, dir=_dir, which=_which,
+_main_builtins = dict(group=Group, Group=Group, dir=_dir, which=_which,
                       exists=_exists, isgroup=_isgroup,
                       subgroups=_subgroups, group_items=_groupitems,
                       parse_group_args=parse_group_args, pause=_pause,

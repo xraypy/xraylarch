@@ -7,8 +7,6 @@ import sys
 import time
 import copy
 from functools import partial
-from collections import OrderedDict
-
 from threading import Thread
 
 import json
@@ -49,7 +47,7 @@ from .xrfdisplay_utils import (XRFGROUP, mcaname, XRFRESULTS_GROUP,
 def read_filterdata(flist, _larch):
     """ read filters data"""
     materials = _larch.symtable.get_symbol('_xray._materials')
-    out = OrderedDict()
+    out = {}
     out['None'] = ('', 0)
     for name in flist:
         if name in materials:
@@ -92,6 +90,9 @@ FitSteps = ['1.e-2', '3.e-3', '1.e-3', '3.e-4', '1.e-4', '3.e-5', '1.e-5',
 FitMaxNFevs = ['200', '500', '1000', '1500', '2000', '3000', '5000', '10000']
 
 xrfmod_setup = """### XRF Model: {mca_label:s}  @ {datetime:s}
+# mca data group for fit:
+{XRFGROUP}.workmca = {mcagroup}
+
 # setup XRF Model:
 _xrfmodel = xrf_model(xray_energy={en_xray:.2f}, count_time={count_time:.5f},
                       energy_min={en_min:.2f}, energy_max={en_max:.2f})
@@ -114,7 +115,8 @@ _xrfmodel.add_scatter_peak(name='{peakname:s}', center={_cen:.2f},
 
 xrfmod_fitscript = """
 # run XRF fit, save results
-_xrffitresult = _xrfmodel.fit_spectrum({group:s}, energy_min={emin:.2f}, energy_max={emax:.2f}, fit_toler={fit_toler:.6g}, fit_step={fit_step:.6g}, max_nfev={max_nfev:d})
+_xrffitresult = _xrfmodel.fit_spectrum({XRFGROUP}.workmca, energy_min={emin:.2f}, energy_max={emax:.2f},
+                                       fit_toler={fit_toler:.6g}, fit_step={fit_step:.6g}, max_nfev={max_nfev:d})
 _xrfresults.insert(0, _xrffitresult)
 ########
 """
@@ -187,7 +189,7 @@ class FitSpectraFrame(wx.Frame):
         xrfgroup = symtable.get_group(XRFGROUP)
         mcagroup = getattr(xrfgroup, '_mca')
         self.mca = getattr(xrfgroup, mcagroup)
-        self.mcagroup = '%s.%s' % (XRFGROUP, mcagroup)
+        self.mcagroup = f'{XRFGROUP}.{mcagroup}'
 
         self.config = DEF_CONFIG
 
@@ -1156,6 +1158,8 @@ class FitSpectraFrame(wx.Frame):
             opts['count_time'] = 1.0
         opts['datetime'] = time.ctime()
         opts['mca_label'] = self.mca_label
+        opts['mcagroup'] = self.mcagroup
+        opts['XRFGROUP'] = XRFGROUP
         script = [xrfmod_setup.format(**opts)]
 
         for peakname in ('Elastic', 'Compton1', 'Compton2'):
@@ -1211,9 +1215,11 @@ class FitSpectraFrame(wx.Frame):
         syms = ["'%s'" % self.ptable.syms[iz-1] for iz in elemz]
         syms = '[%s]' % (', '.join(syms))
         script.append(xrfmod_elems.format(elemlist=syms))
-        script.append("{group:s}.xrf_init = _xrfmodel.calc_spectrum({group:s}.energy)")
+
+        script.append("# set initial estimate of xrf intensity")
+        script.append("{XRFGROUP}.workmca.xrf_init = _xrfmodel.calc_spectrum({XRFGROUP}.workmca.energy)")
         script = '\n'.join(script)
-        self.model_script = script.format(group=self.mcagroup)
+        self.model_script = script.format(group=self.mcagroup, XRFGROUP=XRFGROUP)
 
         self._larch.eval(self.model_script)
 
@@ -1233,14 +1239,14 @@ class FitSpectraFrame(wx.Frame):
                 ampname = 'amp_%s' % nam
                 if nam in ('elastic', 'compton1', 'compton2', 'compton',
                            'background', 'pileup', 'escape'):
-                    ampname = '%s_amp' % nam
+                    ampname = f'{nam}_amp'
                     if nam in ('background', 'pileup', 'escape'):
                         scale = 1.0
                     if nam in ('compton2',):
                         scale /= 5.0
 
                 paramval = self.xrfmod.params[ampname].value
-                s = "_xrfmodel.params['%s'].value = %.5f" % (ampname, paramval*scale)
+                s = f"_xrfmodel.params['{ampname}'].value = {paramval*scale:.5f}"
                 cmds.append(s)
                 parr *= scale
                 parr[np.where(parr<floor)] = floor
@@ -1248,10 +1254,10 @@ class FitSpectraFrame(wx.Frame):
             self.xrfmod.current_model = total
             script = '\n'.join(cmds)
             self._larch.eval(script)
-            self.model_script = "%s\n%s" % (self.model_script, script)
+            self.model_script = f"{self.model_script}\n{script}"
 
-        s = "{group:s}.xrf_init = _xrfmodel.calc_spectrum({group:s}.energy)"
-        self._larch.eval(s.format(group=self.mcagroup))
+        s = f"{XRFGROUP}.workmca.xrf_init = _xrfmodel.calc_spectrum({XRFGROUP}.workmca.energy)"
+        self._larch.eval(s)
 
     def plot_model(self, model_spectrum=None, init=False, with_comps=False,
                    label=None):
@@ -1320,6 +1326,7 @@ class FitSpectraFrame(wx.Frame):
         emax = float(self.wids['en_max'].GetValue())
 
         fit_script = xrfmod_fitscript.format(group=self.mcagroup,
+                                             XRFGROUP=XRFGROUP,
                                              emin=emin, emax=emax,
                                              fit_toler=fit_tol,
                                              fit_step=fit_step,

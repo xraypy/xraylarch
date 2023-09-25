@@ -21,7 +21,6 @@ def athena_to_hdf5(
     do_bkg=True,
     do_fft=True,
     use_hashkey=False,
-    _larch=None,
 ):
     """Read Athena project file (.prj) and write to HDF5 (.h5)
 
@@ -44,7 +43,7 @@ def athena_to_hdf5(
             https://github.com/h5py/h5py/issues/1471
 
     """
-    aprj = AthenaProject(_larch=_larch)
+    aprj = AthenaProject()
     aprj.read(
         filename,
         match=match,
@@ -81,9 +80,7 @@ if __name__ == "__main__":
     fnroot = "cyanobacteria"
     atpfile = os.path.join(_exdir, f"{fnroot}.prj")
     if 0:
-        from larch import Interpreter
-
-        aprj = AthenaProject(_larch=Interpreter())
+        aprj = AthenaProject()
         aprj.read(atpfile, do_bkg=False)  # there is currently a bug in do_bkg!
         adict = aprj.as_dict()
     if 0:

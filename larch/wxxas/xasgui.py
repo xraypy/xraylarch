@@ -389,8 +389,8 @@ class XASFrame(wx.Frame):
         pack(panel, sizer)
         splitter.SplitVertically(leftpanel, panel, 1)
 
-    def process_normalization(self, dgroup, force=True):
-        self.get_nbpage('xasnorm')[1].process(dgroup, force=force)
+    def process_normalization(self, dgroup, force=True, use_form=True):
+        self.get_nbpage('xasnorm')[1].process(dgroup, force=force, use_form=use_form)
 
     def process_exafs(self, dgroup, force=True):
         self.get_nbpage('exafs')[1].process(dgroup, force=force)
@@ -443,7 +443,7 @@ class XASFrame(wx.Frame):
 
         if (getattr(dgroup, 'datatype', 'raw').startswith('xa') and not
             (hasattr(dgroup, 'norm') and hasattr(dgroup, 'e0'))):
-            self.process_normalization(dgroup, force=True)
+            self.process_normalization(dgroup, force=True, use_form=False)
 
         if filename is None:
             filename = dgroup.filename

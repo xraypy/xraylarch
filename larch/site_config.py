@@ -9,10 +9,10 @@ from __future__ import print_function
 
 import sys
 import os
-import logging
-import pkg_resources
-from packaging.version import parse as version_parse
+import importlib.metadata
 from subprocess import check_call, CalledProcessError, TimeoutExpired
+
+from packaging.version import parse as version_parse
 
 from .utils import (uname, get_homedir, nativepath, unixpath,
                     log_warning, log_error)
@@ -33,27 +33,32 @@ def pjoin(*args):
     "simple join"
     return nativepath(os.path.join(*args))
 
-def download_larch():
-    check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', 'xraylarch'])
-
 def update_larch():
+    "pip upgrade larch"
     check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', 'xraylarch'])
 
 def install_extras(package_dict, timeout=30):
-    current = {pkg.key: pkg.version for pkg in pkg_resources.working_set}
+    "install extra paackages"
+    current = {}
+    for names in importlib.metadata.packages_distributions().values():
+        for name in names:
+            if name not in current:
+                try:
+                    current[name] = importlib.metadata.version(name)
+                except importlib.metadata.PackageNotFoundError:
+                    pass
     for pkg, vers_required in package_dict.items():
         vers_installed = current.get(pkg, None)
-        if ((vers_installed is None)
-            or (vers_required is not None
-                and
-                ((version_parse(vers_installed) <
-                  version_parse(vers_required))))):
+        do_install = vers_installed is None
+        if vers_installed is not None and vers_required is not None:
+            do_install = (version_parse(vers_installed) <
+                          version_parse(vers_required))
+        if do_install:
             command = [sys.executable, '-m', 'pip', 'install', f"{pkg}>={vers_required}"]
-            print(command)
             try:
                 check_call(command, timeout=timeout)
             except (CalledProcessError, TimeoutExpired):
-                log_warning(f"could not pip install packages: {missing}")
+                log_warning(f"could not pip install packages: {pkg}")
 
 ##
 # set system-wide and local larch folders
@@ -78,22 +83,6 @@ if uname in ('linux', 'darwin') and os.getuid() > 0:
     lshare = os.path.join(home_dir, '.local', 'share')
     if not os.path.exists(lshare):
         os.makedirs(lshare, mode=457) # for octal 711
-
-
-# frozen executables, as from cx_freeze, will have
-# these paths to be altered...
-if hasattr(sys, 'frozen'):
-    if uname.startswith('win'):
-        try:
-            tdir, exe = os.path.split(sys.executable)
-            toplevel, bindir = os.path.split(tdir)
-            larchdir = os.path.abspath(toplevel)
-        except:
-            pass
-    elif uname.startswith('darwin'):
-        tdir, exe = os.path.split(sys.executable)
-        toplevel, bindir = os.path.split(tdir)
-        larchdir = pjoin(toplevel, 'Resources', 'larch')
 
 
 # initialization larch files to be run on startup
@@ -131,9 +120,9 @@ def make_user_larchdirs():
         "write wrapper"
         if not os.path.exists(fname):
             try:
-                with open(fname, 'w', encoding=sys.getdefaultencoding()) as fh:
-                    fh.write(f'# {text}\n')
-            except:
+                with open(fname, 'w', encoding=sys.getdefaultencoding()) as fileh:
+                    fileh.write(f'# {text}\n')
+            except IOError:
                 log_error(sys.exc_info()[1])
 
     make_dir(user_larchdir)
@@ -148,7 +137,6 @@ def make_user_larchdirs():
 
 def site_config():
     "retutn string of site config"
-    isfrozen = getattr(sys, 'frozen', False)
     return f"""#== Larch Configuration:
   Release version:     {__release_version__}
   Development version: {__version__}
@@ -159,6 +147,7 @@ def site_config():
 """
 
 def show_site_config():
+    "print stie_config"
     print(site_config())
 
 def system_settings():

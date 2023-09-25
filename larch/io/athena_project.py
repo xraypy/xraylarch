@@ -12,7 +12,6 @@ import json
 import platform
 from fnmatch import fnmatch
 from gzip import GzipFile
-from collections import OrderedDict
 from copy import deepcopy
 import numpy as np
 from numpy.random import randint
@@ -388,6 +387,8 @@ def parse_perlathena(text, filename):
                 else:
                     setattr(this.athena_params, key, asfloat(val))
         this.__doc__ = """Athena Group Name %s (key='%s')""" % (label, dat['name'])
+        if label.startswith(' '):
+            label = 'd_' + label.strip()
         name = fix_varname(label)
         if name.startswith('_'):
             name = 'd' + name
@@ -601,22 +602,22 @@ class AthenaGroup(Group):
 
         if isinstance(key, int):
             raise IndexError("AthenaGroup does not support integer indexing")
-        
+
         return getattr(self, key)
 
     def __setitem__(self, key, value):
 
         if isinstance(key, int):
             raise IndexError("AthenaGroup does not support integer indexing")
-        
+
         return setattr(self, key, value)
-    
+
     def keys(self):
         return list(self.groups.keys())
-    
+
     def values(self):
         return list(self.groups.values())
-    
+
     def items(self):
         return list(self.groups.items())
 
@@ -634,9 +635,8 @@ class AthenaProject(object):
     By default, files are saved in Gzipped JSON format
     """
 
-    def __init__(self, filename=None, _larch=None):
-        self._larch = _larch
-        self.groups = OrderedDict()
+    def __init__(self, filename=None):
+        self.groups = {}
         self.header = None
         self.journal = None
         self.filename = filename
@@ -679,7 +679,7 @@ class AthenaProject(object):
 
         # fill in data from pre-edge subtraction
         if not (hasattr(group, 'e0') and hasattr(group, 'edge_step')):
-            pre_edge(group, _larch=self._larch)
+            pre_edge(group)
         group.args = make_athena_args(group, hashkey)
 
         # fix parameters that are incompatible with athena
@@ -814,6 +814,7 @@ class AthenaProject(object):
                     continue
             this = getattr(data, gname)
 
+            this.athena_id = this.athena_params.id
             if use_hashkey:
                 oname = this.athena_params.id
             is_xmu = bool(int(getattr(this.athena_params, 'is_xmu', 1.0)))
@@ -824,25 +825,27 @@ class AthenaProject(object):
                 val = bool(int(getattr(this.athena_params, aname, 0.0)))
                 is_xmu = is_xmu and not val
 
-            if is_xmu and (do_preedge or do_bkg) and (self._larch is not None):
+            if is_xmu and (do_preedge or do_bkg):
                 pars = clean_bkg_params(this.athena_params.bkg)
+                if this.athena_params.bkg.eshift:
+                    this.energy = this.energy + this.athena_params.bkg.eshift
                 pre_edge(this,  e0=float(pars.e0),
                          pre1=float(pars.pre1), pre2=float(pars.pre2),
                          norm1=float(pars.nor1), norm2=float(pars.nor2),
                          nnorm=float(pars.nnorm),
-                         make_flat=bool(pars.flatten), _larch=self._larch)
+                         make_flat=bool(pars.flatten))
                 if do_bkg and hasattr(pars, 'rbkg'):
-                    autobk(this, _larch=self._larch, e0=float(pars.e0),
-                           rbkg=float(pars.rbkg), kmin=float(pars.spl1),
-                           kmax=float(pars.spl2), kweight=float(pars.kw),
-                           dk=float(pars.dk), clamp_lo=float(pars.clamp1),
+                    autobk(this, e0=float(pars.e0), rbkg=float(pars.rbkg),
+                           kmin=float(pars.spl1), kmax=float(pars.spl2),
+                           kweight=float(pars.kw), dk=float(pars.dk),
+                           clamp_lo=float(pars.clamp1),
                            clamp_hi=float(pars.clamp2))
                     if do_fft:
                         pars = clean_fft_params(this.athena_params.fft)
                         kweight=2
                         if hasattr(pars, 'kw'):
                             kweight = float(pars.kw)
-                        xftf(this, _larch=self._larch, kmin=float(pars.kmin),
+                        xftf(this, kmin=float(pars.kmin),
                              kmax=float(pars.kmax), kweight=kweight,
                              window=pars.kwindow, dk=float(pars.dk))
             if is_chi:
@@ -893,8 +896,8 @@ class AthenaProject(object):
         return out
 
 
-def read_athena(filename, match=None, do_preedge=True, do_bkg=False, do_fft=False,
-                use_hashkey=False,  _larch=None):
+def read_athena(filename, match=None, do_preedge=True, do_bkg=False,
+                do_fft=False,  use_hashkey=False):
     """read athena project file
     returns a Group of Groups, one for each Athena Group in the project file
 
@@ -932,18 +935,18 @@ def read_athena(filename, match=None, do_preedge=True, do_bkg=False, do_fft=Fals
     if not os.path.exists(filename):
         raise IOError("%s '%s': cannot find file" % (ERR_MSG, filename))
 
-    aprj = AthenaProject(_larch=_larch)
+    aprj = AthenaProject()
     aprj.read(filename, match=match, do_preedge=do_preedge, do_bkg=do_bkg,
               do_fft=do_fft, use_hashkey=use_hashkey)
     return aprj.as_group()
 
 
-def create_athena(filename=None, _larch=None):
+def create_athena(filename=None):
     """create athena project file"""
-    return AthenaProject(filename=filename, _larch=_larch)
+    return AthenaProject(filename=filename)
 
 
-def extract_athenagroup(dgroup, _larch=None):
+def extract_athenagroup(dgroup):
     '''extract xas group from athena group'''
     g = dgroup
     g.datatype = 'xas'

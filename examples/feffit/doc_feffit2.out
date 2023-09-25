@@ -2,11 +2,11 @@
 [[Statistics]]
    nvarys, npts       =  7, 138
    n_independent      =  19.717
-   chi_square         =  12.9083391
-   reduced chi_square =  1.01507616
-   r-factor           =  0.00251319
-   Akaike info crit   =  5.64826681
-   Bayesian info crit =  12.5185008
+   chi_square         =  12.908339
+   reduced chi_square =  1.0150762
+   r-factor           =  0.0025132
+   Akaike info crit   =  5.6482668
+   Bayesian info crit =  12.518501
  
 [[Data]]
    fit space          = 'r'
@@ -15,18 +15,18 @@
    k window, dk       = 'kaiser', 4.000
    paths used in fit  = ['feff0001.dat', 'feff0002.dat', 'feff0003.dat']
    k-weight           = 2
-   epsilon_k          = Array(mean=0.00175498, std=0.00580695)
-   epsilon_r          = 0.05898659
+   epsilon_k          = Array(mean=0.0017550, std=0.0058069)
+   epsilon_r          = 0.0589866
    n_independent      = 19.717
  
 [[Variables]]
-   alpha          =  0.00281139 +/- 0.00298005   (init=  0.00000000)
-   amp            =  0.93628050 +/- 0.03620977   (init=  1.00000000)
-   c3_1           =  1.44404e-4 +/- 8.21972e-5   (init=  0.00200000)
-   del_e0         =  5.70426231 +/- 0.81972849   (init=  3.00000000)
-   sig2_1         =  0.00868052 +/- 2.83895e-4   (init=  0.00200000)
-   sig2_2         =  0.01310464 +/- 0.00113583   (init=  0.00200000)
-   sig2_3         =  0.00632924 +/- 0.00309015   (init=  0.00200000)
+   alpha          =  0.0028114 +/- 0.0029801   (init=  0.0000000)
+   amp            =  0.9362805 +/- 0.0362098   (init=  1.0000000)
+   c3_1           =  1.4440e-4 +/- 8.2197e-5   (init=  0.0020000)
+   del_e0         =  5.7042623 +/- 0.8197285   (init=  3.0000000)
+   sig2_1         =  0.0086805 +/- 2.8390e-4   (init=  0.0020000)
+   sig2_2         =  0.0131046 +/- 0.0011358   (init=  0.0020000)
+   sig2_3         =  0.0063292 +/- 0.0030901   (init=  0.0020000)
  
 [[Correlations]]    (unreported correlations are <  0.100)
    alpha, c3_1          =  0.952
@@ -54,27 +54,27 @@
     geometry  atom      x        y        z      ipot
               Cu       0.0000,  0.0000,  0.0000  0 (absorber)
               Cu       0.0000, -1.8016,  1.8016  1
-     reff   =  2.54780000
-     degen  =  12.0000000
-     n*s02  =  0.93628050 +/- 0.03620977  := 'amp'
-     e0     =  5.70426231 +/- 0.81972849  := 'del_e0'
-     r      =  2.55496285 +/- 0.01138916  := 'reff + alpha*reff'
-     deltar =  0.00716285 +/- 0.01138916  := 'alpha*reff'
-     sigma2 =  0.00868052 +/- 2.83895e-4  := 'sig2_1'
-     third  =  1.44404e-4 +/- 8.21972e-5  := 'c3_1'
+     reff   =  2.5478000
+     degen  =  12.000000
+     n*s02  =  0.9362805 +/- 0.0362098  := 'amp'
+     e0     =  5.7042623 +/- 0.8197285  := 'del_e0'
+     r      =  2.5549629 +/- 0.0113892  := 'reff + alpha*reff'
+     deltar =  0.0071629 +/- 0.0113892  := 'alpha*reff'
+     sigma2 =  0.0086805 +/- 2.8390e-4  := 'sig2_1'
+     third  =  1.4440e-4 +/- 8.2197e-5  := 'c3_1'
 
  = Path 'pj3m4qvfyl' = Cu K Edge
     feffdat file = feff0002.dat, from feff run ''
     geometry  atom      x        y        z      ipot
               Cu       0.0000,  0.0000,  0.0000  0 (absorber)
               Cu      -3.6032,  0.0000,  0.0000  1
-     reff   =  3.60320000
-     degen  =  6.00000000
-     n*s02  =  0.93628050 +/- 0.03620977  := 'amp'
-     e0     =  5.70426231 +/- 0.81972849  := 'del_e0'
-     r      =  3.61332999 +/- 0.01138916  := 'reff + alpha*reff'
-     deltar =  0.01012999 +/- 0.01138916  := 'alpha*reff'
-     sigma2 =  0.01310464 +/- 0.00113583  := 'sig2_2'
+     reff   =  3.6032000
+     degen  =  6.0000000
+     n*s02  =  0.9362805 +/- 0.0362098  := 'amp'
+     e0     =  5.7042623 +/- 0.8197285  := 'del_e0'
+     r      =  3.6133300 +/- 0.0113892  := 'reff + alpha*reff'
+     deltar =  0.0101300 +/- 0.0113892  := 'alpha*reff'
+     sigma2 =  0.0131046 +/- 0.0011358  := 'sig2_2'
 
  = Path 'pibakl7xet' = Cu K Edge
     feffdat file = feff0003.dat, from feff run ''
@@ -82,12 +82,12 @@
               Cu       0.0000,  0.0000,  0.0000  0 (absorber)
               Cu       1.8016, -1.8016,  0.0000  1
               Cu       1.8016,  0.0000, -1.8016  1
-     reff   =  3.82180000
-     degen  =  48.0000000
-     n*s02  =  0.93628050 +/- 0.03620977  := 'amp'
-     e0     =  5.70426231 +/- 0.81972849  := 'del_e0'
-     r      =  3.83254456 +/- 0.01138916  := 'reff + alpha*reff'
-     deltar =  0.01074456 +/- 0.01138916  := 'alpha*reff'
-     sigma2 =  0.00632924 +/- 0.00309015  := 'sig2_3'
+     reff   =  3.8218000
+     degen  =  48.000000
+     n*s02  =  0.9362805 +/- 0.0362098  := 'amp'
+     e0     =  5.7042623 +/- 0.8197285  := 'del_e0'
+     r      =  3.8325446 +/- 0.0113892  := 'reff + alpha*reff'
+     deltar =  0.0107446 +/- 0.0113892  := 'alpha*reff'
+     sigma2 =  0.0063292 +/- 0.0030901  := 'sig2_3'
 
 =======================================================

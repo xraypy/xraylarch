@@ -23,18 +23,21 @@ from xraydb import atomic_mass, atomic_symbol
 from larch import Group, isNamedClass
 from larch.utils.strutils import fix_varname, b32hash
 from larch.fitting import group2params, dict2params, isParameter, param_value
-from larch.utils import gformat
-from .xafsutils import ETOK, ktoe, set_xafsGroup
+from .xafsutils import ETOK, ktoe, set_xafsGroup, gfmt
 from .sigma2_models import add_sigma2funcs
 
 SMALL_ENERGY = 1.e-6
+
+PATH_PARS = ('degen', 's02', 'e0', 'ei', 'deltar', 'sigma2', 'third', 'fourth')
+FDAT_ARRS = ('real_phc', 'mag_feff', 'pha_feff', 'red_fact',
+             'lam', 'rep', 'pha', 'amp', 'k')
 
 class FeffDatFile(Group):
     def __init__(self, filename=None,  **kws):
         kwargs = dict(name='feff.dat: %s' % filename)
         kwargs.update(kws)
         Group.__init__(self,  **kwargs)
-        if filename is not None:
+        if filename not in ('', None) and os.path.exists(filename):
             self._read(filename)
 
     def __repr__(self):
@@ -73,6 +76,19 @@ class FeffDatFile(Group):
     @rmass.setter
     def rmass(self, val):  pass
 
+    def _set_from_dict(self, **kws):
+        self.__rmass = None
+        for key, val in kws.items():
+            if key  == 'rmass':
+                continue
+            elif key == 'reff':
+                key = '__reff__'
+            elif key == 'nleg':
+                key = '__nleg__'
+            elif key in FDAT_ARRS:
+                val = np.array(val)
+            setattr(self, key, val)
+
     def __setstate__(self, state):
         (self.filename, self.title, self.version, self.shell,
          self.absorber, self.degen, self.__reff__, self.__nleg__,
@@ -108,7 +124,7 @@ class FeffDatFile(Group):
             with open(filename, 'r') as fh:
                 lines = fh.readlines()
         except:
-            print('Error reading file %s ' % filename)
+            print(f"Error reading Feff Data file '{filename}'")
             return
         self.filename = filename
         mode = 'header'
@@ -192,13 +208,10 @@ class FeffDatFile(Group):
         self.__rmass = None  # reduced mass of path
 
 
-PATH_PARS = ('degen', 's02', 'e0', 'ei', 'deltar', 'sigma2', 'third', 'fourth')
-
 class FeffPathGroup(Group):
-    def __init__(self, filename='', label='', feffrun='', s02=None, degen=None,
+    def __init__(self, filename=None, label='', feffrun='', s02=None, degen=None,
                  e0=None, ei=None, deltar=None, sigma2=None, third=None,
-                 fourth=None, use=True, **kws):
-
+                 fourth=None, use=True, _feffdat=None, **kws):
         kwargs = dict(filename=filename)
         kwargs.update(kws)
         Group.__init__(self, **kwargs)
@@ -212,19 +225,19 @@ class FeffPathGroup(Group):
         self.geom  = []
         self.shell = 'K'
         self.absorber = None
-        self._feffdat = None
+        self._feffdat = _feffdat
 
         self.hashkey = 'p000'
         self.k = None
         self.chi = None
 
         self.__def_degen = 1
-        if filename not in ('', None):
-            if not os.path.exists(filename):
-                raise ValueError(f"Feff Path file '{filename:s}' not found")
-            self._feffdat = FeffDatFile(filename=filename)
-            self.create_spline_coefs()
 
+        if filename not in ('', None) and os.path.exists(filename):
+            self._feffdat = FeffDatFile(filename=filename)
+
+        if self._feffdat is not None:
+            self.create_spline_coefs()
             self.geom  = self._feffdat.geom
             self.shell = self._feffdat.shell
             self.absorber = self._feffdat.absorber
@@ -245,6 +258,7 @@ class FeffPathGroup(Group):
         self.init_path_params(degen=degen, s02=s02, e0=e0, ei=ei,
                               deltar=deltar, sigma2=sigma2, third=third,
                               fourth=fourth)
+
 
     def init_path_params(self, degen=None, s02=None, e0=None, ei=None,
                        deltar=None, sigma2=None, third=None, fourth=None):
@@ -281,7 +295,6 @@ class FeffPathGroup(Group):
             (self.filename, self.label, self.feffrun, self.degen,
              self.s02, self.e0, self.ei, self.deltar, self.sigma2,
              self.third, self.fourth, self.use, _feffdat_state) = state
-
 
         self._feffdat = FeffDatFile()
         self._feffdat.__setstate__(_feffdat_state)
@@ -445,7 +458,7 @@ class FeffPathGroup(Group):
 
         stderrs = {}
         out.append('     {:7s}= {:s}'.format('reff',
-                                              gformat(self._feffdat.reff)))
+                                              gfmt(self._feffdat.reff)))
 
         for pname in ('degen', 's02', 'e0', 'r',
                       'deltar', 'sigma2', 'third', 'fourth', 'ei'):
@@ -468,9 +481,9 @@ class FeffPathGroup(Group):
                         std = par.stderr
 
             if std is None  or std <= 0:
-                svalue = gformat(val)
+                svalue = gfmt(val)
             else:
-                svalue = "{:s} +/-{:s}".format(gformat(val), gformat(std))
+                svalue = "{:s} +/-{:s}".format(gfmt(val), gfmt(std))
             if pname == 's02':
                 pname = 'n*s02'
 
@@ -629,7 +642,7 @@ def ff2chi(paths, group=None, paramgroup=None, k=None, kmax=None,
 
     for path in pathlist:
         if not isNamedClass(path, FeffPathGroup):
-            print('%s is not a valid Feff Path' % path)
+            print(f"{path} is not a valid Feff Path")
             return
         path.create_path_params(params=params)
         path._calc_chi(k=k, kstep=kstep, kmax=kmax)
@@ -671,6 +684,8 @@ def feffpath(filename='', label='', feffrun='', s02=None, degen=None,
     ---------
         a FeffPath Group.
     """
+    if filename != '' and not os.path.exists(filename):
+        raise ValueError(f"Feff Path file '{filename:s}' not found")
     return FeffPathGroup(filename=filename, label=label, feffrun=feffrun,
                          s02=s02, degen=degen, e0=e0, ei=ei, deltar=deltar,
                          sigma2=sigma2, third=third, fourth=fourth, use=use)
@@ -689,7 +704,7 @@ def use_feffpath(pathcache, label, degen=None, s02=None,  e0=None,ei=None,
       e0:        E_0      value or parameter [0.0]
       deltar:    delta_R  value or parameter [0.0]
       sigma2:    sigma^2  value or parameter [0.0]
-      third:     c_3      value or parameter [0.0]
+      third:     c_3   o   value or parameter [0.0]
       fourth:    c_4      value or parameter [0.0]
       ei:        E_i      value or parameter [0.0]
       use:       whether to use path in sum [True]

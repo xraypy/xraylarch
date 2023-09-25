@@ -4,7 +4,6 @@ XRF Calibration routines
 """
 
 import numpy as np
-from collections import OrderedDict
 from lmfit.models import GaussianModel, ConstantModel
 
 from xraydb import xray_line
@@ -27,7 +26,7 @@ def xrf_calib_init_roi(mca, roiname):
     if bgr is not None:
         counts = counts - bgr
     if not hasattr(mca, 'init_calib'):
-        mca.init_calib = OrderedDict()
+        mca.init_calib = {}
 
     roi = None
     for xroi in mca.rois:
@@ -86,7 +85,7 @@ def xrf_calib_fitrois(mca):
     bgr = getattr(mca, 'bgr', None)
     if bgr is not None:
         counts = counts - bgr
-    calib = OrderedDict()
+    calib = {}
     for roi in mca.rois:
         words = roi.name.split()
         elem = words[0].title()
