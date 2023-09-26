@@ -35,7 +35,8 @@ psutil
 pymatgen
 fabio
 pyfai
-numexpr>=2.8.7
+importlib_metadata
+numexpr>=2.8.7; python_version > '3.8'
 pycifrw
 importlib_metadata; python_version < '3.8'
 pyopencl
