@@ -52,7 +52,7 @@ from xraydb import f0, f1_chantler, f2_chantler
 
 from .xrd_tools import generate_hkl, d_from_hkl, twth_from_q, E_from_lambda
 from .cif2feff import cif2feffinp
-from ..utils import isotime
+from ..utils import isotime, mkdir
 from ..utils.strutils import version_ge, bytes2str
 from ..utils.physical_constants import TAU, ATOM_SYMS
 from ..site_config import user_larchdir
@@ -637,11 +637,9 @@ class CifStructure():
             else:
                 name = f'{absorber:s}_{edge:s}_{min_name:s}_CIF{self.ams_id:06d}'
 
-            bfolder = os.path.join(user_larchdir, 'feff6', name)
-            if not os.path.exists(bfolder):
-                os.makedirs(bfolder)
-
-            filename = os.path.join(bfolder, 'feff.inp')
+            ffolder = os.path.join(user_larchdir, 'feff', name)
+            mkdir(ffolder)
+            filename = os.path.join(ffolder, 'feff.inp')
         with open(filename, 'w', encoding=sys.getdefaultencoding()) as fh:
             fh.write(feff6text)
         return filename

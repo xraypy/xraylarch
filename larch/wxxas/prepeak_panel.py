@@ -17,7 +17,7 @@ from lmfit import Parameter
 import lmfit.models as lm_models
 
 from larch import Group, site_config
-from larch.utils import uname, gformat
+from larch.utils import uname, gformat, mkdir
 from larch.math import index_of
 from larch.io.export_modelresult import export_modelresult
 from larch.io import save_groups, read_groups
@@ -721,7 +721,7 @@ class PrePeakPanel(TaskPanel):
 
         fsopts = dict(digits=2, increment=0.1, min_val=-9999,
                       max_val=9999, size=(125, -1), with_pin=True)
-        
+
         ppeak_elo  = self.add_floatspin('ppeak_elo',  value=-13, **fsopts)
         ppeak_ehi  = self.add_floatspin('ppeak_ehi',  value=-3, **fsopts)
         ppeak_emin = self.add_floatspin('ppeak_emin', value=-20, **fsopts)
@@ -1551,14 +1551,12 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
     def autosave_modelresult(self, result, fname=None):
         """autosave model result to user larch folder"""
         confdir = os.path.join(site_config.user_larchdir, 'xas_viewer')
+        mkdir(confdir)
         if not os.path.exists(confdir):
-            try:
-                os.makedirs(confdir)
-            except:
-                title = "Cannot create XAS Viewer folder"
-                message = [f"Cannot create directory {confdir}"]
-                ExceptionPopup(self, title, message)
-                return
+            title = "Cannot create XAS Viewer folder"
+            message = [f"Cannot create directory {confdir}"]
+            ExceptionPopup(self, title, message)
+            return
         if fname is None:
             fname = 'autosave_peakfile.modl'
         save_groups(os.path.join(confdir, fname), ['#peakfit 1.0', result])

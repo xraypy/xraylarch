@@ -30,7 +30,7 @@ from larch import Group, site_config
 from larch.math import index_of
 from larch.fitting import group2params, param
 from larch.utils.jsonutils import encode4js, decode4js
-from larch.utils import fix_varname, fix_filename, gformat
+from larch.utils import fix_varname, fix_filename, gformat, mkdir
 from larch.io.export_modelresult import export_modelresult
 from larch.xafs import feffit_report, feffpath
 
@@ -1543,14 +1543,12 @@ class FeffitPanel(TaskPanel):
     def autosave_script(self, text, fname='feffit_script.lar'):
         """autosave model result to user larch folder"""
         confdir = os.path.join(site_config.user_larchdir, 'xas_viewer')
+        mkdir(confdir)
         if not os.path.exists(confdir):
-            try:
-                os.makedirs(confdir)
-            except OSError:
-                title = "Cannot create XAS Viewer folder"
-                message = [f"Cannot create directory {confdir}"]
-                ExceptionPopup(self, title, message)
-                return
+            title = "Cannot create XAS Viewer folder"
+            message = [f"Cannot create directory {confdir}"]
+            ExceptionPopup(self, title, message)
+            return
 
         if fname is None:
             fname = 'feffit_script.lar'
