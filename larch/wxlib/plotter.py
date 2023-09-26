@@ -20,6 +20,7 @@ from wxmplot import PlotFrame, ImageFrame, StackedPlotFrame
 from wxmplot.interactive import get_wxapp
 
 import larch
+from ..utils import mkdir
 from ..xrf import isLarchMCAGroup
 from ..larchlib import ensuremod
 from ..site_config import user_larchdir
@@ -30,7 +31,7 @@ mpl_dir = os.path.join(user_larchdir, 'matplotlib')
 os.environ['MPLCONFIGDIR'] = mpl_dir
 if not os.path.exists(mpl_dir):
     try:
-        os.makedirs(mpl_dir)
+        mkdir(mpl_dir)
     except:
         pass
 

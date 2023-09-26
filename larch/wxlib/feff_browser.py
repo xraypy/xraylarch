@@ -10,7 +10,7 @@ import wx.dataview as dv
 
 import larch
 from larch.site_config import user_larchdir
-from larch.utils import unixpath, read_textfile
+from larch.utils import unixpath, mkdir, read_textfile
 from larch.wxlib import (GridPanel, GUIColors, Button, pack, SimpleText,
                          FileOpen, FileSave, Font, LEFT, FRAMESTYLE,
                          FONTSIZE, MenuItem, EditableListBox, OkCancel,
@@ -381,10 +381,8 @@ class FeffResultsFrame(wx.Frame):
             self.larch.symtable._sys._feffruns = {}
         self.parent = parent
 
-        path = unixpath(os.path.join(user_larchdir, 'feff'))
-        if not os.path.exists(path):
-            os.makedirs(path, mode=493)
-        self.feff_folder = path
+        self.feff_folder = unixpath(os.path.join(user_larchdir, 'feff'))
+        mkdir(self.feff_folder)
 
         self.SetTitle(title)
         self.SetSize((925, 650))
@@ -519,10 +517,8 @@ class FeffResultsFrame(wx.Frame):
         dlg.SetPath(self.feff_folder)
         if  dlg.ShowModal() == wx.ID_CANCEL:
             return None
-        path = os.path.abspath(dlg.GetPath())
-        if not os.path.exists(path):
-            os.makedirs(path, mode=493)
-        self.feff_folder = path
+        self.feff_folder = os.path.abspath(dlg.GetPath())
+        mkdir(self.feff_folder)
 
     def onImportFeffCalc(self, event=None):
         "prompt to import Feff calculation folder"

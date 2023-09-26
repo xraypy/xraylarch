@@ -26,7 +26,7 @@ import larch
 from larch import Group
 from larch.xafs import feff8l, feff6l
 from larch.xrd.cif2feff import cif_sites
-from larch.utils import read_textfile
+from larch.utils import read_textfile, mkdir
 from larch.utils.paths import unixpath
 from larch.utils.strutils import fix_filename, unique_name, strict_ascii
 from larch.site_config import user_larchdir
@@ -87,10 +87,8 @@ class CIFFrame(wx.Frame):
 
         if with_feff:
             self.larch.eval("if not hasattr('_sys', '_feffruns'): _sys._feffruns = {}")
-            path = unixpath(os.path.join(user_larchdir, 'feff'))
-            if not os.path.exists(path):
-                os.makedirs(path, mode=493)
-            self.feff_folder = path
+            self.feff_folder = unixpath(os.path.join(user_larchdir, 'feff'))
+            mkdir(self.feff_folder)
             self.feffruns_list = []
             for fname in os.listdir(self.feff_folder):
                 full = os.path.join(self.feff_folder, fname)
@@ -539,14 +537,11 @@ class CIFFrame(wx.Frame):
         fname = self.wids['feff_runfolder'].GetValue()
         fname = unique_name(fix_filename(fname), self.feffruns_list)
         self.feffruns_list.append(fname)
-        folder = unixpath(os.path.join(self.feff_folder, fname))
-
-        if not os.path.exists(folder):
-            os.makedirs(folder, mode=493)
+        self.folder = unixpath(os.path.join(self.feff_folder, fname))
+        mkdir(self.folder)
         ix, p = self.get_nbpage('Feff Output')
         self.nb.SetSelection(ix)
 
-        self.folder = folder
         out = self.wids['feffout_text']
         out.Clear()
         out.SetInsertionPoint(0)
@@ -690,11 +685,8 @@ class CIFFrame(wx.Frame):
         dlg.SetPath(self.feff_folder)
         if  dlg.ShowModal() == wx.ID_CANCEL:
             return None
-        path = os.path.abspath(dlg.GetPath())
-        if not os.path.exists(path):
-            os.makedirs(path, mode=493)
-        self.feff_folder = path
-
+        self.feff_folder = os.path.abspath(dlg.GetPath())
+        mkdir(self.feff_folder)
 
     def onNBChanged(self, event=None):
         callback = getattr(self.nb.GetCurrentPage(), 'onPanelExposed', None)
