@@ -21,8 +21,7 @@ from .strutils import (fixName, isValidName, isNumber, bytes2str,
                        find_delims, version_ge, unique_name,
                        get_sessionid, strict_ascii)
 
-from .shellutils import (_more, _parent,
-                         _ls, _cd, _cwd, _mkdir)
+from .shellutils import (_more, _parent, ls, cd, cwd, mkdir)
 
 logging.basicConfig(format='%(levelname)s [%(asctime)s]: %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S', level=logging.WARNING)
@@ -236,8 +235,8 @@ def _larch_init(_larch):
                                                      error={'color': 'red'}))
 
 _larch_builtins = dict(copy=copy.copy, deepcopy=copy.deepcopy, more= _more,
-                       parent=_parent, ls=_ls, mkdir=_mkdir, cd=_cd,
-                       cwd=_cwd, group2dict=group2dict,
+                       parent=_parent, ls=ls, mkdir=mkdir, cd=cd,
+                       cwd=cwd, group2dict=group2dict,
                        copy_group=copy_group, copy_xafs_group=copy_xafs_group,
                        dict2group=dict2group, debugtimer=debugtimer,
                        isotime=isotime, json_dump=json_dump,

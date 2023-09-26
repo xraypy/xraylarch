@@ -16,7 +16,7 @@ def _parent(name, _larch=None):
     "return parent group name of an object"
     return _larch.symtable._lookup(name)
 
-def _ls(directory='.'):
+def ls(directory='.'):
     """return a list of files in the current directory,
     optionally using '*' to match file names
 
@@ -44,37 +44,44 @@ def _ls(directory='.'):
         ret = os.listdir(directory)
     else:
         ret = glob(directory)
-    if sys.platform == 'win32':
+    if sys.platform.startswith('win'):
         for i in range(len(ret)):
             ret[i] = ret[i].replace('\\','/')
     return ret
 
-def _cwd():
+def cwd():
     "return current working directory"
     ret = get_cwd()
-    if sys.platform == 'win32':
+    if sys.platform.startswith('win'):
         ret = ret.replace('\\','/')
     return ret
 
-def _cd(name):
+def cd(name):
     """change directory to specified directory"""
-    name = name.strip()
-    if name:
-        os.chdir(name)
+    os.chdir(name.strip())
+    return cwd()
 
-    ret = get_cwd()
-    if sys.platform == 'win32':
-        ret = ret.replace('\\','/')
-    return ret
 
-def _mkdir(name, mode=0o777):
+def mkdir(name, mode=0o775):
     """create directory (and any intermediate subdirectories
 
     Options:
     --------
-      mode   permission mask to use for creating directory (default=0777)
+      mode   permission mask to use for creating directory (default=0775)
     """
-    return os.makedirs(name, mode=mode)
+    if os.path.exists(name):
+        try:
+            os.chmod(name, mode)
+        except PermissionError:
+            pass
+    else:
+        try:
+            os.makedirs(name, mode=mode)
+        except FileExistsError:
+            os.chmod(name, mode)
+        except PermissionError:
+            None
+
 
 def show_more(text, filename=None, writer=None,
               pagelength=30, prefix='', _larch=None):
