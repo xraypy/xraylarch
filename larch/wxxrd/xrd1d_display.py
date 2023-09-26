@@ -27,7 +27,7 @@ from larch.utils import nativepath, get_cwd, gformat, fix_filename
 from larch.utils.physical_constants import PLANCK_HC
 from larch.xray import XrayBackground
 from larch.wxxas import RemoveDialog
-from larch.io import tifffile 
+from larch.io import tifffile
 
 from larch.xrd import (d_from_q,twth_from_q,q_from_twth,
                        d_from_twth,twth_from_d,q_from_d,
@@ -212,7 +212,7 @@ class RenameDialog(wx.Dialog):
 
         self.wids = wids = {}
         wids['newname'] = wx.TextCtrl(panel, value=name, size=(150, -1))
-        
+
         panel.Add(SimpleText(panel, 'New Name: '),  dcol=1, newrow=False)
         panel.Add(wids['newname'], dcol=1)
         panel.Add((10, 10), newrow=True)
@@ -246,7 +246,7 @@ class XRD1DFrame(wx.Frame):
         self.wavelength = wavelength
         self.poni = {'wavelength': 1.e-10*self.wavelength} # ! meters!
         self.pyfai_integrator = None
-            
+
         self.larch = _larch
         if self.larch is None:
             self.larch_buffer = LarchFrame(_larch=None, parent=self,
@@ -279,24 +279,22 @@ class XRD1DFrame(wx.Frame):
         MenuItem(self, fmenu, "Save XY File",
                  "Save XRD 1D data to XY FIle",
                  self.onSaveXY)
-
         self.tiff_reader = MenuItem(self, fmenu, "Read TIFF XRD Image",
-                                    "Read XRD 2D image to be integrated", 
+                                    "Read XRD 2D image to be integrated",
                                     self.onReadTIFF)
         self.tiff_reader.Enable(self.poni.get('dist', -1) > 0)
         fmenu.AppendSeparator()
-        
         MenuItem(self, fmenu, "Change Label for Current Pattern",
                  "Rename Current Pattern",
                  self.onRenameDataset)
-        
+
         MenuItem(self, fmenu, "Remove Selected Patterns",
                  "Remove Selected Patterns",
                  self.remove_selected_datasets)
 
         fmenu.AppendSeparator()
         MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
-        
+
         MenuItem(self, smenu, "Browse AmMin Crystal Structures",
                  "Browse Structures from Am Min Database",
                  self.onCIFBrowse)
@@ -333,12 +331,12 @@ class XRD1DFrame(wx.Frame):
                     winx.Destroy()
                 except:
                     pass
-            
+
         if hasattr(self.larch.symtable, '_plotter'):
             wx.CallAfter(self.larch.symtable._plotter.close_all_displays)
 
         self.Destroy()
-        
+
     def onSetWavelength(self, event=None):
         WavelengthDialog(self, self.wavelength, self.set_wavelength).Show()
 
@@ -378,7 +376,7 @@ class XRD1DFrame(wx.Frame):
             os.chdir(top)
             dxrd = xrd1d(file=sfile, wavelength=self.wavelength)
             self.add_data(dxrd, label=xfile)
-            
+
     def onReadTIFF(self, event=None):
         sfile = FileOpen(self, 'Read TIFF XRD Image',
                          default_file='XRD.tiff',
@@ -394,7 +392,7 @@ class XRD1DFrame(wx.Frame):
                     ExceptionPopup(self, title, message)
             if self.pyfai_integrator is None:
                 return
-            
+
             img =  tifffile.imread(sfile)
             img = img[::-1, :]
             if (img.max() > MAXVAL_INT16) and (img.max() < MAXVAL_INT16 + 64):
@@ -418,7 +416,7 @@ class XRD1DFrame(wx.Frame):
             dxrd.file = fname
             self.add_data(dxrd, label=fname)
 
-            
+
     def onCIFBrowse(self, event=None):
         shown = False
         if self.cif_browser is not None:
@@ -493,11 +491,14 @@ class XRD1DFrame(wx.Frame):
         wavelength = PLANCK_HC/(dset.energy*1000.0)
         buff = [f"# XY data from {label}",
                 f"# wavelength (Ang) = {gformat(wavelength)}",
-                "#-------------------------------------",
-                f"# {xlabel}    Intensity"]
+                "# Calibration data from pyFAI:"]
+        for key, value in self.poni.items():
+            buff.append(f"#    {key}: {value}")
+        buff.append("#-------------------------------------")
+        buff.append(f"# {xlabel}    Intensity")
 
         for x, y in zip(xdat, ydat):
-            buff.append(f" {gformat(x)} {gformat(y)}")
+            buff.append(f"  {gformat(x, 13)}  {gformat(y, 13)}")
         buff.append('')
         with open(sfile, 'w') as fh:
             fh.write('\n'.join(buff))
@@ -671,27 +672,27 @@ class XRD1DFrame(wx.Frame):
         self.Raise()
 
     def set_ponifile(self, ponifile):
-        "set poni from datafile"        
+        "set poni from datafile"
         try:
             self.set_poni(read_poni(ponifile))
         except:
             pass
 
-    def set_poni(self, poni):        
+    def set_poni(self, poni):
         "set poni from dict"
         try:
             self.poni.update(poni)
-            self.set_wavelength(self.poni['wavelength']*1.e10)                
+            self.set_wavelength(self.poni['wavelength']*1.e10)
             self.tiff_reader.Enable(self.poni.get('dist', -1) > 0)
         except:
             pass
-        
+
         try:
             self.pyfai_integrator = AzimuthalIntegrator(**self.poni)
         except:
             self.pyfai_integrator = None
-            
-            
+
+
     def set_wavelength(self, value):
         self.wavelength = value
         self.wids['wavelength'].SetLabel("%.6f" % value)
@@ -849,10 +850,10 @@ class XRD1DFrame(wx.Frame):
         for name in self.datasets:
             self.filelist.Append(name)
 
-        
+
     def onRenameDataset(self, event=None):
-        RenameDialog(self, self.current_label, self.rename_dataset).Show()        
-        
+        RenameDialog(self, self.current_label, self.rename_dataset).Show()
+
 
     def remove_dataset(self, dname=None, event=None):
         if dname in self.datasets:
@@ -862,7 +863,7 @@ class XRD1DFrame(wx.Frame):
         for name in self.datasets:
             self.filelist.Append(name)
 
-            
+
     def remove_selected_datasets(self, event=None):
         sel = []
         for checked in self.filelist.GetCheckedStrings():
@@ -889,7 +890,7 @@ class XRD1DFrame(wx.Frame):
         opts = dict(wintitle=wintitle, win=win, image=True)
         self.img_display = self.larch.symtable._plotter.get_display(**opts)
         return self.img_display
-                                
+
     def get_display(self, win=1, stacked=False):
         wintitle='XRD Plot Window %i' % win
         opts = dict(wintitle=wintitle, stacked=stacked, win=win, linewidth=3)
