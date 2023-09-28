@@ -5,8 +5,6 @@ site configuration for larch:
    init_files:  list of larch files run (in order) on startup
    history_file:
 """
-from __future__ import print_function
-
 import sys
 import os
 import importlib.metadata
@@ -20,8 +18,10 @@ from .version import __version__, __release_version__
 
 larch_version = __version__
 larch_release_version = __release_version__
+
 # lists of recommended packages that are not installed by default
 # but may be installed if several of the larch apps are run.
+
 extras_wxgraph = {'wxutils': '0.3.0', 'wxmplot': '0.9.56'}
 extras_epics =  {'pyepics': '3.5.1', 'epicsapps': None, 'psycopg2-binary':None}
 extras_doc   = {'pytest': None, 'sphinx': None, 'numpydoc': None,
@@ -38,17 +38,12 @@ def update_larch():
     check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', 'xraylarch'])
 
 def install_extras(package_dict, timeout=30):
-    "install extra paackages"
-    current = {}
-    for names in importlib.metadata.packages_distributions().values():
-        for name in names:
-            if name not in current:
-                try:
-                    current[name] = importlib.metadata.version(name)
-                except importlib.metadata.PackageNotFoundError:
-                    pass
+    "install extra packages"
     for pkg, vers_required in package_dict.items():
-        vers_installed = current.get(pkg, None)
+        try:
+            vers_installed = importlib.metadata.distribution(pkg).version
+        except:
+            vers_installed = None
         do_install = vers_installed is None
         if vers_installed is not None and vers_required is not None:
             do_install = (version_parse(vers_installed) <
@@ -59,12 +54,10 @@ def install_extras(package_dict, timeout=30):
                 check_call(command, timeout=timeout)
             except (CalledProcessError, TimeoutExpired):
                 log_warning(f"could not pip install packages: {pkg}")
-
-##
+#
 # set system-wide and local larch folders
 #   user_larchdir = get_homedir() + '.larch' (#unix)
 #                 = get_homedir() + 'larch'  (#win)
-##
 home_dir = get_homedir()
 
 here, i_am = os.path.split(__file__)
