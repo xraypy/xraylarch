@@ -13,7 +13,7 @@ Requirements
 """
 
 __author__ = ["Mauro Rovezzi", "Matt Newville"]
-__version__ = "2023.1"
+__version__ = "2023.2"
 
 import os
 import copy
@@ -23,6 +23,7 @@ import collections
 import numpy as np
 import h5py
 from silx.io.utils import open as silx_open
+from silx.io.h5py_utils import File as silx_h5py_file
 from silx.io.convert import write_to_h5
 
 # from scipy.interpolate import interp1d
@@ -44,21 +45,35 @@ except Exception:
 
 def _str2rng(rngstr, keeporder=True, rebin=None):
     """simple utility to convert a generic string representing a compact
-    list of scans to a sorted list of integers
+    list of scans to a (sorted) list of integers
 
     Parameters
     ----------
-    rngstr : string with given syntax (see Example below)
-    keeporder : boolean [True], to keep the original order
-                keeporder=False turn into a sorted list
-    rebin : integer [None], force rebinning of the final range
+    rngstr : string
+        with given syntax (see Example below)
+    keeporder : boolean [True]
+        to keep the original order
+        keeporder=False turn into a sorted list
+    rebin : integer [None]
+        force rebinning of the final range
 
     Example
     -------
     > _str2rng('100, 7:9, 130:140:5, 14, 16:18:1')
     > [7, 8, 9, 14, 16, 17, 18, 100, 130, 135, 140]
 
+    the string can also have file index prefix 
+
+    > _str2rng('00019/100, 7:9, 130:140:5, 14, 16:18:1')
+    > ('0019', [7, 8, 9, 14, 16, 17, 18, 100, 130, 135, 140])
+
     """
+
+    try:
+        file_idx, scan_str = rngstr.split("/")
+        return file_idx, _str2rng(scan_str)
+    except Exception:
+        pass
     _rng = []
     for _r in rngstr.split(", "):  # the space is important!
         if len(_r.split(",")) > 1:
@@ -237,7 +252,7 @@ class DataSourceSpecH5(object):
         if logger is None:
             from larch.utils.logging import getLogger
 
-            _logger_name = "larch.io.specfile_reader.DataSourceSpecH5"
+            _logger_name = "DataSourceSpecH5"
             self._logger = getLogger(_logger_name, level="WARNING")
         else:
             self._logger = logger
@@ -249,6 +264,7 @@ class DataSourceSpecH5(object):
             self._logger.setLevel("DEBUG")
 
         self._fname = fname
+        self._fn = self._fname
         self._sourcefile = None
         self._sourcefile_type = None
         self._scans = None
@@ -290,11 +306,32 @@ class DataSourceSpecH5(object):
         if self._fname is not None:
             self._init_source_file()
 
+    def __enter__(self):
+        """enter method for with statement"""
+        if h5py.is_hdf5(self._fname):
+            self._sourcefile = silx_h5py_file(self._fname, mode="r")
+        else:
+            self._sourcefile = silx_open(self._fname)
+        return self
+
+    def __exit__(self):
+        """exit method for with statement"""
+        self.close()
+        return self
+
     def _init_source_file(self):
         """init source file object"""
         #: source file object (h5py-like)
+        if not os.path.exists(self._fname):
+            _errmsg = f"{self._fname} does not exist"
+            self._logger.error(_errmsg)
+            raise FileNotFoundError(_errmsg)
         try:
-            self._sourcefile = silx_open(self._fname)
+            if h5py.is_hdf5(self._fname):
+                self._sourcefile = silx_h5py_file(self._fname, mode="r")
+                self._logger.debug("HDF5 open with silx.io.h5py_utils")
+            else:
+                self._sourcefile = silx_open(self._fname)
             for ft in self._file_types:
                 if ft in str(self._sourcefile):
                     self._sourcefile_type = ft
@@ -311,19 +348,33 @@ class DataSourceSpecH5(object):
                     self.set_scan(self._scans[_iscn][0])
             except Exception as e:
                 self._logger.error(e)
+            #self.close()
         except OSError:
-            self._logger.error(f"cannot open {self._fname}")
+            _errmsg = f"cannot open {self._fname}"
+            self._logger.error(_errmsg)
+            raise OSError(_errmsg)
+        try:
+            self._fn = self._fname.split(os.sep)[-1]
+        except Exception:
+            self._logger.debug(f"cannot split {self._fname}")
+            pass
 
     def open(self, mode="r"):
         """Open the source file object with h5py in given mode"""
         try:
-            self._sourcefile = h5py.File(self._fname, mode)
+            if h5py.is_hdf5(self._fname):
+                self._sourcefile = silx_h5py_file(self._fname, mode)
+            else:
+                _errmsg = f"{self._fname} is not HDF5 file"
+                self._logger.error(_errmsg)
+                raise ValueError(_errmsg)
         except OSError:
-            self._logger.error(f"cannot open {self._fname}")
-            pass
+            _errmsg = f"cannot open {self._fname}"
+            self._logger.error(_errmsg)
+            raise OSError(_errmsg)
 
     def close(self):
-        """Close source file silx.io.spech5.SpecH5"""
+        """Close the source file"""
         self._sourcefile.close()
         self._sourcefile = None
 
@@ -408,8 +459,9 @@ class DataSourceSpecH5(object):
                     scan_n = int(scan_n)
                     scan_idx = int(scan_idx)
                 except ValueError:
-                    self._logger.error("scan not selected, wrong 'scan' parameter!")
-                    return
+                    _errmsg = "scan not selected, wrong 'scan' parameter!"
+                    self._logger.error(_errmsg)
+                    raise ValueError(_errmsg)
             assert isinstance(scan_n, int), "'scan_n' must be an integer"
             assert isinstance(scan_idx, int), "'scan_idx' must be an integer"
             self._scan_n = scan_n
@@ -418,8 +470,9 @@ class DataSourceSpecH5(object):
             elif self._urls_fmt == "spec2nexus":
                 self._scan_str = f"S{scan_n}"
             else:
-                self._logger.error("wrong 'urls_fmt'")
-                return
+                _errmsg = "wrong 'urls_fmt'"
+                self._logger.error(_errmsg)
+                raise ValueError(_errmsg)
         if group_url is not None:
             self.set_group(group_url)
         if self._group_url is not None:
@@ -436,7 +489,9 @@ class DataSourceSpecH5(object):
         except KeyError:
             self._scangroup = None
             self._scan_title = None
-            self._logger.error(f"'{self._scan_url}' is not valid")
+            _errmsg = f"'{self._scan_url}' is not valid"
+            self._logger.error(_errmsg)
+            raise KeyError(_errmsg)
 
     def _list_from_url(self, url_str):
         """Utility method to get a list from a scan url
@@ -447,7 +502,9 @@ class DataSourceSpecH5(object):
         try:
             return [i for i in self.get_scangroup()[url_str].keys()]
         except Exception:
-            self._logger.error(f"'{url_str}' not found -> use 'set_scan' method first")
+            _errmsg = f"[{self._fn}//{self._scan_n}] '{url_str}' not found"
+            self._logger.error(_errmsg)
+            #raise ValueError(_errmsg)
 
     # ================== #
     #: READ DATA METHODS
@@ -573,11 +630,12 @@ class DataSourceSpecH5(object):
         Known types of scans
         --------------------
         Generic: <scan_type> <scan_axis> <start> <end> <npoints> <counting_time>
-        'Escan'          (ESRF BM30/BM16 Spec -> Energy)
-        'Emiscan'        (ESRF BM30/BM16 Spec -> Emi_Energy)
-        'fscan'          (ESRF ID26 Spec -> mono_energy)
-        'contscan.motor' (ESRF ID24-DCM BLISS 2023-06 -> energy_enc)
-        'scans.exafs*'   (ESRF BM23 BLISS 2023-06 -> energy_cenc)
+        'Escan'               (ESRF BM30/BM16 Spec -> Energy)
+        'Emiscan'             (ESRF BM30/BM16 Spec -> Emi_Energy)
+        'fscan'               (ESRF ID26 Spec -> mono_energy)
+        'contscan.motor'      (ESRF ID24-DCM BLISS 2023-06 -> energy_enc)
+        'contscan.EnergyCont' (ESRF BM16 BLISS 2023-09 -> energy_enc)
+        'scans.exafs*'        (ESRF BM23 BLISS 2023-06 -> energy_cenc)
 
         Returns
         -------
@@ -589,6 +647,7 @@ class DataSourceSpecH5(object):
              scan_end : "",
              scan_pts : "",
              scan_ct : "",
+             scan_info : ""
             }
         """
         iscn = dict(
@@ -598,6 +657,7 @@ class DataSourceSpecH5(object):
             scan_end=None,
             scan_pts=None,
             scan_ct=None,
+            scan_info=None,
         )
 
         _title = self.get_title()
@@ -628,16 +688,27 @@ class DataSourceSpecH5(object):
                 )
             except IndexError:
                 pass
-        if _scntype == "Escan":  #: ESRF/BM30-BM16 Energy scans with Spec
+
+        # === CUSTOM SCANS -> TODO(move to NeXus)
+        if _scntype == "Escan": 
             iscn.update(dict(scan_axis="Energy"))
-        if _scntype == "Emiscan":  #: ESRF/BM30-BM16 emission scans with Spec
+            iscn.update(dict(scan_info="ESRF/BM30-BM16 Energy scans with Spec"))
+        if _scntype == "Emiscan":
             iscn.update(dict(scan_axis="Emi_Energy"))
-        if _scntype == "fscan":  #: ESRF/ID26 fscan
+            iscn.update(dict(scan_info="ESRF/BM30-BM16 emission scans with Spec"))
+        if _scntype == "fscan":
             iscn.update(dict(scan_axis="mono_energy"))
-        if "scans.exafs" in _scntype:  #: ESRF/BM23 BLISS 2023.06
+            iscn.update(dict(scan_info="ESRF/ID26 fscan"))
+        if "scans.exafs" in _scntype:
             iscn.update(dict(scan_axis="energy_cenc"))
-        if _scntype == "contscan.motor":  #: ESRF/ID24-DCM BLISS 2023.06
+            iscn.update(dict(scan_info="ESRF/BM23 BLISS 2023-June"))
+        if _scntype == "contscan.motor":
             iscn.update(dict(scan_axis="energy_enc"))
+            iscn.update(dict(scan_info="ESRF/ID24-DCM BLISS 2023-June"))
+        if _scntype == "contscan.EnergyCont":
+            iscn.update(dict(scan_axis="energy_enc"))
+            iscn.update(dict(scan_info="ESRF/BM16 BLISS 2023-Sept"))
+
         return iscn
 
     def get_scan_axis(self):
@@ -674,7 +745,7 @@ class DataSourceSpecH5(object):
             sel_cnt = f"{self._cnts_url}/{cnt}"
             return copy.deepcopy(sg[sel_cnt][()])
         else:
-            errmsg = f"'{cnt}' not found in available counters: {cnts}"
+            errmsg = f"[{self._fn}//{self._scan_n}] '{cnt}' not found in available counters"
             self._logger.error(errmsg)
             raise ValueError(errmsg)
 
@@ -699,7 +770,7 @@ class DataSourceSpecH5(object):
             sel_mot = f"{self._mots_url}/{mot}"
             return copy.deepcopy(sg[sel_mot][()])
         else:
-            self._logger.error(f"'{mot}' not found in available motors: {mots}")
+            self._logger.error(f"[{self._fn}//{self._scan_n}] '{mot}' not found in available motors")
             return None
 
     def get_scan(self, scan=None, datatype=None):
