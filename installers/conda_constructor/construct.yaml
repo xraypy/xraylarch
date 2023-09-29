@@ -1,5 +1,5 @@
 name:  xraylarch
-version: 2023-04
+version: 2023-10
 
 channels:
     - https://conda.anaconda.org/conda-forge/
@@ -7,22 +7,20 @@ channels:
     - https://repo.continuum.io/pkgs/msys2 [win]
 
 installer_type: pkg [osx]
-welcome_image: larch_3cones.png
-welcome_image: LarchInstaller.png # [osx]
+welcome_image: LarchInstallerWin.png # [win]
+welcome_image: LarchInstallerMac.png # [osx]
 license_file: ../../LICENSE
 ignore_duplicate_files: True
 
-readme_file: readme.rtf # [osx]
+readme_file: readme.rtf # [osx or win]
 
-osxpkg_userhome_only: True # [osx]
-
-post_install: post_install_linux.sh [linux]
-post_install: post_install_macosx.sh [osx]
+post_install: post_install_posix.sh [linux or osx]
 post_install: post_install_windows.bat [win]
 
 specs:
     - python==3.11
     - conda
+    - mamba
     - openssl
     - setuptools>=61.0
     - pip
