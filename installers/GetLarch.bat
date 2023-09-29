@@ -1,6 +1,5 @@
 @echo off
 
-
 set prefix=%USERPROFILE%\xraylarch
 
 set condaurl=https://github.com/conda-forge/miniforge/releases/latest/download
@@ -20,7 +19,7 @@ echo ## basic mamba installed, running updates
 set PATH=%prefix%;%prefix%\bin;%prefix%\condabin;%prefix%\Scripts;%PATH%
 
 echo ## Installing basic python scipy packages
-call %prefix%\Scripts\mamba install -yc conda-forge numpy scipy matplotlib scikit-image scikit-learn pycifrw pandas jupyter plotly wxpython fabio pyfai pymatgen mkl_fft tomopy
+call %prefix%\Scripts\mamba install -yc conda-forge python==3.11 numpy scipy matplotlib scikit-image scikit-learn pycifrw pandas jupyter plotly wxpython fabio pyfai pymatgen mkl_fft tomopy
 
 echo ## Installing xraylarch and dependencies from PyPI
 call %prefix%\Scripts\pip install wxmplot wxutils lmfit asteval pyshortcuts pyepics epicsapps psycopg2-binary xraylarch
