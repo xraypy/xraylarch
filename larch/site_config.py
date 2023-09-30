@@ -28,6 +28,8 @@ extras_doc   = {'pytest': None, 'sphinx': None, 'numpydoc': None,
                 'sphinxcontrib-bibtex': None, 'sphinxcontrib-argdoc': None}
 extras_qtgraph = {'pyqt5': None, 'pyqtwebengine': None, 'pyqtgraph': None}
 extras_plotly = {'plotly': None, 'jupyter': '5.0', 'ipywidgets': None}
+extras_pymatgen = {'mp_api': None, 'pandas': None, 'py3Dmol': None}
+
 
 def pjoin(*args):
     "simple join"
