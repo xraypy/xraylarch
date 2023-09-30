@@ -6,6 +6,7 @@ Struct2XAS: convert CIFs and XYZs files to FDMNES and FEFF inputs
 """
 # main imports
 import os
+import json
 import time
 import tempfile
 import numpy as np
@@ -17,26 +18,33 @@ from pymatgen.io.cif import CifParser
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
 import larch.utils.logging as logging
+from larch.utils import mkdir, unixpath
+from larch.utils.strutils import fix_filename, unique_name, strict_ascii
+from larch.site_config import user_larchdir, install_extras, extras_pymatgen
+from larch.io import read_ascii
+from larch.math.convolution1D import lin_gamma, conv
 
 try:
     import pandas as pd
     from pandas.io.formats.style import Styler
-
     HAS_PANDAS = True
 except ImportError:
     HAS_PANDAS = False
 
 try:
     import py3Dmol
-
     HAS_PY3DMOL = True
 except ImportError:
     HAS_PY3DMOL = False
+
+
 
 __author__ = ["Beatriz G. Foschiani", "Mauro Rovezzi"]
 __email__ = ["beatrizgfoschiani@gmail.com", "mauro.rovezzi@esrf.fr"]
 __credits__ = ["Jade Chongsathapornpong", "Marius Retegan"]
 __version__ = "2023.2.0"
+
+
 
 # initialize the logger
 logger = logging.getLogger("struct2xas", level="INFO")
@@ -88,6 +96,17 @@ def xyz2struct(molecule):
     struct = Structure(lattice, species, coords, coords_are_cartesian=True)
     return struct
 
+def structure_folders():
+    """
+    return folders under USER_LARCHDIR for FDMNES, Feff,  and structure files,
+    making sure each exists
+    """
+    folders = {}
+    for name in ('feff', 'fdmnes', 'mp_structs'):
+        folders[name] = unixpath(os.path.join(user_larchdir, name))
+        mkdir(folders[name])
+    return folders
+
 
 class Struct2XAS:
     """Class to convert data from CIF and XYZ files to FDMNES and FEFF inputs"""
@@ -132,10 +151,14 @@ class Struct2XAS:
         self.abs_site = 0
         self.is_cif = False
         self.is_xyz = False
-        self._structure_reader()
+        self.read_structure(file)
         self.nabs_sites = len(self.get_abs_sites())
         self.elems = self._get_elems()
         self.species = self._get_species()
+        self.parent_path = user_larchdir
+        self.folders = structure_folders()
+        if not HAS_PY3DMOL:
+            install_extras(extras_pymatgen)
 
         logger.info(
             f"Frames: {self.nframes}, Absorbing sites: {self.nabs_sites}. (Indexes for frames and abs_sites start at 0)"
@@ -200,9 +223,10 @@ class Struct2XAS:
 
         return species_list
 
-    def _structure_reader(self):
-        """Reader to initialize the structure/molecule from the input file"""
+    def read_structure(self, file):
+        """Read and initialize the structure/molecule from the input file"""
         # Split the file name and extension
+        self.file = file
         if os.path.isfile(self.file):
             # file_dirname = os.path.dirname(file)
             file = os.path.basename(self.file)
@@ -233,6 +257,15 @@ class Struct2XAS:
             self.nframes = len(self.molecules)
             self.struct = xyz2struct(self.mol)
             logger.debug("structure created from a XYZ file")
+        elif ext == ".mpjson":
+            self.is_xyz = False
+            self.is_cif = True
+            self.molecules = None
+            self.mol = None
+            self.nframes = 1
+            self.struct = Structure.from_dict(json.load(open(self.file, 'r')))
+            logger.debug("structure created from JSON file")
+
         else:
             errmsg = "only CIF and XYZ files are currently supported"
             logger.error(errmsg)
@@ -633,9 +666,7 @@ class Struct2XAS:
             )
 
         if self.is_xyz:
-            from pymatgen.analysis.local_env import (
-                CrystalNN,
-            )  # previously used: BrunnerNN_real, CutOffDictNN,
+            from pymatgen.analysis.local_env import CrystalNN
 
             obj = CrystalNN()
             coord_env_list = []
@@ -734,14 +765,8 @@ class Struct2XAS:
         atoms = sorted(atoms, key=lambda x: x[2])
         return atoms
 
-    def make_input_fdmnes(
-        self,
-        radius=7,
-        parent_path=None,
-        template=None,
-        green=True,
-        **kwargs,
-    ):
+    def make_input_fdmnes(self, radius=7, parent_path=None,
+                          template=None, green=True, **kwargs):
         """
         Create a fdmnes input from a template.
 
@@ -759,7 +784,7 @@ class Struct2XAS:
             False: use finite-difference method (slower)
 
         ..note:: SCF is always used
-        ..note:: for further information about FDMNES keywords, search for "FDMNES user's guide"
+        ..note:: for further information about FDMNES keywords, search for "FDMNES users guide"
 
         Returns
         -------
@@ -772,26 +797,17 @@ class Struct2XAS:
 
         if template is None:
             template = os.path.join(
-                os.path.dirname(os.path.realpath(__file__)), "templates", "fdmnes.tmpl"
-            )
+                os.path.dirname(os.path.realpath(__file__)),
+                "templates", "fdmnes.tmpl")
 
         if parent_path is None:
-            parent_path = tempfile.mkdtemp(prefix="struct2xas-")
-        self.parent_path = parent_path
-        self.outdir = os.path.join(
-            self.parent_path,
-            "fdmnes",
-            self.file_name,
-            self.abs_atom,
-            f"frame{self.frame}",
-            f"site{self.abs_site}",
-        )
+            parent_path = self.folders['fdmnes']
 
-        if green:
-            method = "green"
-        else:
-            method = ""
+        self.outdir = os.path.join(parent_path, self.file_name, self.abs_atom,
+                                   f"frame{self.frame}",
+                                   f"site{self.abs_site}")
 
+        method = "green" if green else ""
         absorber = ""
         crystal = ""
         occupancy = ""
@@ -925,16 +941,9 @@ class Struct2XAS:
 
         logger.info(f"written FDMNES input -> {fnout}")
 
-    def make_input_feff(
-        self,
-        radius=7,
-        parent_path=None,
-        template=None,
-        feff_comment="*",
-        edge="K",
-        sig2=None,
-        debye=None,
-    ):
+    def make_input_feff(self, radius=7, parent_path=None,
+                        template=None, feff_comment="*", edge="K",
+                        sig2=None, debye=None):
         """
         Create a FEFF input from a template.
 
@@ -968,23 +977,14 @@ class Struct2XAS:
         """
 
         if parent_path is None:
-            parent_path = tempfile.mkdtemp(prefix="struct2xas-")
-        self.parent_path = parent_path
-        self.outdir = os.path.join(
-            self.parent_path,
-            "feff",
-            self.file_name,
-            self.abs_atom,
-            f"frame{self.frame}",
-            f"site{self.abs_site}",
-        )
+            parent_path = self.folders['feff']
+        self.outdir = os.path.join(parent_path, self.file_name, self.abs_atom,
+                                   f"frame{self.frame}", f"site{self.abs_site}")
 
         if template is None:
             template = os.path.join(
                 os.path.dirname(os.path.realpath(__file__)),
-                "templates",
-                "feff_exafs.tmpl",
-            )
+                "templates",  "feff_exafs.tmpl")
 
         if sig2 is None:
             use_sig2 = "*"
@@ -1272,8 +1272,6 @@ def get_fdmnes_info(file, labels=("energy", "mu")):
     Obs: The INPUT file must have the "Header" keyword to use this function in the OUTPUT file
 
     """
-    from larch.io import read_ascii
-
     group = read_ascii(file, labels=labels)
 
     with open(group.path) as f:
@@ -1320,7 +1318,6 @@ def convolve_data(
     .. [GP1202] <http://glowingpython.blogspot.fr/2012/02/convolution-with-numpy.html>
 
     """
-    from larch.math.convolution1D import lin_gamma, conv
 
     gamma_e = lin_gamma(energy, fwhm=fwhm, linbroad=linbroad)
     mu_conv = conv(energy, mu, kernel=kernel, fwhm_e=gamma_e, efermi=efermi)
@@ -1347,19 +1344,64 @@ def save_cif_from_mp(api_key, material_id, parent_path=None):
 
     """
     if parent_path is None:
-        parent_path = tempfile.mkdtemp(prefix="mp-cifs-")
-    #
+        parent_path = structure_folders()['mp_structs']
+
     from pymatgen.ext.matproj import _MPResterLegacy
+
 
     cif = _MPResterLegacy(api_key).get_data(material_id, prop="cif")
     pf = _MPResterLegacy(api_key).get_data(material_id, prop="pretty_formula")[0][
         "pretty_formula"
     ]
     outfn = f"{pf}_{material_id}.cif"
-    with open(
-        file=os.path.join(parent_path, outfn),
-        mode="w",
-    ) as f:
+    with open(file=os.path.join(parent_path, outfn), mode="w") as f:
         f.write(cif[0]["cif"])
         logger.info(f"{material_id} -> {outfn}")
     return [parent_path, outfn]
+
+
+def save_mp_structure(api_key, material_id, parent_path=None):
+    """Save structure from Materials Project Database as json, given the material id
+
+    Parameters
+    ----------
+    api_key : str
+        api-key from Materials Project
+    material id : str
+        material id (format mp-xxxx) from Materials Project
+    parent_path : str
+        path where to store the Structure files
+        if None, user_larchdir + 'mp_structs' is used
+
+    Returns
+    -------
+        name of structure file, which will have an 'mpjson' extension
+
+    Notes
+    ------
+    The structure is saved as json that can be loaded with
+          from pymatgen.core import Structure
+          import json
+          struct = Structure.from_dict(json.load(open(filename, 'r')))
+
+    """
+
+    if parent_path is None:
+        parent_path = structure_folders()['mp_structs']
+
+    try:
+        from mp_api.client import MPRester
+    except ImportError:
+        print("need to install mp_api:  pip install mp_api")
+
+    mpr =  MPRester(api_key)
+    results = mpr.summary.search(material_ids=[material_id], fields=["structure", "formula_pretty"])
+    formula = results[0].formula_pretty
+    structure = results[0].structure
+
+    outfile = os.path.join(parent_path, f"{formula}_{material_id}.mpjson")
+    with open(outfile, 'w') as fh:
+         fh.write(structure.to_json())
+    logger.info(f"saved {material_id} to {outfile}")
+
+    return outfile
