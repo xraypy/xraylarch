@@ -12,7 +12,7 @@ welcome_image: LarchInstallerMac.png # [osx]
 license_file: ../../LICENSE
 ignore_duplicate_files: True
 
-readme_file: readme.rtf # [osx or win]
+readme_file: readme.rtf # [osx]
 
 post_install: post_install_posix.sh [linux or osx]
 post_install: post_install_windows.bat [win]
