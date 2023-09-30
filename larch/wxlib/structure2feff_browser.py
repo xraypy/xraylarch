@@ -17,8 +17,7 @@ from xraydb import atomic_number
 
 import larch
 from larch.xafs import feff8l, feff6l
-from larch.utils import read_textfile
-from larch.utils.paths import unixpath
+from larch.utils import unixpath, mkdir, read_textfile
 from larch.utils.strutils import fix_filename, unique_name, strict_ascii
 from larch.site_config import user_larchdir
 
@@ -42,7 +41,7 @@ MAINSIZE = (850, 750)
 
 class Structure2FeffFrame(wx.Frame):
     _about = """Larch structure browser for generating and running Feff.
-    
+
     Ryuichi Shimogawa <ryuichi.shimogawa@stonybrook.edu>
     """
     def __init__(self, parent=None, _larch=None, path_importer=None, filename=None, **kws):
@@ -64,10 +63,9 @@ class Structure2FeffFrame(wx.Frame):
         self.createMainPanel()
         self.createMenus()
 
-        path = unixpath(os.path.join(user_larchdir, 'feff'))
-        if not os.path.exists(path):
-            os.makedirs(path, mode=493)
-        self.feff_folder = path
+        self.feff_folder = unixpath(os.path.join(user_larchdir, 'feff'))
+        mkdir(self.feff_folder)
+
         self.runs_list = []
         for fname in os.listdir(self.feff_folder):
             full = os.path.join(self.feff_folder, fname)
@@ -273,7 +271,7 @@ class Structure2FeffFrame(wx.Frame):
         structure_text = self.wids['structure_text'].GetValue()
         structure  = self.current_structure
         structure_fname = None
-        
+
         if structure is not None:
             structure_fname = structure['fname']
 
@@ -283,9 +281,8 @@ class Structure2FeffFrame(wx.Frame):
         fname = unique_name(fix_filename(fname), self.runs_list)
         self.runs_list.append(fname)
         folder = unixpath(os.path.join(self.feff_folder, fname))
+        mkdir(folder)
 
-        if not os.path.exists(folder):
-            os.makedirs(folder, mode=493)
         ix, p = self.get_nbpage('Feff Output')
         self.nb.SetSelection(ix)
 
@@ -364,14 +361,14 @@ class Structure2FeffFrame(wx.Frame):
     def onExportStructure(self, event=None):
         if self.current_structure is None:
             return
-        
+
         cc = self.current_structure
         fname = cc["fname"]
         wildcard = f'Sturcture files (*.{cc["fmt"]})|*.{cc["fmt"]}|All files (*.*)|*.*'
         path = FileSave(self, message='Save Structure File',
                         wildcard=wildcard,
                         default_file=fname)
-        
+
         if path is not None:
             with open(path, 'w', encoding=sys.getdefaultencoding()) as fh:
                 fh.write(cc['structure_text'])
@@ -383,30 +380,30 @@ class Structure2FeffFrame(wx.Frame):
                         wildcard=wildcard, default_file='My.cif')
 
         if path is not None:
-            
+
             fmt = path.split('.')[-1]
             fname = os.path.basename(path)
-            
+
             with open(path, 'r', encoding=sys.getdefaultencoding()) as f:
                 structure_text = f.read()
-                
-                        
+
+
             self.current_structure = structure2feff.parse_structure(structure_text=structure_text, fmt=fmt, fname=fname)
-            
+
         self.wids['structure_text'].SetValue(self.current_structure['structure_text'])
-        
+
         # use pytmatgen to get formula
         elems =  chemparse(self.current_structure['formula'].replace(' ', ''))
 
         self.wids['central_atom'].Enable()
         self.wids['edge'].Enable()
         self.wids['cluster_size'].Enable()
-        
+
         self.wids['central_atom'].Clear()
         self.wids['central_atom'].AppendItems(list(elems.keys()))
         self.wids['central_atom'].Select(0)
-        
-        
+
+
 
         el0 = list(elems.keys())[0]
         edge_val = 'K' if atomic_number(el0) < 60 else 'L3'
@@ -454,11 +451,8 @@ class Structure2FeffFrame(wx.Frame):
         dlg.SetPath(self.feff_folder)
         if  dlg.ShowModal() == wx.ID_CANCEL:
             return None
-        path = os.path.abspath(dlg.GetPath())
-        if not os.path.exists(path):
-            os.makedirs(path, mode=493)
-        self.feff_folder = path
-
+        self.feff_folder = os.path.abspath(dlg.GetPath())
+        mkdir(self.feff_folder)
 
     def onNBChanged(self, event=None):
         callback = getattr(self.nb.GetCurrentPage(), 'onPanelExposed', None)
