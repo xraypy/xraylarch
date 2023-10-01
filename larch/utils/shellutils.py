@@ -63,24 +63,19 @@ def cd(name):
 
 
 def mkdir(name, mode=0o775):
-    """create directory (and any intermediate subdirectories
+    """create directory (and any intermediate subdirectories)
 
     Options:
     --------
       mode   permission mask to use for creating directory (default=0775)
     """
     if os.path.exists(name):
-        try:
+        if os.path.isdir(name):
             os.chmod(name, mode)
-        except PermissionError:
-            pass
+        else:
+            raise FileExistsError(f"'{name}' is a file, cannot make folder with that name")
     else:
-        try:
-            os.makedirs(name, mode=mode)
-        except FileExistsError:
-            os.chmod(name, mode)
-        except PermissionError:
-            None
+        os.makedirs(name, mode=mode)
 
 
 def show_more(text, filename=None, writer=None,
