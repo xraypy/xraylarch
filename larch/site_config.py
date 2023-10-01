@@ -94,18 +94,19 @@ history_file = pjoin(user_larchdir, 'history.lar')
 def make_user_larchdirs():
     """create user's larch directories"""
     files = {'init.lar':             'put custom startup larch commands:',
-             'history.lar':          'history of larch commands:',
-             'history_larchgui.lar': 'history of larch_gui commands:',
+             'history.lar':          'history of commands for larch CLI',
+             'history_larchgui.lar': 'history of commands for larch GUI',
              }
-    subdirs = {'matplotlib': 'matplotlib may put files here',
-               'dlls':       'put dlls here',
-               'feff':       'Feff files and folders here'}
+    subdirs = {'matplotlib': 'matplotlib may put cache files here',
+               'feff':       'Feff files and subfolders here',
+               'fdmnes':     'FDMNES files and subfolders here',
+               }
 
     def make_dir(dname):
         "create directory"
         if not os.path.exists(dname):
             try:
-                os.mkdir(dname)
+                os.mkdir(dname, mode=493)
             except PermissionError:
                 log_warning(f'no permission to create directory {dname}')
             except (OSError, TypeError):
