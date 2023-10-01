@@ -17,7 +17,7 @@ condafile="Mambaforge-$uname-x86_64.sh"
 logfile=GetLarch.log
 
 ## set list of conda packages to install from conda-forge
-cforge_pkgs="python==3.11 numpy=>1.22 scipy=>1.8 matplotlib=>3.6 scikit-image scikit-learn pycifrw pandas jupyter plotly wxpython fabio pyfai pymatgen mkl_fft tomopy"
+cforge_pkgs="python==3.11.5 numpy=>1.22 scipy=>1.8 matplotlib=>3.6 scikit-image scikit-learn pycifrw pandas jupyter plotly wxpython fabio pyfai pymatgen mkl_fft tomopy"
 
 ## set list of pip packages to install from pypi
 pip_pkgs="wxmplot wxutils lmfit asteval pyshortcuts pyepics epicsapps psycopg2-binary"

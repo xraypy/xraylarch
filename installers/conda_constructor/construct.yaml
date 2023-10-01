@@ -18,7 +18,7 @@ post_install: post_install_posix.sh [linux or osx]
 post_install: post_install_windows.bat [win]
 
 specs:
-    - python==3.11
+    - python==3.11.5
     - conda
     - mamba
     - openssl
