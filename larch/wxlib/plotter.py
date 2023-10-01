@@ -10,7 +10,6 @@ Exposed functions here are
    imshow: display a false-color map from array data on
            a configurable Image Display Frame.
 '''
-
 import time
 import os
 import sys
@@ -27,13 +26,9 @@ from ..site_config import user_larchdir
 
 from .xrfdisplay import XRFDisplayFrame
 
-mpl_dir = os.path.join(user_larchdir, 'matplotlib')
-os.environ['MPLCONFIGDIR'] = mpl_dir
-if not os.path.exists(mpl_dir):
-    try:
-        mkdir(mpl_dir)
-    except:
-        pass
+mplconfdir = os.path.join(user_larchdir, 'matplotlib')
+mkdir(mplconfdir)
+os.environ['MPLCONFIGDIR'] = mplconfdir
 
 from matplotlib.axes import Axes
 HIST_DOC = Axes.hist.__doc__
