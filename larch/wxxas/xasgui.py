@@ -93,6 +93,8 @@ NB_PANELS = {'Normalization': XASNormPanel,
 QUIT_MESSAGE = '''Really Quit? You may want to save your project before quitting.
  This is not done automatically!'''
 
+LARIX_TITLE = "Larix (was XAS Viewer): XAS Visualization and Analysis"
+
 
 def assign_gsescan_groups(group):
     labels = group.array_labels
@@ -119,7 +121,7 @@ class PreferencesFrame(wx.Frame):
     """ edit preferences"""
     def __init__(self, parent, controller, **kws):
         self.controller = controller
-        wx.Frame.__init__(self, None, -1,  'XAS_Viewer Preferences',
+        wx.Frame.__init__(self, None, -1,  'Larix Preferences',
                           style=FRAMESTYLE, size=(700, 725))
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -238,8 +240,7 @@ class PreferencesFrame(wx.Frame):
         self.controller.save_config()
 
 class XASFrame(wx.Frame):
-    _about = """Larch XAS GUI: XAS Visualization and Analysis
-
+    _about = f"""{LARIX_TITLE}
     Matt Newville <newville @ cars.uchicago.edu>
     """
     def __init__(self, parent=None, _larch=None, filename=None,
@@ -259,7 +260,7 @@ class XASFrame(wx.Frame):
         self.last_athena_file = None
         self.paths2read = []
         self.current_filename = filename
-        title = "Larch XAS GUI: XAS Visualization and Analysis"
+        title = LARIX_TITLE
 
         self.larch_buffer = parent
         if not isinstance(parent, LarchFrame):
@@ -619,7 +620,7 @@ class XASFrame(wx.Frame):
         self.menubar.Append(feff_menu, "Feff")
 
         hmenu = wx.Menu()
-        MenuItem(self, hmenu, 'About XAS Viewer', 'About XAS Viewer',
+        MenuItem(self, hmenu, 'About Larix', 'About Larix',
                  self.onAbout)
         MenuItem(self, hmenu, 'Check for Updates', 'Check for Updates',
                  self.onCheckforUpdates)
@@ -638,7 +639,7 @@ class XASFrame(wx.Frame):
         wildcard = 'Larch file (*.lar)|*.lar|All files (*.*)|*.*'
         path = FileSave(self, message='Save Session History as Larch Script',
                         wildcard=wildcard,
-                        default_file='xas_viewer_history.lar')
+                        default_file='larix_history.lar')
         if path is not None:
             self.larch._larch.input.history.save(path, session_only=True)
             self.write_message("Wrote history %s" % path, 0)
@@ -830,7 +831,7 @@ class XASFrame(wx.Frame):
     def onClearSession(self, evt=None):
         conf = self.controller.get_config('autosave',
                                           {'fileroot': 'autosave'})
-        afile = os.path.join(user_larchdir, 'xas_viewer',
+        afile = os.path.join(self.controller.larix_folder,
                              conf['fileroot']+'.larix')
 
         msg = f"""Session will be saved to
@@ -1038,14 +1039,14 @@ before clearing"""
 
     def onAbout(self, event=None):
         info = AboutDialogInfo()
-        info.SetName('XAS Viewer')
+        info.SetName('Larix')
         info.SetDescription('X-ray Absorption Visualization and Analysis')
         info.SetVersion('Larch %s ' % larch.version.__version__)
         info.AddDeveloper('Matthew Newville: newville at cars.uchicago.edu')
         dlg = AboutBox(info)
 
     def onCheckforUpdates(self, event=None):
-        dlg = LarchUpdaterDialog(self, caller='XAS Viewer')
+        dlg = LarchUpdaterDialog(self, caller='Larix')
         dlg.Raise()
         dlg.SetWindowStyle(wx.STAY_ON_TOP)
         res = dlg.GetResponse()
@@ -1709,13 +1710,12 @@ class XASViewer(LarchWxApp):
         self.SetTopWindow(frame)
         return True
 
-
-def xas_viewer(**kws):
+def larix(**kws):
     XASViewer(**kws)
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="Larch XAS GUI")
+    parser = argparse.ArgumentParser(description=LARIX_TITLE)
     parser.add_argument(
         '-f', '--filename',
         dest='filename',

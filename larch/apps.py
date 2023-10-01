@@ -32,7 +32,7 @@ if HAS_WXPYTHON:
     if uname == 'darwin':
         wx.PyApp.IsDisplayAvailable = lambda _: True
     from .wxmap import MapViewer, DTViewer
-    from .wxxas import XASViewer
+    from .wxxas import XASViewer, LARIX_TITLE
     from .wxlib.xrfdisplay import XRFApp
     from .wxlib.larchframe import LarchApp
     from .epics import EpicsXRFApp
@@ -59,7 +59,7 @@ MainApps = (('Larch CLI',     'larch',       True,  'larch'),
             ('Larch Updater', 'larch',       True,  '_ -m pip install --upgrade xraylarch'),
             ('Larch GUI',     'larch',       False, 'larch --wxgui'),
             ('XAS Viewer',    'onecone',     False, 'xas_viewer'),
-            ('Larix',         'onecene',     False, 'xas_viewer'),
+            ('Larix',         'onecone',     False, 'larix'),
             ('GSE MapViewer', 'gse_xrfmap',  False, 'gse_mapviewer'),
             ('XRF Viewer',    'ptable',      False, 'larch_xrf'),
             ('XRD1D Viewer',  'larch',       False, 'larch_xrd1d') )
@@ -113,13 +113,15 @@ def run_gse_dtcorrect():
     install_extras(extras_epics)
     DTViewer().MainLoop()
 
-def run_xas_viewer():
-    """XAS Viewer """
+def run_larix():
+    """Larix (was XAS Viewer)"""
     set_locale()
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
-    kwargs = make_cli(description="Larch's XAS Viewer and Analysis Program")
+    kwargs = make_cli(description=LARIX_TITLE)
     XASViewer(check_version=True, **kwargs).MainLoop()
+
+run_xas_viewer = run_larix
 
 def run_larch_xrf():
     """ XRF Display"""

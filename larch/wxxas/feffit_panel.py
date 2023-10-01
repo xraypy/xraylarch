@@ -1542,14 +1542,7 @@ class FeffitPanel(TaskPanel):
 
     def autosave_script(self, text, fname='feffit_script.lar'):
         """autosave model result to user larch folder"""
-        confdir = os.path.join(site_config.user_larchdir, 'xas_viewer')
-        mkdir(confdir)
-        if not os.path.exists(confdir):
-            title = "Cannot create XAS Viewer folder"
-            message = [f"Cannot create directory {confdir}"]
-            ExceptionPopup(self, title, message)
-            return
-
+        confdir = self.controller.larix_folder
         if fname is None:
             fname = 'feffit_script.lar'
         fullname = os.path.join(confdir, fname)

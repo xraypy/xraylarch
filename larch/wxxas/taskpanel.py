@@ -349,7 +349,7 @@ class TaskPanel(wx.Panel):
         if dgroup is None:
             dgroup = self.controller.get_group()
         if not hasattr(dgroup, 'config'):
-            dgroup.config = Group(__name__='xas_viewer config')
+            dgroup.config = Group(__name__='Larix config')
         conf = getattr(dgroup.config, self.configname, None)
         defconf = self.get_defaultconfig()
         if conf is None:

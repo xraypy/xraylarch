@@ -1550,13 +1550,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
 
     def autosave_modelresult(self, result, fname=None):
         """autosave model result to user larch folder"""
-        confdir = os.path.join(site_config.user_larchdir, 'xas_viewer')
-        mkdir(confdir)
-        if not os.path.exists(confdir):
-            title = "Cannot create XAS Viewer folder"
-            message = [f"Cannot create directory {confdir}"]
-            ExceptionPopup(self, title, message)
-            return
+        confdir = self.controller.larix_folder
         if fname is None:
             fname = 'autosave_peakfile.modl'
         save_groups(os.path.join(confdir, fname), ['#peakfit 1.0', result])

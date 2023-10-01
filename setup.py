@@ -90,8 +90,6 @@ for required, modname, impname, minver, desc in modules:
 
 ## For Travis-CI, need to write a local site config file
 ##
-if os.environ.get('TRAVIS_CI_TEST', '0') == '1':
-    time.sleep(0.2)
 
 pjoin = os.path.join
 pexists = os.path.exists
@@ -106,7 +104,7 @@ if uname == 'win':
     larchbin = 'larch-script.py'
 
 # list of top level scripts to add to Python's bin/
-scripts = ['larch', 'larch_server', 'feff6l', 'feff8l', 'xas_viewer',
+scripts = ['larch', 'larch_server', 'feff6l', 'feff8l', 'xas_viewer', 'larix',
            'gse_mapviewer', 'larch_xrf', 'epics_xrf', 'larch_xrd1d']
 
 larch_apps = ['{0:s} = larch.apps:run_{0:s}'.format(n) for n in scripts]

@@ -6,7 +6,8 @@ from larch.utils.physical_constants import ATOM_SYMS
 
 ATSYMS = ['?'] + ATOM_SYMS[:98]
 EDGES  = ['K', 'L3', 'L2', 'L1', 'M5', 'M4', 'M3', 'N7']
-CONF_FILE = 'xas_viewer.conf'
+OLDCONF_FILE = 'xas_viewer.conf'
+CONF_FILE = 'larix.conf'
 
 wxmplot.config.Themes['fivethirtyeight'].update({'legend.fontsize': 10,
                                                  'xtick.labelsize': 9,
