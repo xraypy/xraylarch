@@ -59,8 +59,8 @@ if another spectrum is also explained well by those principal components,
 and so "fits in" with the starting collecion of data.  This is admittedly
 limited knowledge, but can be very useful in enabling further analysis.
 
-These three approaches are exposed in the XAS Viewer application
-(:ref:`xasviewer_app`), and the documentation here largely reflects the
+These three approaches are exposed in the Larix application
+(:ref:`larix_app`), and the documentation here largely reflects the
 operations done there.
 
 But first a note for all XANES analysis.  All these methods rely on
@@ -92,7 +92,7 @@ pre-edge peak fitting.  These challenges include
    coincident.
 
 The XAS Viewer application helps with each of the tasks, and it is highly
-recommended that you start with this GUI.  See :ref:`xasviewer_preedge`.
+recommended that you start with this GUI.  See :ref:`larix_preedge`.
 
 
 

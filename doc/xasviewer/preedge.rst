@@ -6,13 +6,13 @@
     :width: 18pt
     :height: 18pt
 
-.. _xasviewer_peakfit:
+.. _larix_peakfit:
 
 Pre-edge peak fitting
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-The "Pre-edge Peak Fit" tab (show in :numref:`fig_xasviewer_3a`) provides a
+The "Pre-edge Peak Fit" tab (show in :numref:`fig_larix_3a`) provides a
 form for fitting pre-edge peaks to line shapes such as Gaussian, Lorentzian,
 or Voigt functions.  This provides an easy-to-use wrapper around `lmfit`_
 and the :func:`minimize` function for curve-fitting with the ability to
@@ -29,7 +29,7 @@ underneath the pre-edge peaks.
 Fitting the baseline requires identifying energy ranges for both the main
 spectrum to be fitted and the pre-edge peaks -- the part of the spectrum
 which should be ignored when fitting the baseline.  This is illustrated in
-:numref:`fig_xasviewer_3a` and :numref:`fig_xasviewer_3b`.  Note that there
+:numref:`fig_larix_3a` and :numref:`fig_larix_3b`.  Note that there
 are separate ranges for the "fit range" and the "pre-edge peak" range
 (illustrated with grey lines and blue circles on the plot).  The "pre-edge
 peak" range should be inside the fit range so that the baseline can fit
@@ -45,21 +45,21 @@ transferred to any of the bounds energy using the corresponding pin icon
 
 .. subfigstart::
 
-.. _fig_xasviewer_3a:
+.. _fig_larix_3a:
 
-.. figure:: ../_images/XASViewer_prepeaks_baseline_form.png
-    :target: ../_images/XASViewer_prepeaks_baseline_form.png
+.. figure:: ../_images/Larix_prepeaks_baseline_form.png
+    :target: ../_images/Larix_prepeaks_baseline_form.png
     :width: 70%
     :align: center
 
-    Pre-edge peak Panel of XASViewer, showing how select regions of
+    Pre-edge peak Panel of Larix, showing how select regions of
     pre-edge peaks for fitting a baseline.
 
 
-.. _fig_xasviewer_3b:
+.. _fig_larix_3b:
 
-.. figure:: ../_images/XASViewer_prepeaks_baseline_plot.png
-    :target: ../_images/XASViewer_prepeaks_baseline_plot.png
+.. figure:: ../_images/Larix_prepeaks_baseline_plot.png
+    :target: ../_images/Larix_prepeaks_baseline_plot.png
     :width: 60%
     :align: center
 
@@ -70,7 +70,7 @@ transferred to any of the bounds energy using the corresponding pin icon
 
 .. subfigend::
     :width: 0.45
-    :label: fig-xasviewer3
+    :label: fig-larix3
 
 
 We will allow the baseline to be refined when fitting the peaks, so it does
@@ -83,7 +83,7 @@ the baseline consists of a Lorentzian curve and a line, there will now be 3
 tabs for the 3 components of the pre-edge peak model.  The background peak
 and the background line will have tabs labeled `bp_` and `bl_`,
 respectively, and the added Gaussian curve will be labeled `gauss1_`, as
-shown in :numref:`fig_xasviewer_4a`, which shows the form with 1 Gaussian
+shown in :numref:`fig_larix_4a`, which shows the form with 1 Gaussian
 peak, and the two-component baseline.  You can add more peaks by repeatedly
 selecting the peak type from the drop-down menu labeled *Add Component*.
 
@@ -101,9 +101,9 @@ parameter values by using the Bounds drop-down list (to select *positive*,
 After selecting a functional form for the peak, clicking on the "Pick
 Values from Data" button, and then clicking two points on the plot near the
 peak of interest will fill in the form with initial values for the
-parameters for that peak.  This is shown in :numref:`fig_xasviewer_4a`
+parameters for that peak.  This is shown in :numref:`fig_larix_4a`
 which has values filled in from the "two click method", and in
-:numref:`fig_xasviewer_4b` which shows the initial Gaussian peak.  The
+:numref:`fig_larix_4b` which shows the initial Gaussian peak.  The
 points you pick do not have to be very accurate, and the initial values
 selected for the `amplitude`, `center`, and `sigma` parameters can be
 modified.  You can also set bounds on any of these parameters -- it is
@@ -115,21 +115,21 @@ don't try to exchange.
 
 .. subfigstart::
 
-.. _fig_xasviewer_4a:
+.. _fig_larix_4a:
 
-.. figure:: ../_images/XASViewer_prepeaks_1gaussian_form.png
-    :target: ../_images/XASViewer_prepeaks_1gaussian_form.png
+.. figure:: ../_images/Larix_prepeaks_1gaussian_form.png
+    :target: ../_images/Larix_prepeaks_1gaussian_form.png
     :width: 100%
     :align: center
 
-    Pre-edge peak Window of XASViewer, showing 3 components of a Gaussian
+    Pre-edge peak Window of Larix, showing 3 components of a Gaussian
     and a baseline that includes a line and Lorentzian.
 
 
-.. _fig_xasviewer_4b:
+.. _fig_larix_4b:
 
-.. figure:: ../_images/XASViewer_prepeaks_1gaussian_plot.png
-    :target: ../_images/XASViewer_prepeaks_1gaussian_plot.png
+.. figure:: ../_images/Larix_prepeaks_1gaussian_plot.png
+    :target: ../_images/Larix_prepeaks_1gaussian_plot.png
     :width: 60%
     :align: center
 
@@ -138,12 +138,12 @@ don't try to exchange.
 
 .. subfigend::
     :width: 0.45
-    :label: fig-xasviewer4
+    :label: fig-larix4
 
 Once the model function is defined and initial parameters values set,
 clicking the Fit Model button will perform the fit. This will bring up
-a Fit Result form shown in :numref:`fig_xasviewer_5a` and an
-initial plot of the data and fit as shown in :numref:`fig_xasviewer_5b`.
+a Fit Result form shown in :numref:`fig_larix_5a` and an
+initial plot of the data and fit as shown in :numref:`fig_larix_5b`.
 
 The Fit Result panel contains goodness-of-fit statistics and parameter
 values and uncertainties (or standard error).  At the top portion of the
@@ -167,19 +167,19 @@ pre-edge peaks.
 
 .. subfigstart::
 
-.. _fig_xasviewer_5a:
+.. _fig_larix_5a:
 
-.. figure:: ../_images/XASViewer_prepeaks_fitresult1_form.png
-    :target: ../_images/XASViewer_prepeaks_fitresult1_form.png
+.. figure:: ../_images/Larix_prepeaks_fitresult1_form.png
+    :target: ../_images/Larix_prepeaks_fitresult1_form.png
     :width: 75%
     :align: left
 
     Fit result frame for Pre-edge peak fit for a fit with 1 Gaussian.
 
-.. _fig_xasviewer_5b:
+.. _fig_larix_5b:
 
-.. figure:: ../_images/XASViewer_prepeaks_fitresult1_plot.png
-    :target: ../_images/XASViewer_prepeaks_fitresult1_plot.png
+.. figure:: ../_images/Larix_prepeaks_fitresult1_plot.png
+    :target: ../_images/Larix_prepeaks_fitresult1_plot.png
     :width: 60%
     :align: center
 
@@ -187,12 +187,12 @@ pre-edge peaks.
 
 .. subfigend::
     :width: 0.45
-    :label: fig-xasviewer5
+    :label: fig-larix5
 
 
-Though the plot of the fit in :numref:`fig_xasviewer_5b` does not look too
+Though the plot of the fit in :numref:`fig_larix_5b` does not look too
 bad, we can see the fit is not perfect. Checking the "Plot with residual?"
-box we get the plot in :numref:`fig_xasviewer_6` that shows the data and fit
+box we get the plot in :numref:`fig_larix_6` that shows the data and fit
 and also the residual.  From this, we can see systematic oscillations in
 the fit residual that is well above the noise level and suggests that
 another peak may be needed to explain this data.  This is not too
@@ -200,10 +200,10 @@ surprising here -- there are obviously two peaks in the pre-edge -- but it
 is does illustrate a useful way to determine when it is useful to add more
 peaks.
 
-.. _fig_xasviewer_6:
+.. _fig_larix_6:
 
-.. figure:: ../_images/XASViewer_prepeaks_fitresult1_residual_plot.png
-    :target: ../_images/XASViewer_prepeaks_fitresult1_residual_plot.png
+.. figure:: ../_images/Larix_prepeaks_fitresult1_residual_plot.png
+    :target: ../_images/Larix_prepeaks_fitresult1_residual_plot.png
     :width: 55%
     :align: center
 
@@ -214,23 +214,23 @@ Adding a second Gaussian (and maybe even a third) will greatly help this
 fit.  If we add another Gaussian peak component to the fit model using the
 drop-down menu of "Add component:", select initial values for that second
 Gaussian before, and re-run the fit, we'll see the Fit Results form and
-plot as shown in :numref:`fig_xasviewer_7a` and :numref:`fig_xasviewer_7b`.
+plot as shown in :numref:`fig_larix_7a` and :numref:`fig_larix_7b`.
 
 .. subfigstart::
 
-.. _fig_xasviewer_7a:
+.. _fig_larix_7a:
 
-.. figure:: ../_images/XASViewer_prepeaks_fitresult2_form.png
-    :target: ../_images/XASViewer_prepeaks_fitresult2_form.png
+.. figure:: ../_images/Larix_prepeaks_fitresult2_form.png
+    :target: ../_images/Larix_prepeaks_fitresult2_form.png
     :width: 95%
     :align: left
 
     Fit result frame for Pre-edge peak fit for a fit with 2 Gaussians.
 
-.. _fig_xasviewer_7b:
+.. _fig_larix_7b:
 
-.. figure:: ../_images/XASViewer_prepeaks_fitresult2_plot.png
-    :target: ../_images/XASViewer_prepeaks_fitresult2_plot.png
+.. figure:: ../_images/Larix_prepeaks_fitresult2_plot.png
+    :target: ../_images/Larix_prepeaks_fitresult2_plot.png
     :width: 95%
     :align: center
 
@@ -239,7 +239,7 @@ plot as shown in :numref:`fig_xasviewer_7a` and :numref:`fig_xasviewer_7b`.
 .. subfigend::
    :width: 0.48
    :alt: pre-edge peak results2
-   :label: fig_xasviewer_7
+   :label: fig_larix_7
 
 
 As mentioned above, fit results can be saved in two different ways, using
@@ -251,11 +251,11 @@ file that will include the text of the fit report and columns including
 data, best-fit, and each of the components of the model.
 
 To continue with the analysis of the data in this example,
-:numref:`fig_xasviewer_7b` shows that the fit residual still has
+:numref:`fig_larix_7b` shows that the fit residual still has
 significant structure, indicating that either another peak should be
 included or that the Gaussian peak shape is not a good model for these
 peaks.  In fact, using 2 Voigt functions significantly improves the fit, as
-shown in :numref:`fig_xasviewer_8a`, with reduced :math:`\chi^2` dropping
+shown in :numref:`fig_larix_8a`, with reduced :math:`\chi^2` dropping
 from 4.4e-6 to 3.2e-6 and similar improvements in the AIC and BIC
 statistics.  To do this, the two Gaussian peaks were deleted and two Voigt
 peaks added, with initial values selected with the "two click method".
@@ -263,9 +263,9 @@ peaks added, with initial values selected with the "two click method".
 The fit of the pre-edge peaks is visibly improved but a systematic
 variation in the residual is still seen at the high energy side of the
 pre-edge peaks.  Adding a third Voigt function at around 7117 eV improves
-the fit even more as shown in :numref:`fig_xasviewer_8b`.  As shown, the
+the fit even more as shown in :numref:`fig_larix_8b`.  As shown, the
 scale of the residual is now 0.001, ten times better than the scale of the
-fit with 1 peak shown in :numref:`fig_xasviewer_6`, and shows much less
+fit with 1 peak shown in :numref:`fig_larix_6`, and shows much less
 systematic structure.  In addition, all the fit statistics are improved
 despite now using 14 variables: reduced :math:`\chi^2` becomes from 5.1e-7,
 AIC is -1957 and BIC is -1917.
@@ -273,10 +273,10 @@ AIC is -1957 and BIC is -1917.
 
 .. subfigstart::
 
-.. _fig_xasviewer_8a:
+.. _fig_larix_8a:
 
-.. figure:: ../_images/XASViewer_prepeaks_fitresult3_plot.png
-    :target: ../_images/XASViewer_prepeaks_fitresult3_plot.png
+.. figure:: ../_images/Larix_prepeaks_fitresult3_plot.png
+    :target: ../_images/Larix_prepeaks_fitresult3_plot.png
     :width: 95%
     :align: left
 
@@ -284,10 +284,10 @@ AIC is -1957 and BIC is -1917.
     for a fit with 2 Voigt functions
     plus the baseline.
 
-.. _fig_xasviewer_8b:
+.. _fig_larix_8b:
 
-.. figure:: ../_images/XASViewer_prepeaks_fitresult4_plot.png
-    :target: ../_images/XASViewer_prepeaks_fitresult4_plot.png
+.. figure:: ../_images/Larix_prepeaks_fitresult4_plot.png
+    :target: ../_images/Larix_prepeaks_fitresult4_plot.png
     :width: 95%
     :align: center
 
@@ -297,10 +297,10 @@ AIC is -1957 and BIC is -1917.
 .. subfigend::
    :width: 0.48
    :alt: pre-edge peak results3
-   :label: fig_xasviewer_8
+   :label: fig_larix_8
 
 
-.. _xasviewer_lincombo:
+.. _larix_lincombo:
 
 Linear Combination Analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -313,7 +313,7 @@ spectral fit, one can then conclude what fraction of atomic environments
 correspond to those of each standard.  For this to work well, the XANES
 data needs to be normalized consistently.
 
-To use this in XAS Viewer, one selects a set of spectra for the "standards"
+To use this in Larix, one selects a set of spectra for the "standards"
 and "builds a model" from the selected groups for the standards, and then
 fits one or more spectra from unknown samples to get the fractional weight
 for each sample.  Options include:
@@ -323,35 +323,35 @@ for each sample.  Options include:
    * trying all combination of standards.
    * forcing all weights to add to 1.0
 
-.. _fig_xasviewer_9a:
+.. _fig_larix_9a:
 
-.. figure:: ../_images/XASViewer_LCF_main.png
-    :target: ../_images/XASViewer_LCF_main.png
+.. figure:: ../_images/Larix_LCF_main.png
+    :target: ../_images/Larix_LCF_main.png
     :width: 75%
     :align: center
 
     Linear Combination Fitting, main panel
 
-.. _fig_xasviewer_9b:
+.. _fig_larix_9b:
 
-.. figure:: ../_images/XASViewer_LCF_plot.png
-    :target: ../_images/XASViewer_LCF_plot.png
+.. figure:: ../_images/Larix_LCF_plot.png
+    :target: ../_images/Larix_LCF_plot.png
     :width: 75%
     :align: center
 
     Linear Combination Fitting, plot of result
 
-.. _fig_xasviewer_9c:
+.. _fig_larix_9c:
 
-.. figure:: ../_images/XASViewer_LCF_results.png
-    :target: ../_images/XASViewer_LCF_results.png
+.. figure:: ../_images/Larix_LCF_results.png
+    :target: ../_images/Larix_LCF_results.png
     :width: 75%
     :align: center
 
     Linear Combination Fitting, results panel
 
 
-.. _xasviewer_pca:
+.. _larix_pca:
 
 Principal Component and Non-negative Factor Analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -375,28 +375,28 @@ the results of PCA to ask::
     is this *other* spectrum made up of the same components as make up my collection?
 
 
-.. _fig_xasviewer_10a:
+.. _fig_larix_10a:
 
-.. figure:: ../_images/XASViewer_PCAmain_page.png
-    :target: ../_images/XASViewer_PCAmain_page.png
+.. figure:: ../_images/Larix_PCAmain_page.png
+    :target: ../_images/Larix_PCAmain_page.png
     :width: 75%
     :align: center
 
     Principal Component Analysis, main panel
 
-.. _fig_xasviewer_10b:
+.. _fig_larix_10b:
 
-.. figure:: ../_images/XASViewer_PCA_compplot.png
-    :target: ../_images/XASViewer_PCA_compplot.png
+.. figure:: ../_images/Larix_PCA_compplot.png
+    :target: ../_images/Larix_PCA_compplot.png
     :width: 75%
     :align: center
 
     Principal Component Analysis, Plot of spectral components.
 
-.. _fig_xasviewer_10c:
+.. _fig_larix_10c:
 
-.. figure:: ../_images/XASViewer_PCA_screeplot.png
-    :target: ../_images/XASViewer_PCA_screeplot.png
+.. figure:: ../_images/Larix_PCA_screeplot.png
+    :target: ../_images/Larix_PCA_screeplot.png
     :width: 75%
     :align: center
 
@@ -404,10 +404,10 @@ the results of PCA to ask::
     of the importance of each component.
 
 
-.. _fig_xasviewer_10d:
+.. _fig_larix_10d:
 
-.. figure:: ../_images/XASViewer_PCA_targetplot.png
-    :target: ../_images/XASViewer_PCA_targetplot.png
+.. figure:: ../_images/Larix_PCA_targetplot.png
+    :target: ../_images/Larix_PCA_targetplot.png
     :width: 75%
     :align: center
 
@@ -415,7 +415,7 @@ the results of PCA to ask::
     components to best match an unknown spectra.
 
 
-.. _xasviewer_regression:
+.. _larix_regression:
 
 
 Linear Regression with LASSO and PLS to predict external variable
@@ -423,20 +423,20 @@ Linear Regression with LASSO and PLS to predict external variable
 
 
 
-.. _xasviewer_exafs_bkg:
+.. _larix_exafs_bkg:
 
 
 EXAFS Processing: Background Subtraction
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. _xasviewer_exafs_fft:
+.. _larix_exafs_fft:
 
 
 EXAFS Processing:  Fourier Transforms
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-.. _xasviewer_feffit:
+.. _larix_feffit:
 
 Fitting EXAFS data to Feff Paths
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

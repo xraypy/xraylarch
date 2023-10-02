@@ -10,7 +10,7 @@ Other Larch GUIs
 .. module:: guis
    :synopsis: Graphical User Interfaces
 
-In addition to :ref:`XAS Viewer <xasviewer_app>`, Larch provides a few
+In addition to :ref:`Larix <larix_app>`, Larch provides a few
 other Graphical User Interfaces for manipulating, viewing, and processing
 of X-ray spectroscopy, scattering, and imaging data.  Many of the GUI
 displays are interrelated, so that they can bring up the other windows for
