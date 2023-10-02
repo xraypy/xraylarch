@@ -27,9 +27,10 @@ used by the broader X-ray, scientific, and programming communities.
 
 There are a few GUI applications written using Larch.  These provide
 user-friendly and interactiv data visualization and analysis tasks for many
-common X-ray analysis tasks.  The most notable of these are :ref:`XAS
-Viewer <xasviewer_app>`, :ref:`GSE Map Viewer <mapviewer_app>`, and
-:ref:`XRF Viewer <xrfviewer_app>` as described in more detail below.
+common X-ray analysis tasks.  The most notable of these are :ref:`Larix
+<larix_app>` (formerly XAS Viewer), :ref:`GSE Map Viewer <mapviewer_app>`, and
+:ref:`Larch XRF <larchxrf_app>` (formerly XRF Viewer) as described in more
+detail below.
 
 In addition to being used as a Python library or from the user-friendly GUI
 applications built, Larch also provides a Python-like macro language - the
@@ -44,18 +45,18 @@ important part of the Larch suite, and can be viewed as the bridge between
 using the GUIs for fully interactive, non-coding analysis, and writing
 batch-processing analysis scripts.
 
-Most of the GUIs (notably, :ref:`XAS Viewer <xasviewer_app>`) work by
-generating and executing this "Larch code", with all of the real work done
-through this macro language.  This allows for self-documented and reproducible
-analysis sessions, and facilitates transitioning from GUI-only analyses to
-scripting, batch processing, and programmatic analysis of larger data sets.
-That is, with a few simple changes and added boilerplate code, the Larch macro
-code saved from a GUI session becomes a Python program.  This macro language
-also allows Larch to be run as a background service so that other processes can
-use Larch as the analysis engine.  The popular `Demeter`_ XAFS application
-suite can use Larch in this way, though the :ref:`XAS Viewer <xasviewer_app>`
-now contains almost all of the features of `Demeter`_ and is much more actively
-being developed and maintained.
+Most of the GUIs (notably, :ref:`Larix <larix_app>`) work by generating and
+executing this "Larch code", with all of the real work done through this macro
+language.  This allows for self-documented and reproducible analysis sessions,
+and facilitates transitioning from GUI-only analyses to scripting, batch
+processing, and programmatic analysis of larger data sets.  That is, with a
+few simple changes and added boilerplate code, the Larch macro code saved from
+a GUI session becomes a Python program.  This macro language also allows Larch
+to be run as a background service so that other processes can use Larch as the
+analysis engine.  The popular `Demeter`_ XAFS application suite can use Larch
+in this way, though the :ref:`Larix <larix_app>` now contains almost all of
+the features of `Demeter`_ and is much more actively being developed and
+maintained.
 
 Larch is distribute under an open-source license that is nearly identical to
 the BSD license.  It is under active and open development centered at the
@@ -80,8 +81,9 @@ by the National Science Foundation - Advanced CyberInfrastructure
   +---------------------------------------+------------+---------------------------------------------------------+
   | Application Name                      | GUI/CLI    | Description                                             |
   +=======================================+============+=========================================================+
-  | :ref:`XAS Viewer <xasviewer_app>`     | GUI        | XAFS Processing and Analysis: XANES pre-edge peak       |
-  |                                       |            | fitting, linear analysis, PCA/LASSO, EXAFS extraction   |
+  | :ref:`Larix <larix_app>`              | GUI        | XAFS Processing and Analysis: XANES pre-edge peak       |
+  | (formerly called XAS Viewer)          |            | fitting, linear analysis, PCA/LASSO, EXAFS background   |
+  |                                       |            | subtraction, running Feff, EXAFS Feff-fitting           |
   +---------------------------------------+------------+---------------------------------------------------------+
   | :ref:`larch <larchcli_app>`           | CLI        | simple shell command-line interface                     |
   +---------------------------------------+------------+---------------------------------------------------------+
@@ -89,13 +91,13 @@ by the National Science Foundation - Advanced CyberInfrastructure
   +---------------------------------------+------------+---------------------------------------------------------+
   | :ref:`GSE Map Viewer <mapviewer_app>` | GUI        | XRF Map Viewer for GSECARS X-ray microprobe data.       |
   +---------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`XRF Viewer <xrfviewer_app>`     | GUI        | Display and Analyze XRF Spectra.                        |
+  | :ref:`Larch_XRF <larchxrf_app>`       | GUI        | Display and Analyze XRF Spectra.                        |
+  +---------------------------------------+------------+---------------------------------------------------------+
+  | :ref:`larch_xrd1d <larchxrd1d_app>`   | GUI        | Display and work with 1-D XRD patterns                  |
   +---------------------------------------+------------+---------------------------------------------------------+
   | :ref:`feff6l <feff6l_app>`            | CLI        | Feff 6 EXAFS calculations                               |
   +---------------------------------------+------------+---------------------------------------------------------+
   | :ref:`feff8l <feff8l_app>`            | CLI        | Feff 8 EXAFS calculations (no XANES)                    |
-  +---------------------------------------+------------+---------------------------------------------------------+
-  | 1D XRD Viewer                         | GUI `beta` | Display and work with 1-D XRD patterns                  |
   +---------------------------------------+------------+---------------------------------------------------------+
   | 2D XRD Viewer                         | GUI `beta` | Display  XRD images                                     |
   +---------------------------------------+------------+---------------------------------------------------------+

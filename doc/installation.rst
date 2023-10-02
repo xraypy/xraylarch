@@ -19,10 +19,10 @@ Downloading and Installation
 .. _GetLarch.bat:                  https://raw.githubusercontent.com/xraypy/xraylarch/master/installers/GetLarch.bat
 .. _Larch Binary Installers:       https://millenia.cars.aps.anl.gov/xraylarch/downloads
 .. _source code:                   https://github.com/xraypy/xraylarch/releases/latest
-.. _Larch for Windows:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2022-04-Windows-x86_64.exe
-.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2022-04-MacOSX-x86_64.pkg
-.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2022-04-Linux-x86_64.sh
-.. _Docs and Examples:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2022-04_docs-examples.zip
+.. _Larch for Windows:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2023-10-Windows-x86_64.exe
+.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2023-10-MacOSX-x86_64.pkg
+.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2023-10-Linux-x86_64.sh
+.. _Docs and Examples:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2023-10_docs-examples.zip
 
 .. _Ifeffit Mailing List: https://millenia.cars.aps.anl.gov/mailman/listinfo/ifeffit/
 .. _Demeter: https://bruceravel.github.io/demeter/
@@ -40,7 +40,7 @@ There are three ways to install Larch. Which of these is right for you will
 depend on your operating system and your familiarity with the Python
 programming language and environment:
 
-   1. :ref:`install-binary`.  Use these to get started with XAS Viewer or
+   1. :ref:`install-binary`.  Use these to get started with Larix or
       other Larch GUI applications, or if you are not familiar with Python.
    2. :ref:`install-scripts`. Use these if your comfortable with the
       command-line or want to customize your installation.
@@ -72,7 +72,7 @@ Installing from a Binary installers
   +---------------------+------------------------+-----------------------------+
 
 Binary installers for Windows and macOSX are available at `Larch Binary
-Installers`_.  These are fairly large (400 to 600 Mb files) self-contained
+Installers`_.  These are fairly large (more that 500 Mb files) self-contained
 files that will install a complete Anaconda Python environment with all of
 libraries needed by Larch.  Normally, this installation will create a folder
 called `xraylarch` in your home folder -- see platform-specific notes below.
@@ -127,8 +127,7 @@ package, with a result that is nearly identical to the binary installer.
 MacOS Notes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-For Mac OS, download the `Larch for MacOSX`_ package installer above and click
+For MacOS, download the `Larch for MacOSX`_ package installer above and click
 it to install Larch.  There are two important notes:
 
 .. note::
@@ -246,7 +245,7 @@ infrastructure and then install xraylarch with pip:
 
 .. code:: bash
 
-   conda create -y --name xraylarch python=>3.10
+   conda create -y --name xraylarch python=>3.11.5
    conda activate xraylarch
    conda install -y -c conda-forge wxpython pymatgen scipy h5py matplotlib
    conda install -y -c conda-forge openbabel tomopy epicsapps    # <- optional packages
@@ -282,13 +281,14 @@ version.
 
 .. note::
 
-   Automatic updates using XAS Viewer have been unreliable for a long time,
-   and can cause a non-working system, especially on Windows.
+   Automatic updates using Larix (was XAS Viewer) have been unreliable for a
+   long time, and can cause a non-working system, especially on Windows.
 
 
-With version 0.9.70,these notifications about updates are now informational
-and do not prompt for an immediate update. In addition, there is now a desktop
-shortcut called "Larch Updater" which will run the update `pip` command above.
+With version 0.9.70 and later, these notifications about updates are now
+informational and do not prompt for an immediate update. In addition, there is
+now a desktop shortcut called "Larch Updater" which will run the update `pip`
+command above.
 
 
 Installing the development version
@@ -364,9 +364,9 @@ install from a binary installer with `pip install xraylarch`.
 Getting Help
 ============================
 
-For questions about using or installing Larch, please use the `Ifeffit Mailing List`_.
-
-For reporting bugs or working with the development process, please submit an issue at the `Larch Github Pages`_.
+For questions about using or installing Larch, please use the `Ifeffit Mailing
+List`_.  For reporting bugs or working with the development process, please
+submit an issue at the `Larch Github Pages`_.
 
 .. _install-exa:
 
@@ -425,7 +425,7 @@ python implementation.  Yong Choi wrote the code for X-ray standing wave
 and reflectivity analysis and graciously allowed it to be included and
 modified for Larch.  Tony Lanzirotti and Steve Sutton have provided
 wonderful and patient feedback on many parts of Larch, especially for XANES
-processing and testing of the XAS Viewer GUI.
+processing and testing of the Larix GUI.
 
 Because Larch began as a rewrite of the Ifeffit XAFS Analysis Package, it
 also references and builds on quite a bit of code developed for XAFS over
