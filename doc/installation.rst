@@ -70,8 +70,10 @@ Installing from a Binary installers
   +---------------------+------------------------+-----------------------------+
   | macOSX  (64 bit)    | `Larch for MacOSX`_    | :ref:`Notes <install-mac>`  |
   +---------------------+------------------------+-----------------------------+
+  | Linux  (64 bit)     | `Larch for Linux`_     | :ref:`Notes <install-lin>`  |
+  +---------------------+------------------------+-----------------------------+
 
-Binary installers for Windows and macOSX are available at `Larch Binary
+Binary installers for Windows, macOSX, and Linux are available at `Larch Binary
 Installers`_.  These are fairly large (more that 500 Mb files) self-contained
 files that will install a complete Anaconda Python environment with all of
 libraries needed by Larch.  Normally, this installation will create a folder
