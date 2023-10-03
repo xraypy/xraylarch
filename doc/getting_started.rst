@@ -1,4 +1,6 @@
-.. _`Larch For XAFS Analysis (youtube.com)`:   https://youtube.com/playlist?list=PLgNIl_xwV_vK4V6CmrsEsahNCAsjt8_Be
+.. _Larch For XAFS Analysis (youtube.com): https://youtube.com/playlist?list=PLgNIl_xwV_vK4V6CmrsEsahNCAsjt8_Be
+
+
 ==================================================
 Getting Started with Larch
 ==================================================

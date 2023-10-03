@@ -210,9 +210,6 @@ Builtin functions inherited from Python
     Return whether the object is callable (i.e., some kind of function).
     Note that classes are callable, as are instances with a __call__() method.
 
-.. function:: cd(directory)
-
-    change directory to specified directory
 
 .. function:: chr(i)
 
@@ -285,10 +282,6 @@ Builtin functions inherited from Python
 .. function:: frozenset(iterable)
 
    create frozenset: an immutable unordered collection of unique elements.
-
-.. function:: get(object)
-
-    get object from symbol table from symbol name
 
 .. function:: getattr(object, name[, default])
 

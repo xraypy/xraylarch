@@ -17,13 +17,20 @@ displays are interrelated, so that they can bring up the other windows for
 displaying, interacting, and processing data.  These include
 
 
+  * :ref:`Larch_XRF <larchxrf_app>`: A GUI for displaying and analyzing X-ray
+    fluorescence spectra.
+
+  * :ref:`Larch_XRD1D <larchxrd1d_app>`: A GUI for displaying and analyzing
+    X-ray Diffraction patterns, integrating XRD images to 1D XRD patterns, and
+    comparing 1D XRD patterns to known crystal structures from CIF files.
+
+  * :ref:`GSE_Mapviewer <mapviewer_app>`: visualization and Analysis of XRF and XRD maps.
+
   * :ref:`larch_gui <larchgui_app>`: simple command-line + data browser for
     Larch.  This is used by other Larch GUIs as **the command-line
     buffer**, and can be used to interact with all the raw data within the
     application.
 
-
-  * :ref:`GSE_Mapviewer <mapviewer_app>`: visualization and Analysis of XRF and XRD maps.
 
 .. _larchcli_app:
 
