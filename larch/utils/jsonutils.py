@@ -162,7 +162,7 @@ def encode4js(obj):
             for item in dir(obj):
                 out[item] = encode4js(getattr(obj, item))
         return out
-    elif hasattr(obj, '__getstate__'):
+    elif hasattr(obj, '__getstate__') and not callable(obj):
         return {'__class__': 'StatefulObject',
                 '__type__': obj.__class__.__name__,
                 'value': encode4js(obj.__getstate__())}
