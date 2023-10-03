@@ -37,7 +37,7 @@ IMG_DISPLAYS = {}
 PLOT_DISPLAYS = {}
 FITPLOT_DISPLAYS = {}
 XRF_DISPLAYS = {}
-
+DISPLAY_LIMITS = None
 PLOTOPTS = {'theme': 'light',
             'height': 550,
             'width': 600,
@@ -271,6 +271,17 @@ def get_display(win=1, _larch=None, wxparent=None, size=None,
         except:
             pass
 
+        global DISPLAY_LIMITS
+        if DISPLAY_LIMITS is None:
+            displays = [wx.Display(i) for i in range(wx.Display.GetCount())]
+            geoms = [d.GetGeometry() for d in displays]
+            _left = min([g.Left for g in geoms])
+            _right = max([g.Right for g in geoms])
+            _top = min([g.Top for g in geoms])
+            _bot = max([g.Bottom for g in geoms])
+            DISPLAY_LIMITS = [_left, _right, _top, _bot]
+            
+        
     win = max(1, min(MAX_WINDOWS, int(abs(win))))
     title   = 'Plot Window %i' % win
     symname = '%s.plot%i' % (_larch_name, win)
@@ -326,10 +337,14 @@ def get_display(win=1, _larch=None, wxparent=None, size=None,
                               size=size, _larch=_larch)
             new_display = True
             parent = wx.GetApp().GetTopWindow()
+
             if parent is not None:
                 xpos, ypos = parent.GetPosition()
                 xsiz, ysiz = parent.GetSize()
-                display.SetPosition((xpos+(xsiz//4)*win, ypos+(ysiz//8)*win))
+                dlims = DISPLAY_LIMITS
+                x = min(dlims[1]-width*0.7, max(dlims[0]+5, xpos+xsiz*(0.65+0.35*win)))
+                y = min(dlims[3]-height*0.7, max(dlims[2]+5, ypos-ysiz*0.05*(win-1)))
+                display.SetPosition((int(x), int(y)))
 
         ddict[win] = display
         return display, new_display

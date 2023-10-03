@@ -299,15 +299,15 @@ class XASFrame(wx.Frame):
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
         self.Show()
-        plotframe = self.controller.get_display(stacked=False)
-        xpos, ypos = self.GetPosition()
-        xsiz, ysiz = self.GetSize()
-        plotframe.SetPosition((xpos+xsiz+5, ypos))
 
         self.Raise()
         self.statusbar.SetStatusText('ready', 1)
         self.timers['autosave'].Start(30_000)
 
+        plotframe = self.controller.get_display(stacked=False)
+        xpos, ypos = self.GetPosition()
+        xsiz, ysiz = self.GetSize()
+        wx.CallAfter(plotframe.SetPosition, (xpos+xsiz+2, ypos))
         if self.current_filename is not None:
             wx.CallAfter(self.onRead, self.current_filename)
 
