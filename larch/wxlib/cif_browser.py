@@ -537,7 +537,7 @@ class CIFFrame(wx.Frame):
         fname = self.wids['feff_runfolder'].GetValue()
         fname = unique_name(fix_filename(fname), self.feffruns_list)
         self.feffruns_list.append(fname)
-        self.folder = unixpath(os.path.join(self.feff_folder, fname))
+        self.folder = folder = unixpath(os.path.join(self.feff_folder, fname))
         mkdir(self.folder)
         ix, p = self.get_nbpage('Feff Output')
         self.nb.SetSelection(ix)
@@ -561,6 +561,7 @@ class CIFFrame(wx.Frame):
         wx.CallAfter(self.run_feff, folder, version8=version8)
 
     def run_feff(self, folder=None, version8=True):
+        print("RUN FEFF ", folder)
         _, dname = os.path.split(folder)
         prog, cmd = feff8l, 'feff8l'
         if not version8:
