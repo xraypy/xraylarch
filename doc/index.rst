@@ -76,29 +76,22 @@ by the National Science Foundation - Advanced CyberInfrastructure
     by the `Feff Project`_, and included with Larch by permission and with
     license to redistrubute.
 
-  +--------------------------------------------+------------+---------------------------------------------------------+
-  | Application Name                           | GUI/CLI    | Description                                             |
-  +============================================+============+=========================================================+
-  | :ref:`Larix <larix_app>` (XAS Viewer)      | GUI        | XAFS Processing and Analysis: XANES pre-edge peak       |
-  |                                            |            | fitting, linear analysis, PCA/LASSO, EXAFS background   |
-  |                                            |            | subtraction, running Feff, EXAFS Feff-fitting           |
-  +--------------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`larch <larchcli_app>`                | CLI        | simple shell command-line interface                     |
-  +--------------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`Larch GUI <larchgui_app>`            | GUI        | enhanced command-line interface with data browser       |
-  +--------------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`GSE Map Viewer <mapviewer_app>`      | GUI        | XRF Map Viewer for GSECARS X-ray microprobe data.       |
-  +--------------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`Larch_XRF <larchxrf_app>`            | GUI        | Display and Analyze XRF Spectra.                        |
-  +--------------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`Larch_XRD1D <larchxrd1d_app>`        | GUI        | Display and work with 1-D XRD patterns                  |
-  +--------------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`feff6l <feff6l_app>`                 | CLI        | Feff 6 EXAFS calculations                               |
-  +--------------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`feff8l <feff8l_app>`                 | CLI        | Feff 8 EXAFS calculations (no XANES)                    |
-  +--------------------------------------------+------------+---------------------------------------------------------+
-  | qtrixs                                     | GUI `beta` | Display RIXS planes, take profiles                      |
-  +--------------------------------------------+------------+---------------------------------------------------------+
+.. csv-table::
+    :delim: |
+    :header-rows: 1
+    :widths: 20 15 65
+
+    Application Name                           | GUI/CLI    | Description
+    :ref:`Larix <larix_app>` (was XAS Viewer)  | GUI        | XAFS Processing and Analysis: XANES pre-edge peak fitting, linear analysis, PCA/LASSO, EXAFS background subtraction, running Feff, EXAFS Feff-fitting
+    :ref:`larch <larchcli_app>`                | CLI        | simple shell command-line interface
+    :ref:`Larch GUI <larchgui_app>`            | GUI        | enhanced command-line interface with data browser
+    :ref:`GSE Map Viewer <mapviewer_app>`      | GUI        | XRF Map Viewer for GSECARS X-ray microprobe data.
+    :ref:`Larch_XRF <larchxrf_app>`            | GUI        | Display and Analyze XRF Spectra.
+    :ref:`Larch_XRD1D <larchxrd1d_app>`        | GUI        | Display and work with 1-D XRD patterns
+    :ref:`feff6l <feff6l_app>`                 | CLI        | Feff 6 EXAFS calculations
+    :ref:`feff8l <feff8l_app>`                 | CLI        | Feff 8 EXAFS calculations (no XANES)
+    qtrixs                                     | GUI `beta` | Display RIXS planes, take profiles
+
 
 .. _contents:
 
