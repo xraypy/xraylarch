@@ -259,7 +259,7 @@ class FeffitDataSet(Group):
         if data is not None:
             dat_attrs.extend(dir(data))
         for attr in dat_attrs:
-            if not hasattr(self.data, attr):
+            if attr not in ('feffit_history',) and not hasattr(self.data, attr):
                 setattr(self.data, attr, getattr(data, attr, None))
 
         if transform is None:
