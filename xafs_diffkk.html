@@ -1,18 +1,18 @@
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>13.9. XAFS: Computing anomalous scattering factors from XAFS data &#8212; xraylarch 0.9.71 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
+    <title>13.9. XAFS: Computing anomalous scattering factors from XAFS data &#8212; xraylarch 0.9.72 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/documentation_options.js?v=3e9ad74a"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
@@ -123,11 +123,11 @@
           <div class="body" role="main">
             
   <section id="xafs-computing-anomalous-scattering-factors-from-xafs-data">
-<span id="xafs-diffkk-sec"></span><h1><span class="section-number">13.9. </span>XAFS: Computing anomalous scattering factors from XAFS data<a class="headerlink" href="#xafs-computing-anomalous-scattering-factors-from-xafs-data" title="Permalink to this heading">¶</a></h1>
+<span id="xafs-diffkk-sec"></span><h1><span class="section-number">13.9. </span>XAFS: Computing anomalous scattering factors from XAFS data<a class="headerlink" href="#xafs-computing-anomalous-scattering-factors-from-xafs-data" title="Link to this heading">¶</a></h1>
 <p>An input XAFS spectra is used to generate energy-dependent, anomalous
 scattering factors.  This is used to improve upon the bare atom
-anomalous scattering factors of <span id="id1">[<a class="reference internal" href="bibliography.html#id45" title="D. T. Cromer and D. A. Liberman. Anomalous dispersion calculations near to and on the long-wavelength side of an absorption-edge. Acta Crystallographica A, 37:267–268, 1981. doi:10.1107/S0567739481000600.">Cromer and Liberman (1981)</a>]</span>,
-<span id="id2">[<a class="reference internal" href="bibliography.html#id47" title="C. T. Chanter. Detailed tabulation of atomic form factors, photoelectric absorption and scattering cross section, and mass attenuation coefficients in the vicinity of absorption edges in the soft X-ray (Z=30-36, Z=60-89, E=0.1 keV-10 keV), addressing convergence issues of earlier work. Journal of Physical and Chemical Reference Data, 29(4):597–1048, JUL-AUG 2000. doi:10.1063/1.1321055.">Chanter (2000)</a>]</span>, and others near the absorption edge.</p>
+anomalous scattering factors of <span id="id1">[<a class="reference internal" href="bibliography.html#id47" title="D. T. Cromer and D. A. Liberman. Anomalous dispersion calculations near to and on the long-wavelength side of an absorption-edge. Acta Crystallographica A, 37:267–268, 1981. doi:10.1107/S0567739481000600.">Cromer and Liberman (1981)</a>]</span>,
+<span id="id2">[<a class="reference internal" href="bibliography.html#id49" title="C. T. Chanter. Detailed tabulation of atomic form factors, photoelectric absorption and scattering cross section, and mass attenuation coefficients in the vicinity of absorption edges in the soft X-ray (Z=30-36, Z=60-89, E=0.1 keV-10 keV), addressing convergence issues of earlier work. Journal of Physical and Chemical Reference Data, 29(4):597–1048, JUL-AUG 2000. doi:10.1063/1.1321055.">Chanter (2000)</a>]</span>, and others near the absorption edge.</p>
 <p>Since XAFS is sensitive to the atomic environment of the resonant atom
 (through the variations of the absorption coefficient), the scattering
 factors from the differential KK transform will also be sensitive to
@@ -139,19 +139,19 @@ fixed-q absorption experiments, such diffraction anomalous
 fine-structure (DAFS) or reflectively-EXAFS (sometimes known as
 ReflEXAFS).</p>
 <section id="overview-of-the-diffkk-implementation">
-<h2><span class="section-number">13.9.1. </span>Overview of the diffKK implementation<a class="headerlink" href="#overview-of-the-diffkk-implementation" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">13.9.1. </span>Overview of the diffKK implementation<a class="headerlink" href="#overview-of-the-diffkk-implementation" title="Link to this heading">¶</a></h2>
 <p>This performs the same algorithm as the venerable DIFFKK program
-described in <span id="id3">[<a class="reference internal" href="bibliography.html#id75" title="J. O. Cross, M. Newville, J. J. Rehr, L. B. Sorensen, C. E. Bouldin, G. Watson, T. Gouder, G. H. Lander, and M. I. Bell. Inclusion of local structure effects in theoretical x-ray resonant scattering amplitudes using ab initio x-ray-absorption spectra calculations. Phys. Rev. B, 58:11215–11225, Nov 1998. doi:10.1103/PhysRevB.58.11215.">Cross et al. (1998)</a>]</span>.  This uses the MacLaurin series
+described in <span id="id3">[<a class="reference internal" href="bibliography.html#id77" title="J. O. Cross, M. Newville, J. J. Rehr, L. B. Sorensen, C. E. Bouldin, G. Watson, T. Gouder, G. H. Lander, and M. I. Bell. Inclusion of local structure effects in theoretical x-ray resonant scattering amplitudes using ab initio x-ray-absorption spectra calculations. Phys. Rev. B, 58:11215–11225, Nov 1998. doi:10.1103/PhysRevB.58.11215.">Cross et al. (1998)</a>]</span>.  This uses the MacLaurin series
 algorithm to compute the differential (i.e. difference between the
 data and the tabulated <span class="math notranslate nohighlight">\(f''(E)\)</span>) Kramers-Kronig transform.  This
-algorithm is described in <span id="id4">[<a class="reference internal" href="bibliography.html#id76" title="Koji Ohta and Hatsuo Ishida. Comparison among several numerical integration methods for kramers-kronig transformation. Appl. Spectrosc., 42(6):952–957, Aug 1988. URL: https://as.osa.org/abstract.cfm?URI=as-42-6-952.">Ohta and Ishida (1988)</a>]</span>.  This implementation
+algorithm is described in <span id="id4">[<a class="reference internal" href="bibliography.html#id78" title="Koji Ohta and Hatsuo Ishida. Comparison among several numerical integration methods for kramers-kronig transformation. Appl. Spectrosc., 42(6):952–957, Aug 1988. URL: https://as.osa.org/abstract.cfm?URI=as-42-6-952.">Ohta and Ishida (1988)</a>]</span>.  This implementation
 casts the MacLaurin series algorithm in vectorized form using NumPy,
 so it is reasonably fast – not quite as fast as the original Fortran
 diffKK program, but certainly speedy enough for interactive data
 processing.</p>
 <p>The input <span class="math notranslate nohighlight">\(\mu(E)\)</span> data are first matched to the tabulated
-<span class="math notranslate nohighlight">\(f''(E)\)</span> using the MBACK algorithm of <span id="id5">[<a class="reference internal" href="bibliography.html#id28" title="Tsu-Chien Weng, Geoffrey S. Waldo, and James E. Penner-Hahn. A method for normalization of X-ray absorption spectra. Journal of Synchrotron Radiation, 12(4):506–510, Jul 2005. doi:10.1107/S0909049504034193.">Weng, Waldo, and Penner-Hahn (2005)</a>]</span> with an
-option of using the modification proposed by <span id="id6">[<a class="reference internal" href="bibliography.html#id29" title="Julia C. Lee, Jingen Xiang, Bruce Ravel, Jeffrey Kortright, and Kathryn Flanagan. Condensed matter astrophysics: a prescription for determining the species-specific composition and quantity of interstellar dust using x-rays. The Astrophysical Journal, 702(2):970, 2009. URL: https://stacks.iop.org/0004-637X/702/i=2/a=970, doi:0004-637X/702/i=2/a=970.">Lee et al. (2009)</a>]</span>.
+<span class="math notranslate nohighlight">\(f''(E)\)</span> using the MBACK algorithm of <span id="id5">[<a class="reference internal" href="bibliography.html#id30" title="Tsu-Chien Weng, Geoffrey S. Waldo, and James E. Penner-Hahn. A method for normalization of X-ray absorption spectra. Journal of Synchrotron Radiation, 12(4):506–510, Jul 2005. doi:10.1107/S0909049504034193.">Weng, Waldo, and Penner-Hahn (2005)</a>]</span> with an
+option of using the modification proposed by <span id="id6">[<a class="reference internal" href="bibliography.html#id31" title="Julia C. Lee, Jingen Xiang, Bruce Ravel, Jeffrey Kortright, and Kathryn Flanagan. Condensed matter astrophysics: a prescription for determining the species-specific composition and quantity of interstellar dust using x-rays. The Astrophysical Journal, 702(2):970, 2009. URL: https://stacks.iop.org/0004-637X/702/i=2/a=970, doi:0004-637X/702/i=2/a=970.">Lee et al. (2009)</a>]</span>.
 This scales the measured <span class="math notranslate nohighlight">\(\mu(E)\)</span> to the size of the tabulated
 function and adjusts the overall slope of the data to best match the
 tabulated value.  This is seen at the top of Figure
@@ -165,12 +165,12 @@ shown at the bottom of <a class="reference internal" href="#fig-cu-diffkk"><span
 <span id="fig-cu-diffkk"></span><a class="reference external image-reference" href="_images/diffkk_cu.png"><img alt="_images/diffkk_cu.png" src="_images/diffkk_cu.png" style="width: 65%;" /></a>
 <figcaption>
 <p><span class="caption-number">Figure 13.9.1.1 </span><span class="caption-text">The anomalous scattering factors determined for copper metal from
-a copper foil, compared with the bare-atom, Cromer-Liberman values.</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
+a copper foil, compared with the bare-atom, Cromer-Liberman values.</span><a class="headerlink" href="#id7" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <dl class="py function">
 <dt class="sig sig-object py" id="diffkk">
-<span class="sig-name descname"><span class="pre">diffkk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'K'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mback_kws</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffkk" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">diffkk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'K'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mback_kws</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffkk" title="Link to this definition">¶</a></dt>
 <dd><p>create a diffKK Group.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -190,7 +190,7 @@ a copper foil, compared with the bare-atom, Cromer-Liberman values.</span><a cla
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffkk.kk">
-<span class="sig-prename descclassname"><span class="pre">diffkk.</span></span><span class="sig-name descname"><span class="pre">kk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'K'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mback_kws</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffkk.kk" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffkk.</span></span><span class="sig-name descname"><span class="pre">kk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'K'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mback_kws</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffkk.kk" title="Link to this definition">¶</a></dt>
 <dd><p>Perform the KK transform.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -250,7 +250,7 @@ a copper foil, compared with the bare-atom, Cromer-Liberman values.</span><a cla
 </div>
 </section>
 <section id="diffkk-on-l-edge-data">
-<h2><span class="section-number">13.9.2. </span>diffKK on L edge data<a class="headerlink" href="#diffkk-on-l-edge-data" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">13.9.2. </span>diffKK on L edge data<a class="headerlink" href="#diffkk-on-l-edge-data" title="Link to this heading">¶</a></h2>
 <p>The diffKK method is fairly straightforward for K edge data.  The
 algorithm for matching the measured <span class="math notranslate nohighlight">\(\mu(E)\)</span> to the tabulated
 <span class="math notranslate nohighlight">\(f''(E)\)</span> works quite well over the entire data range, resulting
@@ -266,19 +266,19 @@ tabulated <span class="math notranslate nohighlight">\(f'(E)\)</span>.</p>
 <figure class="align-default" id="id8">
 <span id="fig-ceo2-xafs"></span><a class="reference external image-reference" href="_images/diffkk_ceo2_xafs.png"><img alt="_images/diffkk_ceo2_xafs.png" src="_images/diffkk_ceo2_xafs.png" style="width: 90%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 13.9.2.1 </span><span class="caption-text">L edge data measured on CeO<sub>2</sub></span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
+<p><span class="caption-number">Figure 13.9.2.1 </span><span class="caption-text">L edge data measured on CeO<sub>2</sub></span><a class="headerlink" href="#id8" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <figure class="align-default" id="id9">
 <span id="fig-ceo2-notok"></span><a class="reference external image-reference" href="_images/diffkk_ceo2_notok.png"><img alt="_images/diffkk_ceo2_notok.png" src="_images/diffkk_ceo2_notok.png" style="width: 90%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 13.9.2.2 </span><span class="caption-text">A poor stab at diffKK analysis of CeO<sub>2</sub></span><a class="headerlink" href="#id9" title="Permalink to this image">¶</a></p>
+<p><span class="caption-number">Figure 13.9.2.2 </span><span class="caption-text">A poor stab at diffKK analysis of CeO<sub>2</sub></span><a class="headerlink" href="#id9" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <figure class="align-default" id="id10">
 <span id="fig-ceo2-diffkk"></span><a class="reference external image-reference" href="_images/diffkk_ceo2_ok.png"><img alt="_images/diffkk_ceo2_ok.png" src="_images/diffkk_ceo2_ok.png" style="width: 90%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 13.9.2.3 </span><span class="caption-text">A better stab at diffKK analysis of CeO<sub>2</sub></span><a class="headerlink" href="#id10" title="Permalink to this image">¶</a></p>
+<p><span class="caption-number">Figure 13.9.2.3 </span><span class="caption-text">A better stab at diffKK analysis of CeO<sub>2</sub></span><a class="headerlink" href="#id10" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </div><p id="fig-ceo2-diffkkcomp">These larch command created the plot in <a class="reference internal" href="#fig-ceo2-notok"><span class="std std-numref">Figure 13.9.2.2</span></a>.</p>
@@ -344,8 +344,8 @@ algorithm would be more appropriate for L edge data.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.0.1.
+    &#169; Copyright Matthew Newville, The University of Chicago, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>

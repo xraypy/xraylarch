@@ -1,24 +1,24 @@
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>5.3. Pre-edge subtraction and Normalization &#8212; xraylarch 0.9.71 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css" />
+    <title>5.3. Pre-edge subtraction and Normalization &#8212; xraylarch 0.9.72 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css?v=dfcb3266" />
     
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/documentation_options.js?v=3e9ad74a"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="5.5. Pre-edge peak fitting" href="preedge.html" />
-    <link rel="prev" title="5.2. Reading and Saving Data into XAS Viewer" href="iodata.html" />
+    <link rel="prev" title="5.2. Reading and Saving Data into Larix" href="iodata.html" />
 
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
@@ -55,7 +55,7 @@
           <a href="preedge.html" title="5.5. Pre-edge peak fitting"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="iodata.html" title="5.2. Reading and Saving Data into XAS Viewer"
+          <a href="iodata.html" title="5.2. Reading and Saving Data into Larix"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -63,7 +63,7 @@
    <li><a href="../xray.html">X-ray Databases</a>|</li>
    <li><a href="../xrf.html">XRF Analysis</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="../xasviewer.html" accesskey="U"><span class="section-number">5. </span>XASViewer</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../xasviewer.html" accesskey="U"><span class="section-number">5. </span>Larix (was XAS Viewer)</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.3. </span>Pre-edge subtraction and Normalization</a></li> 
       </ul>
     </div>
@@ -89,7 +89,7 @@
   <div>
     <h4>Previous topic</h4>
     <p class="topless"><a href="iodata.html"
-                          title="previous chapter"><span class="section-number">5.2. </span>Reading and Saving Data into XAS Viewer</a></p>
+                          title="previous chapter"><span class="section-number">5.2. </span>Reading and Saving Data into Larix</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
@@ -123,9 +123,9 @@
             
   <p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
 <section id="pre-edge-subtraction-and-normalization">
-<span id="xasviewer-preedge"></span><h1><span class="section-number">5.3. </span>Pre-edge subtraction and Normalization<a class="headerlink" href="#pre-edge-subtraction-and-normalization" title="Permalink to this heading">¶</a></h1>
-<p>As shown above in <a class="reference internal" href="overview.html#fig-xasviewer-top"><span class="std std-numref">Figure 5.1.1.1</span></a>, the main analysis panel for
-the XAS Viewer program is the “XAS Normalization” Panel.  This panel helps
+<span id="larix-preedge"></span><h1><span class="section-number">5.3. </span>Pre-edge subtraction and Normalization<a class="headerlink" href="#pre-edge-subtraction-and-normalization" title="Link to this heading">¶</a></h1>
+<p>As shown above in <a class="reference internal" href="overview.html#fig-larix-top"><span class="std std-numref">Figure 5.1.1.1</span></a>, the main analysis panel for
+the Larix program is the “XAS Normalization” Panel.  This panel helps
 you do pre-edge subtraction and normalization of XAFS data using the
 <code class="xref py py-func docutils literal notranslate"><span class="pre">find_e0()</span></code>, <a class="reference internal" href="../xafs_preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a>, or <a class="reference internal" href="../xafs_preedge.html#mback_norm" title="mback_norm"><code class="xref py py-func docutils literal notranslate"><span class="pre">mback_norm()</span></code></a> functions.  This
 processing step is important for getting normalized XAFS spectra that is
@@ -143,7 +143,7 @@ reproducibility are favored.  You can set the value of <span class="math notrans
 it to be determined automatically.</p>
 <p>The next step is to measure how large the jump in absorption is. This
 process can be somewhat trickier, so that there are some heuristics built
-in to XAS Viewer (and <a class="reference internal" href="../xafs_preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a>) to help make this more robust.
+in to Larix (and <a class="reference internal" href="../xafs_preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a>) to help make this more robust.
 You can explicitly set the the value of the edge step, or allow it to be
 calculated from the spectra in one of two ways.</p>
 <p>The classic way for determining the edge step is encapsulated in the
@@ -165,7 +165,7 @@ line and post-edge normalization curve, or compare with the
 MBACK-calculation for normalization.</p>
 </section>
 <section id="common-xas-processing-dialogs">
-<span id="xasviewer-dialogs"></span><h1><span class="section-number">5.4. </span>Common XAS Processing Dialogs<a class="headerlink" href="#common-xas-processing-dialogs" title="Permalink to this heading">¶</a></h1>
+<span id="larix-dialogs"></span><h1><span class="section-number">5.4. </span>Common XAS Processing Dialogs<a class="headerlink" href="#common-xas-processing-dialogs" title="Link to this heading">¶</a></h1>
 <p>When importing and normalizing XAS data, it is sometimes necessary to make some
 corrections of manipulate the data in a few well-defined ways.  These
 can include:</p>
@@ -181,61 +181,61 @@ can include:</p>
 <li><p>correcting over-absorption in fluorescence XANES spectra.</p></li>
 </ul>
 </div></blockquote>
-<p>There are several dialogs available in XAS Viewere, each designed to guide
+<p>There are several dialogs available in Larix, each designed to guide
 through the steps needs for these corrections or manipulations.  Each of
 these is described in more detail below.</p>
 <section id="energy-calibration-and-alignment">
-<span id="xasviewer-energy-calib"></span><h2><span class="section-number">5.4.1. </span>Energy Calibration and alignment<a class="headerlink" href="#energy-calibration-and-alignment" title="Permalink to this heading">¶</a></h2>
+<span id="larix-energy-calib"></span><h2><span class="section-number">5.4.1. </span>Energy Calibration and alignment<a class="headerlink" href="#energy-calibration-and-alignment" title="Link to this heading">¶</a></h2>
 <p>Each XAS spectra Group has</p>
 <figure class="align-center" id="id1">
-<span id="fig-xasviewer-dialog-cal"></span><a class="reference external image-reference" href="../_images/XASViewer_calibrate_dialog.png"><img alt="../_images/XASViewer_calibrate_dialog.png" src="../_images/XASViewer_calibrate_dialog.png" style="width: 50%;" /></a>
+<span id="fig-larix-dialog-cal"></span><a class="reference external image-reference" href="../_images/Larix_calibrate_dialog.png"><img alt="../_images/Larix_calibrate_dialog.png" src="../_images/Larix_calibrate_dialog.png" style="width: 50%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 5.4.1.1 </span><span class="caption-text">Energy calibration dialog.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+<p><span class="caption-number">Figure 5.4.1.1 </span><span class="caption-text">Energy calibration dialog.</span><a class="headerlink" href="#id1" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </section>
 <section id="deglitching-and-truncating-data">
-<span id="xasviewer-deglitch"></span><h2><span class="section-number">5.4.2. </span>Deglitching and Truncating Data<a class="headerlink" href="#deglitching-and-truncating-data" title="Permalink to this heading">¶</a></h2>
+<span id="larix-deglitch"></span><h2><span class="section-number">5.4.2. </span>Deglitching and Truncating Data<a class="headerlink" href="#deglitching-and-truncating-data" title="Link to this heading">¶</a></h2>
 <figure class="align-center" id="id2">
-<span id="fig-xasviewer-dialog-deglitch"></span><a class="reference external image-reference" href="../_images/XASViewer_deglitch_dialog.png"><img alt="../_images/XASViewer_deglitch_dialog.png" src="../_images/XASViewer_deglitch_dialog.png" style="width: 50%;" /></a>
+<span id="fig-larix-dialog-deglitch"></span><a class="reference external image-reference" href="../_images/Larix_deglitch_dialog.png"><img alt="../_images/Larix_deglitch_dialog.png" src="../_images/Larix_deglitch_dialog.png" style="width: 50%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 5.4.2.1 </span><span class="caption-text">De-glitching dialog</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+<p><span class="caption-number">Figure 5.4.2.1 </span><span class="caption-text">De-glitching dialog</span><a class="headerlink" href="#id2" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </section>
 <section id="smoothing-data">
-<span id="xasviewer-smooth"></span><h2><span class="section-number">5.4.3. </span>Smoothing Data<a class="headerlink" href="#smoothing-data" title="Permalink to this heading">¶</a></h2>
+<span id="larix-smooth"></span><h2><span class="section-number">5.4.3. </span>Smoothing Data<a class="headerlink" href="#smoothing-data" title="Link to this heading">¶</a></h2>
 <figure class="align-center" id="id3">
-<span id="fig-xasviewer-dialog-smooth"></span><a class="reference external image-reference" href="../_images/XASViewer_smooth_dialog.png"><img alt="../_images/XASViewer_smooth_dialog.png" src="../_images/XASViewer_smooth_dialog.png" style="width: 50%;" /></a>
+<span id="fig-larix-dialog-smooth"></span><a class="reference external image-reference" href="../_images/Larix_smooth_dialog.png"><img alt="../_images/Larix_smooth_dialog.png" src="../_images/Larix_smooth_dialog.png" style="width: 50%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 5.4.3.1 </span><span class="caption-text">Energy smoothing dialog.</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+<p><span class="caption-number">Figure 5.4.3.1 </span><span class="caption-text">Energy smoothing dialog.</span><a class="headerlink" href="#id3" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </section>
 <section id="de-convolving-xas-data">
-<span id="xasviewer-deconv"></span><h2><span class="section-number">5.4.4. </span>De-convolving XAS  Data<a class="headerlink" href="#de-convolving-xas-data" title="Permalink to this heading">¶</a></h2>
+<span id="larix-deconv"></span><h2><span class="section-number">5.4.4. </span>De-convolving XAS  Data<a class="headerlink" href="#de-convolving-xas-data" title="Link to this heading">¶</a></h2>
 <figure class="align-center" id="id4">
-<span id="fig-xasviewer-dialog-deconv"></span><a class="reference external image-reference" href="../_images/XASViewer_deconvolve_dialog.png"><img alt="../_images/XASViewer_deconvolve_dialog.png" src="../_images/XASViewer_deconvolve_dialog.png" style="width: 50%;" /></a>
+<span id="fig-larix-dialog-deconv"></span><a class="reference external image-reference" href="../_images/Larix_deconvolve_dialog.png"><img alt="../_images/Larix_deconvolve_dialog.png" src="../_images/Larix_deconvolve_dialog.png" style="width: 50%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 5.4.4.1 </span><span class="caption-text">Deconvolution dialog.</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+<p><span class="caption-number">Figure 5.4.4.1 </span><span class="caption-text">Deconvolution dialog.</span><a class="headerlink" href="#id4" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </section>
 <section id="re-binning-xas-data">
-<span id="xasviewer-rebin"></span><h2><span class="section-number">5.4.5. </span>Re-binning XAS  Data<a class="headerlink" href="#re-binning-xas-data" title="Permalink to this heading">¶</a></h2>
+<span id="larix-rebin"></span><h2><span class="section-number">5.4.5. </span>Re-binning XAS  Data<a class="headerlink" href="#re-binning-xas-data" title="Link to this heading">¶</a></h2>
 <figure class="align-center" id="id5">
-<span id="fig-xasviewer-dialog-rebin"></span><a class="reference external image-reference" href="../_images/XASViewer_rebin_dialog.png"><img alt="../_images/XASViewer_rebin_dialog.png" src="../_images/XASViewer_rebin_dialog.png" style="width: 50%;" /></a>
+<span id="fig-larix-dialog-rebin"></span><a class="reference external image-reference" href="../_images/Larix_rebin_dialog.png"><img alt="../_images/Larix_rebin_dialog.png" src="../_images/Larix_rebin_dialog.png" style="width: 50%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 5.4.5.1 </span><span class="caption-text">Energy re-binning dialog.</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+<p><span class="caption-number">Figure 5.4.5.1 </span><span class="caption-text">Energy re-binning dialog.</span><a class="headerlink" href="#id5" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </section>
 <section id="correcting-for-over-absorption-in-xas-data">
-<span id="xasviewer-overabsorb"></span><h2><span class="section-number">5.4.6. </span>Correcting for Over-Absorption in XAS Data<a class="headerlink" href="#correcting-for-over-absorption-in-xas-data" title="Permalink to this heading">¶</a></h2>
+<span id="larix-overabsorb"></span><h2><span class="section-number">5.4.6. </span>Correcting for Over-Absorption in XAS Data<a class="headerlink" href="#correcting-for-over-absorption-in-xas-data" title="Link to this heading">¶</a></h2>
 <figure class="align-center" id="id6">
-<span id="fig-xasviewer-dialog-overabs"></span><a class="reference external image-reference" href="../_images/XASViewer_overabsorption_dialog.png"><img alt="../_images/XASViewer_overabsorption_dialog.png" src="../_images/XASViewer_overabsorption_dialog.png" style="width: 50%;" /></a>
+<span id="fig-larix-dialog-overabs"></span><a class="reference external image-reference" href="../_images/Larix_overabsorption_dialog.png"><img alt="../_images/Larix_overabsorption_dialog.png" src="../_images/Larix_overabsorption_dialog.png" style="width: 50%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 5.4.6.1 </span><span class="caption-text">Over-absorption correction dialog</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+<p><span class="caption-number">Figure 5.4.6.1 </span><span class="caption-text">Over-absorption correction dialog</span><a class="headerlink" href="#id6" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </section>
@@ -258,7 +258,7 @@ these is described in more detail below.</p>
           <a href="preedge.html" title="5.5. Pre-edge peak fitting"
              >next</a> |</li>
         <li class="right" >
-          <a href="iodata.html" title="5.2. Reading and Saving Data into XAS Viewer"
+          <a href="iodata.html" title="5.2. Reading and Saving Data into Larix"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -266,13 +266,13 @@ these is described in more detail below.</p>
    <li><a href="../xray.html">X-ray Databases</a>|</li>
    <li><a href="../xrf.html">XRF Analysis</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="../xasviewer.html" ><span class="section-number">5. </span>XASViewer</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../xasviewer.html" ><span class="section-number">5. </span>Larix (was XAS Viewer)</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.3. </span>Pre-edge subtraction and Normalization</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.0.1.
+    &#169; Copyright Matthew Newville, The University of Chicago, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>

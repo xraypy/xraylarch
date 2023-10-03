@@ -1,18 +1,18 @@
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>8. Programming with Larch from Python &#8212; xraylarch 0.9.71 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
+    <title>8. Programming with Larch from Python &#8212; xraylarch 0.9.72 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/documentation_options.js?v=3e9ad74a"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -140,7 +140,7 @@
           <div class="body" role="main">
             
   <section id="programming-with-larch-from-python">
-<span id="frompython-section"></span><h1><span class="section-number">8. </span>Programming with Larch from Python<a class="headerlink" href="#programming-with-larch-from-python" title="Permalink to this heading">¶</a></h1>
+<span id="frompython-section"></span><h1><span class="section-number">8. </span>Programming with Larch from Python<a class="headerlink" href="#programming-with-larch-from-python" title="Link to this heading">¶</a></h1>
 <p>This chapter describes the use of the <cite>larch</cite> module from Python.
 There are plenty of good reasons to want to do this, and it is certainly
 recommended over using the Larch mini-language for anything fairly
@@ -172,7 +172,7 @@ might look like this:</p>
 <p>More elaborate examples and documentation on what the larch functions do
 are given throughout this documentation.</p>
 <section id="creating-and-using-a-larch-interpreter-in-python">
-<h2><span class="section-number">8.1. </span>creating and using a larch interpreter in Python<a class="headerlink" href="#creating-and-using-a-larch-interpreter-in-python" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">8.1. </span>creating and using a larch interpreter in Python<a class="headerlink" href="#creating-and-using-a-larch-interpreter-in-python" title="Link to this heading">¶</a></h2>
 <p>The example above shows the larch functionality being accessed directly
 from Python.  In addition, from Python you can create an instance of an
 interpreter of the <cite>larch</cite> mini-language and communicate with it the Larch
@@ -203,7 +203,7 @@ you could do:</p>
 </div>
 </section>
 <section id="the-larch-group">
-<h2><span class="section-number">8.2. </span>The Larch <cite>Group</cite><a class="headerlink" href="#the-larch-group" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">8.2. </span>The Larch <cite>Group</cite><a class="headerlink" href="#the-larch-group" title="Link to this heading">¶</a></h2>
 <p>As described throughout the rest of the documentation, Larch organizes data using
 <cite>Group</cite> objects.  For example, the <cite>dat</cite> value extracted from the larch session
 in the example above will be a <cite>Group</cite>.  Many of the container objects created
@@ -250,7 +250,7 @@ namespace of a larch session and then access that data from the session:</p>
 Python program and use it as a calculation engine.</p>
 </section>
 <section id="the-optional-larch-argument">
-<h2><span class="section-number">8.3. </span>The optional <cite>_larch</cite> argument<a class="headerlink" href="#the-optional-larch-argument" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">8.3. </span>The optional <cite>_larch</cite> argument<a class="headerlink" href="#the-optional-larch-argument" title="Link to this heading">¶</a></h2>
 <p>In earlier versions of larch, many functions in the Python interface required or
 strongly recommended making a larch interpreter and passing this around as a
 “session instance” to many of the larch functions.  That is, you might see:</p>
@@ -266,7 +266,7 @@ functions still have an optional <cite>_larch</cite> argument.  You may see this
 some existing code, but at this point, this is no longer needed or recommended.</p>
 </section>
 <section id="converting-larch-code-into-python">
-<h2><span class="section-number">8.4. </span>Converting “Larch code” into Python<a class="headerlink" href="#converting-larch-code-into-python" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">8.4. </span>Converting “Larch code” into Python<a class="headerlink" href="#converting-larch-code-into-python" title="Link to this heading">¶</a></h2>
 <p>As discussed in more detail in the next section, the Larch macro language is
 essentially a dialect of Python so that converting code from the macro language
 into Python is nearly trivial.  The main differences between Python and the larch
@@ -302,7 +302,7 @@ commented out at the top so that they can be easily run in Python or from
 the Larch interpreter.</p>
 </section>
 <section id="larch-submodules">
-<h2><span class="section-number">8.5. </span>Larch submodules<a class="headerlink" href="#larch-submodules" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">8.5. </span>Larch submodules<a class="headerlink" href="#larch-submodules" title="Link to this heading">¶</a></h2>
 <p>The <cite>larch</cite> module is broken up into a number of submodules, as described
 in the table and sections below.  To be clear, this list is incomplete and
 subject to change.  The rest of this document should be used for details of
@@ -369,83 +369,83 @@ that are generally well-documented and do not need to be used only from with
 larch.  If you find yourself using these submodules, it might be easier to just
 use the more general-purpose library.</p>
 <section id="top-level-larch">
-<h3><span class="section-number">8.5.1. </span>Top-level <cite>larch</cite><a class="headerlink" href="#top-level-larch" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">8.5.1. </span>Top-level <cite>larch</cite><a class="headerlink" href="#top-level-larch" title="Link to this heading">¶</a></h3>
 <p>The top-level <cite>larch</cite> module contains several modules and a few important
 classes and methods.  An incomplete list, but the most important objects in
 the top-level module are:</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="Interpreter">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Interpreter</span></span><a class="headerlink" href="#Interpreter" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Interpreter</span></span><a class="headerlink" href="#Interpreter" title="Link to this definition">¶</a></dt>
 <dd><p>class to build a Larch Interpreter</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="Group">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Group</span></span><a class="headerlink" href="#Group" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Group</span></span><a class="headerlink" href="#Group" title="Link to this definition">¶</a></dt>
 <dd><p>class to build a Larch Group</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="site_config">
-<span class="sig-name descname"><span class="pre">site_config</span></span><a class="headerlink" href="#site_config" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">site_config</span></span><a class="headerlink" href="#site_config" title="Link to this definition">¶</a></dt>
 <dd><p>a container (module) of site configuration information.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="is_from_python">
-<span class="sig-name descname"><span class="pre">is_from_python</span></span><a class="headerlink" href="#is_from_python" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_from_python</span></span><a class="headerlink" href="#is_from_python" title="Link to this definition">¶</a></dt>
 <dd><p>a boolean value indicating whether this larch module has been imported
 into Python (True) or into a Larch Interpreter (False)</p>
 </dd></dl>
 
 </section>
 <section id="larch-io">
-<h3><span class="section-number">8.5.2. </span><cite>larch.io</cite><a class="headerlink" href="#larch-io" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">8.5.2. </span><cite>larch.io</cite><a class="headerlink" href="#larch-io" title="Link to this heading">¶</a></h3>
 <p>The <cite>io</cite> module contains functions for reading and writing data with known
 formats.</p>
 </section>
 <section id="larch-xafs">
-<h3><span class="section-number">8.5.3. </span><cite>larch.xafs</cite><a class="headerlink" href="#larch-xafs" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">8.5.3. </span><cite>larch.xafs</cite><a class="headerlink" href="#larch-xafs" title="Link to this heading">¶</a></h3>
 <p>The <cite>xafs</cite> module contains functions for XAFS analysis.</p>
 </section>
 <section id="larch-xray">
-<h3><span class="section-number">8.5.4. </span><cite>larch.xray</cite><a class="headerlink" href="#larch-xray" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">8.5.4. </span><cite>larch.xray</cite><a class="headerlink" href="#larch-xray" title="Link to this heading">¶</a></h3>
 <p>The <cite>xray</cite> module contains functions for X-ray properties, as imported from <a class="reference external" href="https://xraypy.github.io/XrayDB/">xraydb</a>.</p>
 </section>
 <section id="larch-xrf">
-<h3><span class="section-number">8.5.5. </span><cite>larch.xrf</cite><a class="headerlink" href="#larch-xrf" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">8.5.5. </span><cite>larch.xrf</cite><a class="headerlink" href="#larch-xrf" title="Link to this heading">¶</a></h3>
 <p>The <cite>xrf</cite> module contains functions for X-ray fluorescence data.</p>
 </section>
 <section id="larch-xrd">
-<h3><span class="section-number">8.5.6. </span><cite>larch.xrd</cite><a class="headerlink" href="#larch-xrd" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">8.5.6. </span><cite>larch.xrd</cite><a class="headerlink" href="#larch-xrd" title="Link to this heading">¶</a></h3>
 </section>
 <section id="larch-xrmmap">
-<h3><span class="section-number">8.5.7. </span><cite>larch.xrmmap</cite><a class="headerlink" href="#larch-xrmmap" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">8.5.7. </span><cite>larch.xrmmap</cite><a class="headerlink" href="#larch-xrmmap" title="Link to this heading">¶</a></h3>
 </section>
 <section id="larch-fitting">
-<h3><span class="section-number">8.5.8. </span><cite>larch.fitting</cite><a class="headerlink" href="#larch-fitting" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">8.5.8. </span><cite>larch.fitting</cite><a class="headerlink" href="#larch-fitting" title="Link to this heading">¶</a></h3>
 <p>The <cite>fitting</cite> module contains functions for fitting data, including to
 known lineshapes.  Much of this is taken directly from <a class="reference external" href="https://lmfit.github.io/lmfit-py/">lmfit</a> or modified
 slightly for Larch.  If you’re writing programs for fitting data, we do
 recommend using <a class="reference external" href="https://lmfit.github.io/lmfit-py/">lmfit</a> directly.</p>
 </section>
 <section id="larch-math">
-<h3><span class="section-number">8.5.9. </span><cite>larch.math</cite><a class="headerlink" href="#larch-math" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">8.5.9. </span><cite>larch.math</cite><a class="headerlink" href="#larch-math" title="Link to this heading">¶</a></h3>
 </section>
 <section id="larch-utils">
-<h3><span class="section-number">8.5.10. </span><cite>larch.utils</cite><a class="headerlink" href="#larch-utils" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">8.5.10. </span><cite>larch.utils</cite><a class="headerlink" href="#larch-utils" title="Link to this heading">¶</a></h3>
 </section>
 <section id="larch-epics">
-<h3><span class="section-number">8.5.11. </span><cite>larch.epics</cite><a class="headerlink" href="#larch-epics" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">8.5.11. </span><cite>larch.epics</cite><a class="headerlink" href="#larch-epics" title="Link to this heading">¶</a></h3>
 </section>
 <section id="larch-xmlrpc-server">
-<h3><span class="section-number">8.5.12. </span><cite>larch.xmlrpc_server</cite><a class="headerlink" href="#larch-xmlrpc-server" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">8.5.12. </span><cite>larch.xmlrpc_server</cite><a class="headerlink" href="#larch-xmlrpc-server" title="Link to this heading">¶</a></h3>
 </section>
 <section id="larch-shell">
-<h3><span class="section-number">8.5.13. </span><cite>larch.shell</cite><a class="headerlink" href="#larch-shell" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">8.5.13. </span><cite>larch.shell</cite><a class="headerlink" href="#larch-shell" title="Link to this heading">¶</a></h3>
 </section>
 <section id="larch-wxlib">
-<h3><span class="section-number">8.5.14. </span><cite>larch.wxlib</cite><a class="headerlink" href="#larch-wxlib" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">8.5.14. </span><cite>larch.wxlib</cite><a class="headerlink" href="#larch-wxlib" title="Link to this heading">¶</a></h3>
 </section>
 </section>
 </section>
@@ -479,8 +479,8 @@ recommend using <a class="reference external" href="https://lmfit.github.io/lmfi
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.0.1.
+    &#169; Copyright Matthew Newville, The University of Chicago, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>

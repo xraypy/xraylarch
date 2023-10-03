@@ -1,18 +1,18 @@
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>12.6. Fit Examples &#8212; xraylarch 0.9.71 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
+    <title>12.6. Fit Examples &#8212; xraylarch 0.9.72 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/documentation_options.js?v=3e9ad74a"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
@@ -118,7 +118,7 @@
           <div class="body" role="main">
             
   <section id="fit-examples">
-<h1><span class="section-number">12.6. </span>Fit Examples<a class="headerlink" href="#fit-examples" title="Permalink to this heading">¶</a></h1>
+<h1><span class="section-number">12.6. </span>Fit Examples<a class="headerlink" href="#fit-examples" title="Link to this heading">¶</a></h1>
 <p>This section contains a few illustrative fitting examples.  As mentioned
 earlier, the important pieces to have for a fit are:</p>
 <p>1. a <em>Parameter Group</em>: a group that contains all the parameters (both
@@ -129,7 +129,7 @@ argument, and returns an array to be minimized in the least-squares sense.</p>
 <p>The files for the examples shown here are all can be found in the
 <em>examples/fitting</em> folder of the main Larch distribution.</p>
 <section id="example-1-fitting-a-simple-gaussian">
-<span id="fit-example1-sec"></span><h2><span class="section-number">12.6.1. </span>Example 1: Fitting a Simple Gaussian<a class="headerlink" href="#example-1-fitting-a-simple-gaussian" title="Permalink to this heading">¶</a></h2>
+<span id="fit-example1-sec"></span><h2><span class="section-number">12.6.1. </span>Example 1: Fitting a Simple Gaussian<a class="headerlink" href="#example-1-fitting-a-simple-gaussian" title="Link to this heading">¶</a></h2>
 <p>Here we make a simple mock data set and fit a Gaussian function to it.
 Though a fairly simple example, and one that is guaranteed to work well, it
 touches on all the concepts discussed above, and is a reasonable
@@ -224,12 +224,12 @@ correlations between variables.</p>
 <figure class="align-center" id="id4">
 <span id="fig-fit1"></span><a class="reference external image-reference" href="_images/fit_example1.png"><img alt="_images/fit_example1.png" src="_images/fit_example1.png" style="width: 65%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 12.6.1.1 </span><span class="caption-text">Simple fit to mock data</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+<p><span class="caption-number">Figure 12.6.1.1 </span><span class="caption-text">Simple fit to mock data</span><a class="headerlink" href="#id4" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </section>
 <section id="example-2-fitting-xanes-pre-edge-peaks">
-<h2><span class="section-number">12.6.2. </span>Example 2: Fitting XANES Pre-edge Peaks<a class="headerlink" href="#example-2-fitting-xanes-pre-edge-peaks" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">12.6.2. </span>Example 2: Fitting XANES Pre-edge Peaks<a class="headerlink" href="#example-2-fitting-xanes-pre-edge-peaks" title="Link to this heading">¶</a></h2>
 <p>This example extends on the previous one of fitting peaks.  Though
 following the same basic approach (write an objective function, define
 parameters, perform fit), we add several steps that you might use when
@@ -358,13 +358,13 @@ so they can’t go too far astray.</p>
 <figure class="align-left" id="id5">
 <span id="fig-fit2"></span><a class="reference external image-reference" href="_images/fit_example2a1.png"><img alt="_images/fit_example2a1.png" src="_images/fit_example2a1.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 12.6.2.1 </span><span class="caption-text">Data, fit, and residual.</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+<p><span class="caption-number">Figure 12.6.2.1 </span><span class="caption-text">Data, fit, and residual.</span><a class="headerlink" href="#id5" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <figure class="align-right" id="id6">
 <a class="reference external image-reference" href="_images/fit_example2a2.png"><img alt="_images/fit_example2a2.png" src="_images/fit_example2a2.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 12.6.2.2 </span><span class="caption-text">Fit and individual components.</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+<p><span class="caption-number">Figure 12.6.2.2 </span><span class="caption-text">Fit and individual components.</span><a class="headerlink" href="#id6" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p><span class="caption-text">Fit to Fe K-edge pre-edge and edge with 2 Gaussian functions</span></p>
@@ -432,13 +432,13 @@ moved significantly, as can be seen in the plots for this fit:</p>
 <figure class="align-center" id="id7">
 <span id="fig-fit3"></span><a class="reference external image-reference" href="_images/fit_example2b1.png"><img alt="_images/fit_example2b1.png" src="_images/fit_example2b1.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 12.6.2.3 </span><span class="caption-text">Data, fit, and residual.</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
+<p><span class="caption-number">Figure 12.6.2.3 </span><span class="caption-text">Data, fit, and residual.</span><a class="headerlink" href="#id7" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <figure class="align-center" id="id8">
 <span id="fig-fit3b"></span><a class="reference external image-reference" href="_images/fit_example2b2.png"><img alt="_images/fit_example2b2.png" src="_images/fit_example2b2.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 12.6.2.4 </span><span class="caption-text">Fit with individual components.</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
+<p><span class="caption-number">Figure 12.6.2.4 </span><span class="caption-text">Fit with individual components.</span><a class="headerlink" href="#id8" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </div><p id="fig-fit3comp">Finally for this example, we can replace the Gaussian peak shapes with
@@ -481,13 +481,13 @@ improvement.  For completeness, the plots from this fit look like this:</p>
 <figure class="align-center" id="id9">
 <span id="fig-fit4"></span><a class="reference external image-reference" href="_images/fit_example2c1.png"><img alt="_images/fit_example2c1.png" src="_images/fit_example2c1.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 12.6.2.5 </span><span class="caption-text">Data, fit, and residual.</span><a class="headerlink" href="#id9" title="Permalink to this image">¶</a></p>
+<p><span class="caption-number">Figure 12.6.2.5 </span><span class="caption-text">Data, fit, and residual.</span><a class="headerlink" href="#id9" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <figure class="align-center" id="id10">
 <span id="fig-fit4b"></span><a class="reference external image-reference" href="_images/fit_example2c2.png"><img alt="_images/fit_example2c2.png" src="_images/fit_example2c2.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 12.6.2.6 </span><span class="caption-text">Fit with individual components.</span><a class="headerlink" href="#id10" title="Permalink to this image">¶</a></p>
+<p><span class="caption-number">Figure 12.6.2.6 </span><span class="caption-text">Fit with individual components.</span><a class="headerlink" href="#id10" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p><span class="caption-text">Fit to Fe K-edge pre-edge and edge with 3 Voigt functions
@@ -497,7 +497,7 @@ but the ability to explore fitting with different lineshapes like this is
 still a useful test of the robustness of the fit.</p>
 </section>
 <section id="example-3-fitting-xanes-spectra-as-a-linear-combination-of-other-spectra">
-<span id="fit-example3-sec"></span><h2><span class="section-number">12.6.3. </span>Example 3: Fitting XANES Spectra as a Linear Combination of Other Spectra<a class="headerlink" href="#example-3-fitting-xanes-spectra-as-a-linear-combination-of-other-spectra" title="Permalink to this heading">¶</a></h2>
+<span id="fit-example3-sec"></span><h2><span class="section-number">12.6.3. </span>Example 3: Fitting XANES Spectra as a Linear Combination of Other Spectra<a class="headerlink" href="#example-3-fitting-xanes-spectra-as-a-linear-combination-of-other-spectra" title="Link to this heading">¶</a></h2>
 <p>This example is quite a bit simpler than the previous one, though worth an
 explicit example.  Here, we fit a XANES spectra as a linear combination of
 two other spectra.  This approach is often used to compare an unknown
@@ -506,7 +506,7 @@ result with lowest misfit statistics as the most likely results.  Though
 this method should be used with some caution, it is a standard and very
 simple approach to XANES analysis.</p>
 <p>The example here is borrowed from Bruce Ravel’s data and tutorials, and
-based on the work published by <span id="id1">[<a class="reference internal" href="bibliography.html#id50" title="M. F. Lengke, B. Ravel, M. E. Fleet, G. Wagner, R. A. Gordon, and G. Southam. Mechanisms of gold bioaccumulation by filamentous cyanobacteria from gold(iii) - chloride complex. Environmental Science &amp; Technology, 40:6304–6309, 2006. doi:10.1021/es061040r.">Lengke et al. (2006)</a>]</span>, The goal here is not
+based on the work published by <span id="id1">[<a class="reference internal" href="bibliography.html#id52" title="M. F. Lengke, B. Ravel, M. E. Fleet, G. Wagner, R. A. Gordon, and G. Southam. Mechanisms of gold bioaccumulation by filamentous cyanobacteria from gold(iii) - chloride complex. Environmental Science &amp; Technology, 40:6304–6309, 2006. doi:10.1021/es061040r.">Lengke et al. (2006)</a>]</span>, The goal here is not
 to repeat the whole of that analysis, but to present the mechanics of the
 fitting approach.  Essentially, we’re asserting that a particular measured
 spectrum is made of a linear combination of 2 or more other spectra.  We
@@ -529,17 +529,17 @@ important component.</p>
 <figure class="align-center" id="id11">
 <span id="fig-fit5"></span><a class="reference external image-reference" href="_images/fit_example3a.png"><img alt="_images/fit_example3a.png" src="_images/fit_example3a.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 12.6.3.1 </span><span class="caption-text">Components used for linear combinations.</span><a class="headerlink" href="#id11" title="Permalink to this image">¶</a></p>
+<p><span class="caption-number">Figure 12.6.3.1 </span><span class="caption-text">Components used for linear combinations.</span><a class="headerlink" href="#id11" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <figure class="align-center" id="id12">
 <span id="fig-fit5b"></span><a class="reference external image-reference" href="_images/fit_example3b.png"><img alt="_images/fit_example3b.png" src="_images/fit_example3b.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 12.6.3.2 </span><span class="caption-text">Fit and residual with components <em>s1</em> and <em>s2</em>.</span><a class="headerlink" href="#id12" title="Permalink to this image">¶</a></p>
+<p><span class="caption-number">Figure 12.6.3.2 </span><span class="caption-text">Fit and residual with components <em>s1</em> and <em>s2</em>.</span><a class="headerlink" href="#id12" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p><span class="caption-text">Linear Combination Fit of gold XANES in cyanobacteria, after
-<span id="id2">[<a class="reference internal" href="bibliography.html#id50" title="M. F. Lengke, B. Ravel, M. E. Fleet, G. Wagner, R. A. Gordon, and G. Southam. Mechanisms of gold bioaccumulation by filamentous cyanobacteria from gold(iii) - chloride complex. Environmental Science &amp; Technology, 40:6304–6309, 2006. doi:10.1021/es061040r.">Lengke et al. (2006)</a>]</span>.</span></p>
+<span id="id2">[<a class="reference internal" href="bibliography.html#id52" title="M. F. Lengke, B. Ravel, M. E. Fleet, G. Wagner, R. A. Gordon, and G. Southam. Mechanisms of gold bioaccumulation by filamentous cyanobacteria from gold(iii) - chloride complex. Environmental Science &amp; Technology, 40:6304–6309, 2006. doi:10.1021/es061040r.">Lengke et al. (2006)</a>]</span>.</span></p>
 </div><p id="fig-fit5comp">To quantitatively fit these spectra, we read in all the data, and then
 create a single group <em>dat</em> that will contain all the data we need.  It
 turns out (and a common issue for XAFS data), the scans here do not have
@@ -819,13 +819,13 @@ Parameters, and checks for the lowest value of <code class="docutils literal not
 <figure class="align-center" id="id13">
 <span id="fig-fit6"></span><a class="reference external image-reference" href="_images/fit_example3c1.png"><img alt="_images/fit_example3c1.png" src="_images/fit_example3c1.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 12.6.3.3 </span><span class="caption-text">Linear combination fit and residual.</span><a class="headerlink" href="#id13" title="Permalink to this image">¶</a></p>
+<p><span class="caption-number">Figure 12.6.3.3 </span><span class="caption-text">Linear combination fit and residual.</span><a class="headerlink" href="#id13" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <figure class="align-center" id="id14">
 <span id="fig-fit6b"></span><a class="reference external image-reference" href="_images/fit_example3c2.png"><img alt="_images/fit_example3c2.png" src="_images/fit_example3c2.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 12.6.3.4 </span><span class="caption-text">Weighted contribution from individual components.</span><a class="headerlink" href="#id14" title="Permalink to this image">¶</a></p>
+<p><span class="caption-number">Figure 12.6.3.4 </span><span class="caption-text">Weighted contribution from individual components.</span><a class="headerlink" href="#id14" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p><span class="caption-text">Linear Combination XANES Fit of gold components in cyanobacteria with
@@ -905,13 +905,13 @@ that are:</p>
 <figure class="align-center" id="id15">
 <span id="fig-fit7"></span><a class="reference external image-reference" href="_images/fit_example3d1.png"><img alt="_images/fit_example3d1.png" src="_images/fit_example3d1.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 12.6.3.5 </span><span class="caption-text">Data, fit, and residual.</span><a class="headerlink" href="#id15" title="Permalink to this image">¶</a></p>
+<p><span class="caption-number">Figure 12.6.3.5 </span><span class="caption-text">Data, fit, and residual.</span><a class="headerlink" href="#id15" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <figure class="align-center" id="id16">
 <a class="reference external image-reference" href="_images/fit_example3d2.png"><img alt="_images/fit_example3d2.png" src="_images/fit_example3d2.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 12.6.3.6 </span><span class="caption-text">Weighted contribution from individual components.</span><a class="headerlink" href="#id16" title="Permalink to this image">¶</a></p>
+<p><span class="caption-number">Figure 12.6.3.6 </span><span class="caption-text">Weighted contribution from individual components.</span><a class="headerlink" href="#id16" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p><span class="caption-text">Linear Combination XANES Fit of gold components in cyanobacteria
@@ -921,13 +921,13 @@ with species <em>s1</em>, <em>s2</em>, <em>s3</em>, and <em>s6</em>.</span></p>
 <span id="fig-fit8"></span><a class="reference external image-reference" href="_images/fit_example3e1.png"><img alt="_images/fit_example3e1.png" src="_images/fit_example3e1.png" style="width: 100%;" /></a>
 <figcaption>
 <p><span class="caption-number">Figure 12.6.3.7 </span><span class="caption-text">Linear Combination XANES Fit of gold components in cyanobacteria
-with species <em>s1</em>, <em>s2</em>, <em>s3</em>, and <em>s5</em>. Data, fit, and residual.</span><a class="headerlink" href="#id17" title="Permalink to this image">¶</a></p>
+with species <em>s1</em>, <em>s2</em>, <em>s3</em>, and <em>s5</em>. Data, fit, and residual.</span><a class="headerlink" href="#id17" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <figure class="align-center" id="id18">
 <span id="fig-fit8b"></span><a class="reference external image-reference" href="_images/fit_example3e2.png"><img alt="_images/fit_example3e2.png" src="_images/fit_example3e2.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 12.6.3.8 </span><span class="caption-text">Weighted contribution from individual components.</span><a class="headerlink" href="#id18" title="Permalink to this image">¶</a></p>
+<p><span class="caption-number">Figure 12.6.3.8 </span><span class="caption-text">Weighted contribution from individual components.</span><a class="headerlink" href="#id18" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p><span class="caption-text">Linear Combination XANES Fit of gold components in cyanobacteria
@@ -938,7 +938,7 @@ implies that component <em>s3</em> is important even if at a very small fraction
 and that either component <em>s5</em> or <em>s6</em> (which aren’t that different
 spectroscopically or chemically (see <a class="reference internal" href="#fig-fit5"><span class="std std-numref">Figure 12.6.3.1</span></a>) is present.
 Of course, the analysis here is not meant to be definitive, and there are
-many more checks that could be done.  To be clear, <span id="id3">[<a class="reference internal" href="bibliography.html#id50" title="M. F. Lengke, B. Ravel, M. E. Fleet, G. Wagner, R. A. Gordon, and G. Southam. Mechanisms of gold bioaccumulation by filamentous cyanobacteria from gold(iii) - chloride complex. Environmental Science &amp; Technology, 40:6304–6309, 2006. doi:10.1021/es061040r.">Lengke et al. (2006)</a>]</span>
+many more checks that could be done.  To be clear, <span id="id3">[<a class="reference internal" href="bibliography.html#id52" title="M. F. Lengke, B. Ravel, M. E. Fleet, G. Wagner, R. A. Gordon, and G. Southam. Mechanisms of gold bioaccumulation by filamentous cyanobacteria from gold(iii) - chloride complex. Environmental Science &amp; Technology, 40:6304–6309, 2006. doi:10.1021/es061040r.">Lengke et al. (2006)</a>]</span>
 looked at many more unknown spectra, and also adjusted the energy ranges of
 the fits, and concludedd that <em>s1</em>, <em>s2</em>, <em>s3</em>, and <em>s5</em> were the best
 components, with concentrations of the components very similar to the ones
@@ -976,8 +976,8 @@ found here.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.0.1.
+    &#169; Copyright Matthew Newville, The University of Chicago, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>

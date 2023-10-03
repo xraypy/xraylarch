@@ -1,18 +1,18 @@
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>14. X-ray Databases &#8212; xraylarch 0.9.71 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
+    <title>14. X-ray Databases &#8212; xraylarch 0.9.72 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/documentation_options.js?v=3e9ad74a"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
@@ -147,7 +147,7 @@
             
   <p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
 <section id="module-_xray">
-<span id="x-ray-databases"></span><span id="xraydb-chapter"></span><h1><span class="section-number">14. </span>X-ray Databases<a class="headerlink" href="#module-_xray" title="Permalink to this heading">¶</a></h1>
+<span id="x-ray-databases"></span><span id="xraydb-chapter"></span><h1><span class="section-number">14. </span>X-ray Databases<a class="headerlink" href="#module-_xray" title="Link to this heading">¶</a></h1>
 <p>An important aspect of X-ray spectroscopies and scattering analysis is
 having access to tabulated values for X-ray properties of various elements
 and compounds.  Larch provides several functions to access these X-ray
@@ -161,15 +161,15 @@ cross-sections, elastic scattering terms, and anomalous scattering factors.
 The second category allows these elemental properties to be applied to
 common compounds by name or by chemical formula.</p>
 <p>Much of the X-ray spectroscopic data comes from the compilation of Elam <em>et
-al</em> <span id="id1">[<a class="reference internal" href="bibliography.html#id41" title="W. T. Elam, B. D. Ravel, and J. R. Sieber. A new atomic database for x-ray spectroscopic calculations. Radiation Physics and Chemistry, 63(2):121–128, February 2002. doi:10.1016/S0969-806X(01)00227-4.">Elam, Ravel, and Sieber (2002)</a>]</span>.  The core-hole widths for excited electronic levels
-comes from Keski-Rahkonen and Krause <span id="id2">[<a class="reference internal" href="bibliography.html#id42" title="O. Keski-Rahkonen and M. O. Krause. Total and partial atomic-level widths. Atomic Data and Nuclear Data Tables, 14(2):139–146, 1974. doi:10.1016/S0092-640X(74)80020-3.">Keski-Rahkonen and Krause (1974)</a>]</span> and Krause and
-Oliver <span id="id3">[<a class="reference internal" href="bibliography.html#id43" title="M. O. Krause and J. H. Oliver. Natural widths of atomic k and l levels, ka x-ray lines and several kll auger lines. Journal of Physical and Chemical Reference Data, 8:329, 1979. doi:10.1063/1.555595.">Krause and Oliver (1979)</a>]</span>, while elastic X-ray scattering data,
+al</em> <span id="id1">[<a class="reference internal" href="bibliography.html#id43" title="W. T. Elam, B. D. Ravel, and J. R. Sieber. A new atomic database for x-ray spectroscopic calculations. Radiation Physics and Chemistry, 63(2):121–128, February 2002. doi:10.1016/S0969-806X(01)00227-4.">Elam, Ravel, and Sieber (2002)</a>]</span>.  The core-hole widths for excited electronic levels
+comes from Keski-Rahkonen and Krause <span id="id2">[<a class="reference internal" href="bibliography.html#id44" title="O. Keski-Rahkonen and M. O. Krause. Total and partial atomic-level widths. Atomic Data and Nuclear Data Tables, 14(2):139–146, 1974. doi:10.1016/S0092-640X(74)80020-3.">Keski-Rahkonen and Krause (1974)</a>]</span> and Krause and
+Oliver <span id="id3">[<a class="reference internal" href="bibliography.html#id45" title="M. O. Krause and J. H. Oliver. Natural widths of atomic k and l levels, ka x-ray lines and several kll auger lines. Journal of Physical and Chemical Reference Data, 8:329, 1979. doi:10.1063/1.555595.">Krause and Oliver (1979)</a>]</span>, while elastic X-ray scattering data,
 <span class="math notranslate nohighlight">\(f_0(q)\)</span>,is derived from Waasmaier and Kirfel
-<span id="id4">[<a class="reference internal" href="bibliography.html#id44" title="D. Waasmaier and A. Kirfel. New analytical scattering factor functions for free atoms and ions. Acta Crystallographica A, 51:416–431, 1995. doi:10.1107/S0108767394013292.">Waasmaier and Kirfel (1995)</a>]</span>.  Anomalous cross-sections are available as based
-on the work of Cromer and Liberman <span id="id5">[<a class="reference internal" href="bibliography.html#id45" title="D. T. Cromer and D. A. Liberman. Anomalous dispersion calculations near to and on the long-wavelength side of an absorption-edge. Acta Crystallographica A, 37:267–268, 1981. doi:10.1107/S0567739481000600.">Cromer and Liberman (1981)</a>]</span>, using the
-implementation of Brennan and Cowan <span id="id6">[<a class="reference internal" href="bibliography.html#id46" title="S. Brennan and P. L. Cowan. A suite of programs for calculating x-ray absorption, reflection, and diffraction performance for a variety of materials at arbitrary wavelengths. Review of Scientific Instruments, 63(1):850–853, 1992. doi:10.1063/1.1142625.">Brennan and Cowan (1992)</a>]</span>.  In addition,
+<span id="id4">[<a class="reference internal" href="bibliography.html#id46" title="D. Waasmaier and A. Kirfel. New analytical scattering factor functions for free atoms and ions. Acta Crystallographica A, 51:416–431, 1995. doi:10.1107/S0108767394013292.">Waasmaier and Kirfel (1995)</a>]</span>.  Anomalous cross-sections are available as based
+on the work of Cromer and Liberman <span id="id5">[<a class="reference internal" href="bibliography.html#id47" title="D. T. Cromer and D. A. Liberman. Anomalous dispersion calculations near to and on the long-wavelength side of an absorption-edge. Acta Crystallographica A, 37:267–268, 1981. doi:10.1107/S0567739481000600.">Cromer and Liberman (1981)</a>]</span>, using the
+implementation of Brennan and Cowan <span id="id6">[<a class="reference internal" href="bibliography.html#id48" title="S. Brennan and P. L. Cowan. A suite of programs for calculating x-ray absorption, reflection, and diffraction performance for a variety of materials at arbitrary wavelengths. Review of Scientific Instruments, 63(1):850–853, 1992. doi:10.1063/1.1142625.">Brennan and Cowan (1992)</a>]</span>.  In addition,
 values for absorption cross-sections and anomalous X-ray scattering factors
-from Chantler <span id="id7">[<a class="reference internal" href="bibliography.html#id47" title="C. T. Chanter. Detailed tabulation of atomic form factors, photoelectric absorption and scattering cross section, and mass attenuation coefficients in the vicinity of absorption edges in the soft X-ray (Z=30-36, Z=60-89, E=0.1 keV-10 keV), addressing convergence issues of earlier work. Journal of Physical and Chemical Reference Data, 29(4):597–1048, JUL-AUG 2000. doi:10.1063/1.1321055.">Chanter (2000)</a>]</span> (as from
+from Chantler <span id="id7">[<a class="reference internal" href="bibliography.html#id49" title="C. T. Chanter. Detailed tabulation of atomic form factors, photoelectric absorption and scattering cross section, and mass attenuation coefficients in the vicinity of absorption edges in the soft X-ray (Z=30-36, Z=60-89, E=0.1 keV-10 keV), addressing convergence issues of earlier work. Journal of Physical and Chemical Reference Data, 29(4):597–1048, JUL-AUG 2000. doi:10.1063/1.1321055.">Chanter (2000)</a>]</span> (as from
 <a class="reference external" href="https://www.nist.gov/pml/data/ffast/index.cfm">https://www.nist.gov/pml/data/ffast/index.cfm</a>) are available.  Except for
 the anomalous cross-section data from Cromer and Liberman (which is
 implemented using the Fortran routine by Brennan and Cowan with slight
@@ -178,7 +178,7 @@ file.  This implementation was originally done by Darren Dale from CHESS
 (see <a class="reference external" href="https://github.com/praxes/elam_physical_reference">https://github.com/praxes/elam_physical_reference</a>), with some
 additions and alterations made for Larch.</p>
 <section id="x-ray-properties-of-the-elements">
-<h2><span class="section-number">14.1. </span>X-ray Properties of the Elements<a class="headerlink" href="#x-ray-properties-of-the-elements" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">14.1. </span>X-ray Properties of the Elements<a class="headerlink" href="#x-ray-properties-of-the-elements" title="Link to this heading">¶</a></h2>
 <p>The <a class="reference internal" href="#xraydb-elem-funcs-table"><span class="std std-ref">Table of X-ray data functions</span></a> gives a brief
 description to the available functions for accessing these data.  More
 detailed descriptions of function arguments, returned values, and so on are
@@ -465,38 +465,38 @@ line names</span></a>.  Finally, all energies are in eV.</p>
 </div></blockquote>
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.atomic_number">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">atomic_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.atomic_number" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">atomic_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.atomic_number" title="Link to this definition">¶</a></dt>
 <dd><p>return the atomic number from an atomic symbol (‘H’, ‘C’, ‘Fe’, etc)</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.atomic_symbol">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">atomic_symbol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.atomic_symbol" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">atomic_symbol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.atomic_symbol" title="Link to this definition">¶</a></dt>
 <dd><p>return the atomic symbol from an atomic number</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.atomic_mass">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">atomic_mass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.atomic_mass" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">atomic_mass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.atomic_mass" title="Link to this definition">¶</a></dt>
 <dd><p>return the atomic mass in amu from an atomic number or symbol</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.atomic_density">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">atomic_density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.atomic_density" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">atomic_density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.atomic_density" title="Link to this definition">¶</a></dt>
 <dd><p>return the density of the common form of a pure element, in gr/cm^3, from an atomic number or symbol.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.xray_edge">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">xray_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.xray_edge" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">xray_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.xray_edge" title="Link to this definition">¶</a></dt>
 <dd><p>return (edge energy, fluorescence yield, edge jump) for an atomic number or symbol and
 name of the edge.  Edge energies are in eV.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.xray_line">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">xray_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.xray_line" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">xray_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.xray_line" title="Link to this definition">¶</a></dt>
 <dd><p>return (emission energy, intensity, initial level, final level)for an atomic number or symbol
 and name of the emission line.  The intensity is the probability of emission from the given
 initial level.</p>
@@ -504,21 +504,21 @@ initial level.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.xray_edges">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">xray_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.xray_edges" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">xray_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.xray_edges" title="Link to this definition">¶</a></dt>
 <dd><p>return dictionary of all (edge energy, fluorescence yield, edge jump) for an atomic number or
 symbol.  The keys of the dictionay are the names of the edges.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.xray_lines">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">xray_lines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.xray_lines" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">xray_lines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.xray_lines" title="Link to this definition">¶</a></dt>
 <dd><p>return dictionary of all (emission energy, intensity, initial level, final level for an atomic
 number or symbol.  The keys of the dictionay are the names of the emission lines.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.fluo_yield">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">fluo_yield</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emission_family</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">incident_energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_margin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-150</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.fluo_yield" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">fluo_yield</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emission_family</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">incident_energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_margin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-150</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.fluo_yield" title="Link to this definition">¶</a></dt>
 <dd><p>return (fluorescent yield, average emission energy, probability)
 for an atomic number or symbol, edge, emission family, and incident
 energy.</p>
@@ -537,14 +537,14 @@ will be 0 if the incident energy &lt; edge energy + energy_margin.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.core_width">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">core_width</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.core_width" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">core_width</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.core_width" title="Link to this definition">¶</a></dt>
 <dd><p>return core electronic level width for an atomic number or symbol and
 name of the edge.  widths are in eV.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.mu_elam">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">mu_elam</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'total'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.mu_elam" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">mu_elam</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'total'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.mu_elam" title="Link to this definition">¶</a></dt>
 <dd><p>return X-ray mass attenuation coefficient <span class="math notranslate nohighlight">\(\mu/\rho\)</span> in cm^2/gr
 for an atomic number or symbol at specified energy values.</p>
 <dl class="field-list simple">
@@ -563,21 +563,21 @@ incoherent scattering cross sections, respectively.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.coherent_xsec">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">coherent_xsec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energies</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.coherent_xsec" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">coherent_xsec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energies</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.coherent_xsec" title="Link to this definition">¶</a></dt>
 <dd><p>return coherent scattering cross-section for an atomic number or symbol at
 specified energy values.  Values returned are in cm^2/gr.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.incoherent_xsec">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">incoherent_xsec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energies</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.incoherent_xsec" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">incoherent_xsec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energies</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.incoherent_xsec" title="Link to this definition">¶</a></dt>
 <dd><p>return incoherent scattering cross-section for an atomic number or symbol at
 specified energy values. Values returned are in cm^2/gr.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.f0">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">f0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ion</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qvalues</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.f0" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">f0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ion</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qvalues</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.f0" title="Link to this definition">¶</a></dt>
 <dd><p>return elastic scattering (Thomson) factor <span class="math notranslate nohighlight">\(f_0(q)\)</span> for the supplied values of
 <code class="docutils literal notranslate"><span class="pre">q</span></code> (<span class="math notranslate nohighlight">\(q = \sin(\theta)/\lambda\)</span> where <span class="math notranslate nohighlight">\(\theta\)</span> is the scattering angle
 and <span class="math notranslate nohighlight">\(\lambda\)</span> is the X-ray wavelength).  Here, <code class="docutils literal notranslate"><span class="pre">ion</span></code> can be an atomic number or
@@ -587,21 +587,21 @@ The returned values are in units of electron number.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.f0_ions">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">f0_ions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">element</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.f0_ions" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">f0_ions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">element</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.f0_ions" title="Link to this definition">¶</a></dt>
 <dd><p>returns list of valid ions for <a class="reference internal" href="#xray.f0" title="_xray.f0"><code class="xref py py-func docutils literal notranslate"><span class="pre">f0()</span></code></a>.  If <code class="docutils literal notranslate"><span class="pre">element</span></code> is given (either an atomic number or
 symbol), then only the valid ions for that element will be returned.</p>
 </dd></dl>
 
-<span class="target" id="index-3"></span><dl class="py function">
+<dl class="py function" id="index-3">
 <dt class="sig sig-object py" id="xray.chantler_energies">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">chantler_energies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.e9</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.chantler_energies" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">chantler_energies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.e9</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.chantler_energies" title="Link to this definition">¶</a></dt>
 <dd><p>returns array of energies (in eV) at whch data is tabulated in the Chantler tables.
 The arguments <code class="docutils literal notranslate"><span class="pre">emin</span></code> and <code class="docutils literal notranslate"><span class="pre">emax</span></code> can be used to restrict the range of returned energies.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.f1_chantler">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">f1_chantler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energies</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.f1_chantler" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">f1_chantler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energies</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.f1_chantler" title="Link to this definition">¶</a></dt>
 <dd><p>return array of f’, the real part of the anomalous scattering factor for an element at
 the given energies, using the tabulation of Chantler.  The returned values are in units
 of electron numbers, and represent the correction to Thomson scattering term.</p>
@@ -609,7 +609,7 @@ of electron numbers, and represent the correction to Thomson scattering term.</p
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.f2_chantler">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">f2_chantler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energies</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.f2_chantler" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">f2_chantler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energies</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.f2_chantler" title="Link to this definition">¶</a></dt>
 <dd><p>return array of f’’, the imaginary part of the anomalous scattering factor for an
 element at the given energies, using the tabulation of Chantler.  The returned values
 are in units of electron numbers.  These values scale to the values of the mass
@@ -618,14 +618,14 @@ attenuation coefficient.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.mu_chantler">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">mu_chantler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_element</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energies</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.mu_chantler" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">mu_chantler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_element</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energies</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.mu_chantler" title="Link to this definition">¶</a></dt>
 <dd><p>return X-ray mass attenuation coefficient (<span class="math notranslate nohighlight">\(\mu/\rho\)</span>) for an element at the
 specified energy values, using the tabulation of Chantler.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.f1f2_cl">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">f1f2_cl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_element</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energies</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.f1f2_cl" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">f1f2_cl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_or_element</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energies</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.f1f2_cl" title="Link to this definition">¶</a></dt>
 <dd><p>return tuple of (f’, f’’), the real and imaginary anomalous scattering factors for an
 element at the specified energies, using the calculation scheme of Cromer and
 Liberman, as implemented by Brennan and Cowan.  The optional argument <code class="docutils literal notranslate"><span class="pre">width</span></code> can be
@@ -648,7 +648,7 @@ compatibility, but may be dropped in the future.</p>
 </div>
 </section>
 <section id="x-ray-properties-of-materials-and-chemicals">
-<h2><span class="section-number">14.2. </span>X-ray Properties of Materials and Chemicals<a class="headerlink" href="#x-ray-properties-of-materials-and-chemicals" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">14.2. </span>X-ray Properties of Materials and Chemicals<a class="headerlink" href="#x-ray-properties-of-materials-and-chemicals" title="Link to this heading">¶</a></h2>
 <p>Compositional data for several common materials are included with Larch,
 and can be read at run time.  The variable <code class="docutils literal notranslate"><span class="pre">_xray.materials</span></code> contains a
 dictionary of material names, with values of (chemical forumla, density)
@@ -698,7 +698,7 @@ material, using data from Chantler.</p></td>
 </div></blockquote>
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.chemparse">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">chemparse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formula</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.chemparse" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">chemparse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formula</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.chemparse" title="Link to this definition">¶</a></dt>
 <dd><p>parse a chemical formula, returning a dictionary with element symbols as
 keys and number for each element as values.  For example, in Larch:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">chemparse</span><span class="p">(</span><span class="s2">&quot;H2O&quot;</span><span class="p">)</span>
@@ -723,7 +723,7 @@ is ‘Fe0.8’ is supported, but ‘Fe.8’ is not.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.material_get">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">material_get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.material_get" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">material_get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.material_get" title="Link to this definition">¶</a></dt>
 <dd><p>look up chemical compound by naming returning formula (not parsed!) and
 density.  For example, in Larch:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">material_get</span><span class="p">(</span><span class="s1">&#39;kapton&#39;</span><span class="p">)</span>
@@ -741,7 +741,7 @@ density.  For example, in Larch:</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.material_add">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">material_add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.material_add" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">material_add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.material_add" title="Link to this definition">¶</a></dt>
 <dd><p>add material with name, chemical formula, and density.  This will be
 added to the a file in the user’s larch directory, and loaded in
 subsequent larch sessions.</p>
@@ -750,7 +750,7 @@ subsequent larch sessions.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.material_mu">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">material_mu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name_or_formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.material_mu" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">material_mu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name_or_formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.material_mu" title="Link to this definition">¶</a></dt>
 <dd><p>return X-ray attenuation length (in 1/cm) for a material, either by name
 or formula and density.</p>
 <blockquote>
@@ -788,7 +788,7 @@ known materials)</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.material_mu_components">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">material_mu_components</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name_or_formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.material_mu_components" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">material_mu_components</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name_or_formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.material_mu_components" title="Link to this definition">¶</a></dt>
 <dd><p>return dictionary of components to calculate absorption coefficient.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -819,7 +819,7 @@ For example:</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xray.xray_delta_beta">
-<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">xray_delta_beta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">material</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">photo_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.xray_delta_beta" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">_xray.</span></span><span class="sig-name descname"><span class="pre">xray_delta_beta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">material</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">photo_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xray.xray_delta_beta" title="Link to this definition">¶</a></dt>
 <dd><p>return anomalous components of the index of refraction for a material,
 using the tabulated scattering components from Chantler.</p>
 <dl class="field-list simple">
@@ -905,8 +905,8 @@ factor <span class="math notranslate nohighlight">\(f_j\)</span>.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.0.1.
+    &#169; Copyright Matthew Newville, The University of Chicago, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>

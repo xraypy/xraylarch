@@ -1,18 +1,18 @@
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>9.5. Dealing With Errors &#8212; xraylarch 0.9.71 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css" />
+    <title>9.5. Dealing With Errors &#8212; xraylarch 0.9.72 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css?v=dfcb3266" />
     
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/documentation_options.js?v=3e9ad74a"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -118,12 +118,12 @@
           <div class="body" role="main">
             
   <section id="dealing-with-errors">
-<h1><span class="section-number">9.5. </span>Dealing With Errors<a class="headerlink" href="#dealing-with-errors" title="Permalink to this heading">¶</a></h1>
+<h1><span class="section-number">9.5. </span>Dealing With Errors<a class="headerlink" href="#dealing-with-errors" title="Link to this heading">¶</a></h1>
 <p>When an error exists in the syntax of your script, or an error happens when
 running your script, an <em>Error</em> or <em>Exception</em> is generated, and the
 execution of your script is stopped.</p>
 <section id="syntax-errors">
-<h2><span class="section-number">9.5.1. </span>Syntax Errors<a class="headerlink" href="#syntax-errors" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">9.5.1. </span>Syntax Errors<a class="headerlink" href="#syntax-errors" title="Link to this heading">¶</a></h2>
 <p>Syntax errors result from incomplete or ill-formed larch syntax.  For
 example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">+</span>
@@ -144,7 +144,7 @@ form, then execute that intermediate form), syntax errors are sometimes
 referred to as a parsing errors.</p>
 </section>
 <section id="exceptions">
-<h2><span class="section-number">9.5.2. </span>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">9.5.2. </span>Exceptions<a class="headerlink" href="#exceptions" title="Link to this heading">¶</a></h2>
 <p>Even if the syntax of your script is correct, the logic might not be.  In addition,
 even if the logic is correct for most cases, it might not be correct for
 all.  For example, certain values might cause an error run time:</p>
@@ -184,7 +184,7 @@ modern computer languages, and Larch has this capability with
 its <strong>try</strong> and <strong>except</strong> statements.</p>
 </section>
 <section id="try-and-except">
-<h2><span class="section-number">9.5.3. </span>Try and Except<a class="headerlink" href="#try-and-except" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">9.5.3. </span>Try and Except<a class="headerlink" href="#try-and-except" title="Link to this heading">¶</a></h2>
 <p>The <strong>try</strong> statement will execute a block of code and look for certain
 types of exceptions.  One or more <strong>except</strong> statements can be added to
 specify blocks of code to execute if the specified exception occurs.
@@ -239,7 +239,7 @@ inherited from Python.   See the standard Python documentation for more
 details.</p>
 </section>
 <section id="raising-your-own-exceptions">
-<h2><span class="section-number">9.5.4. </span>Raising your own exceptions<a class="headerlink" href="#raising-your-own-exceptions" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">9.5.4. </span>Raising your own exceptions<a class="headerlink" href="#raising-your-own-exceptions" title="Link to this heading">¶</a></h2>
 <p>In certain cases, you may want to cause an exception to occur.  This need is
 most likely to happen when writing your own procedures, and want to ensure
 that the input arguments can be handled correctly.</p>
@@ -281,8 +281,8 @@ be “raising an exception”:</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.0.1.
+    &#169; Copyright Matthew Newville, The University of Chicago, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>

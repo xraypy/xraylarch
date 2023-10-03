@@ -1,11 +1,11 @@
-.. _xrfviewer_app:
+.. _larchxrf_app:
 
 ============================
-The XRF Viewer Application
+The Larrh XRF Application
 ============================
 
 .. _wxmplot:  https://newville.github.io/wxmplot
 .. _matplotlib: https://matplotlib.org/
 
 
-The XRF Viewer GUI application allows display and analysis of X-ray fluorescene spectra.
+The Larch XRF application allows display and analysis of X-ray fluorescene spectra.

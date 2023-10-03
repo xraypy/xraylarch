@@ -1,24 +1,24 @@
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>5.1. XAS Viewer Overview &#8212; xraylarch 0.9.71 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css" />
+    <title>5.1. Larix Overview &#8212; xraylarch 0.9.72 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css?v=dfcb3266" />
     
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/documentation_options.js?v=3e9ad74a"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="5.2. Reading and Saving Data into XAS Viewer" href="iodata.html" />
-    <link rel="prev" title="5. XASViewer" href="../xasviewer.html" />
+    <link rel="next" title="5.2. Reading and Saving Data into Larix" href="iodata.html" />
+    <link rel="prev" title="5. Larix (was XAS Viewer)" href="../xasviewer.html" />
 
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
@@ -52,10 +52,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="iodata.html" title="5.2. Reading and Saving Data into XAS Viewer"
+          <a href="iodata.html" title="5.2. Reading and Saving Data into Larix"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../xasviewer.html" title="5. XASViewer"
+          <a href="../xasviewer.html" title="5. Larix (was XAS Viewer)"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -63,8 +63,8 @@
    <li><a href="../xray.html">X-ray Databases</a>|</li>
    <li><a href="../xrf.html">XRF Analysis</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="../xasviewer.html" accesskey="U"><span class="section-number">5. </span>XASViewer</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.1. </span>XAS Viewer Overview</a></li> 
+          <li class="nav-item nav-item-1"><a href="../xasviewer.html" accesskey="U"><span class="section-number">5. </span>Larix (was XAS Viewer)</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.1. </span>Larix Overview</a></li> 
       </ul>
     </div>
 
@@ -73,7 +73,7 @@
   <div>
     <h3><a href="../index.html">Table of Contents</a></h3>
     <ul>
-<li><a class="reference internal" href="#">5.1. XAS Viewer Overview</a><ul>
+<li><a class="reference internal" href="#">5.1. Larix Overview</a><ul>
 <li><a class="reference internal" href="#basic-layout-gui-controls-and-xas-data-management">5.1.1. Basic Layout, GUI Controls, and XAS Data Management</a><ul>
 <li><a class="reference internal" href="#list-of-spectra">5.1.1.1. List of Spectra</a></li>
 <li><a class="reference internal" href="#notebook-tabs">5.1.1.2. Notebook Tabs</a></li>
@@ -95,12 +95,12 @@
   <div>
     <h4>Previous topic</h4>
     <p class="topless"><a href="../xasviewer.html"
-                          title="previous chapter"><span class="section-number">5. </span>XASViewer</a></p>
+                          title="previous chapter"><span class="section-number">5. </span>Larix (was XAS Viewer)</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
     <p class="topless"><a href="iodata.html"
-                          title="next chapter"><span class="section-number">5.2. </span>Reading and Saving Data into XAS Viewer</a></p>
+                          title="next chapter"><span class="section-number">5.2. </span>Reading and Saving Data into Larix</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -128,9 +128,9 @@
           <div class="body" role="main">
             
   <p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
-<section id="xas-viewer-overview">
-<span id="xasviewer-overview"></span><h1><span class="section-number">5.1. </span>XAS Viewer Overview<a class="headerlink" href="#xas-viewer-overview" title="Permalink to this heading">¶</a></h1>
-<p>XAS Viewer is Graphical User Interface program for working with X-ray
+<section id="larix-overview">
+<span id="id1"></span><h1><span class="section-number">5.1. </span>Larix Overview<a class="headerlink" href="#larix-overview" title="Link to this heading">¶</a></h1>
+<p>Larix is Graphical User Interface program for working with X-ray
 Absorption Spectroscopy (XAS) data.  The program is intended to be useful for
 both novices and experts of XAS, and the aim is to include all analytic methods
 used for XAS data.  While the program emphasizes rapid and interactive data
@@ -141,45 +141,45 @@ of large numbers of spectra.   Two of the most important concepts for using XAS
 Viewer are:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li><p>XAS Viewer organizes all XAS Spectra into <em>Groups</em> of data.  In fact, the
+<li><p>Larix organizes all XAS Spectra into <em>Groups</em> of data.  In fact, the
 words “Spectra” and “Group” may be used interchangeably here.  For each
 spectrum, the raw data, any processed data arrays, all settings, and even
 fitting results will be contained in a single Group, separate from all
 other spectra.</p></li>
 <li><p>To the extent possible, all data processing and analysis steps, and even
-most of the visualization steps in XAS Viewer will be done in the Larch
+most of the visualization steps in Larix will be done in the Larch
 interpreter and shown in the Larch Buffer (<a class="reference internal" href="../guis.html#larchgui-app"><span class="std std-ref">Basic Larch GUI</span></a>) as they
 are executed.  This not only displays the steps taken, but records them in
 as high-level Python code that can be saved and used to create batch
 processing scripts and to give reproducible analyses. If, at any point you
-want to know exactly what XAS Viewer is “really doing”, you can open the
+want to know exactly what Larix is “really doing”, you can open the
 Larch Buffer and see the commands being executed.</p></li>
 </ol>
 </div></blockquote>
-<p>With those overall goals in mind, the main features of XAS Viewer can be broken
+<p>With those overall goals in mind, the main features of Larix can be broken
 into a few categories.  Here we give a brief overview, and then expand on these
 topics in the following sections.</p>
 <section id="basic-layout-gui-controls-and-xas-data-management">
-<h2><span class="section-number">5.1.1. </span>Basic Layout, GUI Controls, and XAS Data Management<a class="headerlink" href="#basic-layout-gui-controls-and-xas-data-management" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">5.1.1. </span>Basic Layout, GUI Controls, and XAS Data Management<a class="headerlink" href="#basic-layout-gui-controls-and-xas-data-management" title="Link to this heading">¶</a></h2>
 <p>Each XAS Spectra or Group of data will be displayed in a list of Spectra of the
-main XAS Viewer window.  This list will show the “File Name” for each
+main Larix window.  This list will show the “File Name” for each
 spectra/group which will usually be derived from the name of the file from
 which the data was read.  Since a data files might give multiple spectra and
-since some Groups of data will be generated by XAS Viewer, the list here really
+since some Groups of data will be generated by Larix, the list here really
 gives a unique name for each group that will be used to identify it throughout
-XAS Viewer.</p>
-<figure class="align-center" id="id1">
-<span id="fig-xasviewer-top"></span><a class="reference external image-reference" href="../_images/XASViewer_Main.png"><img alt="../_images/XASViewer_Main.png" src="../_images/XASViewer_Main.png" style="width: 60%;" /></a>
+Larix.</p>
+<figure class="align-center" id="id2">
+<span id="fig-larix-top"></span><a class="reference external image-reference" href="../_images/Larix_Main.png"><img alt="../_images/Larix_Main.png" src="../_images/Larix_Main.png" style="width: 60%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 5.1.1.1 </span><span class="caption-text">XASViewer showing the File/Group list on the left-hand side and the set of
+<p><span class="caption-number">Figure 5.1.1.1 </span><span class="caption-text">Larix showing the File/Group list on the left-hand side and the set of
 Working Panels in a “Tabbed Display” on the left-hand side for various data
 processing and analysis tasks.  The XAS pre-edge subtraction and
-normalization panel is shown by default.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+normalization panel is shown by default.</span><a class="headerlink" href="#id2" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <section id="list-of-spectra">
-<h3><span class="section-number">5.1.1.1. </span>List of Spectra<a class="headerlink" href="#list-of-spectra" title="Permalink to this heading">¶</a></h3>
-<p>XAS Viewer opens with a main window as shown in <a class="reference internal" href="#fig-xasviewer-top"><span class="std std-numref">Figure 5.1.1.1</span></a>,
+<h3><span class="section-number">5.1.1.1. </span>List of Spectra<a class="headerlink" href="#list-of-spectra" title="Link to this heading">¶</a></h3>
+<p>Larix opens with a main window as shown in <a class="reference internal" href="#fig-larix-top"><span class="std std-numref">Figure 5.1.1.1</span></a>,
 after some data has been read in. The left-hand side contains a list of spectra
 groups that have been read.  Clicking on the file name makes that group of data
 the “current data group”, while checking the boxes next to each name will
@@ -202,24 +202,24 @@ saving and loading Session files, these Journals are preserved across data
 analysis sessions.</p>
 </section>
 <section id="notebook-tabs">
-<h3><span class="section-number">5.1.1.2. </span>Notebook Tabs<a class="headerlink" href="#notebook-tabs" title="Permalink to this heading">¶</a></h3>
-<p>While the List of Spectra is shown on the left-hand side of the XAS Viewer
-window, the right-hand side shown in <a class="reference internal" href="#fig-xasviewer-top"><span class="std std-numref">Figure 5.1.1.1</span></a> contains
+<h3><span class="section-number">5.1.1.2. </span>Notebook Tabs<a class="headerlink" href="#notebook-tabs" title="Link to this heading">¶</a></h3>
+<p>While the List of Spectra is shown on the left-hand side of the Larix
+window, the right-hand side shown in <a class="reference internal" href="#fig-larix-top"><span class="std std-numref">Figure 5.1.1.1</span></a> contains
 multiple forms or “Work Panels” for various data processing and analysis tasks
 that are arranged in a tabbed notebook display. On startup, the work panel
 labelled “Normalization” is shown for for pre-edge subtraction and
-normalization (for more detail, see <a class="reference internal" href="dialogs.html#xasviewer-preedge"><span class="std std-ref">Pre-edge subtraction and Normalization</span></a>).  Other notebook
-tabs include panels for fitting pre-edge peaks (<a class="reference internal" href="preedge.html#xasviewer-peakfit"><span class="std std-ref">Pre-edge peak fitting</span></a>),
-Linear Combination Analysis (<a class="reference internal" href="preedge.html#xasviewer-lincombo"><span class="std std-ref">Linear Combination Analysis</span></a>), Principal Component
-Analysis (<a class="reference internal" href="preedge.html#xasviewer-pca"><span class="std std-ref">Principal Component and Non-negative Factor Analysis</span></a>), Advanced Linear Regression
-(<a class="reference internal" href="preedge.html#xasviewer-regression"><span class="std std-ref">Linear Regression with LASSO and PLS to predict external variable</span></a>), EXAFS Data Processing
-(<a class="reference internal" href="preedge.html#xasviewer-exafs-bkg"><span class="std std-ref">EXAFS Processing: Background Subtraction</span></a> and <a class="reference internal" href="preedge.html#xasviewer-exafs-fft"><span class="std std-ref">EXAFS Processing:  Fourier Transforms</span></a>), and Feff fitting
-(<a class="reference internal" href="preedge.html#xasviewer-feffit"><span class="std std-ref">Fitting EXAFS data to Feff Paths</span></a>).  These panels generally assume that data has been
+normalization (for more detail, see <a class="reference internal" href="dialogs.html#larix-preedge"><span class="std std-ref">Pre-edge subtraction and Normalization</span></a>).  Other notebook
+tabs include panels for fitting pre-edge peaks (<a class="reference internal" href="preedge.html#larix-peakfit"><span class="std std-ref">Pre-edge peak fitting</span></a>),
+Linear Combination Analysis (<a class="reference internal" href="preedge.html#larix-lincombo"><span class="std std-ref">Linear Combination Analysis</span></a>), Principal Component
+Analysis (<a class="reference internal" href="preedge.html#larix-pca"><span class="std std-ref">Principal Component and Non-negative Factor Analysis</span></a>), Advanced Linear Regression
+(<a class="reference internal" href="preedge.html#larix-regression"><span class="std std-ref">Linear Regression with LASSO and PLS to predict external variable</span></a>), EXAFS Data Processing
+(<a class="reference internal" href="preedge.html#larix-exafs-bkg"><span class="std std-ref">EXAFS Processing: Background Subtraction</span></a> and <a class="reference internal" href="preedge.html#larix-exafs-fft"><span class="std std-ref">EXAFS Processing:  Fourier Transforms</span></a>), and Feff fitting
+(<a class="reference internal" href="preedge.html#larix-feffit"><span class="std std-ref">Fitting EXAFS data to Feff Paths</span></a>).  These panels generally assume that data has been
 pre-edge subtracted and normalized.  Each of these will be covered in more
 detail below.</p>
 </section>
 <section id="gui-controls-and-using-the-pin-icon">
-<h3><span class="section-number">5.1.1.3. </span>GUI Controls, and using the Pin icon<a class="headerlink" href="#gui-controls-and-using-the-pin-icon" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">5.1.1.3. </span>GUI Controls, and using the Pin icon<a class="headerlink" href="#gui-controls-and-using-the-pin-icon" title="Link to this heading">¶</a></h3>
 <p>Most of the GUI controls should be pretty familiar.  Several of the fields for
 numerical values only allow valid numbers.  Some of these also have arrows to
 increment or decrement the value by an appropriate amount for that value.</p>
@@ -228,11 +228,11 @@ right of the value.  This pin button allows you to select a value from the
 current plot window.  Clicking this button and then clicking anywhere on the
 plot window will use the X value (or occasionally the Y value) from the point
 selected on the plot to fill in the value for that field.  The ‘pin’ icon is
-used in many of the work panels of XAS Viewer, including the Normalization
+used in many of the work panels of Larix, including the Normalization
 panel.</p>
 </section>
 <section id="menus-and-dialogs">
-<h3><span class="section-number">5.1.1.4. </span>Menus and Dialogs<a class="headerlink" href="#menus-and-dialogs" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">5.1.1.4. </span>Menus and Dialogs<a class="headerlink" href="#menus-and-dialogs" title="Link to this heading">¶</a></h3>
 <p>From the Menubar, a series of Dialogs can be accessed.  These are generally
 useful for auxiliary data processing and analysis tasks including categories
 of:</p>
@@ -250,15 +250,15 @@ running Feff, and browsing Feff results to select paths for analysis.</p></li>
 <p>These dialogs bring up separate windows for there individual tasks.</p>
 </section>
 <section id="plotting-window">
-<h3><span class="section-number">5.1.1.5. </span>Plotting Window<a class="headerlink" href="#plotting-window" title="Permalink to this heading">¶</a></h3>
-<p>Interactive data visualization is an important component of XAS Viewer.  On
+<h3><span class="section-number">5.1.1.5. </span>Plotting Window<a class="headerlink" href="#plotting-window" title="Link to this heading">¶</a></h3>
+<p>Interactive data visualization is an important component of Larix.  On
 startup, a plot window will be shown for plotting X/Y line plots, the most
-common way to plot XAS data.  XAS Viewer will display many different datasets
+common way to plot XAS data.  Larix will display many different datasets
 in this way, all made with Larch (see <a class="reference internal" href="../plotting.html#plotting-chapter"><span class="std std-ref">Plotting and Displaying Data</span></a>) and <a class="reference external" href="https://newville.github.io/wxmplot/">wxmplot</a>.
 These plots are highly interactive, customizable, and can produce
 publication-quality images.  The plots can be zoomed in and out, and can be
 configured to change the colors, linestyles, margins, text for labels, and
-more.  While XAS Viewer starts up with one plot window, some analysis tasks
+more.  While Larix starts up with one plot window, some analysis tasks
 will bring up a second plot window. A few windows for browsing analysis results
 will even allow you to bring up more and choose which window to plot to.</p>
 <p>From any plot window you can use Ctrl-C to copy the image to the clipboard,
@@ -268,55 +268,55 @@ colors, text, styles and so on. These common options are available from the
 File and Options menu of the plotting window.</p>
 <p>In particular, clicking on the legend for any labeled curve on a plot will
 toggle whether that curve is displayed and partially lighten the label
-itself.  This feature of the plotting window means that XAS Viewer may draw
+itself.  This feature of the plotting window means that Larix may draw
 several different traces on the same plot window and allow (or even expect)
 you to turn some of them on or off interactively to better view the
 different components being shown.  This can be especially useful for
 comparing XANES spectra or for inspecting the results of peak fitting.</p>
-<p>XAS Viewer starts up with one plot window.  Some analysis tasks will bring up a
+<p>Larix starts up with one plot window.  Some analysis tasks will bring up a
 second plot window, and  a few displays of analysis results will allow you to
 bring up more and choose which window to plot to.</p>
 </section>
 </section>
 <section id="data-input-and-output">
-<h2><span class="section-number">5.1.2. </span>Data Input and Output<a class="headerlink" href="#data-input-and-output" title="Permalink to this heading">¶</a></h2>
-<p>XAS Viewer can import XAS data in the following formats</p>
+<h2><span class="section-number">5.1.2. </span>Data Input and Output<a class="headerlink" href="#data-input-and-output" title="Link to this heading">¶</a></h2>
+<p>Larix can import XAS data in the following formats</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>XDI data files - the standard data format for XAS data (<a class="reference internal" href="iodata.html#xasviewer-plaintext"><span class="std std-ref">Reading Plain text data files, including XDI</span></a>).</p></li>
+<li><p>XDI data files - the standard data format for XAS data (<a class="reference internal" href="iodata.html#larix-plaintext"><span class="std std-ref">Reading Plain text data files, including XDI</span></a>).</p></li>
 <li><p>plain text data data files with data arrays in column format
-(<a class="reference internal" href="iodata.html#xasviewer-plaintext"><span class="std std-ref">Reading Plain text data files, including XDI</span></a>), including data files from most XAS beamlines
+(<a class="reference internal" href="iodata.html#larix-plaintext"><span class="std std-ref">Reading Plain text data files, including XDI</span></a>), including data files from most XAS beamlines
 at most facilities.</p></li>
-<li><p>Athena Project Files (<a class="reference internal" href="iodata.html#xasviewer-athena"><span class="std std-ref">Reading Data from Athena Project Files</span></a>).</p></li>
-<li><p>ESRF Spec/BLISS HDF5 files (<a class="reference internal" href="iodata.html#xasviewer-blisshdf5"><span class="std std-ref">Reading Spec/Bliss HDF5 Data</span></a>).</p></li>
-<li><p>Larch Session files (<a class="reference internal" href="iodata.html#xasviewer-sessionfiles"><span class="std std-ref">Larch Session Files and XAS Viewer</span></a>).</p></li>
+<li><p>Athena Project Files (<a class="reference internal" href="iodata.html#larix-athena"><span class="std std-ref">Reading Data from Athena Project Files</span></a>).</p></li>
+<li><p>ESRF Spec/BLISS HDF5 files (<a class="reference internal" href="iodata.html#larix-blisshdf5"><span class="std std-ref">Reading Spec/Bliss HDF5 Data</span></a>).</p></li>
+<li><p>Larch Session files (<a class="reference internal" href="iodata.html#larix-sessionfiles"><span class="std std-ref">Larch Session Files and Larix</span></a>).</p></li>
 </ul>
 </div></blockquote>
 <p>Plain text files with non-XAS data, such as line-up scans or X-ray emission
 spectra can also be read in, and some support for plotting is available for
 them.</p>
-<p>For saving and exporting data, XAS Viewer can save multiple XAS spectra as:</p>
+<p>For saving and exporting data, Larix can save multiple XAS spectra as:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>Athena Project files (<a class="reference internal" href="iodata.html#xasviewer-athena"><span class="std std-ref">Reading Data from Athena Project Files</span></a>).</p></li>
+<li><p>Athena Project files (<a class="reference internal" href="iodata.html#larix-athena"><span class="std std-ref">Reading Data from Athena Project Files</span></a>).</p></li>
 <li><p>CSV files, from selected groups or for fitting and analysis results.</p></li>
-<li><p>Larch Session files (<a class="reference internal" href="iodata.html#xasviewer-sessionfiles"><span class="std std-ref">Larch Session Files and XAS Viewer</span></a>).</p></li>
+<li><p>Larch Session files (<a class="reference internal" href="iodata.html#larix-sessionfiles"><span class="std std-ref">Larch Session Files and Larix</span></a>).</p></li>
 </ul>
 </div></blockquote>
-<p>See <a class="reference internal" href="iodata.html#xasviewer-io"><span class="std std-ref">Reading and Saving Data into XAS Viewer</span></a> for details.</p>
+<p>See <a class="reference internal" href="iodata.html#larix-io"><span class="std std-ref">Reading and Saving Data into Larix</span></a> for details.</p>
 </section>
 <section id="data-normalization">
-<h2><span class="section-number">5.1.3. </span>Data Normalization<a class="headerlink" href="#data-normalization" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">5.1.3. </span>Data Normalization<a class="headerlink" href="#data-normalization" title="Link to this heading">¶</a></h2>
 <p>The first task for working with XAS data is to subtract the pre-edge and
 normalize the data, so that normalized XAFS (which goes from 0 below the
 absorption edge to 1 above the absorption edge) is available for downstream
-analysis.  The “Normalization” panel of XAS Viewer shows most of the parameters
+analysis.  The “Normalization” panel of Larix shows most of the parameters
 needed for selecting the energy threshold value ‘E0’, doing pre-edge
 subtraction, and estimating the value of the edge step.</p>
 <p>This step is also typically where data corrections and summing of multiple
 spectra will be done.  There are variety of Task-specific Dialog boxes may be
 used to perform optional data processing and analysis tasks.  These dialogs are
-brought up from the Menu of the XAS Viewer window, and include tools for the
+brought up from the Menu of the Larix window, and include tools for the
 following data processing operations:</p>
 <blockquote>
 <div><ul class="simple">
@@ -333,8 +333,8 @@ data, and the user is able to adjust a small set of curated parameters and then
 visualize the results of these adjustments.</p>
 </section>
 <section id="xanes-analysis">
-<h2><span class="section-number">5.1.4. </span>XANES Analysis<a class="headerlink" href="#xanes-analysis" title="Permalink to this heading">¶</a></h2>
-<p>For XANES analysis, XAS Viewer supports the following data analysis processes:</p>
+<h2><span class="section-number">5.1.4. </span>XANES Analysis<a class="headerlink" href="#xanes-analysis" title="Link to this heading">¶</a></h2>
+<p>For XANES analysis, Larix supports the following data analysis processes:</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>linear combination analysis of spectra.</p></li>
@@ -343,11 +343,11 @@ visualize the results of these adjustments.</p>
 <li><p>pre-edge peak fitting.</p></li>
 </ul>
 </div></blockquote>
-<p>Each of these is given its own “Tab” in the main XAS Viewer window.</p>
+<p>Each of these is given its own “Tab” in the main Larix window.</p>
 </section>
 <section id="exafs-processing">
-<h2><span class="section-number">5.1.5. </span>EXAFS Processing<a class="headerlink" href="#exafs-processing" title="Permalink to this heading">¶</a></h2>
-<p>For EXAFS analysis, the EXAF XANES analysis, XAS Viewer supports the following data analysis processes:</p>
+<h2><span class="section-number">5.1.5. </span>EXAFS Processing<a class="headerlink" href="#exafs-processing" title="Link to this heading">¶</a></h2>
+<p>For EXAFS analysis, the EXAF XANES analysis, Larix supports the following data analysis processes:</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>EXAFS background spline removal.</p></li>
@@ -358,7 +358,7 @@ visualize the results of these adjustments.</p>
 </div></blockquote>
 </section>
 <section id="exafs-modeling-with-feff">
-<h2><span class="section-number">5.1.6. </span>EXAFS Modeling with FEFF<a class="headerlink" href="#exafs-modeling-with-feff" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">5.1.6. </span>EXAFS Modeling with FEFF<a class="headerlink" href="#exafs-modeling-with-feff" title="Link to this heading">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
 <li><p>Browser for CIF files from American Mineralogist Crystal Structure Database.</p></li>
@@ -387,10 +387,10 @@ Gaussian, etc).  Some formats require the <a class="reference external" href="ht
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="iodata.html" title="5.2. Reading and Saving Data into XAS Viewer"
+          <a href="iodata.html" title="5.2. Reading and Saving Data into Larix"
              >next</a> |</li>
         <li class="right" >
-          <a href="../xasviewer.html" title="5. XASViewer"
+          <a href="../xasviewer.html" title="5. Larix (was XAS Viewer)"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -398,13 +398,13 @@ Gaussian, etc).  Some formats require the <a class="reference external" href="ht
    <li><a href="../xray.html">X-ray Databases</a>|</li>
    <li><a href="../xrf.html">XRF Analysis</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="../xasviewer.html" ><span class="section-number">5. </span>XASViewer</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.1. </span>XAS Viewer Overview</a></li> 
+          <li class="nav-item nav-item-1"><a href="../xasviewer.html" ><span class="section-number">5. </span>Larix (was XAS Viewer)</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.1. </span>Larix Overview</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.0.1.
+    &#169; Copyright Matthew Newville, The University of Chicago, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>

@@ -369,7 +369,7 @@ examples in the following sections in this chapter make use of these macros.
 .. function:: plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True, show_peakrange=True, win=1, **kws):
 
     Plot pre-edge peaks and baseline fit, as from :func:`pre_edge_baseline`
-    or XAS Viewer GUI
+    or Larix.
 
 
     :param dgroup:      data group, after running :func:`pre_edge_baseline`

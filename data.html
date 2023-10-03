@@ -1,18 +1,18 @@
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>10. Reading and Writing Data &#8212; xraylarch 0.9.71 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
+    <title>10. Reading and Writing Data &#8212; xraylarch 0.9.72 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/documentation_options.js?v=3e9ad74a"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
@@ -189,15 +189,15 @@
             
   <p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
 <section id="reading-and-writing-data">
-<span id="data-io-chapter"></span><h1><span class="section-number">10. </span>Reading and Writing Data<a class="headerlink" href="#reading-and-writing-data" title="Permalink to this heading">¶</a></h1>
+<span id="data-io-chapter"></span><h1><span class="section-number">10. </span>Reading and Writing Data<a class="headerlink" href="#reading-and-writing-data" title="Link to this heading">¶</a></h1>
 <p>Larch has several built-in functions for reading and writing scientific
 data.  The intention is that the types and varieties of supported files
 will increase.  In addition, because standard Python modules can be used
 from Larch, many types of standard data and image types can be used by
 importing the appropriate Python module.  This chapter describes the Larch
 functions for data handling.</p>
-<span class="target" id="module-larch.io"></span><section id="simple-plaintext-ascii-or-utf-8-column-files">
-<span id="read-ascii-function"></span><h2><span class="section-number">10.1. </span>Simple Plaintext (ASCII or UTF-8) Column Files<a class="headerlink" href="#simple-plaintext-ascii-or-utf-8-column-files" title="Permalink to this heading">¶</a></h2>
+<section id="simple-plaintext-ascii-or-utf-8-column-files">
+<span id="read-ascii-function"></span><span id="module-larch.io"></span><h2><span class="section-number">10.1. </span>Simple Plaintext (ASCII or UTF-8) Column Files<a class="headerlink" href="#simple-plaintext-ascii-or-utf-8-column-files" title="Link to this heading">¶</a></h2>
 <p>A simple way to store small amounts of numerical data - and one that is widely used in
 the XAFS community - is to store data in plaintext data files, with whitespaces
 separating numbers layed out as a table, with a fix number of columns and rows indicated
@@ -229,7 +229,7 @@ column into an array, usually named by the column heading.  That often means tha
 read these files in, you also need to know and tell the program how to use those arrays.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.read_ascii">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_ascii</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simple_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_ascii" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_ascii</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simple_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_ascii" title="Link to this definition">¶</a></dt>
 <dd><p>read a column ascii column file, returning a group
 containing the data extracted from the file.</p>
 <dl class="field-list simple">
@@ -302,7 +302,7 @@ by giving the column index (starting from 0).</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.write_ascii">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">write_ascii</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">commentchar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'#'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_larch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.write_ascii" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">write_ascii</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">commentchar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'#'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.write_ascii" title="Link to this definition">¶</a></dt>
 <dd><p>write a list of items to an ASCII column file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -325,7 +325,7 @@ by giving the column index (starting from 0).</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.write_group">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">write_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scalars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrays</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrays_like</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">commentchar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'#'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_larch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.write_group" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">write_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scalars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrays</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrays_like</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">commentchar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'#'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.write_group" title="Link to this definition">¶</a></dt>
 <dd><p>(deprecated) write components of a group to an ASCII column file</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -336,7 +336,7 @@ Use <cite>save_session</cite> instead.</p>
 
 </section>
 <section id="reading-xafs-data-interchange-xdi-files">
-<span id="read-xdi-function"></span><h2><span class="section-number">10.2. </span>Reading XAFS Data Interchange (XDI) Files<a class="headerlink" href="#reading-xafs-data-interchange-xdi-files" title="Permalink to this heading">¶</a></h2>
+<span id="read-xdi-function"></span><h2><span class="section-number">10.2. </span>Reading XAFS Data Interchange (XDI) Files<a class="headerlink" href="#reading-xafs-data-interchange-xdi-files" title="Link to this heading">¶</a></h2>
 <p>The X-ray Data Interchange Format has been developed as part of an effort to standardize
 the format of plaintext XAFS data files: see <a class="reference external" href="https://github.com/XraySpectroscopy/XAS-Data-Interchange/">XDI</a>.  This eliminates some of the
 challenges with plaintext files and allows consistent naming of arrays.  XDI files often
@@ -349,7 +349,7 @@ dictionary</a>.  The most important components read from an XDI file are give in
 <a class="reference internal" href="#xdi-attr-table"><span class="std std-ref">Table of XDI Attributes</span></a> below.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.read_xdi">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_xdi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_xdi" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_xdi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_xdi" title="Link to this definition">¶</a></dt>
 <dd><p>read an XDI File into a Group</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -483,7 +483,7 @@ scalars values taken from XDI files.</p>
 </div></blockquote>
 </section>
 <section id="athena-project-files">
-<h2><span class="section-number">10.3. </span>Athena Project Files<a class="headerlink" href="#athena-project-files" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">10.3. </span>Athena Project Files<a class="headerlink" href="#athena-project-files" title="Link to this heading">¶</a></h2>
 <p>The popular Athena program for XAFS Analysis uses an “Athena Project File”
 to store many XAFS spectra and some processing parameters as used in
 Athena.  Larch can read and extract the <span class="math notranslate nohighlight">\(\mu(E)\)</span> data from these
@@ -491,10 +491,10 @@ project files - it does not read <span class="math notranslate nohighlight">\(\c
 and can also write <span class="math notranslate nohighlight">\(\mu(E)\)</span> data to Athena Project files.</p>
 <p>Larch does not read or support Artemis projects.</p>
 <section id="reading-athena-project-files">
-<span id="read-athena-function"></span><h3><span class="section-number">10.3.1. </span>Reading Athena Project Files<a class="headerlink" href="#reading-athena-project-files" title="Permalink to this heading">¶</a></h3>
+<span id="read-athena-function"></span><h3><span class="section-number">10.3.1. </span>Reading Athena Project Files<a class="headerlink" href="#reading-athena-project-files" title="Link to this heading">¶</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.read_athena">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_athena</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">match</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_preedge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_bkg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_fft</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_hashkey</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_athena" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_athena</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">match</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_preedge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_bkg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_fft</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_hashkey</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_athena" title="Link to this definition">¶</a></dt>
 <dd><p>open and read an Athena Project File, returning a group of groups, each
 subgroup corresponding to an Athena Group from the project file.</p>
 <dl class="field-list simple">
@@ -541,7 +541,7 @@ string used by Athena, instead of the group label.</p></li>
 </div>
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.extract_athenagroup">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">extract_athenagroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datagroup</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.extract_athenagroup" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">extract_athenagroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datagroup</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.extract_athenagroup" title="Link to this definition">¶</a></dt>
 <dd><p>extracts a group out of an Athena Project File, allowing the file to be
 closed.</p>
 <dl class="field-list simple">
@@ -563,14 +563,14 @@ Project would be:</p>
 </div>
 </section>
 <section id="creating-and-writing-to-athena-project-files">
-<h3><span class="section-number">10.3.2. </span>Creating and Writing to Athena Project Files<a class="headerlink" href="#creating-and-writing-to-athena-project-files" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">10.3.2. </span>Creating and Writing to Athena Project Files<a class="headerlink" href="#creating-and-writing-to-athena-project-files" title="Link to this heading">¶</a></h3>
 <p>You can create an Athena Project File with <a class="reference internal" href="#larch.io.create_athena" title="larch.io.create_athena"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_athena()</span></code></a> and then
 add a group of XAFS data to that pct with the <code class="xref py py-meth docutils literal notranslate"><span class="pre">add_group()</span></code>
 method of that project file.  The group is expected to have array names of
 <cite>energy</cite> and <cite>i0</cite>, and one of <cite>mu</cite>, <cite>mutrans</cite>, or <cite>mufluor</cite>.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.create_athena">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">create_athena</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.create_athena" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">create_athena</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.create_athena" title="Link to this definition">¶</a></dt>
 <dd><p>Open a new or existing Athena Project File, returning an
 <a class="reference internal" href="#larch.io.AthenaProject" title="larch.io.AthenaProject"><code class="xref py py-class docutils literal notranslate"><span class="pre">AthenaProject</span></code></a> object.  That is, a new project file will be
 created if it does not exist, or an existing project will be opened for
@@ -584,13 +584,13 @@ reading and writing.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="larch.io.AthenaProject">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">AthenaProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.AthenaProject" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">AthenaProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.AthenaProject" title="Link to this definition">¶</a></dt>
 <dd><p>A representation of an Athena Project File</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="larch.io.AthenaProject.add_group">
-<span class="sig-prename descclassname"><span class="pre">AthenaProject.</span></span><span class="sig-name descname"><span class="pre">add_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.AthenaProject.add_group" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">AthenaProject.</span></span><span class="sig-name descname"><span class="pre">add_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.AthenaProject.add_group" title="Link to this definition">¶</a></dt>
 <dd><p>add a group of XAFS data to an Athena Project</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -606,7 +606,7 @@ reading and writing.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="larch.io.AthenaProject.save">
-<span class="sig-prename descclassname"><span class="pre">AthenaProject.</span></span><span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_gzip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.AthenaProject.save" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">AthenaProject.</span></span><span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_gzip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.AthenaProject.save" title="Link to this definition">¶</a></dt>
 <dd><p>save project to file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -617,7 +617,7 @@ reading and writing.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="larch.io.AthenaProject.read">
-<span class="sig-prename descclassname"><span class="pre">AthenaProject.</span></span><span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">match</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_preedge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_bkg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_fft</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_hashkey</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.AthenaProject.read" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">AthenaProject.</span></span><span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">match</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_preedge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_bkg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_fft</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_hashkey</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.AthenaProject.read" title="Link to this definition">¶</a></dt>
 <dd><p>read from project.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -639,7 +639,7 @@ this method the data is retained in the <cite>groups</cite> attribute which is a
 Python list of groups for each group in the Athena Project.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="larch.io.AthenaProject.as_group">
-<span class="sig-prename descclassname"><span class="pre">AthenaProject.</span></span><span class="sig-name descname"><span class="pre">as_group</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.AthenaProject.as_group" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">AthenaProject.</span></span><span class="sig-name descname"><span class="pre">as_group</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.AthenaProject.as_group" title="Link to this definition">¶</a></dt>
 <dd><p>Return the Athena Project <cite>groups</cite> attribute (as read by
 <a class="reference internal" href="#larch.io.AthenaProject.read" title="larch.io.AthenaProject.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read()</span></code></a>) to a larch Group of groups.</p>
 </dd></dl>
@@ -657,11 +657,11 @@ Python list of groups for each group in the Athena Project.</p>
 </div>
 </section>
 <section id="converting-athena-project-files-to-hdf5">
-<h3><span class="section-number">10.3.3. </span>Converting Athena Project Files to HDF5<a class="headerlink" href="#converting-athena-project-files-to-hdf5" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">10.3.3. </span>Converting Athena Project Files to HDF5<a class="headerlink" href="#converting-athena-project-files-to-hdf5" title="Link to this heading">¶</a></h3>
 <p>An Athena Project File (.prj) can be easily converted to HDF5 (.h5) with the <a class="reference internal" href="#larch.io.athena_to_hdf5" title="larch.io.athena_to_hdf5"><code class="xref py py-func docutils literal notranslate"><span class="pre">athena_to_hdf5()</span></code></a>.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.athena_to_hdf5">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">athena_to_hdf5</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fileout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">match</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_preedge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_bkg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_fft</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_hashkey</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.athena_to_hdf5" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">athena_to_hdf5</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fileout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">match</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_preedge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_bkg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_fft</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_hashkey</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.athena_to_hdf5" title="Link to this definition">¶</a></dt>
 <dd><p>convert read an Athena Project File to HDF5</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -685,7 +685,7 @@ Python list of groups for each group in the Athena Project.</p>
 </section>
 </section>
 <section id="reading-hdf5-files">
-<h2><span class="section-number">10.4. </span>Reading HDF5 Files<a class="headerlink" href="#reading-hdf5-files" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">10.4. </span>Reading HDF5 Files<a class="headerlink" href="#reading-hdf5-files" title="Link to this heading">¶</a></h2>
 <p>HDF5 is an increasingly popular data format for scientific data, as it can
 efficiently hold very large arrays in a heirarchical format that holds
 “metadata” about the data, and can be explored with a variety of tools.
@@ -693,7 +693,7 @@ The interface used in Larch is based on <a class="reference external" href="http
 for further documentation.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.h5_group">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">h5_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.h5_group" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">h5_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.h5_group" title="Link to this definition">¶</a></dt>
 <dd><p>opens and maps and HDF5 file to a Larch Group, with HDF5 Groups map as
 Larch Groups.  Note that the full set of data is not read and
 copied. Instead, the HDF5 file is kept open and data accessed from the
@@ -731,43 +731,43 @@ and schemas become standardized, better interfaces can easily be made on
 top of this approach.</p>
 </section>
 <section id="reading-netcdf-files">
-<h2><span class="section-number">10.5. </span>Reading NetCDF Files<a class="headerlink" href="#reading-netcdf-files" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">10.5. </span>Reading NetCDF Files<a class="headerlink" href="#reading-netcdf-files" title="Link to this heading">¶</a></h2>
 <p>NetCDF4 is an older and less flexible file format than HDF5, but is
 efficient for storing array data and still in wide use.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.netcdf_group">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">netcdf_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.netcdf_group" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">netcdf_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.netcdf_group" title="Link to this definition">¶</a></dt>
 <dd><p>returns a group with data from a NetCDF4 file.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.netcdf_file">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">netcdf_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'r'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.netcdf_file" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">netcdf_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'r'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.netcdf_file" title="Link to this definition">¶</a></dt>
 <dd><p>opens and returns a netcdf file.</p>
 </dd></dl>
 
 </section>
 <section id="reading-tiff-images">
-<h2><span class="section-number">10.6. </span>Reading TIFF Images<a class="headerlink" href="#reading-tiff-images" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">10.6. </span>Reading TIFF Images<a class="headerlink" href="#reading-tiff-images" title="Link to this heading">¶</a></h2>
 <p>TIFF is a popular image format used by many cameras and detectors. The
 interface used in Larch is based on code from Chrisoph Gohlke.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.read_tiff">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_tiff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_tiff" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_tiff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_tiff" title="Link to this definition">¶</a></dt>
 <dd><p>reads a TIFF image from a TIFF File.  This returns just the image data as an
 array, and does return any metadata.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.tiff_object">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">tiff_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.tiff_object" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">tiff_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.tiff_object" title="Link to this definition">¶</a></dt>
 <dd><p>opens and returns a TIFF file.  This is useful for extracting metadata
 and multiple series.</p>
 </dd></dl>
 
 </section>
 <section id="working-with-epics-channel-access">
-<h2><span class="section-number">10.7. </span>Working with Epics Channel Access<a class="headerlink" href="#working-with-epics-channel-access" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">10.7. </span>Working with Epics Channel Access<a class="headerlink" href="#working-with-epics-channel-access" title="Link to this heading">¶</a></h2>
 <p>Many synchrotron facilities use the Epics control system.  If the Epics
 Channel Access layer, which requires network access and configuration
 discussed elsewhere, are set correcty, then Larch can read and write data
@@ -776,7 +776,7 @@ on <a class="reference external" href="https://pyepics.github.com/pyepics/">pyep
 access is encapsulated into three functions:</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.caget">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">caget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">PV_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.caget" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">caget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">PV_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.caget" title="Link to this definition">¶</a></dt>
 <dd><p>get the value of the Process Variable.  The optional <code class="docutils literal notranslate"><span class="pre">as_string</span></code>
 argument ensures the returned value is the string representation for the
 variable.</p>
@@ -784,7 +784,7 @@ variable.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.caput">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">caput</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">PV_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.caput" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">caput</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">PV_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.caput" title="Link to this definition">¶</a></dt>
 <dd><p>set the value of the Process Variable.  If the optional <code class="docutils literal notranslate"><span class="pre">wait</span></code> is
 <code class="docutils literal notranslate"><span class="pre">True</span></code>, the function will not return until the put “completes”. For
 some types of data, this may wait for some process (moving a motor,
@@ -793,7 +793,7 @@ triggering a detector) to finish before returning.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.PV">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">PV</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">PV_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.PV" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">PV</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">PV_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.PV" title="Link to this definition">¶</a></dt>
 <dd><p>create and return an Epics PV object for a Process Variable.  This will
 have get() and put() methods, and allows you to add callback functions
 which will be run with new values everytime the PV value changes.</p>
@@ -801,12 +801,12 @@ which will be run with new values everytime the PV value changes.</p>
 
 </section>
 <section id="reading-scan-data-from-aps-beamlines">
-<h2><span class="section-number">10.8. </span>Reading Scan Data from APS Beamlines<a class="headerlink" href="#reading-scan-data-from-aps-beamlines" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">10.8. </span>Reading Scan Data from APS Beamlines<a class="headerlink" href="#reading-scan-data-from-aps-beamlines" title="Link to this heading">¶</a></h2>
 <p>This list is minimal, but can be expanded easily to accomodate more
 facilities and beamlines.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.read_mda">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_mda</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_mda" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_mda</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_mda" title="Link to this definition">¶</a></dt>
 <dd><p>read a binary MDA (multi-Dimensional Array) file from the Epics SScan
 Record, and return a group based on the scans it contains.  This is not
 very well tested – use with caution!</p>
@@ -814,34 +814,34 @@ very well tested – use with caution!</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.read_gsescan">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_gsescan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_gsescan" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_gsescan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_gsescan" title="Link to this definition">¶</a></dt>
 <dd><p>read a (old-style) GSECARS Escan data file into a group.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.read_stepscan">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_stepscan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_stepscan" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_stepscan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_stepscan" title="Link to this definition">¶</a></dt>
 <dd><p>read a GSECARS StepScan data file into a group.</p>
 </dd></dl>
 
 </section>
 <section id="reading-spec-bliss-files-via-silx-io-open">
-<h2><span class="section-number">10.9. </span>Reading Spec/BLISS files via <cite>silx.io.open</cite><a class="headerlink" href="#reading-spec-bliss-files-via-silx-io-open" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">10.9. </span>Reading Spec/BLISS files via <cite>silx.io.open</cite><a class="headerlink" href="#reading-spec-bliss-files-via-silx-io-open" title="Link to this heading">¶</a></h2>
 <p>Spec ASCII files (see <a class="reference external" href="https://www.certif.com/content/spec">spec</a>) and BLISS HDF5 files (see <a class="reference external" href="https://bliss.gitlab-pages.esrf.fr/bliss/master/">bliss</a>) are read via
 the <cite>silx.io.open</cite> module (see <a class="reference external" href="https://www.silx.org/">silx</a>).</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.read_specfile">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_specfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_specfile" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_specfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_specfile" title="Link to this definition">¶</a></dt>
 <dd><p>Get a Larch group for a given scan number. If <cite>scan=None</cite> the first scan is returned.</p>
 </dd></dl>
 
 </section>
 <section id="reading-fdmnes-output-files">
-<h2><span class="section-number">10.10. </span>Reading FDMNES output files<a class="headerlink" href="#reading-fdmnes-output-files" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">10.10. </span>Reading FDMNES output files<a class="headerlink" href="#reading-fdmnes-output-files" title="Link to this heading">¶</a></h2>
 <p>ASCII files from the [FDMNES](<a class="reference external" href="http://fdmnes.neel.cnrs.fr/">http://fdmnes.neel.cnrs.fr/</a>) are read via</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.read_fdmnes">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_fdmnes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_fdmnes" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_fdmnes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_fdmnes" title="Link to this definition">¶</a></dt>
 <dd><p>Return a Larch group</p>
 </dd></dl>
 
@@ -850,7 +850,7 @@ order to shift the energy scale to absolute values, according to the <cite>E_edg
 variable. The parsed variables are stored in the <cite>group.header_dict</cite> dictionary.</p>
 </section>
 <section id="saving-and-loading-larch-session-files-larix-files">
-<span id="larch-session-files"></span><h2><span class="section-number">10.11. </span>Saving and Loading Larch Session Files: <cite>.larix</cite> Files<a class="headerlink" href="#saving-and-loading-larch-session-files-larix-files" title="Permalink to this heading">¶</a></h2>
+<span id="larch-session-files"></span><h2><span class="section-number">10.11. </span>Saving and Loading Larch Session Files: <cite>.larix</cite> Files<a class="headerlink" href="#saving-and-loading-larch-session-files-larix-files" title="Link to this heading">¶</a></h2>
 <p>A <em>Larch Session File</em>, with a <cite>.larix</cite> extension, contains all of the user-generated
 data within a Larch session.  All of the data – input data arrays, processed arrays,
 dictionaries, Journals, etc – from all of Groups, and all of processing parameters,
@@ -873,7 +873,7 @@ analysis session. Instead, it will return a new set of data that you might have 
 unpack or extract the groups and arrays of interest.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.save_session">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">save_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_larch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.save_session" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">save_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_larch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.save_session" title="Link to this definition">¶</a></dt>
 <dd><p>save all groups and data into a Larch Save File (.larix)
 A portable compressed json file, that can be loaded with <cite>read_session()</cite></p>
 <dl class="field-list simple">
@@ -889,7 +889,7 @@ A portable compressed json file, that can be loaded with <cite>read_session()</c
 
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.read_session">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_session" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_session" title="Link to this definition">¶</a></dt>
 <dd><p>read Larch Session File, returning data into new data in the
 current session</p>
 <dl class="field-list simple">
@@ -917,7 +917,7 @@ A tuple wih entries:</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.load_session">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">load_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_groups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_xasgroups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_larch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.load_session" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">load_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_groups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_xasgroups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_larch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.load_session" title="Link to this definition">¶</a></dt>
 <dd><p>load all data from a Larch Session File into current larch session,
 merging into existing groups as appropriate (see Notes below)</p>
 <dl class="field-list simple">
@@ -947,7 +947,7 @@ may be modified on loading</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.clear_session">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">clear_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_larch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.clear_session" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">clear_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_larch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.clear_session" title="Link to this definition">¶</a></dt>
 <dd><p>clear user-definded data in a session</p>
 <p class="rubric">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">save_session</span><span class="p">(</span><span class="s1">&#39;foo.larix&#39;</span><span class="p">)</span>
@@ -991,8 +991,8 @@ may be modified on loading</p></li>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.0.1.
+    &#169; Copyright Matthew Newville, The University of Chicago, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>

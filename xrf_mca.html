@@ -1,23 +1,23 @@
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>15.1. XRF Data: MCA and ROI objects &#8212; xraylarch 0.9.71 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
+    <title>15.1. XRF Data: MCA and ROI objects &#8212; xraylarch 0.9.72 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/documentation_options.js?v=3e9ad74a"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="15.2. The XRF Viewer Application" href="xrf_viewer.html" />
+    <link rel="next" title="15.2. The Larrh XRF Application" href="xrf_viewer.html" />
     <link rel="prev" title="15. X-ray Fluorescence Analysis" href="xrf.html" />
 
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
@@ -52,7 +52,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="xrf_viewer.html" title="15.2. The XRF Viewer Application"
+          <a href="xrf_viewer.html" title="15.2. The Larrh XRF Application"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="xrf.html" title="15. X-ray Fluorescence Analysis"
@@ -92,7 +92,7 @@
   <div>
     <h4>Next topic</h4>
     <p class="topless"><a href="xrf_viewer.html"
-                          title="next chapter"><span class="section-number">15.2. </span>The XRF Viewer Application</a></p>
+                          title="next chapter"><span class="section-number">15.2. </span>The Larrh XRF Application</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -120,7 +120,7 @@
           <div class="body" role="main">
             
   <section id="xrf-data-mca-and-roi-objects">
-<h1><span class="section-number">15.1. </span>XRF Data: MCA and ROI objects<a class="headerlink" href="#xrf-data-mca-and-roi-objects" title="Permalink to this heading">¶</a></h1>
+<h1><span class="section-number">15.1. </span>XRF Data: MCA and ROI objects<a class="headerlink" href="#xrf-data-mca-and-roi-objects" title="Link to this heading">¶</a></h1>
 <p>XRF spectra are typically measured with MCAs (Multi Channel Analyzers)
 which holds an array of intensities.  Because of the long history of using
 MCAs to store XRF spectra, the two concepts are often mixed, and one often
@@ -148,13 +148,13 @@ for <code class="docutils literal notranslate"><span class="pre">energy</span></
 ROIs.  Each ROI has a <code class="docutils literal notranslate"><span class="pre">left</span></code> and <code class="docutils literal notranslate"><span class="pre">right</span></code> channel index, and a
 <code class="xref py py-meth docutils literal notranslate"><span class="pre">roi.get_counts()</span></code> method.</p>
 <section id="creating-mca-objects">
-<h2><span class="section-number">15.1.1. </span>Creating MCA objects<a class="headerlink" href="#creating-mca-objects" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">15.1.1. </span>Creating MCA objects<a class="headerlink" href="#creating-mca-objects" title="Link to this heading">¶</a></h2>
 <p>A simple way to create an MCA object is to read one from a disk file.  For
 data collected at GSECARS, this can be done with the <a class="reference internal" href="#read_gsemca" title="read_gsemca"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_gsemca()</span></code></a>
 function.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="read_gsemca">
-<span class="sig-name descname"><span class="pre">read_gsemca</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#read_gsemca" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">read_gsemca</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#read_gsemca" title="Link to this definition">¶</a></dt>
 <dd><p>read a GSECARS MCA spectra file, returning a Group</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -219,7 +219,7 @@ function.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xrf_plot">
-<span class="sig-name descname"><span class="pre">xrf_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mca</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xrf_plot" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">xrf_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mca</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xrf_plot" title="Link to this definition">¶</a></dt>
 <dd><p>create an interactive window for displaying an X-ray Fluorescence spectra</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -238,7 +238,7 @@ ROI definitions, calibration values, and related data.</p></li>
 <span id="xrf-mca1"></span><a class="reference external image-reference" href="_images/xrf_display1.png"><img alt="_images/xrf_display1.png" src="_images/xrf_display1.png" style="width: 75%;" /></a>
 <figcaption>
 <p><span class="caption-number">Figure 15.1.1.1 </span><span class="caption-text">Example XRF Display, showing X-ray Fluorescence spectra, defined ROIs
-(in red), and Periodic Table for showing predicted emission lines.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+(in red), and Periodic Table for showing predicted emission lines.</span><a class="headerlink" href="#id1" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </section>
@@ -258,7 +258,7 @@ ROI definitions, calibration values, and related data.</p></li>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="xrf_viewer.html" title="15.2. The XRF Viewer Application"
+          <a href="xrf_viewer.html" title="15.2. The Larrh XRF Application"
              >next</a> |</li>
         <li class="right" >
           <a href="xrf.html" title="15. X-ray Fluorescence Analysis"
@@ -274,8 +274,8 @@ ROI definitions, calibration values, and related data.</p></li>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.0.1.
+    &#169; Copyright Matthew Newville, The University of Chicago, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>

@@ -1,23 +1,23 @@
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>5. XASViewer &#8212; xraylarch 0.9.71 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
+    <title>5. Larix (was XAS Viewer) &#8212; xraylarch 0.9.72 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/documentation_options.js?v=3e9ad74a"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="5.1. XAS Viewer Overview" href="xasviewer/overview.html" />
+    <link rel="next" title="5.1. Larix Overview" href="xasviewer/overview.html" />
     <link rel="prev" title="4. Other Larch GUIs" href="guis.html" />
 
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
@@ -52,7 +52,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="xasviewer/overview.html" title="5.1. XAS Viewer Overview"
+          <a href="xasviewer/overview.html" title="5.1. Larix Overview"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="guis.html" title="4. Other Larch GUIs"
@@ -63,7 +63,7 @@
    <li><a href="xray.html">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
 
-        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5. </span>XASViewer</a></li> 
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5. </span>Larix (was XAS Viewer)</a></li> 
       </ul>
     </div>
 
@@ -77,7 +77,7 @@
   <div>
     <h4>Next topic</h4>
     <p class="topless"><a href="xasviewer/overview.html"
-                          title="next chapter"><span class="section-number">5.1. </span>XAS Viewer Overview</a></p>
+                          title="next chapter"><span class="section-number">5.1. </span>Larix Overview</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -105,31 +105,31 @@
           <div class="body" role="main">
             
   <p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
-<section id="xasviewer">
-<span id="xasviewer-app"></span><h1><span class="section-number">5. </span>XASViewer<a class="headerlink" href="#xasviewer" title="Permalink to this heading">¶</a></h1>
-<p>The XAS Viewer Application gives a graphical user interface (GUI) for the
+<section id="larix-was-xas-viewer">
+<span id="xasviewer-app"></span><span id="larix-app"></span><h1><span class="section-number">5. </span>Larix (was XAS Viewer)<a class="headerlink" href="#larix-was-xas-viewer" title="Link to this heading">¶</a></h1>
+<p>The Larix Application gives a graphical user interface (GUI) for the
 visualization and analyis of X-ray absorption spectroscopy (XAS) data, both
-XANES and EXAFS. It is deliberately patterned after the Demeter Package (Athena
-and Artemis programs), and shares many concepts and presentation ideas with
-these progrqms.  As a GUI Program, XAS Viewer should seem very “Athena-like”
-though of course there will be several differences.  We hope that many of these
-differences will be “improvements”.  By using Larch for all of its analysis
-steps, XAS Viewer not only provides interactive data visualization,
+XANES and EXAFS. It is deliberately patterned after the Demeter Package
+(Athena and Artemis programs), and shares many concepts and presentation ideas
+with these progrqms.  As a GUI Program, Larix should seem very “Athena-like”
+though of course there will be several differences.  We hope that many of
+these differences will be “improvements”.  By using Larch for all of its
+analysis steps, Larix not only provides interactive data visualization,
 exploration, and analysis of XAS data, but also records those steps as Larch /
 Python commands that can be saved and reproduced outside of the GUI, say to
 enable batch processing of large volumes of data.</p>
-<p>XAS Viewer is still in active development with new features driving much of the
+<p>Larix is still in active development with new features driving much of the
 development and releases of Larch version for the past few years. At this
-writing (June, 2023, Larch version 0.9.70), the main feature of XAS Viewer are
+writing (October, 2023, Larch version 0.9.72), the main feature of Larix are
 met, though improvements and new featutes continue to be made, and bugs are
 being fixed as quickly as possible. Ideas for additions and improvements are
 most welcome.  If you find problems with it or unexpected or missing
 functionality, please let us know.  In addition, if you find any features from
 Athena, Artemis, Sixpack, or other analysis programs that you would like to see
-in XAS Viewer, please let us know.</p>
+in Larix, please let us know.</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="xasviewer/overview.html">5.1. XAS Viewer Overview</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="xasviewer/overview.html">5.1. Larix Overview</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="xasviewer/overview.html#basic-layout-gui-controls-and-xas-data-management">5.1.1. Basic Layout, GUI Controls, and XAS Data Management</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xasviewer/overview.html#data-input-and-output">5.1.2. Data Input and Output</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xasviewer/overview.html#data-normalization">5.1.3. Data Normalization</a></li>
@@ -138,11 +138,11 @@ in XAS Viewer, please let us know.</p>
 <li class="toctree-l2"><a class="reference internal" href="xasviewer/overview.html#exafs-modeling-with-feff">5.1.6. EXAFS Modeling with FEFF</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="xasviewer/iodata.html">5.2. Reading and Saving Data into XAS Viewer</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="xasviewer/iodata.html">5.2. Reading and Saving Data into Larix</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="xasviewer/iodata.html#reading-plain-text-data-files-including-xdi">5.2.1. Reading Plain text data files, including XDI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xasviewer/iodata.html#reading-data-from-athena-project-files">5.2.2. Reading Data from Athena Project Files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xasviewer/iodata.html#reading-spec-bliss-hdf5-data">5.2.3. Reading Spec/Bliss HDF5 Data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/iodata.html#larch-session-files-and-xas-viewer">5.2.4. Larch Session Files and XAS Viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/iodata.html#larch-session-files-and-larix">5.2.4. Larch Session Files and Larix</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xasviewer/iodata.html#auto-saving-larch-session-files">5.2.5. Auto-saving Larch Session Files</a></li>
 </ul>
 </li>
@@ -181,7 +181,7 @@ in XAS Viewer, please let us know.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="xasviewer/overview.html" title="5.1. XAS Viewer Overview"
+          <a href="xasviewer/overview.html" title="5.1. Larix Overview"
              >next</a> |</li>
         <li class="right" >
           <a href="guis.html" title="4. Other Larch GUIs"
@@ -192,12 +192,12 @@ in XAS Viewer, please let us know.</p>
    <li><a href="xray.html">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
 
-        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5. </span>XASViewer</a></li> 
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5. </span>Larix (was XAS Viewer)</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.0.1.
+    &#169; Copyright Matthew Newville, The University of Chicago, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>

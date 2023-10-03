@@ -1,18 +1,18 @@
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>9.9. Differences between Larch and Python &#8212; xraylarch 0.9.71 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css" />
+    <title>9.9. Differences between Larch and Python &#8212; xraylarch 0.9.72 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css?v=dfcb3266" />
     
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/documentation_options.js?v=3e9ad74a"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -118,7 +118,7 @@
           <div class="body" role="main">
             
   <section id="differences-between-larch-and-python">
-<span id="python-diffs-section"></span><h1><span class="section-number">9.9. </span>Differences between Larch and Python<a class="headerlink" href="#differences-between-larch-and-python" title="Permalink to this heading">¶</a></h1>
+<span id="python-diffs-section"></span><h1><span class="section-number">9.9. </span>Differences between Larch and Python<a class="headerlink" href="#differences-between-larch-and-python" title="Link to this heading">¶</a></h1>
 <p>Larch is based on and very similar to Python, but there are some very
 important differences that need to be noted, especially for those familiar
 with Python.  These differences are not here because we feel Python is
@@ -178,7 +178,7 @@ changes from the standard Python name lookup rules.</p></li>
 <p>You can also see that Python’s syntax is followed very closely, so that the
 translation from Larch-to-Python is minimal.</p>
 <section id="code-block-ends">
-<span id="id1"></span><h2><span class="section-number">9.9.1. </span>Code Block Ends<a class="headerlink" href="#code-block-ends" title="Permalink to this heading">¶</a></h2>
+<span id="id1"></span><h2><span class="section-number">9.9.1. </span>Code Block Ends<a class="headerlink" href="#code-block-ends" title="Link to this heading">¶</a></h2>
 <p>Unlike Python, Larch does not use significant whitespace to define blocks.
 There, that was easy.  Instead, Larch uses “end blocks”, of the form:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">test</span><span class="p">:</span>
@@ -203,14 +203,14 @@ Python, which can be useful in translating code:</p>
 <p>This code is both valid Larch and valid Python.</p>
 </section>
 <section id="groups-vs-modules">
-<h2><span class="section-number">9.9.2. </span>Groups vs Modules<a class="headerlink" href="#groups-vs-modules" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">9.9.2. </span>Groups vs Modules<a class="headerlink" href="#groups-vs-modules" title="Link to this heading">¶</a></h2>
 <p>This is at least partly a semantic distinction.  Larch organizes data and
 code into Groups – simple containers that hold data, functions, and other
 groups.  These are implemented as a simple, empty class that is part of the
 symbol table.</p>
 </section>
 <section id="symbol-lookup-rules">
-<h2><span class="section-number">9.9.3. </span>Symbol Lookup Rules<a class="headerlink" href="#symbol-lookup-rules" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">9.9.3. </span>Symbol Lookup Rules<a class="headerlink" href="#symbol-lookup-rules" title="Link to this heading">¶</a></h2>
 <p>Looking up symbol names is a key feature of any language.  Python and Larch
 both allow <em>namespaces</em> in which symbols can be nested into a heirarchy,
 using a syntax of <strong>parent.child</strong>, with a dot (‘.’) separating the
@@ -300,7 +300,7 @@ while it is running; ‘_sys.moduleGroup’, which holds the namespace for a
 module associated with a currently running function.</p>
 </section>
 <section id="unimplemented-features">
-<h2><span class="section-number">9.9.4. </span>Unimplemented features<a class="headerlink" href="#unimplemented-features" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">9.9.4. </span>Unimplemented features<a class="headerlink" href="#unimplemented-features" title="Link to this heading">¶</a></h2>
 <p>A domain-specific-language like Larch does not need to be as full-featured
 as Python, so we left a few things out.  These include (this may not be an
 exhaustive list):</p>
@@ -347,8 +347,8 @@ exhaustive list):</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.0.1.
+    &#169; Copyright Matthew Newville, The University of Chicago, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>
