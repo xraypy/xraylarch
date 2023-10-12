@@ -35,7 +35,6 @@ if HAS_WXPYTHON:
     from .wxxas import XASViewer, LARIX_TITLE
     from .wxlib.xrfdisplay import XRFApp
     from .wxlib.larchframe import LarchApp
-    from .epics import EpicsXRFApp
     from .wxxrd import XRD1DApp, XRD2DViewer
 
 
@@ -100,7 +99,6 @@ def run_gse_mapviewer():
     set_locale()
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
-    install_extras(extras_epics)
     kwargs = make_cli(description="Larch's XRM Map Viewer and Analysis Program",
                       filedesc='XRM Map File (.h5)')
     MapViewer(check_version=True, **kwargs).MainLoop()
@@ -128,7 +126,6 @@ def run_larch_xrf():
     set_locale()
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
-    install_extras(extras_epics)
     kwargs = make_cli(description="Larch's XRF Viewer and Analysis Program",
                     filedesc='MCA File (.mca)')
     XRFApp(**kwargs).MainLoop()
@@ -139,6 +136,7 @@ def run_epics_xrf():
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
     install_extras(extras_epics)
+    from .epics import EpicsXRFApp
     EpicsXRFApp().MainLoop()
 
 def run_larch_xrd1d():
@@ -152,7 +150,6 @@ def run_xrd2d_viewer():
     set_locale()
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
-    install_extras(extras_epics)
     XRD2DViewer().MainLoop()
 
 
@@ -242,7 +239,6 @@ def run_larch():
         set_locale()
         use_mpl_wxagg()
         install_extras(extras_wxgraph)
-        install_extras(extras_epics)
         LarchApp(with_inspection=True).MainLoop()
 
     # run wx Larch CLI
@@ -252,7 +248,6 @@ def run_larch():
             use_mpl_wxagg()
         try:
             install_extras(extras_wxgraph)
-            install_extras(extras_epics)
         except ImportError:
             pass
         vinfo = check_larchversion()
