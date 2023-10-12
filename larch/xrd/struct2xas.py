@@ -38,12 +38,10 @@ except ImportError:
     HAS_PY3DMOL = False
 
 
-
 __author__ = ["Beatriz G. Foschiani", "Mauro Rovezzi"]
 __email__ = ["beatrizgfoschiani@gmail.com", "mauro.rovezzi@esrf.fr"]
 __credits__ = ["Jade Chongsathapornpong", "Marius Retegan"]
-__version__ = "2023.2.0"
-
+__version__ = "2023.3.0"
 
 
 # initialize the logger
@@ -95,6 +93,7 @@ def xyz2struct(molecule):
     # Create the Structure object
     struct = Structure(lattice, species, coords, coords_are_cartesian=True)
     return struct
+
 
 def structure_folders():
     """
