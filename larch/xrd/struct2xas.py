@@ -244,8 +244,8 @@ class Struct2XAS:
             self.mol = None
             self.nframes = 1
             self.cif = CifParser(self.file)
-            # self.struct = Structure.from_file(self.file)
-            self.struct = self.cif.get_structures()[0]
+            self.struct = Structure.from_file(self.file)
+            #self.struct = self.cif.get_structures()[0]  #: NOT WORKING!
             logger.debug("structure created from a CIF file")
         elif ext == ".xyz":
             self.is_xyz = True
