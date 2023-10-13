@@ -33,6 +33,8 @@ try:
 except ImportError:
     pass
 
+import pyFAI
+pyFAI.use_opencl = False
 
 ## be careful here: it is easy to have cicrular imports!
 
