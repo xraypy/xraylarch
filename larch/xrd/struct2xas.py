@@ -231,13 +231,14 @@ class Struct2XAS:
             file = os.path.basename(self.file)
             split_file = os.path.splitext(file)
             self.file_name = split_file[0]
-            ext = split_file[1]
+            self.file_ext = split_file[1]
         else:
+            self.file_name, self.file_ext = None, None
             errmsg = f"{self.file} not found"
             logger.error(errmsg)
             raise FileNotFoundError(errmsg)
 
-        if ext == ".cif":
+        if self.file_ext == ".cif":
             self.is_cif = True
             self.xyz = None
             self.molecules = None
@@ -247,7 +248,7 @@ class Struct2XAS:
             self.struct = Structure.from_file(self.file)
             #self.struct = self.cif.get_structures()[0]  #: NOT WORKING!
             logger.debug("structure created from a CIF file")
-        elif ext == ".xyz":
+        elif self.file_ext == ".xyz":
             self.is_xyz = True
             self.cif = None
             self.xyz = XYZ.from_file(self.file)
@@ -256,7 +257,7 @@ class Struct2XAS:
             self.nframes = len(self.molecules)
             self.struct = xyz2struct(self.mol)
             logger.debug("structure created from a XYZ file")
-        elif ext == ".mpjson":
+        elif self.file_ext == ".mpjson":
             self.is_xyz = False
             self.is_cif = True
             self.molecules = None
@@ -310,9 +311,12 @@ class Struct2XAS:
             raise KeyError(errmsg)
         try:
             atom_lists.append(cf["_atom_site_symmetry_multiplicity"])
-            atom_lists.append(cf["_atom_site_Wyckoff_symbol"])
         except KeyError:
             atom_lists.append(["?"] * natoms)
+
+        try:
+            atom_lists.append(cf["_atom_site_Wyckoff_symbol"])
+        except KeyError:
             atom_lists.append(["?"] * natoms)
 
         atom_sites = []
@@ -793,6 +797,7 @@ class Struct2XAS:
         """
         replacements = {}
         replacements.update(**kwargs)
+        replacements["version"] = __version__
 
         if template is None:
             template = os.path.join(
@@ -810,6 +815,7 @@ class Struct2XAS:
         absorber = ""
         crystal = ""
         occupancy = ""
+        comment = f"input structure: {self.file_name}{self.file_ext}\ncreation date: {_get_timestamp()}"
 
         if self.is_cif:
             try:
@@ -883,10 +889,6 @@ class Struct2XAS:
             # absorber = f"{absorber}"
             # replacements["absorber"] = f"Z_absorber\n{round(Element(elem).Z)}"
 
-            comment = (
-                f"cif file name: {self.file_name}\ncreation date:{_get_timestamp()}"
-            )
-
         if self.is_xyz:
             replacements["crystal"] = "molecule"
 
@@ -911,10 +913,6 @@ class Struct2XAS:
             replacements["lattice"] = (
                 f"{lat.a:<12.8f} {lat.b:12.8f} {lat.c:12.8f} "
                 f"{lat.alpha:12.8f} {lat.beta:12.8f} {lat.gamma:12.8f}"
-            )
-
-            comment = (
-                f"xyz file name: {self.file_name}\ncreation date:{_get_timestamp()}"
             )
 
         replacements["sites"] = sites
@@ -942,7 +940,7 @@ class Struct2XAS:
 
     def make_input_feff(self, radius=7, parent_path=None,
                         template=None, feff_comment="*", edge="K",
-                        sig2=None, debye=None):
+                        sig2=None, debye=None, **kwargs):
         """
         Create a FEFF input from a template.
 
@@ -974,6 +972,9 @@ class Struct2XAS:
         None -> writes FEFF input to disk
         directory structure: {parent_path}/feff/{self.file_name}/{self.abs_atom}/frame{self.frame}/site{self.abs_site}/
         """
+        replacements = {}
+        replacements.update(**kwargs)
+        replacements["version"] = __version__
 
         if parent_path is None:
             parent_path = self.folders['feff']
@@ -998,7 +999,6 @@ class Struct2XAS:
             use_debye = ""
             temperature, debye_temperature = debye[0], debye[1]
 
-        replacements = {}
         feff_comment = f"{feff_comment}"
         edge = f"{edge}"
         radius = f"{radius}"
@@ -1095,7 +1095,7 @@ class Struct2XAS:
                     f"{at[i][0][0]:10.6f} {at[i][0][1]:10.6f} {at[i][0][2]:10.6f} {ipot[choice]}  {choice:>5} {at[i][3]:10.5f} *{at[i][4]}"
                 )
 
-        title = f"TITLE {self.file_name}\nTITLE {_get_timestamp()}\nTITLE site {self.abs_site}"
+        title = f"TITLE {self.file_name}{self.file_ext}\nTITLE {_get_timestamp()}\nTITLE site {self.abs_site}"
 
         replacements["feff_comment"] = feff_comment
         replacements["edge"] = edge
