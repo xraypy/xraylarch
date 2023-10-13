@@ -39,4 +39,3 @@ numexpr==2.8.4; python_version < '3.9'
 numexpr>=2.8.7; python_version > '3.8'
 pycifrw
 importlib_metadata; python_version < '3.8'
-pyopencl
