@@ -22,7 +22,6 @@ except ImportError:
 HAS_WXPYTHON = False
 try:
     import wx
-    from .wxlib import LarchWxApp
     HAS_WXPYTHON = True
 except ImportError:
     wx = None
@@ -36,7 +35,6 @@ class Shell(cmd.Cmd):
 
         self.debug  = debug
         cmd.Cmd.__init__(self,completekey='tab')
-
         if stdin is not None:
             sys.stdin = stdin
         if stdout is not None:
@@ -53,10 +51,10 @@ class Shell(cmd.Cmd):
         self.larch = Interpreter(historyfile=history_file,
                                  maxhistory=maxhist)
         self.larch.writer = StdWriter(_larch=self.larch)
-
         if with_wx and HAS_WXPYTHON:
             symtable = self.larch.symtable
             try:
+                from .wxlib import LarchWxApp
                 app = LarchWxApp(redirect=False, clearSigInt=False)
             except SystemExit:
                 with_wx = False
@@ -91,7 +89,6 @@ class Shell(cmd.Cmd):
             writer.write("\n")
             if self.color_writer:
                 writer.set_textstyle('text')
-
         self.larch_execute = self.default
         self.larch.run_init_scripts()
 

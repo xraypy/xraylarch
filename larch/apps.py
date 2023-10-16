@@ -8,16 +8,13 @@ import locale
 import shutil
 from argparse import ArgumentParser
 
+
 import matplotlib
 from pyshortcuts import make_shortcut, ico_ext, get_desktop
+
 from .site_config import (icondir, uname, install_extras,
                           update_larch, extras_wxgraph,
                           extras_epics)
-
-from .shell import Shell
-from .xmlrpc_server import larch_server_cli, LarchServer
-from .xafs.feffrunner import feff6l_cli, feff8l_cli
-
 from .version import __date__, make_banner, check_larchversion
 
 HAS_WXPYTHON = False
@@ -31,12 +28,6 @@ if HAS_WXPYTHON:
     # note: this will be needed for some macOS builds until wxPython 4.2.1 is released.
     if uname == 'darwin':
         wx.PyApp.IsDisplayAvailable = lambda _: True
-    from .wxmap import MapViewer, DTViewer
-    from .wxxas import XASViewer, LARIX_TITLE
-    from .wxlib.xrfdisplay import XRFApp
-    from .wxlib.larchframe import LarchApp
-    from .wxxrd import XRD1DApp, XRD2DViewer
-
 
 def use_mpl_wxagg():
     """import matplotlib, set backend to wxAgg"""
@@ -101,6 +92,7 @@ def run_gse_mapviewer():
     install_extras(extras_wxgraph)
     kwargs = make_cli(description="Larch's XRM Map Viewer and Analysis Program",
                       filedesc='XRM Map File (.h5)')
+    from .wxmap import MapViewer
     MapViewer(check_version=True, **kwargs).MainLoop()
 
 def run_gse_dtcorrect():
@@ -109,6 +101,7 @@ def run_gse_dtcorrect():
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
     install_extras(extras_epics)
+    from .wxmap import DTViewer
     DTViewer().MainLoop()
 
 def run_larix():
@@ -116,6 +109,7 @@ def run_larix():
     set_locale()
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
+    from .wxxas import XASViewer, LARIX_TITLE
     kwargs = make_cli(description=LARIX_TITLE)
     XASViewer(check_version=True, **kwargs).MainLoop()
 
@@ -128,6 +122,7 @@ def run_larch_xrf():
     install_extras(extras_wxgraph)
     kwargs = make_cli(description="Larch's XRF Viewer and Analysis Program",
                     filedesc='MCA File (.mca)')
+    from .wxlib.xrfdisplay import XRFApp
     XRFApp(**kwargs).MainLoop()
 
 def run_epics_xrf():
@@ -143,6 +138,7 @@ def run_larch_xrd1d():
     """XRD Display for 1D patternss"""
     set_locale()
     use_mpl_wxagg()
+    from .wxxrd import XRD1DApp
     XRD1DApp().MainLoop()
 
 def run_xrd2d_viewer():
@@ -150,20 +146,25 @@ def run_xrd2d_viewer():
     set_locale()
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
+    from .wxxrd import XRD2DViewer
     XRD2DViewer().MainLoop()
 
 
 def run_feff6l():
     "run feff6l"
+    from .xafs.feffrunner import feff6l_cli
     feff6l_cli()
 
 def run_feff8l():
     "run feff8l"
+    from .xafs.feffrunner import feff8l_cli
     feff8l_cli()
 
 def run_larch_server():
     "run larch XMLRPC server"
+    from .xmlrpc_server import larch_server_cli
     larch_server_cli()
+
 
 ## main larch cli or wxgui
 def run_larch():
@@ -231,6 +232,7 @@ def run_larch():
         vinfo = check_larchversion()
         if vinfo.update_available:
             print(vinfo.message)
+        from .xmlrpc_server import LarchServer
         server = LarchServer(host='localhost', port=int(args.port))
         server.run()
 
@@ -239,6 +241,7 @@ def run_larch():
         set_locale()
         use_mpl_wxagg()
         install_extras(extras_wxgraph)
+        from .wxlib.larchframe import LarchApp
         LarchApp(with_inspection=True).MainLoop()
 
     # run wx Larch CLI
@@ -254,6 +257,7 @@ def run_larch():
         if vinfo.update_available:
             print(vinfo.message)
 
+        from .shell import Shell
         cli = Shell(quiet=args.quiet, with_wx=with_wx)
         # execute scripts listed on command-line
         if args.scripts is not None:
