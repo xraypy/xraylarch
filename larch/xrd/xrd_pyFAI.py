@@ -15,6 +15,7 @@ HAS_pyFAI = False
 try:
     import pyFAI
     import pyFAI.units
+    pyFAI.use_opencl = False
     HAS_pyFAI = True
 except ImportError:
     pass
@@ -44,7 +45,7 @@ def read_poni(fname):
                     k = k.lower()
                     if k in conf:
                         conf[k] = float(v)
-                        
+
             if key == 'distance':
                 key='dist'
             elif key == 'pixelsize1':
@@ -77,7 +78,7 @@ Wavelength: {wavelength:16.11g}
                              poni1=poni1, poni2=poni2,
                              rot1=rot1, rot2=rot2, rot3=rot3,
                              dist=dist, wavelength=wavelength))
-        
+
 
 def return_ai(calfile):
 

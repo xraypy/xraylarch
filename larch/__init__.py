@@ -20,7 +20,6 @@ if (sys.version_info.major < 3 or sys.version_info.minor < 8):
     raise EnvironmentError('larch requires python 3.8 or higher')
 
 import numpy
-
 import scipy, scipy.optimize, scipy.special, scipy.stats
 import matplotlib
 import lmfit
@@ -32,9 +31,6 @@ try:
     import h5py
 except ImportError:
     pass
-
-import pyFAI
-pyFAI.use_opencl = False
 
 ## be careful here: it is easy to have cicrular imports!
 

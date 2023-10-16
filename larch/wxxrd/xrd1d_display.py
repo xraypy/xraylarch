@@ -14,6 +14,7 @@ from numpy.polynomial.chebyshev import chebfit, chebval
 
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 import pyFAI.units
+pyFAI.use_opencl = False
 
 import wx
 import wx.lib.scrolledpanel as scrolled
