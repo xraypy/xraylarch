@@ -3,6 +3,8 @@
 __date__    = '2023-Oct-03'
 __release_version__ = '0.9.72'
 __authors__ = "M. Newville, M. Koker, M. Rovezzi, B. Ravel, and others"
+from ._version import __version__, __version_tuple__
+
 import sys
 from collections import namedtuple
 from packaging.version import parse as ver_parse
@@ -13,16 +15,6 @@ import numpy
 import scipy
 import matplotlib
 import lmfit
-
-try:
-    from importlib.metadata import version, PackageNotFoundError
-except ImportError:
-    from importlib_metadata import version, PackageNotFoundError
-try:
-    __version__ = version("xraylarch")
-except PackageNotFoundError:
-    # package is not installed
-    __version__ = __release_version__
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 

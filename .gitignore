@@ -5,6 +5,7 @@
 *.bak
 *.aux
 *.pdf
+larch/_version.py
 conda_constructor/*.sh
 conda_constructor/*.exe
 conda_constructor/*.pkg
