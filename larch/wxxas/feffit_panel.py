@@ -93,7 +93,7 @@ xftr({groupname:s}, rmin={rmin:.3f}, rmax={rmax:.3f}, dr={dr:.3f}, window='{rwin
 """
 
 COMMANDS['feffit_params_init'] = """# create feffit Parameter Group to hold fit parameters
-_feffit_params = param_group()
+_feffit_params = param_group(reff=-1.0)
 """
 
 COMMANDS['feffit_trans'] = """# define Fourier transform and fitting space
