@@ -1,4 +1,4 @@
-name: Test with Ubuntu, Mamba
+name: Test with Ubuntu, Conda
 
 on: [push]
 
@@ -15,20 +15,19 @@ jobs:
         shell: bash -l {0}
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python from Miniconda/mamba
+    - name: Set up Python from Miniconda/conda
       uses: conda-incubator/setup-miniconda@v2
       with:
         miniconda-version: latest
-        mamba-version: "*"
         channels: conda-forge,defaults
         channel-priority: true
         activate-environment: anaconda-client-env
         python-version: ${{ matrix.python-version }}
-    - name: Install mamba dependencies
+    - name: Install conda dependencies
       run: |
         printenv
-        mamba install -y -c conda-forge python=${{ matrix.python-version }} numpy=>1.22 scipy=>1.8 matplotlib=>3.6 wxpython
-        mamba install -y -c conda-forge scikit-image scikit-learn pycifrw pandas jupyter plotly pyparsing pytest pytest-cov coverage
+	cond install -y -c conda-forge python=${{ matrix.python-version }} numpy=>1.22 scipy=>1.8 matplotlib=>3.6 wxpython
+        conda install -y -c conda-forge scikit-image scikit-learn pycifrw pandas jupyter plotly pyparsing pytest pytest-cov coverage
     - name: Install xraylarch and other dependencies with pip
       run: |
         pip install lmfit peakutils pyepics pyshortcuts termcolor sphinx dill pycifrw xraydb wxmplot wxutils fabio silx imageio charset-normalizer
