@@ -1,21 +1,18 @@
-name: Test with Ubuntu, Conda
+name: Test with Windows, Mamba
 
 on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     strategy:
       max-parallel: 5
       fail-fast: false
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11']
-    defaults:
-      run:
-        shell: bash -l {0}
+        python-version: ['3.8.10', '3.9', '3.10', '3.11']
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python from Miniconda/conda
+    - name: Set up Python from Miniconda
       uses: conda-incubator/setup-miniconda@v2.2.0
       with:
         miniconda-version: latest
@@ -27,11 +24,12 @@ jobs:
     - name: Install conda dependencies
       run: |
         printenv
-        conda install -y -c conda-forge python=${{ matrix.python-version }} numpy=>1.22 scipy=>1.8 matplotlib=>3.6 wxpython
-        conda install -y -c conda-forge scikit-image scikit-learn pycifrw pandas jupyter plotly pyparsing pytest pytest-cov coverage
+        mamba install -y -c conda-forge python=${{ matrix.python-version }} numpy=>1.22 scipy=>1.8 matplotlib=>3.6 wxpython
+        mamba install -y -c conda-forge scikit-image scikit-learn pycifrw pandas jupyter plotly pyparsing pytest pytest-cov coverage
     - name: Install xraylarch and other dependencies with pip
       run: |
-        pip install lmfit peakutils pyepics pyshortcuts termcolor sphinx dill pycifrw xraydb wxmplot wxutils fabio silx imageio charset-normalizer
+        printenv
+        pip install lmfit peakutils pyepics pyshortcuts termcolor sphinx dill xraydb wxmplot wxutils fabio silx imageio charset-normalizer
         pip install .
     - name: Run test suite
       run: |
