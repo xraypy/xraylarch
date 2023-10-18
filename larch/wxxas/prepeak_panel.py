@@ -727,10 +727,12 @@ class PrePeakPanel(TaskPanel):
         ppeak_emin = self.add_floatspin('ppeak_emin', value=-20, **fsopts)
         ppeak_emax = self.add_floatspin('ppeak_emax', value=0, **fsopts)
 
+        self.loadresults_btn = Button(pan, 'Load Fit Result',
+                                      action=self.onLoadFitResult, size=(150, -1))
         self.showresults_btn = Button(pan, 'Show Fit Results',
                                       action=self.onShowResults, size=(150, -1))
         self.showresults_btn.Disable()
-
+        
         self.fitbline_btn  = Button(pan,'Fit Baseline', action=self.onFitBaseline,
                                     size=(150, -1))
 
@@ -778,7 +780,8 @@ class PrePeakPanel(TaskPanel):
             pan.Add(SimpleText(pan, text), dcol=dcol, newrow=newrow)
 
         pan.Add(SimpleText(pan, 'Pre-edge Peak Fitting',
-                           size=(350, -1), **self.titleopts), style=LEFT, dcol=4)
+                           size=(350, -1), **self.titleopts), style=LEFT, dcol=5)
+        pan.Add(self.loadresults_btn)
 
         add_text('Array to fit: ')
         pan.Add(self.array_choice, dcol=3)

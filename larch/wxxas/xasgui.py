@@ -239,6 +239,7 @@ class PreferencesFrame(wx.Frame):
     def onSave(self, event=None):
         self.controller.save_config()
 
+
 class XASFrame(wx.Frame):
     _about = f"""{LARIX_TITLE}
     Matt Newville <newville @ cars.uchicago.edu>
@@ -482,7 +483,6 @@ class XASFrame(wx.Frame):
         group_menu = wx.Menu()
         data_menu = wx.Menu()
         feff_menu = wx.Menu()
-        ppeak_menu = wx.Menu()
         m = {}
 
         MenuItem(self, fmenu, "&Open Data File\tCtrl+O",
@@ -544,6 +544,9 @@ class XASFrame(wx.Frame):
                  'Show Larch Programming Buffer',
                  self.onShowLarchBuffer)
 
+        MenuItem(self, fmenu, 'wxInspect\tCtrl+I',
+                 'Show wx inspection window',   self.onwxInspect)
+        
         MenuItem(self, fmenu, 'Edit Preferences\tCtrl+E', 'Customize Preferences',
                  self.onPreferences)
 
@@ -601,14 +604,10 @@ class XASFrame(wx.Frame):
         MenuItem(self, data_menu, "Add and Subtract Spectra",
                  "Calculations of Spectra",  self.onSpectraCalc)
 
-        MenuItem(self, ppeak_menu, "Load Pre-edge Peak Model",
-                 "Load saved model for Pre-edge Peak Fitting",
-                 self.onPrePeakLoad)
 
         self.menubar.Append(fmenu, "&File")
         self.menubar.Append(group_menu, "Groups")
         self.menubar.Append(data_menu, "Data")
-        self.menubar.Append(ppeak_menu, "Pre-edge Peaks")
 
         MenuItem(self, feff_menu, "Browse CIF Structures, Run Feff",
                  "Browse CIF Structure, run Feff", self.onCIFBrowse)
@@ -629,6 +628,9 @@ class XASFrame(wx.Frame):
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE,  self.onClose)
 
+    def onwxInspect(self, evt=None):
+        wx.GetApp().ShowInspectionTool()
+        
     def onShowLarchBuffer(self, evt=None):
         if self.larch_buffer is None:
             self.larch_buffer = LarchFrame(_larch=self.larch, is_standalone=False)
@@ -1028,11 +1030,6 @@ before clearing"""
     def onDeconvolveData(self, event=None):
         if self.has_datagroup():
             DeconvolutionDialog(self, self.controller).Show()
-
-    def onPrePeakLoad(self, event=None):
-        idx, peakpage = self.get_nbpage('prepeak')
-        self.nb.SetSelection(idx)
-        peakpage.onLoadFitResult()
 
     def onConfigDataFitting(self, event=None):
         pass
