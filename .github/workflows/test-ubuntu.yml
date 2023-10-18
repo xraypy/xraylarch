@@ -26,7 +26,7 @@ jobs:
     - name: Install conda dependencies
       run: |
         printenv
-	cond install -y -c conda-forge python=${{ matrix.python-version }} numpy=>1.22 scipy=>1.8 matplotlib=>3.6 wxpython
+        conda install -y -c conda-forge python=${{ matrix.python-version }} numpy=>1.22 scipy=>1.8 matplotlib=>3.6 wxpython
         conda install -y -c conda-forge scikit-image scikit-learn pycifrw pandas jupyter plotly pyparsing pytest pytest-cov coverage
     - name: Install xraylarch and other dependencies with pip
       run: |
