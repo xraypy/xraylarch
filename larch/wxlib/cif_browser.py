@@ -39,7 +39,6 @@ from larch.wxlib import (LarchFrame, FloatSpin, EditableListBox,
                          PeriodicTablePanel, FeffResultsPanel, LarchWxApp,
                          ExceptionPopup, set_color)
 
-
 from larch.xrd import CifStructure, get_amcsd, find_cifs, get_cif, parse_cif_file
 
 LEFT = wx.ALIGN_LEFT
@@ -47,7 +46,7 @@ CEN |=  wx.ALL
 FNB_STYLE = fnb.FNB_NO_X_BUTTON|fnb.FNB_SMART_TABS
 FNB_STYLE |= fnb.FNB_NO_NAV_BUTTONS|fnb.FNB_NODRAG
 
-MAINSIZE = (850, 750)
+MAINSIZE = (1000, 650)
 
 class CIFFrame(wx.Frame):
     _about = """Larch Crystallographic Information File Browser
@@ -129,7 +128,7 @@ class CIFFrame(wx.Frame):
         sizer = wx.GridBagSizer(2, 2)
 
         self.title = SimpleText(panel, 'Search American Mineralogical CIF Database:',
-                                size=(650, -1), style=LEFT)
+                                size=(700, -1), style=LEFT)
         self.title.SetFont(Font(FONTSIZE+2))
         wids = self.wids = {}
 
@@ -178,7 +177,7 @@ class CIFFrame(wx.Frame):
         sizer.Add(self.title,     (0, 0), (1, 6), LEFT, 2)
 
         ir += 1
-        sizer.Add(HLine(panel, size=(550, 2)), (ir, 0), (1, 6), LEFT, 3)
+        sizer.Add(HLine(panel, size=(650, 2)), (ir, 0), (1, 6), LEFT, 3)
 
         ir += 1
         sizer.Add(minlab,          (ir, 0), (1, 1), LEFT, 3)
@@ -238,7 +237,7 @@ class CIFFrame(wx.Frame):
             wids['feff_cluster_size'].Disable()
 
             ir += 1
-            sizer.Add(HLine(panel, size=(550, 2)), (ir, 0), (1, 6), LEFT, 3)
+            sizer.Add(HLine(panel, size=(650, 2)), (ir, 0), (1, 6), LEFT, 3)
 
             ir += 1
 
@@ -270,7 +269,7 @@ class CIFFrame(wx.Frame):
 
 
         ir += 1
-        sizer.Add(HLine(panel, size=(550, 2)), (ir, 0), (1, 6), LEFT, 3)
+        sizer.Add(HLine(panel, size=(650, 2)), (ir, 0), (1, 6), LEFT, 3)
 
         pack(panel, sizer)
 
@@ -289,7 +288,7 @@ class CIFFrame(wx.Frame):
             pass
 
         self.plotpanel.SetMinSize((250, 250))
-        self.plotpanel.SetMaxSize((700, 450))
+        self.plotpanel.SetMaxSize((675, 400))
         self.plotpanel.onPanelExposed = self.showXRD1D
 
         cif_panel = wx.Panel(rightpanel)
@@ -314,18 +313,18 @@ class CIFFrame(wx.Frame):
                                                 path_importer=self.path_importer,
                                                 _larch=self.larch)
 
-            feff_panel = wx.Panel(rightpanel)
-            wids['feff_text'] = wx.TextCtrl(feff_panel,
+            feffinp_panel = wx.Panel(rightpanel)
+            wids['feff_text'] = wx.TextCtrl(feffinp_panel,
                                            value='<Feff Input Text>',
                                            style=wx.TE_MULTILINE,
                                            size=(700, 450))
             wids['feff_text'].CanCopy()
 
-            feff_panel.onPanelExposed = self.onGetFeff
+            feffinp_panel.onPanelExposed = self.onGetFeff
             wids['feff_text'].SetFont(Font(FONTSIZE+1))
             feff_sizer = wx.BoxSizer(wx.VERTICAL)
             feff_sizer.Add(wids['feff_text'], 0, LEFT, 1)
-            pack(feff_panel, feff_sizer)
+            pack(feffinp_panel, feff_sizer)
 
             feffout_panel = wx.Panel(rightpanel)
             wids['feffout_text'] = wx.TextCtrl(feffout_panel,
@@ -338,7 +337,7 @@ class CIFFrame(wx.Frame):
             feffout_sizer.Add(wids['feffout_text'], 0, LEFT, 1)
             pack(feffout_panel, feffout_sizer)
 
-            for label, page in (('Feff Input Text', feff_panel),
+            for label, page in (('Feff Input Text', feffinp_panel),
                                 ('Feff Output Text', feffout_panel),
                                 ('Feff Results',    self.feffresults),
                                 ):
