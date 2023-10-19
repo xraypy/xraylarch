@@ -16,7 +16,6 @@ jobs:
       uses: conda-incubator/setup-miniconda@v2.2.0
       with:
         miniconda-version: latest
-        mamba-version: "*"
         channels: conda-forge,defaults
         channel-priority: true
         activate-environment: anaconda-client-env
