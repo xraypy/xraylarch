@@ -684,7 +684,7 @@ class XASFrame(wx.Frame):
 
         try:
             groups2csv(savegroups, outfile, x=res.xarray, y=res.yarray,
-                    delim=res.delim, individual=res.individual, _larch=self.larch)
+                    delim=res.delim, individual=res.individual)
             self.write_message(f"Exported CSV file {outfile:s}")
         except:
             title = "Could not export CSV File"
