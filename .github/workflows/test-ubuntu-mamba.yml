@@ -1,0 +1,38 @@
+name: Test with Ubuntu, Mamba
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 5
+      fail-fast: false
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11']
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python from Miniconda/conda
+      uses: conda-incubator/setup-miniconda@v2.2.0
+      with:
+        miniconda-version: latest
+        mamba-version: "*"
+        channels: conda-forge,defaults
+        channel-priority: true
+        activate-environment: anaconda-client-env
+        python-version: ${{ matrix.python-version }}
+    - name: Install conda dependencies
+      run: |
+        printenv
+        mamba install -y -c conda-forge python=${{ matrix.python-version }} "numpy>=1.23" "scipy>=1.8" "matplotlib>=3.6" "h5py>=3.5" "wxpython>=4.1" scikit-image scikit-learn pycifrw pandas jupyter plotly pyparsing pytest pytest-cov coverage
+    - name: Install xraylarch and other dependencies with pip
+      run: |
+        pip install lmfit peakutils pyepics pyshortcuts termcolor sphinx dill pycifrw xraydb wxmplot wxutils fabio silx imageio charset-normalizer
+        pip install .
+    - name: Run test suite
+      run: |
+        cd tests
+        python -m pytest
