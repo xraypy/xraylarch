@@ -546,7 +546,7 @@ class XASFrame(wx.Frame):
 
         MenuItem(self, fmenu, 'wxInspect\tCtrl+I',
                  'Show wx inspection window',   self.onwxInspect)
-        
+
         MenuItem(self, fmenu, 'Edit Preferences\tCtrl+E', 'Customize Preferences',
                  self.onPreferences)
 
@@ -630,7 +630,7 @@ class XASFrame(wx.Frame):
 
     def onwxInspect(self, evt=None):
         wx.GetApp().ShowInspectionTool()
-        
+
     def onShowLarchBuffer(self, evt=None):
         if self.larch_buffer is None:
             self.larch_buffer = LarchFrame(_larch=self.larch, is_standalone=False)
@@ -752,7 +752,7 @@ class XASFrame(wx.Frame):
                                   "Overwrite existing file?", style=wx.YES_NO):
                 return
 
-        aprj = AthenaProject(filename=filename, _larch=self.larch)
+        aprj = AthenaProject(filename=filename)
         for label, grp in zip(grouplist, savegroups):
             aprj.add_group(grp)
         aprj.save(use_gzip=True)
