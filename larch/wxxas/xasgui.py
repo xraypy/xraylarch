@@ -684,7 +684,7 @@ class XASFrame(wx.Frame):
 
         try:
             groups2csv(savegroups, outfile, x=res.xarray, y=res.yarray,
-                    delim=res.delim, individual=res.individual, _larch=self.larch)
+                    delim=res.delim, individual=res.individual)
             self.write_message(f"Exported CSV file {outfile:s}")
         except:
             title = "Could not export CSV File"
@@ -752,7 +752,7 @@ class XASFrame(wx.Frame):
                                   "Overwrite existing file?", style=wx.YES_NO):
                 return
 
-        aprj = AthenaProject(filename=filename, _larch=self.larch)
+        aprj = AthenaProject(filename=filename)
         for label, grp in zip(grouplist, savegroups):
             aprj.add_group(grp)
         aprj.save(use_gzip=True)
