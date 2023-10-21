@@ -1,4 +1,4 @@
-name: Test with Windows, Conda
+name: Test with Windows, Mamba
 
 on: [push]
 
@@ -16,6 +16,7 @@ jobs:
       uses: conda-incubator/setup-miniconda@v2.2.0
       with:
         miniconda-version: latest
+        mamba-version: "*"
         channels: conda-forge,defaults
         channel-priority: true
         activate-environment: anaconda-client-env
@@ -23,7 +24,7 @@ jobs:
     - name: Install conda dependencies
       run: |
         printenv
-        conda install -y -c conda-forge python=${{ matrix.python-version }} "numpy>=1.23" "scipy>=1.8" "matplotlib>=3.6" "h5py>=3.5" "wxpython>=4.1" scikit-image scikit-learn pycifrw pandas jupyter plotly pyparsing pytest pytest-cov coverage
+        mamba install -y -c conda-forge python=${{ matrix.python-version }} "numpy>=1.23" "scipy>=1.8" "matplotlib>=3.6" "h5py>=3.5" "wxpython>=4.1" scikit-image scikit-learn pycifrw pandas jupyter plotly pyparsing pytest pytest-cov coverage
     - name: Install xraylarch and other dependencies with pip
       run: |
         printenv
