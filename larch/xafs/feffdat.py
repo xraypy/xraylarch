@@ -32,6 +32,10 @@ PATH_PARS = ('degen', 's02', 'e0', 'ei', 'deltar', 'sigma2', 'third', 'fourth')
 FDAT_ARRS = ('real_phc', 'mag_feff', 'pha_feff', 'red_fact',
              'lam', 'rep', 'pha', 'amp', 'k')
 
+# values that will be available in calculations of Path Parameter values
+FEFFDAT_VALUES = ('reff', 'nleg', 'degen', 'rmass', 'rnorman',
+                  'gam_ch', 'rs_int', 'vint', 'vmu', 'vfermi')
+
 class FeffDatFile(Group):
     def __init__(self, filename=None,  **kws):
         kwargs = dict(name='feff.dat: %s' % filename)
@@ -405,10 +409,8 @@ class FeffPathGroup(Group):
 
         symtab = self.params._asteval.symtable
         symtab['feffpath'] = self._feffdat
-        symtab['reff'] = self._feffdat.reff
-        symtab['vint'] = self._feffdat.vint
-        symtab['vmu']  = self._feffdat.vmu
-        symtab['vfermi'] = self._feffdat.vfermi
+        for attr in FEFFDAT_VALUES:
+            symtab[attr] = getattr(self._feffdat, attr)
 
 
     def __path_params(self, **kws):
