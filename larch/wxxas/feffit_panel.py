@@ -33,7 +33,7 @@ from larch.utils.jsonutils import encode4js, decode4js
 from larch.utils import fix_varname, fix_filename, gformat, mkdir
 from larch.io.export_modelresult import export_modelresult
 from larch.xafs import feffit_report, feffpath
-
+from larch.xafs.feffdat import FEFFDAT_VALUES
 from larch.xafs.xafsutils import FT_WINDOWS
 
 from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
@@ -1315,7 +1315,7 @@ class FeffitPanel(TaskPanel):
             for node in ast.walk(ast.parse(expr)):
                 if isinstance(node, ast.Name):
                     sym = node.id
-                    if sym not in symtable:
+                    if sym not in symtable and sym in FEFFDAT_VALUES:
                         s = f"_feffit_params.{sym:s} = param({value:.4f}, name='{sym:s}', vary=True{extras:s})"
                         self.larch_eval(s)
             result = True
