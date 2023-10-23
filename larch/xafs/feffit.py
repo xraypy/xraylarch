@@ -8,6 +8,7 @@ except ImportError:
     from collections import Iterable
 from copy import copy, deepcopy
 from functools import partial
+import ast
 import numpy as np
 from numpy import array, arange, interp, pi, zeros, sqrt, concatenate
 
@@ -537,7 +538,8 @@ def feffit_transform(_larch=None, **kws):
     """
     return TransformGroup(_larch=_larch, **kws)
 
-def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **kws):
+def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True,
+           fix_unused_variables=True,  _larch=None, **kws):
     """execute a Feffit fit: a fit of feff paths to a list of datasets
 
     Parameters:
@@ -546,7 +548,8 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
       datasets:     Feffit Dataset group or list of Feffit Dataset group.
       rmax_out:     maximum R value to calculate output arrays.
       path_output:  Flag to set whether all Path outputs should be written.
-
+      fix_unused_variables: Flag for whether to set `vary=False` for unused
+                    variable parameters.  Otherwise, a warning will be printed.
     Returns:
     ---------
       a fit results group.  This will contain subgroups of:
@@ -581,6 +584,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
         if isinstance(wpar, Parameter):
             setattr(wpar, 'skip', getattr(opar, 'skip', False))
 
+
     params = group2params(work_paramgroup)
 
     def _resid(params, datasets=None, pargroup=None, **kwargs):
@@ -596,6 +600,28 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
             return
         ds.prepare_fit(params=params)
 
+    # try to identify variable Parameters that are not actually used
+    vars, exprs = [], []
+    for p in params.values():
+        if p.vary:
+            vars.append(p.name)
+        elif p.expr is not None:
+            exprs.append(p.expr)
+
+    for expr in exprs:
+         for node in ast.walk(ast.parse(expr)):
+                if isinstance(node, ast.Name):
+                    if node.id in vars:
+                        vars.remove(node.id)
+    if len(vars) > 0:
+        if fix_unused_variables:
+            for v in vars:
+                params[v].vary = False
+        else:
+            vlist = ', '.join(vars)
+            print(f"Feffit Warning: unused variables: {vlist}")
+
+    # run fit
     fit = Minimizer(_resid, params,
                     fcn_kws=dict(datasets=datasets, pargroup=work_paramgroup),
                     scale_covar=False, **fit_kws)
