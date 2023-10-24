@@ -1315,7 +1315,7 @@ class FeffitPanel(TaskPanel):
             for node in ast.walk(ast.parse(expr)):
                 if isinstance(node, ast.Name):
                     sym = node.id
-                    if sym not in symtable and sym in FEFFDAT_VALUES:
+                    if sym not in symtable and sym not in FEFFDAT_VALUES:
                         s = f"_feffit_params.{sym:s} = param({value:.4f}, name='{sym:s}', vary=True{extras:s})"
                         self.larch_eval(s)
             result = True
