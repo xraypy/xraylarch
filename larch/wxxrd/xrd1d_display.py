@@ -49,7 +49,7 @@ MAXVAL = 2**32 - 2**15
 MAXVAL_INT16 = 2**16 - 8
 
 XYWcards = "XY Data File(*.xy)|*.xy|All files (*.*)|*.*"
-TIFFWcards = "TIF Files(*.tif)|*.tif|TIFF Files(*.tiff)|*.tiff|All files (*.*)|*.*"
+TIFFWcards = "TIFF Files|*.tif;*.tiff|All files (*.*)|*.*"
 PlotWindowChoices = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
 
 X_SCALES = [u'q (\u212B\u207B\u00B9)', u'2\u03B8 (\u00B0)', u'd (\u212B)']
@@ -303,7 +303,6 @@ class XRD1DFrame(wx.Frame):
         MenuItem(self, cmenu, "Read PONI Calibration File",
                  "Read PONI Calibration (pyFAI) FIle",
                  self.onReadPONI)
-
 
         MenuItem(self, cmenu, "Set Energy / Wavelength",
                  "Set Energy and Wavelength",
