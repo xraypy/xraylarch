@@ -215,6 +215,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=None,
     group.k    = kout
     group.chi  = chi/edge_step
     group.ek0  = ek0
+    group.rbkg = rbkg
 
     # now fill in 'autobk_details' group
     details = Group(kmin=kmin, kmax=kmax, irbkg=irbkg, nknots=len(spl_k),
