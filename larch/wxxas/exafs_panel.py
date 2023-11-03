@@ -16,6 +16,7 @@ from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
                          plotlabels, Check, CEN, RIGHT, LEFT)
 
 from larch.xafs.xafsutils import etok, ktoe, FT_WINDOWS
+from larch.xafs.pre_edge import find_e0
 
 from .xas_dialogs import EnergyUnitsDialog
 from .taskpanel import TaskPanel
@@ -348,16 +349,26 @@ class EXAFSPanel(TaskPanel):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
         self.dgroup = dgroup
-        if not hasattr(dgroup, 'norm'):
+        if not (hasattr(dgroup, 'norm') and hasattr(dgroup, 'e0')):
             self.xasmain.process_normalization(dgroup)
 
         self.skip_process = True
         wids = self.wids
+        ek0 = getattr(dgroup, 'ek0', None)
+        if ek0 is None:
+            ek0 = dgroup.ek0 = getattr(dgroup, 'e0', None)
+        if ek0 is None:
+            ek0 = dgroup.ek0 = dgroup.e0 = find_e0(dgroup)
+        if ek0 is None:
+            print("cannot determine E0 for this group")
+            return
+
+        rbkg = getattr(dgroup, 'rbkg', None)
+        if rbkg is None:
+            rkbg = dgroup.rbkg = opts.get('rbkg', 1.0)
+
         for attr in ('ek0', 'rbkg'):
-            val = getattr(dgroup, attr, None)
-            if val is None:
-                val = opts.get(attr, -1)
-            wids[attr].SetValue(val)
+            wids[attr].SetValue(getattr(dgroup, attr))
 
         for attr in ('bkg_kmin', 'bkg_kmax', 'bkg_kweight', 'fft_kmin',
                      'fft_kmax', 'fft_kweight', 'fft_dk', 'fft_rmaxout',
@@ -379,7 +390,7 @@ class EXAFSPanel(TaskPanel):
             except:
                 print(f"could not set '{attr:s}' to {val}")
 
-        for attr in ('fft_kwindow', 'plotone_op', 'plotsel_op', 'plotalt_op'):
+        for attr in ('fft_kwindow', 'plotone_op', 'plotalt_op'): # 'plotsel_op',
             if attr in opts:
                 wids[attr].SetStringSelection(opts[attr])
 
