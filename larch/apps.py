@@ -87,7 +87,6 @@ def run_gse_mapviewer():
     """Mapviewer"""
     set_locale()
     use_mpl_wxagg()
-    # install_extras(extras_wxgraph)
     kwargs = make_cli(description="Larch's XRM Map Viewer and Analysis Program",
                       filedesc='XRM Map File (.h5)')
     from .wxmap import MapViewer
@@ -97,8 +96,6 @@ def run_gse_dtcorrect():
     """GSE DT Correct """
     set_locale()
     use_mpl_wxagg()
-    # install_extras(extras_wxgraph)
-    # install_extras(extras_epics)
     from .wxmap import DTViewer
     DTViewer().MainLoop()
 
@@ -106,7 +103,6 @@ def run_larix():
     """Larix (was XAS Viewer)"""
     set_locale()
     use_mpl_wxagg()
-    # install_extras(extras_wxgraph)
     from .wxxas import XASViewer, LARIX_TITLE
     kwargs = make_cli(description=LARIX_TITLE)
     XASViewer(check_version=True, **kwargs).MainLoop()
@@ -117,7 +113,6 @@ def run_larch_xrf():
     """ XRF Display"""
     set_locale()
     use_mpl_wxagg()
-    # install_extras(extras_wxgraph)
     kwargs = make_cli(description="Larch's XRF Viewer and Analysis Program",
                     filedesc='MCA File (.mca)')
     from .wxlib.xrfdisplay import XRFApp
@@ -127,10 +122,14 @@ def run_epics_xrf():
     """XRF Display for Epics Detectors"""
     set_locale()
     use_mpl_wxagg()
-    # install_extras(extras_wxgraph)
-    # install_extras(extras_epics)
-    from .epics import EpicsXRFApp
-    EpicsXRFApp().MainLoop()
+    IMPORT_OK = False
+    try:
+        from .epics import EpicsXRFApp
+        IMPORT_OK = True
+    except ImportError:
+        print("cannot import EpicsXRFApp: try `pip install xraylarch[epics]`")
+    if IMPORT_OK:gi
+        EpicsXRFApp().MainLoop()
 
 def run_larch_xrd1d():
     """XRD Display for 1D patternss"""
@@ -143,7 +142,6 @@ def run_xrd2d_viewer():
     """XRD Display for 2D patternss"""
     set_locale()
     use_mpl_wxagg()
-    # install_extras(extras_wxgraph)
     from .wxxrd import XRD2DViewer
     XRD2DViewer().MainLoop()
 
@@ -214,7 +212,6 @@ def run_larch():
 
     # create desktop icons
     if args.makeicons:
-        # install_extras(extras_wxgraph)
         make_desktop_shortcuts()
         return
 
@@ -238,7 +235,6 @@ def run_larch():
     elif args.wxgui:
         set_locale()
         use_mpl_wxagg()
-        # install_extras(extras_wxgraph)
         from .wxlib.larchframe import LarchApp
         LarchApp(with_inspection=True).MainLoop()
 
@@ -247,10 +243,6 @@ def run_larch():
         if with_wx:
             set_locale()
             use_mpl_wxagg()
-        try:
-            # install_extras(extras_wxgraph)
-        except ImportError:
-            pass
         vinfo = check_larchversion()
         if vinfo.update_available:
             print(vinfo.message)
