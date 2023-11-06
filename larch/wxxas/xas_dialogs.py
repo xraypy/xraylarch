@@ -76,6 +76,18 @@ def add_floatspin(name, value, panel, with_pin=True, xasmain=None,
     return fspin, pinb
 
 
+def get_view_limits(ppanel):
+    "get last zoom limits for a plot panel"
+    xlim = ppanel.axes.get_xlim()
+    ylim = ppanel.axes.get_ylim()
+    return (xlim, ylim)
+
+def set_view_limits(ppanel, xlim, ylim):
+    "set zoom limits for a plot panel, as found from get_view_limits"
+    ppanel.axes.set_xlim(xlim, emit=True)
+    ppanel.axes.set_ylim(ylim, emit=True)
+
+
 class OverAbsorptionDialog(wx.Dialog):
     """dialog for correcting over-absorption"""
     def __init__(self, parent, controller, **kws):
@@ -155,6 +167,7 @@ class OverAbsorptionDialog(wx.Dialog):
                   newrow=True)
         panel.pack()
         fit_dialog_window(self, panel)
+        self.plot_results(keep_limits=False)
 
 
     def onDone(self, event=None):
@@ -215,11 +228,11 @@ class OverAbsorptionDialog(wx.Dialog):
         ngroup.journal.add('source_desc', f"fluo_corrected({olddesc})")
         ngroup.journal.add('fluor_correction_command', self.cmd)
 
-    def plot_results(self, event=None):
+    def plot_results(self, event=None, keep_limits=True):
         ppanel = self.controller.get_display(stacked=False).panel
-        ppanel.oplot
+
         dgroup = self.dgroup
-        zoom_limits = get_zoomlimits(ppanel, dgroup)
+        xlim, ylim = get_view_limits(ppanel)
         path, fname = os.path.split(dgroup.filename)
 
         opts = dict(linewidth=3, ylabel=plotlabels.norm,
@@ -230,13 +243,17 @@ class OverAbsorptionDialog(wx.Dialog):
             opts['xmin'] = dgroup.e0 + self.controller.plot_erange[0]
             opts['xmax'] = dgroup.e0 + self.controller.plot_erange[1]
 
+        if not hasattr(dgroup, 'norm_corr'):
+            dgroup.norm_corr = dgroup.norm[:]
+
         ppanel.plot(dgroup.energy, dgroup.norm_corr, zorder=10, marker=None,
                     title='Over-absorption Correction:\n %s' % fname,
                     label='corrected', **opts)
 
         ppanel.oplot(dgroup.energy, dgroup.norm, zorder=10, marker='o',
                      markersize=3, label='original', **opts)
-        set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
+        if keep_limits:
+            set_view_limits(ppanel, xlim, ylim)
         ppanel.canvas.draw()
         ppanel.conf.draw_legend(show=True)
 
@@ -335,7 +352,7 @@ class EnergyCalibrateDialog(wx.Dialog):
 
         fit_dialog_window(self, panel)
 
-        self.plot_results()
+        self.plot_results(keep_limits=False)
         wx.CallAfter(self.get_groups_shared_energyrefs)
 
     def on_select(self, event=None, opt=None):
@@ -468,12 +485,13 @@ class EnergyCalibrateDialog(wx.Dialog):
         ngroup.journal.add('source_desc', f"energy_shifted({olddesc}, {eshift:.4f})")
         ngroup.journal.add('energy_shift ', 0.0)
 
-    def plot_results(self, event=None):
+    def plot_results(self, event=None, keep_limits=True):
         ppanel = self.controller.get_display(stacked=False).panel
         ppanel.oplot
         xnew, ynew = self.data
         dgroup = self.dgroup
-        zoom_limits = get_zoomlimits(ppanel, dgroup)
+
+        xlim, ylim = get_view_limits(ppanel)
         path, fname = os.path.split(dgroup.filename)
 
         wids = self.wids
@@ -519,10 +537,9 @@ class EnergyCalibrateDialog(wx.Dialog):
 
             ppanel.oplot(xref, yref, style='solid', zorder=5, color='#2ca02c',
                          marker=None, label=refgroup.filename, **opts)
-
-        set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
+        if keep_limits:
+            set_view_limits(ppanel, xlim, ylim)
         ppanel.canvas.draw()
-
 
 
     def GetResponse(self):
@@ -630,11 +647,10 @@ class RebinDataDialog(wx.Dialog):
         fit_dialog_window(self, panel)
 
         self.on_rebin()
-        self.plot_results()
+        self.plot_results(keep_limits=False)
 
     def onDone(self, event=None):
         self.Destroy()
-
 
     def on_groupchoice(self, event=None):
         self.dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
@@ -711,11 +727,11 @@ class RebinDataDialog(wx.Dialog):
     def on_done(self, event=None):
         self.Destroy()
 
-    def plot_results(self):
+    def plot_results(self, event=None, keep_limits=True):
         ppanel = self.controller.get_display(stacked=False).panel
         xnew, ynew, yerr, e0 = self.data
         dgroup = self.dgroup
-        zoom_limits = get_zoomlimits(ppanel, dgroup)
+        xlim, ylim = get_view_limits(ppanel)
         path, fname = os.path.split(dgroup.filename)
 
         opts = {}
@@ -732,7 +748,8 @@ class RebinDataDialog(wx.Dialog):
         ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
                      marker='o', markersize=4, linewidth=2.0,
                      label='original', show_legend=True, **opts)
-        set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
+        if keep_limits:
+            set_view_limits(ppanel, xlim, ylim)
         ppanel.canvas.draw()
 
     def GetResponse(self):
@@ -776,18 +793,20 @@ class SmoothDataDialog(wx.Dialog):
 
         opts  = dict(size=(50, -1), act_on_losefocus=True, odd_only=False)
 
-        self.sigma = FloatCtrl(panel, value=1, precision=2, minval=0, **opts)
-        self.par_n = FloatCtrl(panel, value=2, precision=0, minval=1, **opts)
-        self.par_o = FloatCtrl(panel, value=1, precision=0, minval=1, **opts)
+        self.sigma = FloatSpin(panel, value=1, digits=2, min_val=0, increment=0.1,
+                               size=(60, -1), action=self.on_smooth)
 
-        for fc in (self.sigma, self.par_n, self.par_o):
-            fc.SetAction(self.on_smooth)
+        self.par_n = FloatSpin(panel, value=2, digits=0, min_val=1, increment=1,
+                               size=(60, -1), action=self.on_smooth)
+
+        self.par_o = FloatSpin(panel, value=1, digits=0, min_val=1, increment=1,
+                               size=(60, -1), action=self.on_smooth)
+
+        # for fc in (self.sigma, self.par_n, self.par_o):
+        # self.sigma.SetAction(self.on_smooth)
 
         self.message = SimpleText(panel, label='         ', size=(200, -1))
 
-        # wids['apply'] = Button(panel, 'Save / Overwrite', size=(150, -1),
-        #                       action=self.on_apply)
-        # SetTip(wids['apply'], 'Save corrected data, overwrite current arrays')
 
         wids['save_as'] = Button(panel, 'Save As New Group: ', size=(150, -1),
                            action=self.on_saveas)
@@ -804,9 +823,9 @@ class SmoothDataDialog(wx.Dialog):
 
         add_text('Smoothing Method: ')
         panel.Add(self.smooth_op)
-        add_text(' n= ', newrow=False)
+        add_text(' n = ', newrow=False)
         panel.Add(self.par_n)
-        add_text(' order= ', newrow=False)
+        add_text(' order=  ', newrow=False)
         panel.Add(self.par_o)
 
         add_text('Convolution Form: ')
@@ -826,7 +845,7 @@ class SmoothDataDialog(wx.Dialog):
         panel.pack()
         fit_dialog_window(self, panel)
 
-        self.plot_results()
+        self.plot_results(keep_limits=False)
 
     def onDone(self, event=None):
         self.Destroy()
@@ -841,6 +860,8 @@ class SmoothDataDialog(wx.Dialog):
         smoothop = self.smooth_op.GetStringSelection().lower()
 
         convop   = self.conv_op.GetStringSelection()
+        self.conv_op.Enable(smoothop.startswith('conv'))
+        self.sigma.Enable(smoothop.startswith('conv'))
         self.message.SetLabel('')
         self.par_n.SetMin(1)
         self.par_n.odd_only = False
@@ -848,9 +869,11 @@ class SmoothDataDialog(wx.Dialog):
         par_o = int(self.par_o.GetValue())
         sigma = self.sigma.GetValue()
         cmd = '{group:s}.mu' # No smoothing
+        estep = find_energy_step(self.data[0])
         if smoothop.startswith('box'):
             self.par_n.Enable()
             cmd = "boxcar({group:s}.mu, {par_n:d})"
+            self.conv_op.Disable()
         elif smoothop.startswith('savi'):
             self.par_n.Enable()
             self.par_n.odd_only = True
@@ -867,7 +890,6 @@ class SmoothDataDialog(wx.Dialog):
             cmd = "savitzky_golay({group:s}.mu, {par_n:d}, {par_o:d})"
 
         elif smoothop.startswith('conv'):
-            estep = find_energy_step(self.data[0])
             cmd = "smooth({group:s}.energy, {group:s}.mu, xstep={estep:f}, sigma={sigma:f}, form='{convop:s}')"
         self.cmd = cmd.format(group=self.dgroup.groupname, convop=convop,
                               estep=estep, sigma=sigma, par_n=par_n, par_o=par_o)
@@ -906,14 +928,14 @@ class SmoothDataDialog(wx.Dialog):
     def on_done(self, event=None):
         self.Destroy()
 
-    def plot_results(self):
+    def plot_results(self, event=None, keep_limits=True):
         ppanel = self.controller.get_display(stacked=False).panel
         xnew, ynew = self.data
         dgroup = self.dgroup
-        zoom_limits = get_zoomlimits(ppanel, dgroup)
         path, fname = os.path.split(dgroup.filename)
-
         opts = {}
+        xlim, ylim = get_view_limits(ppanel)
+
         if self.controller.plot_erange is not None:
             opts['xmin'] = dgroup.e0 + self.controller.plot_erange[0]
             opts['xmax'] = dgroup.e0 + self.controller.plot_erange[1]
@@ -927,7 +949,8 @@ class SmoothDataDialog(wx.Dialog):
         ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
                      marker='o', markersize=4, linewidth=2.0,
                      label='original', show_legend=True, **opts)
-        set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
+        if keep_limits:
+            set_view_limits(ppanel, xlim, ylim)
         ppanel.canvas.draw()
 
     def GetResponse(self):
@@ -996,7 +1019,7 @@ class DeconvolutionDialog(wx.Dialog):
         panel.pack()
 
         fit_dialog_window(self, panel)
-        self.plot_results()
+        self.plot_results(keep_limits=False)
 
     def onDone(self, event=None):
         self.Destroy()
@@ -1047,11 +1070,11 @@ class DeconvolutionDialog(wx.Dialog):
         self.parent.process_normalization(dgroup)
         self.plot_results()
 
-    def plot_results(self):
+    def plot_results(self, event=None, keep_limits=True):
         ppanel = self.controller.get_display(stacked=False).panel
         xnew, ynew = self.data
         dgroup = self.dgroup
-        zoom_limits = get_zoomlimits(ppanel, dgroup)
+        xlim, ylim = get_view_limits(ppanel)
         path, fname = os.path.split(dgroup.filename)
 
         opts = {}
@@ -1068,7 +1091,8 @@ class DeconvolutionDialog(wx.Dialog):
         ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
                      marker='o', markersize=4, linewidth=2.0,
                      label='original', show_legend=True, **opts)
-        set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
+        if keep_limits:
+            set_view_limits(ppanel, xlim, ylim)
         ppanel.canvas.draw()
 
     def GetResponse(self):
@@ -1186,7 +1210,7 @@ class DeglitchDialog(wx.Dialog):
         panel.pack()
 
         fit_dialog_window(self, panel)
-        self.plot_results(use_zoom=False)
+        self.plot_results(keep_limits=False)
 
     def onDone(self, event=None):
         self.Destroy()
@@ -1300,7 +1324,7 @@ class DeglitchDialog(wx.Dialog):
 
         self.parent.process_normalization(ngroup)
 
-    def plot_results(self, use_zoom=True):
+    def plot_results(self, event=None, keep_limits=True):
         ppanel = self.controller.get_display(stacked=False).panel
 
         xdat, ydat = self.data
@@ -1333,9 +1357,7 @@ class DeglitchDialog(wx.Dialog):
         dgroup.plot_xlabel = xlabel
         dgroup.plot_ylabel = ylabel
 
-        zoom_limits = None
-        if use_zoom:
-            zoom_limits = get_zoomlimits(ppanel, dgroup)
+        xlim, ylim = get_view_limits(ppanel)
 
         ppanel.plot(xdat, ydat, zorder=10, marker=None, linewidth=3,
                     label='original', ylabel=ylabel, **opts)
@@ -1351,9 +1373,11 @@ class DeglitchDialog(wx.Dialog):
             s = '' if ex < 0 else '\n[%.1f]' % (etok(ex))
             return r"%1.4g%s" % (x, s)
 
-        set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
+        if keep_limits:
+            set_view_limits(ppanel, xlim, ylim)
         if plottype in ('chie', 'chiew'):
             ppanel.axes.xaxis.set_major_formatter(FuncFormatter(ek_formatter))
+
         ppanel.canvas.draw()
 
         self.history_message.SetLabel('%i items in history' % (len(self.xmasks)-1))
