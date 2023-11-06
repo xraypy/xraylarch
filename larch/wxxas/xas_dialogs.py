@@ -509,7 +509,7 @@ class EnergyCalibrateDialog(wx.Dialog):
             ynew = np.gradient(ynew)/np.gradient(xnew)
             ylabel = plotlabels.dmude
 
-        opts = dict(xmin=xmin, xmax=xmax, ylabel=ylabel,
+        opts = dict(xmin=xmin, xmax=xmax, ylabel=ylabel, delay_draw=True,
                     xlabel=plotlabels.energy, show_legend=True)
 
         if self.controller.plot_erange is not None:
@@ -522,11 +522,10 @@ class EnergyCalibrateDialog(wx.Dialog):
 
         ppanel.plot(xold, yold, zorder=10, marker='o', markersize=3,
                      label='original', linewidth=2, color='#1f77b4',
-                     title=f'Energy Calibration:\n {fname}',
-                     delay_draw=True, **opts)
+                     title=f'Energy Calibration:\n {fname}', **opts)
 
         ppanel.oplot(xnew, ynew, zorder=15, marker='+', markersize=3,
-                    linewidth=2, label='shifted', delay_draw=True,
+                    linewidth=2, label='shifted',
                     color='#d62728', **opts)
 
         if wids['reflist'].GetStringSelection() != 'None':
@@ -734,18 +733,18 @@ class RebinDataDialog(wx.Dialog):
         xlim, ylim = get_view_limits(ppanel)
         path, fname = os.path.split(dgroup.filename)
 
-        opts = {}
+        opts = {'delay_draw': True}
         if self.controller.plot_erange is not None:
             opts['xmin'] = dgroup.e0 + self.controller.plot_erange[0]
             opts['xmax'] = dgroup.e0 + self.controller.plot_erange[1]
 
-        ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker='square',
+        ppanel.plot(xnew, ynew, zorder=20, marker='square',
                     linewidth=3, title='Enegy rebinning:\n %s' % fname,
                     label='rebinned', xlabel=plotlabels.energy,
                     ylabel=plotlabels.mu, **opts)
 
         xold, yold = self.dgroup.energy, self.dgroup.mu
-        ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
+        ppanel.oplot(xold, yold, zorder=10, 
                      marker='o', markersize=4, linewidth=2.0,
                      label='original', show_legend=True, **opts)
         if keep_limits:
@@ -933,20 +932,20 @@ class SmoothDataDialog(wx.Dialog):
         xnew, ynew = self.data
         dgroup = self.dgroup
         path, fname = os.path.split(dgroup.filename)
-        opts = {}
+        opts = {'delay_draw': True}
         xlim, ylim = get_view_limits(ppanel)
 
         if self.controller.plot_erange is not None:
             opts['xmin'] = dgroup.e0 + self.controller.plot_erange[0]
             opts['xmax'] = dgroup.e0 + self.controller.plot_erange[1]
 
-        ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker=None,
+        ppanel.plot(xnew, ynew, zorder=20, marker=None,
                     linewidth=3, title='Smoothing:\n %s' % fname,
                     label='smoothed', xlabel=plotlabels.energy,
                     ylabel=plotlabels.mu, **opts)
 
         xold, yold = self.dgroup.energy, self.dgroup.mu
-        ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
+        ppanel.oplot(xold, yold, zorder=10, 
                      marker='o', markersize=4, linewidth=2.0,
                      label='original', show_legend=True, **opts)
         if keep_limits:
@@ -1077,18 +1076,18 @@ class DeconvolutionDialog(wx.Dialog):
         xlim, ylim = get_view_limits(ppanel)
         path, fname = os.path.split(dgroup.filename)
 
-        opts = {}
+        opts = {'delay_draw': True}
         if self.controller.plot_erange is not None:
             opts['xmin'] = dgroup.e0 + self.controller.plot_erange[0]
             opts['xmax'] = dgroup.e0 + self.controller.plot_erange[1]
 
-        ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker=None,
+        ppanel.plot(xnew, ynew, zorder=20, marker=None,
                     linewidth=3, title='Deconvolving:\n %s' % fname,
                     label='deconvolved', xlabel=plotlabels.energy,
                     ylabel=plotlabels.mu, **opts)
 
         xold, yold = self.dgroup.energy, self.dgroup.norm
-        ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
+        ppanel.oplot(xold, yold, zorder=10,
                      marker='o', markersize=4, linewidth=2.0,
                      label='original', show_legend=True, **opts)
         if keep_limits:
@@ -1346,7 +1345,8 @@ class DeglitchDialog(wx.Dialog):
             xmin = self.dgroup.e0
             xlabel = xlabel=plotlabels.ewithk
 
-        opts = dict(xlabel=xlabel, title='De-glitching:\n %s' % fname)
+        opts = dict(xlabel=xlabel, title='De-glitching:\n %s' % fname,
+                    delay_draw=True)
 
         ylabel =  {'mu': plotlabels.mu,
                    'norm': plotlabels.norm,
