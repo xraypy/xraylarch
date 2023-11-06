@@ -8,7 +8,7 @@ fi
 unset CONDA_EXE CONDA_PYTHON_EXE CONDA_PREFIX PROJ_LIB
 
 # use pip to install some known-safe-for-pip packages
-$PREFIX/bin/pip install xraylarch wxmplot wxutils pyepics epicsapps psycopg2-binary pyfai
+$PREFIX/bin/pip install xraylarch[larix]
 
 # make desktop icons
 $PREFIX/bin/python $PREFIX/bin/larch -m
