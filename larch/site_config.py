@@ -22,41 +22,19 @@ larch_release_version = __release_version__
 # lists of recommended packages that are not installed by default
 # but may be installed if several of the larch apps are run.
 
-extras_wxgraph = {'wxutils': '0.3.0', 'wxmplot': '0.9.56'}
-extras_epics =  {'pyepics': '3.5.1', 'epicsapps': None, 'psycopg2-binary':None}
-extras_doc   = {'pytest': None, 'sphinx': None, 'numpydoc': None,
-                'sphinxcontrib-bibtex': None, 'sphinxcontrib-argdoc': None}
-extras_qtgraph = {'pyqt5': None, 'pyqtwebengine': None, 'pyqtgraph': None}
-extras_plotly = {'plotly': None, 'jupyter': '5.0', 'ipywidgets': None}
-extras_pymatgen = {'mp_api': None, 'pandas': None, 'py3Dmol': None}
-
-
 def pjoin(*args):
     "simple join"
     return nativepath(os.path.join(*args))
 
-def update_larch():
+def update_larch(with_larix=True):
     "pip upgrade larch"
-    check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', 'xraylarch'])
+    target = 'xraylarch'
+    if with_larix:
+        target = 'xraylarch\[larix\]'
+    check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', target])
 
-def install_extras(package_dict, timeout=30):
-    "install extra packages"
-    for pkg, vers_required in package_dict.items():
-        try:
-            vers_installed = importlib.metadata.distribution(pkg).version
-        except:
-            vers_installed = None
-        do_install = vers_installed is None
-        if vers_installed is not None and vers_required is not None:
-            do_install = (version_parse(vers_installed) <
-                          version_parse(vers_required))
-        if do_install:
-            command = [sys.executable, '-m', 'pip', 'install', f"{pkg}>={vers_required}"]
-            try:
-                check_call(command, timeout=timeout)
-            except (CalledProcessError, TimeoutExpired):
-                log_warning(f"could not pip install packages: {pkg}")
-#
+
+
 # set system-wide and local larch folders
 #   user_larchdir = get_homedir() + '.larch' (#unix)
 #                 = get_homedir() + 'larch'  (#win)

@@ -39,15 +39,6 @@ elif platform == 'darwin':
 
 
 if HAS_WXPYTHON:
-    try:
-        import wxutils
-        import wxmplot
-    except:
-        from ..apps import install_extras
-        from ..site_config import extras_wxgraph
-        install_extras(extras_wxgraph)
-
-
     from . import larchframe
     from . import larchfilling
     from . import readlinetextctrl

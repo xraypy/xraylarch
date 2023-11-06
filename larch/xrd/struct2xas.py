@@ -20,7 +20,7 @@ from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 import larch.utils.logging as logging
 from larch.utils import mkdir, unixpath
 from larch.utils.strutils import fix_filename, unique_name, strict_ascii
-from larch.site_config import user_larchdir, install_extras, extras_pymatgen
+from larch.site_config import user_larchdir
 from larch.io import read_ascii
 from larch.math.convolution1D import lin_gamma, conv
 
@@ -157,9 +157,6 @@ class Struct2XAS:
         self.species = self._get_species()
         self.parent_path = user_larchdir
         self.folders = structure_folders()
-        if not HAS_PY3DMOL:
-            install_extras(extras_pymatgen)
-
         logger.info(
             f"Frames: {self.nframes}, Absorbing sites: {self.nabs_sites}. (Indexes for frames and abs_sites start at 0)"
         )

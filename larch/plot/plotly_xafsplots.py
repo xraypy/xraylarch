@@ -36,21 +36,11 @@ get_display = _plot = _oplot = _newplot = _fitplot = _plot_text = nullfunc
 _plot_marker = _plot_arrow = _plot_axvline = _plot_axhline = nullfunc
 
 
-from larch.site_config import (install_extras, extras_plotly)
-
-
 HAS_PLOTLY = True
 try:
     import plotly
 except ImportError:
-    install_extras(extras_plotly, timeout=30)
-    time.sleep(0.25)
-    try:
-        import plotpy
-    except ImportError:
-        logger = logging.getLogger()
-        logger.warning(f"could not pip install plotly")
-        HAS_PLOTLY = False
+    HAS_PLOTLY = False
 
 if HAS_PLOTLY:
     import plotly.graph_objs as pgo
