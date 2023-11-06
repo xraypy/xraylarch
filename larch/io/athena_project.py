@@ -827,8 +827,9 @@ class AthenaProject(object):
 
             if is_xmu and (do_preedge or do_bkg):
                 pars = clean_bkg_params(this.athena_params.bkg)
-                if this.athena_params.bkg.eshift:
-                    this.energy = this.energy + this.athena_params.bkg.eshift
+                eshift = getattr(this.athena_params.bkg, 'eshift', None)
+                if eshift is not None:
+                    this.energy = this.energy + eshift
                 pre_edge(this,  e0=float(pars.e0),
                          pre1=float(pars.pre1), pre2=float(pars.pre2),
                          norm1=float(pars.nor1), norm2=float(pars.nor2),
