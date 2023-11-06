@@ -128,7 +128,7 @@ def run_epics_xrf():
         IMPORT_OK = True
     except ImportError:
         print("cannot import EpicsXRFApp: try `pip install xraylarch[epics]`")
-    if IMPORT_OK:gi
+    if IMPORT_OK:
         EpicsXRFApp().MainLoop()
 
 def run_larch_xrd1d():
