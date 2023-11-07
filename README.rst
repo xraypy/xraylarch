@@ -1,6 +1,12 @@
 Larch:  Data Analysis Tools for X-ray Spectroscopy and More
 ============================================================
 
+.. image:: https://github.com/xraypy/xraylarch/actions/workflows/test-ubuntu-mamba.yml/badge.svg
+  :target: https://github.com/xraypy/xraylarch/actions/workflows/test-ubuntu-mamba.yml
+
+.. image::  https://github.com/xraypy/xraylarch/actions/workflows/test-windows-mamba.yml/badge.svg
+   :target: https://github.com/xraypy/xraylarch/actions/workflows/test-ubuntu-mamba.yml
+
 .. image::  https://github.com/xraypy/xraylarch/actions/workflows/test-ubuntu.yml/badge.svg
    :target: https://github.com/xraypy/xraylarch/actions/workflows/test-ubuntu.yml
 
