@@ -320,32 +320,13 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
     if p2-p1 < 2:
         p2 = min(len(energy), p1 + 2)
 
-
-    if make_flat and p2-p1 > 4:
-        enx, mux = remove_nans2(energy[p1:p2], norm[p1:p2])
-        # enx, mux = (energy[p1:p2], norm[p1:p2])
-        fpars = Parameters()
-        ncoefs = len(pre_dat['norm_coefs'])
-        fpars.add('c0', value=1.0, vary=True)
-        fpars.add('c1', value=0.0, vary=False)
-        fpars.add('c2', value=0.0, vary=False)
-        if ncoefs > 1:
-            fpars['c1'].set(value=1.e-5, vary=True)
-            if ncoefs > 2:
-                fpars['c2'].set(value=1.e-5, vary=True)
-
-        try:
-            fit = Minimizer(flat_resid, fpars, fcn_args=(enx, mux))
-            result = fit.leastsq()
-            fc0 = result.params['c0'].value
-            fc1 = result.params['c1'].value
-            fc2 = result.params['c2'].value
-
-            flat_diff   = fc0 + energy * (fc1 + energy * fc2)
-            flat        = norm - flat_diff  + flat_diff[ie0]
-            flat[:ie0]  = norm[:ie0]
-        except:
-            pass
+    if make_flat:
+        pre_edge = pre_dat['pre_edge']
+        post_edge = pre_dat['post_edge']
+        edge_step = pre_dat['edge_step']
+        flat_residue = (post_edge - pre_edge)/edge_step
+        flat = norm - flat_residue + flat_residue[ie0]
+        flat[:ie0] = norm[:ie0]
 
     group.e0 = e0
     group.norm = norm
