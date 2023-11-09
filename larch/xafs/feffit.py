@@ -17,7 +17,8 @@ from scipy.optimize import leastsq as scipy_leastsq
 from lmfit import Parameters, Parameter, Minimizer, fit_report
 
 from larch import Group, isNamedClass
-from larch.utils import fix_varname
+from larch.utils import fix_varname, gformat
+from larch.utils.strutils import b32hash, random_varname
 from ..math import index_of, realimag, complex_phase, remove_nans
 from ..fitting import (correlated_values, eval_stderr, ParameterGroup,
                        group2params, params2group, isParameter)
@@ -229,10 +230,14 @@ class TransformGroup(Group):
         return (out*self._cauchymask)[self._cauchyslice]
 
 class FeffitDataSet(Group):
-    def __init__(self, data=None, paths=None, transform=None,
-                 epsilon_k=None, _larch=None, pathlist=None, model=None, **kws):
+
+    def __init__(self, data=None, paths=None, transform=None, epsilon_k=None,
+                 refine_bkg=False, pathlist=None, model=None, _larch=None,
+                 **kws):
+
         self._larch = _larch
         Group.__init__(self, **kws)
+        self.refine_bkg = refine_bkg
 
         if paths is None and pathlist is not None:  # legacy
             paths = pathlist
@@ -268,13 +273,38 @@ class FeffitDataSet(Group):
         else:
             trasform = copy(transform)
         self.transform = transform
+
         if model is None:
             self.model = Group(__name__='Feffit Model for %s' % repr(data))
             self.model.k = None
         else:
             self.model = model
+        self.hashkey = None
         self.__chi = None
         self.__prepared = False
+
+    def _generate_hashkey(self, other_hashkeys=None):
+        """generate hash for dataset"""
+        if self.hashkey is not None:
+            return
+        hlen = 10
+        dat = [self.data.ek0, self.data.e0, self.data.rbkg]
+        for arr in (self.data.energy, self.data.norm, self.data.chi):
+            dat.extend([arr.min(), arr.max(), arr.mean(),
+                        (arr**2).mean(), len(arr)])
+            dat.extend(arr[:30:3])
+        s = "|".join([gformat(x) for x in dat])
+        self.hashkey = f"d{(b32hash(s)[:hlen].lower())}"
+        # may need to look for hash collisions: if there is a collision,
+        # it is probably the same dataset, so just go witha
+        if other_hashkeys is not None:
+            ntry = 0
+            while self.hashkey in other_hashkeys:
+                ntry += 1
+                if ntry > 1e6:
+                    ntry = 0
+                    hlen += 1
+                self.hashkey = f"d{random_varname(hlen)}"
 
     def __repr__(self):
         return '<FeffitDataSet Group: %s>' % self.__name__
@@ -283,15 +313,21 @@ class FeffitDataSet(Group):
         return FeffitDataSet(data=copy(self.data),
                              paths=self.paths,
                              transform=self.transform,
+                             refine_bkg=self.refine_bkg,
+                             epsilon_k=self.data.epsilon_k,
+                             model=self.model,
                              _larch=self._larch)
 
     def __deepcopy__(self, memo):
         return FeffitDataSet(data=deepcopy(self.data),
                              paths=self.paths,
                              transform=self.transform,
+                             refine_bkg=self.refine_bkg,
+                             epsilon_k=self.data.epsilon_k,
+                             model=self.model,
                              _larch=self._larch)
 
-    def prepare_fit(self, params):
+    def prepare_fit(self, params, other_hashkeys=None):
         """prepare for fit with this dataset"""
         trans = self.transform
         trans.make_karrays()
@@ -335,7 +371,13 @@ class FeffitDataSet(Group):
             if path.spline_coefs is None:
                 path.create_spline_coefs()
 
+        self._generate_hashkey(other_hashkeys=other_hashkeys)
+        self.bkg_spline = {}
+        if self.refine_bkg:
+            self.n_spline = 1 + 2*(trans.rmin)*(trans.kmax-trans.kmin)/pi
+            self.n_idp = 1 + 2*(trans.rmax)*(trans.kmax-trans.kmin)/pi
         self.__prepared = True
+
 
 
     def estimate_noise(self, chi=None, rmin=15.0, rmax=30.0, all_kweights=True):
@@ -594,12 +636,14 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True,
     if isNamedClass(datasets, FeffitDataSet):
         datasets = [datasets]
 
+    # we need unique dataset hashes if refine_bkg is used
+    dset_hashkeys = []
     for ds in datasets:
         if not isNamedClass(ds, FeffitDataSet):
             print( "feffit needs a list of FeffitDataSets")
             return
-        ds.prepare_fit(params=params)
-
+        ds.prepare_fit(params=params, other_hashkeys=dset_hashkeys)
+        dset_hashkeys.append(ds.hashkey)
     # try to identify variable Parameters that are not actually used
     vars, exprs = [], []
     for p in params.values():
@@ -628,7 +672,6 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True,
 
     result = fit.leastsq()
     params2group(result.params, work_paramgroup)
-
     dat = concatenate([d._residual(work_paramgroup, data_only=True) for d in datasets])
 
     n_idp = 0

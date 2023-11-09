@@ -706,7 +706,7 @@ def use_feffpath(pathcache, label, degen=None, s02=None,  e0=None,ei=None,
       e0:        E_0      value or parameter [0.0]
       deltar:    delta_R  value or parameter [0.0]
       sigma2:    sigma^2  value or parameter [0.0]
-      third:     c_3   o   value or parameter [0.0]
+      third:     c_3      value or parameter [0.0]
       fourth:    c_4      value or parameter [0.0]
       ei:        E_i      value or parameter [0.0]
       use:       whether to use path in sum [True]
