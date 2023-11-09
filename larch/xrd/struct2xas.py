@@ -27,23 +27,23 @@ from larch.math.convolution1D import lin_gamma, conv
 try:
     import pandas as pd
     from pandas.io.formats.style import Styler
+
     HAS_PANDAS = True
 except ImportError:
     HAS_PANDAS = False
 
 try:
     import py3Dmol
+
     HAS_PY3DMOL = True
 except ImportError:
     HAS_PY3DMOL = False
 
 
-
 __author__ = ["Beatriz G. Foschiani", "Mauro Rovezzi"]
 __email__ = ["beatrizgfoschiani@gmail.com", "mauro.rovezzi@esrf.fr"]
 __credits__ = ["Jade Chongsathapornpong", "Marius Retegan"]
-__version__ = "2023.2.0"
-
+__version__ = "2023.3.0"
 
 
 # initialize the logger
@@ -96,13 +96,14 @@ def xyz2struct(molecule):
     struct = Structure(lattice, species, coords, coords_are_cartesian=True)
     return struct
 
+
 def structure_folders():
     """
     return folders under USER_LARCHDIR for FDMNES, Feff,  and structure files,
     making sure each exists
     """
     folders = {}
-    for name in ('feff', 'fdmnes', 'mp_structs'):
+    for name in ("feff", "fdmnes", "mp_structs"):
         folders[name] = unixpath(os.path.join(user_larchdir, name))
         mkdir(folders[name])
     return folders
@@ -229,23 +230,24 @@ class Struct2XAS:
             file = os.path.basename(self.file)
             split_file = os.path.splitext(file)
             self.file_name = split_file[0]
-            ext = split_file[1]
+            self.file_ext = split_file[1]
         else:
+            self.file_name, self.file_ext = None, None
             errmsg = f"{self.file} not found"
             logger.error(errmsg)
             raise FileNotFoundError(errmsg)
 
-        if ext == ".cif":
+        if self.file_ext == ".cif":
             self.is_cif = True
             self.xyz = None
             self.molecules = None
             self.mol = None
             self.nframes = 1
             self.cif = CifParser(self.file)
-            # self.struct = Structure.from_file(self.file)
-            self.struct = self.cif.get_structures()[0]
+            self.struct = Structure.from_file(self.file)
+            # self.struct = self.cif.get_structures()[0]  #: NOT WORKING!
             logger.debug("structure created from a CIF file")
-        elif ext == ".xyz":
+        elif self.file_ext == ".xyz":
             self.is_xyz = True
             self.cif = None
             self.xyz = XYZ.from_file(self.file)
@@ -254,13 +256,13 @@ class Struct2XAS:
             self.nframes = len(self.molecules)
             self.struct = xyz2struct(self.mol)
             logger.debug("structure created from a XYZ file")
-        elif ext == ".mpjson":
+        elif self.file_ext == ".mpjson":
             self.is_xyz = False
             self.is_cif = True
             self.molecules = None
             self.mol = None
             self.nframes = 1
-            self.struct = Structure.from_dict(json.load(open(self.file, 'r')))
+            self.struct = Structure.from_dict(json.load(open(self.file, "r")))
             logger.debug("structure created from JSON file")
 
         else:
@@ -308,9 +310,12 @@ class Struct2XAS:
             raise KeyError(errmsg)
         try:
             atom_lists.append(cf["_atom_site_symmetry_multiplicity"])
-            atom_lists.append(cf["_atom_site_Wyckoff_symbol"])
         except KeyError:
             atom_lists.append(["?"] * natoms)
+
+        try:
+            atom_lists.append(cf["_atom_site_Wyckoff_symbol"])
+        except KeyError:
             atom_lists.append(["?"] * natoms)
 
         atom_sites = []
@@ -389,9 +394,9 @@ class Struct2XAS:
 
             # Get multiples sites for absorber atom
             for idx, sites in enumerate(sym_struct.equivalent_sites):
-                # sites = sorted(
-                #    sites, key=lambda s: tuple(abs(x) for x in s.frac_coords)
-                # )
+                sites = sorted(
+                    sites, key=lambda s: tuple(abs(x) for x in s.frac_coords)
+                )
                 site = sites[0]
                 abs_row = [idx, site.species_string]
                 abs_row.append([j for j in np.round(site.frac_coords, 4)])
@@ -762,8 +767,9 @@ class Struct2XAS:
         atoms = sorted(atoms, key=lambda x: x[2])
         return atoms
 
-    def make_input_fdmnes(self, radius=7, parent_path=None,
-                          template=None, green=True, **kwargs):
+    def make_input_fdmnes(
+        self, radius=7, parent_path=None, template=None, green=True, **kwargs
+    ):
         """
         Create a fdmnes input from a template.
 
@@ -791,23 +797,29 @@ class Struct2XAS:
         """
         replacements = {}
         replacements.update(**kwargs)
+        replacements["version"] = __version__
 
         if template is None:
             template = os.path.join(
-                os.path.dirname(os.path.realpath(__file__)),
-                "templates", "fdmnes.tmpl")
+                os.path.dirname(os.path.realpath(__file__)), "templates", "fdmnes.tmpl"
+            )
 
         if parent_path is None:
-            parent_path = self.folders['fdmnes']
+            parent_path = self.folders["fdmnes"]
 
-        self.outdir = os.path.join(parent_path, self.file_name, self.abs_atom,
-                                   f"frame{self.frame}",
-                                   f"site{self.abs_site}")
+        self.outdir = os.path.join(
+            parent_path,
+            self.file_name,
+            self.abs_atom,
+            f"frame{self.frame}",
+            f"site{self.abs_site}",
+        )
 
         method = "green" if green else ""
         absorber = ""
         crystal = ""
         occupancy = ""
+        comment = f"input structure: {self.file_name}{self.file_ext}\ncreation date: {_get_timestamp()}"
 
         if self.is_cif:
             try:
@@ -840,9 +852,9 @@ class Struct2XAS:
 
             unique_sites = []
             for sites in analyzer.get_symmetrized_structure().equivalent_sites:
-                # sites = sorted(
-                #    sites, key=lambda s: tuple(abs(x) for x in s.frac_coords)
-                # )
+                sites = sorted(
+                    sites, key=lambda s: tuple(abs(x) for x in s.frac_coords)
+                )
                 unique_sites.append((sites[0], len(sites)))
                 sites = str()
             if self.full_occupancy:
@@ -881,10 +893,6 @@ class Struct2XAS:
             # absorber = f"{absorber}"
             # replacements["absorber"] = f"Z_absorber\n{round(Element(elem).Z)}"
 
-            comment = (
-                f"cif file name: {self.file_name}\ncreation date:{_get_timestamp()}"
-            )
-
         if self.is_xyz:
             replacements["crystal"] = "molecule"
 
@@ -911,10 +919,6 @@ class Struct2XAS:
                 f"{lat.alpha:12.8f} {lat.beta:12.8f} {lat.gamma:12.8f}"
             )
 
-            comment = (
-                f"xyz file name: {self.file_name}\ncreation date:{_get_timestamp()}"
-            )
-
         replacements["sites"] = sites
         replacements["radius"] = radius
         replacements["method"] = method
@@ -938,9 +942,17 @@ class Struct2XAS:
 
         logger.info(f"written FDMNES input -> {fnout}")
 
-    def make_input_feff(self, radius=7, parent_path=None,
-                        template=None, feff_comment="*", edge="K",
-                        sig2=None, debye=None):
+    def make_input_feff(
+        self,
+        radius=7,
+        parent_path=None,
+        template=None,
+        feff_comment="*",
+        edge="K",
+        sig2=None,
+        debye=None,
+        **kwargs,
+    ):
         """
         Create a FEFF input from a template.
 
@@ -972,16 +984,26 @@ class Struct2XAS:
         None -> writes FEFF input to disk
         directory structure: {parent_path}/feff/{self.file_name}/{self.abs_atom}/frame{self.frame}/site{self.abs_site}/
         """
+        replacements = {}
+        replacements.update(**kwargs)
+        replacements["version"] = __version__
 
         if parent_path is None:
-            parent_path = self.folders['feff']
-        self.outdir = os.path.join(parent_path, self.file_name, self.abs_atom,
-                                   f"frame{self.frame}", f"site{self.abs_site}")
+            parent_path = self.folders["feff"]
+        self.outdir = os.path.join(
+            parent_path,
+            self.file_name,
+            self.abs_atom,
+            f"frame{self.frame}",
+            f"site{self.abs_site}",
+        )
 
         if template is None:
             template = os.path.join(
                 os.path.dirname(os.path.realpath(__file__)),
-                "templates",  "feff_exafs.tmpl")
+                "templates",
+                "feff_exafs.tmpl",
+            )
 
         if sig2 is None:
             use_sig2 = "*"
@@ -996,7 +1018,6 @@ class Struct2XAS:
             use_debye = ""
             temperature, debye_temperature = debye[0], debye[1]
 
-        replacements = {}
         feff_comment = f"{feff_comment}"
         edge = f"{edge}"
         radius = f"{radius}"
@@ -1093,7 +1114,7 @@ class Struct2XAS:
                     f"{at[i][0][0]:10.6f} {at[i][0][1]:10.6f} {at[i][0][2]:10.6f} {ipot[choice]}  {choice:>5} {at[i][3]:10.5f} *{at[i][4]}"
                 )
 
-        title = f"TITLE {self.file_name}\nTITLE {_get_timestamp()}\nTITLE site {self.abs_site}"
+        title = f"TITLE {self.file_name}{self.file_ext}\nTITLE {_get_timestamp()}\nTITLE site {self.abs_site}"
 
         replacements["feff_comment"] = feff_comment
         replacements["edge"] = edge
@@ -1341,10 +1362,9 @@ def save_cif_from_mp(api_key, material_id, parent_path=None):
 
     """
     if parent_path is None:
-        parent_path = structure_folders()['mp_structs']
+        parent_path = structure_folders()["mp_structs"]
 
     from pymatgen.ext.matproj import _MPResterLegacy
-
 
     cif = _MPResterLegacy(api_key).get_data(material_id, prop="cif")
     pf = _MPResterLegacy(api_key).get_data(material_id, prop="pretty_formula")[0][
@@ -1384,21 +1404,23 @@ def save_mp_structure(api_key, material_id, parent_path=None):
     """
 
     if parent_path is None:
-        parent_path = structure_folders()['mp_structs']
+        parent_path = structure_folders()["mp_structs"]
 
     try:
         from mp_api.client import MPRester
     except ImportError:
         print("need to install mp_api:  pip install mp_api")
 
-    mpr =  MPRester(api_key)
-    results = mpr.summary.search(material_ids=[material_id], fields=["structure", "formula_pretty"])
+    mpr = MPRester(api_key)
+    results = mpr.summary.search(
+        material_ids=[material_id], fields=["structure", "formula_pretty"]
+    )
     formula = results[0].formula_pretty
     structure = results[0].structure
 
     outfile = os.path.join(parent_path, f"{formula}_{material_id}.mpjson")
-    with open(outfile, 'w') as fh:
-         fh.write(structure.to_json())
+    with open(outfile, "w") as fh:
+        fh.write(structure.to_json())
     logger.info(f"saved {material_id} to {outfile}")
 
     return outfile
