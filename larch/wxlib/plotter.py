@@ -349,8 +349,13 @@ def get_display(win=1, _larch=None, wxparent=None, size=None,
                         xsiz, ysiz = PLOT_DISPLAYS[1].GetSize()
                     except:
                         pass
-                x = min(dlims[1]-xsiz*0.3, max(20, xpos + xsiz*(0.1+0.15*win)))
-                y = min(dlims[3]-ysiz*0.3, max(20, ypos + ysiz*(0.1+0.15*win)))
+                off = 0.20*(win-1)
+                x = max(20, xpos + xsiz*off)
+                y = max(20, ypos + ysiz*off)
+                if y+0.75*ysiz > dlims[3]:
+                    y = 40+max(40, 40+ysiz*(off-0.5))
+                if x+0.75*xsiz > dlims[1]:
+                    x = 20+max(10, 10+xpos+xsiz*(off-0.5))
                 display.SetPosition((int(x), int(y)))
         ddict[win] = display
         return display, new_display
