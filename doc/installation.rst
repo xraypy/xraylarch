@@ -215,24 +215,24 @@ installation.
 .. _install-conda:
 
 Installing into an existing Anaconda Python environment
-================================================================
+=========================================================
 
-If you are already using an `Anaconda Python`_  environment, you may want to
-install Larch into that environment or create a new environment for it.
-Larch uses many of the common "scipy ecosystem" packages. The main packages
-that you may need to install that may not be installed are:
+If are already using an existing `Anaconda Python`_, you may want to install
+Larch into that environment or create a new environment for it.  This is
+definitely possible.  Larch uses many of the common "scipy ecosystem"
+packages. The main packages that you may need to install that may not be
+installed are:
 
    * `wxpython`: needed for all plotting, graphics and GUI applications.
    * `pymatgen`: needed for handling CIF files to generate Feff input files.
    * `openbabel`: needed for converting some structure files to Feff input files.
    * `tomopy`: needed only for reconstructing X-ray fluorescence tomography.
-   * `epicsapps`: applications using the Epics control system.
 
 To be clear, much of the core Larch functionality can be used as a library
 without these packages installed, but especially `wxpython` and `pymatgen` are
 heavily used and should be installed.
 
-There is a `conda-forge` package for X-ray Larch, so from a shell it may be
+If you are using There is a `conda-forge` package for X-ray Larch, so from a shell it may be
 that all you need to do is run
 
 
@@ -267,12 +267,84 @@ Finally, no matter how you install Larch, you can run
 
 to create the Larch desktop application launchers or shortcuts.
 
+Installing with `pip` into an existing Python environment
+===========================================================
+
+Larch relies on the "scipy ecosystem", and has a large number of packages that
+it depends on. Most of these are available as binary (so-called "wheel" files)
+from `PyPI`_, so that a simple
+
+.. code:: bash
+
+    pip install xraylarch
+
+will work. In fact, as of this writing (0.9.73, November, 2023), this install
+command will work to install a fairly bare-bones set of tools -- the basic
+xraylarcg library, without requiring the packages needed to make any of the
+GUIs work.
+
+In order to get the GUI-needed package, you could install with
+
+.. code:: bash
+
+    pip install xraylarch[larix]
+
+(Note, you may need to type "``pip install xraylarch\[larix\]``" in some shells
+and terminals).  This will also install all of the `wxPython` packages needed
+for the GUIs, as well as the libraries related to Jupyter.
+
+The most notable missing binary package is the `wxPython` package on Linux.
+That means that if `wxPython` is not already installed, `pip` will try to
+compile it: this will almost certainly fail.  This problem (which, in fairness
+to all involved, is very difficult to solve) is one of the main reasons we
+recommend using `Anaconda Python` - it provides this package in a consistent
+way. Anaconda Python also provides very good versions of almost all of hte
+"core scipy ecosystem" libraries.  It also has good support for optional Intel
+Math Kernel libraries that will be used if available.
+
+But, if you are not using Linux, or are using a system-provided Python that
+includes wxPython (and has it installed), it should be possible to install a
+runnable Larch library with
+
+.. code:: bash
+
+    pip install xraylarch
+
+There are other optional addons that can be installed with Larch, such as
+
+.. code:: bash
+
+    pip install xraylarch[dev]
+
+to add development and testing packages, or
+
+.. code:: bash
+
+    pip install xraylarch[doc]
+
+to add tools needed to build the docs, or
+
+.. code:: bash
+
+    pip install xraylarch[epics]
+
+to add tools needed to use the Epics controls system, or
+
+.. code:: bash
+
+    pip install xraylarch[all]
+
+to install all these (and a few more packages)
+
 
 Updating a previous installation
 ==================================
 
 As new versions of X-ray Larch are released, they will be announced and pushed
-to `PyPI`_, so that updating can be done with:
+
+to `PyPI`_.  This will allow updating can be done with
+
+.. code:: bash
 
     pip install --upgrade xraylarch
 
@@ -310,16 +382,22 @@ Making Desktop shortcuts to Link to the Applications
 =======================================================
 
 To make a `Larch` folder on your desktop with shortcuts (Windows or Linux) or
-Applications (MacOS) for the main Larch applications, you can then type::
+Applications (MacOS) for the main Larch applications, you can then type
+
+.. code:: bash
 
     larch -m
 
 If that complains that it does not find `larch`, you may have to explicitly
-give the path to Python and/or Larch::
+give the path to Python and/or Larch
+
+.. code:: bash
 
    $HOME/xraylarch/bin/larch -m
 
-from Linux or MacOSX or::
+from Linux or MacOSX or
+
+.. code:: bash
 
    %APPDATA%\\Local\\xraylarch\Scripts\larch.exe -m
 
@@ -343,7 +421,7 @@ the source repository with::
 
 and then install with::
 
-    pip install -e .
+    pip install -e .[all]
 
 This use of `pip` will install any requirements and Larch itself, but those
 should have been installed already when you installed.  Depending on your
@@ -351,8 +429,8 @@ platform and version of Python you are installing to, you may need elevated
 permissions as from `sudo` to install Larch to a system folder.
 
 
-Optional Python Packages
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Installing Optional Python Packages with Larch
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 While most of the packages required for Larch will be installed automatically
 (and are listed in the `requirements.txt` file in the source tree), there are
