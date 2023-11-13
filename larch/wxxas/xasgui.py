@@ -544,8 +544,8 @@ class XASFrame(wx.Frame):
                  'Show Larch Programming Buffer',
                  self.onShowLarchBuffer)
 
-        MenuItem(self, fmenu, 'wxInspect\tCtrl+I',
-                 'Show wx inspection window',   self.onwxInspect)
+#         MenuItem(self, fmenu, 'wxInspect\tCtrl+I',
+#                  'Show wx inspection window',   self.onwxInspect)
 
         MenuItem(self, fmenu, 'Edit Preferences\tCtrl+E', 'Customize Preferences',
                  self.onPreferences)
