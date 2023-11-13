@@ -80,19 +80,20 @@
 </li>
 <li><a class="reference internal" href="#installing-with-the-getlarch-sh-and-getlarch-bat-scripts">1.2. Installing with the <cite>GetLarch.sh</cite> and <cite>GetLarch.bat</cite> scripts</a></li>
 <li><a class="reference internal" href="#installing-into-an-existing-anaconda-python-environment">1.3. Installing into an existing Anaconda Python environment</a></li>
-<li><a class="reference internal" href="#updating-a-previous-installation">1.4. Updating a previous installation</a></li>
-<li><a class="reference internal" href="#installing-the-development-version">1.5. Installing the development version</a></li>
-<li><a class="reference internal" href="#making-desktop-shortcuts-to-link-to-the-applications">1.6. Making Desktop shortcuts to Link to the Applications</a></li>
-<li><a class="reference internal" href="#larch-for-developers-source-installation">1.7. Larch for developers (source installation)</a><ul>
-<li><a class="reference internal" href="#optional-python-packages">1.7.1. Optional Python Packages</a></li>
+<li><a class="reference internal" href="#installing-with-pip-into-an-existing-python-environment">1.4. Installing with <cite>pip</cite> into an existing Python environment</a></li>
+<li><a class="reference internal" href="#updating-a-previous-installation">1.5. Updating a previous installation</a></li>
+<li><a class="reference internal" href="#installing-the-development-version">1.6. Installing the development version</a></li>
+<li><a class="reference internal" href="#making-desktop-shortcuts-to-link-to-the-applications">1.7. Making Desktop shortcuts to Link to the Applications</a></li>
+<li><a class="reference internal" href="#larch-for-developers-source-installation">1.8. Larch for developers (source installation)</a><ul>
+<li><a class="reference internal" href="#installing-optional-python-packages-with-larch">1.8.1. Installing Optional Python Packages with Larch</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#getting-help">1.8. Getting Help</a></li>
-<li><a class="reference internal" href="#install-exa">1.9. Docs and Examples</a></li>
-<li><a class="reference internal" href="#citing-larch">1.10. Citing Larch</a></li>
-<li><a class="reference internal" href="#funding-and-support">1.11. Funding and Support</a></li>
-<li><a class="reference internal" href="#acknowledgements">1.12. Acknowledgements</a></li>
-<li><a class="reference internal" href="#license">1.13. License</a></li>
+<li><a class="reference internal" href="#getting-help">1.9. Getting Help</a></li>
+<li><a class="reference internal" href="#install-exa">1.10. Docs and Examples</a></li>
+<li><a class="reference internal" href="#citing-larch">1.11. Citing Larch</a></li>
+<li><a class="reference internal" href="#funding-and-support">1.12. Funding and Support</a></li>
+<li><a class="reference internal" href="#acknowledgements">1.13. Acknowledgements</a></li>
+<li><a class="reference internal" href="#license">1.14. License</a></li>
 </ul>
 </li>
 </ul>
@@ -293,23 +294,23 @@ installation.</p>
 </section>
 <section id="installing-into-an-existing-anaconda-python-environment">
 <span id="install-conda"></span><h2><span class="section-number">1.3. </span>Installing into an existing Anaconda Python environment<a class="headerlink" href="#installing-into-an-existing-anaconda-python-environment" title="Link to this heading">¶</a></h2>
-<p>If you are already using an <a class="reference external" href="https://www.continuum.io/">Anaconda Python</a>  environment, you may want to
-install Larch into that environment or create a new environment for it.
-Larch uses many of the common “scipy ecosystem” packages. The main packages
-that you may need to install that may not be installed are:</p>
+<p>If are already using an existing <a class="reference external" href="https://www.continuum.io/">Anaconda Python</a>, you may want to install
+Larch into that environment or create a new environment for it.  This is
+definitely possible.  Larch uses many of the common “scipy ecosystem”
+packages. The main packages that you may need to install that may not be
+installed are:</p>
 <blockquote>
 <div><ul class="simple">
 <li><p><cite>wxpython</cite>: needed for all plotting, graphics and GUI applications.</p></li>
 <li><p><cite>pymatgen</cite>: needed for handling CIF files to generate Feff input files.</p></li>
 <li><p><cite>openbabel</cite>: needed for converting some structure files to Feff input files.</p></li>
 <li><p><cite>tomopy</cite>: needed only for reconstructing X-ray fluorescence tomography.</p></li>
-<li><p><cite>epicsapps</cite>: applications using the Epics control system.</p></li>
 </ul>
 </div></blockquote>
 <p>To be clear, much of the core Larch functionality can be used as a library
 without these packages installed, but especially <cite>wxpython</cite> and <cite>pymatgen</cite> are
 heavily used and should be installed.</p>
-<p>There is a <cite>conda-forge</cite> package for X-ray Larch, so from a shell it may be
+<p>If you are using There is a <cite>conda-forge</cite> package for X-ray Larch, so from a shell it may be
 that all you need to do is run</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>-yc<span class="w"> </span>conda-forge<span class="w"> </span>xraylarch
 </pre></div>
@@ -332,13 +333,64 @@ ensure that you get the latest version.</p>
 </div>
 <p>to create the Larch desktop application launchers or shortcuts.</p>
 </section>
+<section id="installing-with-pip-into-an-existing-python-environment">
+<h2><span class="section-number">1.4. </span>Installing with <cite>pip</cite> into an existing Python environment<a class="headerlink" href="#installing-with-pip-into-an-existing-python-environment" title="Link to this heading">¶</a></h2>
+<p>Larch relies on the “scipy ecosystem”, and has a large number of packages that
+it depends on. Most of these are available as binary (so-called “wheel” files)
+from <a class="reference external" href="https://pypi.org">PyPI</a>, so that a simple</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>xraylarch
+</pre></div>
+</div>
+<p>will work. In fact, as of this writing (0.9.73, November, 2023), this install
+command will work to install a fairly bare-bones set of tools – the basic
+xraylarcg library, without requiring the packages needed to make any of the
+GUIs work.</p>
+<p>In order to get the GUI-needed package, you could install with</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>xraylarch<span class="o">[</span>larix<span class="o">]</span>
+</pre></div>
+</div>
+<p>(Note, you may need to type “<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">xraylarch\[larix\]</span></code>” in some shells
+and terminals).  This will also install all of the <cite>wxPython</cite> packages needed
+for the GUIs, as well as the libraries related to Jupyter.</p>
+<p>The most notable missing binary package is the <cite>wxPython</cite> package on Linux.
+That means that if <cite>wxPython</cite> is not already installed, <cite>pip</cite> will try to
+compile it: this will almost certainly fail.  This problem (which, in fairness
+to all involved, is very difficult to solve) is one of the main reasons we
+recommend using <cite>Anaconda Python</cite> - it provides this package in a consistent
+way. Anaconda Python also provides very good versions of almost all of hte
+“core scipy ecosystem” libraries.  It also has good support for optional Intel
+Math Kernel libraries that will be used if available.</p>
+<p>But, if you are not using Linux, or are using a system-provided Python that
+includes wxPython (and has it installed), it should be possible to install a
+runnable Larch library with</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>xraylarch
+</pre></div>
+</div>
+<p>There are other optional addons that can be installed with Larch, such as</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>xraylarch<span class="o">[</span>dev<span class="o">]</span>
+</pre></div>
+</div>
+<p>to add development and testing packages, or</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>xraylarch<span class="o">[</span>doc<span class="o">]</span>
+</pre></div>
+</div>
+<p>to add tools needed to build the docs, or</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>xraylarch<span class="o">[</span>epics<span class="o">]</span>
+</pre></div>
+</div>
+<p>to add tools needed to use the Epics controls system, or</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>xraylarch<span class="o">[</span>all<span class="o">]</span>
+</pre></div>
+</div>
+<p>to install all these (and a few more packages)</p>
+</section>
 <section id="updating-a-previous-installation">
-<h2><span class="section-number">1.4. </span>Updating a previous installation<a class="headerlink" href="#updating-a-previous-installation" title="Link to this heading">¶</a></h2>
-<p>As new versions of X-ray Larch are released, they will be announced and pushed
-to <a class="reference external" href="https://pypi.org">PyPI</a>, so that updating can be done with:</p>
-<blockquote>
-<div><p>pip install –upgrade xraylarch</p>
-</div></blockquote>
+<h2><span class="section-number">1.5. </span>Updating a previous installation<a class="headerlink" href="#updating-a-previous-installation" title="Link to this heading">¶</a></h2>
+<p>As new versions of X-ray Larch are released, they will be announced and pushed</p>
+<p>to <a class="reference external" href="https://pypi.org">PyPI</a>.  This will allow updating can be done with</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>xraylarch
+</pre></div>
+</div>
 <p>For versions up to 0.9.68, XAS Viewer and other Larch Applications would
 notify users as updates became available and prompt them to install the latest
 version.</p>
@@ -353,7 +405,7 @@ now a desktop shortcut called “Larch Updater” which will run the update <cit
 command above.</p>
 </section>
 <section id="installing-the-development-version">
-<h2><span class="section-number">1.5. </span>Installing the development version<a class="headerlink" href="#installing-the-development-version" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">1.6. </span>Installing the development version<a class="headerlink" href="#installing-the-development-version" title="Link to this heading">¶</a></h2>
 <p>For the brave, a nightly build of the latest development version can be downloaded and installed with</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-latest-py3-none-any.whl
 </pre></div>
@@ -362,25 +414,25 @@ command above.</p>
 catch the development in the middle of trying to fix something tricky.</p>
 </section>
 <section id="making-desktop-shortcuts-to-link-to-the-applications">
-<h2><span class="section-number">1.6. </span>Making Desktop shortcuts to Link to the Applications<a class="headerlink" href="#making-desktop-shortcuts-to-link-to-the-applications" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">1.7. </span>Making Desktop shortcuts to Link to the Applications<a class="headerlink" href="#making-desktop-shortcuts-to-link-to-the-applications" title="Link to this heading">¶</a></h2>
 <p>To make a <cite>Larch</cite> folder on your desktop with shortcuts (Windows or Linux) or
-Applications (MacOS) for the main Larch applications, you can then type:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span> <span class="o">-</span><span class="n">m</span>
+Applications (MacOS) for the main Larch applications, you can then type</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>larch<span class="w"> </span>-m
 </pre></div>
 </div>
 <p>If that complains that it does not find <cite>larch</cite>, you may have to explicitly
-give the path to Python and/or Larch:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$HOME/xraylarch/bin/larch -m
+give the path to Python and/or Larch</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">$HOME</span>/xraylarch/bin/larch<span class="w"> </span>-m
 </pre></div>
 </div>
-<p>from Linux or MacOSX or:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">APPDATA</span><span class="o">%</span>\\<span class="n">Local</span>\\<span class="n">xraylarch</span>\<span class="n">Scripts</span>\<span class="n">larch</span><span class="o">.</span><span class="n">exe</span> <span class="o">-</span><span class="n">m</span>
+<p>from Linux or MacOSX or</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%APPDATA%<span class="se">\\</span>Local<span class="se">\\</span>xraylarch<span class="se">\S</span>cripts<span class="se">\l</span>arch.exe<span class="w"> </span>-m
 </pre></div>
 </div>
 <p>from Windows.</p>
 </section>
 <section id="larch-for-developers-source-installation">
-<h2><span class="section-number">1.7. </span>Larch for developers (source installation)<a class="headerlink" href="#larch-for-developers-source-installation" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">1.8. </span>Larch for developers (source installation)<a class="headerlink" href="#larch-for-developers-source-installation" title="Link to this heading">¶</a></h2>
 <p>For developers, Larch is an open-source project, with active development
 happening at the <a class="reference external" href="https://github.com/xraypy/xraylarch">Larch Repository (github.com)</a>.  There, you will find
 the latest source code and pages for submit bug reports.</p>
@@ -393,15 +445,15 @@ the source repository with:</p>
 </pre></div>
 </div>
 <p>and then install with:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span><span class="p">[</span><span class="nb">all</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>This use of <cite>pip</cite> will install any requirements and Larch itself, but those
 should have been installed already when you installed.  Depending on your
 platform and version of Python you are installing to, you may need elevated
 permissions as from <cite>sudo</cite> to install Larch to a system folder.</p>
-<section id="optional-python-packages">
-<h3><span class="section-number">1.7.1. </span>Optional Python Packages<a class="headerlink" href="#optional-python-packages" title="Link to this heading">¶</a></h3>
+<section id="installing-optional-python-packages-with-larch">
+<h3><span class="section-number">1.8.1. </span>Installing Optional Python Packages with Larch<a class="headerlink" href="#installing-optional-python-packages-with-larch" title="Link to this heading">¶</a></h3>
 <p>While most of the packages required for Larch will be installed automatically
 (and are listed in the <cite>requirements.txt</cite> file in the source tree), there are
 a few packages that are useful for some functionality but somewhat less easy
@@ -412,13 +464,13 @@ install from a binary installer with <cite>pip install xraylarch</cite>.</p>
 </section>
 </section>
 <section id="getting-help">
-<h2><span class="section-number">1.8. </span>Getting Help<a class="headerlink" href="#getting-help" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">1.9. </span>Getting Help<a class="headerlink" href="#getting-help" title="Link to this heading">¶</a></h2>
 <p>For questions about using or installing Larch, please use the <a class="reference external" href="https://millenia.cars.aps.anl.gov/mailman/listinfo/ifeffit/">Ifeffit Mailing
 List</a>.  For reporting bugs or working with the development process, please
 submit an issue at the <a class="reference external" href="https://github.com/xraypy/xraylarch">Larch Github Pages</a>.</p>
 </section>
 <section id="install-exa">
-<span id="id1"></span><h2><span class="section-number">1.9. </span>Docs and Examples<a class="headerlink" href="#install-exa" title="Link to this heading">¶</a></h2>
+<span id="id1"></span><h2><span class="section-number">1.10. </span>Docs and Examples<a class="headerlink" href="#install-exa" title="Link to this heading">¶</a></h2>
 <p>The source kit includes sources for documentation in the <cite>docs</cite> folder
 and several examples (including all those shown in this documentation)
 in the <cite>examples</cite> folder.</p>
@@ -427,7 +479,7 @@ that contains a <cite>doc</cite> folder with this full documentation, and an
 <cite>examples</cite> folder with all of the Larch examples.</p>
 </section>
 <section id="citing-larch">
-<h2><span class="section-number">1.10. </span>Citing Larch<a class="headerlink" href="#citing-larch" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">1.11. </span>Citing Larch<a class="headerlink" href="#citing-larch" title="Link to this heading">¶</a></h2>
 <p>Currently, the best citation for Larch is M. Newville, <em>Larch: An Analysis
 Package For XAFS And Related Spectroscopies</em>. Journal of Physics:
 Conference Series, 430:012007 (2013).  <span id="id2">[<a class="reference internal" href="bibliography.html#id4" title="M. Newville. Larch: An Analysis Package For XAFS And Related Spectroscopies. Journal of Physics: Conference Series, 430:012007, 2013. doi:10.1088/1742-6596/430/1/012007.">Newville (2013)</a>]</span></p>
@@ -436,7 +488,7 @@ Conference Series, 430:012007 (2013).  <span id="id2">[<a class="reference inter
       data-style="large_rectangle">
 </span></section>
 <section id="funding-and-support">
-<h2><span class="section-number">1.11. </span>Funding and Support<a class="headerlink" href="#funding-and-support" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">1.12. </span>Funding and Support<a class="headerlink" href="#funding-and-support" title="Link to this heading">¶</a></h2>
 <p>Larch development at the GeoScoilEnviroCARS sector of Center for Advanced
 Radiation Sources at the University of Chicago has been supported by the US
 National Science Foundation - Earth Sciences (EAR-1128799), and Department
@@ -445,7 +497,7 @@ specifically for Larch was granted by the National Science Foundation -
 Advanced CyberInfrastructure (ACI-1450468).</p>
 </section>
 <section id="acknowledgements">
-<h2><span class="section-number">1.12. </span>Acknowledgements<a class="headerlink" href="#acknowledgements" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">1.13. </span>Acknowledgements<a class="headerlink" href="#acknowledgements" title="Link to this heading">¶</a></h2>
 <p>Larch was mostly written by and is maintained by Matt Newville
 &lt;<a class="reference external" href="mailto:newville&#37;&#52;&#48;cars&#46;uchicago&#46;edu">newville<span>&#64;</span>cars<span>&#46;</span>uchicago<span>&#46;</span>edu</a>&gt;.  Bruce Ravel has an incalculable influence on
 the design and implementation of this code and has provided countless fixes
@@ -492,7 +544,7 @@ greatly from numerous collaborators and added many features that Larch, in
 turn, has been able to depend on.</p>
 </section>
 <section id="license">
-<h2><span class="section-number">1.13. </span>License<a class="headerlink" href="#license" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">1.14. </span>License<a class="headerlink" href="#license" title="Link to this heading">¶</a></h2>
 <p>Except where explicitly noted in the individual files, the code,
 documentation, and all material associated with Larch are distributed under
 the BSD License:</p>

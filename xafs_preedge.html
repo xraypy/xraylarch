@@ -179,7 +179,7 @@ some checks to avoid spurious glitches.</p>
 <dd class="field-even"><p>Value of e0. If a group is provided, group.e0 will also be set.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)">float</a></p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
@@ -585,8 +585,8 @@ and that the spectra has decent pre-edge subtraction and normalization.</p>
 <li><p><strong>norm</strong> (<em>ndarray</em><em> or </em><em>None</em>) – array of normalized mu(E) to be fit (deprecated, see note 2)</p></li>
 <li><p><strong>arrayname</strong> (<em>string</em><em> or </em><em>None</em>) – name of array to use as data (see note 2)</p></li>
 <li><p><strong>group</strong> (<em>group</em><em> or </em><em>None</em>) – output group</p></li>
-<li><p><strong>emax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em> or </em><em>None</em>) – max energy (eV) to use for baesline fit [e0-5]</p></li>
-<li><p><strong>emin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em> or </em><em>None</em>) – min energy (eV) to use for baesline fit [e0-40]</p></li>
+<li><p><strong>emax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> or </em><em>None</em>) – max energy (eV) to use for baesline fit [e0-5]</p></li>
+<li><p><strong>emin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> or </em><em>None</em>) – min energy (eV) to use for baesline fit [e0-40]</p></li>
 <li><p><strong>elo</strong> – (float or None)       low energy of pre-edge peak region to not fit baseline [e0-20]</p></li>
 <li><p><strong>ehi</strong> – (float or None)       high energy of pre-edge peak region ot not fit baseline [e0-10]</p></li>
 <li><p><strong>_larch</strong> (<em>larch instance</em><em> or </em><em>None</em>) – current larch session.</p></li>
@@ -634,10 +634,10 @@ and that the spectra has decent pre-edge subtraction and normalization.</p>
 <li><p><strong>energy</strong> (<em>ndarray</em><em> or </em><em>group</em>) – array of x-ray energies, in eV, or group (see note 1)</p></li>
 <li><p><strong>norm</strong> (<em>ndarray</em><em> or </em><em>group</em>) – array of normalized mu(E)</p></li>
 <li><p><strong>group</strong> (<em>group</em><em> or </em><em>None</em>) – output group</p></li>
-<li><p><strong>elo</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em> or </em><em>None</em>) – low energy of pre-edge peak region to not fit baseline [e0-20]</p></li>
-<li><p><strong>ehi</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em> or </em><em>None</em>) – high energy of pre-edge peak region ot not fit baseline [e0-10]</p></li>
-<li><p><strong>emax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em> or </em><em>None</em>) – max energy (eV) to use for baesline fit [e0-5]</p></li>
-<li><p><strong>emin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em> or </em><em>None</em>) – min energy (eV) to use for baesline fit [e0-40]</p></li>
+<li><p><strong>elo</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> or </em><em>None</em>) – low energy of pre-edge peak region to not fit baseline [e0-20]</p></li>
+<li><p><strong>ehi</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> or </em><em>None</em>) – high energy of pre-edge peak region ot not fit baseline [e0-10]</p></li>
+<li><p><strong>emax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> or </em><em>None</em>) – max energy (eV) to use for baesline fit [e0-5]</p></li>
+<li><p><strong>emin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> or </em><em>None</em>) – min energy (eV) to use for baesline fit [e0-40]</p></li>
 <li><p><strong>form</strong> (<em>string</em>) – form used for baseline (see description)  [‘linear+lorentzian’]</p></li>
 <li><p><strong>_larch</strong> (<em>larch instance</em><em> or </em><em>None</em>) – current larch session.</p></li>
 </ul>
