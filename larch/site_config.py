@@ -30,13 +30,9 @@ def update_larch(with_larix=True):
     "pip upgrade larch"
     target = 'xraylarch'
     if with_larix:
-        target = 'xraylarch\[larix\]'
+        target = 'xraylarch[larix]'
     check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', target])
 
-
-
-# set system-wide and local larch folders
-#   user_larchdir = get_homedir() + '.larch' (#unix)
 #                 = get_homedir() + 'larch'  (#win)
 home_dir = get_homedir()
 
