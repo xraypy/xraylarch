@@ -714,10 +714,11 @@ class FeffPathPanel(wx.Panel):
 
 class FeffitPanel(TaskPanel):
     def __init__(self, parent=None, controller=None, **kws):
-        TaskPanel.__init__(self, parent, controller, panel='feffit', **kws)
-        self.paths_data = {}
         self.resetting = False
         self.model_needs_rebuild = False
+        self.params_need_update = False
+        TaskPanel.__init__(self, parent, controller, panel='feffit', **kws)
+        self.paths_data = {}
         self.config_saved = self.get_defaultconfig()
         self.dgroup = None
 
@@ -735,23 +736,25 @@ class FeffitPanel(TaskPanel):
             self.fill_form(dgroup)
         except:
             pass # print(" Cannot Fill feffit panel from group ")
-        self.dgroup = dgroup
-        feffpaths = getattr(self.larch.symtable, '_feffpaths', None)
+        if dgroup is not self.dgroup:
+            # setting up feffit for this group
+            self.dgroup = dgroup
+            try:
+                has_fit_hist = len(self.dgroup.feffit_history) > 0
+            except:
+                has_fit_hist = getattr(self.larch.symtable, '_feffit_dataset', None) is not None
+
+            if has_fit_hist:
+                self.wids['show_results'].Enable()
 
 
-        try:
-            has_fit_hist = len(dgroup.feffit_history) > 0
-        except:
-            has_fit_hist = False
+            feffpaths = getattr(self.larch.symtable, '_feffpaths', None)
+            if feffpaths is not None:
+                self.reset_paths()
 
-
-        if not has_fit_hist:
-            has_fit_hist = getattr(self.larch.symtable, '_feffit_dataset', None) is not None
-
-        if has_fit_hist:
-            self.wids['show_results'].Enable()
-        if feffpath is not None:
-            self.reset_paths()
+            self.params_panel.update()
+            self.skip_unused_params()
+            self.params_need_update = False
 
     def build_display(self):
         self.paths_nb = flatnotebook(self, {}, on_change=self.onPathsNBChanged,
@@ -878,6 +881,10 @@ class FeffitPanel(TaskPanel):
 
     def onPathsNBChanged(self, event=None):
         updater = getattr(self.paths_nb.GetCurrentPage(), 'update_values', None)
+        if self.params_need_update and not self.resetting:
+            self.params_panel.update()
+            self.skip_unused_params()
+            self.params_need_update = False
         if callable(updater) and not self.resetting:
             updater()
 
@@ -889,8 +896,6 @@ class FeffitPanel(TaskPanel):
             conf = None
         if not hasattr(dgroup, 'chi'):
             self.xasmain.process_exafs(dgroup)
-
-        # print("Get Config ", dgroup, self.configname, hasattr(dgroup, 'config'))
 
         dconf = self.get_defaultconfig()
         if dgroup is None:
@@ -925,6 +930,11 @@ class FeffitPanel(TaskPanel):
         conf.update(kws)
         if dgroup is None:
             return conf
+
+        if self.params_need_update:
+            self.params_panel.update()
+            self.skip_unused_params()
+            self.params_need_update = False
 
         self.dgroup = dgroup
         opts = self.read_form(dgroup=dgroup)
@@ -1023,7 +1033,7 @@ class FeffitPanel(TaskPanel):
     def onPlot(self, evt=None, dgroup=None, pargroup_name='_feffit_params',
                paths_name='_feffpaths', pathsum_name='_pathsum', title=None,
                dataset_name=None,  build_fitmodel=True, topwin=None, **kws):
-
+        # feffit plot
         self.process(dgroup)
         opts = self.read_form(dgroup=dgroup)
         opts.update(**kws)
@@ -1159,17 +1169,18 @@ class FeffitPanel(TaskPanel):
                     self.paths_nb.DeletePage(i)
             allpages = get_pagenames()
 
-        time.sleep(0.1)
-
-        self.resetting = False
+        time.sleep(0.02)
         feffpaths = deepcopy(getattr(self.larch.symtable, '_feffpaths', {}))
         self.paths_data = {}
         for path in feffpaths.values():
-            self.add_path(path.filename, feffpath=path)
+            self.add_path(path.filename, feffpath=path, resize=False)
+
         self.get_pathpage('parameters').Rebuild()
+        self.resetting = False
+        self.params_need_update = True
 
 
-    def add_path(self, filename, pathinfo=None, feffpath=None):
+    def add_path(self, filename, pathinfo=None, feffpath=None, resize=True):
         """ add new path to cache  """
 
         if pathinfo is None and feffpath is None:
@@ -1278,13 +1289,13 @@ class FeffitPanel(TaskPanel):
                 print(f"cannot file Feff data file '{filename}'")
 
         self.larch_eval(COMMANDS['use_path'].format(**pdat))
-
-        sx,sy = self.GetSize()
-        self.SetSize((sx, sy+1))
-        self.SetSize((sx, sy))
-        ipage, pagepanel = self.xasmain.get_nbpage('feffit')
-        self.xasmain.nb.SetSelection(ipage)
-        self.xasmain.Raise()
+        if resize:
+            sx,sy = self.GetSize()
+            self.SetSize((sx, sy+1))
+            self.SetSize((sx, sy))
+            ipage, pagepanel = self.xasmain.get_nbpage('feffit')
+            self.xasmain.nb.SetSelection(ipage)
+            self.xasmain.Raise()
 
     def get_pathkeys(self):
         _feffpaths = getattr(self.larch.symtable, '_feffpaths', {})
@@ -1322,8 +1333,7 @@ class FeffitPanel(TaskPanel):
         except:
             result = False
 
-        self.params_panel.update()
-        wx.CallAfter(self.skip_unused_params)
+        self.params_need_update = True
         return result
 
     def onLoadFitResult(self, event=None):
