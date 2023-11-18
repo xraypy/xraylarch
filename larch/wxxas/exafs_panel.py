@@ -99,7 +99,7 @@ class EXAFSPanel(TaskPanel):
         wids['plotsel_op'].SetStringSelection(chik)
         wids['plotalt_op'].SetStringSelection(noplot)
 
-        plot_one = Button(panel, 'Plot This Group', size=(175, -1),
+        plot_one = Button(panel, 'Plot Current Group', size=(175, -1),
                           action=self.onPlotOne)
 
         plot_sel = Button(panel, 'Plot Selected Groups', size=(175, -1),
