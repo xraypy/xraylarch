@@ -19,7 +19,7 @@ from larch.xafs.xafsutils import etok, ktoe, FT_WINDOWS
 from larch.xafs.pre_edge import find_e0
 
 from .xas_dialogs import EnergyUnitsDialog
-from .taskpanel import TaskPanel
+from .taskpanel import TaskPanel, update_confval
 from .config import ATHENA_CLAMPNAMES, PlotWindowChoices
 
 np.seterr(all='ignore')
@@ -310,21 +310,41 @@ class EXAFSPanel(TaskPanel):
         if dgroup is None:
             return self.get_defaultconfig()
 
-        conf = getattr(dgroup.config, self.configname, None)
-        if conf is None:
-            conf = self.get_defaultconfig()
+        conf = getattr(dgroup.config, self.configname,
+                       self.get_defaultconfig())
 
-        ek0 = getattr(dgroup, 'ek0', None)
-        if ek0 is None:
-            ek0 = conf.get('ek0', None)
+        # update config from callargs - last call arguments
+        callargs = getattr(dgroup, 'callargs', None)
+        if callargs is not None:
+            bkg_callargs = getattr(callargs, 'autobk', None)
+            if bkg_callargs is not None:
+                for attr in ('rbkg', 'ek0'):
+                    update_confval(conf, bkg_callargs, attr)
+                for attr in ('kmin', 'kmax', 'kweight'):
+                    update_confval(conf, bkg_callargs, attr, pref='bkg_')
+                conf['bkg_clamplo'] = bkg_callargs.get('clamp_lo', 1)
+                conf['bkg_clamphi'] = bkg_callargs.get('clamp_hi', 20)
+
+            ftf_callargs = getattr(callargs, 'xftf', None)
+            if ftf_callargs is not None:
+                conf['fft_kwindow'] = ftf_callargs.get('window', 'Hanning')
+                conf['fft_rmaxout'] = ftf_callargs.get('rmax_out', 12)
+                for attr in ('kmin', 'kmax', 'dk', 'kweight'):
+                    update_confval(conf, ftf_callargs, attr, pref='fft_')
+
+            ftr_callargs = getattr(callargs, 'xftr', None)
+            if ftr_callargs is not None:
+                conf['fft_rwindow'] = ftr_callargs.get('window', 'Hanning')
+                for attr in ('rmin', 'rmax', 'dr'):
+                    update_confval(conf, ftr_callargs, attr, pref='fft_')
+
+        ek0 = getattr(dgroup, 'ek0', conf.get('ek0', None))
         if ek0 is None:
             nconf = getattr(dgroup.config, 'xasnorm', {'e0': None})
-            ek0 = nconf.get('e0', None)
-        if ek0 is None:
-            ek0 = min(dgroup.energy)
-            e0val = getattr(dgroup, 'e0', None)
-            if e0val is not None:
-                ek0 = e0val
+            ek0 = nconf.get('e0',  getattr(dgroup, 'e0', None))
+            if ek0 is None:
+                ek0 = min(dgroup.energy)
+
         if getattr(dgroup, 'ek0', None) is None:
             dgroup.ek0 = ek0
 
