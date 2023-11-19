@@ -42,6 +42,15 @@ def autoset_fs_increment(wid, value):
         c += 1
     wid.SetIncrement(inc)
 
+def update_confval(dest, source, attr, pref=''):
+    """
+    update a dict value for an attribute from a source dict
+    """
+    val = source.get(attr, None)
+    if val is None:
+        val = dest.get(pref+attr, None)
+    dest[pref+attr] = val
+    return val
 
 class GroupJournalFrame(wx.Frame):
     """ edit parameters"""
