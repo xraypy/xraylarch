@@ -26,7 +26,7 @@ from larch.utils.strutils import fix_varname, fix_filename, file2groupname
 from larch.utils.physical_constants import ATOM_NAMES
 from larch.wxlib.plotter import last_cursor_pos
 from .xas_dialogs import EnergyUnitsDialog
-from .taskpanel import TaskPanel, autoset_fs_increment
+from .taskpanel import TaskPanel, autoset_fs_increment, update_confval
 from .config import make_array_choice, EDGES, ATSYMS, NNORM_CHOICES, NORM_METHODS
 
 np.seterr(all='ignore')
@@ -301,15 +301,20 @@ class XASNormPanel(TaskPanel):
         self.read_form()
 
         defconf = self.get_defaultconfig()
-        conf = getattr(dgroup.config, self.configname, None)
-        if conf is None:
-            conf = defconf
-
+        conf = getattr(dgroup.config, self.configname, defconf)
         for k, v in defconf.items():
             if k not in conf:
                 conf[k] = v
         if conf.get('edge_step', None) is None:
             conf['edge_step'] = getattr(dgroup, 'edge_step', 1)
+
+        # update config from callargs - last call arguments
+        callargs = getattr(dgroup, 'callargs', None)
+        if callargs is not None:
+            pre_callargs = getattr(callargs, 'pre_edge', None)
+            if pre_callargs is not None:
+                for attr in ('e0', 'norm', 'nvict', 'pre1', 'pre2', 'norm1', 'norm2'):
+                    update_confval(conf, pre_callargs, attr)
 
         atsym = '?'
         if hasattr(dgroup, 'element'):
