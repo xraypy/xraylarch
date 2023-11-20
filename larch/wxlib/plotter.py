@@ -343,6 +343,8 @@ def get_display(win=1, _larch=None, wxparent=None, size=None,
                 x = xpos + xsiz*0.75
                 y = ypos + ysiz*0.75
                 dlims = DISPLAY_LIMITS
+                if dlims is None:
+                    dlims = [0, 5000, 0, 5000]
                 if len(PLOT_DISPLAYS) > 0:
                     try:
                         xpos, ypos = PLOT_DISPLAYS[1].GetPosition()
