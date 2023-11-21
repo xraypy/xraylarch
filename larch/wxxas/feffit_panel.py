@@ -717,6 +717,7 @@ class FeffitPanel(TaskPanel):
         self.resetting = False
         self.model_needs_rebuild = False
         self.params_need_update = False
+        self.rmin_warned = False
         TaskPanel.__init__(self, parent, controller, panel='feffit', **kws)
         self.paths_data = {}
         self.config_saved = self.get_defaultconfig()
@@ -772,8 +773,8 @@ class FeffitPanel(TaskPanel):
         fit_kmin = self.add_floatspin('fit_kmin',  value=2, **fsopts)
         fit_kmax = self.add_floatspin('fit_kmax',  value=17, **fsopts)
         fit_dk   = self.add_floatspin('fit_dk',    value=4, **fsopts)
-        fit_rmin = self.add_floatspin('fit_rmin',  value=1, **fsopts)
         fit_rmax = self.add_floatspin('fit_rmax',  value=5, **fsopts)
+        fit_rmin = self.add_floatspin('fit_rmin',  value=1, action=self.onRmin, **fsopts)
 
         wids['fit_kwstring'] = Choice(pan, size=(150, -1),
                                      choices=list(Feffit_KWChoices.keys()))
@@ -878,6 +879,30 @@ class FeffitPanel(TaskPanel):
         sizer.Add((10, 10), 0, LEFT, 3)
         sizer.Add(self.paths_nb,  1, LEFT|wx.GROW, 5)
         pack(self, sizer)
+
+    def onRmin(self, event=None, **kws):
+        dgroup = self.controller.get_group()
+        if dgroup is None:
+            return
+        rbkg = getattr(dgroup, 'rbkg', None)
+        callargs = getattr(dgroup, 'callargs', None)
+        if rbkg is None and callargs is not None:
+            autobk_args = getattr(callargs, 'autobk', {'rbkg': 1.0})
+            rbkg = autobk_args.get('rbkg', None)
+        if rbkg is None: rbkg = 0.0
+        rmin = self.wids['fit_rmin'].GetValue()
+        if rmin > (rbkg-0.025):
+            self.rmin_warned = False
+
+        if rmin < (rbkg-0.025) and not self.rmin_warned:
+            self.rmin_warned = True
+            Popup(self,
+                  f"""Rmin={rmin:.3f} Ang is below Rbkg={rbkg:.3f} Ang.
+
+                  This should be done with caution.""",
+                  "Warning: Rmin < Rbkg",
+                  style=wx.ICON_WARNING|wx.OK_DEFAULT)
+
 
     def onPathsNBChanged(self, event=None):
         updater = getattr(self.paths_nb.GetCurrentPage(), 'update_values', None)
