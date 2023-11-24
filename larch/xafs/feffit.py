@@ -25,6 +25,7 @@ from ..fitting import (correlated_values, eval_stderr, ParameterGroup,
 
 from .xafsutils import set_xafsGroup, gfmt
 from .xafsft import xftf_fast, xftr_fast, ftwindow
+from .autobk import autobk_delta_chi
 from .feffdat import FeffPathGroup, ff2chi
 
 class TransformGroup(Group):
@@ -260,6 +261,9 @@ class FeffitDataSet(Group):
         self.data.epsilon_k = getattr(data, 'epsilon_k', epsilon_k)
         if epsilon_k is not None:
             self.data.epsilon_k = epsilon_k
+
+        if not hasattr(data, 'delta_chi'):  # needs autobk_delta_chi
+            autobk_delta_chi(data)
 
         dat_attrs = ['delta_chi', 'r', 'chir_mag', 'chir_re', 'chir_im']
         if data is not None:
