@@ -14,7 +14,7 @@ from larch import Group, isgroup, parse_group_args, Make_CallArgs
 
 from larch.math import index_of, index_nearest, remove_dups, remove_nans2
 
-from .xafsutils import set_xafsGroup
+from .xafsutils import set_xafsGroup, TINY_ENERGY
 from .pre_edge import find_e0, preedge, pre_edge
 
 MAXORDER = 6
@@ -113,7 +113,7 @@ def mback(energy, mu=None, group=None, z=None, edge='K', e0=None, pre1=None, pre
     if _larch is not None:
         group = set_xafsGroup(group, _larch=_larch)
 
-    energy = remove_dups(energy)
+    energy = remove_dups(energy, tiny=TINY_ENERGY)
     if energy.size <= 1:
         raise ValueError("energy array must have at least 2 points")
     if e0 is None or e0 < energy[1] or e0 > energy[-2]:

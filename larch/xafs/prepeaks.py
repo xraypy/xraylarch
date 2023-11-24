@@ -20,8 +20,7 @@ from xraydb import guess_edge, xray_edge, core_width
 from larch import Group, Make_CallArgs, isgroup, parse_group_args
 # now we can reliably import other std and xafs modules...
 
-from larch.math import (index_of, index_nearest,
-                        remove_dups, remove_nans2)
+from larch.math import (index_of, index_nearest, remove_nans2)
 
 from larch.fitting import dict2params
 from .xafsutils import set_xafsGroup
