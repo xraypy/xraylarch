@@ -155,19 +155,17 @@ def interp(x, y, xnew, kind='linear', fill_value=np.nan, **kws):
     return out
 
 
-def remove_dups(arr, tiny=1.e-7, frac=1.e-6):
+def remove_dups(arr, tiny=1.e-6):
     """avoid repeated successive values of an array that is expected
     to be monotonically increasing.
 
     For repeated values, the second encountered occurance (at index i)
-    will be increased by an amount that is the largest of:
-      (tiny, frac*abs(arr[i]-arr[i-1]))
+    will be increased by an amount given by tiny
 
     Parameters
     ----------
     arr :  array of values expected to be monotonically increasing
-    tiny : smallest expected absolute value of interval [1.e-7]
-    frac : smallest expected fractional interval   [1.e-6]
+    tiny : smallest expected absolute value of interval [1.e-6]
 
     Returns
     -------
@@ -175,34 +173,41 @@ def remove_dups(arr, tiny=1.e-7, frac=1.e-6):
 
     Example
     -------
-    >>> x = np.array([0, 1.1, 2.2, 2.2, 3.3])
-    >>> print(remove_dups(x))
-    >>> array([ 0.   ,  1.1  ,  2.2,  2.2000001,  3.3  ])
+    >>> x = np.array([1, 2, 3, 3, 3, 4, 5, 6, 7, 7, 8])
+    >>> remove_dups(x)
+    array([1.      , 2.      , 3.      , 3.000001, 3.000002, 4.      ,
+           5.      , 6.      , 7.      , 7.000001, 8.      ])
     """
     try:
-        arr = np.asarray(arr)
+        work = np.asarray(arr)
     except Exception:
         print('remove_dups: argument is not an array')
 
-    if arr.size <= 1:
+    if work.size <= 1:
         return arr
-    shape = arr.shape
-    arr = arr.flatten()
-    previous_value = np.nan
+    shape = work.shape
+    work = work.flatten()
+
+    min_step = min(np.diff(work))
+    tval = (abs(min(work)) + abs(max(work))) /2.0
+    if min_step > 10*tiny:
+        return work
+    previous_val = np.nan
     previous_add = 0
 
-    add = np.zeros(arr.size)
-    for i in range(1, len(arr)):
-        if not np.isnan(arr[i-1]):
-            previous_value = arr[i-1]
+    npts = len(work)
+    add = np.zeros(npts)
+    for i in range(1, npts):
+        if not np.isnan(work[i-1]):
+            previous_val = work[i-1]
             previous_add = add[i-1]
-        value = arr[i]
-        if np.isnan(value) or np.isnan(previous_value):
+        val = work[i]
+        if np.isnan(val) or np.isnan(previous_val):
             continue
-        diff = abs(value - previous_value)
+        diff = abs(val - previous_val)
         if diff < tiny:
-            add[i] = previous_add + max(tiny, frac*diff)
-    return (arr+add).reshape(shape)
+            add[i] = previous_add + tiny
+    return work+add
 
 
 def remove_nans(val, goodval=0.0, default=0.0):
