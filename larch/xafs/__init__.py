@@ -30,7 +30,7 @@ from .feffdat import FeffDatFile, FeffPathGroup, feffpath, path2chi, ff2chi, use
 from .feffit import (FeffitDataSet, TransformGroup, feffit,
                      feffit_dataset, feffit_transform, feffit_report)
 
-from .autobk import autobk
+from .autobk import autobk, autobk_lmfit, autobk_delta_chi
 from .mback import mback, mback_norm
 from .diffkk import diffkk, diffKKGroup
 from .fluo import fluo_corr
@@ -58,7 +58,9 @@ def _larch_init(_larch):
 _larch_groups = (diffKKGroup, FeffRunner, FeffDatFile, FeffPathGroup,
                  TransformGroup, FeffitDataSet)
 
-_larch_builtins = {'_xafs': dict(autobk=autobk, etok=etok, ktoe=ktoe,
+_larch_builtins = {'_xafs': dict(autobk=autobk, autobk_lmfit=autobk_lmfit,
+                                 autobk_delta_chi=autobk_delta_chi,
+                                 etok=etok, ktoe=ktoe,
                                  guess_energy_units=guess_energy_units,
                                  diffkk=diffkk, xftf=xftf, xftr=xftr,
                                  xftf_prep=xftf_prep, xftf_fast=xftf_fast,
