@@ -12,9 +12,9 @@ import ast
 import numpy as np
 from numpy import array, arange, interp, pi, zeros, sqrt, concatenate
 
-from scipy.optimize import leastsq as scipy_leastsq
-
-from lmfit import Parameters, Parameter, Minimizer, fit_report
+from scipy.interpolate import splrep, splev
+from lmfit import Parameters, Parameter, Minimizer
+from lmfit.printfuncs import getfloat_attr
 
 from larch import Group, isNamedClass
 from larch.utils import fix_varname, gformat
@@ -231,16 +231,14 @@ class TransformGroup(Group):
         return (out*self._cauchymask)[self._cauchyslice]
 
 class FeffitDataSet(Group):
-
     def __init__(self, data=None, paths=None, transform=None, epsilon_k=None,
-                 refine_bkg=False, pathlist=None, model=None, _larch=None,
-                 **kws):
+                 refine_bkg=False, model=None, pathlist=None,
+                 _larch=None, **kws):
 
         self._larch = _larch
         Group.__init__(self, **kws)
         self.refine_bkg = refine_bkg
-
-        if paths is None and pathlist is not None:  # legacy
+        if paths is None and pathlist is not None:
             paths = pathlist
 
         if isinstance(paths, dict):
@@ -287,11 +285,11 @@ class FeffitDataSet(Group):
         self.__chi = None
         self.__prepared = False
 
-    def _generate_hashkey(self, other_hashkeys=None):
+    def __generate_hashkey(self, other_hashkeys=None):
         """generate hash for dataset"""
         if self.hashkey is not None:
             return
-        hlen = 10
+        hlen = 7
         dat = [self.data.ek0, self.data.e0, self.data.rbkg]
         for arr in (self.data.energy, self.data.norm, self.data.chi):
             dat.extend([arr.min(), arr.max(), arr.mean(),
@@ -299,8 +297,9 @@ class FeffitDataSet(Group):
             dat.extend(arr[:30:3])
         s = "|".join([gformat(x) for x in dat])
         self.hashkey = f"d{(b32hash(s)[:hlen].lower())}"
-        # may need to look for hash collisions: if there is a collision,
-        # it is probably the same dataset, so just go witha
+        # may need to look for hash collisions: hlen=6 gives 1e9 keys
+        # collision are probably the same dataset, so just go with a
+        # random string
         if other_hashkeys is not None:
             ntry = 0
             while self.hashkey in other_hashkeys:
@@ -350,10 +349,11 @@ class FeffitDataSet(Group):
             self.set_epsilon_k(eps_k)
         else:
             self.estimate_noise(chi=self.__chi, rmin=15.0, rmax=30.0)
-            # if delta_chi (uncertainty in chi(k) from autobk or other source)
-            # exists, add it in quadrature to high-k noise estimate, and
-            # update epsilon_k to be this combination.
-            if getattr(self.data, 'delta_chi', None) is not None:
+
+            # if not refining the background, and if delta_chi (uncertainty in
+            # chi(k) from autobk or other source) exists, add it in quadrature
+            # to high-k noise estimate, and update epsilon_k to be this value
+            if not self.refine_bkg and hasattr(self.data, 'delta_chi'):
                 cur_eps_k = getattr(self, 'epsilon_k', 0.0)
                 if isinstance(cur_eps_k, (list, tuple)):
                     eps_ave = 0.
@@ -375,13 +375,21 @@ class FeffitDataSet(Group):
             if path.spline_coefs is None:
                 path.create_spline_coefs()
 
-        self._generate_hashkey(other_hashkeys=other_hashkeys)
+        self.__generate_hashkey(other_hashkeys=other_hashkeys)
         self.bkg_spline = {}
         if self.refine_bkg:
-            self.n_spline = 1 + 2*(trans.rmin)*(trans.kmax-trans.kmin)/pi
             self.n_idp = 1 + 2*(trans.rmax)*(trans.kmax-trans.kmin)/pi
+            nspline = 1 + round(2*(trans.rmin)*(trans.kmax-trans.kmin)/pi)
+            trans.rmin = 0.
+            knots_k = np.linspace(trans.kmin, trans.kmax, nspline)
+            # np.linspace(trans.kmax, trans.kmax+trans.kstep/10.0, 3)))
+            knots_y = np.linspace(-1e-4, 1.e-4, nspline)
+            knots, coefs, order = splrep(knots_k, knots_y, k=3)
+            self.bkg_spline = {'knots': knots, 'coefs': coefs,
+                               'nspline': nspline, 'order':order}
+            for i in range(nspline):
+                params.add(f'bkg{i:02d}_{self.hashkey}', value=0, vary=True)
         self.__prepared = True
-
 
 
     def estimate_noise(self, chi=None, rmin=15.0, rmax=30.0, all_kweights=True):
@@ -473,6 +481,18 @@ class FeffitDataSet(Group):
         ff2chi(self.paths, paramgroup=paramgroup, k=self.model.k,
                 _larch=self._larch, group=self.model)
 
+        if not data_only and self.refine_bkg:
+            knots = self.bkg_spline['knots']
+            order = self.bkg_spline['order']
+            nspline = self.bkg_spline['nspline']
+            coefs = []
+            for i in range(nspline):
+                parname = f'bkg{i:02d}_{self.hashkey}'
+                par = paramgroup[parname]
+                coefs.append(par.value)
+            self.model.bkg_chi = splev(self.model.k, [knots, coefs, order])
+            self.model.chi += self.model.bkg_chi
+
         eps_k = self.epsilon_k
         if isinstance(eps_k, np.ndarray):
             eps_k[np.where(eps_k<1.e-12)[0]] = 1.e-12
@@ -535,7 +555,7 @@ class FeffitDataSet(Group):
             for p in self.paths.values():
                 xft(p.chi, group=p, rmax_out=rmax_out)
 
-def feffit_dataset(data=None, paths=None, transform=None,
+def feffit_dataset(data=None, paths=None, transform=None, refine_bkg=False,
                    epsilon_k=None, pathlist=None, _larch=None):
     """create a Feffit Dataset group.
 
@@ -544,8 +564,6 @@ def feffit_dataset(data=None, paths=None, transform=None,
       data:      group containing experimental EXAFS (needs arrays 'k' and 'chi').
       paths:     dict of {label: FeffPathGroup}, using FeffPathGroup created by feffpath()
       transform: Feffit Transform group.
-      pathlist:  list of FeffPathGroup [deprecated - use 'paths']
-
       epsilon_k: Uncertainty in data (either single value or array of
                  same length as data.k)
 
@@ -556,7 +574,7 @@ def feffit_dataset(data=None, paths=None, transform=None,
 
     """
     return FeffitDataSet(data=data, paths=paths, transform=transform,
-                         pathlist=pathlist, _larch=_larch)
+                         refine_bkg=refine_bkg, pathlist=pathlist, _larch=_larch)
 
 def feffit_transform(_larch=None, **kws):
     """create a feffit transform group
@@ -652,7 +670,10 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True,
     vars, exprs = [], []
     for p in params.values():
         if p.vary:
-            vars.append(p.name)
+            nam = p.name
+            if not any([nam.startswith('bkg') and
+                        nam.endswith(ds.hashkey) for ds in datasets]):
+                vars.append(nam)
         elif p.expr is not None:
             exprs.append(p.expr)
 
@@ -790,26 +811,27 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
     exprformat = '   %12s = %s +/-%s  = \'%s\''
     out = [topline, header % 'Statistics']
 
-    out.append('   nvarys, npts       =  %i, %i' % (result.nvarys,
-                                                   result.ndata))
-    out.append('   n_independent      =  %.3f'  % (result.n_independent))
-    out.append('   chi_square         = %s'  % gfmt(result.chi_square))
-    out.append('   reduced chi_square = %s'  % gfmt(result.chi2_reduced))
-    out.append('   r-factor           = %s'  % gfmt(result.rfactor))
-    out.append('   Akaike info crit   = %s'  % gfmt(result.aic))
-    out.append('   Bayesian info crit = %s'  % gfmt(result.bic))
+    def getval(attr):
+        return getfloat_attr(result, attr)
+    out.append(f"   n_function_calls   = {getval('nfev')}")
+    out.append(f"   n_variables        = {getval('nvarys')}")
+    out.append(f"   n_data_points      = {getval('ndata')}")
+    out.append(f"   n_independent      = {getval('n_independent')}")
+    out.append(f"   chi_square         = {getval('chi_square')}")
+    out.append(f"   reduced chi_square = {getval('chi2_reduced')}")
+    out.append(f"   r-factor           = {getval('rfactor')}")
+    out.append(f"   Akaike info crit   = {getval('aic')}")
+    out.append(f"   Bayesian info crit = {getval('bic')}")
     out.append(' ')
 
     if len(datasets) == 1:
-        out.append(header % 'Data')
+        out.append(header % 'Dataset')
     else:
         out.append(header % 'Datasets (%i)' % len(datasets))
     for i, ds in enumerate(datasets):
         if not hasattr(ds, 'epsilon_k'):
             ds.prepare_fit(params)
         tr = ds.transform
-        if len(datasets) > 1:
-            out.append(' dataset %i:' % (i+1))
         if isinstance(tr.kweight, Iterable):
             if isinstance(ds.epsilon_k[0], np.ndarray):
                 msg = []
@@ -821,27 +843,31 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
                 eps_k = ', '.join([gfmt(eps).strip() for eps in ds.epsilon_k])
             eps_r = ', '.join([gfmt(eps).strip() for eps in ds.epsilon_r])
             kweigh = ', '.join(['%i' % kwe for kwe in tr.kweight])
+            eps_k = eps_k.strip()
+            eps_r = eps_r.strip()
+            kweigh = kweigh.strip()
         else:
             if isinstance(ds.epsilon_k, np.ndarray):
                 eps_k = 'Array(mean=%s, std=%s)' % (gfmt(ds.epsilon_k.mean()).strip(),
                                                     gfmt(ds.epsilon_k.std()).strip())
             else:
-                eps_k = gfmt(ds.epsilon_k)
+                eps_k = gfmt(ds.epsilon_k).strip()
             eps_r = gfmt(ds.epsilon_r).strip()
             kweigh = '%i' % tr.kweight
-        out.append('   fit space          = \'%s\''  % (tr.fitspace))
-        out.append('   r-range            = %.3f, %.3f' % (tr.rmin, tr.rmax))
-        out.append('   k-range            = %.3f, %.3f' % (tr.kmin, tr.kmax))
-        kwin = '   k window, dk       = \'%s\', %.3f'   % (tr.window, tr.dk)
+        out.append(f"   dataset unique_id  = '{ds.hashkey}'")
+        out.append(f"   fit space          = '{tr.fitspace}'")
+        out.append(f"   r-range            = {tr.rmin:.3f}, {tr.rmax:.3f}")
+        out.append(f"   k-range            = {tr.kmin:.3f}, {tr.kmax:.3f}")
+        kwin = f"   k window, dk       = '{tr.window}', {tr.dk:.3f}"
         if tr.dk2 is not None:
-            kwin = "%s, %.3f" % (kwin, tr.dk2)
+            kwin += f", {tr.dk2:.3f}"
         out.append(kwin)
         pathfiles = [p.filename for p in ds.paths.values()]
-        out.append('   paths used in fit  = %s' % (repr(pathfiles)))
-        out.append('   k-weight           = %s' % kweigh)
-        out.append('   epsilon_k          = %s'  % eps_k)
-        out.append('   epsilon_r          = %s'  % eps_r)
-        out.append('   n_independent      = %.3f'  % (ds.n_idp))
+        out.append(f"   paths used in fit  = {repr(pathfiles)}")
+        out.append(f"   k-weight           = {kweigh}")
+        out.append(f"   epsilon_k          = {eps_k}")
+        out.append(f"   epsilon_r          = {eps_r}")
+        out.append(f"   n_independent      = {ds.n_idp:.3f}")
         #
     out.append(' ')
     out.append(header % 'Variables')
