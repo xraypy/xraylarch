@@ -133,7 +133,9 @@ _pathsum = ff2chi({paths:s}, paramgroup=_feffit_params)
 """
 
 COMMANDS['do_feffit'] = """# build feffit dataset, run feffit
-_feffit_dataset = feffit_dataset(data={groupname:s}, transform={trans:s}, paths={paths:s})
+_feffit_dataset = feffit_dataset(data={groupname:s}, transform={trans:s},
+                                 refine_bkg={refine_bkg:s},
+                                 paths={paths:s})
 _feffit_result = feffit({params}, _feffit_dataset)
 if not hasattr({groupname:s}, 'feffit_history'): {groupname}.feffit_history = []
 {groupname:s}.feffit_history.insert(0, _feffit_result)
@@ -798,21 +800,12 @@ class FeffitPanel(TaskPanel):
         wids['plot_voffset'] =  FloatSpin(pan, value=0, digits=2, increment=0.25,
                                           size=(100, -1), action=self.onPlot)
 
-
-        ppanel = wx.Panel(pan)
-        ppanel.SetMinSize((450, 20))
-
-        wids['plot_paths'] = Check(ppanel, default=False, label='Plot Each Path',
+        wids['plot_paths'] = Check(pan, default=False, label='Plot Each Path',
                                    action=self.onPlot)
-        wids['plot_ftwindows'] = Check(ppanel, default=False, label='Plot FT Windows',
+        wids['plot_ftwindows'] = Check(pan, default=False, label='Plot FT Windows',
                                        action=self.onPlot)
-
-        psizer = wx.BoxSizer(wx.HORIZONTAL)
-        psizer.Add(wids['plot_paths'],  0, LEFT, 2)
-        psizer.Add(wids['plot_ftwindows'], 0, LEFT, 2)
-        #psizer.Add(SimpleText(ppanel, '  Offset ', size=(100, -1) ), 0, LEFT, 2)
-        #psizer.Add(wids['plot_voffset'], 0, LEFT, 2)
-        pack(ppanel, psizer)
+        wids['refine_bkg'] = Check(pan, default=False,
+                                   label='Refine Background during Fit?')
         wids['plot_current']  = Button(pan,'Plot Current Model',
                                      action=self.onPlot,  size=(175, -1))
         wids['do_fit']        = Button(pan, 'Fit Data to Model',
@@ -828,9 +821,9 @@ class FeffitPanel(TaskPanel):
             pan.Add(SimpleText(pan, text), dcol=dcol, newrow=newrow)
 
         pan.Add(SimpleText(pan, 'Feff Fitting',
-                           size=(150, -1), **self.titleopts), style=LEFT, dcol=1, newrow=True)
-        pan.Add(SimpleText(pan, 'To add paths, use Feff->Browse Feff Calculations',
-                           size=(350, -1)), style=LEFT, dcol=3)
+                           size=(150, -1), **self.titleopts), style=LEFT, dcol=1)
+        pan.Add(SimpleText(pan, 'Use Feff->Browse Feff Calculations to Add Paths',
+                           size=(425, -1)), style=LEFT, dcol=4)
 
         add_text('Fitting Space: ')
         pan.Add(wids['fit_space'])
@@ -852,13 +845,17 @@ class FeffitPanel(TaskPanel):
         pan.Add(fit_rmin)
         add_text('R max: ', newrow=False)
         pan.Add(fit_rmax)
+        add_text('  ', newrow=True)
+        pan.Add(wids['refine_bkg'], dcol=3)
 
         pan.Add(HLine(pan, size=(600, 2)), dcol=6, newrow=True)
 
         pan.Add(wids['plot_current'], dcol=1, newrow=True)
         pan.Add(wids['plotone_op'], dcol=1)
-        pan.Add(ppanel, dcol=4)
-        add_text('  ', dcol=2, newrow=True)
+
+        pan.Add(wids['plot_paths'],  newrow=True)
+        pan.Add(wids['plot_ftwindows'])
+        # pan.Add(ppanel, dcol=2, newrow=True)
         add_text('Vertical Offset' , newrow=False)
         pan.Add(wids['plot_voffset'])
 
@@ -867,7 +864,7 @@ class FeffitPanel(TaskPanel):
         add_text('Plot Window: ', newrow=False)
         pan.Add(wids['plot_win'], dcol=1)
 
-        pan.Add(wids['do_fit'], dcol=3, newrow=True)
+        pan.Add(wids['do_fit'], dcol=1, newrow=True)
         pan.Add(wids['show_results'])
         pan.Add((5, 5), newrow=True)
 
@@ -876,7 +873,9 @@ class FeffitPanel(TaskPanel):
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(pan, 0, LEFT, 3)
-        sizer.Add((10, 10), 0, LEFT, 3)
+        sizer.Add((3, 3), 0, LEFT, 3)
+        sizer.Add(SimpleText(self, ' Parameters and Paths'), 0, LEFT, 2)
+        sizer.Add((3, 3), 0, LEFT, 3)
         sizer.Add(self.paths_nb,  1, LEFT|wx.GROW, 5)
         pack(self, sizer)
 
@@ -1024,7 +1023,9 @@ class FeffitPanel(TaskPanel):
             form_opts['fit_kweight'] = 2
 
 
-        form_opts['fit_space'] = Feffit_SpaceChoices[wids['fit_space'].GetStringSelection()]
+        form_opts['refine_bkg'] = wids['refine_bkg'].IsChecked()
+        fitspace_string = wids['fit_space'].GetStringSelection()
+        form_opts['fit_space'] = Feffit_SpaceChoices[fitspace_string]
 
         form_opts['fit_kwindow'] = wids['fit_kwindow'].GetStringSelection()
         form_opts['plot_ftwindows'] = wids['plot_ftwindows'].IsChecked()
@@ -1492,6 +1493,7 @@ class FeffitPanel(TaskPanel):
 
         # dgroup = opts['datagroup']
         fopts = dict(groupname=opts['groupname'],
+                     refine_bkg=bool(opts['refine_bkg']),
                      trans='_feffit_trans',
                      paths='_feffpaths',
                      params='_feffit_params')
@@ -1528,7 +1530,6 @@ class FeffitPanel(TaskPanel):
 
         script.append("######################################")
         self.larch_eval(COMMANDS['do_feffit'].format(**fopts))
-
 
         self.wids['show_results'].Enable()
         self.onPlot(dgroup=opts['datagroup'], build_fitmodel=False,
