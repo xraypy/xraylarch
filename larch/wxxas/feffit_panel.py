@@ -134,7 +134,7 @@ _pathsum = ff2chi({paths:s}, paramgroup=_feffit_params)
 
 COMMANDS['do_feffit'] = """# build feffit dataset, run feffit
 _feffit_dataset = feffit_dataset(data={groupname:s}, transform={trans:s},
-                                 refine_bkg={refine_bkg:s},
+                                 refine_bkg={refine_bkg},
                                  paths={paths:s})
 _feffit_result = feffit({params}, _feffit_dataset)
 if not hasattr({groupname:s}, 'feffit_history'): {groupname}.feffit_history = []
