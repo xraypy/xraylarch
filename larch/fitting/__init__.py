@@ -282,7 +282,9 @@ def params2group(params, paramgroup):
     _params = getattr(paramgroup, '__params__', None)
     for name, param in params.items():
         this = getattr(paramgroup, name, None)
-        if isParameter(this):
+        if this is None:
+            setattr(paramgroup, name, param)
+        elif isParameter(this):
             if _params is not None:
                 _params[name] = this
             for attr in ('value', 'vary', 'stderr', 'min', 'max', 'expr',
