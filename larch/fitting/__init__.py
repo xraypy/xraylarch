@@ -44,8 +44,6 @@ def confidence_report(conf_vals, **kws):
     """
     return ci_report(conf_vals)
 
-
-
 def asteval_with_uncertainties(*vals, **kwargs):
     """Calculate object value, given values for variables.
 
@@ -282,9 +280,7 @@ def params2group(params, paramgroup):
     _params = getattr(paramgroup, '__params__', None)
     for name, param in params.items():
         this = getattr(paramgroup, name, None)
-        if this is None:
-            setattr(paramgroup, name, param)
-        elif isParameter(this):
+        if isParameter(this):
             if _params is not None:
                 _params[name] = this
             for attr in ('value', 'vary', 'stderr', 'min', 'max', 'expr',
