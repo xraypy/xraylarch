@@ -27,18 +27,22 @@ trans = feffit_transform(kmin=3, kmax=16, kw=2, dk=4,
 
 # define dataset to include data, pathlist, transform
 dset = feffit_dataset(data=cu_data, paths=[path1],
+                      epsilon_k=0.002,
                       transform=trans, refine_bkg=True)
 
 out = feffit(pars, dset)
 print(feffit_report(out))
 
 plot_chifit(dset)
+#
+if hasattr(out.datasets[0].data, 'bkgk'):
+    mbkg = group(k=out.datasets[0].data.k, chi=out.datasets[0].data.bkgk)
+    #
+    plot(mbkg.k, mbkg.chi*mbkg.k**2, label='fitted bkg (1x)', win=1)
+    plot(mbkg.k, (out.datasets[0]._chi-out.datasets[0]._bkg)*mbkg.k**2, label='chi-bkg', win=1)
+    #
+    xftf(mbkg, kmin=trans.kmin, kmax=trans.kmax, kweight=trans.kweight,
+         dk=trans.dk, kwindow=trans.window)
 
-mbkg = group(k=out.datasets[0].model.k, chi=out.datasets[0].model.bkg_chi)
-
-plot(mbkg.k, 10*mbkg.chi*mbkg.k**2, label='fitted bkg (10x)', win=1)
-
-xftf(mbkg, kmin=trans.kmin, kmax=trans.kmax, kweight=trans.kweight,
-     dk=trans.dk, kwindow=trans.window)
-
-plot(mbkg.r, 10*mbkg.chir_mag, label='fitted bkg (10x)', win=2)
+    plot(mbkg.r, mbkg.chir_mag, label='fitted bkg (1x)', win=2)
+#endif

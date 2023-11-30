@@ -5,15 +5,17 @@ path1 = feffpath('feff_feo01.dat')
 path2 = feffpath('feff_feo02.dat')
 
 # create a group containing parameters
-pars = group(del_e0  = param(-4.0, min=-10, max=10),
-             amp = param(0.8, min=0.3, max=1.5))
+pars = group(del_e0 = param('del_e0', -4.0, min=-10, max=10),
+             amp= param('amp', 0.8, min=0.3, max=1.5))
 
 for p in (path1, path2):
     p.e0  = 'del_e0'
     p.s02 = 'amp'
     p.sigma2 = 0.003
-    if p == path2: p.sigma2 = 0.005
-endfor
+    if p == path2:
+        p.sigma2 = 0.005
+    #endif
+#endfor
 
 mysum = group(label='FeO sum of paths')
 
@@ -26,13 +28,13 @@ newplot(mysum.k, mysum.chi*mysum.k**2,
         xlabel=r'$ k \rm\, (\AA^{-1})$',
         ylabel=r'$ k^2\chi(k)$',  title=mysum.label)
 
+
 # now change parameter values, re-do sum
 pars.del_e0.value = 3.5
-pars.amp.value = 1.0
+pars.amp.value = 0.95
 
 # re-calculate chi for each path with paramgroup set
 # then sum the paths ourselves
-
 path2chi(path1, paramgroup=pars)
 path2chi(path2, paramgroup=pars)
 

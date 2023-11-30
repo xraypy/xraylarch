@@ -43,7 +43,7 @@ def rplot_fit(dset, title, win=1):
 def phase_correct(dset):
    "calculate phase-corrected FT, find estimate of R"
    nrpts = len(dset.model.r)
-   path1 = dset.pathlist[0]
+   path1 = list(dset.paths.items())[0][1]
    # get phase from Feff path
    feff_pha = interp(path1._feffdat.k, path1._feffdat.pha, dset.model.k)
    # phase-corrected Fourier Transform
@@ -90,7 +90,7 @@ fmt = '|  %s     | %5.1f |%s|%s|%s|%s|%7.3f|'
 
 results = {}
 for ix, scatterer in enumerate(('Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb')):
-    dset  = feffit_dataset(data=znse_data, pathlist=[paths[scatterer]],
+    dset  = feffit_dataset(data=znse_data, paths={scatterer: paths[scatterer]},
                            transform=trans)
     pars = group(amp    = guess(1.0),
                  del_e0 = guess(0.1, min=-20, max=20),
@@ -98,14 +98,14 @@ for ix, scatterer in enumerate(('Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb'))
                  del_r  = guess(0.) )
 
     out = feffit(pars, dset)
-    path1 = out.datasets[0].pathlist[0]
+    path1 = out.datasets[0].paths[scatterer]
     # read scatterer from Feff geometry, to be sure it's correct
     scatt = path1._feffdat.geom[1][0]
     title = 'Path: Zn-%s ' % scatt
     r_phcor = phase_correct(out.datasets[0])
     rplot_fit(out.datasets[0], title, win=1+ix)
 
-    redchi = out.chi_reduced
+    redchi = out.chi2_reduced
 
     _amp   = '%5.2f(%.2f) ' % (out.params['amp'].value, out.params['amp'].stderr)
     _de0   = '%6.2f(%.2f) ' % (out.params['del_e0'].value,  out.params['del_e0'].stderr)
