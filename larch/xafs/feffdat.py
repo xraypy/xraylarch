@@ -582,7 +582,7 @@ class FeffPathGroup(Group):
 
 
 
-def path2chi(path, paramgroup=None, **kws):
+def path2chi(path, params=None, paramgroup=None, **kws):
     """calculate chi(k) for a Feff Path,
     optionally setting path parameter values
     output chi array will be written to path group
@@ -603,17 +603,20 @@ def path2chi(path, paramgroup=None, **kws):
     if not isNamedClass(path, FeffPathGroup):
         msg('%s is not a valid Feff Path' % path)
         return
-    path.calc_chi_from_params(paramgroup, **kws)
+    if params is None and paramgroup is not None:
+        params = group2params(paramgroup)
+    path.calc_chi_from_params(params=params, **kws)
 
 
-def ff2chi(paths, group=None, paramgroup=None, k=None, kmax=None,
-            kstep=0.05,  **kws):
+def ff2chi(paths, group=None, params=None, k=None, kmax=None, kstep=0.05,
+           paramgroup=None, **kws):
     """sum chi(k) for a list of FeffPath Groups.
 
     Parameters:
     ------------
       paths:       a list of FeffPath Groups or dict of {label: FeffPathGroups}
-      paramgroup:  a Parameter Group for calculating Path Parameters [None]
+      params:      lmfit.Parameters for calculating Path Parameters [None]
+      paramgroup:  (old) Group of Parameters for calculating Path Parameters [None]
       kmax:        maximum k value for chi calculation [20].
       kstep:       step in k value for chi calculation [0.05].
       k:           explicit array of k values to calculate chi.
@@ -625,11 +628,11 @@ def ff2chi(paths, group=None, paramgroup=None, k=None, kmax=None,
     `paths` and writes the resulting arrays to group.k and group.chi.
 
     """
-    if isinstance(paramgroup, Parameters):
-        params = paramgroup
-    else:
-        params = group2params(paramgroup)
-
+    if params is None:
+        if isinstance(paramgroup, Parameters):
+            params = paramgroup
+        else:
+            params = group2params(paramgroup)
 
     if isinstance(paths, (list, tuple)):
         pathlist = paths
