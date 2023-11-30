@@ -649,8 +649,9 @@ def plot_wavelet(dgroup, show_mag=True, show_real=False, show_imag=False,
 
 def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
                 show_mag=True, show_real=False, show_imag=False,
-                title=None, new=True, delay_draw=False, offset=0, win=1,
-                _larch=None):
+                show_bkg=False, use_rebkg=False, title=None, new=True,
+                delay_draw=False, offset=0, win=1, _larch=None):
+
     """
     plot_chifit(dataset, kmin=0, kmax=None, rmax=None,
                 show_mag=True, show_real=False, show_imag=False,
@@ -668,6 +669,8 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
      show_mag     bool whether to plot |chidr(R)| [True]
      show_real    bool whether to plot Re[chi(R)] [False]
      show_imag    bool whether to plot Im[chi(R)] [False]
+     show_bkg     bool whether to plot feffit-refined background [False]
+     use_rebkg    bool whether to plot data with feffit-refined background [False]
      title        string for plot title [None, may use filename if available]
      new          bool whether to start a new plot [True]
      delay_draw   bool whether to delay draw until more traces are added [False]
@@ -678,22 +681,35 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
     if kweight is None:
         kweight = dataset.transform.kweight
     #endif
-    if isinstance(kweight, (list, tuple, ndarray)): kweight=kweight[0]
-
-    data_chik  = dataset.data.chi * dataset.data.k**kweight
-    model_chik = dataset.model.chi * dataset.model.k**kweight
+    if isinstance(kweight, (list, tuple, ndarray)):
+        kweight=kweight[0]
 
     title = _get_title(dataset, title=title)
+
+    mod = dataset.model
+    dat = dataset.data
+    if use_rebkg and hasattr(dataset, 'data_rebkg'):
+        dat = dataset.data_rebkg
+        title += ' (refined bkg)'
+
+    data_chik  = dat.chi * dat.k**kweight
+    model_chik = mod.chi * mod.k**kweight
 
     opts=dict(labelfontsize=10, legendfontsize=10, linewidth=3,
               show_legend=True, delay_draw=True, win=win, title=title,
               _larch=_larch)
 
     # k-weighted chi(k) in first plot window
-    _plot(dataset.data.k, data_chik+offset, xmin=kmin, xmax=kmax,
-            xlabel=plotlabels.k, ylabel=plotlabels.chikw.format(kweight),
-            label='data', new=new, **opts)
-    _plot(dataset.model.k, model_chik+offset, label='fit',  **opts)
+    _plot(dat.k, data_chik+offset, xmin=kmin, xmax=kmax,
+          xlabel=plotlabels.k, ylabel=plotlabels.chikw.format(kweight),
+          label='data', new=new, **opts)
+    _plot(mod.k, model_chik+offset, label='fit',  **opts)
+
+    if show_bkg and hasattr(dat, 'bkgk'):
+        _plot(dat.k, dat.bkgk*dat.k**kweight,
+              label='refined bkg', **opts)
+    #endif
+
     redraw(win=win, xmin=kmin, xmax=kmax, _larch=_larch)
 
     # show chi(R) in next plot window
@@ -705,21 +721,19 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
                      xmax=rmax, new=True, show_legend=True))
 
     if show_mag:
-        _plot(dataset.data.r,  dataset.data.chir_mag+offset,
-             label='|data|', **opts)
+        _plot(dat.r, dat.chir_mag+offset, label='|data|', **opts)
         opts['new'] = False
-        _plot(dataset.model.r, dataset.model.chir_mag+offset,
-              label='|fit|', **opts)
+        _plot(mod.r, mod.chir_mag+offset,  label='|fit|', **opts)
     #endif
     if show_real:
-        _plot(dataset.data.r, dataset.data.chir_re+offset, label='Re[data]', **opts)
+        _plot(dat.r, dat.chir_re+offset, label='Re[data]', **opts)
         opts['new'] = False
-        _plot(dataset.model.r, dataset.model.chir_re+offset, label='Re[fit]',  **opts)
+        _plot(mod.r, mod.chir_re+offset, label='Re[fit]',  **opts)
     #endif
     if show_imag:
-        _plot(dataset.data.r, dataset.data.chir_im+offset, label='Im[data]', **opts)
+        _plot(dat.r, dat.chir_im+offset, label='Im[data]', **opts)
         opts['new'] = False
-        _plot(dataset.model.r, dataset.model.chir_im+offset, label='Im[fit]',  **opts)
+        _plot(mod.r, mod.chir_im+offset, label='Im[fit]',  **opts)
     #endif
     if show_mag or show_real or show_imag:
         redraw(win=opts['win'], xmax=opts['xmax'], _larch=_larch)
