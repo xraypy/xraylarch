@@ -83,7 +83,8 @@ class DTCorrectFrame(wx.Frame):
                         style=wx.FD_OPEN|wx.FD_MULTIPLE|wx.FD_CHANGE_DIR)
 
         if dlg.ShowModal() == wx.ID_OK:
-            path = dlg.GetPath()
+            paths = dlg.GetPaths()
+            path = paths[0]
             mdir, p = os.path.split(path)
             os.chdir(mdir)
             roiname = self.wid_roi.GetValue().strip()
@@ -110,9 +111,8 @@ class DTCorrectFrame(wx.Frame):
                 corr_fcn = gsescan_deadtime_correct
                 if is_GSEXDI(fname):
                     corr_fcn = gsexdi_deadtime_correct
-                self.write_message("Correcting %s" % (fname))
-                out = corr_fcn(fname, roiname, subdir=dirname,
-                               bad=bad_channels, _larch=self.larch)
+                print("Correcting %s" % (fname))
+                out = corr_fcn(fname, roiname, subdir=dirname, bad=bad_channels)
                 if out is not None:
                     out.mu = out.mufluor
                     out.filename = fname
@@ -125,11 +125,11 @@ class DTCorrectFrame(wx.Frame):
             _, aname = os.path.split(athena_name)
             self.wid_ath.SetValue(increment_filename(aname))
 
-            aprj = AthenaProject(filename=athena_name, _larch=self.larch)
+            aprj = AthenaProject(filename=athena_name)
             for grp, label in groups:
                 aprj.add_group(grp, signal='mu')
             aprj.save(use_gzip=True)
-            self.write_message("Corrected %i files, wrote %s" % (len(groups), aname))
+            print("Corrected %i files, wrote %s" % (len(groups), aname))
 
     def createMainPanel(self):
         panel = wx.Panel(self)
