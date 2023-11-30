@@ -1,14 +1,17 @@
 =================== FEFFIT RESULTS ====================
 [[Statistics]]
-   nvarys, npts       =  4, 104
-   n_independent      =  15.260
-   chi_square         =  112.91671
-   reduced chi_square =  10.027875
-   r-factor           =  0.0027218
-   Akaike info crit   =  38.541883
-   Bayesian info crit =  41.442898
+   n_function_calls   = 36
+   n_variables        = 4
+   n_data_points      = 104
+   n_independent      = 15.2602829
+   chi_square         = 112.916714
+   reduced chi_square = 10.0278754
+   r-factor           = 0.00272181
+   Akaike info crit   = 38.5418835
+   Bayesian info crit = 41.4428977
  
-[[Data]]
+[[Dataset]]
+   dataset unique_id  = 'dgpiqpwi'
    fit space          = 'r'
    r-range            = 1.400, 3.000
    k-range            = 3.000, 17.000

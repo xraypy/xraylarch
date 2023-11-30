@@ -1,32 +1,35 @@
 =================== FEFFIT RESULTS ====================
 [[Statistics]]
-   nvarys, npts       =  7, 230
-   n_independent      =  17.106
-   chi_square         =  151.234100
-   reduced chi_square =  14.9640722
-   r-factor           =  0.01377419
-   Akaike info crit   =  51.2813775
-   Bayesian info crit =  57.1575789
+   n_function_calls   = 65
+   n_variables        = 7
+   n_data_points      = 230
+   n_independent      = 17.1064802
+   chi_square         = 156.610624
+   reduced chi_square = 15.4960600
+   r-factor           = 0.01377419
+   Akaike info crit   = 51.8789694
+   Bayesian info crit = 57.7551708
  
-[[Data]]
+[[Dataset]]
+   dataset unique_id  = 'dp3elp4f'
    fit space          = 'q'
    r-range            = 1.000, 3.200
    k-range            = 2.000, 13.500
    k window, dk       = 'kaiser', 3.000
    paths used in fit  = ['feff_feo01.dat', 'feff_feo02.dat']
    k-weight           = 3
-   epsilon_k          = Array(mean=7.6751e-04, std=0.00186633)
-   epsilon_r          = 0.16541873
+   epsilon_k          = Array(mean=7.7091e-4, std=0.0018654)
+   epsilon_r          = 0.1661505
    n_independent      = 17.106
  
 [[Variables]]
-   de0            = -1.44177738 +/- 1.00760144   (init= -1.47416477)
-   delr_1         = -0.02917118 +/- 0.00958845   (init= -0.02936638)
-   delr_2         =  0.04811111 +/- 0.00746557   (init=  0.04782343)
-   n1             =  5.58156465 +/- 1.13202532   (init=  5.41282687)
-   n2             =  11.2247051 +/- 1.34240733   (init=  11.1724782)
-   sig2_1         =  0.01238692 +/- 0.00245421   (init=  0.01202039)
-   sig2_2         =  0.01258038 +/- 0.00104580   (init=  0.01253566)
+   de0            = -1.4418400 +/- 1.0075979   (init=  0.1000000)
+   delr_1         = -0.0291715 +/- 0.0095887   (init=  0.0000000)
+   delr_2         =  0.0481107 +/- 0.0074656   (init=  0.0000000)
+   n1             =  5.7051162 +/- 1.1572056   (init=  6.0000000)
+   n2             =  11.473040 +/- 1.3721353   (init=  12.000000)
+   sig2_1         =  0.0123871 +/- 0.0024544   (init=  0.0020000)
+   sig2_2         =  0.0125804 +/- 0.0010458   (init=  0.0020000)
  
 [[Correlations]]    (unreported correlations are <  0.500)
    n2, sig2_2           =  0.940

@@ -1,14 +1,17 @@
 =================== FEFFIT RESULTS ====================
 [[Statistics]]
-   nvarys, npts       =  7, 138
-   n_independent      =  19.717
-   chi_square         =  12.908339
-   reduced chi_square =  1.0150762
-   r-factor           =  0.0025132
-   Akaike info crit   =  5.6482668
-   Bayesian info crit =  12.518501
+   n_function_calls   = 107
+   n_variables        = 7
+   n_data_points      = 138
+   n_independent      = 19.7166213
+   chi_square         = 12.9083391
+   reduced chi_square = 1.01507616
+   r-factor           = 0.00251319
+   Akaike info crit   = 5.64826681
+   Bayesian info crit = 12.5185008
  
-[[Data]]
+[[Dataset]]
+   dataset unique_id  = 'do2js2h5'
    fit space          = 'r'
    r-range            = 1.400, 3.500
    k-range            = 3.000, 17.000
@@ -58,8 +61,8 @@
      degen  =  12.000000
      n*s02  =  0.9362805 +/- 0.0362098  := 'amp'
      e0     =  5.7042623 +/- 0.8197285  := 'del_e0'
-     r      =  2.5549629 +/- 0.0113892  := 'reff + alpha*reff'
-     deltar =  0.0071629 +/- 0.0113892  := 'alpha*reff'
+     r      =  2.5549629 +/- 0.0075926  := 'reff + alpha*reff'
+     deltar =  0.0071629 +/- 0.0075926  := 'alpha*reff'
      sigma2 =  0.0086805 +/- 2.8390e-4  := 'sig2_1'
      third  =  1.4440e-4 +/- 8.2197e-5  := 'c3_1'
 
@@ -72,8 +75,8 @@
      degen  =  6.0000000
      n*s02  =  0.9362805 +/- 0.0362098  := 'amp'
      e0     =  5.7042623 +/- 0.8197285  := 'del_e0'
-     r      =  3.6133300 +/- 0.0113892  := 'reff + alpha*reff'
-     deltar =  0.0101300 +/- 0.0113892  := 'alpha*reff'
+     r      =  3.6133300 +/- 0.0107377  := 'reff + alpha*reff'
+     deltar =  0.0101300 +/- 0.0107377  := 'alpha*reff'
      sigma2 =  0.0131046 +/- 0.0011358  := 'sig2_2'
 
  = Path 'pibakl7xet' = Cu K Edge
