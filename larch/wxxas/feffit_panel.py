@@ -1939,7 +1939,7 @@ class FeffitResultFrame(wx.Frame):
         dgroup = dset.data
         if not hasattr(dset.data, 'rwin'):
             dset._residual(result.params)
-            dset.save_ffts()
+            dset.save_outputs()
         trans  = dset.transform
         dset.prepare_fit(group2params(result.paramgroup))
         dset._residual(result.paramgroup)
