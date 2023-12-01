@@ -1,9 +1,7 @@
-
 # read data
 cu_data  = read_ascii('../xafsdata/cu_150k.xmu', labels='energy mutrans')
-cu_data  = read_ascii('../xafsdata/cu_metal_rt.xdi', labels='energy i0 itrans mutrans')
-autobk(cu_data.energy, cu_data.mutrans, group=cu_data, rbkg=1.2, kw=1, clamp_hi=50)
 
+autobk(cu_data.energy, cu_data.mutrans, group=cu_data, rbkg=1.1, kw=2, clamp_hi=50)
 
 # define fitting parameter group
 
@@ -94,29 +92,16 @@ dset = feffit_dataset(data=cu_data, transform=trans,
                                 path7, path8, path9, path10, path11,
                                 path12, path13])
 
-
 # perform fit!
 out = feffit(pars, dset)
 
-print( feffit_report(out, with_paths=False, min_correl=0.3))
+print(feffit_report(out, with_paths=False, min_correl=0.3))
 
 fout = open('feffit_13paths.out', 'w')
 
 fout.write(feffit_report(out, with_paths=True))
 fout.close()
 
-
-plot(dset.data.k,  dset.data.chi *dset.data.k**2, new=True,
-     xlabel=r'$k \rm\,(\AA^{-1})$', label='data',
-     ylabel=r'$k^2\chi(k) \rm\,(\AA^{-2})$',
-     title='13 paths fit to Cu', show_legend=True)
-plot(dset.model.k, dset.model.chi*dset.model.k**2, label='fit')
-
-plot(dset.data.r,  dset.data.chir_im, new=True, xmax=6.5,
-     ymin=-3.25, ymax=3.25,
-     win=2,
-     xlabel=r'$R \rm\,(\AA)$', label='data',
-     ylabel=r'$|\chi(R)|, {\mathrm{Im}}[\chi(R)] \rm\,(\AA^{-3})$',
-     title='13 paths fit to Cu', show_legend=True, color='black', style='solid')
-plot(dset.model.r, dset.model.chir_im, label='fit', win=2, color='black', style='short dashed')
-plot(dset.data.r, dset.data.chir_mag, win=2, color='black', style='solid')
+plot_chifit(dset, kmin=0, kmax=None, kweight=None, rmax=8,
+            show_mag=True, show_imag=True,
+            title='13 paths fit to Cu',  new=True)
