@@ -12,7 +12,8 @@ if [ $uname == Darwin ]; then
 fi
 
 condaurl="https://github.com/conda-forge/miniforge/releases/latest/download"
-condafile="Mambaforge-$uname-x86_64.sh"
+
+condafile="Miniforge3-$uname-x86_64.sh"
 
 logfile=GetLarch.log
 

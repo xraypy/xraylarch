@@ -3,7 +3,7 @@
 set prefix=%USERPROFILE%\xraylarch
 
 set condaurl=https://github.com/conda-forge/miniforge/releases/latest/download
-set condafile=Mambaforge-Windows-x86_64.exe
+set condafile=Miniforge3-Windows-x86_64.exe
 
 if not exist %~dp0%condafile% (
     echo ## Downloading Miniconda from https://repo.anaconda.com/miniconda/, please wait...
