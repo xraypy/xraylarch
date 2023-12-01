@@ -403,6 +403,8 @@ class FeffPathGroup(Group):
         """stores data about this Feff path in the Parameters
         symbol table for use as `reff` and in sigma2 calcs
         """
+        if self.params is None:
+            self.create_path_params()
         if (not isinstance(self.params, Parameters) and
             isinstance(self.params, dict)):
             self.params = dict2params(self.params)
@@ -422,6 +424,7 @@ class FeffPathGroup(Group):
         self.store_feffdat()
         if self.params is None:
             self.create_path_params()
+
         out = []
         for pname in PATH_PARS:
             val = kws.get(pname, None)
@@ -531,8 +534,8 @@ class FeffPathGroup(Group):
         # get values for all the path parameters
         (degen, s02, e0, ei, deltar, sigma2, third, fourth)  = \
                 self.__path_params(degen=degen, s02=s02, e0=e0, ei=ei,
-                                 deltar=deltar, sigma2=sigma2,
-                                 third=third, fourth=fourth)
+                                   deltar=deltar, sigma2=sigma2,
+                                   third=third, fourth=fourth)
 
         # create e0-shifted energy and k, careful to look for |e0| ~= 0.
         en = k*k - e0*ETOK
