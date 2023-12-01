@@ -1,4 +1,3 @@
-
 cu = read_ascii('../xafsdata/cu.chi')
 
 fitparams = group(amp  = param(1, vary=True),
@@ -18,5 +17,7 @@ dset  = feffit_dataset(data=cu, pathlist=[path1], transform=trans)
 out = feffit(fitparams, dset)
 print( feffit_report(out))
 
-ox, oy, map = chi2_map(out, 'de0', 'delr')
-imshow(map, y=ox, x=oy)
+ox, oy, map = chi2_map(out, 'de0', 'delr', sigma=2, nx=25, ny=25)
+imshow(map, x=ox, y=oy, xlabel='de0', ylabel='delr', show_axis=True,
+       style='contour')
+#, levels=[2, 4, 6, 8, 10])

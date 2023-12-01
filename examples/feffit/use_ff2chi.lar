@@ -1,14 +1,13 @@
 p1 = feffpath('feff0001.dat', e0=0, sigma2=0.010)
-
 for i in range(5):
     e0 = -6 + 3*i
     p1._calc_chi(e0=e0)
-    plot(p1.k, p1.chi*p1.k**2, label='e0= % .1f' % e0, new=i==0)
+    plot(p1.k, p1.chi*p1.k**2, label='e0= % .1f' % e0, new=(i==0), show_legend=True)
 #endfor
 
+e0 = 0.0
+p1._calc_chi(e0=e0)
 p2 = feffpath('feff0002.dat', e0=e0, sigma2=0.015)
-
 total = ff2chi([p1, p2])
-
-
-plot(total.k, total.chi*total.k**2, label='sum of paths', win=2)
+plot(total.k, total.chi*total.k**2, label='sum of paths',
+     win=2, new=True, show_legend=True)

@@ -3,7 +3,7 @@
 # single precision, and consistent with the digitation in
 # the Feff.dat file and linear interpolation
 #
-    p1 = feffpath('feff0001.dat')
+p1 = feffpath('feff0001.dat')
 p1.e0 = 0
 p1.sigma2 = 0.01 # 13
 path2chi(p1)
@@ -14,7 +14,7 @@ fdat = group(k=p1.k, chi=sum)
 trans = feffit_transform(kmin=4, kmax=16, kweight=3, dk=8,
                          window='hanning', rmin=2., rmax=3.8)
 d1 = feffit_dataset(data=fdat, pathlist=[p1], transform=trans)
-d1.prepare_fit()
+d1.estimate_noise()
 trans._xafsft(fdat.chi, group=fdat, rmax_out=32)
 print( 'noise estimate k = ', d1.epsilon_k)
 print( 'noise estimate r = ', d1.epsilon_r, log(d1.epsilon_r))

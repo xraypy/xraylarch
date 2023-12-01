@@ -27,7 +27,7 @@ path1.sigma2 = 'ss2'
 path1.deltar = 'delr'
 path1.third  = 'third'
 
-trans = feffit_transform(kmin=3, kmax=14, kw=2, dk=4,  window='bessel',
+trans = feffit_transform(kmin=3, kmax=14, kw=2, dk=4,  window='kaiser',
                          rmin=1.4, rmax=3.0)
 dset  = feffit_dataset(data=fdat, pathlist=[path1], transform=trans)
 
