@@ -783,7 +783,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True,
 
     out = Group(name='feffit results', params=result.params,
                 paramgroup=work_paramgroup, datasets=datasets,
-                fit_details=result, chi_square=chi_square,
+                fit_details=result, fitter=fit, chi_square=chi_square,
                 n_independent=n_idp, chi2_reduced=chi2_reduced,
                 rfactor=rfactor, aic=aic, bic=bic, covar=covar)
 
@@ -871,7 +871,7 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
                 eps_k = gfmt(ds.epsilon_k).strip()
             eps_r = gfmt(ds.epsilon_r).strip()
             kweigh = '%i' % tr.kweight
-        out.append(f"   dataset unique_id  = '{ds.hashkey}'")
+        out.append(f"   unique_id          = '{ds.hashkey}'")
         out.append(f"   fit space          = '{tr.fitspace}'")
         if ds.refine_bkg:
             out.append(f"   r_bkg (refine bkg) = {tr.rbkg:.3f}")
