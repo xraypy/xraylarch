@@ -409,7 +409,7 @@ class FeffitDataSet(Group):
         trans = self.transform
         trans.make_karrays()
         if chi is None:
-            chi = self._chi
+            chi = self.data.chi
 
         save = trans.rmin, trans.rmax, trans.fitspace
 
