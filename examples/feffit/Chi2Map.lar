@@ -17,7 +17,52 @@ dset  = feffit_dataset(data=cu, pathlist=[path1], transform=trans)
 out = feffit(fitparams, dset)
 print( feffit_report(out))
 
-ox, oy, map = chi2_map(out, 'de0', 'delr', sigma=2, nx=25, ny=25)
-imshow(map, x=ox, y=oy, xlabel='de0', ylabel='delr', show_axis=True,
-       style='contour')
-#, levels=[2, 4, 6, 8, 10])
+def show_confidence_map(xparam, yparam, feffit_result,
+                        sigma_levels=(1, 2, 3), nsamples=41, win=1):
+    pass
+#enddef
+
+xparam = 'de0'
+yparam = 'delr'
+feffit_result = out
+sigma_levels=(1, 2, 3)
+nsamples=41
+win=1
+
+from wxmplot.config import linecolors
+colors = linecolors[:len(sigma_levels)]
+
+nsigma = max(sigma_levels)+0.5
+
+xv = out.params[xparam].value
+xs = out.params[xparam].stderr
+yv = out.params[yparam].value
+ys = out.params[yparam].stderr
+
+xvals, yvals, sigma_map = feffit_conf_map(feffit_result, xparam, yparam,
+                                          nsamples=nsamples, nsigma=nsigma)
+
+disp = get_display(win=win)
+
+disp.plot([xv], [yv], marker='+', markersize=6, color='black',
+          xlabel=xparam, ylabel=yparam,
+          xmin=xvals.min(), xmax=xvals.max(),
+          ymin=yvals.min(), ymax=yvals.max())
+
+axes = disp.panel.axes
+cnt = axes.contour(xvals, yvals, sigma_map, levels=sigma_levels,
+                   colors=colors, linestyles='-', linewidth=3)
+axes.clabel(cnt, inline=True, fmt=r"$\sigma=%.0f$", fontsize=7)
+
+
+
+for i in sigma_levels:
+    axes.plot((xv-i*xs, xv+i*xs, xv+i*xs, xv-i*xs, xv-i*xs),
+              (yv-i*ys, yv-i*ys, yv+i*ys, yv+i*ys, yv-i*ys),
+              linewidth=1, color=colors[i-1])
+#endfor
+disp.draw()
+## #enddef
+
+
+show_confidence_map('de0', 'delr', out, sigma_levels = [1, 2, 3])
