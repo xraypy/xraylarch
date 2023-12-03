@@ -1941,8 +1941,8 @@ class FeffitResultFrame(wx.Frame):
             dset._residual(result.params)
             dset.save_outputs()
         trans  = dset.transform
-        dset.prepare_fit(group2params(result.paramgroup))
-        dset._residual(result.paramgroup)
+        dset.prepare_fit(result.params)
+        dset._residual(result.params)
 
         result_name  = f'{self.datagroup.groupname}.feffit_history[{self.nfit}]'
         opts['label'] = f'{result_name}.label'
