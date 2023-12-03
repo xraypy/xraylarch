@@ -366,6 +366,8 @@ class FeffPathGroup(Group):
         """
         create Path Parameters within the current lmfit.Parameters namespace
         """
+        if isinstance(params, Group):
+            params = group2params(params)
         if params is not None:
            self.params = params
         if self.params is None:
