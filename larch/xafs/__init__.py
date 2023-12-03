@@ -28,7 +28,8 @@ from .pre_edge import pre_edge, preedge, find_e0, energy_align, find_energy_step
 from .prepeaks import prepeaks_setup, pre_edge_baseline, prepeaks_fit
 from .feffdat import FeffDatFile, FeffPathGroup, feffpath, path2chi, ff2chi, use_feffpath
 from .feffit import (FeffitDataSet, TransformGroup, feffit,
-                     feffit_dataset, feffit_transform, feffit_report)
+                     feffit_dataset, feffit_transform, feffit_report,
+                     feffit_conf_map)
 
 from .autobk import autobk, autobk_lmfit, autobk_delta_chi
 from .mback import mback, mback_norm
@@ -85,6 +86,7 @@ _larch_builtins = {'_xafs': dict(autobk=autobk, autobk_lmfit=autobk_lmfit,
                                  feffit_dataset=feffit_dataset,
                                  feffit_transform=feffit_transform,
                                  feffit_report=feffit_report,
+                                 feffit_conf_map=feffit_conf_map,
                                  feffrunner=feffrunner, feff6l=feff6l,
                                  feff8l=feff8l,
                                  feffpath= feffpath,

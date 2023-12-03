@@ -14,7 +14,7 @@ from numpy import array, arange, interp, pi, zeros, sqrt, concatenate
 
 from scipy.interpolate import splrep, splev
 from scipy.interpolate import InterpolatedUnivariateSpline as IUSpline
-from lmfit import Parameters, Parameter, Minimizer
+from lmfit import Parameters, Parameter, Minimizer, conf_interval2d
 from lmfit.printfuncs import getfloat_attr
 
 from larch import Group, isNamedClass
@@ -622,6 +622,10 @@ def feffit_transform(_larch=None, **kws):
     """
     return TransformGroup(_larch=_larch, **kws)
 
+def _feffit_resid(params, datasets=None, **kwargs):
+    """ this is the residual function for feffit"""
+    return concatenate([d._residual(params) for d in datasets])
+
 def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True,
            fix_unused_variables=True,  _larch=None, **kws):
     """execute a Feffit fit: a fit of feff paths to a list of datasets
@@ -668,12 +672,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True,
         if isinstance(wpar, Parameter):
             setattr(wpar, 'skip', getattr(opar, 'skip', False))
 
-
     params = group2params(work_paramgroup)
-
-    def _resid(params, datasets=None, **kwargs):
-        """ this is the residual function"""
-        return concatenate([d._residual(params) for d in datasets])
 
     if isNamedClass(datasets, FeffitDataSet):
         datasets = [datasets]
@@ -711,7 +710,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True,
             print(f"Feffit Warning: unused variables: {vlist}")
 
     # run fit
-    fit = Minimizer(_resid, params,fcn_kws=dict(datasets=datasets),
+    fit = Minimizer(_feffit_resid, params, fcn_kws=dict(datasets=datasets),
                     scale_covar=False, **fit_kws)
 
     result = fit.leastsq()
@@ -782,15 +781,40 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True,
         ds.save_outputs(rmax_out=rmax_out, path_outputs=path_outputs)
 
     out = Group(name='feffit results', params=result.params,
-                paramgroup=work_paramgroup, datasets=datasets,
-                fit_details=result, fitter=fit, chi_square=chi_square,
-                n_independent=n_idp, chi2_reduced=chi2_reduced,
-                rfactor=rfactor, aic=aic, bic=bic, covar=covar)
+                paramgroup=work_paramgroup, fit_kws=fit_kws, datasets=datasets,
+                fit_details=result, chi_square=chi_square, n_independent=n_idp,
+                chi2_reduced=chi2_reduced, rfactor=rfactor, aic=aic, bic=bic,
+                covar=covar)
 
     for attr in ('params', 'nvarys', 'nfree', 'ndata', 'var_names', 'nfev',
                  'success', 'errorbars', 'message', 'lmdif_message'):
         setattr(out, attr, getattr(result, attr, None))
     return out
+
+def feffit_conf_map(result, xpar, ypar, nsamples=41, nsigma=3.5):
+    """
+    return 2d map of confidence interval (sigma values) for a pair of variables from feffit
+
+    """
+    def show_progress(i, imax):
+        if i > (imax-1):
+            print('done.')
+        elif i % round(imax//10) == 0:
+            print(f"{i}/{imax}", flush=True, end=', ')
+
+    fitter = Minimizer(_feffit_resid, result.params,
+                       fcn_kws=dict(datasets=result.datasets),
+                       scale_covar=False, **result.fit_kws)
+
+    xvals, yvals, chi2_map = conf_interval2d(fitter, result.fit_details, xpar, ypar,
+                                             nsamples, nsamples, nsigma=nsigma, chi2_out=True,
+                                             callback=show_progress)
+
+    chi2_map = chi2_map * result.n_independent / result.fit_details.ndata
+    chisqr0 = min(result.chi_square, chi2_map.min())
+    sigma_map = np.sqrt((chi2_map-chisqr0)/result.chi2_reduced)
+    return xvals, yvals, sigma_map
+
 
 
 def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
