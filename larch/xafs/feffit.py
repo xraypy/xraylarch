@@ -250,6 +250,7 @@ class FeffitDataSet(Group):
             self.paths = {path.label: copy(path) for path in paths}
         else:
             self.paths = {}
+        self.pathlist = list(self.paths.values())
         # make datagroup from passed in data: copy of k, chi, delta_chi, epsilon_k
         self.data = Group(__name__='Feffit DatasSet from %s' % repr(data),
                           groupname=getattr(data, 'groupname', repr(data)),
