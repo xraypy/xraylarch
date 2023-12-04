@@ -625,7 +625,9 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
 
     if kmax is not None:
         fig.set_xrange(0, kmax)
-    ylabel = set_label_weight(plotlabels.chikw, kweight)
+    ylabel = plotlabels.chi0
+    if kweight > 0:
+        ylabel = set_label_weight(plotlabels.chikw, kweight)
     fig.set_style(title=title, xaxis_title=plotlabels.k,
                   yaxis_title=ylabel)
 
