@@ -924,12 +924,17 @@ def plot_path_k(dataset, ipath=0, kmin=0, kmax=None, offset=0, label=None,
 
     chi_kw = offset + path.chi * path.k**kweight
 
-    _plot(path.k, chi_kw, label=label, xmin=kmin, xmax=kmax,
-          xlabel=plotlabels.k,
-          ylabel=set_label_weight(plotlabels.chikw, kweight),
-          win=win, new=new, delay_draw=delay_draw, _larch=_larch, **kws)
-    if delay_draw:
-        redraw(win=win, xmin=kmin, xmax=kmax, _larch=_larch)
+    fig = PlotlyFigure(two_yaxis=False)
+    fig.add_plot(path.k, chi_kw, label=label)
+
+    if kmin is not None or kmax is not None:
+        fig.set_xrange(kmin, kmax)
+
+    ylabel = set_label_weight(plotlabels.chikw, kweight)
+    fig.set_style(title=title, xaxis_title=plotlabels.k,
+                  yaxis_title=ylabel)
+    fig.show()
+    return fig
 #enddef
 
 def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
@@ -962,28 +967,28 @@ def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
     if label is None:
         label = 'path %i' % (1+ipath)
     #endif
-    kweight =dataset.transform.kweight
+    kweight = dataset.transform.kweight
+
+    fig = PlotlyFigure(two_yaxis=False)
+    if show_mag:
+        fig.add_plot(path.r, offset+path.chir_mag, label=f'|{label}|')
+        
+    if show_real:
+        fig.add_plot(path.r, offset+path.chir_re, label=f'Re[{label}]')        
+
+    if show_imag:
+        fig.add_plot(path.r,  offset+path.chir_im, label=f'Im[{label}]')
+
+    if rmax is not None:
+        fig.set_xrange(0, rmax)
+
     ylabel = plotlabels.chirlab(kweight, show_mag=show_mag,
                                 show_real=show_real, show_imag=show_imag)
+    fig.set_style(title=title, xaxis_title=plotlabels.r,
+                  yaxis_title=ylabel)
+    fig.show()
+    return fig
 
-    opts = dict(xlabel=plotlabels.r, ylabel=ylabel, xmax=rmax, new=new,
-                delay_draw=True, _larch=_larch)
-
-    opts.update(kws)
-    if show_mag:
-        _plot(path.r,  offset+path.chir_mag, label=label, **opts)
-        opts['new'] = False
-    #endif
-    if show_real:
-        _plot(path.r,  offset+path.chir_re, label=label, **opts)
-        opts['new'] = False
-    #endif
-    if show_imag:
-        _plot(path.r,  offset+path.chir_im, label=label, **opts)
-        opts['new'] = False
-    #endif
-    redraw(win=win, xmax=rmax, _larch=_larch)
-#enddef
 
 def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, title=None,
                  new=True, delay_draw=False, win=1, _larch=None, **kws):
@@ -1013,18 +1018,22 @@ def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, title=None,
 
     title = _get_title(dataset, title=title)
 
-    _plot(model.k, model_chi_kw, title=title, label='sum', new=new,
-          xlabel=plotlabels.r, ylabel=plotlabels.chikw.format(kweight),
-          xmin=kmin, xmax=kmax, win=win, delay_draw=True,_larch=_larch,
-          **kws)
+    fig = PlotlyFigure(two_yaxis=False)
+    fig.add_plot(model.k, model_chi_kw, label='sum')
 
-    for ipath in range(len(dataset.pathlist)):
-        plot_path_k(dataset, ipath, offset=(ipath+1)*offset,
-                    kmin=kmin, kmax=kmax, new=False, delay_draw=True,
-                    win=win, _larch=_larch)
-    #endfor
-    redraw(win=win, xmin=kmin, xmax=kmax, _larch=_larch)
-#enddef
+    for ipath, path in enumerate(dataset.pathlist):
+        label = 'path %i' % (1+ipath)
+        chi_kw = offset + path.chi * path.k**kweight
+        fig.add_plot(path.k, chi_kw+(ipath+1)*offset, label=label)
+    
+    if kmin is not None or kmax is not None:
+        fig.set_xrange(kmin, kmax)
+
+    ylabel = set_label_weight(plotlabels.chikw, kweight)
+    fig.set_style(title=title, xaxis_title=plotlabels.k,
+                  yaxis_title=ylabel)
+    fig.show()
+    return fig
 
 def plot_paths_r(dataset, offset=-0.25, rmax=None, show_mag=True,
                  show_real=False, show_imag=False, title=None, new=True,
@@ -1055,29 +1064,35 @@ def plot_paths_r(dataset, offset=-0.25, rmax=None, show_mag=True,
     ylabel = plotlabels.chirlab(kweight, show_mag=show_mag,
                                 show_real=show_real, show_imag=show_imag)
     title = _get_title(dataset, title=title)
-    opts = dict(xlabel=plotlabels.r, ylabel=ylabel, xmax=rmax, new=new,
-                delay_draw=True, title=title, _larch=_larch)
-    opts.update(kws)
-    if show_mag:
-        _plot(model.r,  model.chir_mag, label='|sum|', **opts)
-        opts['new'] = False
-    #endif
-    if show_real:
-        _plot(model.r,  model.chir_re, label='Re[sum]', **opts)
-        opts['new'] = False
-    #endif
-    if show_imag:
-        _plot(model.r,  model.chir_im, label='Im[sum]', **opts)
-        opts['new'] = False
-    #endif
 
-    for ipath in range(len(dataset.pathlist)):
-        plot_path_r(dataset, ipath, offset=(ipath+1)*offset,
-                    show_mag=show_mag, show_real=show_real,
-                    show_imag=show_imag, **opts)
-    #endfor
-    redraw(win=win, xmax=rmax,_larch=_larch)
-#enddef
+
+    fig = PlotlyFigure(two_yaxis=False)
+    if show_mag:
+        fig.add_plot(model.r,  model.chir_mag, label='|sum|')
+    if show_real:
+        fig.add_plot(model.r,  model.chir_re, label='Re[sum]')
+    if show_imag:
+        fig.add_plot(model.r,  model.chir_im, label='Im[sum]')
+
+    for ipath, path in enumerate(dataset.pathlist):
+        label = 'path %i' % (1+ipath)
+        off = (ipath+1)*offset
+        if show_mag:
+            fig.add_plot(path.r, off+path.chir_mag, label=f'|{label}|')
+        if show_real:
+            fig.add_plot(path.r, off+path.chir_re, label=f'Re[{label}]')        
+        if show_imag:
+            fig.add_plot(path.r, off+path.chir_im, label=f'Im[{label}]')
+
+    if rmax is not None:
+        fig.set_xrange(0, rmax)
+
+    ylabel = plotlabels.chirlab(kweight, show_mag=show_mag,
+                                show_real=show_real, show_imag=show_imag)
+    fig.set_style(title=title, xaxis_title=plotlabels.r,
+                  yaxis_title=ylabel)
+    fig.show()
+    return fig
 
 
 def extend_plotrange(x, y, xmin=None, xmax=None, extend=0.10):
