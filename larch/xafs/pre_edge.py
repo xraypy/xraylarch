@@ -40,9 +40,15 @@ def find_e0(energy, mu=None, group=None, _larch=None):
                                          defaults=(mu,), group=group,
                                          fcn_name='find_e0')
     # first find e0 without smoothing, then refine with smoothing
-    e1, ie0, estep = _finde0(energy, mu, estep=None, use_smooth=False)
-    istart = max(2, ie0-75)
-    istop  = min(ie0+75, len(energy)-2)
+    e1, ie0, estep1 = _finde0(energy, mu, estep=None, use_smooth=False)
+    istart = max(3, ie0-75)
+    istop  = min(ie0+75, len(energy)-3)
+
+    # for the smoothing energy, we use and energy step that is an average of
+    # the observed minimimum energy step (which could be ridiculously low)
+    # and a scaled value of the initial e0 (0.2 eV and 5000 eV, 0.4 eV at 10000 eV)
+
+    estep = 0.5*(max(0.01, min(1.0, estep1)) + max(0.01, min(1.0, e1/25000.)))
     e0, ix, ex = _finde0(energy[istart:istop], mu[istart:istop], estep=estep, use_smooth=True)
     if ix < 1 :
         e0 = energy[istart+2]
@@ -70,10 +76,10 @@ def _finde0(energy, mu, estep=None, use_smooth=True):
     if len(mu.shape) > 1:
         mu = mu.squeeze()
     if estep is None:
-        estep = find_energy_step(en)/2.0
+        estep = find_energy_step(en)
     nmin = max(2, int(len(en)*0.01))
     if use_smooth:
-        dmu = smooth(en, np.gradient(mu)/np.gradient(en), xstep=estep, sigma=3*estep)
+        dmu = smooth(en, np.gradient(mu)/np.gradient(en), xstep=estep, sigma=estep)
     else:
         dmu = np.gradient(mu)/np.gradient(en)
     # find points of high derivative
