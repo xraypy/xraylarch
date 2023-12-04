@@ -89,10 +89,13 @@ def chirlab(kweight, show_mag=True, show_real=False, show_imag=False):
     return set_label_weight(ylab[0], kweight+1)
 #enddef
 
-plotlabels = Group(k       = r'$k \rm\,(\AA^{-1})$',
-                   r       = r'$R \rm\,(\AA)$',
+# note:
+#  to make life easier for MathJax/Plotly/IPython
+#  we have just replaced "\AA" with "\unicode{x212B}"
+plotlabels = Group(k       = r'$k \rm\,(\unicode{x212B}^{-1})$',
+                   r       = r'$R \rm\,(\unicode{x212B})$',
                    energy  = r'$E\rm\,(eV)$',
-                   ewithk  = r'$E\rm\,(eV)$' + '\n' + r'$[k \rm\,(\AA^{-1})]$',
+                   ewithk  = r'$E\rm\,(eV)$' + '\n' + r'$[k \rm\,(\unicode{x212B}^{-1})]$',
                    mu      = r'$\mu(E)$',
                    norm    = r'normalized $\mu(E)$',
                    flat    = r'flattened $\mu(E)$',
@@ -103,24 +106,18 @@ plotlabels = Group(k       = r'$k \rm\,(\AA^{-1})$',
                    chie0   = r'$\chi(E)$',
                    chie1   = r'$E\chi(E) \rm\, (eV)$',
                    chiew   = r'$E^{__W__}\chi(E) \rm\,(eV^{__W__})$',
-                   chikw   = r'$k^{{__W__}}\chi(k) \rm\,(\AA^{{-__W__}})$',
+                   chikw   = r'$k^{{__W__}}\chi(k) \rm\,(\unicode{x212B}^{{-__W__}})$',
                    chi0    = r'$\chi(k)$',
-                   chi1    = r'$k\chi(k) \rm\,(\AA^{-1})$',
-                   chi2    = r'$k^2\chi(k) \rm\,(\AA^{-2})$',
-                   chi3    = r'$k^3\chi(k) \rm\,(\AA^{-3})$',
-                   chir    = r'$\chi(R) \rm\,(\AA^{{-__W__}})$',
-                   chirmag = r'$|\chi(R)| \rm\,(\AA^{{-__W__}})$',
-                   chirre  = r'${{\rm Re}}[\chi(R)] \rm\,(\AA^{{-__W__}})$',
-                   chirim  = r'${{\rm Im}}[\chi(R)] \rm\,(\AA^{{-__W__}})$',
-                   chirpha = r'${{\rm Phase}}[\chi(R)] \rm\,(\AA^{{-__W__}})$',
+                   chi1    = r'$k\chi(k) \rm\,(\unicode{x212B}^{-1})$',
+                   chi2    = r'$k^2\chi(k) \rm\,(\unicode{x212B}^{-2})$',
+                   chi3    = r'$k^3\chi(k) \rm\,(\unicode{x212B}^{-3})$',
+                   chir    = r'$\chi(R) \rm\,(\unicode{x212B}^{{-__W__}})$',
+                   chirmag = r'$|\chi(R)| \rm\,(\unicode{x212B}^{{-__W__}})$',
+                   chirre  = r'${{\rm Re}}[\chi(R)] \rm\,(\unicode{x212B}^{{-__W__}})$',
+                   chirim  = r'${{\rm Im}}[\chi(R)] \rm\,(\unicode{x212B}^{{-__W__}})$',
+                   chirpha = r'${{\rm Phase}}[\chi(R)] \rm\,(\unicode{x212B}^{{-__W__}})$',
                    e0color = '#B2B282',
                    chirlab = chirlab)
-
-# plotly's mathjax needs an extra package to support \AA:
-for attr in dir(plotlabels):
-    val = getattr(plotlabels, attr)
-    if isinstance(val, str) and r'\AA' in val:
-        setattr(plotlabels, attr, r'$\require{mediawiki-texvc} ' + val[1:])
 
 
 def safetitle(t):
@@ -748,22 +745,28 @@ def plot_chiq(dgroup, kweight=None, kmax=None, show_chik=False, label=None,
     if new:
         title = _get_title(dgroup, title=title)
 
-    _plot(dgroup.k, chiq+offset, xlabel=plotlabels.k,
-          ylabel=set_label_weight(plotlabels.chikw, kweight),
-          title=title, label=label, zorder=20, new=new, xmax=kmax, **opts)
+    fig = PlotlyFigure(two_yaxis=False)
+    fig.add_plot(dgroup.k, chiq+offset, label=label)
+
+    if kmin is not None or kmax is not None:
+        fig.set_xrange(kmin, kmax)
+
+    ylabel = set_label_weight(plotlabels.chikw, kweight)
+    fig.set_style(title=title, xaxis_title=plotlabels.k,
+                  yaxis_title=ylabel)
 
     if show_chik:
         chik = dgroup.chi * dgroup.k ** kweight
-        _plot(dgroup.k, chik+offset, zorder=16, label='chi(k)',  **opts)
+        fig.add_plot(dgroup.k, chik+offset, label='chi(k) (unfiltered)')
     #endif
     if show_window and hasattr(dgroup, 'kwin'):
         kwin = dgroup.kwin
         if scale_window:
             kwin = kwin*max(abs(chiq))
-        _plot(dgroup.k, kwin+offset, zorder=12, label='window',  **opts)
+        fig.add_plot(dgroup.k, kwin+offset, label='window')
     #endif
-
-    redraw(win=win, xmax=kmax, _larch=_larch)
+    fig.show()
+    return fig
 #enddef
 
 
@@ -809,6 +812,7 @@ def plot_wavelet(dgroup, show_mag=True, show_real=False, show_imag=False,
 
 def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
                 show_mag=True, show_real=False, show_imag=False,
+                show_bkg=False, use_rebkg=False,
                 title=None, new=True, delay_draw=False, offset=0, win=1,
                 _larch=None):
     """
@@ -838,54 +842,57 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
     if kweight is None:
         kweight = dataset.transform.kweight
     #endif
-    if isinstance(kweight, (list, tuple, np.ndarray)): kweight=kweight[0]
-
-    data_chik  = dataset.data.chi * dataset.data.k**kweight
-    model_chik = dataset.model.chi * dataset.model.k**kweight
+    if isinstance(kweight, (list, tuple, np.ndarray)):
+        kweight=kweight[0]
 
     title = _get_title(dataset, title=title)
 
-#     opts=dict(labelfontsize=10, legendfontsize=10, linewidth=3,
-#               show_legend=True, delay_draw=True, win=win, title=title,
-#               _larch=_larch)
-    fig = PlotlyFigure(two_yaxis=False)
+    mod = dataset.model
+    dat = dataset.data
+    if use_rebkg and hasattr(dataset, 'data_rebkg'):
+        dat = dataset.data_rebkg
+        title += ' (refined bkg)'
+
+    data_chik  = dat.chi * dat.k**kweight
+    model_chik = mod.chi * mod.k**kweight
 
     # k-weighted chi(k) in first plot window
-    _plot(dataset.data.k, data_chik+offset, xmin=kmin, xmax=kmax,
-          xlabel=plotlabels.k,
-          ylabel=set_label_weight(plotlabels.chikw, kweight),
-          label='data', new=new, **opts)
-    _plot(dataset.model.k, model_chik+offset, label='fit',  **opts)
-    redraw(win=win, xmin=kmin, xmax=kmax, _larch=_larch)
+    fig = PlotlyFigure(two_yaxis=False)
+    fig.add_plot(dat.k, data_chik+offset, label='data')
+    fig.add_plot(mod.k, model_chik+offset, label='fit')
 
-    # show chi(R) in next plot window
-    opts['win'] = win = win+1
-    ylabel = plotlabels.chirlab(kweight, show_mag=show_mag,
-                                show_real=show_real, show_imag=show_imag)
+    if kmin is not None or kmax is not None:
+        fig.set_xrange(kmin, kmax)
 
-    opts.update(dict(xlabel=plotlabels.r, ylabel=ylabel,
-                     xmax=rmax, new=True, show_legend=True))
+    ylabel = set_label_weight(plotlabels.chikw, kweight)
+    fig.set_style(title=title, xaxis_title=plotlabels.k,
+                  yaxis_title=ylabel)
+
+    fig.show()
+
+    #  chi(R) in first plot window
+    rfig = PlotlyFigure(two_yaxis=False)
 
     if show_mag:
-        _plot(dataset.data.r,  dataset.data.chir_mag+offset,
-             label='|data|', **opts)
-        opts['new'] = False
-        _plot(dataset.model.r, dataset.model.chir_mag+offset,
-              label='|fit|', **opts)
-    #endif
+        rfig.add_plot(dat.r, dat.chir_mag+offset, label='|data|')
+        rfig.add_plot(mod.r, mod.chir_mag+offset, label='|fit|')
+
     if show_real:
-        _plot(dataset.data.r, dataset.data.chir_re+offset, label='Re[data]', **opts)
-        opts['new'] = False
-        _plot(dataset.model.r, dataset.model.chir_re+offset, label='Re[fit]',  **opts)
-    #endif
+        rfig.add_plot(dat.r, dat.chir_re+offset, label='Re[data]')
+        rfig.add_plot(mod.r, mod.chir_re+offset, label='Re[fit]')
     if show_imag:
-        _plot(dataset.data.r, dataset.data.chir_im+offset, label='Im[data]', **opts)
-        opts['new'] = False
-        _plot(dataset.model.r, dataset.model.chir_im+offset, label='Im[fit]',  **opts)
-    #endif
-    if show_mag or show_real or show_imag:
-        redraw(win=opts['win'], xmax=opts['xmax'], _larch=_larch)
-    #endif
+        rfig.add_plot(dat.r, dat.chir_im+offset, label='Im[data]')
+        rfig.add_plot(mod.r, mod.chir_im+offset, label='Im[fit]')
+
+    if rmax is not None:
+        rfig.set_xrange(0, rmax)
+
+    ylabel = chirlab(kweight, show_mag=show_mag, show_real=show_real, show_imag=show_imag)
+    rfig.set_style(title=title, xaxis_title=plotlabels.r,
+                  yaxis_title=ylabel)
+
+    rfig.show()
+    return fig, rfig
 #enddef
 
 def plot_path_k(dataset, ipath=0, kmin=0, kmax=None, offset=0, label=None,
