@@ -68,7 +68,7 @@ FIGSTYLE = dict(width=650, height=500,
                 )
 
 def set_label_weight(label, w):
-    return label.replace('__W__', '{0:g}'.format(w))
+    return label.replace('_w_', '{0:g}'.format(w))
 
 # common XAFS plot labels
 def chirlab(kweight, show_mag=True, show_real=False, show_imag=False):
@@ -105,17 +105,17 @@ plotlabels = Group(k       = r'$k \rm\,(\unicode{x212B}^{-1})$',
                    chie    = r'$\chi(E)$',
                    chie0   = r'$\chi(E)$',
                    chie1   = r'$E\chi(E) \rm\, (eV)$',
-                   chiew   = r'$E^{__W__}\chi(E) \rm\,(eV^{__W__})$',
-                   chikw   = r'$k^{{__W__}}\chi(k) \rm\,(\unicode{x212B}^{{-__W__}})$',
+                   chiew   = r'$E^{{_w_}\chi(E) \rm\,(eV^{_w_})$',
+                   chikw   = r'$k^{{_w_}}\chi(k) \rm\,(\unicode{x212B}^{{-_w_}})$',
                    chi0    = r'$\chi(k)$',
                    chi1    = r'$k\chi(k) \rm\,(\unicode{x212B}^{-1})$',
                    chi2    = r'$k^2\chi(k) \rm\,(\unicode{x212B}^{-2})$',
                    chi3    = r'$k^3\chi(k) \rm\,(\unicode{x212B}^{-3})$',
-                   chir    = r'$\chi(R) \rm\,(\unicode{x212B}^{{-__W__}})$',
-                   chirmag = r'$|\chi(R)| \rm\,(\unicode{x212B}^{{-__W__}})$',
-                   chirre  = r'${{\rm Re}}[\chi(R)] \rm\,(\unicode{x212B}^{{-__W__}})$',
-                   chirim  = r'${{\rm Im}}[\chi(R)] \rm\,(\unicode{x212B}^{{-__W__}})$',
-                   chirpha = r'${{\rm Phase}}[\chi(R)] \rm\,(\unicode{x212B}^{{-__W__}})$',
+                   chir    = r'$\chi(R) \rm\,(\unicode{x212B}^{{-_w_}})$',
+                   chirmag = r'$|\chi(R)| \rm\,(\unicode{x212B}^{{-_w_}})$',
+                   chirre  = r'${{\rm Re}}[\chi(R)] \rm\,(\unicode{x212B}^{{-_w_}})$',
+                   chirim  = r'${{\rm Im}}[\chi(R)] \rm\,(\unicode{x212B}^{{-_w_}})$',
+                   chirpha = r'${{\rm Phase}}[\chi(R)] \rm\,(\unicode{x212B}^{{-_w_}})$',
                    e0color = '#B2B282',
                    chirlab = chirlab)
 
@@ -625,9 +625,7 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
 
     if kmax is not None:
         fig.set_xrange(0, kmax)
-    ylabel = plotlabels.chi0
-    if kweight > 0:
-        ylabel = set_label_weight(plotlabels.chikw, kweight)
+    ylabel = set_label_weight(plotlabels.chikw, kweight)
     fig.set_style(title=title, xaxis_title=plotlabels.k,
                   yaxis_title=ylabel)
 
@@ -924,17 +922,12 @@ def plot_path_k(dataset, ipath=0, kmin=0, kmax=None, offset=0, label=None,
 
     chi_kw = offset + path.chi * path.k**kweight
 
-    fig = PlotlyFigure(two_yaxis=False)
-    fig.add_plot(path.k, chi_kw, label=label)
-
-    if kmin is not None or kmax is not None:
-        fig.set_xrange(kmin, kmax)
-
-    ylabel = set_label_weight(plotlabels.chikw, kweight)
-    fig.set_style(title=title, xaxis_title=plotlabels.k,
-                  yaxis_title=ylabel)
-    fig.show()
-    return fig
+    _plot(path.k, chi_kw, label=label, xmin=kmin, xmax=kmax,
+          xlabel=plotlabels.k,
+          ylabel=set_label_weight(plotlabels.chikw, kweight),
+          win=win, new=new, delay_draw=delay_draw, _larch=_larch, **kws)
+    if delay_draw:
+        redraw(win=win, xmin=kmin, xmax=kmax, _larch=_larch)
 #enddef
 
 def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
@@ -967,28 +960,28 @@ def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
     if label is None:
         label = 'path %i' % (1+ipath)
     #endif
-    kweight = dataset.transform.kweight
-
-    fig = PlotlyFigure(two_yaxis=False)
-    if show_mag:
-        fig.add_plot(path.r, offset+path.chir_mag, label=f'|{label}|')
-        
-    if show_real:
-        fig.add_plot(path.r, offset+path.chir_re, label=f'Re[{label}]')        
-
-    if show_imag:
-        fig.add_plot(path.r,  offset+path.chir_im, label=f'Im[{label}]')
-
-    if rmax is not None:
-        fig.set_xrange(0, rmax)
-
+    kweight =dataset.transform.kweight
     ylabel = plotlabels.chirlab(kweight, show_mag=show_mag,
                                 show_real=show_real, show_imag=show_imag)
-    fig.set_style(title=title, xaxis_title=plotlabels.r,
-                  yaxis_title=ylabel)
-    fig.show()
-    return fig
 
+    opts = dict(xlabel=plotlabels.r, ylabel=ylabel, xmax=rmax, new=new,
+                delay_draw=True, _larch=_larch)
+
+    opts.update(kws)
+    if show_mag:
+        _plot(path.r,  offset+path.chir_mag, label=label, **opts)
+        opts['new'] = False
+    #endif
+    if show_real:
+        _plot(path.r,  offset+path.chir_re, label=label, **opts)
+        opts['new'] = False
+    #endif
+    if show_imag:
+        _plot(path.r,  offset+path.chir_im, label=label, **opts)
+        opts['new'] = False
+    #endif
+    redraw(win=win, xmax=rmax, _larch=_larch)
+#enddef
 
 def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, title=None,
                  new=True, delay_draw=False, win=1, _larch=None, **kws):
@@ -1018,22 +1011,18 @@ def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, title=None,
 
     title = _get_title(dataset, title=title)
 
-    fig = PlotlyFigure(two_yaxis=False)
-    fig.add_plot(model.k, model_chi_kw, label='sum')
+    _plot(model.k, model_chi_kw, title=title, label='sum', new=new,
+          xlabel=plotlabels.r, ylabel=plotlabels.chikw.format(kweight),
+          xmin=kmin, xmax=kmax, win=win, delay_draw=True,_larch=_larch,
+          **kws)
 
-    for ipath, path in enumerate(dataset.pathlist):
-        label = 'path %i' % (1+ipath)
-        chi_kw = offset + path.chi * path.k**kweight
-        fig.add_plot(path.k, chi_kw+(ipath+1)*offset, label=label)
-    
-    if kmin is not None or kmax is not None:
-        fig.set_xrange(kmin, kmax)
-
-    ylabel = set_label_weight(plotlabels.chikw, kweight)
-    fig.set_style(title=title, xaxis_title=plotlabels.k,
-                  yaxis_title=ylabel)
-    fig.show()
-    return fig
+    for ipath in range(len(dataset.pathlist)):
+        plot_path_k(dataset, ipath, offset=(ipath+1)*offset,
+                    kmin=kmin, kmax=kmax, new=False, delay_draw=True,
+                    win=win, _larch=_larch)
+    #endfor
+    redraw(win=win, xmin=kmin, xmax=kmax, _larch=_larch)
+#enddef
 
 def plot_paths_r(dataset, offset=-0.25, rmax=None, show_mag=True,
                  show_real=False, show_imag=False, title=None, new=True,
@@ -1064,35 +1053,29 @@ def plot_paths_r(dataset, offset=-0.25, rmax=None, show_mag=True,
     ylabel = plotlabels.chirlab(kweight, show_mag=show_mag,
                                 show_real=show_real, show_imag=show_imag)
     title = _get_title(dataset, title=title)
-
-
-    fig = PlotlyFigure(two_yaxis=False)
+    opts = dict(xlabel=plotlabels.r, ylabel=ylabel, xmax=rmax, new=new,
+                delay_draw=True, title=title, _larch=_larch)
+    opts.update(kws)
     if show_mag:
-        fig.add_plot(model.r,  model.chir_mag, label='|sum|')
+        _plot(model.r,  model.chir_mag, label='|sum|', **opts)
+        opts['new'] = False
+    #endif
     if show_real:
-        fig.add_plot(model.r,  model.chir_re, label='Re[sum]')
+        _plot(model.r,  model.chir_re, label='Re[sum]', **opts)
+        opts['new'] = False
+    #endif
     if show_imag:
-        fig.add_plot(model.r,  model.chir_im, label='Im[sum]')
+        _plot(model.r,  model.chir_im, label='Im[sum]', **opts)
+        opts['new'] = False
+    #endif
 
-    for ipath, path in enumerate(dataset.pathlist):
-        label = 'path %i' % (1+ipath)
-        off = (ipath+1)*offset
-        if show_mag:
-            fig.add_plot(path.r, off+path.chir_mag, label=f'|{label}|')
-        if show_real:
-            fig.add_plot(path.r, off+path.chir_re, label=f'Re[{label}]')        
-        if show_imag:
-            fig.add_plot(path.r, off+path.chir_im, label=f'Im[{label}]')
-
-    if rmax is not None:
-        fig.set_xrange(0, rmax)
-
-    ylabel = plotlabels.chirlab(kweight, show_mag=show_mag,
-                                show_real=show_real, show_imag=show_imag)
-    fig.set_style(title=title, xaxis_title=plotlabels.r,
-                  yaxis_title=ylabel)
-    fig.show()
-    return fig
+    for ipath in range(len(dataset.pathlist)):
+        plot_path_r(dataset, ipath, offset=(ipath+1)*offset,
+                    show_mag=show_mag, show_real=show_real,
+                    show_imag=show_imag, **opts)
+    #endfor
+    redraw(win=win, xmax=rmax,_larch=_larch)
+#enddef
 
 
 def extend_plotrange(x, y, xmin=None, xmax=None, extend=0.10):
