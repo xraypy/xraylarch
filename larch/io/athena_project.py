@@ -111,7 +111,7 @@ def make_athena_args(group, hashkey=None, **kws):
                  ('bkg_rbkg', '1.0'), ('bkg_slope', '0'),
                  ('bkg_pre1', '-150'), ('bkg_pre2', '-30'),
                  ('bkg_nor1', '150'), ('bkg_nor2', '800'),
-                 ('bkg_nnorm', '1'),
+                 ('bkg_nnorm', '1'), ('bkg_nvict', '0'),
                  ('prjrecord', 'athena.prj, 1'),  ('chi_column', ''),
                  ('chi_string', ''), ('collided', '0'), ('columns', ''),
                  ('daq', ''), ('denominator', '1'), ('display', '0'),
@@ -166,7 +166,7 @@ def make_athena_args(group, hashkey=None, **kws):
             args[aname] = val
 
     bkg_map = dict(nnorm='nnorm', nor1='norm1', nor2='norm2', pre1='pre1',
-                   pre2='pre2')
+                   pre2='pre2', nvict='nvict')
 
     if hasattr(group, 'pre_edge_details'):
         for aname, lname in bkg_map.items():
@@ -231,6 +231,7 @@ def format_array(arr):
 
 def clean_bkg_params(grp):
     grp.nnorm = getattr(grp, 'nnorm', 2)
+    grp.nvict = getattr(grp, 'nvict', 0)
     grp.e0   = getattr(grp, 'e0', -1)
     grp.rbkg = getattr(grp, 'rbkg', 1)
     grp.pre1 = getattr(grp, 'pre1', -150)
@@ -834,6 +835,7 @@ class AthenaProject(object):
                          pre1=float(pars.pre1), pre2=float(pars.pre2),
                          norm1=float(pars.nor1), norm2=float(pars.nor2),
                          nnorm=float(pars.nnorm),
+                         nvict=float(pars.nvict),
                          make_flat=bool(pars.flatten))
                 if do_bkg and hasattr(pars, 'rbkg'):
                     autobk(this, e0=float(pars.e0), rbkg=float(pars.rbkg),
