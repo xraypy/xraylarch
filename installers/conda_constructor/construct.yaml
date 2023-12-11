@@ -41,6 +41,7 @@ specs:
     - pyyaml
     - toml
     - sphinx
+    - notebook<7
     - dill
     - psycopg2
     - patchelf         # [linux]

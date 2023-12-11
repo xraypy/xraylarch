@@ -11,7 +11,7 @@
    Bayesian info crit = 243.985673
  
 [[Datasets (3)]]
-   dataset unique_id  = 'd3hdjp7v'
+   unique_id          = 'd3hdjp7v'
    fit space          = 'r'
    r-range            = 1.400, 3.400
    k-range            = 3.000, 17.000
@@ -21,7 +21,7 @@
    epsilon_k          = Array(mean=0.0011450, std=9.5319e-4)
    epsilon_r          = 0.0384855
    n_independent      = 18.825
-   dataset unique_id  = 'd3s3lmwo'
+   unique_id          = 'd3s3lmwo'
    fit space          = 'r'
    r-range            = 1.400, 3.400
    k-range            = 3.000, 17.000
@@ -31,7 +31,7 @@
    epsilon_k          = Array(mean=0.0010796, std=0.0010404)
    epsilon_r          = 0.0362874
    n_independent      = 18.825
-   dataset unique_id  = 'dcultf7u'
+   unique_id          = 'dcultf7u'
    fit space          = 'r'
    r-range            = 1.400, 3.400
    k-range            = 3.000, 17.000
