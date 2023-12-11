@@ -5,6 +5,7 @@
 ## all required packages with mamba or pip
 
 prefix=$HOME/xraylarch
+larchurl='xraylarch[larix]'
 
 uname=`uname`
 if [ $uname == Darwin ]; then
@@ -59,7 +60,6 @@ if [ -d $prefix ] ; then
    exit 0
 fi
 
-larchurl='xraylarch[larix]'
 
 echo "##############  " | tee $logfile
 echo "##  This script will install Larch for $uname to $prefix" | tee -a $logfile
@@ -90,9 +90,9 @@ echo "#> $prefix/bin/mamba install -yc conda-forge $cforge_pkgs " | tee -a $logf
 $prefix/bin/mamba install -y -c conda-forge $cforge_pkgs
 $prefix/bin/mamba list
 
-echo "##Installing xraylarch as 'pip install $larchurl'"  | tee -a $logfile
-echo "#> $prefix/bin/pip install $larchurl"| tee -a $logfile
-$prefix/bin/pip install $larchurl | tee -a $logfile
+echo "##Installing xraylarch as 'pip install \"$larchurl\"'"  | tee -a $logfile
+echo "#> $prefix/bin/pip install \"$larchurl\""| tee -a $logfile
+$prefix/bin/pip install "$larchurl" | tee -a $logfile
 
 ## create desktop shortcuts
 echo "## Creating desktop shortcuts"
