@@ -41,7 +41,7 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          Button, HLine, Choice, Check, MenuItem, COLORS,
                          set_color, CEN, RIGHT, LEFT, FRAMESTYLE, Font,
                          FONTSIZE, FONTSIZE_FW, FileSave, FileOpen,
-                         flatnotebook, Popup, FileCheckList,
+                         flatnotebook, Popup, FileCheckList, OkCancel,
                          EditableListBox, ExceptionPopup, CIFFrame,
                          LarchFrame, LarchWxApp)
 
@@ -235,6 +235,35 @@ class RenameDialog(wx.Dialog):
             self.callback(self.wids['newname'].GetValue())
         self.Destroy()
 
+class ResetMaskDialog(wx.Dialog):
+    """dialog for wavelength/energy"""
+    def __init__(self, parent):
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(350, 300),
+                           title="Unset Mask?")
+        self.SetFont(Font(FONTSIZE))
+        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
+
+        self.wids = wids = {}
+
+        warn_msg = 'This will remove the current mask!'
+
+        panel.Add(SimpleText(panel, warn_msg), dcol=2)
+
+        panel.Add(OkCancel(panel), dcol=2, newrow=True)
+        panel.pack()
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(panel, 1, LEFT, 5)
+        pack(self, sizer)
+        self.Fit()
+        w0, h0 = self.GetSize()
+        w1, h1 = self.GetBestSize()
+        self.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+
+    def GetResponse(self):
+        self.Raise()
+        return (self.ShowModal() == wx.ID_OK)
+
 class XRD1DFrame(wx.Frame):
     """browse 1D XRD patterns"""
 
@@ -261,6 +290,7 @@ class XRD1DFrame(wx.Frame):
         self.cif_browser = None
         self.img_display = None
         self.plot_display = None
+        self.mask = None
         self.datasets = {}
         self.form = {}
         self.createMenus()
@@ -297,20 +327,29 @@ class XRD1DFrame(wx.Frame):
         MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
         MenuItem(self, smenu, "Browse AmMin Crystal Structures",
-                 "Browse Structures from Am Min Database",
+                 "Browse Structures from American Mineralogical Database",
                  self.onCIFBrowse)
 
         MenuItem(self, cmenu, "Read PONI Calibration File",
-                 "Read PONI Calibration (pyFAI) FIle",
+                 "Read PONI Calibration (pyFAI) File",
                  self.onReadPONI)
 
-        MenuItem(self, cmenu, "Set Energy / Wavelength",
+        MenuItem(self, cmenu, "Set Energy/Wavelength",
                  "Set Energy and Wavelength",
                  self.onSetWavelength)
 
+        MenuItem(self, cmenu, "Set Mask for imported Images",
+                 "Read Mask for Imported TIFF XRD Images", self.onReadMask)
+
+        m = MenuItem(self, cmenu, "Unset Mask",
+                     "Reset to use no mask for Imported TIFF XRD Images",
+                     self.onUnsetMask)
+        self.unset_mask_menu = m
+        m.Enable(False)
+
         menubar = wx.MenuBar()
         menubar.Append(fmenu, "&File")
-        menubar.Append(cmenu, "&Calibration")
+        menubar.Append(cmenu, "&Calibration and Mask")
         menubar.Append(smenu, "&Search CIF Structures")
         self.SetMenuBar(menubar)
 
@@ -377,6 +416,34 @@ class XRD1DFrame(wx.Frame):
             dxrd = xrd1d(file=sfile, wavelength=self.wavelength)
             self.add_data(dxrd, label=xfile)
 
+    def onUnsetMask(self, event=None):
+        if self.mask is not None:
+            dlg = ResetMaskDialog(self)
+            if dlg.GetResponse():
+                self.mask = None
+                self.unset_mask_menu.Enable(False)
+
+    def onReadMask(self, event=None):
+        sfile = FileOpen(self, 'Read Mask Image File',
+                         default_file='XRD.mask',
+                         default_dir=get_cwd(),
+                         wildcard="Mask Files(*.mask)|*.mask|All files (*.*)|*.*")
+
+        if sfile is not None:
+            valid_mask = False
+            try:
+                img =  tifffile.imread(sfile)
+                valid_mask = len(img.shape)==2 and img.max() == 1 and img.min() == 0
+            except:
+                valid_mask = False
+            if valid_mask:
+                self.mask = (1 - img[::-1, :]).astype(img.dtype)
+                self.unset_mask_menu.Enable(True)
+            else:
+                title = "Could not use mask file"
+                message = [f"Could not use {sfile:s} as a mask file"]
+                o = ExceptionPopup(self, title, message)
+
     def onReadTIFF(self, event=None):
         sfile = FileOpen(self, 'Read TIFF XRD Image',
                          default_file='XRD.tiff',
@@ -395,6 +462,15 @@ class XRD1DFrame(wx.Frame):
 
             img =  tifffile.imread(sfile)
             img = img[::-1, :]
+            if self.mask is not None:
+                if (self.mask.shape == img.shape):
+                    img = img*self.mask
+                else:
+                    title = "Could not apply current mask"
+                    message = [f"Could not apply current mask [shape={self.mask.shape}]",
+                               f"to this XRD image [shape={img.shape}]"]
+                    o = ExceptionPopup(self, title, message)
+
             if (img.max() > MAXVAL_INT16) and (img.max() < MAXVAL_INT16 + 64):
                 #probably really 16bit data
                 img[np.where(img>MAXVAL_INT16)] = 0
