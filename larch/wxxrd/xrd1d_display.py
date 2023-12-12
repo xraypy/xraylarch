@@ -347,6 +347,11 @@ class XRD1DFrame(wx.Frame):
         self.unset_mask_menu = m
         m.Enable(False)
 
+        m = MenuItem(self, cmenu, "Show Mask Image",
+                     "Show image of mask", self.onShowMask)
+        self.show_mask_menu = m
+        m.Enable(False)
+
         menubar = wx.MenuBar()
         menubar.Append(fmenu, "&File")
         menubar.Append(cmenu, "&Calibration and Mask")
@@ -422,6 +427,7 @@ class XRD1DFrame(wx.Frame):
             if dlg.GetResponse():
                 self.mask = None
                 self.unset_mask_menu.Enable(False)
+                self.show_mask_menu.Enable(False)
 
     def onReadMask(self, event=None):
         sfile = FileOpen(self, 'Read Mask Image File',
@@ -439,10 +445,16 @@ class XRD1DFrame(wx.Frame):
             if valid_mask:
                 self.mask = (1 - img[::-1, :]).astype(img.dtype)
                 self.unset_mask_menu.Enable(True)
+                self.show_mask_menu.Enable(True)
             else:
                 title = "Could not use mask file"
                 message = [f"Could not use {sfile:s} as a mask file"]
                 o = ExceptionPopup(self, title, message)
+
+    def onShowMask(self, event=None):
+        if self.mask is not None:
+            imd = self.get_imdisplay()
+            imd.display(self.mask, colomap='gray', auto_contrast=True)
 
     def onReadTIFF(self, event=None):
         sfile = FileOpen(self, 'Read TIFF XRD Image',
