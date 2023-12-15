@@ -8,7 +8,6 @@ import wx
 import numpy as np
 
 from functools import partial
-
 from xraydb import guess_edge, atomic_number
 
 from larch.utils import gformat
@@ -300,8 +299,10 @@ class XASNormPanel(TaskPanel):
             return self.get_defaultconfig()
         self.read_form()
 
+
         defconf = self.get_defaultconfig()
         conf = getattr(dgroup.config, self.configname, defconf)
+
         for k, v in defconf.items():
             if k not in conf:
                 conf[k] = v
@@ -309,12 +310,12 @@ class XASNormPanel(TaskPanel):
             conf['edge_step'] = getattr(dgroup, 'edge_step', 1)
 
         # update config from callargs - last call arguments
-        callargs = getattr(dgroup, 'callargs', None)
-        if callargs is not None:
-            pre_callargs = getattr(callargs, 'pre_edge', None)
-            if pre_callargs is not None:
-                for attr in ('e0', 'norm', 'nvict', 'pre1', 'pre2', 'norm1', 'norm2'):
-                    update_confval(conf, pre_callargs, attr)
+        # callargs = getattr(dgroup, 'callargs', None)
+        # if callargs is not None:
+        #    pre_callargs = getattr(callargs, 'pre_edge', None)
+        #    if pre_callargs is not None:
+        #        for attr in ('e0', 'nnorm', 'nvict', 'pre1', 'pre2', 'norm1', 'norm2'):
+        #            update_confval(conf, pre_callargs, attr)
 
         atsym = '?'
         if hasattr(dgroup, 'element'):
@@ -809,7 +810,6 @@ class XASNormPanel(TaskPanel):
             return
 
         self.skip_process = True
-
         conf = self.get_config(dgroup)
         form = self.read_form()
         if not use_form:
