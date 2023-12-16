@@ -197,7 +197,7 @@ class FeffRunner(Group):
                 self.message_writer(line)
 
             ## snarf threshold energy
-            pattern = re.compile('mu_(new|old)=\s+(-?\d\.\d+)')
+            pattern = re.compile(r'mu_(new|old)=\s+(-?\d\.\d+)')
             match = pattern.search(line)
             if match is not None:
                 self.threshold.append(match.group(2))

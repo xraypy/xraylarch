@@ -17,11 +17,9 @@ MAX_NNORM = 5
 
 @Make_CallArgs(["energy","mu"])
 def find_e0(energy, mu=None, group=None, _larch=None):
-    """calculate :math:`E_0`, the energy threshold of absorption, or
-    'edge energy', given :math:`\mu(E)`.
+    """calculate E0, the energy threshold of absorption, or 'edge energy', given mu(E).
 
-    :math:`E_0` is found as the point with maximum derivative with
-    some checks to avoid spurious glitches.
+    E0 is found as the point with maximum derivative with some checks to avoid spurious glitches.
 
     Arguments:
         energy (ndarray or group): array of x-ray energies, in eV, or group
