@@ -36,7 +36,7 @@ from larch.xrd import (integrate_xrd,E_from_lambda,xrd1d,read_lambda,
                        return_ai,twth_from_xy,q_from_xy,eta_from_xy)
 from .XRDCalibrationFrame import CalibrationPopup
 from .XRDMaskFrame import MaskToolsPopup
-from .XRD1Dviewer import Calc1DPopup
+# from .XRD1Dviewer import Calc1DPopup
 
 ###################################
 
@@ -655,8 +655,8 @@ class XRD2DViewerFrame(wx.Frame):
                 tifffile.imsave(path,self.plt_img)
 
     def on1DXRD(self,event=None):
-
-        read, save, plot = False, False, False
+        pass
+        """ read, save, plot = False, False, False
         if self.calfile is not None and self.plt_img is not None:
             myDlg = Calc1DPopup(self,self.plt_img)
             if myDlg.ShowModal() == wx.ID_OK:
@@ -735,7 +735,7 @@ class XRD2DViewerFrame(wx.Frame):
                         data1dxrd.xrd_from_2d([q,cnts],'q')
                         self.xrddisplay1D.xrd1Dviewer.add1Ddata(data1dxrd)
                 self.xrddisplay1D.Show()
-
+        """
 
 
 
@@ -931,7 +931,7 @@ class XRD2DViewerFrame(wx.Frame):
         except:
             pass
 
-       
+
     def onExit(self, event=None):
         dlg = wx.MessageDialog(None, 'Really Quit?', 'Question',
                                wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
