@@ -1328,9 +1328,9 @@ class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
                                    'Left-Drag to select points for XRF Spectra')}
 
-    def __init__(self, parent=None, filename=None, _larch=None,
-                 use_scandb=False, check_version=True,
-                 size=(925, 650), **kwds):
+    def __init__(self, parent=None, filename=None, _larch=None, title=None,
+                 use_scandb=False, check_version=True, size=(925, 650),
+                 **kwds):
 
         if check_version:
             def check_version():
@@ -1366,7 +1366,9 @@ class MapViewerFrame(wx.Frame):
         self.dtcor   = True
         self.showxrd = False
 
-        self.SetTitle('GSE XRM MapViewer')
+        if title is None:
+            title = "XRF Map Viewing and Analysis"
+        self.SetTitle(title)
 
         self.createMainPanel()
         self.SetFont(Font(FONTSIZE))
@@ -2747,8 +2749,10 @@ class OpenMapFolder(wx.Dialog):
 
 class MapViewer(LarchWxApp):
     def __init__(self, use_scandb=False, _larch=None, filename=None,
-                 check_version=True, with_inspect=False, **kws):
+                 title=None, check_version=True, with_inspect=False, **kws):
+
         self.filename = filename
+        self.title = title
         self.use_scandb = use_scandb
         self.check_version = check_version
         LarchWxApp.__init__(self, _larch=_larch,
@@ -2756,6 +2760,7 @@ class MapViewer(LarchWxApp):
 
     def createApp(self):
         frame = MapViewerFrame(use_scandb=self.use_scandb,
+                               title=self.title,
                                filename=self.filename,
                                check_version=self.check_version,
                                _larch=self._larch)
