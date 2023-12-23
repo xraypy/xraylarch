@@ -108,6 +108,7 @@ Table of Contents
    guis.rst
    xasviewer.rst
    wxmap_viewer.rst
+   xrd1d_viewer.rst
    qtrixs.rst
    python.rst
    larchlang.rst
