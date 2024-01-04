@@ -706,7 +706,7 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
 
 #enddef
 
-def plot_chiq(dgroup, kweight=None, kmax=None, show_chik=False, label=None,
+def plot_chiq(dgroup, kweight=None, kmin=0, kmax=None, show_chik=False, label=None,
               title=None, new=True, delay_draw=False, offset=0, win=1,
               show_window=False, scale_window=True, _larch=None):
     """
@@ -747,9 +747,9 @@ def plot_chiq(dgroup, kweight=None, kmax=None, show_chik=False, label=None,
 
     fig = PlotlyFigure(two_yaxis=False)
     fig.add_plot(dgroup.k, chiq+offset, label=label)
-
-    if kmin is not None or kmax is not None:
-        fig.set_xrange(kmin, kmax)
+    if kmax is None:
+        kmax = max(dgroup.k)
+    fig.set_xrange(kmin, kmax)
 
     ylabel = set_label_weight(plotlabels.chikw, kweight)
     fig.set_style(title=title, xaxis_title=plotlabels.k,
