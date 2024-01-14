@@ -37,7 +37,7 @@ from .config import PrePeak_ArrayChoices, PlotWindowChoices
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
 ModelChoices = {'other': ('<General Models>', 'Constant', 'Linear',
-                          'Quadratic', 'Exponential', 'PowerLaw'
+                          'Quadratic', 'Exponential', 'PowerLaw',
                           'Linear Step', 'Arctan Step',
                           'ErrorFunction Step', 'Logistic Step', 'Rectangle'),
                 'peaks': ('<Peak Models>', 'Gaussian', 'Lorentzian',
@@ -732,7 +732,7 @@ class PrePeakPanel(TaskPanel):
         self.showresults_btn = Button(pan, 'Show Fit Results',
                                       action=self.onShowResults, size=(150, -1))
         self.showresults_btn.Disable()
-        
+
         self.fitbline_btn  = Button(pan,'Fit Baseline', action=self.onFitBaseline,
                                     size=(150, -1))
 

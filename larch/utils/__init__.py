@@ -150,7 +150,7 @@ def copy_xafs_group(group, _larch=None):
 
     for attr in dir(group):
         do_copy = True
-        if attr in ('xdat', 'ydat', 'i0', 'data' 'yerr',
+        if attr in ('xdat', 'ydat', 'i0', 'data', 'yerr',
                     'energy', 'mu'):
             val = getattr(group, attr)*1.0
         elif attr in ('norm', 'flat', 'deriv', 'deconv',

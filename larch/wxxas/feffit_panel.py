@@ -934,7 +934,7 @@ class FeffitPanel(TaskPanel):
 
         econf = getattr(dgroup.config, 'exafs', {})
         for key in ('fit_kmin', 'fit_kmax', 'fit_dk',
-                    'fit_rmin', 'fit_rmax', 'fit_dr'
+                    'fit_rmin', 'fit_rmax', 'fit_dr',
                     'fit_kwindow', 'fit_rwindow'):
             alt = key.replace('fit', 'fft')
             val = conf.get(key, -1)
