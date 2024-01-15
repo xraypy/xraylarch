@@ -1,40 +1,40 @@
 =================== FEFFIT RESULTS ====================
 [[Statistics]]
-   n_function_calls   = 49
-   n_variables        = 7
-   n_data_points      = 230
-   n_independent      = 17.1064802
-   chi_square         = 7475630.83
-   reduced chi_square = 739686.879
-   r-factor           = 0.14252235
-   Akaike info crit   = 236.173863
-   Bayesian info crit = 242.050064
- 
-[[Dataset]]
-   dataset unique_id  = 'dp3elp4f'
-   fit space          = 'k'
-   r-range            = 1.000, 3.200
-   k-range            = 2.000, 13.500
-   k window, dk       = 'kaiser', 3.000
-   paths used in fit  = ['feff_feo01.dat', 'feff_feo02.dat']
-   k-weight           = 2
-   epsilon_k          = Array(mean=8.0600e-4, std=0.0018556)
-   epsilon_r          = 0.0152248
-   n_independent      = 17.106
+  n_function_calls     = 49
+  n_variables          = 7
+  n_data_points        = 230
+  n_independent        = 17.1064802
+  chi_square           = 7475630.83
+  reduced chi_square   = 739686.879
+  r-factor             = 0.14252235
+  Akaike info crit     = 236.173863
+  Bayesian info crit   = 242.050064
  
 [[Variables]]
-   de0            = -1.8793985 +/- 2.5285324   (init=  0.1000000)
-   delr_1         = -0.0289654 +/- 0.0316899   (init=  0.0000000)
-   delr_2         =  0.0447253 +/- 0.0247363   (init=  0.0000000)
-   n1             =  5.0954909 +/- 2.4602584   (init=  6.0000000)
-   n2             =  12.796196 +/- 5.1180205   (init=  12.000000)
-   sig2_1         =  0.0104509 +/- 0.0077429   (init=  0.0020000)
-   sig2_2         =  0.0135419 +/- 0.0042588   (init=  0.0020000)
+  de0                  = -1.8793985 +/- 2.5285324  (init= 0.1000000)
+  delr_1               = -0.0289654 +/- 0.0316899  (init= 0.0000000)
+  delr_2               =  0.0447253 +/- 0.0247363  (init= 0.0000000)
+  n1                   =  5.0954909 +/- 2.4602584  (init= 6.0000000)
+  n2                   =  12.796196 +/- 5.1180205  (init= 12.000000)
+  sig2_1               =  0.0104509 +/- 0.0077429  (init= 0.0020000)
+  sig2_2               =  0.0135419 +/- 0.0042588  (init= 0.0020000)
  
-[[Correlations]]    (unreported correlations are <  0.500)
-   n2, sig2_2           =  0.924
-   n1, sig2_1           =  0.881
-   de0, delr_2          =  0.870
-   de0, delr_1          =  0.671
-   delr_1, delr_2       =  0.591
+[[Correlations]] (unreported correlations are <  0.500)
+  n2, sig2_2           =  0.924
+  n1, sig2_1           =  0.881
+  de0, delr_2          =  0.870
+  de0, delr_1          =  0.671
+  delr_1, delr_2       =  0.591
+ 
+[[Dataset]]
+  unique_id            = 'dp3elp4f'
+  fit space            = 'k'
+  r-range              = 1.000, 3.200
+  k-range              = 2.000, 13.500
+  k window, dk         = 'kaiser', 3.000
+  paths used in fit    = ['feff_feo01.dat', 'feff_feo02.dat']
+  k-weight             = 2
+  epsilon_k            = Array(mean=8.0600e-4, std=0.0018556)
+  epsilon_r            = 0.0152248
+  n_independent        = 17.106
 =======================================================

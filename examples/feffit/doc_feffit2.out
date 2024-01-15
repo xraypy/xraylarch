@@ -1,58 +1,58 @@
 =================== FEFFIT RESULTS ====================
 [[Statistics]]
-   n_function_calls   = 107
-   n_variables        = 7
-   n_data_points      = 138
-   n_independent      = 19.7166213
-   chi_square         = 12.9083391
-   reduced chi_square = 1.01507616
-   r-factor           = 0.00251319
-   Akaike info crit   = 5.64826681
-   Bayesian info crit = 12.5185008
- 
-[[Dataset]]
-   unique_id          = 'ds3qtgjs'
-   fit space          = 'r'
-   r-range            = 1.400, 3.500
-   k-range            = 3.000, 17.000
-   k window, dk       = 'kaiser', 4.000
-   paths used in fit  = ['feff0001.dat', 'feff0002.dat', 'feff0003.dat']
-   k-weight           = 2
-   epsilon_k          = Array(mean=0.0017550, std=0.0058069)
-   epsilon_r          = 0.0589866
-   n_independent      = 19.717
+  n_function_calls     = 107
+  n_variables          = 7
+  n_data_points        = 138
+  n_independent        = 19.7166213
+  chi_square           = 12.9083391
+  reduced chi_square   = 1.01507616
+  r-factor             = 0.00251319
+  Akaike info crit     = 5.64826681
+  Bayesian info crit   = 12.5185008
  
 [[Variables]]
-   alpha          =  0.0028114 +/- 0.0029801   (init=  0.0000000)
-   amp            =  0.9362805 +/- 0.0362098   (init=  1.0000000)
-   c3_1           =  1.4440e-4 +/- 8.2197e-5   (init=  0.0020000)
-   del_e0         =  5.7042623 +/- 0.8197285   (init=  3.0000000)
-   sig2_1         =  0.0086805 +/- 2.8390e-4   (init=  0.0020000)
-   sig2_2         =  0.0131046 +/- 0.0011358   (init=  0.0020000)
-   sig2_3         =  0.0063292 +/- 0.0030901   (init=  0.0020000)
+  alpha                =  0.0028114 +/- 0.0029801  (init= 0.0000000)
+  amp                  =  0.9362805 +/- 0.0362098  (init= 1.0000000)
+  c3_1                 =  1.4440e-4 +/- 8.2197e-5  (init= 0.0020000)
+  del_e0               =  5.7042623 +/- 0.8197285  (init= 3.0000000)
+  sig2_1               =  0.0086805 +/- 2.8390e-4  (init= 0.0020000)
+  sig2_2               =  0.0131046 +/- 0.0011358  (init= 0.0020000)
+  sig2_3               =  0.0063292 +/- 0.0030901  (init= 0.0020000)
  
-[[Correlations]]    (unreported correlations are <  0.100)
-   alpha, c3_1          =  0.952
-   alpha, del_e0        =  0.950
-   amp, sig2_1          =  0.929
-   c3_1, del_e0         =  0.837
-   amp, sig2_2          =  0.298
-   sig2_1, sig2_2       =  0.276
-   sig2_1, sig2_3       =  0.213
-   amp, sig2_3          =  0.213
-   c3_1, sig2_3         = -0.189
-   alpha, amp           =  0.185
-   alpha, sig2_1        =  0.172
-   c3_1, sig2_2         =  0.168
-   alpha, sig2_2        =  0.152
-   alpha, sig2_3        = -0.148
-   amp, del_e0          =  0.148
-   amp, c3_1            =  0.145
-   del_e0, sig2_1       =  0.143
-   c3_1, sig2_1         =  0.124
+[[Correlations]] (unreported correlations are <  0.100)
+  alpha, c3_1          =  0.952
+  alpha, del_e0        =  0.950
+  amp, sig2_1          =  0.929
+  c3_1, del_e0         =  0.837
+  amp, sig2_2          =  0.298
+  sig2_1, sig2_2       =  0.276
+  sig2_1, sig2_3       =  0.213
+  amp, sig2_3          =  0.213
+  c3_1, sig2_3         = -0.189
+  alpha, amp           =  0.185
+  alpha, sig2_1        =  0.172
+  c3_1, sig2_2         =  0.168
+  alpha, sig2_2        =  0.152
+  alpha, sig2_3        = -0.148
+  amp, del_e0          =  0.148
+  amp, c3_1            =  0.145
+  del_e0, sig2_1       =  0.143
+  c3_1, sig2_1         =  0.124
+ 
+[[Dataset]]
+  unique_id            = 'ds3qtgjs'
+  fit space            = 'r'
+  r-range              = 1.400, 3.500
+  k-range              = 3.000, 17.000
+  k window, dk         = 'kaiser', 4.000
+  paths used in fit    = ['feff0001.dat', 'feff0002.dat', 'feff0003.dat']
+  k-weight             = 2
+  epsilon_k            = Array(mean=0.0017550, std=0.0058069)
+  epsilon_r            = 0.0589866
+  n_independent        = 19.717
  
 [[Paths]]
- = Path 'p3tf6mewgr' = Cu K Edge
+ = Path 'p3tf6mewg' = Cu K Edge
     feffdat file = feff0001.dat, from feff run ''
     geometry  atom      x        y        z      ipot
               Cu       0.0000,  0.0000,  0.0000  0 (absorber)
@@ -66,7 +66,7 @@
      sigma2 =  0.0086805 +/- 2.8390e-4  := 'sig2_1'
      third  =  1.4440e-4 +/- 8.2197e-5  := 'c3_1'
 
- = Path 'pj3m4qvfyl' = Cu K Edge
+ = Path 'pj3m4qvfy' = Cu K Edge
     feffdat file = feff0002.dat, from feff run ''
     geometry  atom      x        y        z      ipot
               Cu       0.0000,  0.0000,  0.0000  0 (absorber)
@@ -79,7 +79,7 @@
      deltar =  0.0101300 +/- 0.0107377  := 'alpha*reff'
      sigma2 =  0.0131046 +/- 0.0011358  := 'sig2_2'
 
- = Path 'pibakl7xet' = Cu K Edge
+ = Path 'pibakl7xe' = Cu K Edge
     feffdat file = feff0003.dat, from feff run ''
     geometry  atom      x        y        z      ipot
               Cu       0.0000,  0.0000,  0.0000  0 (absorber)
