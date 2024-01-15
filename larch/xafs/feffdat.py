@@ -230,8 +230,8 @@ class FeffPathGroup(Group):
         self.shell = 'K'
         self.absorber = None
         self._feffdat = _feffdat
-
-        self.hashkey = 'p000'
+        self.dataset = 'd001'
+        self.hashkey = 'p001'
         self.k = None
         self.chi = None
 
@@ -322,13 +322,13 @@ class FeffPathGroup(Group):
             rep.extend(atom)
         rep.append("%7.4f" % self._feffdat.reff)
         s = "|".join([str(i) for i in rep])
-        return "p%s" % (b32hash(s)[:9].lower())
+        return "p%s" % (b32hash(s)[:8].lower())
 
     def pathpar_name(self, parname):
         """
         get internal name of lmfit Parameter for a path paramter, using Path's hashkey
         """
-        return f'{parname}_{self.hashkey}'
+        return f'{parname}_{self.dataset}_{self.hashkey}'
 
     def __copy__(self):
         newpath = FeffPathGroup()
@@ -362,7 +362,7 @@ class FeffPathGroup(Group):
     def __repr__(self):
         return f'<FeffPath Group label={self.label:s}, filename={self.filename:s}, use={self.use}>'
 
-    def create_path_params(self, params=None):
+    def create_path_params(self, params=None, dataset=None):
         """
         create Path Parameters within the current lmfit.Parameters namespace
         """
@@ -372,7 +372,8 @@ class FeffPathGroup(Group):
            self.params = params
         if self.params is None:
             self.params = Parameters()
-
+        if dataset is not None:
+            self.dataset = dataset
         if (not isinstance(self.params, Parameters) and
             isinstance(self.params, dict)):
             self.params = dict2params(self.params)
