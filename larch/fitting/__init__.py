@@ -14,6 +14,8 @@ from lmfit.minimizer import MinimizerResult
 from lmfit.model import (ModelResult, save_model, load_model,
                          save_modelresult, load_modelresult)
 from lmfit.confidence import f_compare
+
+from lmfit.printfuncs import gformat, getfloat_attr
 from uncertainties import ufloat, correlated_values
 from uncertainties import wrap as un_wrap
 
@@ -29,6 +31,113 @@ def param_value(val):
     while isinstance(val, Parameter):
         val = val.value
     return val
+
+def format_param(par, length=10, with_initial=True):
+    value = repr(par)
+    if isParameter(par):
+        value = gformat(par.value, length=length)
+        if not par.vary and par.expr is None:
+            value = f"{value} (fixed)"
+        else:
+            stderr = 'unknown'
+            if par.stderr is not None:
+                stderr = gformat(par.stderr, length=length)
+                value = f"{value} +/-{stderr}"
+                if par.vary and par.expr is None and with_initial:
+                    value = f"{value} (init={gformat(par.init_value, length=length)})"
+            if par.expr is not None:
+                value = f"{value}  = '{par.expr}'"
+    return value
+
+
+def stats_table(results, labels=None, csv_output=False, csv_delim=','):
+    """
+    create a table comparing fit statistics for multiple fit results
+    """
+    stats = {'number of variables': 'nvarys',
+             'chi-square': 'chi_square',
+             'reduced chi-square': 'chi2_reduced',
+             'r-factor': 'rfactor',
+             'Akaike Info Crit': 'aic',
+             'Bayesian Info Crit': 'bic'}
+
+    nfits = len(results)
+    if labels is not None:
+        if len(labels) != len(results):
+            raise ValueError('labels must be a list that is the same length as results')
+
+    columns = [['Statistics']]
+    if labels is None:
+        labels = [f"  Fit {i+1}" for i in range(nfits)]
+    for lab in labels:
+        columns.append([lab])
+
+    for sname, attr in stats.items():
+        columns[0].append(sname)
+        for i, result in enumerate(results):
+            columns[i+1].append(getfloat_attr(result, attr))
+
+    return format_table_columns(columns, csv_output=csv_output, csv_delim=csv_delim)
+
+def paramgroups_table(pgroups, labels=None, csv_output=False, csv_delim=','):
+    """
+    create a table comparing parameters from a Feffit Parameter Grooup for multiple fit results
+    """
+    nfits = len(pgroups)
+    if labels is not None:
+        if len(labels) != len(pgroups):
+            raise ValueError('labels must be a list that is the same length as Parameter Groups')
+
+    columns = [['Parameter']]
+    if labels is None:
+        labels = [f" Fit {i+1}" for i in range(nfits)]
+    for lab in labels:
+        columns.append([lab])
+
+    parnames = []
+    for pgroup in pgroups:
+        for pname in dir(pgroup):
+            if pname not in parnames:
+                parnames.append(pname)
+
+    for pname in parnames:
+        columns[0].append(pname)
+        for i, pgroup in enumerate(pgroups):
+            value = 'N/A'
+            par = getattr(pgroup, pname, None)
+            if par is not None:
+                value = format_param(par, length=10, with_initial=False)
+            columns[i+1].append(value)
+
+    return format_table_columns(columns, csv_output=csv_output, csv_delim=csv_delim)
+
+
+def format_table_columns(columns, csv_output=False, csv_delim=','):
+    hjoin, rjoin, edge = '+', '|', '|'
+    if csv_output:
+       hjoin, rjoin, edge = csv_delim, csv_delim, ''
+
+    ncols = len(columns)
+    nrows = len(columns[0])
+    slen = [2]*ncols
+    for i, col in enumerate(columns):
+        slen[i] = max(5, max([len(row) for row in col]))
+
+    buff = []
+    if not csv_output:
+        header = edge + hjoin.join(['-'*(lx+2) for lx in slen]) + edge
+        buff = [header]
+
+    while len(columns[0]) > 0:
+        values = [c.pop(0) for c in columns]
+        row = rjoin.join([f" {l:{slen[i]}.{slen[i]}s} " for i, l in enumerate(values)])
+        buff.append(edge + row + edge)
+        if not csv_output and len(buff) == 2:
+            buff.append(header)
+    if not csv_output:
+        buff.append(header)
+    return '\n'.join(buff)
+
 
 def f_test(ndata, nvars, chisquare, chisquare0, nfix=1):
     """return the F-test value for the following input values:
