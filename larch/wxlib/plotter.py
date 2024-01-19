@@ -306,7 +306,8 @@ def get_display(win=1, _larch=None, wxparent=None, size=None,
     if wintitle is not None:
         title = wintitle
 
-    def _get_disp(symname, creator, win, ddict, wxparent, size, height, width, _larch):
+    def _get_disp(symname, creator, win, ddict, wxparent,
+                  size, height, width, _larch):
         wxapp = get_wxapp()
         display = None
         new_display = False
@@ -342,9 +343,6 @@ def get_display(win=1, _larch=None, wxparent=None, size=None,
                 xsiz, ysiz = parent.GetSize()
                 x = xpos + xsiz*0.75
                 y = ypos + ysiz*0.75
-                dlims = DISPLAY_LIMITS
-                if dlims is None:
-                    dlims = [0, 5000, 0, 5000]
                 if len(PLOT_DISPLAYS) > 0:
                     try:
                         xpos, ypos = PLOT_DISPLAYS[1].GetPosition()
@@ -352,8 +350,12 @@ def get_display(win=1, _larch=None, wxparent=None, size=None,
                     except:
                         pass
                 off = 0.20*(win-1)
-                x = max(20, xpos + xsiz*off)
-                y = max(20, ypos + ysiz*off)
+                x = max(25, xpos + xsiz*off)
+                y = max(25, ypos + ysiz*off)
+                global DISPLAY_LIMITS
+                dlims = DISPLAY_LIMITS
+                if dlims is None:
+                    dlims = [0, 5000, 0, 5000]
                 if y+0.75*ysiz > dlims[3]:
                     y = 40+max(40, 40+ysiz*(off-0.5))
                 if x+0.75*xsiz > dlims[1]:
@@ -476,7 +478,8 @@ def _xrf_oplot(x=None, y=None, mca=None, win=1, _larch=None, **kws):
     _xrf_plot(x=x, y=y, mca=mca, win=win, _larch=_larch, new=False, **kws)
 
 def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
-          xrf=False, stacked=False, force_draw=True, side='left', wintitle=None, **kws):
+          xrf=False, stacked=False, force_draw=True, side='left',
+          wintitle=None, **kws):
     """plot(x, y[, win=1], options])
 
     Plot 2-D trace of x, y arrays in a Plot Frame, clearing any plot currently in the Plot Frame.
@@ -515,7 +518,7 @@ def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
     """
     plotter = get_display(wxparent=wxparent, win=win, size=size,
                           xrf=xrf, stacked=stacked,
-                          wintitle=wintitle,  _larch=_larch)
+                          wintitle=wintitle, _larch=_larch)
     if plotter is None:
         return
     plotter.Raise()
