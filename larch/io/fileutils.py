@@ -6,9 +6,11 @@ import time
 import os
 import sys
 
-from random import seed, randrange
+from random import Random
 from string import printable
 from ..utils.strutils import fix_filename, fix_varname, strip_quotes
+
+rng = Random()
 
 def asciikeys(adict):
     """ensure a dictionary has ASCII keys (and so can be an **kwargs)"""
@@ -28,14 +30,15 @@ def get_timestamp(with_t=False):
         time.strftime('%Y-%m-%dT%H:%M:%S')
     return time.strftime('%Y-%m-%d %H:%M:%S')
 
-def random_string(n):
+def random_string(n, rng_seed=None):
     """  random_string(n)
     generates a random string of length n, that will match:
        [a-z][a-z0-9](n-1)
     """
-    seed(time.time())
-    s = [printable[randrange(0,36)] for i in range(n-1)]
-    s.insert(0, printable[randrange(10,36)])
+    if rng_seed is not None:
+        rng.seed(rng_seed)
+    s = [printable[rng.randrange(0, 36)] for i in range(n-1)]
+    s.insert(0, printable[rng.randrange(10, 36)])
     return ''.join(s)
 
 def pathOf(dir, base, ext, delim='.'):

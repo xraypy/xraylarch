@@ -1,12 +1,13 @@
 import os
-import random
+from random import Random
 from io import StringIO
-
 
 from xraydb import atomic_symbol, atomic_number, xray_edge
 from larch.utils import fix_varname, strict_ascii, gformat
 
 from .amcsd_utils import PMG_CIF_OPTS, CifParser, Molecule, SpacegroupAnalyzer
+
+rng = Random()
 
 def get_atom_map(structure):
     """generalization of pymatgen atom map
@@ -88,7 +89,8 @@ def cif_sites(ciftext, absorber=None):
 
 
 def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
-                site_index=None, extra_titles=None, with_h=False, version8=True):
+                site_index=None, extra_titles=None, with_h=False,
+                version8=True, rng_seed=None):
     """convert CIF text to Feff8 or Feff6l input file
 
     Arguments
@@ -103,6 +105,7 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
       extra_titles (list of str or None): extra title lines to include [None]
       with_h (bool):            whether to include H atoms [False]
       version8 (bool):          whether to write Feff8l input (see Note 5)[True]
+      rng_seed (int or None):   seed for RNG to get reproducible occupancy selections [None]
     Returns
     -------
       text of Feff input file
@@ -128,6 +131,10 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
         cstruct = read_cif_structure(ciftext)
     except ValueError:
         return '# could not read CIF file'
+
+    global rng
+    if rng_seed is not None:
+        rng.seed(rng_seed)
 
     sgroup = SpacegroupAnalyzer(cstruct).get_symmetry_dataset()
     space_group = sgroup["international"]
@@ -156,7 +163,6 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
         atlist = ', '.join(atoms_map.keys())
         raise ValueError(f'atomic symbol {absorber:s} not listed in CIF data: ({atlist})')
 
-
     site_atoms = {}  # map xtal site with list of atoms occupying that site
     site_tags = {}
     absorber_count = 0
@@ -165,7 +171,7 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
         if len(site_species) > 1:
             s_els = [s.symbol for s in site.species.keys()]
             s_wts = [s for s in site.species.values()]
-            site_atoms[sindex] = random.choices(s_els, weights=s_wts, k=1000)
+            site_atoms[sindex] = rng.choices(s_els, weights=s_wts, k=1000)
             site_tags[sindex] = f'({site.species_string:s})_{1+sindex:d}'
         else:
             site_atoms[sindex] = [site_species[0]] * 1000

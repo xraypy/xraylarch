@@ -9,7 +9,9 @@ import os
 import uuid
 import hashlib
 from base64 import b64encode, b32encode
-import random
+from random import Random
+
+rng = Random()
 
 from packaging import version as pkg_version
 
@@ -257,12 +259,16 @@ def get_sessionid():
     return out.replace('/', '-').replace('+', '=')
 
 
-def random_varname(n):
+def random_varname(n, rng_seed=None):
     L = 'abcdefghijklmnopqrstuvwxyz0123456789'
-    return random.choice(L[:26]) + ''.join([random.choice(L) for _ in range(n-1)])
+
+    global rng
+    if rng_seed is None:
+        rng.seed(rng_seed)
+    return rng.choice(L[:26]) + ''.join([random.choice(L) for _ in range(n-1)])
 
 
-def file2groupname(filename, slen=9, minlen=2, symtable=None):
+def file2groupname(filename, slen=9, minlen=2, symtable=None, rng_seed=None):
     """create a group name based of filename
     the group name will have a string component of
     length slen followed by a 2 digit number
@@ -274,11 +280,14 @@ def file2groupname(filename, slen=9, minlen=2, symtable=None):
     symtable  (None or larch symbol table) symbol table for
               checking that the group name is unique
     """
+    global rng
+    if rng_seed is None:
+        rng.seed(rng_seed)
 
     gname = fix_varname(filename).lower().replace('_', '')
 
     if gname[0] not in 'abcdefghijklmnopqrstuvwxyz':
-        gname = random.choice(['a', 'b', 'c', 'd', 'e', 'f', 'g']) + gname
+        gname = rng.choice(['a', 'b', 'c', 'd', 'e', 'f', 'g']) + gname
     if len(gname) < minlen:
         gname = gname + random_varname(minlen-len(gname))
 

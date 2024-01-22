@@ -1,11 +1,12 @@
 import os
-import random
-
-from .amcsd_utils import (SpacegroupAnalyzer, Molecule, IMolecule, IStructure)
+from random import Random
 
 from xraydb import atomic_symbol, atomic_number, xray_edge
 from larch.utils.strutils import fix_varname, strict_ascii
 
+from .amcsd_utils import (SpacegroupAnalyzer, Molecule, IMolecule, IStructure)
+
+rng = Random()
 
 def get_atom_map(structure):
     """generalization of pymatgen atom map
@@ -98,8 +99,9 @@ def parse_structure(structure_text, fmt='cif', fname="default.filename"):
     return {'formula': struct.composition.reduced_formula, 'sites': struct.sites, 'structure_text': structure_text, 'fmt': fmt, 'fname': fname}
 
 
-def structure2feffinp(structure_text, absorber, edge=None, cluster_size=8.0, absorber_site=1,
-                      site_index=None, extra_titles=None, with_h=False, version8=True, fmt='cif'):
+def structure2feffinp(structure_text, absorber, edge=None, cluster_size=8.0,
+                      absorber_site=1, site_index=None, extra_titles=None,
+                      with_h=False, version8=True, fmt='cif', rng_seed=None):
     """convert structure text to Feff8 or Feff6l input file
 
     Arguments
@@ -115,6 +117,7 @@ def structure2feffinp(structure_text, absorber, edge=None, cluster_size=8.0, abs
       with_h (bool):            whether to include H atoms [False]
       version8 (bool):          whether to write Feff8l input (see Note 5)[True]
       fmt (string):             format of structure file (cif, poscar, etc) [cif]
+      rng_seed (int or None):   seed for RNG to get reproducible occupancy selections [None]
     Returns
     -------
       text of Feff input file
@@ -140,6 +143,10 @@ def structure2feffinp(structure_text, absorber, edge=None, cluster_size=8.0, abs
         struct = read_structure(structure_text, fmt=fmt)
     except ValueError:
         return '# could not read structure file'
+
+    global rng
+    if rng_seed is not None:
+        rng.seed(rng_seed)
 
     is_molecule = False
 
@@ -184,7 +191,7 @@ def structure2feffinp(structure_text, absorber, edge=None, cluster_size=8.0, abs
         if len(site_species) > 1:
             s_els = [s.symbol for s in site.species.keys()]
             s_wts = [s for s in site.species.values()]
-            site_atoms[sindex] = random.choices(s_els, weights=s_wts, k=1000)
+            site_atoms[sindex] = rng.choices(s_els, weights=s_wts, k=1000)
             site_tags[sindex] = f'({site.species_string:s})_{1+sindex:d}'
         else:
             site_atoms[sindex] = [site_species[0]] * 1000
