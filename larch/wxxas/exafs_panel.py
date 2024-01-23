@@ -13,7 +13,7 @@ from functools import partial
 from larch.math import index_of
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
                          get_icon, SimpleText, pack, Button, HLine, Choice,
-                         plotlabels, Check, CEN, RIGHT, LEFT)
+                         TextCtrl, plotlabels, Check, CEN, RIGHT, LEFT)
 
 from larch.xafs.xafsutils import etok, ktoe, FT_WINDOWS
 from larch.xafs.pre_edge import find_e0
@@ -132,6 +132,22 @@ class EXAFSPanel(TaskPanel):
         wids['push_e0'].SetToolTip('Use this value for E0 in the Normalization Tab')
 
 
+        #
+        wids['plotopt_name'] = TextCtrl(panel, 'view1', size=(150, -1),
+                                        action=self.onPlotOptSave,
+                                        act_on_losefocus=False)
+        wids['plotopt_name'].SetToolTip('Name this set of Plot Choices')
+
+        self.plotopt_saves = {'default': {'plotone_op': chik, 'plotsel_op': chik,
+                                          'plotalt_op': noplot, 'plot_voffset': 0.0,
+                                          'plot_kweight': 2, 'plot_kweight_alt': 2,
+                                          'plot_rmax': 8}}
+
+        wids['plotopt_sel']  = Choice(panel, size=(150, -1),
+                                      choices=list(self.plotopt_saves.keys()),
+                                      action=self.onPlotOptSel)
+
+
         opts['max_val'] = 6
         opts['action'] = self.onRbkg
         wids['rbkg'] = FloatSpin(panel, value=1.0, **opts)
@@ -190,22 +206,29 @@ class EXAFSPanel(TaskPanel):
         panel.Add(self.wids['plotsel_op'], dcol=2)
 
         add_text('Vertical offset: ', newrow=False)
-        panel.Add(wids['plot_voffset'], dcol=2)
+        panel.Add(wids['plot_voffset'],  style=RIGHT)
 
         panel.Add(plot_one, newrow=True)
         panel.Add(self.wids['plotone_op'], dcol=2)
 
         add_text('Plot k weight: ', newrow=False)
-        panel.Add(wids['plot_kweight'])
+        panel.Add(wids['plot_kweight'], style=RIGHT)
 
         add_text('Add Second Plot: ', newrow=True)
         panel.Add(self.wids['plotalt_op'], dcol=2)
         add_text('Plot2 k weight: ', newrow=False)
-        panel.Add(wids['plot_kweight_alt'])
+        panel.Add(wids['plot_kweight_alt'], style=RIGHT)
         add_text('Window for Second Plot: ', newrow=True)
         panel.Add(self.wids['plot_win'], dcol=2)
         add_text('Plot R max: ', newrow=False)
-        panel.Add(wids['plot_rmax'])
+        panel.Add(wids['plot_rmax'], style=RIGHT)
+
+        add_text('Save Plot Options as: ', newrow=True)
+        panel.Add(self.wids['plotopt_name'], dcol=2)
+
+        add_text('Use Saved Plot Options: ', dcol=1, newrow=False)
+        panel.Add(self.wids['plotopt_sel'], dcol=1)
+
 
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
 
@@ -392,7 +415,8 @@ class EXAFSPanel(TaskPanel):
 
         for attr in ('bkg_kmin', 'bkg_kmax', 'bkg_kweight', 'fft_kmin',
                      'fft_kmax', 'fft_kweight', 'fft_dk', 'fft_rmaxout',
-                     'plot_rmax'):
+                     # 'plot_rmax'
+                     ):
             try:
                 wids[attr].SetValue(float(opts.get(attr)))
             except:
@@ -412,7 +436,9 @@ class EXAFSPanel(TaskPanel):
 
         for attr in ('fft_kwindow', 'plotone_op', 'plotalt_op'): # 'plotsel_op',
             if attr in opts:
-                wids[attr].SetStringSelection(opts[attr])
+                # wids[attr].SetStringSelection(opts[attr])
+                print("would have set " , attr, opts[attr])
+
 
         frozen = opts.get('is_frozen', False)
         if hasattr(dgroup, 'is_frozen'):
@@ -603,6 +629,36 @@ class EXAFSPanel(TaskPanel):
         if self.skip_plotting:
             return
         self.onPlotOne(dgroup=dgroup)
+
+
+    def onPlotOptSave(self, val=None, event=None):
+        data = {}
+        for attr in ('plot_voffset', 'plot_kweight',
+                     'plot_kweight_alt', 'plot_rmax'):
+            data[attr] = self.wids[attr].GetValue()
+
+        for attr in ('plotone_op', 'plotsel_op', 'plotalt_op'):
+            data[attr] = self.wids[attr].GetStringSelection()
+        self.plotopt_saves[val] = data
+
+        choices = list(reversed(self.plotopt_saves.keys()))
+        self.wids['plotopt_sel'].SetChoices(choices)
+        self.wids['plotopt_sel'].SetSelection(0)
+
+
+    def onPlotOptSel(self, event=None):
+        name =  event.GetString()
+        data = self.plotopt_saves.get(name, None)
+        if data is not None:
+            for attr in ('plot_voffset', 'plot_kweight',
+                         'plot_kweight_alt', 'plot_rmax'):
+                self.wids[attr].SetValue(data[attr])
+
+            for attr in ('plotone_op', 'plotsel_op', 'plotalt_op'):
+                self.wids[attr].SetStringSelection(data[attr])
+
+            self.plot()
+
 
     def onPlotOne(self, evt=None, dgroup=None):
         if self.skip_plotting:
