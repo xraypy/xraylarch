@@ -309,14 +309,6 @@ class XASNormPanel(TaskPanel):
         if conf.get('edge_step', None) is None:
             conf['edge_step'] = getattr(dgroup, 'edge_step', 1)
 
-        # update config from callargs - last call arguments
-        # callargs = getattr(dgroup, 'callargs', None)
-        # if callargs is not None:
-        #    pre_callargs = getattr(callargs, 'pre_edge', None)
-        #    if pre_callargs is not None:
-        #        for attr in ('e0', 'nnorm', 'nvict', 'pre1', 'pre2', 'norm1', 'norm2'):
-        #            update_confval(conf, pre_callargs, attr)
-
         atsym = '?'
         if hasattr(dgroup, 'element'):
             elem = getattr(dgroup, 'element', '?')
