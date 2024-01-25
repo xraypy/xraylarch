@@ -69,7 +69,8 @@ def add_floatspin(name, value, panel, with_pin=True, xasmain=None,
                              relative_e0=relative_e0,
                              callback=callback)
         fspin, pinb = FloatSpinWithPin(panel, value=value,
-                                       pin_action=pin_action, **kws)
+                                       pin_action=pin_action,
+                                       **kws)
     else:
         fspin = FloatSpin(panel, value=value, **kws)
         pinb = None
@@ -744,7 +745,7 @@ class RebinDataDialog(wx.Dialog):
                     ylabel=plotlabels.mu, **opts)
 
         xold, yold = self.dgroup.energy, self.dgroup.mu
-        ppanel.oplot(xold, yold, zorder=10, 
+        ppanel.oplot(xold, yold, zorder=10,
                      marker='o', markersize=4, linewidth=2.0,
                      label='original', show_legend=True, **opts)
         if keep_limits:
@@ -945,7 +946,7 @@ class SmoothDataDialog(wx.Dialog):
                     ylabel=plotlabels.mu, **opts)
 
         xold, yold = self.dgroup.energy, self.dgroup.mu
-        ppanel.oplot(xold, yold, zorder=10, 
+        ppanel.oplot(xold, yold, zorder=10,
                      marker='o', markersize=4, linewidth=2.0,
                      label='original', show_legend=True, **opts)
         if keep_limits:
@@ -1103,6 +1104,7 @@ class DeglitchDialog(wx.Dialog):
         self.parent = parent
         self.controller = controller
         self.wids = {}
+        self.plot_markers = None
         self.dgroup = self.controller.get_group()
         groupnames = list(self.controller.file_groups.keys())
 
@@ -1137,10 +1139,6 @@ class DeglitchDialog(wx.Dialog):
 
         undo = Button(panel, 'Undo remove', size=(125, -1),
                       action=self.on_undo)
-        #wids['apply'] = Button(panel, 'Save / Overwrite', size=(150, -1),
-        #                       action=self.on_apply)
-        #SetTip(wids['apply'], '''Save deglitched, overwrite current arrays,
-#clear undo history''')
 
         wids['save_as'] = Button(panel, 'Save As New Group: ', size=(150, -1),
                                  action=self.on_saveas)
@@ -1151,15 +1149,20 @@ class DeglitchDialog(wx.Dialog):
 
         self.history_message = SimpleText(panel, '')
 
-        opts  = dict(size=(125, -1), digits=2, increment=0.1, action=None)
+        opts  = dict(size=(125, -1), digits=2, increment=0.1)
         for wname in ('xlast', 'range1', 'range2'):
-            if wname == 'range2': lastx += 1
-            pin_callback = partial(self.on_pinvalue, opt=wname)
-            fspin, pinbtn = add_floatspin(wname, lastx, panel,
-                                          with_pin=True, xasmain=self.parent,
-                                          callback=pin_callback, **opts)
+            if wname == 'range2':
+                lastx += 1
+            pin_action = partial(self.parent.onSelPoint, opt=wname,
+                                 relative_e0=False,
+                                 callback=self.on_pinvalue)
+
+            float_action=partial(self.on_floatvalue, opt=wname)
+            fspin, pinb = FloatSpinWithPin(panel, value=lastx,
+                                           pin_action=pin_action,
+                                           action=float_action)
             wids[wname] = fspin
-            wids[wname+'_pin'] = pinbtn
+            wids[wname+'_pin'] = pinb
 
         self.choice_range = Choice(panel, choices=('above', 'below', 'between'),
                                     size=(90, -1), action=self.on_rangechoice)
@@ -1221,6 +1224,7 @@ class DeglitchDialog(wx.Dialog):
             plottype = DEGLITCH_PLOTS[plotstr]
         self.data = self.get_xydata(datatype=plottype)
         self.xmasks = [np.ones(len(self.data[0]), dtype=bool)]
+        self.plot_markers = None
 
     def get_xydata(self, datatype='mu'):
         if hasattr(self.dgroup, 'energy'):
@@ -1262,6 +1266,12 @@ class DeglitchDialog(wx.Dialog):
     def on_pinvalue(self, opt='__', xsel=None, **kws):
         if xsel is not None and opt in self.wids:
             self.wids[opt].SetValue(xsel)
+        self.plot_markers = opt
+        self.plot_results()
+
+    def on_floatvalue(self, val=None, opt='_', **kws):
+        self.plot_markers = opt
+        self.plot_results()
 
     def on_remove(self, event=None, opt=None):
         xwork, ywork = self.data
@@ -1377,6 +1387,26 @@ class DeglitchDialog(wx.Dialog):
             set_view_limits(ppanel, xlim, ylim)
         if plottype in ('chie', 'chiew'):
             ppanel.axes.xaxis.set_major_formatter(FuncFormatter(ek_formatter))
+
+        if self.plot_markers is not None:
+            rchoice = self.choice_range.GetStringSelection().lower()
+            xwork, ywork = self.data
+            opts = dict(marker='o', markersize=6, zorder=2, label='_nolegend_',
+                        markerfacecolor='#66000022', markeredgecolor='#440000')
+            if self.plot_markers == 'xlast':
+                bad = index_nearest(xwork, self.wids['xlast'].GetValue())
+                ppanel.axes.plot([xwork[bad]], [ywork[bad]], **opts)
+            else:
+                bad = index_nearest(xwork, self.wids['range1'].GetValue())
+                if rchoice == 'above':
+                    ppanel.axes.plot([xwork[bad:]], [ywork[bad:]], **opts)
+                elif rchoice == 'below':
+                    ppanel.axes.plot([xwork[:bad+1]], [ywork[:bad+1]], **opts)
+                elif rchoice == 'between':
+                    bad2 = index_nearest(xwork, self.wids['range2'].GetValue())
+                    ppanel.axes.plot([xwork[bad:bad2+1]],
+                                     [ywork[bad:bad2+1]], **opts)
+
 
         ppanel.canvas.draw()
 
