@@ -41,7 +41,7 @@ noplot  = '<no plot>'
 PlotOne_Choices = [mu_bkg, chie, chik, chikwin, chirmag, chirre, chirmr, wavelet,
                    chir_w, chiq, chikq]
 PlotAlt_Choices = [noplot] + PlotOne_Choices
-PlotSel_Choices = [chie, chik, chirmag, chirre]
+PlotSel_Choices = [chie, chik, chirmag, chirre, chiq]
 
 
 PlotCmds = {mu_bkg:  "plot_bkg({group:s}",
@@ -133,12 +133,12 @@ class EXAFSPanel(TaskPanel):
 
 
         #
-        wids['plotopt_name'] = TextCtrl(panel, 'view1', size=(150, -1),
+        wids['plotopt_name'] = TextCtrl(panel, 'kspace, kw=2', size=(150, -1),
                                         action=self.onPlotOptSave,
                                         act_on_losefocus=False)
         wids['plotopt_name'].SetToolTip('Name this set of Plot Choices')
 
-        self.plotopt_saves = {'default': {'plotone_op': chik, 'plotsel_op': chik,
+        self.plotopt_saves = {'kspace, kw=2': {'plotone_op': chik, 'plotsel_op': chik,
                                           'plotalt_op': noplot, 'plot_voffset': 0.0,
                                           'plot_kweight': 2, 'plot_kweight_alt': 2,
                                           'plot_rmax': 8}}
@@ -415,12 +415,15 @@ class EXAFSPanel(TaskPanel):
 
         for attr in ('bkg_kmin', 'bkg_kmax', 'bkg_kweight', 'fft_kmin',
                      'fft_kmax', 'fft_kweight', 'fft_dk', 'fft_rmaxout',
-                     # 'plot_rmax'
                      ):
             try:
                 wids[attr].SetValue(float(opts.get(attr)))
             except:
                 pass
+        for attr in ('fft_kwindow',):
+            if attr in opts:
+                wids[attr].SetStringSelection(opts[attr])
+
 
         for attr in ('bkg_clamplo', 'bkg_clamphi'):
             val = opts.get(attr, 0)
@@ -432,13 +435,7 @@ class EXAFSPanel(TaskPanel):
             try:
                 wids[attr].SetStringSelection("%d" % int(val))
             except:
-                print(f"could not set '{attr:s}' to {val}")
-
-        for attr in ('fft_kwindow', 'plotone_op', 'plotalt_op'): # 'plotsel_op',
-            if attr in opts:
-                # wids[attr].SetStringSelection(opts[attr])
-                print("would have set " , attr, opts[attr])
-
+                pass
 
         frozen = opts.get('is_frozen', False)
         if hasattr(dgroup, 'is_frozen'):
@@ -631,15 +628,19 @@ class EXAFSPanel(TaskPanel):
         self.onPlotOne(dgroup=dgroup)
 
 
-    def onPlotOptSave(self, val=None, event=None):
+    def onPlotOptSave(self, name=None, event=None):
         data = {}
+        if name is None or len(name) < 1:
+            name = f"view {len(self.plotopt_saves)+1}"
+
+        name = name.strip()
         for attr in ('plot_voffset', 'plot_kweight',
                      'plot_kweight_alt', 'plot_rmax'):
             data[attr] = self.wids[attr].GetValue()
 
         for attr in ('plotone_op', 'plotsel_op', 'plotalt_op'):
             data[attr] = self.wids[attr].GetStringSelection()
-        self.plotopt_saves[val] = data
+        self.plotopt_saves[name] = data
 
         choices = list(reversed(self.plotopt_saves.keys()))
         self.wids['plotopt_sel'].SetChoices(choices)
