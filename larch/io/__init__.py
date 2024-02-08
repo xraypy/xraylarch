@@ -45,6 +45,7 @@ from .specfile_reader import (str2rng_larch, read_specfile, open_specfile,
 from .stepscan_file import read_stepscan
 
 from .nexus_xas import NXxasFile
+from .xas_data_source import open_xas_source, read_xas_source
 
 def read_tiff(fname, *args, **kws):
     """read image data from a TIFF file as an array"""
@@ -103,7 +104,9 @@ __exports__ = dict(increment_filename=increment_filename,
                    str2rng=str2rng_larch,
                    read_specfile=read_specfile,
                    specfile=open_specfile,
-                   read_fdmnes=read_fdmnes
+                   read_fdmnes=read_fdmnes,
+                   open_xas_source=open_xas_source,
+                   read_xas_source=read_xas_source
                    )
 
 _larch_builtins = {'_io':__exports__}
