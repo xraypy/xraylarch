@@ -975,7 +975,7 @@ class XASNormPanel(TaskPanel):
             if not hasattr(dgroup, 'scale'):
                 dgroup.scale = 1.0
 
-            dgroup.norm = dgroup.ydat*dgroup.scale
+            dgroup.norm = dgroup.norm*dgroup.scale
             if pchoice == 'dmude':
                 dgroup.plot_ylabel = 'dy/dx'
                 dgroup.plot_yarrays = [('dmude', PLOTOPTS_1, 'dy/dx')]
@@ -988,12 +988,12 @@ class XASNormPanel(TaskPanel):
             elif pchoice == 'norm+dmude':
                 lab = plotlabels.norm
                 dgroup.plot_y2label = 'dy/dx'
-                dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, 'y'),
+                dgroup.plot_yarrays = [('norm', PLOTOPTS_1, 'y'),
                                        ('dmude', PLOTOPTS_D, 'dy/dx')]
             elif pchoice == 'norm+d2mude':
                 lab = plotlabels.norm
                 dgroup.plot_y2label = 'd2y/dx2'
-                dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, 'y'),
+                dgroup.plot_yarrays = [('norm', PLOTOPTS_1, 'y'),
                                        ('d2normde', PLOTOPTS_D, 'd2y/dx2')]
             return
 
@@ -1025,12 +1025,12 @@ class XASNormPanel(TaskPanel):
         elif pchoice == 'norm+i0':
             lab = plotlabels.norm
             dgroup.plot_y2label = lab2 = plotlabels.i0
-            dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, lab),
+            dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab),
                                    ('i0', PLOTOPTS_D, lab2)]
         elif pchoice == 'norm+flat':
             lab = plotlabels.norm
             dgroup.plot_y2label = lab2 = plotlabels.flat
-            dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, lab),
+            dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab),
                                    ('flat', PLOTOPTS_D, lab2)]
         elif pchoice == 'mback_norm':
             req_attrs.append('mback_norm')
@@ -1160,7 +1160,6 @@ class XASNormPanel(TaskPanel):
         narr = len(plot_yarrays) - 1
 
         _linewidth = popts['linewidth']
-
         for i, pydat in enumerate(plot_yarrays):
             yaname, yopts, yalabel = pydat
             popts.update(yopts)
