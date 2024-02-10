@@ -61,6 +61,19 @@ PlotSel_Choices_nonxas = {'Raw Data': 'mu',
 FSIZE = 120
 FSIZEBIG = 175
 
+def get_auto_nnorm(config):
+    "autoamatically set nnorm from range"
+    norm1 = config['norm1']
+    norm2 = config['norm2']
+    nrange = abs(norm2 - norm1)
+    nnorm = 2
+    if nrange < 350:
+        nnorm = 1
+    if nrange < 50:
+        norm = 0
+    return nnorm
+
+
 class XASNormPanel(TaskPanel):
     """XAS normalization Panel"""
     def __init__(self, parent, controller=None, **kws):
@@ -150,6 +163,18 @@ class XASNormPanel(TaskPanel):
         sx.Add(self.wids['auto_step'], 0, LEFT, 4)
         pack(step_panel, sx)
 
+        # step row
+        nnorm_panel = wx.Panel(panel)
+        self.wids['nnorm'] = Choice(nnorm_panel, choices=list(NNORM_CHOICES.keys()),
+                                    size=(150, -1), action=self.onNNormChoice,
+                                    default=2)
+        self.wids['auto_nnorm'] = Check(nnorm_panel, default=True, label='auto?',
+                                    action=self.onAuto_NNORM)
+
+        sx = wx.BoxSizer(wx.HORIZONTAL)
+        sx.Add(self.wids['nnorm'], 0, LEFT, 4)
+        sx.Add(self.wids['auto_nnorm'], 0, LEFT, 4)
+        pack(nnorm_panel, sx)
 
         self.wids['energy_ref'] = Choice(panel, choices=['None'],
                                          action=self.onEnergyRef, size=(300, -1))
@@ -158,9 +183,6 @@ class XASNormPanel(TaskPanel):
                                     size=(100, -1), action=self.onNormMethod,
                                     default=0)
 
-        self.wids['nnorm'] = Choice(panel, choices=list(NNORM_CHOICES.keys()),
-                                    size=(150, -1), action=self.onNormMethod,
-                                    default=0)
 
         opts = {'size': (FSIZE, -1), 'digits': 2, 'increment': 5.0, 'action': self.onSet_Ranges,
                 'min_val':-99000, 'max_val':99000}
@@ -211,7 +233,7 @@ class XASNormPanel(TaskPanel):
                                        action=self.onFreezeGroup)
 
         use_auto = Button(panel, 'Use Default Settings', size=(200, -1),
-                          action=self.onAutoNorm)
+                          action=self.onResetNorm)
         copy_auto = Button(panel, 'Copy', size=(60, -1),
                            action=self.onCopyAuto)
 
@@ -277,7 +299,7 @@ class XASNormPanel(TaskPanel):
         add_text('Norm Energy range: ')
         panel.Add(nor_panel, dcol=2)
         panel.Add(SimpleText(panel, 'Polynomial Type:'), newrow=True)
-        panel.Add(self.wids['nnorm'], dcol=3)
+        panel.Add(nnorm_panel, dcol=3)
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=4, newrow=True)
         panel.Add(self.wids['is_frozen'], newrow=True)
@@ -402,6 +424,7 @@ class XASNormPanel(TaskPanel):
             self.wids['nvict'].SetStringSelection("%d" % opts['nvict'])
             self.wids['show_e0'].SetValue(opts['show_e0'])
             self.wids['auto_e0'].SetValue(opts['auto_e0'])
+            self.wids['auto_nnorm'].SetValue(opts.get('auto_nnorm', 0))
             self.wids['auto_step'].SetValue(opts['auto_step'])
             self.wids['edge'].SetStringSelection(opts['edge'].title())
             self.wids['atsym'].SetStringSelection(opts['atsym'].title())
@@ -432,17 +455,19 @@ class XASNormPanel(TaskPanel):
         wx.CallAfter(self.unset_skip_process)
 
     def set_nnorm_widget(self, nnorm=None):
-        nnorm_str = 'auto'
-        if nnorm is not None:
-            try:
-                nnorm = int(nnorm)
-            except ValueError:
-                nnorm = None
+        if nnorm in (None, 'auto'):
+            nnorm = nnorm_default = get_auto_nnorm(self.get_config())
 
-            for k, v in NNORM_CHOICES.items():
-                if v == nnorm:
-                    nnorm_str = k
+        try:
+            nnorm = int(nnorm)
+        except ValueError:
+            nnorm = nnorm_default
+
+        for k, v in NNORM_CHOICES.items():
+            if v == nnorm:
+                nnorm_str = k
         self.wids['nnorm'].SetStringSelection(nnorm_str)
+        self.wids['auto_nnorm'].SetValue(0)
 
     def unset_skip_process(self):
         self.skip_process = False
@@ -464,7 +489,8 @@ class XASNormPanel(TaskPanel):
         form_opts['plotone_op'] = self.plotone_op.GetStringSelection()
         form_opts['plotsel_op'] = self.plotsel_op.GetStringSelection()
         form_opts['plot_voff'] = self.wids['plot_voff'].GetValue()
-        for ch in ('show_e0', 'show_pre', 'show_norm', 'auto_e0', 'auto_step'):
+        for ch in ('show_e0', 'show_pre', 'show_norm', 'auto_e0',
+                   'auto_step', 'auto_nnorm'):
             form_opts[ch] = self.wids[ch].IsChecked()
 
         form_opts['norm_method'] = self.wids['norm_method'].GetStringSelection().lower()
@@ -474,9 +500,18 @@ class XASNormPanel(TaskPanel):
         form_opts['energy_ref'] = self.wids['energy_ref'].GetStringSelection()
         return form_opts
 
+    def onNNormChoice(self, evt=None):
+        auto_nnorm  = self.wids['auto_nnorm'].SetValue(0)
+        self.onNormMethod()
+
     def onNormMethod(self, evt=None):
         method = self.wids['norm_method'].GetStringSelection().lower()
+        auto_nnorm  = self.wids['auto_nnorm'].GetValue()
+
         nnorm  = NNORM_CHOICES.get(self.wids['nnorm'].GetStringSelection(), None)
+        if nnorm is None:
+            nnorm = get_auto_nnorm(self.get_config())
+
         nvict = int(self.wids['nvict'].GetStringSelection())
         self.update_config({'norm_method': method, 'nnorm': nnorm, 'nvict': nvict})
         if method.startswith('mback'):
@@ -496,8 +531,9 @@ class XASNormPanel(TaskPanel):
             dgroup.is_frozen = frozen
         except:
             pass
-        for wattr in ('e0', 'step', 'pre1', 'pre2', 'norm1', 'norm2',
-                      'nvict', 'nnorm', 'show_e0', 'auto_e0', 'auto_step',
+
+        for wattr in ('e0', 'step', 'pre1', 'pre2', 'norm1', 'norm2', 'nvict',
+                      'nnorm', 'show_e0', 'auto_e0', 'auto_step', 'auto_nnorm',
                       'norm_method', 'edge', 'atsym', 'show_pre', 'show_norm'):
             self.wids[wattr].Enable(not frozen)
 
@@ -606,17 +642,22 @@ class XASNormPanel(TaskPanel):
 
         wx.CallAfter(self.controller.set_focus)
 
-    def onAutoNorm(self, evt=None):
-        defaults = self.get_defaultconfig()
-        norm1 = defaults['norm1']
-        norm2 = defaults['norm2']
-        nnorm = 2
-        if (norm2-norm1 < 350): nnorm = 1
-        if (norm2-norm1 < 50): nnorm = 0
+    def onAuto_NNORM(self, evt=None):
+        if evt.IsChecked():
+            nnorm = get_auto_nnorm(self.get_config())
+            self.set_nnorm_widget(nnorm)
+            self.wids['auto_nnorm'].SetValue(0)
+            time.sleep(0.001)
+            wx.CallAfter(self.onReprocess)
 
+    def onResetNorm(self, evt=None):
+        auto_nnorm = self.wids['auto_nnorm'].GetValue()
+        if auto_nnorm:
+            nnorm = get_auto_nnorm(self.get_config())
         self.set_nnorm_widget(nnorm)
-        self.wids['norm_method'].SetSelection(0)
+
         self.wids['auto_step'].SetValue(1)
+        self.wids['auto_e0'].SetValue(1)
         self.wids['auto_e0'].SetValue(1)
         self.wids['nvict'].SetSelection(0)
         for attr in ('pre1', 'pre2', 'norm1', 'norm2'):
