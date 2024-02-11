@@ -60,6 +60,7 @@ if HAS_WXPYTHON:
     from .columnframe import ColumnDataFileFrame, EditColumnFrame
     from .athena_importer import AthenaImporter
     from .specfile_importer import SpecfileImporter
+    from .xas_importer import XasImporter
     from .reportframe import ReportFrame, DictFrame, DataTableGrid
     from .gui_utils import (databrowser, fileprompt, LarchWxApp, wx_update)
     from .larch_updater import LarchUpdaterDialog
