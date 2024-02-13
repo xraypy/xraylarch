@@ -352,7 +352,6 @@ class XASNormPanel(TaskPanel):
         conf['atsym'] = atsym
         if atsym == '?':
             conf['atsym'] = getattr(dgroup, 'atsym', atsym)
-
         conf['edge'] = getattr(dgroup,'edge', conf['edge'])
 
         xeref = getattr(dgroup, 'energy_ref', '')
@@ -375,6 +374,7 @@ class XASNormPanel(TaskPanel):
             atsym, edge = guess_edge(dgroup.e0)
             conf['atsym'] = atsym
             conf['edge'] = edge
+
 
         if hasattr(dgroup, 'mback_params'):
             conf['atsym'] = getattr(dgroup.mback_params, 'atsym', conf['atsym'])
@@ -426,6 +426,7 @@ class XASNormPanel(TaskPanel):
             self.wids['auto_e0'].SetValue(opts['auto_e0'])
             self.wids['auto_nnorm'].SetValue(opts.get('auto_nnorm', 0))
             self.wids['auto_step'].SetValue(opts['auto_step'])
+
             self.wids['edge'].SetStringSelection(opts['edge'].title())
             self.wids['atsym'].SetStringSelection(opts['atsym'].title())
             self.wids['norm_method'].SetStringSelection(opts['norm_method'].lower())
@@ -834,7 +835,6 @@ class XASNormPanel(TaskPanel):
     def process(self, dgroup=None, force_mback=False, force=False, use_form=True, **kws):
         """ handle process (pre-edge/normalize) of XAS data from XAS form
         """
-
         if self.skip_process and not force:
             return
         if dgroup is None:
@@ -881,9 +881,11 @@ class XASNormPanel(TaskPanel):
                 dgroup.xdat = dgroup.energy = res.energy
         dgroup.energy_units = en_units
 
+        if not hasattr(dgroup, 'e0'):
+            e0 = find_e0(dgroup)
+
         if hasattr(dgroup, 'e0') and form['atsym'] == '?':
             form['atsym'], form['edge'] = guess_edge(dgroup.e0)
-
         dgroup.atsym = form['atsym']
         dgroup.edge = form['edge']
 
@@ -979,7 +981,6 @@ class XASNormPanel(TaskPanel):
             atsym, edge = guess_edge(dgroup.e0)
             conf['atsym'] = dgroup.atsym = atsym
             conf['edge'] = dgroup.edge = edge
-
         self.wids['atsym'].SetStringSelection(dgroup.atsym)
         self.wids['edge'].SetStringSelection(dgroup.edge)
 
@@ -996,6 +997,7 @@ class XASNormPanel(TaskPanel):
             conf['edge'] = getattr(dgroup.mback_params, 'edge')
         self.update_config(conf, dgroup=dgroup)
         wx.CallAfter(self.unset_skip_process)
+
 
     def get_plot_arrays(self, dgroup):
         lab = plotlabels.norm
@@ -1122,7 +1124,6 @@ class XASNormPanel(TaskPanel):
                 val = self.wids[wid].GetValue()
                 ival = min(len(y4e0)-1, index_of(dgroup.energy, dgroup.e0 + val))
                 dgroup.plot_extras.append(('marker', dgroup.e0+val, y4e0[ival], popts))
-
 
     def plot(self, dgroup, title=None, plot_yarrays=None, yoff=0,
              delay_draw=True, multi=False, new=True, with_extras=True, **kws):
