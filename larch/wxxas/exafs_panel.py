@@ -44,7 +44,7 @@ PlotAlt_Choices = [noplot] + PlotOne_Choices
 PlotSel_Choices = [chie, chik, chirmag, chirre, chiq]
 
 
-PlotCmds = {mu_bkg:  "plot_bkg({group:s}",
+PlotCmds = {mu_bkg:  "plot_bkg({group:s}, show_ek0={show_ek0}",
             chie:    "plot_chie({group:s}",
             chik:    "plot_chik({group:s}, show_window=False, kweight={plot_kweight:.0f}",
             chikwin: "plot_chik({group:s}, show_window=True, kweight={plot_kweight:.0f}",
@@ -124,10 +124,17 @@ class EXAFSPanel(TaskPanel):
                                    action=self.onProcess)
         wids['plot_win'].SetStringSelection('2')
 
+        ek0_panel = wx.Panel(panel)
         opts = dict(digits=2, increment=0.1, min_val=0, action=self.onProcess)
-        wids['ek0'] = FloatSpin(panel, **opts)
+        wids['ek0'] = FloatSpin(ek0_panel, **opts)
+        wids['show_ek0'] = Check(ek0_panel, default=True, label='show?',
+                                 action=self.onShowEk0)
+        sx = wx.BoxSizer(wx.HORIZONTAL)
+        sx.Add(self.wids['ek0'], 0, LEFT, 4)
+        sx.Add(self.wids['show_ek0'], 0, LEFT, 4)
+        pack(ek0_panel, sx)
 
-        wids['push_e0'] = Button(panel, 'Use as Normalization E0', size=(200, -1),
+        wids['push_e0'] = Button(panel, 'Use as Normalization E0', size=(180, -1),
                                  action=self.onPushE0)
         wids['push_e0'].SetToolTip('Use this value for E0 in the Normalization Tab')
 
@@ -239,8 +246,8 @@ class EXAFSPanel(TaskPanel):
 
 
         add_text('E k=0: ')
-        panel.Add(wids['ek0'])
-        panel.Add(wids['push_e0'], dcol=2)
+        panel.Add(ek0_panel, dcol=2)
+        panel.Add(wids['push_e0'], dcol=1)
         panel.Add(CopyBtn('ek0'), style=RIGHT)
 
         add_text('R bkg: ')
@@ -473,6 +480,8 @@ class EXAFSPanel(TaskPanel):
         for attr in ('fft_kwindow', 'fft_rwindow', 'plotone_op',
                      'plotsel_op', 'plotalt_op'):
             conf[attr] = wids[attr].GetStringSelection()
+        conf['show_ek0'] = wids['show_ek0'].IsChecked()
+
         time.sleep(0.001)
         self.skip_process = skip_save
         if as_copy:
@@ -483,6 +492,10 @@ class EXAFSPanel(TaskPanel):
 
     def onSaveConfigBtn(self, evt=None):
         self.set_defaultconfig(self.read_form())
+
+    def onShowEk0(self, evt=None):
+        print("show ek0 ", evt)
+
 
     def onPushE0(self, evt=None):
         conf = self.read_form()
@@ -671,6 +684,7 @@ class EXAFSPanel(TaskPanel):
         self.process(dgroup=self.dgroup)
         conf['title'] = '"%s"' % self.dgroup.filename
 
+        # print(" onPlotOne ", conf['plotone_op'])
         cmd = PlotCmds[conf['plotone_op']] + ", win=1, title={title:s})"
         # 2nd plot
         cmd2 =  PlotCmds[conf['plotalt_op']]
@@ -680,6 +694,7 @@ class EXAFSPanel(TaskPanel):
             cmd = "%s\n%s" % (cmd, cmd2)
             self.controller.get_display(win=2)
 
+        # print(" onPlotOne ",   cmd.format(**conf))
         self.larch_eval(cmd.format(**conf))
         self.last_plot = 'one'
 
