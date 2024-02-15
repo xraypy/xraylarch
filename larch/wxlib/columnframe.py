@@ -588,8 +588,8 @@ class ColumnDataFileFrame(wx.Frame) :
                            ypop='', monod=3.1355316, en_units=en_units,
                            yerr_op='constant', yerr_val=1, yerr_arr=None,
                            yrpop='', yrop='/', yref1='', yref2='',
-                           is_trans=False,
                            has_yref=False, dtc_config={}, multicol_config={})
+        # print(" READ COL FILE xxx ", config)
         if config is not None:
             self.config.update(config)
             dtype = config.get('datatype', None)
@@ -615,6 +615,8 @@ class ColumnDataFileFrame(wx.Frame) :
 
         if self.config['yref2'] is None and 'i1' in self.array_labels:
             self.config['yref2'] = 'i1'
+
+        use_trans = self.config.get('is_trans', False) or 'log' in self.config['ypop']
 
         message = "Data Columns for %s" % group.filename
         wx.Frame.__init__(self, None, -1,
@@ -657,8 +659,7 @@ class ColumnDataFileFrame(wx.Frame) :
         self.yerr_op.SetSelection(0)
 
         self.is_trans = Check(panel, label='is transmission data?',
-                              default=self.config['is_trans'],
-                              action=self.onTransCheck)
+                              default=use_trans, action=self.onTransCheck)
 
         self.yerr_val = FloatCtrl(panel, value=1, precision=4, size=(75, -1))
         self.monod_val  = FloatCtrl(panel, value=3.1355316, precision=7, size=(75, -1))
@@ -683,6 +684,7 @@ class ColumnDataFileFrame(wx.Frame) :
         self.yrop =  Choice(panel, choices=ARR_OPS, action=self.onUpdate, size=(100, -1))
 
         self.ysuf = SimpleText(panel, '')
+        # print("COL FILE READER set ypop to ", use_trans, self.config['ypop'])
         self.ypop.SetStringSelection(self.config['ypop'])
         self.yop.SetStringSelection(self.config['yop'])
         self.yrpop.SetStringSelection(self.config['yrpop'])
@@ -695,6 +697,7 @@ class ColumnDataFileFrame(wx.Frame) :
         self.yerr_val.SetValue(self.config['yerr_val'])
         if '(' in self.config['ypop']:
             self.ysuf.SetLabel(')')
+
 
         ixsel, iysel = 0, 1
         iy2sel = iyesel = iyr1sel = iyr2sel = len(yarr_labels)-1
@@ -729,7 +732,7 @@ class ColumnDataFileFrame(wx.Frame) :
         self.wid_refgroupname = wx.TextCtrl(panel, value=group.groupname + '_ref',
                                          size=(150, -1))
 
-        self.onTransCheck(is_trans=self.config['is_trans'])
+        self.onTransCheck(is_trans=use_trans)
         self.onYrefCheck(has_yref=self.config['has_yref'])
 
 
@@ -1234,6 +1237,10 @@ class ColumnDataFileFrame(wx.Frame) :
         if datatype == 'raw':
             self.en_units.SetStringSelection('not energy')
 
+        ypop = self.ypop.GetStringSelection().strip()
+        self.is_trans.SetValue('log' in ypop)
+
+
         conf = {'datatype': datatype,
                 'ix':  self.xarr.GetSelection(),
                 'xarr': self.xarr.GetStringSelection(),
@@ -1244,7 +1251,7 @@ class ColumnDataFileFrame(wx.Frame) :
                 'iy1': self.yarr1.GetSelection(),
                 'iy2': self.yarr2.GetSelection(),
                 'yop': self.yop.GetStringSelection().strip(),
-                'ypop': self.ypop.GetStringSelection().strip(),
+                'ypop': ypop,
                 'iyerr': self.yerr_arr.GetSelection(),
                 'yerr_arr': self.yerr_arr.GetStringSelection(),
                 'yerr_op': self.yerr_op.GetStringSelection().lower(),
@@ -1313,7 +1320,6 @@ def create_arrays(dgroup, datatype='xas', ix=0, xarr='energy', en_units='eV',
     ncol, npts = dgroup.data.shape
     exprs = dict(xdat=None, ydat=None, yerr=None, yref=None)
 
-    # print("CREATE ARRAYS ", dgroup, datatype, ncol, npts)
     if not hasattr(dgroup, 'index'):
         dgroup.index = 1.0*np.arange(npts)
 
