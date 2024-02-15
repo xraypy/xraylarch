@@ -883,11 +883,15 @@ class XASNormPanel(TaskPanel):
 
         if not hasattr(dgroup, 'e0'):
             e0 = find_e0(dgroup)
+            if form['atsym'] == '?' and conf.get('atsym', '?') != '?':
+                form['atsym'] = conf['atsym']
+                form['edge'] = conf.get('edge', 'K')
 
-        if hasattr(dgroup, 'e0') and form['atsym'] == '?':
+        if form['atsym'] == '?':
             form['atsym'], form['edge'] = guess_edge(dgroup.e0)
         dgroup.atsym = form['atsym']
         dgroup.edge = form['edge']
+
 
         cmds = []
         # test whether the energy shift is 0 or is different from the current energy shift:
