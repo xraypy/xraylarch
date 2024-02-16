@@ -14,7 +14,6 @@ from functools import partial
 import numpy as np
 np.seterr(all='ignore')
 
-
 import wx
 import wx.lib.scrolledpanel as scrolled
 
@@ -56,10 +55,10 @@ DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
 # PlotOne_Choices = [chik, chirmag, chirre, chirmr]
 
-PlotOne_Choices = make_array_choice(['chi','chir_mag', 'chir_re', 'chir_mag+chir_re', 'chiq'])
-PlotAlt_Choices = make_array_choice(['noplot', 'chi','chir_mag', 'chir_re', 'chir_mag+chir_re'])
+Plot1_Choices = make_array_choice(['chi','chir_mag', 'chir_re', 'chir_mag+chir_re', 'chiq'])
+Plot2_Choices = make_array_choice(['noplot', 'chi','chir_mag', 'chir_re', 'chir_mag+chir_re', 'chiq'])
 
-# PlotAlt_Choices = [noplot] + PlotOne_Choices
+# Plot2_Choices = [noplot] + Plot1_Choices
 
 ScriptWcards = "Fit Models(*.lar)|*.lar|All files (*.*)|*.*"
 
@@ -778,7 +777,7 @@ class FeffitPanel(TaskPanel):
         fit_rmax = self.add_floatspin('fit_rmax',  value=5, **fsopts)
         fit_rmin = self.add_floatspin('fit_rmin',  value=1, action=self.onRmin, **fsopts)
 
-        wids['fit_kwstring'] = Choice(pan, size=(150, -1),
+        wids['fit_kwstring'] = Choice(pan, size=(120, -1),
                                      choices=list(Feffit_KWChoices.keys()))
         wids['fit_kwstring'].SetSelection(1)
 
@@ -787,36 +786,49 @@ class FeffitPanel(TaskPanel):
         wids['fit_space'] = Choice(pan, choices=list(Feffit_SpaceChoices.keys()),
                                    size=(150, -1))
 
-        wids['plotone_op'] = Choice(pan, choices=list(PlotOne_Choices.keys()),
-                                    action=self.onPlot, size=(150, -1))
-        wids['plotone_op'].SetSelection(1)
-        wids['plotalt_op'] = Choice(pan, choices=list(PlotAlt_Choices.keys()),
-                                    action=self.onPlot, size=(150, -1))
+        wids['plot_kw'] = Choice(pan, size=(80, -1),
+                                  choices=['0', '1', '2', '3', '4'], default=2)
 
-        wids['plot_win'] = Choice(pan, choices=PlotWindowChoices,
-                                  action=self.onPlot, size=(60, -1))
-        wids['plot_win'].SetStringSelection('2')
+        wids['plot1_op'] = Choice(pan, choices=list(Plot1_Choices.keys()),
+                                    action=self.onPlot, size=(150, -1))
+        wids['plot1_op'].SetSelection(1)
 
-        wids['plot_voffset'] =  FloatSpin(pan, value=0, digits=2, increment=0.25,
+        wids['plot1_voff'] =  FloatSpin(pan, value=0, digits=2, increment=0.25,
                                           size=(100, -1), action=self.onPlot)
 
-        wids['plot_paths'] = Check(pan, default=False, label='Plot Each Path',
+        wids['plot1_paths'] = Check(pan, default=False, label='Plot Each Path',
                                    action=self.onPlot)
-        wids['plot_ftwindows'] = Check(pan, default=False, label='Plot FT Windows',
+        wids['plot1_ftwins'] = Check(pan, default=False, label='Plot FT Windows',
                                        action=self.onPlot)
-        wids['refine_bkg'] = Check(pan, default=False,
-                                   label='Refine Background during Fit?')
+
+
+        wids['plot2_win'] = Choice(pan, choices=PlotWindowChoices,
+                                   action=self.onPlot, size=(55, -1))
+        wids['plot2_win'].SetStringSelection('2')
+        wids['plot2_win'].SetToolTip('Plot Window for Second Plot')
+
+        wids['plot2_op'] = Choice(pan, choices=list(Plot2_Choices.keys()),
+                                    action=self.onPlot, size=(150, -1))
+
+
+        wids['plot2_voff'] =  FloatSpin(pan, value=0, digits=2, increment=0.25,
+                                          size=(100, -1), action=self.onPlot)
+
+        wids['plot2_paths'] = Check(pan, default=False, label='Plot Each Path',
+                                   action=self.onPlot)
+        wids['plot2_ftwins'] = Check(pan, default=False, label='Plot FT Windows',
+                                       action=self.onPlot)
         wids['plot_current']  = Button(pan,'Plot Current Model',
                                      action=self.onPlot,  size=(175, -1))
+
+        wids['refine_bkg'] = Check(pan, default=False,
+                                   label='Refine Background during Fit?')
         wids['do_fit']        = Button(pan, 'Fit Data to Model',
                                       action=self.onFitModel,  size=(175, -1))
         wids['show_results']  = Button(pan, 'Show Fit Results',
                                       action=self.onShowResults,  size=(175, -1))
         wids['show_results'].Disable()
 
-#         wids['do_fit_sel']= Button(pan, 'Fit Selected Groups',
-#                                    action=self.onFitSelected,  size=(125, -1))
-#         wids['do_fit_sel'].Disable()
         def add_text(text, dcol=1, newrow=True):
             pan.Add(SimpleText(pan, text), dcol=dcol, newrow=newrow)
 
@@ -829,7 +841,7 @@ class FeffitPanel(TaskPanel):
         pan.Add(wids['fit_space'])
 
         add_text('k weightings: ', newrow=False)
-        pan.Add(wids['fit_kwstring'])
+        pan.Add(wids['fit_kwstring'], dcol=3)
 
         add_text('k min: ')
         pan.Add(fit_kmin)
@@ -851,18 +863,27 @@ class FeffitPanel(TaskPanel):
         pan.Add(HLine(pan, size=(600, 2)), dcol=6, newrow=True)
 
         pan.Add(wids['plot_current'], dcol=1, newrow=True)
-        pan.Add(wids['plotone_op'], dcol=1)
+        pan.Add(wids['plot1_op'], dcol=1)
+        add_text('k-weight:' , newrow=False)
+        pan.Add(wids['plot_kw'], dcol=1)
 
-        pan.Add(wids['plot_paths'],  newrow=True)
-        pan.Add(wids['plot_ftwindows'])
-        # pan.Add(ppanel, dcol=2, newrow=True)
+        pan.Add(wids['plot1_ftwins'], newrow=True)
+        pan.Add(wids['plot1_paths'])
         add_text('Vertical Offset' , newrow=False)
-        pan.Add(wids['plot_voffset'])
+        pan.Add(wids['plot1_voff'])
 
-        add_text('Second Plot: ', newrow=True)
-        pan.Add(wids['plotalt_op'], dcol=1)
-        add_text('Plot Window: ', newrow=False)
-        pan.Add(wids['plot_win'], dcol=1)
+
+        add_text('Add Second Plot: ')
+
+        pan.Add(wids['plot2_op'], dcol=1)
+        add_text('Plot Window:' , newrow=False)
+        pan.Add(wids['plot2_win'])
+
+        pan.Add(wids['plot2_ftwins'],  newrow=True)
+        pan.Add(wids['plot2_paths'])
+        add_text('Vertical Offset' , newrow=False)
+        pan.Add(wids['plot2_voff'])
+
 
         pan.Add(wids['do_fit'], dcol=1, newrow=True)
         pan.Add(wids['show_results'])
@@ -966,7 +987,7 @@ class FeffitPanel(TaskPanel):
         for attr in ('fit_kmin', 'fit_kmax', 'fit_dk', 'fit_rmin',
                      'fit_rmax', 'fit_kwindow', 'fit_rwindow',
                      'fit_dr', 'fit_kwstring', 'fit_space',
-                     'fit_plot', 'plot_paths'):
+                     'fit_plot', 'plot1_paths'):
 
             conf[attr] = opts.get(attr, None)
 
@@ -1028,13 +1049,17 @@ class FeffitPanel(TaskPanel):
         form_opts['fit_space'] = Feffit_SpaceChoices[fitspace_string]
 
         form_opts['fit_kwindow'] = wids['fit_kwindow'].GetStringSelection()
-        form_opts['plot_ftwindows'] = wids['plot_ftwindows'].IsChecked()
-        form_opts['plot_paths'] = wids['plot_paths'].IsChecked()
-        form_opts['plotone_op'] = PlotOne_Choices[wids['plotone_op'].GetStringSelection()]
-        form_opts['plotalt_op'] = PlotAlt_Choices[wids['plotalt_op'].GetStringSelection()]
-        form_opts['plot_voffset'] = wids['plot_voffset'].GetValue()
-        form_opts['plot_win'] = int(wids['plot_win'].GetStringSelection())
+        form_opts['plot_kw'] = int(wids['plot_kw'].GetStringSelection())
+        form_opts['plot1_ftwins'] = wids['plot1_ftwins'].IsChecked()
+        form_opts['plot1_paths'] = wids['plot1_paths'].IsChecked()
+        form_opts['plot1_op'] = Plot1_Choices[wids['plot1_op'].GetStringSelection()]
+        form_opts['plot1_voff'] = wids['plot1_voff'].GetValue()
 
+        form_opts['plot2_op'] = Plot2_Choices[wids['plot2_op'].GetStringSelection()]
+        form_opts['plot2_ftwins'] = wids['plot2_ftwins'].IsChecked()
+        form_opts['plot2_paths'] = wids['plot2_paths'].IsChecked()
+        form_opts['plot2_voff'] = wids['plot2_voff'].GetValue()
+        form_opts['plot2_win'] = int(wids['plot2_win'].GetStringSelection())
         return form_opts
 
 
@@ -1094,14 +1119,15 @@ class FeffitPanel(TaskPanel):
         except:
             paths = {}
 
-        plot1 = opts['plotone_op']
-        plot2 = opts['plotalt_op']
+        plot1 = opts['plot1_op']
+        plot2 = opts['plot2_op']
+
         cmds = []
 
-        kw = opts['fit_kweight']
+        kweight = opts['plot_kw']
 
         ftargs = dict(kmin=opts['fit_kmin'], kmax=opts['fit_kmax'], dk=opts['fit_dk'],
-                      kwindow=opts['fit_kwindow'], kweight=opts['fit_kweight'],
+                      kwindow=opts['fit_kwindow'], kweight=kweight,
                       rmin=opts['fit_rmin'], rmax=opts['fit_rmax'],
                       dr=opts.get('fit_dr', 0.1), rwindow='hanning')
 
@@ -1111,29 +1137,28 @@ class FeffitPanel(TaskPanel):
             cmds.append(COMMANDS['xft'].format(groupname=dataset_name, **ftargs))
         if dgroup is not None:
             cmds.append(COMMANDS['xft'].format(groupname=gname, **ftargs))
-        if opts['plot_paths']:
+        if opts['plot1_paths'] or opts['plot2_paths']:
             cmds.append(COMMANDS['path2chi'].format(paths_name=paths_name,
                                                     pargroup_name=pargroup_name,
                                                     **ftargs))
 
         self.larch_eval('\n'.join(cmds))
-        with_win = opts['plot_ftwindows']
         needs_qspace = False
         cmds = []
         for i, plot in enumerate((plot1, plot2)):
-            if plot in PlotAlt_Choices:
-                plot = PlotAlt_Choices[plot]
-
-            if plot in ('noplot', '<no plot>'):
-                continue
+            if plot in Plot2_Choices:
+                plot = Plot2_Choices[plot]
             plotwin = 1
-            if i > 0:
-                plotwin = int(opts.get('plot_win', '2'))
+            if i == 1:
+                if plot in ('noplot', '<no plot>'):
+                    continue
+                else:
+                    plotwin = int(opts.get('plot2_win', '2'))
             pcmd = 'plot_chir'
             pextra = f', win={plotwin:d}'
             if plot == 'chi':
                 pcmd = 'plot_chik'
-                pextra += f', kweight={kw:d}'
+                pextra += f', kweight={kweight:d}'
             elif plot == 'chir_mag':
                 pcmd = 'plot_chir'
                 pextra +=  f', rmax={plot_rmax}'
@@ -1148,7 +1173,7 @@ class FeffitPanel(TaskPanel):
             else:
                 print(" do not know how to plot ", plot)
                 continue
-
+            with_win = opts[f'plot{i+1}_ftwins']
             newplot = f', show_window={with_win}, new=True'
             overplot = f', show_window=False, new=False'
             if dgroup is not None:
@@ -1157,8 +1182,8 @@ class FeffitPanel(TaskPanel):
                     cmds.append(f"{pcmd}({pathsum_name:s}, label='model'{pextra}{overplot})")
             elif pathsum is not None:
                 cmds.append(f"{pcmd}({pathsum_name:s}, label='Path sum'{pextra}, title='sum of paths'{newplot})")
-            if opts['plot_paths']:
-                voff = opts['plot_voffset']
+            if opts[f'plot{i+1}_paths']:
+                voff = opts[f'plot{i+1}_voff']
 
                 for i, label in enumerate(paths.keys()):
                     if paths[label].use:
@@ -1669,32 +1694,43 @@ class FeffitResultFrame(wx.Frame):
                                         minsize=(350, -1),
                                         colour=COLORS['title'], style=LEFT)
 
-        wids['plotone_op'] = Choice(panel, choices=list(PlotOne_Choices.keys()),
+        wids['plot1_op'] = Choice(panel, choices=list(Plot1_Choices.keys()),
                                     action=self.onPlot, size=(125, -1))
-        wids['plotone_op'].SetSelection(1)
-        wids['plotalt_op'] = Choice(panel, choices=list(PlotAlt_Choices.keys()),
+        wids['plot1_op'].SetSelection(1)
+        wids['plot2_op'] = Choice(panel, choices=list(Plot2_Choices.keys()),
                                     action=self.onPlot, size=(125, -1))
 
-        wids['plot_win'] = Choice(panel, choices=PlotWindowChoices,
+        wids['plot2_win'] = Choice(panel, choices=PlotWindowChoices,
                                   action=self.onPlot, size=(60, -1))
-        wids['plot_win'].SetStringSelection('2')
+        wids['plot2_win'].SetStringSelection('2')
 
-        ppanel = wx.Panel(panel)
-        ppanel.SetMinSize((450, 20))
-        wids['plot_paths'] = Check(ppanel, default=False, label='Plot Each Path',
-                                   action=self.onPlot)
-        wids['plot_ftwindows'] = Check(ppanel, default=False, label='Plot FT Windows',
-                                       action=self.onPlot)
+        wids['plot_kw'] = Choice(panel, size=(80, -1),
+                                  choices=['0', '1', '2', '3', '4'], default=2)
 
-        wids['plot_voffset'] = FloatSpin(ppanel, value=0, digits=2, increment=0.25,
-                                         action=self.onPlot, size=(100, -1))
 
-        psizer = wx.BoxSizer(wx.HORIZONTAL)
-        psizer.Add( wids['plot_paths'], 0, 2)
-        psizer.Add( wids['plot_ftwindows'], 0, 2)
-        psizer.Add(SimpleText(ppanel, ' Offset'), 0, 2)
-        psizer.Add( wids['plot_voffset'], 0, 2)
-        pack(ppanel, psizer)
+        # ppanel = wx.Panel(panel)
+        # ppanel.SetMinSize((450, 20))
+        wids['plot1_paths'] = Check(panel, default=False, label='Plot Each Path',
+                                    action=self.onPlot)
+        wids['plot1_ftwins'] = Check(panel, default=False, label='Plot FT Windows',
+                                     action=self.onPlot)
+
+        wids['plot1_voff'] = FloatSpin(panel, value=0, digits=2, increment=0.25,
+                                       action=self.onPlot, size=(100, -1))
+        wids['plot2_paths'] = Check(panel, default=False, label='Plot Each Path',
+                                    action=self.onPlot)
+        wids['plot2_ftwins'] = Check(panel, default=False, label='Plot FT Windows',
+                                     action=self.onPlot)
+
+        wids['plot2_voff'] = FloatSpin(panel, value=0, digits=2, increment=0.25,
+                                       action=self.onPlot, size=(100, -1))
+
+#         psizer = wx.BoxSizer(wx.HORIZONTAL)
+#         psizer.Add( wids['plot1_ftwins'], 0, 2)
+#         psizer.Add( wids['plot1_paths'], 0, 2)
+#         psizer.Add(SimpleText(ppanel, ' Offset'), 0, 2)
+#         psizer.Add( wids['plot1_voff'], 0, 2)
+#         pack(ppanel, psizer)
 
         wids['plot_current']  = Button(panel,'Plot Current Model',
                                      action=self.onPlot,  size=(175, -1))
@@ -1723,13 +1759,25 @@ class FeffitResultFrame(wx.Frame):
 
         irow += 1
         sizer.Add(wids['plot_current'],     (irow, 0), (1, 1), LEFT)
-        sizer.Add(wids['plotone_op'],       (irow, 1), (1, 1), LEFT)
-        sizer.Add(ppanel,                   (irow, 2), (1, 3), LEFT)
+        sizer.Add(wids['plot1_op'],         (irow, 1), (1, 1), LEFT)
+        sizer.Add(SimpleText(panel, 'k-weight'),  (irow, 2), (1, 1), LEFT)
+        sizer.Add(wids['plot_kw'],               (irow, 3), (1, 1), LEFT)
+        irow += 1
+        sizer.Add(wids['plot1_ftwins'],     (irow, 0), (1, 1), LEFT)
+        sizer.Add(wids['plot1_paths'],      (irow, 1), (1, 1), LEFT)
+        sizer.Add(SimpleText(panel, 'Vertical  Offest:'),  (irow, 2), (1, 1), LEFT)
+        sizer.Add(wids['plot1_voff'],         (irow, 3), (1, 1), LEFT)
+
         irow += 1
         sizer.Add(SimpleText(panel, 'Add Second Plot:', style=LEFT), (irow, 0), (1, 1), LEFT)
-        sizer.Add(wids['plotalt_op'],                                (irow, 1), (1, 1), LEFT)
+        sizer.Add(wids['plot2_op'],                                (irow, 1), (1, 1), LEFT)
         sizer.Add(SimpleText(panel, 'Plot Window:', style=LEFT), (irow, 2), (1, 1), LEFT)
-        sizer.Add(wids['plot_win'],                              (irow, 3), (1, 1), LEFT)
+        sizer.Add(wids['plot2_win'],                              (irow, 3), (1, 1), LEFT)
+        irow += 1
+        sizer.Add(wids['plot2_ftwins'],     (irow, 0), (1, 1), LEFT)
+        sizer.Add(wids['plot2_paths'],      (irow, 1), (1, 1), LEFT)
+        sizer.Add(SimpleText(panel, 'Vertical  Offest:'),  (irow, 2), (1, 1), LEFT)
+        sizer.Add(wids['plot2_voff'],         (irow, 3), (1, 1), LEFT)
 
         irow += 1
         sizer.Add(wids['show_pathpars'], (irow, 0), (1, 1), LEFT)
@@ -1918,19 +1966,24 @@ class FeffitResultFrame(wx.Frame):
         self.show_results()
 
     def onPlot(self, event=None):
-
         opts = {'build_fitmodel': False}
-        for key, meth in (('plot_ftwindows', 'IsChecked'),
-                          ('plot_paths', 'IsChecked'),
-                          ('plotone_op', 'GetStringSelection'),
-                          ('plotalt_op', 'GetStringSelection'),
-                          ('plot_win',   'GetStringSelection'),
-                          ('plot_voffset', 'GetValue')):
+        for key, meth in (('plot1_ftwins', 'IsChecked'),
+                          ('plot2_ftwins', 'IsChecked'),
+                          ('plot1_paths', 'IsChecked'),
+                          ('plot2_paths', 'IsChecked'),
+                          ('plot1_op', 'GetStringSelection'),
+                          ('plot2_op', 'GetStringSelection'),
+                          ('plot1_voff', 'GetValue'),
+                          ('plot2_voff', 'GetValue'),
+                          ('plot_kw', 'GetStringSelection'),
+                          ('plot2_win',   'GetStringSelection'),
+                          ):
             opts[key] = getattr(self.wids[key], meth)()
 
-        opts['plotone_op'] = PlotOne_Choices[opts['plotone_op']]
-        opts['plotalt_op'] = PlotAlt_Choices[opts['plotalt_op']]
-        opts['plot_win'] = int(opts['plot_win'])
+        opts['plot1_op'] = Plot1_Choices[opts['plot1_op']]
+        opts['plot2_op'] = Plot2_Choices[opts['plot2_op']]
+        opts['plot2_win'] = int(opts['plot2_win'])
+        opts['plot_kw'] = int(opts['plot_kw'])
 
         result = self.get_fitresult()
         if result is None:
