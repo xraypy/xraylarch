@@ -128,7 +128,10 @@ _feffpaths['{title:s}'] = use_feffpath(_feffcache['paths'], '{title:s}',
 """
 
 COMMANDS['ff2chi']   = """# sum paths using a list of paths and a group of parameters
-_pathsum = ff2chi({paths:s}, paramgroup=_feffit_params)
+_feffit_dataset = feffit_dataset(data={groupname:s}, transform={trans:s},
+                                 refine_bkg={refine_bkg},
+                                 paths={paths:s})
+_feffit_dataset.model = ff2chi({paths:s}, paramgroup=_feffit_params)
 """
 
 COMMANDS['do_feffit'] = """# build feffit dataset, run feffit
@@ -1081,13 +1084,44 @@ class FeffitPanel(TaskPanel):
                 if wids.vary is not None:
                    wids.vary.SetStringSelection(varstr)
 
-    def onPlot(self, evt=None, dgroup=None, pargroup_name='_feffit_params',
-               paths_name='_feffpaths', pathsum_name='_pathsum', title=None,
-               dataset_name=None,  build_fitmodel=True, topwin=None, **kws):
-        # feffit plot
+    def onPlot(self, evt=None, dataset_name='_feffit_dataset',
+               pargroup_name='_feffit_params', title=None, build_fitmodel=True,
+               topwin=None, **kws):
+
+        dataset = getattr(self.larch.symtable, dataset_name, None)
+        if dataset is None:
+            dgroup = self.controller.get_group()
+        else:
+            dgroup = dataset.data
+
         self.process(dgroup)
         opts = self.read_form(dgroup=dgroup)
         opts.update(**kws)
+
+        if build_fitmodel:
+            self.build_fitmodel(dgroup)
+
+        dataset = self.larch.eval(dataset_name)
+        if dataset is None:
+            print("could not get dataset : ", dataset_name)
+            return
+
+        model_name = dataset_name + '.model'
+        paths_name = dataset_name + '.paths'
+        paths = self.larch.eval(paths_name)
+
+        data_name  = dataset_name + '.data'
+        refine_bkg = getattr(dataset, 'refine_bkg',
+                             opts.get('refine_bkg', False))
+
+        # print("REFINE BKG ",
+        #       getattr(dataset, 'refine_bkg', None),
+        #       opts.get('refine_bkg', None),
+        #       hasattr(dataset, 'data_rebkg'))
+
+        if refine_bkg and hasattr(dataset, 'data_rebkg'):
+            data_name =  dataset_name + '.data_rebkg'
+
         fname = opts['filename']
         if title is None:
             title = fname
@@ -1096,33 +1130,14 @@ class FeffitPanel(TaskPanel):
         if "'" in title:
             title = title.replace("'", "\\'")
 
-        gname = opts['groupname']
-        if dataset_name is None:
-            dataset_name = gname
-
-        if dgroup is None:
-            dgroup = opts['datagroup']
-
         exafs_conf = self.xasmain.get_nbpage('exafs')[1].read_form()
         plot_rmax = exafs_conf['plot_rmax']
-
-        if build_fitmodel:
-            self.build_fitmodel(dgroup)
-
-        try:
-            pathsum = self._plain_larch_eval(pathsum_name)
-        except:
-            pathsum = None
-
-        try:
-            paths = self._plain_larch_eval(paths_name)
-        except:
-            paths = {}
 
         plot1 = opts['plot1_op']
         plot2 = opts['plot2_op']
 
-        cmds = []
+        cmds = ["#### plot ",
+                f"#  build arrays for plotting: refine bkg? {refine_bkg}, {dgroup.groupname} / {dataset_name}"]
 
         kweight = opts['plot_kw']
 
@@ -1131,12 +1146,11 @@ class FeffitPanel(TaskPanel):
                       rmin=opts['fit_rmin'], rmax=opts['fit_rmax'],
                       dr=opts.get('fit_dr', 0.1), rwindow='hanning')
 
-        if pathsum is not None:
-            cmds.append(COMMANDS['xft'].format(groupname=pathsum_name, **ftargs))
-        if dataset_name  is not None:
-            cmds.append(COMMANDS['xft'].format(groupname=dataset_name, **ftargs))
-        if dgroup is not None:
-            cmds.append(COMMANDS['xft'].format(groupname=gname, **ftargs))
+        if model_name is not None:
+            cmds.append(COMMANDS['xft'].format(groupname=model_name, **ftargs))
+        if data_name  is not None:
+            cmds.append(COMMANDS['xft'].format(groupname=data_name, **ftargs))
+
         if opts['plot1_paths'] or opts['plot2_paths']:
             cmds.append(COMMANDS['path2chi'].format(paths_name=paths_name,
                                                     pargroup_name=pargroup_name,
@@ -1177,11 +1191,11 @@ class FeffitPanel(TaskPanel):
             newplot = f', show_window={with_win}, new=True'
             overplot = f', show_window=False, new=False'
             if dgroup is not None:
-                cmds.append(f"{pcmd}({dataset_name:s}, label='data'{pextra}, title='{title}'{newplot})")
-                if pathsum is not None:
-                    cmds.append(f"{pcmd}({pathsum_name:s}, label='model'{pextra}{overplot})")
-            elif pathsum is not None:
-                cmds.append(f"{pcmd}({pathsum_name:s}, label='Path sum'{pextra}, title='sum of paths'{newplot})")
+                cmds.append(f"{pcmd}({data_name:s}, label='data'{pextra}, title='{title}'{newplot})")
+                if dataset.model is not None:
+                    cmds.append(f"{pcmd}({model_name:s}, label='model'{pextra}{overplot})")
+            elif dataset.model is not None:
+                cmds.append(f"{pcmd}({model_name:s}, label='Path sum'{pextra}, title='sum of paths'{newplot})")
             if opts[f'plot{i+1}_paths']:
                 voff = opts[f'plot{i+1}_voff']
 
@@ -1197,7 +1211,8 @@ class FeffitPanel(TaskPanel):
                         cmds.append(f"{pcmd}({objname}, label='{label:s}'{pextra}, offset={(i+1)*voff}{overplot})")
 
         self.larch_eval('\n'.join(cmds))
-        self.controller.set_focus(topwin=topwin)
+        if topwin is not None:
+            self.controller.set_focus(topwin=topwin)
 
 
     def reset_paths(self, event=None):
@@ -1460,7 +1475,20 @@ class FeffitPanel(TaskPanel):
             opts['paths'].append(pdat)
 
         paths_string = '[%s]' % (', '.join(paths_list))
-        cmds.append(COMMANDS['ff2chi'].format(paths=paths_string))
+
+
+# _feffit_dataset = feffit_dataset(data={groupname:s}, transform={trans:s},
+#                                  refine_bkg={refine_bkg},
+#                                  paths={paths:s})
+# _feffit_dataset.model = ff2chi({paths:s}, paramgroup=_feffit_params)
+
+        cmds.append(COMMANDS['ff2chi'].format(paths=paths_string,
+                                              trans='_feffit_trans',
+                                              groupname=opts['groupname'],
+                                              refine_bkg=opts['refine_bkg'])
+                    )
+        cmds.append('# end of build model')
+
         self.larch_eval("\n".join(cmds))
         return opts
 
@@ -1547,8 +1575,7 @@ class FeffitPanel(TaskPanel):
             lab, fname, run = path['title'], path['fullpath'], path['feffrun']
             amp, e0, delr, sigma2, third, ei = path['amp'], path['e0'], path['delr'], path['sigma2'], path['third'], path['ei']
             script.append(f"""## Path '{lab}' : ############
-#_feffcache['paths']['{lab}'] = feffpath('{fname}',
-#                  label='{lab}', feffrun='{run}', degen=1)
+#_feffcache['paths']['{lab}'] = feffpath('{fname}', label='{lab}', feffrun='{run}', degen=1)
 #_feffpaths['{lab}'] = use_feffpath(_feffcache['paths'], '{lab}',
 #                               s02='{amp:s}', e0='{e0:s}', deltar='{delr:s}',
 #                               sigma2='{sigma2:s}', third='{third:s}', ei='{ei:s}')""")
@@ -1557,10 +1584,10 @@ class FeffitPanel(TaskPanel):
         self.larch_eval(COMMANDS['do_feffit'].format(**fopts))
 
         self.wids['show_results'].Enable()
-        self.onPlot(dgroup=opts['datagroup'], build_fitmodel=False,
+        self.onPlot(dataset_name='_feffit_dataset',
                     pargroup_name='_feffit_result.paramgroup',
-                    paths_name='_feffit_dataset.paths',
-                    pathsum_name='_feffit_dataset.model')
+                    build_fitmodel=False)
+
 
         script.extend(self.get_session_history()[nstart:])
         script.extend(["print(feffit_report(_feffit_result))",
@@ -1707,9 +1734,6 @@ class FeffitResultFrame(wx.Frame):
         wids['plot_kw'] = Choice(panel, size=(80, -1),
                                   choices=['0', '1', '2', '3', '4'], default=2)
 
-
-        # ppanel = wx.Panel(panel)
-        # ppanel.SetMinSize((450, 20))
         wids['plot1_paths'] = Check(panel, default=False, label='Plot Each Path',
                                     action=self.onPlot)
         wids['plot1_ftwins'] = Check(panel, default=False, label='Plot FT Windows',
@@ -1724,13 +1748,6 @@ class FeffitResultFrame(wx.Frame):
 
         wids['plot2_voff'] = FloatSpin(panel, value=0, digits=2, increment=0.25,
                                        action=self.onPlot, size=(100, -1))
-
-#         psizer = wx.BoxSizer(wx.HORIZONTAL)
-#         psizer.Add( wids['plot1_ftwins'], 0, 2)
-#         psizer.Add( wids['plot1_paths'], 0, 2)
-#         psizer.Add(SimpleText(ppanel, ' Offset'), 0, 2)
-#         psizer.Add( wids['plot1_voff'], 0, 2)
-#         pack(ppanel, psizer)
 
         wids['plot_current']  = Button(panel,'Plot Current Model',
                                      action=self.onPlot,  size=(175, -1))
@@ -1999,11 +2016,9 @@ class FeffitResultFrame(wx.Frame):
 
         result_name  = f'{self.datagroup.groupname}.feffit_history[{self.nfit}]'
         opts['label'] = f'{result_name}.label'
+        opts['dataset_name']  = f'{result_name}.datasets[0]'
         opts['pargroup_name'] = f'{result_name}.paramgroup'
-        opts['paths_name']    = f'{result_name}.datasets[0].paths'
-        opts['pathsum_name']  = f'{result_name}.datasets[0].model'
-        opts['dataset_name']  = f'{result_name}.datasets[0].data'
-        opts['dgroup']  = dgroup
+
         opts['title'] = f'{self.datagroup.filename}: {result.label}'
 
         for attr in ('kmin', 'kmax', 'dk', 'rmin', 'rmax', 'fitspace'):
@@ -2011,7 +2026,6 @@ class FeffitResultFrame(wx.Frame):
         opts['fit_kwstring'] = "%s" % getattr(trans, 'kweight')
         opts['kwindow']  = getattr(trans, 'window')
         opts['topwin'] = self
-
         self.feffit_panel.onPlot(**opts)
 
 
