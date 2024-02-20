@@ -44,6 +44,7 @@ LarchGroupTypes = {'Group': Group,
                    'FeffitDataSet': FeffitDataSet,
                    'TransformGroup': TransformGroup,
                    'MinimizerResult': MinimizerResult,
+                   'Minimizer': Minimizer,
                    'FeffDatFile':  FeffDatFile,
                    'FeffPathGroup': FeffPathGroup,
                    }
@@ -123,6 +124,15 @@ def encode4js(obj):
             if obj.level == val:
                 level = key
         return {'__class__':  'Logger', 'name': obj.name, 'level': level}
+    elif isinstance(obj, Minimizer):
+        out = {'__class__': 'Minimizer'}
+
+        for attr in ('userfcn', 'params', 'kw', 'scale_covar', 'max_nfev',
+                     'nan_policy', 'success', 'nfev', 'nfree', 'ndata', 'ier',
+                     'errorbars', 'message', 'lmdif_message', 'chisqr',
+                     'redchi', 'covar', 'userkws', 'userargs', 'result'):
+            out[attr] = encode4js(getattr(obj, attr, None))
+        return out
     elif isinstance(obj, MinimizerResult):
         out = {'__class__': 'MinimizerResult'}
         for attr in ('aborted', 'aic', 'bic', 'call_kws', 'chisqr',
@@ -287,7 +297,19 @@ def decode4js(obj):
                 pass  # ignore class methods for subclassed Groups
             else:
                 out[key] = decode4js(val)
-        if classname == 'FeffDatFile':
+        if classname == 'Minimizer':
+            userfunc = out.pop('userfcn')
+            params = out.pop('params')
+            kws = out.pop('kws')
+            for kname in ('scale_covar', 'max_nfev', 'nan_policy'):
+                kws[kname] = out.pop(kname)
+            mini = Minimizer(userfunc, params, **kws)
+            for kname in ('success', 'nfev', 'nfree', 'ndata', 'ier',
+                          'errorbars', 'message', 'lmdif_message', 'chisqr',
+                          'redchi', 'covar', 'userkws', 'userargs', 'result'):
+                setattr(mini, kname, out.pop(kname))
+            out = mini
+        elif classname == 'FeffDatFile':
             path = FeffDatFile()
             path._set_from_dict(**out)
             out = path
