@@ -361,10 +361,10 @@ class FeffitDataSet(Group):
         else:
             self.estimate_noise(chi=self._chi, rmin=15.0, rmax=30.0)
 
-            # if not refining the background, and if delta_chi (uncertainty in
-            # chi(k) from autobk or other source) exists, add it in quadrature
-            # to high-k noise estimate, and update epsilon_k to be this value
-            if not self.refine_bkg and hasattr(self.data, 'delta_chi'):
+            # if delta_chi (uncertainty in chi(k) from autobk or other source)
+            # exists, add it in quadrature to high-k noise estimate, and
+            # update epsilon_k to be this value
+            if hasattr(self.data, 'delta_chi'):
                 cur_eps_k = getattr(self, 'epsilon_k', 0.0)
                 if isinstance(cur_eps_k, (list, tuple)):
                     eps_ave = 0.
@@ -391,7 +391,7 @@ class FeffitDataSet(Group):
         self.bkg_spline = {}
         if self.refine_bkg:
             trans.rbkg = max(trans.rbkg, trans.rmin)
-            trans.rmin = 0.
+            trans.rmin = trans.rstep
             self.n_idp = 1 + 2*(trans.rmax)*(trans.kmax-trans.kmin)/pi
             nspline = 1 + round(2*(trans.rbkg)*(trans.kmax-trans.kmin)/pi)
             knots_k = np.linspace(trans.kmin, trans.kmax, nspline)
