@@ -6,6 +6,7 @@ import sys
 class debugtime(object):
     def __init__(self, verbose=False, _larch=None, precision=3):
         self._larch = _larch
+        self.precision = precision
         self.clear()
         self.verbose = verbose
         self.add('init')
