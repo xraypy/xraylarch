@@ -29,7 +29,7 @@ from lmfit.minimizer import Minimizer, MinimizerResult
 from lmfit.parameter import SCIPY_FUNCTIONS
 
 from larch import Group, isgroup, Journal, ParameterGroup
-
+from larch.io.athena_project import AthenaGroup
 from larch.xafs import FeffitDataSet, FeffDatFile, FeffPathGroup, TransformGroup
 from larch.xafs.feffutils import FeffCalcResults
 from larch.utils.strutils import bytes2str, str2bytes, fix_varname
@@ -42,6 +42,7 @@ HAS_STATE['FeffPathGroup'] = FeffPathGroup
 HAS_STATE['Journal'] = Journal
 
 LarchGroupTypes = {'Group': Group,
+                   'AthenaGroup': AthenaGroup,
                    'ParameterGroup': ParameterGroup,
                    'FeffitDataSet': FeffitDataSet,
                    'TransformGroup': TransformGroup,
@@ -327,5 +328,5 @@ def decode4js(obj):
         out = SCIPY_FUNCTIONS.get(mname, None)
 
     else:
-        print("cannot decode ", classname, obj)
+        print("cannot decode ", classname, repr(obj)[:100])
     return out

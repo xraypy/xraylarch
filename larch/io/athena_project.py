@@ -553,7 +553,7 @@ def parse_jsonathena(text, filename):
 class AthenaGroup(Group):
     """A special Group for handling datasets loaded from Athena project files"""
 
-    def __init__(self, show_sel=False):
+    def __init__(self, show_sel=False, **kws):
         """Constructor
 
         Parameters
@@ -562,7 +562,7 @@ class AthenaGroup(Group):
         show_sel : boolean, False
             if True, it shows the selection flag in HTML representation
         """
-        super().__init__()
+        super().__init__(**kws)
         self.show_sel = show_sel
 
     def _repr_html_(self):
@@ -600,14 +600,12 @@ class AthenaGroup(Group):
         self._athena_groups = groups
 
     def __getitem__(self, key):
-
         if isinstance(key, int):
             raise IndexError("AthenaGroup does not support integer indexing")
 
         return getattr(self, key)
 
     def __setitem__(self, key, value):
-
         if isinstance(key, int):
             raise IndexError("AthenaGroup does not support integer indexing")
 
