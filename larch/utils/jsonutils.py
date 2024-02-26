@@ -8,6 +8,8 @@ import numpy as np
 import h5py
 from datetime import datetime
 from collections import namedtuple
+from types import ModuleType
+import importlib
 import logging
 
 HAS_STATE = {}
@@ -91,7 +93,6 @@ def encode4js(obj):
             out['writable'] = obj.writable()
         except ValueError:
             out['writable'] = False
-        return out
     elif isinstance(obj, h5py.File):
         return {'__class__': 'HDF5File',
                 'value': (obj.name, obj.filename, obj.mode, obj.libver),
@@ -118,7 +119,6 @@ def encode4js(obj):
             out[encode4js(key)] = encode4js(val)
         return out
     elif isinstance(obj, logging.Logger):
-
         level = 'DEBUG'
         for key, val in LoggingLevels.items():
             if obj.level == val:
@@ -172,6 +172,8 @@ def encode4js(obj):
             for item in dir(obj):
                 out[item] = encode4js(getattr(obj, item))
         return out
+    elif isinstance(obj, ModuleType):
+        return {'__class__': 'Module',  'value': obj.__name__}
     elif hasattr(obj, '__getstate__') and not callable(obj):
         return {'__class__': 'StatefulObject',
                 '__type__': obj.__class__.__name__,
@@ -249,6 +251,9 @@ def decode4js(obj):
         out = open(obj['name'], mode=mode)
         if obj['closed']:
             out.close()
+
+    elif classname == 'Module':
+        out = importlib.import_module(obj.__name__)
 
     elif classname == 'Parameters':
         out = Parameters()
