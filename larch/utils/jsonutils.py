@@ -12,45 +12,60 @@ from types import ModuleType
 import importlib
 import logging
 
-HAS_STATE = {}
-try:
-    from sklearn.cross_decomposition import PLSRegression
-    from sklearn.linear_model import LassoLarsCV, LassoLars, Lasso
-    HAS_STATE.update({'PLSRegression': PLSRegression,
-                      'LassoLarsCV':LassoLarsCV,
-                      'LassoLars': LassoLars, 'Lasso': Lasso})
-
-except ImportError:
-    pass
 
 from lmfit import Parameter, Parameters
 from lmfit.model import Model, ModelResult
 from lmfit.minimizer import Minimizer, MinimizerResult
 from lmfit.parameter import SCIPY_FUNCTIONS
 
-from larch import Group, isgroup, Journal, ParameterGroup
-from larch.io.athena_project import AthenaGroup
-from larch.xafs import FeffitDataSet, FeffDatFile, FeffPathGroup, TransformGroup
-from larch.xafs.feffutils import FeffCalcResults
-from larch.utils.strutils import bytes2str, str2bytes, fix_varname
+from larch import Group, isgroup
 from larch.utils.logging  import getLogger
 from larch.utils.logging  import _levels as LoggingLevels
 
-HAS_STATE['FeffCalcResults'] = FeffCalcResults
-HAS_STATE['FeffDatFile'] = FeffDatFile
-HAS_STATE['FeffPathGroup'] = FeffPathGroup
-HAS_STATE['Journal'] = Journal
+HAS_STATE = {}
+LarchGroupTypes = {}
 
-LarchGroupTypes = {'Group': Group,
-                   'AthenaGroup': AthenaGroup,
-                   'ParameterGroup': ParameterGroup,
-                   'FeffitDataSet': FeffitDataSet,
-                   'TransformGroup': TransformGroup,
-                   'MinimizerResult': MinimizerResult,
-                   'Minimizer': Minimizer,
-                   'FeffDatFile':  FeffDatFile,
-                   'FeffPathGroup': FeffPathGroup,
-                   }
+def setup_larchtypes():
+    global HAS_STATE,  LarchGroupTypes
+    if len(HAS_STATE) == 0 or len(LarchGroupTypes)==0:
+        try:
+            from sklearn.cross_decomposition import PLSRegression
+            from sklearn.linear_model import LassoLarsCV, LassoLars, Lasso
+            HAS_STATE.update({'PLSRegression': PLSRegression,
+                              'LassoLarsCV':LassoLarsCV,
+                              'LassoLars': LassoLars, 'Lasso': Lasso})
+
+        except ImportError:
+            pass
+
+        from larch import Journal, Group
+
+        HAS_STATE['Journal'] = Journal
+
+        from larch.xafs.feffutils import FeffCalcResults
+        HAS_STATE['FeffCalcResults'] = FeffCalcResults
+
+        from larch.xafs import FeffDatFile, FeffPathGroup
+        HAS_STATE['FeffDatFile'] = FeffDatFile
+        HAS_STATE['FeffPathGroup'] = FeffPathGroup
+
+        from larch import ParameterGroup
+        from larch.io.athena_project import AthenaGroup
+        from larch.xafs import FeffitDataSet, TransformGroup
+
+        LarchGroupTypes = {'Group': Group,
+                           'AthenaGroup': AthenaGroup,
+                           'ParameterGroup': ParameterGroup,
+                           'FeffitDataSet': FeffitDataSet,
+                           'TransformGroup': TransformGroup,
+                           'MinimizerResult': MinimizerResult,
+                           'Minimizer': Minimizer,
+                           'FeffDatFile':  FeffDatFile,
+                           'FeffPathGroup': FeffPathGroup,
+                           }
+
+
+
 
 def encode4js(obj):
     """return an object ready for json encoding.
@@ -60,6 +75,7 @@ def encode4js(obj):
       Larch Groups
       Larch Parameters
     """
+    setup_larchtypes()
     if obj is None:
         return None
     if isinstance(obj, np.ndarray):
@@ -209,6 +225,7 @@ def decode4js(obj):
     """
     if not isinstance(obj, dict):
         return obj
+    setup_larchtypes()
     out = obj
     classname = obj.pop('__class__', None)
     if classname is None:
@@ -316,6 +333,7 @@ def decode4js(obj):
                 setattr(mini, kname, out.pop(kname))
             out = mini
         elif classname == 'FeffDatFile':
+            from larch.xafs import FeffDatFile
             path = FeffDatFile()
             path._set_from_dict(**out)
             out = path
