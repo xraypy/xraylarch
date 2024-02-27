@@ -10,6 +10,7 @@ import numpy as np
 try:
     from sklearn.cross_decomposition import PLSRegression
     from sklearn.model_selection import  RepeatedKFold
+    from sklearn.preprocessing import StandardScaler
     from sklearn.linear_model import LassoLarsCV, LassoLars, Lasso
     HAS_SKLEARN = True
 except ImportError:
@@ -88,7 +89,10 @@ def pls_train(groups, varname='valence', arrayname='norm', scale=True,
         cv = RepeatedKFold(n_splits=cv_folds, n_repeats=cv_repeats)
         for ctrain, ctest in cv.split(range(nvals)):
             model.fit(spectra[ctrain, :], ydat[ctrain])
-            ypred = model.predict(spectra[ctest, :])[:, 0]
+            ypred = model.predict(spectra[ctest, :])
+            if len(ypred.shape) == 2:
+                ypred = ypred[:, 0]
+
             resid.extend((ypred - ydat[ctest]).tolist())
         resid = np.array(resid)
         rmse_cv = np.sqrt( (resid**2).mean() )
@@ -97,7 +101,9 @@ def pls_train(groups, varname='valence', arrayname='norm', scale=True,
     model = PLSRegression(**kws)
     out = model.fit(spectra, ydat)
 
-    ypred = model.predict(spectra)[:, 0]
+    ypred = model.predict(spectra)
+    if len(ypred.shape) == 2:
+        ypred = ypred[:, 0]
 
     rmse = np.sqrt(((ydat - ypred)**2).mean())
 
@@ -160,11 +166,17 @@ def lasso_train(groups, varname='valence', arrayname='norm', alpha=None,
     ydat = np.array(ydat)
 
     nvals = len(groups)
+    ymean = norms = nonzero = None
+    spectra_scaled = spectra[:]
+    if fit_intercept and normalize:
+        s_scalar = StandardScaler().fit(spectra)
+        spectra_scaled = s_scalar.transform(spectra)
 
-    kws.update(dict(fit_intercept=fit_intercept, normalize=normalize))
+    kws.update(dict(fit_intercept=fit_intercept))
     creator = LassoLars if use_lars else Lasso
     model = None
 
+    npts = xdat.shape[0]
     rmse_cv = None
     if not skip_cv:
         if cv_folds is None:
@@ -176,34 +188,37 @@ def lasso_train(groups, varname='valence', arrayname='norm', alpha=None,
         if alpha is None:
             lcvmod = LassoLarsCV(cv=cv, max_n_alphas=1e7,
                                  max_iter=1e7, eps=1.e-12, **kws)
-            lcvmod.fit(spectra, ydat)
+            lcvmod.fit(spectra_scaled, ydat)
             alpha = lcvmod.alpha_
-
+            # if normalize:
+            #    alpha = alpha / np.sqrt(npts)
         model = creator(alpha=alpha, **kws)
         resid = []
         for ctrain, ctest in cv.split(range(nvals)):
-            model.fit(spectra[ctrain, :], ydat[ctrain])
-            ypred = model.predict(spectra[ctest, :])
+            model.fit(spectra_scaled[ctrain, :], ydat[ctrain])
+            ypred = model.predict(spectra_scaled[ctest, :])
             resid.extend((ypred - ydat[ctest]).tolist())
         resid = np.array(resid)
         rmse_cv = np.sqrt( (resid**2).mean() )
 
     if alpha is None:
         cvmod = creator(**kws)
-        cvmod.fit(spectra, ydat)
+        cvmod.fit(spectra_scaled, ydat)
         alpha = cvmod.alpha_
+        # alpha = alpha / np.sqrt(npts)
 
     if model is None:
         model = creator(alpha=alpha, **kws)
 
     # final fit without cross-validation
-    out = model.fit(spectra, ydat)
-
-    ypred = model.predict(spectra)
+    out = model.fit(spectra_scaled, ydat)
+    # print("model fit out: ", out)
+    ypred = model.predict(spectra_scaled)
 
     rmse = np.sqrt(((ydat - ypred)**2).mean())
 
-    return Group(x=xdat, spectra=spectra, ydat=ydat, ypred=ypred,
+    return Group(x=xdat, spectra=spectra, spectra_scaled=spectra_scaled,
+                 ydat=ydat, ypred=ypred,
                  alpha=alpha, active=model.active_, coefs=model.coef_,
                  cv_folds=cv_folds, cv_repeats=cv_repeats,
                  rmse_cv=rmse_cv, rmse=rmse, model=model, varname=varname,
