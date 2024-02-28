@@ -657,6 +657,8 @@ class XASNormPanel(TaskPanel):
             nnorm = get_auto_nnorm(self.get_config())
         self.set_nnorm_widget(nnorm)
 
+        defaults = self.get_defaultconfig()        
+
         self.wids['auto_step'].SetValue(1)
         self.wids['auto_e0'].SetValue(1)
         self.wids['auto_e0'].SetValue(1)
