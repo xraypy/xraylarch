@@ -6,17 +6,17 @@
 Larix (was XAS Viewer)
 ===========================
 
-The Larix Application gives a graphical user interface (GUI) for the
+The `Larix` Application gives a graphical user interface (GUI) for the
 visualization and analyis of X-ray absorption spectroscopy (XAS) data, both
-XANES and EXAFS. It is deliberately patterned after the Demeter Package
-(Athena and Artemis programs), and shares many concepts and presentation ideas
-with these progrqms.  As a GUI Program, Larix should seem very "Athena-like"
-though of course there will be several differences.  We hope that many of
-these differences will be "improvements".  By using Larch for all of its
-analysis steps, Larix not only provides interactive data visualization,
-exploration, and analysis of XAS data, but also records those steps as Larch /
-Python commands that can be saved and reproduced outside of the GUI, say to
-enable batch processing of large volumes of data.
+XANES and EXAFS. It is deliberately patterned after the Demeter Package (Athena
+and Artemis programs), and shares many concepts and presentation ideas with
+these progrqms.  As a GUI Program, Larix should seem very "Athena-like" though
+of course there will be several differences.  We hope that many of these
+differences will be "improvements".  By using Larch for all of its analysis
+steps, Larix not only provides interactive data visualization, exploration, and
+analysis of XAS data, but also records those steps as Larch / Python commands
+that can be saved and reproduced outside of the GUI, say to enable batch
+processing of large volumes of data.
 
 Larix is still in active development with new features driving much of the
 development and releases of Larch version for the past few years. At this

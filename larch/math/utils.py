@@ -6,6 +6,7 @@ import numpy as np
 
 from scipy.stats import linregress
 from scipy.interpolate import UnivariateSpline
+from scipy.interpolate import InterpolatedUnivariateSpline as IUSpline
 from scipy.interpolate import interp1d as scipy_interp1d
 
 from .lineshapes import gaussian, lorentzian, voigt
@@ -151,7 +152,7 @@ def interp(x, y, xnew, kind='linear', fill_value=np.nan, **kws):
             coefs = polyfit(x[sel], y[sel], 2)
             out[span] = coefs[0] + xnew[span]*(coefs[1] + coefs[2]*xnew[span])
         elif kind.startswith('cubic'):
-            out[span] = UnivariateSpline(x[sel], y[sel], s=0)(xnew[span])
+            out[span] = IUSpline(x[sel], y[sel])(xnew[span])
     return out
 
 

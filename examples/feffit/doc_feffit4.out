@@ -1,54 +1,54 @@
 =================== FEFFIT RESULTS ====================
 [[Statistics]]
-   n_function_calls   = 65
-   n_variables        = 7
-   n_data_points      = 144
-   n_independent      = 17.1064802
-   chi_square         = 65.0941583
-   reduced chi_square = 6.44083368
-   r-factor           = 0.01751179
-   Akaike info crit   = 36.8607146
-   Bayesian info crit = 42.7369161
- 
-[[Dataset]]
-   dataset unique_id  = 'dp3elp4f'
-   fit space          = 'r'
-   r-range            = 1.000, 3.200
-   k-range            = 2.000, 13.500
-   k window, dk       = 'kaiser', 3.000
-   paths used in fit  = ['feff_feo01.dat', 'feff_feo02.dat']
-   k-weight           = 3
-   epsilon_k          = Array(mean=7.7091e-4, std=0.0018654)
-   epsilon_r          = 0.1661505
-   n_independent      = 17.106
+  n_function_calls     = 65
+  n_variables          = 7
+  n_data_points        = 144
+  n_independent        = 17.1064802
+  chi_square           = 65.0941583
+  reduced chi_square   = 6.44083368
+  r-factor             = 0.01751179
+  Akaike info crit     = 36.8607146
+  Bayesian info crit   = 42.7369161
  
 [[Variables]]
-   de0            = -1.4741656 +/- 1.1341834   (init=  0.1000000)
-   delr_1         = -0.0293664 +/- 0.0107585   (init=  0.0000000)
-   delr_2         =  0.0478234 +/- 0.0083873   (init=  0.0000000)
-   n1             =  5.5325714 +/- 1.2512685   (init=  6.0000000)
-   n2             =  11.419642 +/- 1.5349979   (init=  12.000000)
-   sig2_1         =  0.0120204 +/- 0.0027069   (init=  0.0020000)
-   sig2_2         =  0.0125357 +/- 0.0011737   (init=  0.0020000)
+  de0                  = -1.4741656 +/- 1.1341834  (init= 0.1000000)
+  delr_1               = -0.0293664 +/- 0.0107585  (init= 0.0000000)
+  delr_2               =  0.0478234 +/- 0.0083873  (init= 0.0000000)
+  n1                   =  5.5325714 +/- 1.2512685  (init= 6.0000000)
+  n2                   =  11.419642 +/- 1.5349979  (init= 12.000000)
+  sig2_1               =  0.0120204 +/- 0.0027069  (init= 0.0020000)
+  sig2_2               =  0.0125357 +/- 0.0011737  (init= 0.0020000)
  
-[[Correlations]]    (unreported correlations are <  0.100)
-   n2, sig2_2           =  0.939
-   de0, delr_2          =  0.919
-   n1, sig2_1           =  0.897
-   de0, delr_1          =  0.582
-   delr_1, delr_2       =  0.539
-   delr_1, sig2_1       =  0.220
-   delr_1, n1           =  0.190
-   delr_2, sig2_2       =  0.184
-   de0, n1              = -0.178
-   delr_2, n2           =  0.159
-   delr_2, n1           = -0.156
-   de0, sig2_1          = -0.125
-   delr_2, sig2_1       = -0.107
-   n1, n2               =  0.106
+[[Correlations]] (unreported correlations are <  0.100)
+  n2, sig2_2           =  0.939
+  de0, delr_2          =  0.919
+  n1, sig2_1           =  0.897
+  de0, delr_1          =  0.582
+  delr_1, delr_2       =  0.539
+  delr_1, sig2_1       =  0.220
+  delr_1, n1           =  0.190
+  delr_2, sig2_2       =  0.184
+  de0, n1              = -0.178
+  delr_2, n2           =  0.159
+  delr_2, n1           = -0.156
+  de0, sig2_1          = -0.125
+  delr_2, sig2_1       = -0.107
+  n1, n2               =  0.106
+ 
+[[Dataset]]
+  unique_id            = 'dp3elp4f'
+  fit space            = 'r'
+  r-range              = 1.000, 3.200
+  k-range              = 2.000, 13.500
+  k window, dk         = 'kaiser', 3.000
+  paths used in fit    = ['feff_feo01.dat', 'feff_feo02.dat']
+  k-weight             = 3
+  epsilon_k            = Array(mean=7.7091e-4, std=0.0018654)
+  epsilon_r            = 0.1661505
+  n_independent        = 17.106
  
 [[Paths]]
- = Path 'pjuumtmhel' = Fe K Edge
+ = Path 'pjuumtmhe' = Fe K Edge
     feffdat file = feff_feo01.dat, from feff run ''
     geometry  atom      x        y        z      ipot
               Fe       0.0000,  0.0000,  0.0000  0 (absorber)
@@ -61,7 +61,7 @@
      deltar = -0.0293664 +/- 0.0107585  := 'delr_1'
      sigma2 =  0.0120204 +/- 0.0027069  := 'sig2_1'
 
- = Path 'p7etnrdqri' = Fe K Edge
+ = Path 'p7etnrdqr' = Fe K Edge
     feffdat file = feff_feo02.dat, from feff run ''
     geometry  atom      x        y        z      ipot
               Fe       0.0000,  0.0000,  0.0000  0 (absorber)

@@ -63,7 +63,7 @@ Regress_Choices = ['Partial Least Squares', 'LassoLars']
 
 PlotWindowChoices = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
 
-NNORM_CHOICES = {'auto':None,  'constant':0, 'linear':1, 'quadratic':2, 'cubic':3}
+NNORM_CHOICES = {'constant':0, 'linear':1, 'quadratic':2, 'cubic':3}
 NORM_METHODS = ('polynomial', 'mback')
 
 ATHENA_CLAMPNAMES = {'none': 0, 'slight': 1, 'weak': 5, 'medium': 20,
@@ -230,6 +230,7 @@ regression = [CVar('elo_rel', -40, 'float',  desc='low-energy fit range, relativ
        ]
 
 xasnorm = [CVar('auto_e0',  True, 'bool', desc='whether to automatically set E0'),
+           CVar('auto_nnorm',  True, 'bool', desc='whether to automatically set normalization polynomial'),
            CVar('auto_step',  True, 'bool', desc='whether to automatically set edge step'),
            CVar('show_e0',  True, 'bool', desc='whether to show E0'),
            CVar('energy_shift',  0., 'float', desc='value of Energy shift from original data'),
@@ -240,7 +241,7 @@ xasnorm = [CVar('auto_e0',  True, 'bool', desc='whether to automatically set E0'
            CVar('nvict',   0, 'int',     min=0, max=3,  desc='Victoreen order for pre-edge fitting\n(Energy^(-nvict))'),
            CVar('show_pre',  False, 'bool', desc='whether to show pre-edge energy range (pre1, pre2)'),
            CVar('norm_method',  'polynomial', 'choice', choices=NORM_METHODS,  desc='normalization method'),
-           CVar('nnorm',     'auto', 'choice', choices=list(NNORM_CHOICES.keys()),
+           CVar('nnorm',     'linear', 'choice', choices=list(NNORM_CHOICES.keys()),
                 desc='type of polynomial for normalization'),
            CVar('norm1', 150, 'float',  step=5, desc='low-energy fit range for normalization curve,\nrelative to E0'),
            CVar('norm2',  -1, 'float',  step=5, desc='high-energy fit range for normalization curve,\nelative to E0 (set to -1 for "auto")'),

@@ -13,7 +13,7 @@ from functools import partial
 from larch.math import index_of
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
                          get_icon, SimpleText, pack, Button, HLine, Choice,
-                         plotlabels, Check, CEN, RIGHT, LEFT)
+                         TextCtrl, plotlabels, Check, CEN, RIGHT, LEFT)
 
 from larch.xafs.xafsutils import etok, ktoe, FT_WINDOWS
 from larch.xafs.pre_edge import find_e0
@@ -41,10 +41,10 @@ noplot  = '<no plot>'
 PlotOne_Choices = [mu_bkg, chie, chik, chikwin, chirmag, chirre, chirmr, wavelet,
                    chir_w, chiq, chikq]
 PlotAlt_Choices = [noplot] + PlotOne_Choices
-PlotSel_Choices = [chie, chik, chirmag, chirre]
+PlotSel_Choices = [chie, chik, chirmag, chirre, chiq]
 
 
-PlotCmds = {mu_bkg:  "plot_bkg({group:s}",
+PlotCmds = {mu_bkg:  "plot_bkg({group:s}, show_ek0={show_ek0}",
             chie:    "plot_chie({group:s}",
             chik:    "plot_chik({group:s}, show_window=False, kweight={plot_kweight:.0f}",
             chikwin: "plot_chik({group:s}, show_window=True, kweight={plot_kweight:.0f}",
@@ -124,12 +124,35 @@ class EXAFSPanel(TaskPanel):
                                    action=self.onProcess)
         wids['plot_win'].SetStringSelection('2')
 
+        ek0_panel = wx.Panel(panel)
         opts = dict(digits=2, increment=0.1, min_val=0, action=self.onProcess)
-        wids['ek0'] = FloatSpin(panel, **opts)
+        wids['ek0'] = FloatSpin(ek0_panel, **opts)
+        wids['show_ek0'] = Check(ek0_panel, default=True, label='show?',
+                                 action=self.onShowEk0)
+        sx = wx.BoxSizer(wx.HORIZONTAL)
+        sx.Add(self.wids['ek0'], 0, LEFT, 4)
+        sx.Add(self.wids['show_ek0'], 0, LEFT, 4)
+        pack(ek0_panel, sx)
 
-        wids['push_e0'] = Button(panel, 'Use as Normalization E0', size=(200, -1),
+        wids['push_e0'] = Button(panel, 'Use as Normalization E0', size=(180, -1),
                                  action=self.onPushE0)
         wids['push_e0'].SetToolTip('Use this value for E0 in the Normalization Tab')
+
+
+        #
+        wids['plotopt_name'] = TextCtrl(panel, 'kspace, kw=2', size=(150, -1),
+                                        action=self.onPlotOptSave,
+                                        act_on_losefocus=False)
+        wids['plotopt_name'].SetToolTip('Name this set of Plot Choices')
+
+        self.plotopt_saves = {'kspace, kw=2': {'plotone_op': chik, 'plotsel_op': chik,
+                                          'plotalt_op': noplot, 'plot_voffset': 0.0,
+                                          'plot_kweight': 2, 'plot_kweight_alt': 2,
+                                          'plot_rmax': 8}}
+
+        wids['plotopt_sel']  = Choice(panel, size=(150, -1),
+                                      choices=list(self.plotopt_saves.keys()),
+                                      action=self.onPlotOptSel)
 
 
         opts['max_val'] = 6
@@ -190,22 +213,29 @@ class EXAFSPanel(TaskPanel):
         panel.Add(self.wids['plotsel_op'], dcol=2)
 
         add_text('Vertical offset: ', newrow=False)
-        panel.Add(wids['plot_voffset'], dcol=2)
+        panel.Add(wids['plot_voffset'],  style=RIGHT)
 
         panel.Add(plot_one, newrow=True)
         panel.Add(self.wids['plotone_op'], dcol=2)
 
         add_text('Plot k weight: ', newrow=False)
-        panel.Add(wids['plot_kweight'])
+        panel.Add(wids['plot_kweight'], style=RIGHT)
 
         add_text('Add Second Plot: ', newrow=True)
         panel.Add(self.wids['plotalt_op'], dcol=2)
         add_text('Plot2 k weight: ', newrow=False)
-        panel.Add(wids['plot_kweight_alt'])
+        panel.Add(wids['plot_kweight_alt'], style=RIGHT)
         add_text('Window for Second Plot: ', newrow=True)
         panel.Add(self.wids['plot_win'], dcol=2)
         add_text('Plot R max: ', newrow=False)
-        panel.Add(wids['plot_rmax'])
+        panel.Add(wids['plot_rmax'], style=RIGHT)
+
+        add_text('Save Plot Options as: ', newrow=True)
+        panel.Add(self.wids['plotopt_name'], dcol=2)
+
+        add_text('Use Saved Plot Options: ', dcol=1, newrow=False)
+        panel.Add(self.wids['plotopt_sel'], dcol=1)
+
 
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
 
@@ -216,8 +246,8 @@ class EXAFSPanel(TaskPanel):
 
 
         add_text('E k=0: ')
-        panel.Add(wids['ek0'])
-        panel.Add(wids['push_e0'], dcol=2)
+        panel.Add(ek0_panel, dcol=2)
+        panel.Add(wids['push_e0'], dcol=1)
         panel.Add(CopyBtn('ek0'), style=RIGHT)
 
         add_text('R bkg: ')
@@ -392,11 +422,15 @@ class EXAFSPanel(TaskPanel):
 
         for attr in ('bkg_kmin', 'bkg_kmax', 'bkg_kweight', 'fft_kmin',
                      'fft_kmax', 'fft_kweight', 'fft_dk', 'fft_rmaxout',
-                     'plot_rmax'):
+                     ):
             try:
                 wids[attr].SetValue(float(opts.get(attr)))
             except:
                 pass
+        for attr in ('fft_kwindow',):
+            if attr in opts:
+                wids[attr].SetStringSelection(opts[attr])
+
 
         for attr in ('bkg_clamplo', 'bkg_clamphi'):
             val = opts.get(attr, 0)
@@ -408,11 +442,7 @@ class EXAFSPanel(TaskPanel):
             try:
                 wids[attr].SetStringSelection("%d" % int(val))
             except:
-                print(f"could not set '{attr:s}' to {val}")
-
-        for attr in ('fft_kwindow', 'plotone_op', 'plotalt_op'): # 'plotsel_op',
-            if attr in opts:
-                wids[attr].SetStringSelection(opts[attr])
+                pass
 
         frozen = opts.get('is_frozen', False)
         if hasattr(dgroup, 'is_frozen'):
@@ -450,6 +480,8 @@ class EXAFSPanel(TaskPanel):
         for attr in ('fft_kwindow', 'fft_rwindow', 'plotone_op',
                      'plotsel_op', 'plotalt_op'):
             conf[attr] = wids[attr].GetStringSelection()
+        conf['show_ek0'] = wids['show_ek0'].IsChecked()
+
         time.sleep(0.001)
         self.skip_process = skip_save
         if as_copy:
@@ -460,6 +492,10 @@ class EXAFSPanel(TaskPanel):
 
     def onSaveConfigBtn(self, evt=None):
         self.set_defaultconfig(self.read_form())
+
+    def onShowEk0(self, evt=None):
+        print("show ek0 ", evt)
+
 
     def onPushE0(self, evt=None):
         conf = self.read_form()
@@ -604,6 +640,40 @@ class EXAFSPanel(TaskPanel):
             return
         self.onPlotOne(dgroup=dgroup)
 
+
+    def onPlotOptSave(self, name=None, event=None):
+        data = {}
+        if name is None or len(name) < 1:
+            name = f"view {len(self.plotopt_saves)+1}"
+
+        name = name.strip()
+        for attr in ('plot_voffset', 'plot_kweight',
+                     'plot_kweight_alt', 'plot_rmax'):
+            data[attr] = self.wids[attr].GetValue()
+
+        for attr in ('plotone_op', 'plotsel_op', 'plotalt_op'):
+            data[attr] = self.wids[attr].GetStringSelection()
+        self.plotopt_saves[name] = data
+
+        choices = list(reversed(self.plotopt_saves.keys()))
+        self.wids['plotopt_sel'].SetChoices(choices)
+        self.wids['plotopt_sel'].SetSelection(0)
+
+
+    def onPlotOptSel(self, event=None):
+        name =  event.GetString()
+        data = self.plotopt_saves.get(name, None)
+        if data is not None:
+            for attr in ('plot_voffset', 'plot_kweight',
+                         'plot_kweight_alt', 'plot_rmax'):
+                self.wids[attr].SetValue(data[attr])
+
+            for attr in ('plotone_op', 'plotsel_op', 'plotalt_op'):
+                self.wids[attr].SetStringSelection(data[attr])
+
+            self.plot()
+
+
     def onPlotOne(self, evt=None, dgroup=None):
         if self.skip_plotting:
             return
@@ -614,6 +684,7 @@ class EXAFSPanel(TaskPanel):
         self.process(dgroup=self.dgroup)
         conf['title'] = '"%s"' % self.dgroup.filename
 
+        # print(" onPlotOne ", conf['plotone_op'])
         cmd = PlotCmds[conf['plotone_op']] + ", win=1, title={title:s})"
         # 2nd plot
         cmd2 =  PlotCmds[conf['plotalt_op']]
@@ -623,6 +694,7 @@ class EXAFSPanel(TaskPanel):
             cmd = "%s\n%s" % (cmd, cmd2)
             self.controller.get_display(win=2)
 
+        # print(" onPlotOne ",   cmd.format(**conf))
         self.larch_eval(cmd.format(**conf))
         self.last_plot = 'one'
 

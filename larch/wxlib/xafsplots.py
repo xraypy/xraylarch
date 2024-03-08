@@ -284,7 +284,7 @@ def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
     redraw(win=win, xmin=emin, xmax=emax, _larch=_larch)
 #enddef
 
-def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
+def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, show_ek0=False,
              label=None, title=None, new=True, delay_draw=False, offset=0,
              win=1, _larch=None):
     """
@@ -296,9 +296,10 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
     ----------
      dgroup      group of XAFS data after autobk() results (see Note 1)
      norm        bool whether to show normalized data [True]
-     emin       min energy to show, absolute or relative to E0 [None, start of data]
-     emax       max energy to show, absolute or relative to E0 [None, end of data]
+     emin        min energy to show, absolute or relative to E0 [None, start of data]
+     emax        max energy to show, absolute or relative to E0 [None, end of data]
      show_e0     bool whether to show E0 [False]
+     show_ek0    bool whether to show EK0 [False]
      label       string for label [``None``: 'mu']
      title       string for plot titlte [None, may use filename if available]
      new         bool whether to start a new plot [True]
@@ -344,9 +345,21 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
         ymin, ymax = xylims[2], xylims[3]
     _plot(dgroup.energy, bkg+offset, zorder=18, label='bkg', **opts)
 
-    if show_e0:
-        _plot_axvline(dgroup.e0, zorder=2, size=3, label='E0',
-                      color=plotlabels.e0color, win=win, _larch=_larch)
+    e0val, e0label = None, 'E0'
+    if show_e0 and hasattr(dgroup, 'e0'):
+        e0val = dgroup.e0
+    elif show_ek0 and hasattr(dgroup, 'ek0'):
+        e0val, e0label = dgroup.ek0,  'EK0'
+
+    if e0val is not None:
+        ie0 = index_of(dgroup.energy, e0val)
+        ee0 = dgroup.energy[ie0]
+        me0 = mu[ie0] + offset
+        disp.panel.axes.plot([ee0], [me0], marker='o',
+                             markersize=5, label='_nolegend_',
+                             markerfacecolor='#808080',
+                             markeredgecolor='#A03030')
+
         if disp is not None:
             disp.panel.conf.draw_legend()
     #endif

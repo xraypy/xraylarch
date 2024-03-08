@@ -192,7 +192,6 @@ def read_session(fname):
     cmd_history = []
     nsyms = nsym_expected = 0
     section = symname = '_unknown_'
-
     for line in lines:
         if line.startswith("##<"):
             section = line.replace('##<','').replace('>', '').strip().lower()
@@ -210,7 +209,7 @@ def read_session(fname):
                 try:
                     symbols[symname] = decode4js(json.loads(line))
                 except:
-                    print("decode failed:: ", symname, line[:150])
+                    print("decode failed:: ", symname, repr(line)[:50])
 
         else:
             if line.startswith('##') and ':' in line:
@@ -222,7 +221,7 @@ def read_session(fname):
                     try:
                         val = decode4js(json.loads(val))
                     except:
-                        print("decode failed @## ", val[:150])
+                        print("decode failed @## ", repr(val)[:50])
                 config[key] = val
     return SessionStore(config, cmd_history, symbols)
 

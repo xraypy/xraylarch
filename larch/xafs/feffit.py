@@ -361,10 +361,10 @@ class FeffitDataSet(Group):
         else:
             self.estimate_noise(chi=self._chi, rmin=15.0, rmax=30.0)
 
-            # if not refining the background, and if delta_chi (uncertainty in
-            # chi(k) from autobk or other source) exists, add it in quadrature
-            # to high-k noise estimate, and update epsilon_k to be this value
-            if not self.refine_bkg and hasattr(self.data, 'delta_chi'):
+            # if delta_chi (uncertainty in chi(k) from autobk or other source)
+            # exists, add it in quadrature to high-k noise estimate, and
+            # update epsilon_k to be this value
+            if hasattr(self.data, 'delta_chi'):
                 cur_eps_k = getattr(self, 'epsilon_k', 0.0)
                 if isinstance(cur_eps_k, (list, tuple)):
                     eps_ave = 0.
@@ -378,20 +378,20 @@ class FeffitDataSet(Group):
                         _dchi = interp(self.model.k, self.data.k, _dchi)
                     self.set_epsilon_k(np.sqrt(_dchi**2 + cur_eps_k**2))
 
+        self.__generate_hashkey(other_hashkeys=other_hashkeys)
         # for each path in the list of paths, setup the Path Parameters
         # to use the current Parameters namespace
         if isinstance(params, Group):
             params = group2params(params)
         for label, path in self.paths.items():
-            path.create_path_params(params=params)
+            path.create_path_params(params=params, dataset=self.hashkey)
             if path.spline_coefs is None:
                 path.create_spline_coefs()
 
-        self.__generate_hashkey(other_hashkeys=other_hashkeys)
         self.bkg_spline = {}
         if self.refine_bkg:
             trans.rbkg = max(trans.rbkg, trans.rmin)
-            trans.rmin = 0.
+            trans.rmin = trans.rstep
             self.n_idp = 1 + 2*(trans.rmax)*(trans.kmax-trans.kmin)/pi
             nspline = 1 + round(2*(trans.rbkg)*(trans.kmax-trans.kmin)/pi)
             knots_k = np.linspace(trans.kmin, trans.kmax, nspline)
@@ -715,8 +715,8 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True,
                     scale_covar=False, **fit_kws)
 
     result = fit.leastsq()
-    # params2group(result.params, work_paramgroup)
-    dat = concatenate([d._residual(result.params, data_only=True) for d in datasets])
+    dat = concatenate([d._residual(result.params, data_only=True)
+                       for d in datasets])
 
     n_idp = 0
     for ds in datasets:
@@ -855,21 +855,65 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
 
     def getval(attr):
         return getfloat_attr(result, attr)
-    out.append(f"   n_function_calls   = {getval('nfev')}")
-    out.append(f"   n_variables        = {getval('nvarys')}")
-    out.append(f"   n_data_points      = {getval('ndata')}")
-    out.append(f"   n_independent      = {getval('n_independent')}")
-    out.append(f"   chi_square         = {getval('chi_square')}")
-    out.append(f"   reduced chi_square = {getval('chi2_reduced')}")
-    out.append(f"   r-factor           = {getval('rfactor')}")
-    out.append(f"   Akaike info crit   = {getval('aic')}")
-    out.append(f"   Bayesian info crit = {getval('bic')}")
-    out.append(' ')
 
-    if len(datasets) == 1:
-        out.append(header % 'Dataset')
-    else:
-        out.append(header % 'Datasets (%i)' % len(datasets))
+    def add_string(label, value, llen=20):
+        if len(label) < llen:
+            label = (label + ' '*llen)[:llen]
+        out.append(f"  {label} = {value}")
+
+    add_string('n_function_calls', getval('nfev'))
+    add_string('n_variables', getval('nvarys'))
+    add_string('n_data_points', getval('ndata'))
+    add_string('n_independent', getval('n_independent'))
+    add_string('chi_square', getval('chi_square'))
+    add_string('reduced chi_square', getval('chi2_reduced'))
+    add_string('r-factor',  getval('rfactor'))
+    add_string('Akaike info crit', getval('aic'))
+    add_string('Bayesian info crit', getval('bic'))
+
+    out.append(' ')
+    out.append(header % 'Variables')
+    for name, par in params.items():
+        if any([name.endswith('_%s' % phash) for phash in path_hashkeys]):
+            continue
+        if isParameter(par):
+            if par.vary:
+                stderr = 'unknown'
+                if par.stderr is not None:
+                    stderr = gfmt(par.stderr)
+                add_string(name, f"{gfmt(par.value)} +/-{stderr}  (init={gfmt(par.init_value)})")
+
+            elif par.expr is not None:
+                stderr = 'unknown'
+                if par.stderr is not None:
+                    stderr = gfmt(par.stderr)
+                add_string(name, f"{gfmt(par.value)} +/-{stderr}  = '{par.expr}'")
+            else:
+                add_string(name, f"{gfmt(par.value)} (fixed)")
+
+    covar_vars = result.var_names
+    if len(covar_vars) > 0:
+        out.append(' ')
+        out.append(header % 'Correlations' +
+                   ' (unreported correlations are < % .3f)' % min_correl)
+        correls = {}
+        for i, name in enumerate(covar_vars):
+            par = params[name]
+            if not par.vary:
+                continue
+            if hasattr(par, 'correl') and par.correl is not None:
+                for name2 in covar_vars[i+1:]:
+                    if name != name2 and name2 in par.correl:
+                        correls["%s, %s" % (name, name2)] = par.correl[name2]
+
+        sort_correl = sorted(correls.items(), key=lambda it: abs(it[1]))
+        sort_correl.reverse()
+        for name, val in sort_correl:
+            if abs(val) > min_correl:
+                vv = f"{val:+.3f}".replace('+', ' ')
+                add_string(name, vv)
+
+    out.append(' ')
     for i, ds in enumerate(datasets):
         if not hasattr(ds, 'epsilon_k'):
             ds.prepare_fit(params)
@@ -896,78 +940,30 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
                 eps_k = gfmt(ds.epsilon_k).strip()
             eps_r = gfmt(ds.epsilon_r).strip()
             kweigh = '%i' % tr.kweight
-        out.append(f"   unique_id          = '{ds.hashkey}'")
-        out.append(f"   fit space          = '{tr.fitspace}'")
+        extra = f" {i+1} of {len(datasets)}" if len(datasets) > 1 else ""
+
+        out.append(f"[[Dataset{extra}]]")
+        add_string('unique_id', f"'{ds.hashkey}'")
+        add_string('fit space', f"'{tr.fitspace}'")
         if ds.refine_bkg:
-            out.append(f"   r_bkg (refine bkg) = {tr.rbkg:.3f}")
-        out.append(f"   r-range            = {tr.rmin:.3f}, {tr.rmax:.3f}")
-        out.append(f"   k-range            = {tr.kmin:.3f}, {tr.kmax:.3f}")
-        kwin = f"   k window, dk       = '{tr.window}', {tr.dk:.3f}"
+            add_string('r_bkg (refine bkg)', f"{tr.rbkg:.3f}")
+        add_string('r-range', f"{tr.rmin:.3f}, {tr.rmax:.3f}")
+        add_string('k-range', f"{tr.kmin:.3f}, {tr.kmax:.3f}")
+        kwin = f"'{tr.window}', {tr.dk:.3f}"
         if tr.dk2 is not None:
             kwin += f", {tr.dk2:.3f}"
-        out.append(kwin)
-        pathfiles = [p.filename for p in ds.paths.values()]
-        out.append(f"   paths used in fit  = {repr(pathfiles)}")
-        out.append(f"   k-weight           = {kweigh}")
-        out.append(f"   epsilon_k          = {eps_k}")
-        out.append(f"   epsilon_r          = {eps_r}")
-        out.append(f"   n_independent      = {ds.n_idp:.3f}")
+        add_string('k window, dk', kwin)
+        pathfiles = repr([p.filename for p in ds.paths.values()])
+        add_string('paths used in fit', pathfiles)
+        add_string('k-weight', kweigh)
+        add_string('epsilon_k', eps_k)
+        add_string('epsilon_r', eps_r)
+        add_string('n_independent', f"{ds.n_idp:.3f}")
         #
-    out.append(' ')
-    out.append(header % 'Variables')
-    for name, par in params.items():
-        if any([name.endswith('_%s' % phash) for phash in path_hashkeys]):
-            continue
-        if len(name) < 14:
-            name = (name + ' '*14)[:14]
 
-        if isParameter(par):
-            if par.vary:
-                stderr = 'unknown'
-                if par.stderr is not None:
-                    stderr = gfmt(par.stderr)
-                out.append(varformat % (name, gfmt(par.value),
-                                        stderr, gfmt(par.init_value)))
-
-            elif par.expr is not None:
-                stderr = 'unknown'
-                if par.stderr is not None:
-                    stderr = gfmt(par.stderr)
-                out.append(exprformat % (name, gfmt(par.value),
-                                         stderr, par.expr))
-            else:
-                out.append(fixformat % (name, gfmt(par.value)))
-
-    covar_vars = result.var_names
-    if len(covar_vars) > 0:
-        out.append(' ')
-        out.append(header % 'Correlations' +
-                   '    (unreported correlations are < % .3f)' % min_correl)
-        correls = {}
-        for i, name in enumerate(covar_vars):
-            par = params[name]
-            if not par.vary:
-                continue
-            if hasattr(par, 'correl') and par.correl is not None:
-                for name2 in covar_vars[i+1:]:
-                    if name != name2 and name2 in par.correl:
-                        correls["%s, %s" % (name, name2)] = par.correl[name2]
-
-        sort_correl = sorted(correls.items(), key=lambda it: abs(it[1]))
-        sort_correl.reverse()
-        for name, val in sort_correl:
-            if abs(val) < min_correl:
-                break
-            if len(name) < 20:
-                name = (name + ' '*20)[:20]
-            out.append('   %s = % .3f' % (name, val))
-
-    if with_paths:
-        out.append(' ')
-        out.append(header % 'Paths')
-        for ids, ds in enumerate(datasets):
-            if len(datasets) > 1:
-                out.append(' dataset %i:' % (ids+1))
+        if with_paths:
+            out.append(' ')
+            out.append(header % 'Paths')
             for label, path in ds.paths.items():
                 out.append('%s\n' % path.report())
     out.append('='*len(topline))

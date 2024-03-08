@@ -356,6 +356,8 @@ class XASFrame(wx.Frame):
                                                  select_action=self.ShowFile,
                                                  remove_action=self.RemoveFile)
         set_color(self.controller.filelist, 'list_fg', bg='list_bg')
+        # self.controller.filelist.check_event  = self.filelist_check_event
+        self.controller.filelist.Bind(wx.EVT_CHECKLISTBOX, self.filelist_check_event)
 
         tsizer = wx.BoxSizer(wx.HORIZONTAL)
         tsizer.Add(sel_all, 1, LEFT|wx.GROW, 1)
@@ -428,6 +430,15 @@ class XASFrame(wx.Frame):
                 group = self.controller.file_groups.pop(s)
             self.controller.sync_xasgroups()
 
+    def filelist_check_event(self, evt=None):
+        """MN 2024-Feb this is included to better 'swallow' the checked event,
+        so that it does in fact run ShowFile().
+        This could be removed eventually, as wxutils will also no longer run
+        filelist.SetSelection()"""
+        index = evt.GetSelection()
+        label = evt.GetString()
+        pass
+
     def ShowFile(self, evt=None, groupname=None, process=True,
                  filename=None, plot=True, **kws):
         if filename is None and evt is not None:
@@ -446,7 +457,6 @@ class XASFrame(wx.Frame):
         if (getattr(dgroup, 'datatype', 'raw').startswith('xa') and not
             (hasattr(dgroup, 'norm') and hasattr(dgroup, 'e0'))):
             self.process_normalization(dgroup, force=True, use_form=False)
-
         if filename is None:
             filename = dgroup.filename
         self.current_filename = filename
