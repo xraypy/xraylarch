@@ -13,7 +13,7 @@ Requirements
 """
 
 __author__ = ["Mauro Rovezzi", "Matt Newville"]
-__version__ = "2023.2"
+__version__ = "2023.3"
 
 import os
 import copy
@@ -708,7 +708,9 @@ class DataSourceSpecH5(object):
         if _scntype == "contscan.EnergyCont":
             iscn.update(dict(scan_axis="energy_enc"))
             iscn.update(dict(scan_info="ESRF/BM16 BLISS 2023-Sept"))
-
+        if _scntype == "trigscan":
+            iscn.update(dict(scan_axis="energy_enc"))
+            iscn.update(dict(scan_info="ESRF/BLISS 2023-Dec"))
         return iscn
 
     def get_scan_axis(self):
