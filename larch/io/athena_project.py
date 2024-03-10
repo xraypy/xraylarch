@@ -16,7 +16,7 @@ from copy import deepcopy
 import numpy as np
 from numpy.random import randint
 
-from larch import Group
+from larch import Group, repr_value
 from larch import __version__ as larch_version
 from larch.utils.strutils import bytes2str, str2bytes, fix_varname, asfloat
 
@@ -553,7 +553,7 @@ def parse_jsonathena(text, filename):
 class AthenaGroup(Group):
     """A special Group for handling datasets loaded from Athena project files"""
 
-    def __init__(self, show_sel=False, **kws):
+    def __init__(self,  **kws):
         """Constructor
 
         Parameters
@@ -563,18 +563,12 @@ class AthenaGroup(Group):
             if True, it shows the selection flag in HTML representation
         """
         super().__init__(**kws)
-        self.show_sel = show_sel
 
     def _repr_html_(self):
         """HTML representation for Jupyter notebook"""
-
-        _has_sel = any([hasattr(g, 'sel') for g in self.groups.values()])
-        html = ["<table>"]
-        html.append("<tr>")
-        html.append("<td><b>Group</b></td>")
-        if self.show_sel and _has_sel:
-            html.append("<td><b>Sel</b></td>")
-        html.append("</tr>")
+        html = ["<table><tr><td><b>Group Name</b></td>",
+                "<td><b>Label/File Name</b></td>",
+                "<td><b>Selected</b></td></tr>"]
         for name, grp in self.groups.items():
             try:
                 if grp.sel == 1:
@@ -583,21 +577,11 @@ class AthenaGroup(Group):
                     sel = ""
             except AttributeError:
                 sel = ""
-            html.append("<tr>")
-            html.append(f"<td>{name}</td>")
-            if self.show_sel and _has_sel:
-                html.append(f"<td>{sel}</td>")
-            html.append("</tr>")
+            fname = getattr(grp, 'filename', getattr(grp, 'label', 'unkownn'))
+            html.append(f"<tr><td>{name}</td><td>{fname}</td><td>{sel}</td></tr>")
         html.append("</table>")
-        return ''.join(html)
+        return '\n'.join(html)
 
-    @property
-    def groups(self):
-        return self._athena_groups
-
-    @groups.setter
-    def groups(self, groups):
-        self._athena_groups = groups
 
     def __getitem__(self, key):
         if isinstance(key, int):
@@ -693,7 +677,6 @@ class AthenaProject(object):
 
         # add a selection flag
         group.sel = 1
-
         self.groups[hashkey] = group
 
     def save(self, filename=None, use_gzip=True):
@@ -756,8 +739,8 @@ class AthenaProject(object):
         Notes:
             1. To limit the imported groups, use the pattern in `match`,
                using '*' to match 'all', '?' to match any single character,
-               or [sequence] to match any of a sequence of letters.  The match
-               will always be insensitive to case.
+               or [sequence] to match any of a sequence of letters.  Matching
+               is insensitive to case, and done with Python's fnmatch module.
             3. do_preedge,  do_bkg, and do_fft will attempt to reproduce the
                pre-edge, background subtraction, and FFT from Athena by using
                the parameters saved in the project file.
@@ -806,6 +789,8 @@ class AthenaProject(object):
         self.journal = data.journal
         self.group_names = data.group_names
 
+        if match is not None:
+            match = match.lower()
         for gname in data.group_names:
             oname = gname
             if match is not None:
@@ -855,20 +840,28 @@ class AthenaProject(object):
                 del this.energy
                 del this.mu
 
-            # add a selection flag
+            # add a selection flag and XAS datatypes, as used by Larix
             this.sel = 1
-
+            this.datatype = 'xas'
+            this.filename = getattr(this, 'label', 'unknown')
+            this.xdat = 1.0*this.energy
+            this.ydat = 1.0*this.mu
+            this.yerr = 1.0
+            this.plot_xlabel = 'energy'
+            this.plot_ylabel = 'mu'
             self.groups[oname] = this
 
     def as_group(self):
         """convert AthenaProject to Larch group"""
         out = AthenaGroup()
         out.__doc__ = """XAFS Data from Athena Project File %s""" % (self.filename)
-        out._athena_journal = self.journal
-        out._athena_header = self.header
-        out._athena_groups = self.groups
+        out.filename = self.filename
+        out.journal = self.journal
+        out.header = self.header
+        out.groups = {}
 
         for name, group in self.groups.items():
+            out.groups[name] = group
             setattr(out, name, group)
         return out
 
@@ -876,8 +869,9 @@ class AthenaProject(object):
         """convert AthenaProject to a nested dictionary"""
         out = dict()
         out["_doc"] = """XAFS Data from Athena Project File %s""" % (self.filename)
-        out["_journal"] = self.journal  # str
-        out["_header"] = self.header  # str
+        out["filename"] = self.filenamel  # str
+        out["journal"] = self.journal  # str
+        out["header"] = self.header  # str
         out["groups"] = dict()
 
         for name, group in self.groups.items():
@@ -939,6 +933,7 @@ def read_athena(filename, match=None, do_preedge=True, do_bkg=False,
     aprj = AthenaProject()
     aprj.read(filename, match=match, do_preedge=do_preedge, do_bkg=do_bkg,
               do_fft=do_fft, use_hashkey=use_hashkey)
+
     return aprj.as_group()
 
 
@@ -948,14 +943,13 @@ def create_athena(filename=None):
 
 
 def extract_athenagroup(dgroup):
-    '''extract xas group from athena group'''
-    g = dgroup
-    g.datatype = 'xas'
-    g.filename = getattr(g, 'label', 'unknown')
-    g.xdat = 1.0*g.energy
-    g.ydat = 1.0*g.mu
-    g.yerr = 1.0
-    g.plot_xlabel = 'energy'
-    g.plot_ylabel = 'mu'
-    return g
+    '''deprecated -- no longer needed (extract xas group from athena group)'''
+    dgroup.datatype = 'xas'
+    dgroup.filename = getattr(dgroup, 'label', 'unknown')
+    dgroup.xdat = 1.0*dgroup.energy
+    dgroup.ydat = 1.0*dgroup.mu
+    dgroup.yerr = 1.0
+    dgroup.plot_xlabel = 'energy'
+    dgroup.plot_ylabel = 'mu'
+    return dgroup
 #enddef
