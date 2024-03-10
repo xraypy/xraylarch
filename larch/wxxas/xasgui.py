@@ -1285,7 +1285,7 @@ before clearing"""
         """read groups from a list of groups from an athena project file"""
         self.larch.eval("_prj = read_athena('{path:s}', do_fft=False, do_bkg=False)".format(path=path))
         dgroup = None
-        script = "{group:s} = extract_athenagroup(_prj.{prjgroup:s})"
+        script = "{group:s} = _prj.{prjgroup:s}"
         cur_panel = self.nb.GetCurrentPage()
         cur_panel.skip_plotting = True
         parent, spath = os.path.split(path)

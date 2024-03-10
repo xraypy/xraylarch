@@ -557,7 +557,7 @@ class LarchFrame(wx.Frame):
         read_cmd = "_prj = read_athena('{path:s}', do_fft=False, do_bkg=False)"
         self.larchshell.eval(read_cmd.format(path=path))
         dgroup = None
-        script = "{group:s} = extract_athenagroup(_prj.{prjgroup:s})"
+        script = "{group:s} = _prj.{prjgroup:s}"
         for gname in namelist:
             this = getattr(self.larchshell.symtable._prj, gname)
             gid = str(getattr(this, 'athena_id', gname))
