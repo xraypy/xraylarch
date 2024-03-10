@@ -6,7 +6,7 @@ import os
 import sys
 import types
 import numpy
-from larch import Group
+from larch import Group, repr_value
 
 TERMCOLOR_COLORS = ('grey', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white')
 
@@ -33,9 +33,7 @@ def get(sym=None, _larch=None):
 
 def show_tree(group, indent=0, groups_shown=None, _larch=None):
     """show members of a Group, with a tree structure for sub-groups
-
     > show_tree(group1)
-
     """
     if groups_shown is None:
         groups_shown = []
@@ -55,9 +53,10 @@ def show_tree(group, indent=0, groups_shown=None, _larch=None):
             dval = repr(obj)
             if isinstance(obj, numpy.ndarray):
                 if len(obj) > 10 or len(obj.shape)>1:
-                    dval = "array<shape=%s, type=%s>" % (repr(obj.shape),
+                    dval = f"array<shape=%s, type=%s>, min" % (repr(obj.shape),
                                                          repr(obj.dtype))
             _larch.writer.write('%s %s: %s\n' % (indent*' ', item, dval))
+
 
 def show(sym=None, with_private=False, with_color=True, color=None,
          color2=None, truncate=True, with_methods=True, _larch=None):
@@ -125,18 +124,7 @@ def show(sym=None, with_private=False, with_color=True, color=None,
 
     count = 0
     for item, obj in dmembers:
-        if (isinstance(obj, numpy.ndarray) and
-            (len(obj) > 10 or len(obj.shape)>1)):
-            dval = "array<shape=%s, type=%s>" % (repr(obj.shape),
-                                                 repr(obj.dtype))
-        elif isinstance(obj, (list, tuple)) and truncate and len(obj) > 5:
-            dval = "[%s, %s, ... %s, %s]" % (repr(obj[0]), repr(obj[1]),
-                                             repr(obj[-2]), repr(obj[-1]))
-        else:
-            try:
-                dval = repr(obj)
-            except:
-                dval = obj
+        dval = repr_value(obj)
         if color_output:
             _larch.writer.set_textstyle({True:'text', False:'text2'}[(count%2)==1])
         count += 1
