@@ -3,11 +3,27 @@
 SymbolTable for Larch interpreter
 '''
 import copy
-
 import numpy
-
+from lmfit.printfuncs import gformat
 from . import site_config
 from .utils import fixName, isValidName
+
+def repr_value(val):
+    """render a repr-like value for ndarrays, lists, etc"""
+    if (isinstance(val, numpy.ndarray) and
+            (len(val) > 6 or len(val.shape)>1)):
+        sval = f"shape={val.shape}, type={val.dtype} range=[{gformat(val.min())}:{gformat(val.max())}]"
+    elif isinstance(val, list) and len(val) > 6:
+        sval = f"length={len(val)}: [{val[0]}, {val[1]}, ... {val[-2]}, {val[-1]}]"
+    elif isinstance(val, tuple) and len(val) > 6:
+        sval = f"length={len(val)}: ({val[0]}, {val[1]}, ... {val[-2]}, {val[-1]})"
+    else:
+        try:
+            sval = repr(val)
+        except:
+            sval = val
+    return sval
+
 
 class Group():
     """
@@ -15,7 +31,7 @@ class Group():
     """
     __private = ('_main', '_larch', '_parents', '__name__', '__doc__',
                  '__private', '_subgroups', '_members', '_repr_html_')
-    
+
     __generic_functions = ('keys', 'values', 'items')
 
     def __init__(self, name=None, **kws):
@@ -71,28 +87,28 @@ class Group():
 
         if isinstance(key, int):
             raise IndexError("Group does not support Integer indexing")
-        
+
         return getattr(self, key)
 
     def __setitem__(self, key, value):
 
         if isinstance(key, int):
             raise IndexError("Group does not support Integer indexing")
-        
+
         return setattr(self, key, value)
-    
+
     def __iter__(self):
         return iter(self.keys())
-    
+
     def keys(self):
         return self.__dir__()
-    
+
     def values(self):
         return [getattr(self, key) for key in self.__dir__()]
-    
+
     def items(self):
         return [(key, getattr(self, key)) for key in self.__dir__()]
-    
+
     def _subgroups(self):
         "return list of names of members that are sub groups"
         return [k for k in self._members() if isgroup(self.__dict__[k])]
@@ -107,17 +123,17 @@ class Group():
 
     def _repr_html_(self):
         """HTML representation for Jupyter notebook"""
-
-        html = [f"Group {self.__name__}"]
-        html.append("<table>")
-        html.append("<tr><td><b>Attribute</b></td><td><b>Type</b></td></tr>")
+        html = [f"Group {self.__name__}", "<table>",
+                "<tr><td><b>Attribute</b></td><td><b>Type</b></td>",
+                "<td><b>Value</b></td></tr>"]
         attrs = self.__dir__()
-        atypes = [type(getattr(self, attr)).__name__ for attr in attrs]
-        hwords = [f"<tr><td>{attr}</td><td><i>{atp}</i></td></tr>" \
-                  for attr, atp in zip(attrs, atypes)]
-        html.append(''.join(hwords))
+        for attr in self.__dir__():
+            obj = getattr(self, attr)
+            atype = type(obj).__name__
+            sval = repr_value(obj)
+            html.append(f"<tr><td>{attr}</td><td><i>{atype}</i></td><td>{sval}</td></tr>")
         html.append("</table>")
-        return ''.join(html)
+        return '\n'.join(html)
 
 
 def isgroup(grp, *args):
@@ -477,13 +493,7 @@ class SymbolTable(Group):
         out = ['f== {group.__name__}: {len(members)} symbols ==']
         for item in members:
             obj = getattr(group, item)
-            dval = None
-            if isinstance(obj, numpy.ndarray):
-                if len(obj) > 10 or len(obj.shape)>1:
-                    dval = "array<shape=%s, type=%s>" % (repr(obj.shape),
-                                                         repr(obj.dtype))
-            if dval is None:
-                dval = repr(obj)
+            dval = repr_value(obj)
             out.append(f'  {item}: {dval}')
         out.append('\n')
         self._larch.writer.write('\n'.join(out))
