@@ -250,7 +250,6 @@ class PlotlyFigure:
 
         self.fig.add_trace(trace, **trace_opts)
 
-
     def add_vline(self, *args, **kws):
         self.fig.add_vline(*args, **kws)
 
@@ -794,6 +793,7 @@ def plot_wavelet(dgroup, show_mag=True, show_real=False, show_imag=False,
     -----
      The wavelet will be performed
     """
+    print("Image display not yet available with larch+plotly")
     kweight = _get_kweight(dgroup, kweight)
     cauchy_wavelet(dgroup, kweight=kweight, rmax_out=rmax)
     title = _get_title(dgroup, title=title)
@@ -918,17 +918,20 @@ def plot_path_k(dataset, ipath=0, kmin=0, kmax=None, offset=0, label=None,
     """
     kweight = dataset.transform.kweight
     path = dataset.pathlist[ipath]
-    if label is None: label = 'path %i' % (1+ipath)
+    if label is None:
+        label = 'path %i' % (1+ipath)
+    title = _get_title(dataset, title=title)
 
     chi_kw = offset + path.chi * path.k**kweight
+    fig = PlotlyFigure(two_yaxis=False)
+    fig.add_plot(path.k, chi_kw, label=label)
+    fig.set_style(title=title,  xaxis_title=plotlabels.k,
+                  yaxis_label=set_label_weight(plotlabels.chikw, kweight))
+    if kmin is not None or kmax is not None:
+        fig.set_xrange(kmin, kmax)
+    fig.show()
+    return fig
 
-    _plot(path.k, chi_kw, label=label, xmin=kmin, xmax=kmax,
-          xlabel=plotlabels.k,
-          ylabel=set_label_weight(plotlabels.chikw, kweight),
-          win=win, new=new, delay_draw=delay_draw, _larch=_larch, **kws)
-    if delay_draw:
-        redraw(win=win, xmin=kmin, xmax=kmax, _larch=_larch)
-#enddef
 
 def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
                 show_mag=True, show_real=False, show_imag=True,
@@ -959,29 +962,29 @@ def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
     path = dataset.pathlist[ipath]
     if label is None:
         label = 'path %i' % (1+ipath)
-    #endif
+
+    title = _get_title(dataset, title=title)
     kweight =dataset.transform.kweight
     ylabel = plotlabels.chirlab(kweight, show_mag=show_mag,
                                 show_real=show_real, show_imag=show_imag)
 
-    opts = dict(xlabel=plotlabels.r, ylabel=ylabel, xmax=rmax, new=new,
-                delay_draw=True, _larch=_larch)
-
     opts.update(kws)
+    fig = PlotlyFigure(two_yaxis=False)
     if show_mag:
-        _plot(path.r,  offset+path.chir_mag, label=label, **opts)
-        opts['new'] = False
-    #endif
+        fig.add_plot(path.r,  offset+path.chir_mag, label=f'|{label}|')
+
     if show_real:
-        _plot(path.r,  offset+path.chir_re, label=label, **opts)
-        opts['new'] = False
-    #endif
+        fig.add_plot(path.r,  offset+path.chir_re, label=f'Re[{label}|')
+
     if show_imag:
-        _plot(path.r,  offset+path.chir_im, label=label, **opts)
-        opts['new'] = False
-    #endif
-    redraw(win=win, xmax=rmax, _larch=_larch)
-#enddef
+        fig.add_plot(path.r,  offset+path.chir_im, label=f'Im[{label}|')
+
+    fig.set_style(title=title,  xaxis_title=plotlabels.r, yaxis_label=chirlab(kweight))
+    if rmax is not None:
+        fig.set_xrange(0, rmax)
+
+    fig.show()
+    return fig
 
 def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, title=None,
                  new=True, delay_draw=False, win=1, _larch=None, **kws):
@@ -1011,18 +1014,23 @@ def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, title=None,
 
     title = _get_title(dataset, title=title)
 
-    _plot(model.k, model_chi_kw, title=title, label='sum', new=new,
-          xlabel=plotlabels.r, ylabel=plotlabels.chikw.format(kweight),
-          xmin=kmin, xmax=kmax, win=win, delay_draw=True,_larch=_larch,
-          **kws)
+    fig = PlotlyFigure(two_yaxis=False)
+    fig.add_plot(model.k, model_chi_kw, label='sum')
 
     for ipath in range(len(dataset.pathlist)):
-        plot_path_k(dataset, ipath, offset=(ipath+1)*offset,
-                    kmin=kmin, kmax=kmax, new=False, delay_draw=True,
-                    win=win, _larch=_larch)
-    #endfor
-    redraw(win=win, xmin=kmin, xmax=kmax, _larch=_larch)
-#enddef
+        path = dataset.pathlist[ipath]
+        label = 'path %i' % (1+ipath)
+        chi_kw = offset*(1+ipath) + path.chi * path.k**kweight
+        fig.add_plot(path.k, chi_kw, label=label)
+
+    fig.set_style(title=title,  xaxis_title=plotlabels.k,
+                  yaxis_label=plotlabels.chikw.format(kweight))
+    if kmin is not None or kmax is not None:
+        fig.set_xrange(kmin, kmax)
+
+    fig.show()
+    return fig
+
 
 def plot_paths_r(dataset, offset=-0.25, rmax=None, show_mag=True,
                  show_real=False, show_imag=False, title=None, new=True,
@@ -1050,37 +1058,42 @@ def plot_paths_r(dataset, offset=-0.25, rmax=None, show_mag=True,
     kweight = dataset.transform.kweight
     model = dataset.model
 
-    ylabel = plotlabels.chirlab(kweight, show_mag=show_mag,
-                                show_real=show_real, show_imag=show_imag)
     title = _get_title(dataset, title=title)
-    opts = dict(xlabel=plotlabels.r, ylabel=ylabel, xmax=rmax, new=new,
-                delay_draw=True, title=title, _larch=_larch)
-    opts.update(kws)
+    fig = PlotlyFigure(two_yaxis=False)
+
     if show_mag:
-        _plot(model.r,  model.chir_mag, label='|sum|', **opts)
-        opts['new'] = False
-    #endif
+        fig.add_plot(model.r, model.chir_mag, label='|sum|')
+
     if show_real:
-        _plot(model.r,  model.chir_re, label='Re[sum]', **opts)
-        opts['new'] = False
-    #endif
+        fig.add_plot(model.r, model.chir_re, label='Re[sum]')
+
     if show_imag:
-        _plot(model.r,  model.chir_im, label='Im[sum]', **opts)
-        opts['new'] = False
-    #endif
+        fig.add_plot(model.r, model.chir_re, label='Im[sum]')
 
     for ipath in range(len(dataset.pathlist)):
-        plot_path_r(dataset, ipath, offset=(ipath+1)*offset,
-                    show_mag=show_mag, show_real=show_real,
-                    show_imag=show_imag, **opts)
-    #endfor
-    redraw(win=win, xmax=rmax,_larch=_larch)
-#enddef
+        path = dataset.pathlist[ipath]
+        label = 'path %i' % (1+ipath)
+        off = (ipath+1)*offset
+        if show_mag:
+            fig.add_plot(path.r, path.chir_mag, label=f'|{label}|')
+
+        if show_real:
+            fig.add_plot(path.r, path.chir_re, label=f'Re[{label}]')
+
+        if show_imag:
+            fig.add_plot(path.r, path.chir_re, label=f'Im[{label}]')
+
+    fig.set_style(title=title, xaxis_title=plotlabels.r, yaxis_label=chirlab(kweight))
+    if rmax is not None:
+        fig.set_xrange(0, rmax)
+    fig.show()
+    return fig
+
 
 
 def extend_plotrange(x, y, xmin=None, xmax=None, extend=0.10):
     """return plot limits to extend a plot range for x, y pairs"""
-    xeps = min(diff(x)) / 5.
+    xeps = min(np.diff(x)) / 5.
     if xmin is None:
         xmin = min(x)
     if xmax is None:
@@ -1118,42 +1131,34 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
 
     title = "pre_edge baseline\n %s" % dgroup.filename
 
-    popts = dict(xmin=px0, xmax=px1, ymin=py0, ymax=py1, title=title,
-                 xlabel='Energy (eV)', ylabel='mu (normalized)', delay_draw=True,
-                 show_legend=True, style='solid', linewidth=3,
-                 label='data', new=True,
-                 marker='None', markersize=4, win=win, _larch=_larch)
-    popts.update(kws)
+    fig = PlotlyFigure(two_yaxis=False)
 
     ydat = dgroup.ydat
     xdat = dgroup.xdat
     if subtract_baseline:
-        xdat = ppeak.energy
-        ydat = ppeak.baseline
-        popts['label'] = 'baseline subtracted peaks'
-        _plot(xdat, ydat, **popts)
+        fig.add_plot(ppeak.energy, ppeak.baseline, label='baseline subtracted peaks')
     else:
-        _plot(xdat, ydat, **popts)
-        popts['new'] = False
-        popts['label'] = 'baseline'
-        _oplot(ppeak.energy, ppeak.baseline, **popts)
-
-    popts = dict(win=win, _larch=_larch, delay_draw=True,
-                 label='_nolegend_')
+        fig.add_plot(ppeak.energy, ppeak.baseline, label='baseline')
+        fig.add_plot(xdat, ydat, label='data')
 
     if show_fitrange:
         for x in (ppeak.emin, ppeak.emax):
-            _plot_axvline(x, color='#DDDDCC', **popts)
-            _plot_axvline(ppeak.centroid, color='#EECCCC', **popts)
+            fig.add_vline(x=x, line_width=2, line_dash="dash", line_color="#DDDDCC")
+            fig.add_vline(x=ppeak.centroid, line_width=2, line_dash="dash", line_color="#EECCCC")
 
     if show_peakrange:
         for x in (ppeak.elo, ppeak.ehi):
             y = ydat[index_of(xdat, x)]
-            _plot_marker(x, y, color='#222255', marker='o', size=8, **popts)
+            fig.add_plot([x], [y], marker='o', marker_size=7)
+            # line_width=2, line_dash="dash", line_color="#AAC")
+            # _plot_marker(x, y, color='#222255', marker='o', size=8, **popts)
 
-    redraw(win=win, xmin=px0, xmax=px1, ymin=py0, ymax=py1,
-           show_legend=True, _larch=_larch)
-#enddef
+    fig.set_style(title=title, xaxis_title=plotlabels.energy, yaxis_label='mu (normalized)')
+    fig.set_xrange(px0, px1)
+    fig.set_yrange(py0, py1)
+    fig.show()
+    return fig
+
 
 def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
                       show_residual=False, win=1, _larch=None):
@@ -1179,7 +1184,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     #endif
 
     opts = pkfit.user_options
-    xeps = min(diff(dgroup.xdat)) / 5.
+    xeps = min(np.diff(dgroup.xdat)) / 5.
     xdat = 1.0*pkfit.energy
     ydat = 1.0*pkfit.norm
 
@@ -1202,7 +1207,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
                 baseline += ycomp
 
     plotopts = dict(title='%s:\npre-edge peak' % dgroup.filename,
-                    xlabel='Energy (eV)', ylabel=opts['array_desc'],
+                    xlabel='Energy (eV)', yaxis_label=opts['array_desc'],
                     delay_draw=True, show_legend=True, style='solid',
                     linewidth=3, marker='None', markersize=4)
 
@@ -1274,9 +1279,9 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
 def _pca_ncomps(result, min_weight=0, ncomps=None):
     if ncomps is None:
         if min_weight > 1.e-12:
-            ncomps = where(result.variances < min_weight)[0][0]
+            ncomps = np.where(result.variances < min_weight)[0][0]
         else:
-            ncomps = argmin(result.ind)
+            ncomps = np.argmin(result.ind)
     return ncomps
 
 
@@ -1286,22 +1291,20 @@ def plot_pca_components(result, min_weight=0, ncomps=None, min_variance=1.e-5, w
     result must be output of `pca_train`
     """
     title = "PCA components"
-    popts = dict(xmin=result.xmin, xmax=result.xmax, title=title,
-                 xlabel=plotlabels.energy, ylabel=plotlabels.norm,
-                 delay_draw=True, show_legend=True, style='solid',
-                 linewidth=3, new=True, marker='None', markersize=4,
-                 win=win, _larch=_larch)
 
-    popts.update(kws)
     ncomps = int(result.nsig)
-
-    _plot(result.x, result.mean, label='Mean', **popts)
+    fig = PlotlyFigure(two_yaxis=False)
+    fig.add_plot(result.x, result.mean, label='Mean')
     for i, comp in enumerate(result.components):
         if result.variances[i] > min_variance:
             label = 'Comp# %d (%.4f)' % (i+1, result.variances[i])
-            _oplot(result.x, comp, label=label, **popts)
+            fig.add_plot(result.x, comp, label=label)
 
-    redraw(win=win, show_legend=True, _larch=_larch)
+    fig.set_style(title=title, xaxis_title=plotlabels.energy, yaxis_title=plotlabels.norm)
+    fig.set_xrange(result.xmin, result.xmax)
+    fig.show()
+    return fig
+
 
 def plot_pca_weights(result, min_weight=0, ncomps=None, win=1, _larch=None, **kws):
     """Plot component weights from PCA result (aka SCREE plot)
@@ -1311,32 +1314,32 @@ def plot_pca_weights(result, min_weight=0, ncomps=None, win=1, _larch=None, **kw
     max_comps = len(result.components)
 
     title = "PCA Variances (SCREE) and Indicator Values"
+    fig = PlotlyFigure(two_yaxis=False)
 
     popts = dict(title=title, xlabel='Component #', zorder=10,
-                 xmax=max_comps+1.5, xmin=0.25, ymax=1, ylabel='variance',
+                 xmax=max_comps+1.5, xmin=0.25, ymax=1, yaxis_label='variance',
                  style='solid', ylog_scale=True, show_legend=True,
                  linewidth=1, new=True, marker='o', win=win, _larch=_larch)
 
     popts.update(kws)
 
     ncomps = max(1, int(result.nsig))
-    x = 1 + arange(ncomps)
+    x = 1 + np.arange(ncomps)
     y = result.variances[:ncomps]
-    _plot(x, y, label='significant', **popts)
+    fig.add_plot(x, y, label='significant', style='solid', marker='o')
 
-    xe = 1 + arange(ncomps-1, max_comps)
+    xe = 1 + np.arange(ncomps-1, max_comps)
     ye = result.variances[ncomps-1:ncomps+max_comps]
 
-    popts.update(dict(new=False, zorder=5, style='short dashed',
-                      color='#B34050', ymin=2e-3*result.variances[ncomps-1]))
-    _plot(xe, ye, label='not significant', **popts)
+    # popts.update(dict(new=False, zorder=5, style='short dashed',
+    #                      color='#B34050', ymin=2e-3*result.variances[ncomps-1]))
+    fig.add_plot(xe, ye, label='not significant', style='dashed', marker='o')
 
-    xi = 1 + arange(len(result.ind)-1)
+    xi = 1 + np.arange(len(result.ind)-1)
 
-    _plot(xi, result.ind[1:], zorder=15, y2label='Indicator Value',
-          label='IND', style='solid', win=win, show_legend=True,
-          linewidth=1, marker='o', side='right', _larch=_larch)
-
+    fig.add_plot(xi, result.ind[1:],
+                 label='Indicator Value',
+                 style='solid')
 
 
 def plot_pca_fit(dgroup, win=1, with_components=False, _larch=None, **kws):
@@ -1350,7 +1353,7 @@ def plot_pca_fit(dgroup, win=1, with_components=False, _larch=None, **kws):
     model = result.pca_model
 
     popts = dict(xmin=model.xmin, xmax=model.xmax, title=title,
-                 xlabel=plotlabels.energy, ylabel=plotlabels.norm,
+                 xlabel=plotlabels.energy, yaxis_label=plotlabels.norm,
                  delay_draw=True, show_legend=True, style='solid',
                  linewidth=3, new=True, marker='None', markersize=4,
                  stacked=True, win=win, _larch=_larch)
@@ -1406,7 +1409,7 @@ def plot_diffkk(dgroup, emin=None, emax=None, new=True, label=None,
     opts = dict(win=win, show_legend=True, linewidth=3,
                 delay_draw=True, _larch=_larch)
 
-    _plot(dgroup.energy, f2, xlabel=plotlabels.energy, ylabel=ylabel,
+    _plot(dgroup.energy, f2, xlabel=plotlabels.energy, yaxis_label=ylabel,
           title=title, label=labels['f2'], zorder=20, new=new, xmin=emin, xmax=emax,
           **opts)
     zorder = 15
