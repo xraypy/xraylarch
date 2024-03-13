@@ -657,7 +657,7 @@ class XASNormPanel(TaskPanel):
             nnorm = get_auto_nnorm(self.get_config())
         self.set_nnorm_widget(nnorm)
 
-        defaults = self.get_defaultconfig()        
+        defaults = self.get_defaultconfig()
 
         self.wids['auto_step'].SetValue(1)
         self.wids['auto_e0'].SetValue(1)
@@ -931,10 +931,12 @@ class XASNormPanel(TaskPanel):
 
         for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
             if form[attr] is None or form[attr] == 'auto':
-                copts.append("%s=None" % attr)
+                val = 'None'
+            elif attr in ('nvict', 'nnorm'):
+                val = f"{int(form[attr])}"
             else:
-                fmt = "%s=%d" if attr in ('nvict', 'nnorm') else "%s=%.2f"
-                copts.append(fmt % (attr, form[attr]))
+                val = f"{float(form[attr]):.2f}"
+            copts.append(f"{attr}={val}")
 
         self.larch_eval("pre_edge(%s)" % (', '.join(copts)))
         self.larch_eval("{group:s}.norm_poly = 1.0*{group:s}.norm".format(**form))
