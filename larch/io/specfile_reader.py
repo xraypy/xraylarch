@@ -838,18 +838,17 @@ class DataSourceSpecH5(object):
         for label in array_labels[1:]: #: avoid loading twice arr_axis
             arr = self.get_array(label).astype(np.float64)
             ptsdiff = axis_size - arr.size
-            #self._logger.debug(f"`{label}` ({arr.size}) -> {abs(ptsdiff)}")           
-            if abs(ptsdiff) > 10:
+            self._logger.debug(f"`{label}` ({arr.size}) -> {abs(ptsdiff)}")           
+            if abs(ptsdiff) > 10 or ptsdiff < 0:
                 ipop = array_labels.index(label)
                 pop_labels.append(array_labels.pop(ipop))
             else:
-                #print(f"{label}: {arr.size} ({ptsdiff})")
                 ptsdiffs.append(ptsdiff)
                 data.append(arr)
                 setattr(out, label, arr)
         assert len(array_labels) == len(data) == len(ptsdiffs), "length of array_labels and data do not match"
         if len(pop_labels):
-            self._logger.warning(f"Y arrays >>> not loaded: `{pop_labels}` [excessive size mismatch with `{axis}`]")
+            self._logger.info(f"Y arrays >>> not loaded: `{pop_labels}` [excessive size mismatch with `{axis}`]")
         #: in case of array shape mismatch strip last points
         ptsdiff_max = max(ptsdiffs)
         if ptsdiff_max > 0:
