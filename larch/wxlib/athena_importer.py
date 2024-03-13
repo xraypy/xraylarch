@@ -84,7 +84,7 @@ class AthenaImporter(wx.Frame) :
 
         self.a_project = read_athena(self.filename, do_bkg=False, do_fft=False)
         self.allgroups = {}
-        for sname, grp in self.a_project._athena_groups.items():
+        for sname, grp in self.a_project.groups.items():
             if hasattr(grp, 'energy') and hasattr(grp, 'mu'):
                 label = getattr(grp, 'label', sname)
                 try:
