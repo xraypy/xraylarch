@@ -48,7 +48,7 @@ import math
 import numpy
 import sys
 from larch.utils.physical_constants import AVOGADRO, BARN
-from larch.xray import xray_delta_beta, chemparse
+from larch.xray import xray_delta_beta, chemparse, atomic_mass
 
 pre_edge_margin=150.    # FY calculated from 150 eV below the absorption edge.
 fluo_emit_min=500.      # minimum energy for emitted fluorescence.  ignore fluorescence emissions below 500eV
@@ -71,17 +71,20 @@ class Material:
         self.beta=0.1                   # index of refraction, imaginary part
         # MN replace
         elements = chemparse(composition)
-        AtomList = elements.keys()
-        AtomIndex = elements.values()
         AtomWeight=0
-        for (ii, atom) in enumerate(AtomList):
-            # MN replace...
-            AtWt= atomic_mass(atom)
-            index=AtomIndex[ii]
-            AtomWeight = AtomWeight + index*AtWt
-        NumberDensity=density*AVOGARDRO/AtomWeight
-        self.NumDen=NumberDensity       # number of molecules per cm^3
-        self.AtWt=AtomWeight            # weight per mole
+        # AtomList = elements.keys()
+        # AtomIndex = elements.values()
+        #         for (ii, atom) in enumerate(AtomList):
+        #             # MN replace...
+        #             AtWt= atomic_mass(atom)
+        #             index=AtomIndex[ii]
+        #            AtomWeight = AtomWeight + index*AtWt
+        for sym, mole in elements.items():
+            AtomWeight = AtomWeight + mole*atomic_mass(sym)
+        NumberDensity = density*AVOGADRO/AtomWeight
+        self.NumDen = NumberDensity       # number of molecules per cm^3
+        self.AtWt = AtomWeight            # weight per mole
+
     def getLa(self, energy, NumLayer=1.0):    # get absorption legnth for incident x-ray, NumLayer for multiple layers
         # MN replace...
         temp= xray_delta_beta(self.composition, self.density, energy)
@@ -372,7 +375,7 @@ def cal_NetYield2(eV0, Atoms, xHe=0, xAl=0, xKapton=0, WD=6.0, xsw=0, WriteFile=
         Include_SelfAbsorption='Yes'
         angle0=sample.angle/math.pi*180.
         textOut=sample.txt          # substrate concentration
-    NetYield=[];    NetTrans=[]; Net=[];    out2='';	net=0.0
+    NetYield=[];    NetTrans=[]; Net=[];    out2='';    net=0.0
     text0=''
     edges      =['K',  'K',  'L1', 'L1', 'L2', 'L2', 'L2', 'L3', 'L3', 'L3']
     Fluo_lines =['Ka', 'Kb', 'Lb', 'Lg', 'Ln', 'Lb', 'Lg', 'Ll', 'La', 'Lb']
@@ -419,7 +422,7 @@ def cal_NetYield2(eV0, Atoms, xHe=0, xAl=0, xKapton=0, WD=6.0, xsw=0, WriteFile=
                 continue                        # try next item if FY=0
             else:
                 if xsect_resonant!=0.0:         # use input value near edge
-                    xsect=xsect_resonant	# for cross-section near absoprtion edge
+                    xsect=xsect_resonant    # for cross-section near absoprtion edge
                 #print(xsect,fy,emit_prob)
                 net_yield=xsect*fy*emit_prob    # net_yield --> cross-section, yield, emission_probability
                 # net transmission --> transmission from surface through detector
