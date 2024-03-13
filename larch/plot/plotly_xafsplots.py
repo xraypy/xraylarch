@@ -23,18 +23,15 @@ import numpy as np
 import time
 import logging
 from copy import deepcopy
-from matplotlib.ticker import FuncFormatter
 
 from larch import Group
-from larch.math import (index_of, index_nearest, interp)
-from larch.xafs import cauchy_wavelet, etok, ktoe
+from larch.math import index_of
+from larch.xafs import cauchy_wavelet, etok
 
 def nullfunc(*args, **kws):
     pass
 
 get_display = _plot = _oplot = _newplot = _fitplot = _plot_text = nullfunc
-_plot_marker = _plot_arrow = _plot_axvline = _plot_axhline = nullfunc
-
 
 HAS_PLOTLY = True
 try:
@@ -46,12 +43,8 @@ if HAS_PLOTLY:
     import plotly.graph_objs as pgo
     from  plotly.subplots import make_subplots
 
-def get_display(win=1, *args, **kws):
-    pass
-
 LineColors = ('#1f77b4', '#d62728', '#2ca02c', '#ff7f0e', '#9467bd',
               '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf')
-
 LineStyles = ('solid', 'dashed', 'dotted')
 NCOLORS = len(LineColors)
 NSTYLES = len(LineStyles)
@@ -156,8 +149,6 @@ def _get_kweight(dgroup, kweight=None):
     ftargs = getattr(callargs, 'xftf', {'kweight':0})
     return ftargs['kweight']
 
-
-
 def _get_erange(dgroup, emin=None, emax=None):
     """get absolute emin/emax for data range, allowing using
     values relative to e0.
@@ -177,42 +168,41 @@ def _get_erange(dgroup, emin=None, emax=None):
     else:
         emax = dat_emax
     return emin, emax
-#enddef
+
+def extend_plotrange(x, y, xmin=None, xmax=None, extend=0.10):
+    """return plot limits to extend a plot range for x, y pairs"""
+    xeps = min(np.diff(x)) / 5.
+    if xmin is None:
+        xmin = min(x)
+    if xmax is None:
+        xmax = max(x)
+
+    xmin = max(min(x), xmin-5)
+    xmax = min(max(x), xmax+5)
+
+    i0 = index_of(x, xmin + xeps)
+    i1 = index_of(x, xmax + xeps) + 1
+
+    xspan = x[i0:i1]
+    xrange = max(xspan) - min(xspan)
+    yspan = y[i0:i1]
+    yrange = max(yspan) - min(yspan)
+
+    return  (min(xspan) - extend * xrange,
+             max(xspan) + extend * xrange,
+             min(yspan) - extend * yrange,
+             max(yspan) + extend * yrange)
+
 
 def redraw(win=1, xmin=None, xmax=None, ymin=None, ymax=None,
            dymin=None, dymax=None,
-           show_legend=True, stacked=False, _larch=None):
-    disp = get_display(win=win, stacked=stacked, _larch=_larch)
-    if disp is None:
-        return
-    panel = disp.panel
-    panel.conf.show_legend = show_legend
-    if (xmin is not None or xmax is not None or
-        ymin is not None or ymax is not None):
-        panel.set_xylims((xmin, xmax, ymin, ymax))
-        if stacked:
-            disp.panel_bot.set_xylims((xmin, xmax, dymin, dymax))
-
-    panel.unzoom_all()
-    panel.reset_formats()
-    if stacked:
-        disp.panel_bot.unzoom_all()
-        disp.panel_bot.reset_formats()
-    if show_legend:  # note: draw_legend *will* redraw the canvas
-        panel.conf.draw_legend()
-    else:
-        panel.canvas.draw()
-        if stacked:
-            disp.panel_bot.canvas.draw()
-
-    #endif
-#enddef
+           show_legend=True, stacked=False):
+    pass
 
 
 class PlotlyFigure:
     """wrapping of Plotly Figure
     """
-
     def __init__(self, two_yaxis=False, style=None):
         self.two_yaxis = two_yaxis
         self.style = deepcopy(FIGSTYLE)
@@ -241,7 +231,7 @@ class PlotlyFigure:
 
         trace_opts = {}
         if self.two_yaxis:
-            trace_opts['secondary_y'] = (side.lower().startswith('l'))
+            trace_opts['secondary_y'] = (side.lower().startswith('r'))
 
         lineopts = dict(color=color, width=linewidth)
         trace = pgo.Scatter(x=x, y=y, name=label, line=lineopts)
@@ -259,40 +249,43 @@ class PlotlyFigure:
     def set_yrange(self, ymin, ymax):
         self.fig.update_yaxes(range=[ymin, ymax])
 
+    def set_ylog(self, ylog=True):
+        ytype = 'log' if ylog else 'linear'
+        self.fig.update_yaxes(type=ytype)
+
     def set_style(self, **kws):
         self.style.update(**kws)
         self.fig.update_layout(**self.style)
 
-    def show(self):
-        self.fig.show()
+    def show(self, title=None, xlabel=None, ylabel=None,
+            xmin=None, xmax=None, ymin=None, ymax=None, show=True):
+        self.set_style(title=title, xaxis_title=xlabel, yaxis_title=ylabel)
+        if xmin is not None or xmax is not None:
+            self.set_xrange(xmin, xmax)
+        if ymin is not None or ymax is not None:
+            self.set_yrange(ymin, ymax)
+        if show:
+            self.fig.show()
+        return self
 
-def plot(xdata, ydata, dy=None, new=False, label=None, xlabel=None,
+def plot(xdata, ydata, dy=None, fig=None, label=None, xlabel=None,
          ylabel=None, y2label=None, title=None, side='left', ylog_scale=None,
          xlog_scale=None, grid=None, xmin=None, xmax=None, ymin=None,
          ymax=None, color=None, style='solid', alpha=None, fill=False,
          drawstyle=None, linewidth=2, marker=None, markersize=None,
          show_legend=None, bgcolor=None, framecolor=None, gridcolor=None,
          textcolor=None, labelfontsize=None, titlefontsize=None,
-         legendfontsize=None, fullbox=None, axes_style=None, zorder=None,
-         delay_draw=False, **kws):
-
+         legendfontsize=None, fullbox=None, axes_style=None, zorder=None, show=True):
     """emulate wxmplot plot() function, probably incompletely"""
 
-    fig = PlotlyFigure(two_yaxis=(side=='right'))
-    if new:
-        fig.clear()
+    if fig is None:
+        fig = PlotlyFigure(two_yaxis=(side=='right'))
 
     fig.add_plot(xdata, ydata, label=label, color=color, linewidth=linewidth,
                  style=style, marker=marker, side=side)
 
-    fig.set_style(title=title, xaxis_title=xlabel, yaxis_title=ylabel)
-    if xmin is not None or xmax is not None:
-        fig.set_xrange(xmin, xmax)
-    if ymin is not None or ymax is not None:
-        fig.set_yrange(ymin, ymax)
-
-    fig.show()
-    return fig
+    return fig.show(title=title, xlabel=xlabel, ylabel=ylabel,
+                    xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, show=show)
 
 
 def multi_plot(plotsets):
@@ -337,32 +330,17 @@ def multi_plot(plotsets):
 
         fig.add_plot(xdata, ydata, **popts)
 
-    xmin = sopts.pop('xmin')
-    xmax = sopts.pop('xmax')
-    ymin = sopts.pop('ymin')
-    ymax = sopts.pop('ymax')
-
     sopts['xaxis_title'] = sopts.pop('xlabel')
     sopts['yaxis_title'] = sopts.pop('ylabel')
-    fig.set_style(**sopts)
-
-    if xmin is not None or xmax is not None:
-        fig.set_xrange(xmin, xmax)
-    if ymin is not None or ymax is not None:
-        fig.set_yrange(ymin, ymax)
-    fig.show()
-    return fig
-
-
+    return fig.show(**sopts)
 
 def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
             show_pre=False, show_post=False, show_e0=False, with_deriv=False,
-            emin=None, emax=None, label='mu', new=True, delay_draw=False,
-            offset=0, title=None, win=1, _larch=None):
+            emin=None, emax=None, label='mu', offset=0, title=None, fig=None, show=True):
     """
     plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
-             show_e0=False, show_deriv=False, emin=None, emax=None, label=None,
-             new=True, win=1)
+            show_e0=False, show_deriv=False, emin=None, emax=None, label=None,
+            show=True, fig=None)
 
     Plot mu(E) for an XAFS data group in various forms
 
@@ -380,10 +358,9 @@ def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
      emax       max energy to show, absolute or relative to E0 [None, end of data]
      label      string for label [None:  'mu', `dmu/dE', or 'mu norm']
      title      string for plot title [None, may use filename if available]
-     new        bool whether to start a new plot [True]
-     delay_draw bool whether to delay draw until more traces are added [False]
-     offset      vertical offset to use for y-array [0]
-     win        integer plot window to use [1]
+     offset     vertical offset to use for y-array [0]
+     show       display the PlotlyFig now [True]
+     fig        PlotlyFig to reuse [None]
 
     Notes
     -----
@@ -424,13 +401,13 @@ def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
     emin, emax = _get_erange(dgroup, emin, emax)
     title = _get_title(dgroup, title=title)
 
-
-    fig = PlotlyFigure(two_yaxis=with_deriv)
+    if fig is None:
+        fig = PlotlyFigure(two_yaxis=with_deriv)
     fig.add_plot(dgroup.energy, mu+offset, label=label)
 
     if with_deriv:
         fig.add_plot(dgroup.energy, dgroup.dmude+offset, label=f"{ylabel} (deriv)", side='right')
-
+        fig.fig.update_yaxis(title_text=plotlabels.dmude, secondary_y=True)
     else:
         if not show_norm and show_pre:
             fig.add_plot(dgroup.energy, dgroup.pre_edge+offset, label='pre_edge')
@@ -440,17 +417,14 @@ def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
     if show_e0:
         fig.add_vline(x=dgroup.e0, line_width=2, line_dash="dash", line_color="#AAC")
 
-    fig.set_xrange(emin, emax)
-    fig.set_style(title=title, xaxis_title=plotlabels.energy, yaxis_title=ylabel)
-    fig.show()
-    return fig
+    return fig.show(title=title, xlabel=plotlabels.energy, ylabel=ylabel,
+                        xmin=emin, xmax=emax, show=show)
 
 
 def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
-             label=None, title=None, new=True, delay_draw=False, offset=0,
-             win=1, _larch=None):
+             label=None, title=None, offset=0):
     """
-    plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, label=None, new=True, win=1):
+    plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, label=None, new=True)
 
     Plot mu(E) and background mu0(E) for XAFS data group
 
@@ -463,10 +437,7 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
      show_e0     bool whether to show E0 [False]
      label       string for label [``None``: 'mu']
      title       string for plot titlte [None, may use filename if available]
-     new         bool whether to start a new plot [True]
-     delay_draw  bool whether to delay draw until more traces are added [False]
      offset      vertical offset to use for y-array [0]
-     win         integer plot window to use [1]
 
     Notes
     -----
@@ -479,13 +450,12 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
         mu = dgroup.mutrans
     else:
         raise ValueError("XAFS data group has no array for mu")
-    #endif
 
     bkg = dgroup.bkg
     ylabel = plotlabels.mu
     if label is None:
         label = 'mu'
-    #endif
+
     emin, emax = _get_erange(dgroup, emin, emax)
     if norm:
         mu  = dgroup.norm
@@ -501,17 +471,14 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
 
     if show_e0:
         fig.add_vline(x=dgroup.e0, line_width=2, line_dash="dash", line_color="#AAC")
-    fig.set_xrange(emin, emax)
-    fig.set_style(title=title, xaxis_title=plotlabels.energy, yaxis_title=ylabel)
-    fig.show()
-    return fig
+
+    return fig.show(title=title, xlabel=plotlabels.energy, ylabel=ylabel, xmin=emin, xmax=emax)
 
 
 def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
-              eweight=0, new=True, delay_draw=False,
-              offset=0, win=1, show_k=False, _larch=None):
+              eweight=0, offset=0, how_k=False, fig=None, show=True):
     """
-    plot_chie(dgroup, emin=None, emax=None, label=None, new=True, win=1):
+    plot_chie(dgroup, emin=None, emax=None, label=None, new=True, fig=None):
 
     Plot chi(E) for XAFS data group
 
@@ -522,11 +489,10 @@ def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
      emax        max energy to show, absolute or relative to E0 [None, end of data]
      label       string for label [``None``: 'mu']
      title       string for plot title [None, may use filename if available]
-     new         bool whether to start a new plot [True]
      eweight     energy weightingn for energisdef es>e0  [0]
-     delay_draw  bool whether to delay draw until more traces are added [False]
      offset      vertical offset to use for y-array [0]
-     win         integer plot window to use [1]
+     show        display the PlotlyFig now [True]
+     fig         PlotlyFigure to re-use [None]
 
     Notes
     -----
@@ -554,9 +520,7 @@ def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
     if emax is not None:
         emax = emax - e0
 
-
     title = _get_title(dgroup, title=title)
-
     def ek_formatter(x, pos):
         ex = float(x)
         if ex < 0:
@@ -565,21 +529,16 @@ def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
             s = f"\n[{etok(ex):.2f}]"
         return r"%1.4g%s" % (x, s)
 
-    fig = PlotlyFigure(two_yaxis=False)
+    if fig is None:
+        fig = PlotlyFigure(two_yaxis=False)
     fig.add_plot(dgroup.energy-e0, chie+offset, label=label)
-
-    fig.set_xrange(emin, emax)
-    fig.set_style(title=title, xaxis_title=xlabel, yaxis_title=ylabel)
-    fig.show()
-    return fig
-
+    return fig.show(title=title, xlabel=xlabel, ylabel=ylabel, xmin=emin, xmax=emax, show=show)
 
 def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
-              scale_window=True, label=None, title=None, new=True,
-              delay_draw=False, offset=0, win=1, _larch=None):
+              scale_window=True, label=None, title=None, offset=0, show=True, fig=None):
     """
     plot_chik(dgroup, kweight=None, kmax=None, show_window=True, label=None,
-              new=True, win=1)
+              fig=None)
 
     Plot k-weighted chi(k) for XAFS data group
 
@@ -592,10 +551,9 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
      scale_window bool whether to scale k-window to max |chi(k)| [True]
      label        string for label [``None`` to use 'chi']
      title        string for plot title [None, may use filename if available]
-     new          bool whether to start a new plot [True]
-     delay_draw   bool whether to delay draw until more traces are added [False]
      offset       vertical offset to use for y-array [0]
-     win          integer plot window to use [1]
+     show         display the PlotlyFig now [True]
+     fig          PlotlyFigure to re-use [None]
 
     Notes
     -----
@@ -603,17 +561,15 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
          k, chi, kwin, filename
     """
     kweight = _get_kweight(dgroup, kweight)
-
     chi = dgroup.chi * dgroup.k ** kweight
-    opts = dict(win=win, show_legend=True, delay_draw=True, linewidth=3,
-                _larch=_larch)
+
     if label is None:
         label = 'chi'
-    #endif
-    if new:
-        title = _get_title(dgroup, title=title)
 
-    fig = PlotlyFigure(two_yaxis=False)
+    title = _get_title(dgroup, title=title)
+
+    if fig is None:
+        fig = PlotlyFigure(two_yaxis=False)
     fig.add_plot(dgroup.k, chi+offset, label=label)
 
     if show_window and hasattr(dgroup, 'kwin'):
@@ -622,23 +578,16 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
             kwin = kwin*max(abs(chi))
         fig.add_plot(dgroup.k, kwin+offset, label='window')
 
-    if kmax is not None:
-        fig.set_xrange(0, kmax)
-    ylabel = set_label_weight(plotlabels.chikw, kweight)
-    fig.set_style(title=title, xaxis_title=plotlabels.k,
-                  yaxis_title=ylabel)
-
-    fig.show()
-    return fig
-
-#enddef
+    return fig.show(title=title, xlabel=plotlabels.k, xmin=0, xmax=kmax,
+                    ylabel=set_label_weight(plotlabels.chikw, kweight),
+                        show=show)
 
 def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
               show_window=False, rmax=None, label=None, title=None,
-              new=True, delay_draw=False, offset=0, win=1, _larch=None):
+              offset=0, show=True, fig=None):
     """
     plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
-              rmax=None, label=None, new=True, win=1)
+              rmax=None, label=None, fig=None)
 
     Plot chi(R) for XAFS data group
 
@@ -652,10 +601,9 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
      label        string for label [``None`` to use 'chir']
      title        string for plot title [None, may use filename if available]
      rmax         max R to show [None, end of data]
-     new          bool whether to start a new plot [True]
-     delay_draw   bool whether to delay draw until more traces are added [False]
      offset       vertical offset to use for y-array [0]
-     win          integer plot window to use [1]
+     show         display the PlotlyFig now [True]
+     fig          PlotlyFigure to re-use [None]
 
     Notes
     -----
@@ -664,50 +612,38 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
     """
     kweight = _get_kweight(dgroup, None)
 
-    if new:
-        title = _get_title(dgroup, title=title)
-
-    opts = dict(win=win, show_legend=True, linewidth=3, title=title,
-                zorder=20, xmax=rmax, xlabel=plotlabels.r, new=new,
-                delay_draw=True, _larch=_larch)
+    title = _get_title(dgroup, title=title)
 
     ylabel = plotlabels.chirlab(kweight, show_mag=show_mag,
                                 show_real=show_real, show_imag=show_imag)
-    opts['ylabel'] = ylabel
+
     if not hasattr(dgroup, 'r'):
         print("group does not have chi(R) data")
         return
     #endif
     if label is None:
         label = 'chir'
-    #endif
-    fig = PlotlyFigure(two_yaxis=False)
+
+    if fig is None:
+        fig = PlotlyFigure(two_yaxis=False)
     if show_mag:
         fig.add_plot(dgroup.r, dgroup.chir_mag+offset, label=f'{label} (mag)')
-    #endif
     if show_real:
         fig.add_plot(dgroup.r, dgroup.chir_re+offset, label=f'{label} (real)')
-        opts['new'] = False
-    #endif
+
     if show_imag:
         fig.add_plot(dgroup.r, dgroup.chir_im+offset, label=f'{label} (imag)')
-    #endif
+
     if show_window and hasattr(dgroup, 'rwin'):
         rwin = dgroup.rwin * max(dgroup.chir_mag)
         fig.add_plot(dgroup.r, rwin+offset, label='window')
-    #endif
-    if rmax is not None:
-        fig.set_xrange(0, rmax)
 
-    fig.set_style(title=title, xaxis_title=plotlabels.r, yaxis_title=ylabel)
-    fig.show()
-    return fig
+    return fig.show(title=title, xlabel=plotlabels.r, ylabel=ylabel, xmax=rmax, show=show)
 
-#enddef
 
 def plot_chiq(dgroup, kweight=None, kmin=0, kmax=None, show_chik=False, label=None,
-              title=None, new=True, delay_draw=False, offset=0, win=1,
-              show_window=False, scale_window=True, _larch=None):
+              title=None, offset=0, show_window=False, scale_window=True,
+              show=True, fig=None):
     """
     plot_chiq(dgroup, kweight=None, kmax=None, show_chik=False, label=None,
               new=True, win=1)
@@ -724,10 +660,9 @@ def plot_chiq(dgroup, kweight=None, kmin=0, kmax=None, show_chik=False, label=No
      scale_window bool whether to scale FT k-window to max |chi(q)| [True]
      label        string for label [``None`` to use 'chi']
      title        string for plot title [None, may use filename if available]
-     new          bool whether to start a new plot [True]
-     delay_draw   bool whether to delay draw until more traces are added [False]
      offset       vertical offset to use for y-array [0]
-     win          integer plot window to use [1]
+     show         display the PlotlyFig now [True]
+     fig          PlotlyFigure to re-use [None]
 
     Notes
     -----
@@ -737,88 +672,39 @@ def plot_chiq(dgroup, kweight=None, kmin=0, kmax=None, show_chik=False, label=No
     kweight = _get_kweight(dgroup, kweight)
     nk = len(dgroup.k)
     chiq = dgroup.chiq_re[:nk]
-    opts = dict(win=win, show_legend=True, delay_draw=True, linewidth=3, _larch=_larch)
+
     if label is None:
         label = 'chi(q) (filtered)'
-    #endif
-    if new:
-        title = _get_title(dgroup, title=title)
 
-    fig = PlotlyFigure(two_yaxis=False)
+    title = _get_title(dgroup, title=title)
+    if fig is None:
+        fig = PlotlyFigure(two_yaxis=False)
     fig.add_plot(dgroup.k, chiq+offset, label=label)
     if kmax is None:
         kmax = max(dgroup.k)
-    fig.set_xrange(kmin, kmax)
-
-    ylabel = set_label_weight(plotlabels.chikw, kweight)
-    fig.set_style(title=title, xaxis_title=plotlabels.k,
-                  yaxis_title=ylabel)
 
     if show_chik:
         chik = dgroup.chi * dgroup.k ** kweight
         fig.add_plot(dgroup.k, chik+offset, label='chi(k) (unfiltered)')
-    #endif
+
     if show_window and hasattr(dgroup, 'kwin'):
         kwin = dgroup.kwin
         if scale_window:
             kwin = kwin*max(abs(chiq))
         fig.add_plot(dgroup.k, kwin+offset, label='window')
-    #endif
-    fig.show()
-    return fig
-#enddef
+
+    ylabel = set_label_weight(plotlabels.chikw, kweight)
+    return fig.show(title=title, xlabel=plotlabels.k,
+                    ylabel=ylabel, xmin=kmin, xmax=kmax, show=show)
 
 
-def plot_wavelet(dgroup, show_mag=True, show_real=False, show_imag=False,
-                 rmax=None, kmax=None, kweight=None, title=None, win=1, _larch=None):
-    """
-    plot_wavelet(dgroup, show_mag=True, show_real=False, show_imag=False,
-              rmax=None, kmax=None, kweight=None, title=None, win=1)
-
-    Plot wavelet for XAFS data group
-
-    Arguments
-    ----------
-     dgroup       group of XAFS data after xftf() results (see Note 1)
-     show_mag     bool whether to plot wavelet magnitude [True]
-     show_real    bool whether to plot real part of wavelet [False]
-     show_imag    bool whether to plot imaginary part of wavelet [False]
-     title        string for plot title [None, may use filename if available]
-     rmax         max R to show [None, end of data]
-     kmax         max k to show [None, end of data]
-     kweight      k-weight to use to construct wavelet [None, take from group]
-     win          integer image window to use [1]
-
-    Notes
-    -----
-     The wavelet will be performed
-    """
-    print("Image display not yet available with larch+plotly")
-    kweight = _get_kweight(dgroup, kweight)
-    cauchy_wavelet(dgroup, kweight=kweight, rmax_out=rmax)
-    title = _get_title(dgroup, title=title)
-
-    opts = dict(win=win, title=title, x=dgroup.k, y=dgroup.wcauchy_r, xmax=kmax,
-                ymax=rmax, xlabel=plotlabels.k, ylabel=plotlabels.r,
-                show_axis=True, _larch=_larch)
-    if show_mag:
-        _imshow(dgroup.wcauchy_mag, **opts)
-    elif show_real:
-        _imshow(dgroup.wcauchy_real, **opts)
-    elif show_imag:
-        _imshow(dgroup.wcauchy_imag, **opts)
-    #endif
-#enddef
 
 def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
                 show_mag=True, show_real=False, show_imag=False,
-                show_bkg=False, use_rebkg=False,
-                title=None, new=True, delay_draw=False, offset=0, win=1,
-                _larch=None):
+                show_bkg=False, use_rebkg=False, title=None, offset=0):
     """
     plot_chifit(dataset, kmin=0, kmax=None, rmax=None,
-                show_mag=True, show_real=False, show_imag=False,
-                new=True, win=1)
+                show_mag=True, show_real=False, show_imag=False)
 
     Plot k-weighted chi(k) and chi(R) for fit to feffit dataset
 
@@ -833,10 +719,8 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
      show_real    bool whether to plot Re[chi(R)] [False]
      show_imag    bool whether to plot Im[chi(R)] [False]
      title        string for plot title [None, may use filename if available]
-     new          bool whether to start a new plot [True]
-     delay_draw   bool whether to delay draw until more traces are added [False]
      offset       vertical offset to use for y-array [0]
-     win          integer plot window to use [1]
+
 
     """
     if kweight is None:
@@ -861,14 +745,9 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
     fig.add_plot(dat.k, data_chik+offset, label='data')
     fig.add_plot(mod.k, model_chik+offset, label='fit')
 
-    if kmin is not None or kmax is not None:
-        fig.set_xrange(kmin, kmax)
-
     ylabel = set_label_weight(plotlabels.chikw, kweight)
-    fig.set_style(title=title, xaxis_title=plotlabels.k,
-                  yaxis_title=ylabel)
-
-    fig.show()
+    fig.show(title=title, xlaxbl=plotlabels.k,
+                  ylabel=ylabel, xmin=kmin, xmax=kmax)
 
     #  chi(R) in first plot window
     rfig = PlotlyFigure(two_yaxis=False)
@@ -884,22 +763,13 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
         rfig.add_plot(dat.r, dat.chir_im+offset, label='Im[data]')
         rfig.add_plot(mod.r, mod.chir_im+offset, label='Im[fit]')
 
-    if rmax is not None:
-        rfig.set_xrange(0, rmax)
-
     ylabel = chirlab(kweight, show_mag=show_mag, show_real=show_real, show_imag=show_imag)
-    rfig.set_style(title=title, xaxis_title=plotlabels.r,
-                  yaxis_title=ylabel)
-
-    rfig.show()
+    rfig.showt(title=title, xlabel=plotlabels.r, ylabel=ylabel, xmin=0, xmax=rmax)
     return fig, rfig
-#enddef
 
-def plot_path_k(dataset, ipath=0, kmin=0, kmax=None, offset=0, label=None,
-                new=False, delay_draw=False, win=1, _larch=None, **kws):
+def plot_path_k(dataset, ipath=0, kmin=0, kmax=None, offset=0, label=None, fig=None):
     """
-    plot_path_k(dataset, ipath, kmin=0, kmax=None, offset=0,
-               label=None, new=False, win=1, **kws)
+    plot_path_k(dataset, ipath, kmin=0, kmax=None, offset=0, label=None)
 
     Plot k-weighted chi(k) for a single Path of a feffit dataset
 
@@ -911,10 +781,7 @@ def plot_path_k(dataset, ipath=0, kmin=0, kmax=None, offset=0, label=None,
      kmax         max k to show [None, end of data]
      offset       vertical offset to use for plot [0]
      label        path label ['path %d' % ipath]
-     new          bool whether to start a new plot [True]
-     delay_draw   bool whether to delay draw until more traces are added [False]
-     win          integer plot window to use [1]
-     kws          additional keyword arguments are passed to plot()
+     fig          PlotlyFigure for reuse
     """
     kweight = dataset.transform.kweight
     path = dataset.pathlist[ipath]
@@ -923,24 +790,18 @@ def plot_path_k(dataset, ipath=0, kmin=0, kmax=None, offset=0, label=None,
     title = _get_title(dataset, title=title)
 
     chi_kw = offset + path.chi * path.k**kweight
-    fig = PlotlyFigure(two_yaxis=False)
+    if fig is None:
+        fig = PlotlyFigure(two_yaxis=False)
     fig.add_plot(path.k, chi_kw, label=label)
-    fig.set_style(title=title,  xaxis_title=plotlabels.k,
-                  yaxis_label=set_label_weight(plotlabels.chikw, kweight))
-    if kmin is not None or kmax is not None:
-        fig.set_xrange(kmin, kmax)
-    fig.show()
-    return fig
-
+    return fig.set_style(title=title,  xlabel=plotlabels.k,
+                        yabel=set_label_weight(plotlabels.chikw, kweight),
+                        xmin=kmin, xmax=kmax)
 
 def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
-                show_mag=True, show_real=False, show_imag=True,
-                new=False, delay_draw=False, win=1, _larch=None,
-                **kws):
+                show_mag=True, show_real=False, show_imag=True, fig=None):
     """
     plot_path_r(dataset, ipath,rmax=None, offset=0, label=None,
-                show_mag=True, show_real=False, show_imag=True,
-                new=False, win=1, **kws)
+                show_mag=True, show_real=False, show_imag=True, fig=None)
 
     Plot chi(R) for a single Path of a feffit dataset
 
@@ -954,10 +815,7 @@ def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
      show_mag     bool whether to plot |chi(R)| [True]
      show_real    bool whether to plot Re[chi(R)] [False]
      show_imag    bool whether to plot Im[chi(R)] [False]
-     new          bool whether to start a new plot [True]
-     delay_draw   bool whether to delay draw until more traces are added [False]
-     win          integer plot window to use [1]
-     kws          additional keyword arguments are passed to plot()
+     fig          PlotlyFigure for reuse
     """
     path = dataset.pathlist[ipath]
     if label is None:
@@ -968,8 +826,8 @@ def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
     ylabel = plotlabels.chirlab(kweight, show_mag=show_mag,
                                 show_real=show_real, show_imag=show_imag)
 
-    opts.update(kws)
-    fig = PlotlyFigure(two_yaxis=False)
+    if fig is None:
+        fig = PlotlyFigure(two_yaxis=False)
     if show_mag:
         fig.add_plot(path.r,  offset+path.chir_mag, label=f'|{label}|')
 
@@ -979,18 +837,13 @@ def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
     if show_imag:
         fig.add_plot(path.r,  offset+path.chir_im, label=f'Im[{label}|')
 
-    fig.set_style(title=title,  xaxis_title=plotlabels.r, yaxis_label=chirlab(kweight))
-    if rmax is not None:
-        fig.set_xrange(0, rmax)
+    return fig.show(title=title,  xlabel=plotlabels.r, ylabel=chirlab(kweight),
+                    xmax=rmax)
 
-    fig.show()
-    return fig
 
-def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, title=None,
-                 new=True, delay_draw=False, win=1, _larch=None, **kws):
-
+def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, title=None, fig=None):
     """
-    plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, new=True, win=1, **kws):
+    plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, fig=None)
 
     Plot k-weighted chi(k) for model and all paths of a feffit dataset
 
@@ -1000,11 +853,8 @@ def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, title=None,
      kmin         min k to show [0]
      kmax         max k to show [None, end of data]
      offset       vertical offset to use for paths for plot [-1]
-     new          bool whether to start a new plot [True]
      title        string for plot title [None, may use filename if available]
-     win          integer plot window to use [1]
-     delay_draw   bool whether to delay draw until more traces are added [False]
-     kws          additional keyword arguments are passed to plot()
+     fig          PlotlyFigure for reuse
     """
     # make k-weighted chi(k)
     kweight = dataset.transform.kweight
@@ -1013,8 +863,8 @@ def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, title=None,
     model_chi_kw = model.chi * model.k**kweight
 
     title = _get_title(dataset, title=title)
-
-    fig = PlotlyFigure(two_yaxis=False)
+    if fig:
+        fig = PlotlyFigure(two_yaxis=False)
     fig.add_plot(model.k, model_chi_kw, label='sum')
 
     for ipath in range(len(dataset.pathlist)):
@@ -1023,21 +873,15 @@ def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, title=None,
         chi_kw = offset*(1+ipath) + path.chi * path.k**kweight
         fig.add_plot(path.k, chi_kw, label=label)
 
-    fig.set_style(title=title,  xaxis_title=plotlabels.k,
-                  yaxis_label=plotlabels.chikw.format(kweight))
-    if kmin is not None or kmax is not None:
-        fig.set_xrange(kmin, kmax)
-
-    fig.show()
-    return fig
-
+    return fig.show(title=title,  xlabel=plotlabels.k,
+                    ylabel=plotlabels.chikw.format(kweight),
+                    xmin=kmin, xmax=kmax)
 
 def plot_paths_r(dataset, offset=-0.25, rmax=None, show_mag=True,
-                 show_real=False, show_imag=False, title=None, new=True,
-                 win=1, delay_draw=False, _larch=None, **kws):
+                 show_real=False, show_imag=False, title=None, fig=None):
     """
     plot_paths_r(dataset, offset=-0.5, rmax=None, show_mag=True, show_real=False,
-                 show_imag=False, new=True, win=1, **kws):
+                 show_imag=False)
 
     Plot chi(R) for model and all paths of a feffit dataset
 
@@ -1050,16 +894,14 @@ def plot_paths_r(dataset, offset=-0.25, rmax=None, show_mag=True,
      show_real    bool whether to plot Re[chi(R)] [False]
      show_imag    bool whether to plot Im[chi(R)] [False]
      title        string for plot title [None, may use filename if available]
-     new          bool whether to start a new plot [True]
-     delay_draw   bool whether to delay draw until more traces are added [False]
-     win          integer plot window to use [1]
-     kws          additional keyword arguments are passed to plot()
+     fig          PlotlyFigure for reuse
     """
     kweight = dataset.transform.kweight
     model = dataset.model
 
     title = _get_title(dataset, title=title)
-    fig = PlotlyFigure(two_yaxis=False)
+    if fig is None:
+        fig = PlotlyFigure(two_yaxis=False)
 
     if show_mag:
         fig.add_plot(model.r, model.chir_mag, label='|sum|')
@@ -1083,40 +925,11 @@ def plot_paths_r(dataset, offset=-0.25, rmax=None, show_mag=True,
         if show_imag:
             fig.add_plot(path.r, path.chir_re, label=f'Im[{label}]')
 
-    fig.set_style(title=title, xaxis_title=plotlabels.r, yaxis_label=chirlab(kweight))
-    if rmax is not None:
-        fig.set_xrange(0, rmax)
-    fig.show()
-    return fig
-
-
-
-def extend_plotrange(x, y, xmin=None, xmax=None, extend=0.10):
-    """return plot limits to extend a plot range for x, y pairs"""
-    xeps = min(np.diff(x)) / 5.
-    if xmin is None:
-        xmin = min(x)
-    if xmax is None:
-        xmax = max(x)
-
-    xmin = max(min(x), xmin-5)
-    xmax = min(max(x), xmax+5)
-
-    i0 = index_of(x, xmin + xeps)
-    i1 = index_of(x, xmax + xeps) + 1
-
-    xspan = x[i0:i1]
-    xrange = max(xspan) - min(xspan)
-    yspan = y[i0:i1]
-    yrange = max(yspan) - min(yspan)
-
-    return  (min(xspan) - extend * xrange,
-             max(xspan) + extend * xrange,
-             min(yspan) - extend * yrange,
-             max(yspan) + extend * yrange)
+    return fig.show(title=title, xlabel=plotlabels.r,
+                    ylabel=chirlab(kweight), xmax=rmax)
 
 def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
-                           show_peakrange=True, win=1, _larch=None, **kws):
+                           show_peakrange=True):
     """Plot pre-edge peak baseline fit, as from `pre_edge_baseline` or XAS Viewer
 
     dgroup must have a 'prepeaks' attribute
@@ -1150,18 +963,13 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
         for x in (ppeak.elo, ppeak.ehi):
             y = ydat[index_of(xdat, x)]
             fig.add_plot([x], [y], marker='o', marker_size=7)
-            # line_width=2, line_dash="dash", line_color="#AAC")
-            # _plot_marker(x, y, color='#222255', marker='o', size=8, **popts)
 
-    fig.set_style(title=title, xaxis_title=plotlabels.energy, yaxis_label='mu (normalized)')
-    fig.set_xrange(px0, px1)
-    fig.set_yrange(py0, py1)
-    fig.show()
-    return fig
+    return fig.show(title=title, xlabel=plotlabels.energy, ylabel='mu (normalized)',
+                    xmin=px0, xmax=px1, ymin=py0, ymax=py1)
 
 
 def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
-                      show_residual=False, win=1, _larch=None):
+                      show_residual=False):
     """plot pre-edge peak fit, as from XAS Viewer
 
     dgroup must have a 'peakfit_history' attribute
@@ -1206,10 +1014,10 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
             if label in opts['bkg_components']:
                 baseline += ycomp
 
-    plotopts = dict(title='%s:\npre-edge peak' % dgroup.filename,
-                    xlabel='Energy (eV)', yaxis_label=opts['array_desc'],
-                    delay_draw=True, show_legend=True, style='solid',
-                    linewidth=3, marker='None', markersize=4)
+    fig = PlotlyFigure(two_yaxis=False)
+    title ='%s:\npre-edge peak' % dgroup.filename
+
+
 
     if subtract_baseline:
         ydat -= baseline
@@ -1224,44 +1032,34 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
                                           xmin=opts['emin'], xmax=opts['emax'])
 
     ncolor = 0
-    popts = {'win': win, '_larch': _larch}
+    popts = {}
     plotopts.update(popts)
     dymin = dymax = None
+
+    fig.add_plot(xdat, ydat, label='data')
+    fig.add_plot(xday, yfit, label='fit')
+
     if show_residual:
-        popts['stacked'] = True
-        _fitplot(xdat, ydat, yfit, label='data', label2=ylabel, **plotopts)
+        dfig = PlotlyFigure()
+        dfig.add_plot(xdat, yfit-ydat, label='fit-data')
         dy = yfit - ydat
         dymax, dymin = dy.max(), dy.min()
         dymax += 0.05 * (dymax - dymin)
         dymin -= 0.05 * (dymax - dymin)
-    else:
-        _plot(xdat_full, ydat_full, new=True, label='data',
-              color=LineColors[0], **plotopts)
-        _oplot(xdat, yfit, label=ylabel, color=LineColors[1], **plotopts)
-        ncolor = 1
 
     if ycomps is not None:
         ncomps = len(ycomps)
         if not subtract_baseline:
-            ncolor += 1
-            _oplot(xdat, baseline, label='baseline', delay_draw=True,
-                   style='short dashed', marker='None', markersize=5,
-                   color=LineColors[ncolor], **popts)
-
+            fig.add_plot(xdat, baseline, label='baseline')
         for icomp, label in enumerate(ycomps):
             ycomp = ycomps[label]
             if label in opts['bkg_components']:
                 continue
-            ncolor =  (ncolor+1) % 10
-            _oplot(xdat, ycomp, label=label, delay_draw=(icomp != ncomps-1),
-                   style='short dashed', marker='None', markersize=5,
-                   color=LineColors[ncolor], **popts)
+            fig.add_plot(xdat, ycomp, label=label)
 
     if opts.get('show_fitrange', False):
         for attr in ('emin', 'emax'):
-            _plot_axvline(opts[attr], ymin=0, ymax=1,
-                          delay_draw=False, color='#DDDDCC',
-                          label='_nolegend_', **popts)
+            fig.add_vline(opts[attr], line_width=2, line_dash="dash", line_color="#DDDDCC")
 
     if opts.get('show_centroid', False):
         pcen = getattr(dgroup.prepeaks, 'centroid', None)
@@ -1270,11 +1068,12 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
             if pcen is not None:
                 pcen = pcen.value
         if pcen is not None:
-            _plot_axvline(pcen, delay_draw=False, ymin=0, ymax=1,
-                          color='#EECCCC', label='_nolegend_', **popts)
+            fig.add_vlinee(pcen, color='#EECCCC')
 
-    redraw(xmin=dx0, xmax=dx1, ymin=min(dy0, fy0),
-           ymax=max(dy1, fy1), dymin=dymin, dymax=dymax, show_legend=True, **popts)
+    fig.show(title=title, xlabel=plotlabels.energy, ylabel=opts['array_desc'])
+    dfig.show(title=tile, ylabel='fit-data', ymin=dymin, ymax=dymax)
+    return fig, dfig
+
 
 def _pca_ncomps(result, min_weight=0, ncomps=None):
     if ncomps is None:
@@ -1285,7 +1084,7 @@ def _pca_ncomps(result, min_weight=0, ncomps=None):
     return ncomps
 
 
-def plot_pca_components(result, min_weight=0, ncomps=None, min_variance=1.e-5, win=1, _larch=None, **kws):
+def plot_pca_components(result, min_weight=0, ncomps=None, min_variance=1.e-5):
     """Plot components from PCA result
 
     result must be output of `pca_train`
@@ -1300,79 +1099,74 @@ def plot_pca_components(result, min_weight=0, ncomps=None, min_variance=1.e-5, w
             label = 'Comp# %d (%.4f)' % (i+1, result.variances[i])
             fig.add_plot(result.x, comp, label=label)
 
-    fig.set_style(title=title, xaxis_title=plotlabels.energy, yaxis_title=plotlabels.norm)
-    fig.set_xrange(result.xmin, result.xmax)
-    fig.show()
-    return fig
+    return fig.show(title=title, xlabel=plotlabels.energy, ylabel=plotlabels.norm,
+                 xmin=result.xmin, xmax=result.xmax)
 
-
-def plot_pca_weights(result, min_weight=0, ncomps=None, win=1, _larch=None, **kws):
+def plot_pca_weights(result, min_weight=0, ncomps=None):
     """Plot component weights from PCA result (aka SCREE plot)
 
     result must be output of `pca_train`
     """
-    max_comps = len(result.components)
+    max_comps = len(result.components)-1
 
     title = "PCA Variances (SCREE) and Indicator Values"
-    fig = PlotlyFigure(two_yaxis=False)
-
-    popts = dict(title=title, xlabel='Component #', zorder=10,
-                 xmax=max_comps+1.5, xmin=0.25, ymax=1, yaxis_label='variance',
-                 style='solid', ylog_scale=True, show_legend=True,
-                 linewidth=1, new=True, marker='o', win=win, _larch=_larch)
-
-    popts.update(kws)
+    fig = PlotlyFigure(two_yaxis=True)
 
     ncomps = max(1, int(result.nsig))
-    x = 1 + np.arange(ncomps)
+
+    x0, x1, y0, y1 = extend_plotrange(result.variances, result.variances)
+    y0 = max(1.e-6, min(result.variances[:-1]))
+    x = 1+np.arange(ncomps)
     y = result.variances[:ncomps]
     fig.add_plot(x, y, label='significant', style='solid', marker='o')
 
     xe = 1 + np.arange(ncomps-1, max_comps)
     ye = result.variances[ncomps-1:ncomps+max_comps]
 
-    # popts.update(dict(new=False, zorder=5, style='short dashed',
-    #                      color='#B34050', ymin=2e-3*result.variances[ncomps-1]))
     fig.add_plot(xe, ye, label='not significant', style='dashed', marker='o')
+    fig.set_ylog()
+    yi = result.ind[1:]
+    xi = 1 + np.arange(len(yi))
 
-    xi = 1 + np.arange(len(result.ind)-1)
+    x0, x1, yimin, yimax = extend_plotrange(xi, yi)
 
-    fig.add_plot(xi, result.ind[1:],
-                 label='Indicator Value',
-                 style='solid')
+    fig.add_plot(xi, result.ind[1:], label='Indicator Value',
+                    style='solid', side='right')
+    fig.fig.update_yaxes(title_text='Indicator', secondary_y=True)
+    return fig.show(title=title, xlabel='Component #', ylabel='variance')
 
 
-def plot_pca_fit(dgroup, win=1, with_components=False, _larch=None, **kws):
+def plot_pca_fit(dgroup, with_components=True):
     """Plot data and fit result from pca_fit, which rom PCA result
 
     result must be output of `pca_fit`
     """
-
     title = "PCA fit: %s" % (dgroup.filename)
     result = dgroup.pca_result
     model = result.pca_model
 
-    popts = dict(xmin=model.xmin, xmax=model.xmax, title=title,
-                 xlabel=plotlabels.energy, yaxis_label=plotlabels.norm,
-                 delay_draw=True, show_legend=True, style='solid',
-                 linewidth=3, new=True, marker='None', markersize=4,
-                 stacked=True, win=win, _larch=_larch)
-    popts.update(kws)
-    _fitplot(result.x, result.ydat, result.yfit,
-             label='data', label2='PCA fit', **popts)
-
-    disp = get_display(win=win, stacked=True, _larch=_larch)
-    if with_components and disp is not None:
-        disp.panel.oplot(result.x, model.mean, label='mean')
+    fig = PlotlyFigure(two_yaxis=False)
+    fig.add_plot(result.x, result.ydat, label='data')
+    fig.add_plot(result.x, result.yfit, label='fit')
+    if with_components:
+        fig.add_plot(result.x, model.mean, label='mean')
         for n in range(len(result.weights)):
             cval = model.components[n]*result.weights[n]
-            disp.panel.oplot(result.x, cval, label='Comp #%d' % (n+1))
-    redraw(win=win, show_legend=True, stacked=True, _larch=_larch)
+            fig.add_plot(result.x, cval, label='Comp #%d' % (n+1))
+
+    fig.show(title=title, xmin=model.xmin, xmax=model.xmax,
+             xlabel=plotlabels.energy, ylabel=plotlabels.norm)
+
+    dfig = PlotlyFigure(two_yaxis=False)
+    dfig.add_plot(result.x, result.yfit-result.ydat, label='fit-data')
+    dfig.show(title=title, xmin=model.xmin, xmax=model.xmax,
+             xlabel=plotlabels.energy, ylabel='fit-data')
+    return fig, dfig
 
 def plot_diffkk(dgroup, emin=None, emax=None, new=True, label=None,
-                title=None, delay_draw=False, offset=0, win=1, _larch=None):
+                title=None, offset=0):
     """
-    plot_diffkk(dgroup, norm=True, emin=None, emax=None, show_e0=False, label=None, new=True, win=1):
+    plot_diffkk(dgroup, norm=True, emin=None, emax=None, show_e0=False, label=None):
 
     Plot mu(E) and background mu0(E) for XAFS data group
 
@@ -1385,10 +1179,7 @@ def plot_diffkk(dgroup, emin=None, emax=None, new=True, label=None,
      show_e0     bool whether to show E0 [False]
      label       string for label [``None``: 'mu']
      title       string for plot title [None, may use filename if available]
-     new         bool whether to start a new plot [True]
-     delay_draw  bool whether to delay draw until more traces are added [False]
      offset      vertical offset to use for y-array [0]
-     win         integer plot window to use [1]
 
     Notes
     -----
@@ -1406,26 +1197,21 @@ def plot_diffkk(dgroup, emin=None, emax=None, new=True, label=None,
 
     labels = {'f2': r"$f_2(E)$", 'fpp': r"$f''(E)$", 'fp': r"$f'(E)$", 'f1': r"$f_1(E)$"}
 
-    opts = dict(win=win, show_legend=True, linewidth=3,
-                delay_draw=True, _larch=_larch)
+    fig = PlotlyFigure(two_yaxis=False)
+    fig.add_plot(dgroup.energy, f2, label=labels['f2'])
 
-    _plot(dgroup.energy, f2, xlabel=plotlabels.energy, yaxis_label=ylabel,
-          title=title, label=labels['f2'], zorder=20, new=new, xmin=emin, xmax=emax,
-          **opts)
-    zorder = 15
     for attr in ('fpp', 'f1', 'fp'):
         yval = getattr(dgroup, attr)
         if yval is not None:
-            _plot(dgroup.energy, yval, zorder=zorder, label=labels[attr], **opts)
-            zorder = zorder - 3
+            fig.add_plot(dgroup.energy, yval, label=labels[attr])
 
-    redraw(win=win, xmin=emin, xmax=emax, _larch=_larch)
-#enddef
+    return fig.show(title=title, xlabel=plotlabels.energy, yaxis_label=ylabel,
+             xmin=emin, xmax=emax)
 
-def plot_feffdat(feffpath, with_phase=True, title=None,
-                 new=True, delay_draw=False, win=1, _larch=None):
+
+def plot_feffdat(feffpath, with_phase=True, title=None, fig=None):
     """
-    plot_feffdat(feffpath, with_phase=True, title=None, new=True, win=1):
+    plot_feffdat(feffpath, with_phase=True, title=None)
 
     Plot Feff's magnitude and phase as a function of k for a FeffPath
 
@@ -1434,9 +1220,6 @@ def plot_feffdat(feffpath, with_phase=True, title=None,
      feffpath    feff path as read by feffpath()
      with_pase   whether to plot phase(k) as well as magnitude [True]
      title       string for plot title [None, may use filename if available]
-     new         bool whether to start a new plot [True]
-     delay_draw  bool whether to delay draw until more traces are added [False]
-     win         integer plot window to use [1]
 
     Notes
     -----
@@ -1447,20 +1230,59 @@ def plot_feffdat(feffpath, with_phase=True, title=None,
         fdat = feffpath._feffdat
     else:
         raise ValueError("must pass in a Feff path as from feffpath()")
-    #endif
 
-    _plot(fdat.k, fdat.mag_feff, xlabel=plotlabels.k,
-          ylabel='|F(k)|', title=title, label='magnitude', zorder=20,
-          new=new, win=win, show_legend=True,
-          delay_draw=delay_draw, linewidth=3, _larch=_larch)
+    if fig is None:
+        fig = PlotlyFigure(two_yaxis=True)
+    fig.add_plot(result.x, result.ydat, label='data')
+
+
+    fig.add_plot(fdat.k, fdat.mag_feff, label='magnitude')
+    # xlabel=plotlabels.k,
+    # ylabel='|F(k)|', title=title,
 
     if with_phase:
-        _plot(fdat.k, fdat.pha_feff, xlabel=plotlabels.k,
-              y2label='Phase(k)', title=title, label='phase', side='right',
-              zorder=10, new=False, win=win, show_legend=True,
-              delay_draw=delay_draw, linewidth=3, _larch=_larch)
-    #endif
+        fig.add_plot(fdat.k, fdat.pha_feff, label='phase')
+        fig.fig.update_yaxis(title_text='Phase(k)', secondary_y=True)
+    return fig.show(title=title, xlabel=plotlabels.k, ylabel='|F(k)|')
 
-    if delay_draw:
-        redraw(win=win, xmin=emin, xmax=emax, _larch=_larch)
+#enddef
+
+def plot_wavelet(dgroup, show_mag=True, show_real=False, show_imag=False,
+                 rmax=None, kmax=None, kweight=None, title=None):
+    """
+    plot_wavelet(dgroup, show_mag=True, show_real=False, show_imag=False,
+              rmax=None, kmax=None, kweight=None, title=None)
+
+    Plot wavelet for XAFS data group
+
+    Arguments
+    ----------
+     dgroup       group of XAFS data after xftf() results (see Note 1)
+     show_mag     bool whether to plot wavelet magnitude [True]
+     show_real    bool whether to plot real part of wavelet [False]
+     show_imag    bool whether to plot imaginary part of wavelet [False]
+     title        string for plot title [None, may use filename if available]
+     rmax         max R to show [None, end of data]
+     kmax         max k to show [None, end of data]
+     kweight      k-weight to use to construct wavelet [None, take from group]
+
+    Notes
+    -----
+     The wavelet will be performed
+    """
+    print("Image display not yet available with larch+plotly")
+    kweight = _get_kweight(dgroup, kweight)
+    cauchy_wavelet(dgroup, kweight=kweight, rmax_out=rmax)
+    title = _get_title(dgroup, title=title)
+
+    opts = dict(title=title, x=dgroup.k, y=dgroup.wcauchy_r, xmax=kmax,
+                ymax=rmax, xlabel=plotlabels.k, ylabel=plotlabels.r,
+                show_axis=True)
+    if show_mag:
+        _imshow(dgroup.wcauchy_mag, **opts)
+    elif show_real:
+        _imshow(dgroup.wcauchy_real, **opts)
+    elif show_imag:
+        _imshow(dgroup.wcauchy_imag, **opts)
+    #endif
 #enddef
