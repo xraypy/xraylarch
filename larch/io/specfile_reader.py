@@ -13,7 +13,7 @@ Requirements
 """
 
 __author__ = ["Mauro Rovezzi", "Matt Newville"]
-__version__ = "2023.2"
+__version__ = "2024.1"
 
 import os
 import copy
@@ -708,7 +708,9 @@ class DataSourceSpecH5(object):
         if _scntype == "contscan.EnergyCont":
             iscn.update(dict(scan_axis="energy_enc"))
             iscn.update(dict(scan_info="ESRF/BM16 BLISS 2023-Sept"))
-
+        if _scntype == "trigscan":
+            iscn.update(dict(scan_axis="energy_enc"))
+            iscn.update(dict(scan_info="ESRF/BLISS 2023-Dec"))
         return iscn
 
     def get_scan_axis(self):
@@ -719,7 +721,7 @@ class DataSourceSpecH5(object):
         if not (_axisout in _mots):
             self._logger.debug(f"'{_axisout}' not in (real) motors")
         if not (_axisout in _cnts):
-            self._logger.info(f"'{_axisout}' not in counters")
+            self._logger.debug(f"'{_axisout}' not in counters")
             _axisout = _cnts[0]
             self._logger.info(f"using the first counter: '{_axisout}'")
         return _axisout
@@ -826,19 +828,37 @@ class DataSourceSpecH5(object):
             timestamp=timestamp,
         )
 
-        data = []
-        axis_shape = self.get_array(axis).shape
-        for label in array_labels:
+        arr_axis = self.get_array(axis).astype(np.float64)
+        axis_size = arr_axis.size
+        data = [arr_axis]
+        ptsdiffs = [0]
+        pop_labels = []
+        self._logger.debug(f"X array (=scan axis): `{axis}` (size: {axis_size})")
+        self._logger.debug("Y arrays >>> loading all arrays in array_labels (check size match with scan axis) <<<")
+        for label in array_labels[1:]: #: avoid loading twice arr_axis
             arr = self.get_array(label).astype(np.float64)
-            if arr.shape == axis_shape:
-                setattr(out, label, arr)
-                data.append(arr)
-            else:
-                self._logger.warning(
-                    f"'{label}' skipped (shape is different from '{axis}')"
-                )
+            ptsdiff = axis_size - arr.size
+            self._logger.debug(f"`{label}` ({arr.size}) -> {abs(ptsdiff)}")           
+            if abs(ptsdiff) > 10 or ptsdiff < 0:
                 ipop = array_labels.index(label)
-                array_labels.pop(ipop)
+                pop_labels.append(array_labels.pop(ipop))
+            else:
+                ptsdiffs.append(ptsdiff)
+                data.append(arr)
+                setattr(out, label, arr)
+        assert len(array_labels) == len(data) == len(ptsdiffs), "length of array_labels and data do not match"
+        if len(pop_labels):
+            self._logger.info(f"Y arrays >>> not loaded: `{pop_labels}` [excessive size mismatch with `{axis}`]")
+        #: in case of array shape mismatch strip last points
+        ptsdiff_max = max(ptsdiffs)
+        if ptsdiff_max > 0:
+            out_size = axis_size - ptsdiff_max
+            for iarr, (lab, arr) in enumerate(zip(array_labels, data)):
+                ptsdiff = axis_size - arr.size
+                arr = arr[:out_size]
+                data[iarr] = arr
+                setattr(out, lab, arr)
+            self._logger.info(f"Y arrays >>> removed {ptsdiff_max} last points")
         out.data = np.array(data)
         return out
 
