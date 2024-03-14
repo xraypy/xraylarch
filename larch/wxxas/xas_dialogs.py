@@ -1704,15 +1704,12 @@ class ExportCSVDialog(wx.Dialog):
                            'space': ' ',
                            'tab': '\t'}
 
-
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
-
         self.save_individual_files = Check(panel, default=False, label='Save individual files', action=self.onSaveIndividualFiles)
         self.master_group = Choice(panel, choices=groupnames, size=(200, -1))
-        self.xarray_name  = Choice(panel, choices=list(self.xchoices.keys()),size=(200, -1))
-        self.yarray_name  = Choice(panel, choices=list(self.ychoices.keys()), size=(200, -1))
+        self.xarray_name  = Choice(panel, choices=list(self.xchoices.keys()), size=(200, -1))
+        self.yarray_name  = Choice(panel, choices=list(self.ychoices.keys()), action=self.onYChoice, size=(200, -1))
         self.del_name     = Choice(panel, choices=list(self.delchoices.keys()), size=(200, -1))
-
 
         panel.Add(self.save_individual_files, newrow=True)
 
@@ -1731,6 +1728,16 @@ class ExportCSVDialog(wx.Dialog):
         panel.pack()
         fit_dialog_window(self, panel)
 
+    def onYChoice(self, event=None):
+        ychoice = self.yarray_name.GetStringSelection()
+        yval = self.ychoices[ychoice]
+        xarray = 'Energy'
+        if yval in ('chi', 'chiq'):
+            xarray = 'k'
+        elif yval in ('chir_mag', 'chir_re'):
+            xarray = 'R'
+        self.xarray_name.SetStringSelection(xarray)
+        
     def onSaveIndividualFiles(self, event=None):
         save_individual = self.save_individual_files.IsChecked()
         self.master_group.Enable(not save_individual)
@@ -1740,6 +1747,8 @@ class ExportCSVDialog(wx.Dialog):
         response = namedtuple('ExportCSVResponse',
                               ('ok', 'individual', 'master', 'xarray', 'yarray', 'delim'))
         ok = False
+        individual = master = ''
+        xarray, yarray, delim = 'Energy', '', ','
         if self.ShowModal() == wx.ID_OK:
             individual = self.save_individual_files.IsChecked()
             master = self.master_group.GetStringSelection()
