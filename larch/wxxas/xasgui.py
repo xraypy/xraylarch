@@ -33,7 +33,7 @@ from larch.utils.strutils import (file2groupname, unique_name,
 from larch.larchlib import read_workdir, save_workdir, read_config, save_config
 
 from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
-                         SpecfileImporter, FileCheckList, FloatCtrl,
+                         SpecfileImporter, XasImporter, FileCheckList, FloatCtrl,
                          FloatSpin, SetTip, get_icon, SimpleText, TextCtrl,
                          pack, Button, Popup, HLine, FileSave, FileOpen,
                          Choice, Check, MenuItem, HyperText, set_color, COLORS,
@@ -71,6 +71,7 @@ from larch.io import (read_ascii, read_xdi, read_gsexdi, gsescan_group,
                       fix_varname, groups2csv, is_athena_project,
                       is_larch_session_file,
                       AthenaProject, make_hashkey, is_specfile, open_specfile)
+from larch.io.xas_data_source import open_xas_source
 
 from larch.xafs import pre_edge, pre_edge_baseline
 
@@ -1182,22 +1183,41 @@ before clearing"""
             self.show_subframe('athena_import', AthenaImporter,
                                controller=self.controller, filename=path,
                                read_ok_cb=self.onReadAthenaProject_OK)
+            return
+    
         # check for Spec File
-        elif is_specfile(path):
+        if is_specfile(path):
             self.show_subframe('spec_import', SpecfileImporter,
                                filename=path,
                                _larch=self.larch_buffer.larchshell,
                                config=self.last_spec_config,
                                read_ok_cb=self.onReadSpecfile_OK)
+            return
+    
         # check for Larch Session File
-        elif is_larch_session_file(path):
+        if is_larch_session_file(path):
             self.onLoadSession(path=path)
+            return
+
+        # check XAS data source (HDF5 and SPEC)
+        # try:
+        #     data_source = open_xas_source(path)
+        # except Exception:
+        #     pass
+        # else:
+        #     self.show_subframe('xas_import', XasImporter,
+        #                     filename=path,
+        #                     data_source=data_source,
+        #                     _larch=self.larch_buffer.larchshell,
+        #                     last_array_sel=self.last_array_sel_spec,
+        #                     read_ok_cb=self.onReadXasDataSource_OK)
+        #     return
+
         # default to Column File
-        else:
-            self.show_subframe('readfile', ColumnDataFileFrame, filename=path,
-                               config=self.last_col_config,
-                               _larch=self.larch_buffer.larchshell,
-                               read_ok_cb=self.onRead_OK)
+        self.show_subframe('readfile', ColumnDataFileFrame, filename=path,
+                        config=self.last_col_config,
+                        _larch=self.larch_buffer.larchshell,
+                        read_ok_cb=self.onRead_OK)
 
     def onReadSpecfile_OK(self, script, path, scanlist, config=None):
         """read groups from a list of scans from a specfile"""
@@ -1280,6 +1300,46 @@ before clearing"""
         self.write_message("read %d datasets from %s" % (len(scanlist), path))
         self.larch.eval('del _specfile')
 
+    def onReadXasDataSource_OK(self, script, path, scanlist, array_sel=None, extra_sums=None):
+        """read groups from a list of scans from a xas data source"""
+        self.larch.eval("_data_source = open_xas_source('{path:s}')".format(path=path))
+        dgroup = None
+        _path, fname = os.path.split(path)
+        first_group = None
+        cur_panel = self.nb.GetCurrentPage()
+        cur_panel.skip_plotting = True
+        symtable = self.larch.symtable
+        if array_sel is not None:
+            self.last_array_sel_spec = array_sel
+
+        for scan in scanlist:
+            gname = fix_varname("{:s}{:s}".format(fname[:6], scan))
+            if hasattr(symtable, gname):
+                count, tname = 0, gname
+                while count < 1e7 and self.larch.symtable.has_group(tname):
+                    tname = gname + make_hashkey(length=7)
+                    count += 1
+                gname = tname
+
+            cur_panel.skip_plotting = (scan == scanlist[-1])
+            yname = self.last_array_sel_spec['yarr1']
+            if first_group is None:
+                first_group = gname
+            self.larch.eval(script.format(group=gname, data_source='_data_source',
+                                          path=path, scan=scan))
+
+            displayname = f"{fname:s} scan{scan:s} {yname:s}"
+            jrnl = {'source_desc': f"{fname:s}: scan{scan:s} {yname:s}"}
+            dgroup = self.install_group(gname, displayname,
+                                        process=True, plot=False, extra_sums=extra_sums,
+                                        source=displayname,
+                                        journal=jrnl)
+        cur_panel.skip_plotting = False
+
+        if first_group is not None:
+            self.ShowFile(groupname=first_group, process=True, plot=True)
+        self.write_message("read %d datasets from %s" % (len(scanlist), path))
+        self.larch.eval('del _data_source')
 
     def onReadAthenaProject_OK(self, path, namelist):
         """read groups from a list of groups from an athena project file"""

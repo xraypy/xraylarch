@@ -36,3 +36,4 @@ Thumbs.db
 .vscode/
 .empty/
 .eggs/
+.coverage
