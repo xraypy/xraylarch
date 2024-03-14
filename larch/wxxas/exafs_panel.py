@@ -608,6 +608,7 @@ class EXAFSPanel(TaskPanel):
             txt = autobk_cmd.format(**conf)
         except:
             conf.update(self.read_form())
+            txt = autobk_cmd.format(**conf)
 
         bkgpars = []
         for attr in ('ek0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
@@ -720,7 +721,7 @@ class EXAFSPanel(TaskPanel):
                 conf['label'] = dgroup.filename
                 conf['offset'] = offset * i
                 if not hasattr(dgroup, 'chir_mag'):
-                    self.process(dgroup=dgroup, read_form=False)
+                    self.process(dgroup=dgroup, force=True, read_form=False, **conf)
 
                 extra = """, offset={offset:.3f}, win=1, delay_draw=True,
     label='{label:s}', new={new:s})"""
