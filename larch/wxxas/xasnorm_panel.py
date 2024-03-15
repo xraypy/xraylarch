@@ -163,7 +163,7 @@ class XASNormPanel(TaskPanel):
         sx.Add(self.wids['auto_step'], 0, LEFT, 4)
         pack(step_panel, sx)
 
-        # step row
+        # step rows
         nnorm_panel = wx.Panel(panel)
         self.wids['nnorm'] = Choice(nnorm_panel, choices=list(NNORM_CHOICES.keys()),
                                     size=(150, -1), action=self.onNNormChoice,
@@ -930,12 +930,15 @@ class XASNormPanel(TaskPanel):
             copts.append("step=%s" % gformat(float(edge_step)))
 
         for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
-            if form[attr] is None or form[attr] == 'auto':
+            val = form[attr]
+            if val is None or val == 'auto':
                 val = 'None'
             elif attr in ('nvict', 'nnorm'):
-                val = f"{int(form[attr])}"
+                if val in NNORM_CHOICES:
+                    val = NNORM_CHOICES[val]
+                val = int(val)
             else:
-                val = f"{float(form[attr]):.2f}"
+                val = f"{float(val):.2f}"
             copts.append(f"{attr}={val}")
 
         self.larch_eval("pre_edge(%s)" % (', '.join(copts)))
@@ -957,10 +960,16 @@ class XASNormPanel(TaskPanel):
             copts.append("z=%d" % atomic_number(form['atsym']))
             copts.append("edge='%s'" % form['edge'])
             for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
-                if form[attr] is None:
-                    copts.append("%s=None" % attr)
+                val = form[attr]
+                if val is None or val == 'auto':
+                    val = 'None'
+                elif attr in ('nvict', 'nnorm'):
+                    if val in NNORM_CHOICES:
+                        val = NNORM_CHOICES[val]
+                    val = int(val)
                 else:
-                    copts.append("%s=%.2f" % (attr, form[attr]))
+                    val = f"{float(val):.2f}"
+                copts.append(f"{attr}={val}")
             self.larch_eval("mback_norm(%s)" % (', '.join(copts)))
 
             if form['auto_step']:
