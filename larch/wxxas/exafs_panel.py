@@ -594,6 +594,8 @@ class EXAFSPanel(TaskPanel):
             conf = getattr(dgroup.config, self.configname, None)
             if conf is None:
                 conf = self.get_config(dgroup=dgroup)
+            if 'ek0' not in conf:
+                conf['ek0']  = conf.get('e0', getattr(dgroup, 'e0', -1))
 
         if read_form:
             conf.update(self.read_form())
@@ -712,6 +714,7 @@ class EXAFSPanel(TaskPanel):
         conf = self.read_form(as_copy=True)
         bcmd = PlotCmds[conf['plotsel_op']]
         conf['new'] = 'True'
+        conf.pop('ek0') # don't copy ek0 to all groups
         offset = conf['plot_voffset']
         for i, checked in enumerate(group_ids):
             groupname = self.controller.file_groups[str(checked)]
