@@ -350,6 +350,7 @@ class MultiColumnFrame(wx.Frame) :
 
         bsizer.Add(Button(bpanel, ' Select All ', action=self.onSelAll))
         bsizer.Add(Button(bpanel, ' Select None ', action=self.onSelNone))
+        bsizer.Add(Button(bpanel, ' Plot Selected ', action=self.onPlotSel))
         bsizer.Add(Button(bpanel, ' Import Selected Columns ', action=self.onOK_Multi))
         pack(bpanel, bsizer)
 
@@ -364,7 +365,7 @@ class MultiColumnFrame(wx.Frame) :
 
         ir += 1
         sizer.Add(SimpleText(panel, label=' Array Name'),  (ir, 0), (1, 1), LEFT, 3)
-        sizer.Add(SimpleText(panel, label=' Import? '),   (ir, 1), (1, 1), LEFT, 3)
+        sizer.Add(SimpleText(panel, label=' Select '),   (ir, 1), (1, 1), LEFT, 3)
         sizer.Add(SimpleText(panel, label=' Plot'),       (ir, 2), (1, 1), LEFT, 3)
 
         array_labels = getattr(group, 'array_labels', self.yarr_labels)
@@ -404,6 +405,31 @@ class MultiColumnFrame(wx.Frame) :
         for wname, wid in self.wids.items():
             if wname.startswith('use_'):
                 wid.SetValue(0)
+
+    def onPlotSel(self, event=None):
+        group = self.group
+        self.config['i0']  = self.wids['i0'].GetSelection()
+        channels = []
+        x = self.group.xdat
+        popts = dict(marker=None, markersize=0, linewidth=2.5,
+                     ylabel='selected arrays', show_legend=True,
+                     xlabel=self.group.plot_xlabel, delay_draw=True)
+        first = True
+        for wname, wid in self.wids.items():
+            if wname.startswith('use_') and wid.IsChecked():
+                chan = int(wname.replace('use_', ''))
+                y = self.group.data[chan, :]
+                try:
+                    label = self.group.array_labels[chan]
+                except:
+                    label = f'column {chan+1}'
+                plot = self.parent.plotpanel.oplot
+                if first:
+                    first = False
+                    plot = self.parent.plotpanel.plot
+                plot(x, y, label=label, **popts)
+        self.parent.plotpanel.draw()
+
 
     def onPlot(self, event=None, index=None):
         if index is not None:
