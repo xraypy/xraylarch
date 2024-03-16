@@ -85,13 +85,13 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=None,
 
     Follows the 'First Argument Group' convention.
     """
-    msg = sys.stdout
+    msg = sys.stdout.write
     if _larch is not None:
         msg = _larch.writer.write
     if 'kw' in kws:
         kweight = kws.pop('kw')
     if len(kws) > 0:
-        msg('Unrecognized a:rguments for autobk():\n')
+        msg('Unrecognized arguments for autobk():\n')
         msg('    %s\n' % (', '.join(kws.keys())))
         return
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
@@ -346,13 +346,13 @@ def autobk_lmfit(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=
 
     Follows the 'First Argument Group' convention.
     """
-    msg = sys.stdout
+    msg = sys.stdout.write
     if _larch is not None:
         msg = _larch.writer.write
     if 'kw' in kws:
         kweight = kws.pop('kw')
     if len(kws) > 0:
-        msg('Unrecognized a:rguments for autobk():\n')
+        msg('Unrecognized arguments for autobk_lmfit():\n')
         msg('    %s\n' % (', '.join(kws.keys())))
         return
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
