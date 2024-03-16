@@ -746,7 +746,7 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
     fig.add_plot(mod.k, model_chik+offset, label='fit')
 
     ylabel = set_label_weight(plotlabels.chikw, kweight)
-    fig.show(title=title, xlaxbl=plotlabels.k,
+    fig.show(title=title, xlabel=plotlabels.k,
                   ylabel=ylabel, xmin=kmin, xmax=kmax)
 
     #  chi(R) in first plot window
@@ -764,7 +764,7 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
         rfig.add_plot(mod.r, mod.chir_im+offset, label='Im[fit]')
 
     ylabel = chirlab(kweight, show_mag=show_mag, show_real=show_real, show_imag=show_imag)
-    rfig.showt(title=title, xlabel=plotlabels.r, ylabel=ylabel, xmin=0, xmax=rmax)
+    rfig.show(title=title, xlabel=plotlabels.r, ylabel=ylabel, xmin=0, xmax=rmax)
     return fig, rfig
 
 def plot_path_k(dataset, ipath=0, kmin=0, kmax=None, offset=0, label=None, fig=None):
@@ -863,7 +863,7 @@ def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, title=None, fig=None):
     model_chi_kw = model.chi * model.k**kweight
 
     title = _get_title(dataset, title=title)
-    if fig:
+    if fig is None:
         fig = PlotlyFigure(two_yaxis=False)
     fig.add_plot(model.k, model_chi_kw, label='sum')
 
@@ -874,7 +874,7 @@ def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, title=None, fig=None):
         fig.add_plot(path.k, chi_kw, label=label)
 
     return fig.show(title=title,  xlabel=plotlabels.k,
-                    ylabel=plotlabels.chikw.format(kweight),
+                    ylabel=set_label_weight(plotlabels.chikw, kweight),
                     xmin=kmin, xmax=kmax)
 
 def plot_paths_r(dataset, offset=-0.25, rmax=None, show_mag=True,
@@ -917,13 +917,13 @@ def plot_paths_r(dataset, offset=-0.25, rmax=None, show_mag=True,
         label = 'path %i' % (1+ipath)
         off = (ipath+1)*offset
         if show_mag:
-            fig.add_plot(path.r, path.chir_mag, label=f'|{label}|')
+            fig.add_plot(path.r, off+path.chir_mag, label=f'|{label}|')
 
         if show_real:
-            fig.add_plot(path.r, path.chir_re, label=f'Re[{label}]')
+            fig.add_plot(path.r, off+path.chir_re, label=f'Re[{label}]')
 
         if show_imag:
-            fig.add_plot(path.r, path.chir_re, label=f'Im[{label}]')
+            fig.add_plot(path.r, off+path.chir_im, label=f'Im[{label}]')
 
     return fig.show(title=title, xlabel=plotlabels.r,
                     ylabel=chirlab(kweight), xmax=rmax)
