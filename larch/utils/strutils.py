@@ -10,10 +10,11 @@ import uuid
 import hashlib
 from base64 import b64encode, b32encode
 from random import Random
+from packaging import version as pkg_version
+
+from .gformat import gformat
 
 rng = Random()
-
-from packaging import version as pkg_version
 
 def bytes2str(s):
     if isinstance(s, str):
@@ -339,3 +340,8 @@ def break_longstring(s, maxlen=90, n1=20):
         s = s[ibreak+minlen+1:]
     out.append(s)
     return out
+
+
+def array_hash(arr, len=12):
+    """generate hash for an array, to tell if an array has changed"""
+    return b32hash(''.join([gformat(x, length=16) for x in arr]))[:len].lower()
