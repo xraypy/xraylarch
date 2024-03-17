@@ -264,9 +264,6 @@ class FeffitDataSet(Group):
         if epsilon_k is not None:
             self.data.epsilon_k = epsilon_k
 
-        if not hasattr(data, 'delta_chi'):  # needs autobk_delta_chi
-            autobk_delta_chi(data)
-
         dat_attrs = ['delta_chi', 'r', 'chir_mag', 'chir_re', 'chir_im']
         if data is not None:
             dat_attrs.extend(dir(data))
@@ -364,6 +361,7 @@ class FeffitDataSet(Group):
             # if delta_chi (uncertainty in chi(k) from autobk or other source)
             # exists, add it in quadrature to high-k noise estimate, and
             # update epsilon_k to be this value
+            autobk_delta_chi(self.data)
             if hasattr(self.data, 'delta_chi'):
                 cur_eps_k = getattr(self, 'epsilon_k', 0.0)
                 if isinstance(cur_eps_k, (list, tuple)):
