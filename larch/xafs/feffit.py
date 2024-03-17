@@ -375,6 +375,9 @@ class FeffitDataSet(Group):
                 _dchi = self.data.delta_chi
                 if _dchi is not None:
                     if isinstance(_dchi, np.ndarray):
+                        nchi = len(self.data.k)
+                        if len(_dchi) != nchi:
+                            _dchi = np.concatenate((_dchi, np.zeros(nchi)))[:nchi]
                         _dchi = interp(self.model.k, self.data.k, _dchi)
                     self.set_epsilon_k(np.sqrt(_dchi**2 + cur_eps_k**2))
 
