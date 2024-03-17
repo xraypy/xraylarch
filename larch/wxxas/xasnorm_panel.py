@@ -26,7 +26,8 @@ from larch.utils.physical_constants import ATOM_NAMES
 from larch.wxlib.plotter import last_cursor_pos
 from .xas_dialogs import EnergyUnitsDialog
 from .taskpanel import TaskPanel, autoset_fs_increment, update_confval
-from .config import make_array_choice, EDGES, ATSYMS, NNORM_CHOICES, NORM_METHODS
+from .config import (make_array_choice, EDGES, ATSYMS,
+                     NNORM_CHOICES, NNORM_STRINGS, NORM_METHODS)
 
 np.seterr(all='ignore')
 
@@ -456,17 +457,16 @@ class XASNormPanel(TaskPanel):
         wx.CallAfter(self.unset_skip_process)
 
     def set_nnorm_widget(self, nnorm=None):
+        nnorm_default = get_auto_nnorm(self.get_config())
         if nnorm in (None, 'auto'):
-            nnorm = nnorm_default = get_auto_nnorm(self.get_config())
-
-        try:
-            nnorm = int(nnorm)
-        except ValueError:
             nnorm = nnorm_default
+        elif nnorm in NNORM_CHOICES:
+            nnorm = int(NNORM_CHOICES[nnorm])
 
-        for k, v in NNORM_CHOICES.items():
-            if v == nnorm:
-                nnorm_str = k
+        nnorm_str = NNORM_STRINGS.get(nnorm, None)
+        if nnorm_str is None:
+            nnorm_str = NNORM_STRINGS.get(nnorm_default, '1')
+
         self.wids['nnorm'].SetStringSelection(nnorm_str)
         self.wids['auto_nnorm'].SetValue(0)
 
@@ -485,7 +485,7 @@ class XASNormPanel(TaskPanel):
 
         form_opts['energy_shift'] = self.wids['energy_shift'].GetValue()
 
-        form_opts['nnorm'] = NNORM_CHOICES.get(self.wids['nnorm'].GetStringSelection(), None)
+        form_opts['nnorm'] = NNORM_CHOICES.get(self.wids['nnorm'].GetStringSelection(), 1)
         form_opts['nvict'] = int(self.wids['nvict'].GetStringSelection())
         form_opts['plotone_op'] = self.plotone_op.GetStringSelection()
         form_opts['plotsel_op'] = self.plotsel_op.GetStringSelection()
@@ -509,7 +509,7 @@ class XASNormPanel(TaskPanel):
         method = self.wids['norm_method'].GetStringSelection().lower()
         auto_nnorm  = self.wids['auto_nnorm'].GetValue()
 
-        nnorm  = NNORM_CHOICES.get(self.wids['nnorm'].GetStringSelection(), None)
+        nnorm  = NNORM_CHOICES.get(self.wids['nnorm'].GetStringSelection(), 1)
         if nnorm is None:
             nnorm = get_auto_nnorm(self.get_config())
 

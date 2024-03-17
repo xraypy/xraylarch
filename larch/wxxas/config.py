@@ -64,6 +64,8 @@ Regress_Choices = ['Partial Least Squares', 'LassoLars']
 PlotWindowChoices = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
 
 NNORM_CHOICES = {'constant':0, 'linear':1, 'quadratic':2, 'cubic':3}
+NNORM_STRINGS = {int(v): k for k, v in NNORM_CHOICES.items()}
+
 NORM_METHODS = ('polynomial', 'mback')
 
 ATHENA_CLAMPNAMES = {'none': 0, 'slight': 1, 'weak': 5, 'medium': 20,
