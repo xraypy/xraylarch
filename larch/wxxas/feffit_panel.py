@@ -29,6 +29,7 @@ from larch import Group, site_config
 from larch.math import index_of
 from larch.fitting import group2params, param
 from larch.utils.jsonutils import encode4js, decode4js
+from larch.inputText import is_complete
 from larch.utils import fix_varname, fix_filename, gformat, mkdir
 from larch.io.export_modelresult import export_modelresult
 from larch.xafs import feffit_report, feffpath
@@ -65,9 +66,12 @@ ScriptWcards = "Fit Models(*.lar)|*.lar|All files (*.*)|*.*"
 MIN_CORREL = 0.10
 
 COMMANDS = {}
-COMMANDS['feffit_top'] = """## saved {ctime}
-## commmands to reproduce Feffit
-## to use from python, uncomment these lines:
+COMMANDS['feffit_top'] = """##### FEFFIT Commands
+##
+## saved {ctime}
+## to use from python, uncomment these import lines:
+##
+
 #from larch.xafs import feffit, feffit_dataset, feffit_transform, feffit_report
 #from larch.xafs import pre_edge, autobk, xftf, xftr, ff2chi, feffpath
 #from larch.fitting import  param_group, param
@@ -78,9 +82,11 @@ COMMANDS['feffit_top'] = """## saved {ctime}
 #from wxmplot.interactive import get_wxapp
 #wxapp = get_wxapp()  # <- needed for plotting to work from python command-line
 ####
+####
 """
 
-COMMANDS['data_source'] = """# you will need to add how the data chi(k) gets built:
+COMMANDS['data_source'] = """### you will need to add how the data chi(k) gets built:
+###
 ## data group = {groupname}
 ## from source = {filename}
 ## some processing steps for this group (comment out as needed):
@@ -150,6 +156,21 @@ for label, path in {paths_name:s}.items():
          window='{kwindow:s}', kweight={kweight:.3f})
 #endfor
 """
+
+def get_commands(textlines):
+    """return list of complete larch command / python function calls
+    from a list of text lines such as 'command history'
+    """
+    out = []
+    work_lines = []
+    for line in textlines:
+        work_lines.append(line)
+        work = ' '.join(work_lines)
+        if is_complete(work):
+            out.append(work)
+            work_lines.clear()
+    out.extend(work_lines)   # add any dangling text
+    return out
 
 
 class ParametersModel(dv.DataViewIndexListModel):
@@ -1556,19 +1577,34 @@ class FeffitPanel(TaskPanel):
         if dgroup is None:
             dgroup = opts['datagroup']
 
+        #print("DGROUP JOURNAL ")
+        #print(dgroup.journal)
 
-        script.append("######################################")
+        script.append("###\n### DATA \n###\n")
         script.append(COMMANDS['data_source'].format(groupname=groupname, filename=filename))
-        for cmd in session_history:
+        seen_cmds = []
+        cmdhist = []
+        sesshist = get_commands(session_history)
+        for cmd in reversed(sesshist):
             if groupname in cmd or filename in cmd or 'athena' in cmd or 'session' in cmd:
-                for cline in cmd.split('\n'):
-                    script.append(f"# {cline}")
+                scmd = cmd.strip()
+                if (scmd.startswith('#') or scmd.startswith('plot_')
+                   or 'feffit_dataset(' in scmd or 'feffit_transform(' in scmd):
+                    continue
+                fcn_name, args = scmd.split('(', 1) if '(' in scmd else ('', scmd)
+                if fcn_name in ('autobk', 'pre_edge', 'xftf', 'xftr'):
+                    if fcn_name in seen_cmds:
+                        continue
+                    else:
+                        seen_cmds.append(fcn_name)
+                cmdhist.append(f"# {cmd}")
 
-        script.append("#### end of data reading and preparation")
-        script.append("######################################")
+        script.extend(list(reversed(cmdhist)))
+
+        script.append("### end of data reading and preparation\n###\n###")
         script.append("## read Feff Paths into '_feffpaths'.  You will need to either")
-        script.append("##  read feff.dat from disk files with `feffpath()` or use Paths")
-        script.append("##   cached from a session file into `feffcache`")
+        script.append("##    read feff.dat from disk files with `feffpath()` or use Paths")
+        script.append("##     cached from a session file into `feffcache`")
         script.append("#_feffcache = {'runs': {}, 'paths':{}}")
         script.append("#_feffpaths = {}")
         for path in opts['paths']:
@@ -1580,7 +1616,7 @@ class FeffitPanel(TaskPanel):
 #                               s02='{amp:s}', e0='{e0:s}', deltar='{delr:s}',
 #                               sigma2='{sigma2:s}', third='{third:s}', ei='{ei:s}')""")
 
-        script.append("######################################")
+        script.append("###\n###\n###")
         self.larch_eval(COMMANDS['do_feffit'].format(**fopts))
 
         self.wids['show_results'].Enable()
@@ -1938,7 +1974,6 @@ class FeffitResultFrame(wx.Frame):
                                             text=text, title=title,
                                             default_filename=default_filename,
                                             wildcard=wildcard)
-
 
     def onShowPathParams(self, event=None):
         result = self.get_fitresult()
