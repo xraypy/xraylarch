@@ -33,8 +33,7 @@ The latest release version of Larch is |release|.
 
 Larch is in active and continuing development.  We do not use a strict
 schedule, but for the past few years, new versions have typically been
-released every 2 months or so.
-
+released every 3 months or so.
 
 There are three ways to install Larch. Which of these is right for you will
 depend on your operating system and your familiarity with the Python
@@ -134,11 +133,10 @@ it to install Larch.  There are two important notes:
 
 .. note::
 
-   With MacOS 10.15 (Catalina), Apple will not install non-signed 3rd party
-   packages by default.  You may need to go into General Settings part of the
-   **Security & Privacy** section of **System Preferences** and explicitly
-   allow this package to be installed. You probably will be prompted for an
-   Administrative password.
+   MacOS will not install non-signed 3rd party packages by default.  You may
+   need to go into General Settings part of the **Security & Privacy** section
+   of **System Preferences** and explicitly allow this package to be
+   installed. You probably will be prompted for an Administrative password.
 
 .. note::
 
@@ -232,7 +230,7 @@ To be clear, much of the core Larch functionality can be used as a library
 without these packages installed, but especially `wxpython` and `pymatgen` are
 heavily used and should be installed.
 
-If you are using There is a `conda-forge` package for X-ray Larch, so from a shell it may be
+There is a `conda-forge` package for X-ray Larch, so from a shell it may be
 that all you need to do is run
 
 
@@ -247,15 +245,26 @@ infrastructure and then install xraylarch with pip:
 
 .. code:: bash
 
-   conda create -y --name xraylarch python=>3.11.5
-   conda activate xraylarch
-   conda install -y -c conda-forge wxpython pymatgen scipy h5py matplotlib
-   conda install -y -c conda-forge openbabel tomopy epicsapps    # <- optional packages
-   pip install xraylarch
+   mamba create -y --name xraylarch python=>3.11.5 scipy mkl_fft h5py matplotlib pandas
+   mamba activate xraylarch
+   mamba install -y -c conda-forge wxpython pymatgen jupyter "notebook<7.0"
+   mamba install -y -c scikit-image scikit-learn pycifrw plotly fabio pyfai
+   mamba install -y -c conda-forge openbabel tomopy  # <- optional packages
+   pip install "xraylarch[larix]"
+
+.. note::
+
+   These commands use `mamba` because it is much faster that `conda`.  If this
+   fails, you may need to run `conda install mamba`
+
+.. note::
+
+   Jupyter notebook version 7 and later does not work with plotly, and
+   specifically with the example Jupyter notebooks use X-ray Larch.
 
 
 Since the `PyPI_` packages are the main release package, this method may better
-ensure that you get the latest version.
+ensure that you get the latest version compared to installing the `conda-forge` package.
 
 
 Finally, no matter how you install Larch, you can run
@@ -278,10 +287,9 @@ from `PyPI`_, so that a simple
 
     pip install xraylarch
 
-will work. In fact, as of this writing (0.9.73, November, 2023), this install
-command will work to install a fairly bare-bones set of tools -- the basic
-xraylarcg library, without requiring the packages needed to make any of the
-GUIs work.
+shoould work. Starting with version 0.9.73 9November, 2023), this command will
+work to install a fairly bare-bones set of tools -- the basic xraylarch
+library, without requiring the packages needed to make any of the GUIs work.
 
 In order to get the GUI-needed package, you could install with
 
@@ -295,7 +303,7 @@ for the GUIs, as well as the libraries related to Jupyter.
 
 The most notable missing binary package is the `wxPython` package on Linux.
 That means that if `wxPython` is not already installed, `pip` will try to
-compile it: this will almost certainly fail.  This problem (which, in fairness
+compile it, which will almost certainly fail.  This problem (which, in fairness
 to all involved, is very difficult to solve) is one of the main reasons we
 recommend using `Anaconda Python` - it provides this package in a consistent
 way. Anaconda Python also provides very good versions of almost all of hte

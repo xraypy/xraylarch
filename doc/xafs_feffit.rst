@@ -312,10 +312,10 @@ assume 1 :math:`k` weight -- these will take the first one listed.
       ================= ==========================================================
        component name        description
       ================= ==========================================================
-	 epsilon_k        estimated noise in the :math:`\chi(k)` data.
-	 epsilon_r        estimated noise in the :math:`\chi(R)` data.
-	 n_idp            estimated number of independent points in the data.
-	 model            a group for the model :math:`\chi` spectrum.
+         epsilon_k        estimated noise in the :math:`\chi(k)` data.
+         epsilon_r        estimated noise in the :math:`\chi(R)` data.
+         n_idp            estimated number of independent points in the data.
+         model            a group for the model :math:`\chi` spectrum.
       ================= ==========================================================
 
    The ``model`` component will be set after a fit, and will contain the
@@ -382,19 +382,19 @@ assume 1 :math:`k` weight -- these will take the first one listed.
     description of its content.  Many of these are described in more detail
     in :ref:`fitting-results-sec`
 
-	================= =====================================================================
-	 component name     description
-	================= =====================================================================
-	   chi_reduced      reduced chi-square statistic.
-	   chi_square       chi-square statistic.
-	   covar            covariance matrix.
-	   covar_vars       list of variable names for rows and columns of covariance matrix.
-	   errorbars        Flag whether error bars could be calculated.
-	   fit_details      group with additional fit details.
-	   message          output message from fit.
-	   nfree            number of degrees of freedom in fit.
-	   nvarys           number of variables in fit.
-	================= =====================================================================
+        ================= =====================================================================
+         component name     description
+        ================= =====================================================================
+           chi_reduced      reduced chi-square statistic.
+           chi_square       chi-square statistic.
+           covar            covariance matrix.
+           covar_vars       list of variable names for rows and columns of covariance matrix.
+           errorbars        Flag whether error bars could be calculated.
+           fit_details      group with additional fit details.
+           message          output message from fit.
+           nfree            number of degrees of freedom in fit.
+           nvarys           number of variables in fit.
+        ================= =====================================================================
 
 .. index:: Feffit Output Arrays
 .. _xafs-feffit_arrays_table:
@@ -406,19 +406,19 @@ assume 1 :math:`k` weight -- these will take the first one listed.
     following the conventions for :func:`xftf` in section on :ref:`Fourier
     Transforms for XAFS <xafs-ft_sec>`.
 
-	================= =====================================================================
-	 array name        description
-	================= =====================================================================
-	    k                  wavenumber array of :math:`k`.
-	    chi                :math:`\chi(k)`.
-	    kwin               window :math:`\Omega(k)` (length of input chi(k)).
-	    r                  uniform array of :math:`R`, out to ``rmax_out``.
-	    chir               complex array of :math:`\tilde\chi(R)`.
-	    chir_mag           magnitude of :math:`\tilde\chi(R)`.
-	    chir_pha           phase of :math:`\tilde\chi(R)`.
-	    chir_re            real part of :math:`\tilde\chi(R)`.
-	    chir_im            imaginary part of :math:`\tilde\chi(R)`.
-	================= =====================================================================
+        ================= =====================================================================
+         array name        description
+        ================= =====================================================================
+            k                  wavenumber array of :math:`k`.
+            chi                :math:`\chi(k)`.
+            kwin               window :math:`\Omega(k)` (length of input chi(k)).
+            r                  uniform array of :math:`R`, out to ``rmax_out``.
+            chir               complex array of :math:`\tilde\chi(R)`.
+            chir_mag           magnitude of :math:`\tilde\chi(R)`.
+            chir_pha           phase of :math:`\tilde\chi(R)`.
+            chir_re            real part of :math:`\tilde\chi(R)`.
+            chir_im            imaginary part of :math:`\tilde\chi(R)`.
+        ================= =====================================================================
 
 
 :func:`feffit_report`

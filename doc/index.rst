@@ -22,8 +22,8 @@ libraries including `numpy`_, `scipy`_, `h5py`_, `matplotlib`_. In turn, Larch
 provides a comprehensive Python library for processing and analyzing X-ray
 spectroscopy and imaging data.  Several Python libraries - `xraydb`_, `lmfit`_,
 `asteval`_, `wxmplot`_, and `pyshortcuts`_ - were orginally built for Larch and
-then spun-off as separate libraries that can be used by the broader X-ray,
-scientific, and programming communities.
+then spun-off as separate libraries that can be used by the broader X-ray and
+scientific programming communities.
 
 Larch includes a few GUI applications that provide user-friendly and
 interactive data visualization for many common X-ray analysis tasks. The most
