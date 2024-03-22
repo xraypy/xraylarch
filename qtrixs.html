@@ -6,18 +6,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>7. QtRIXS &#8212; xraylarch 0.9.74 documentation</title>
+    <title>8. QtRIXS &#8212; xraylarch 0.9.75 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
     
-    <script src="_static/documentation_options.js?v=516bc39e"></script>
+    <script src="_static/documentation_options.js?v=f5134787"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="8. Programming with Larch from Python" href="python.html" />
-    <link rel="prev" title="6. GSECARS Mapviewr" href="wxmap_viewer.html" />
+    <link rel="next" title="9. Programming with Larch from Python" href="python.html" />
+    <link rel="prev" title="7. Larch XRD1D Viewer" href="xrd1d_viewer.html" />
 
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
@@ -51,10 +51,10 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="python.html" title="8. Programming with Larch from Python"
+          <a href="python.html" title="9. Programming with Larch from Python"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="wxmap_viewer.html" title="6. GSECARS Mapviewr"
+          <a href="xrd1d_viewer.html" title="7. Larch XRD1D Viewer"
              accesskey="P">previous</a> |</li>
    <li>[<a href="index.html"> Larch</a>|</li>
    <li><a href="getting_started.html"> Getting Started</a>|</li>
@@ -62,7 +62,7 @@
    <li><a href="xray.html">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
 
-        <li class="nav-item nav-item-this"><a href=""><span class="section-number">7. </span>QtRIXS</a></li> 
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">8. </span>QtRIXS</a></li> 
       </ul>
     </div>
 
@@ -71,9 +71,9 @@
   <div>
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
-<li><a class="reference internal" href="#">7. QtRIXS</a><ul>
-<li><a class="reference internal" href="#reading-rixs-data">7.1. Reading RIXS data</a></li>
-<li><a class="reference internal" href="#plotting-rixs-data">7.2. Plotting RIXS data</a></li>
+<li><a class="reference internal" href="#">8. QtRIXS</a><ul>
+<li><a class="reference internal" href="#reading-rixs-data">8.1. Reading RIXS data</a></li>
+<li><a class="reference internal" href="#plotting-rixs-data">8.2. Plotting RIXS data</a></li>
 </ul>
 </li>
 </ul>
@@ -81,13 +81,13 @@
   </div>
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="wxmap_viewer.html"
-                          title="previous chapter"><span class="section-number">6. </span>GSECARS Mapviewr</a></p>
+    <p class="topless"><a href="xrd1d_viewer.html"
+                          title="previous chapter"><span class="section-number">7. </span>Larch XRD1D Viewer</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
     <p class="topless"><a href="python.html"
-                          title="next chapter"><span class="section-number">8. </span>Programming with Larch from Python</a></p>
+                          title="next chapter"><span class="section-number">9. </span>Programming with Larch from Python</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -115,7 +115,7 @@
           <div class="body" role="main">
             
   <section id="qtrixs">
-<span id="qtrixs-chapter"></span><h1><span class="section-number">7. </span>QtRIXS<a class="headerlink" href="#qtrixs" title="Link to this heading">¶</a></h1>
+<span id="qtrixs-chapter"></span><h1><span class="section-number">8. </span>QtRIXS<a class="headerlink" href="#qtrixs" title="Link to this heading">¶</a></h1>
 <p>The QtRIXS GUI is still under active development, this means that its design
 will evolve/change in the future and bugs are probably present in the code.
 <em>Any help is welcome!</em></p>
@@ -126,7 +126,7 @@ must be instantiated from a Python shell. For a better experience, working
 within <a class="reference external" href="https://ipython.org/">IPython</a> is recommended.</p>
 <p>The CLI interface is based on a simple list model, that is, the</p>
 <section id="reading-rixs-data">
-<h2><span class="section-number">7.1. </span>Reading RIXS data<a class="headerlink" href="#reading-rixs-data" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">8.1. </span>Reading RIXS data<a class="headerlink" href="#reading-rixs-data" title="Link to this heading">¶</a></h2>
 <p>RIXS data are stored in the <code class="xref py py-class docutils literal notranslate"><span class="pre">larch.qtrixs.rixsdata.RixsData</span></code>. This
 is a relatively simple Python object with few attributes mapping the data,
 and methods to grid the original (X, Y, Z) arrays to RIXS maps. Usually the
@@ -141,7 +141,7 @@ reading in the <cite>RixsData</cite> object is as simple as:</p>
 </div>
 </section>
 <section id="plotting-rixs-data">
-<h2><span class="section-number">7.2. </span>Plotting RIXS data<a class="headerlink" href="#plotting-rixs-data" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">8.2. </span>Plotting RIXS data<a class="headerlink" href="#plotting-rixs-data" title="Link to this heading">¶</a></h2>
 <p>Once the data are read in the <cite>RixsData</cite> object, can be added to the model
 where are stored in a list and easily retrieved or plotted using their
 index. Here an example to load a couple of planes and show them:</p>
@@ -160,11 +160,11 @@ index. Here an example to load a couple of planes and show them:</p>
 <span class="n">main_win</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">rixs_et</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">crop</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1">#: data[1] in plot[2] (new plot window is created)</span>
 </pre></div>
 </div>
-<p>The output of this script is shown in <a class="reference internal" href="#fig-qtrixs-main"><span class="std std-numref">Figure 7.2.1</span></a></p>
+<p>The output of this script is shown in <a class="reference internal" href="#fig-qtrixs-main"><span class="std std-numref">Figure 8.2.1</span></a></p>
 <figure class="align-center" id="id1">
 <span id="fig-qtrixs-main"></span><a class="reference external image-reference" href="_images/qtrixs_main_window.png"><img alt="_images/qtrixs_main_window.png" src="_images/qtrixs_main_window.png" style="width: 55%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 7.2.1 </span><span class="caption-text">QtRIXS main window showing two RIXS data objects loaded in the model and
+<p><span class="caption-number">Figure 8.2.1 </span><span class="caption-text">QtRIXS main window showing two RIXS data objects loaded in the model and
 plotted in the plot area.</span><a class="headerlink" href="#id1" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
@@ -175,11 +175,11 @@ by:</p>
 <span class="n">main_win</span><span class="o">.</span><span class="n">addRixsDOIDockWidget</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1">#: another info box for plot 2</span>
 </pre></div>
 </div>
-<p>The result is shown in <a class="reference internal" href="#fig-qtrixs-cursors"><span class="std std-numref">Figure 7.2.2</span></a>.</p>
+<p>The result is shown in <a class="reference internal" href="#fig-qtrixs-cursors"><span class="std std-numref">Figure 8.2.2</span></a>.</p>
 <figure class="align-center" id="id2">
 <span id="fig-qtrixs-cursors"></span><a class="reference external image-reference" href="_images/qtrixs_cursors.png"><img alt="_images/qtrixs_cursors.png" src="_images/qtrixs_cursors.png" style="width: 55%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 7.2.2 </span><span class="caption-text">Main window with added two widgets for getting information on the
+<p><span class="caption-number">Figure 8.2.2 </span><span class="caption-text">Main window with added two widgets for getting information on the
 regions of interest.</span><a class="headerlink" href="#id2" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
@@ -198,11 +198,11 @@ toolbar works correctly for horizontal and vertical cuts only. For taking a
 diagonal cut in energy transfer (i.e., HERFD-XAS) the best is to simply take an
 horizontal cut in emitted energy. If the profiles window gets busy of many
 curves, the plot can be simply be cleaned by popping the context menu with
-right click on the legends. This is shown in <a class="reference internal" href="#fig-qtrixs-profiles"><span class="std std-numref">Figure 7.2.3</span></a>.</p>
+right click on the legends. This is shown in <a class="reference internal" href="#fig-qtrixs-profiles"><span class="std std-numref">Figure 8.2.3</span></a>.</p>
 <figure class="align-center" id="id3">
 <span id="fig-qtrixs-profiles"></span><a class="reference external image-reference" href="_images/qtrixs_profiles.png"><img alt="_images/qtrixs_profiles.png" src="_images/qtrixs_profiles.png" style="width: 55%;" /></a>
 <figcaption>
-<p><span class="caption-number">Figure 7.2.3 </span><span class="caption-text">Cropped plots, plot in energy transfer and line cuts to visualize the
+<p><span class="caption-number">Figure 8.2.3 </span><span class="caption-text">Cropped plots, plot in energy transfer and line cuts to visualize the
 profiles of the spectra. A context menu is available to clean, highlight or
 move one line to right axis of the plot.</span><a class="headerlink" href="#id3" title="Link to this image">¶</a></p>
 </figcaption>
@@ -224,10 +224,10 @@ move one line to right axis of the plot.</span><a class="headerlink" href="#id3"
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="python.html" title="8. Programming with Larch from Python"
+          <a href="python.html" title="9. Programming with Larch from Python"
              >next</a> |</li>
         <li class="right" >
-          <a href="wxmap_viewer.html" title="6. GSECARS Mapviewr"
+          <a href="xrd1d_viewer.html" title="7. Larch XRD1D Viewer"
              >previous</a> |</li>
    <li>[<a href="index.html"> Larch</a>|</li>
    <li><a href="getting_started.html"> Getting Started</a>|</li>
@@ -235,7 +235,7 @@ move one line to right axis of the plot.</span><a class="headerlink" href="#id3"
    <li><a href="xray.html">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
 
-        <li class="nav-item nav-item-this"><a href=""><span class="section-number">7. </span>QtRIXS</a></li> 
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">8. </span>QtRIXS</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

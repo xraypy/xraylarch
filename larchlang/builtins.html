@@ -6,18 +6,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>9.8. Builtin Functions &#8212; xraylarch 0.9.74 documentation</title>
+    <title>10.8. Builtin Functions &#8212; xraylarch 0.9.75 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css?v=dfcb3266" />
     
-    <script src="../_static/documentation_options.js?v=516bc39e"></script>
+    <script src="../_static/documentation_options.js?v=f5134787"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="9.9. Differences between Larch and Python" href="notpython.html" />
-    <link rel="prev" title="9.7. Running Larch Scripts, and Modules" href="modules.html" />
+    <link rel="next" title="10.9. Differences between Larch and Python" href="notpython.html" />
+    <link rel="prev" title="10.7. Running Larch Scripts, and Modules" href="modules.html" />
 
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
@@ -51,10 +51,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="notpython.html" title="9.9. Differences between Larch and Python"
+          <a href="notpython.html" title="10.9. Differences between Larch and Python"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="modules.html" title="9.7. Running Larch Scripts, and Modules"
+          <a href="modules.html" title="10.7. Running Larch Scripts, and Modules"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -62,8 +62,8 @@
    <li><a href="../xray.html">X-ray Databases</a>|</li>
    <li><a href="../xrf.html">XRF Analysis</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="../larchlang.html" accesskey="U"><span class="section-number">9. </span>Larch Macro Language Tutorial</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href=""><span class="section-number">9.8. </span>Builtin Functions</a></li> 
+          <li class="nav-item nav-item-1"><a href="../larchlang.html" accesskey="U"><span class="section-number">10. </span>Larch Macro Language Tutorial</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">10.8. </span>Builtin Functions</a></li> 
       </ul>
     </div>
 
@@ -72,9 +72,9 @@
   <div>
     <h3><a href="../index.html">Table of Contents</a></h3>
     <ul>
-<li><a class="reference internal" href="#">9.8. Builtin Functions</a><ul>
-<li><a class="reference internal" href="#builtin-data-values">9.8.1. Builtin data values</a></li>
-<li><a class="reference internal" href="#larch-specific-builtin-functions">9.8.2. Larch-Specific Builtin functions</a><ul>
+<li><a class="reference internal" href="#">10.8. Builtin Functions</a><ul>
+<li><a class="reference internal" href="#builtin-data-values">10.8.1. Builtin data values</a></li>
+<li><a class="reference internal" href="#larch-specific-builtin-functions">10.8.2. Larch-Specific Builtin functions</a><ul>
 <li><a class="reference internal" href="#add_plugin"><code class="docutils literal notranslate"><span class="pre">add_plugin()</span></code></a></li>
 <li><a class="reference internal" href="#cd"><code class="docutils literal notranslate"><span class="pre">cd()</span></code></a></li>
 <li><a class="reference internal" href="#cwd"><code class="docutils literal notranslate"><span class="pre">cwd()</span></code></a></li>
@@ -99,7 +99,7 @@
 <li><a class="reference internal" href="#which"><code class="docutils literal notranslate"><span class="pre">which()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#builtin-functions-inherited-from-python">9.8.3. Builtin functions inherited from Python</a><ul>
+<li><a class="reference internal" href="#builtin-functions-inherited-from-python">10.8.3. Builtin functions inherited from Python</a><ul>
 <li><a class="reference internal" href="#abs"><code class="docutils literal notranslate"><span class="pre">abs()</span></code></a></li>
 <li><a class="reference internal" href="#all"><code class="docutils literal notranslate"><span class="pre">all()</span></code></a></li>
 <li><a class="reference internal" href="#any"><code class="docutils literal notranslate"><span class="pre">any()</span></code></a></li>
@@ -168,12 +168,12 @@
   <div>
     <h4>Previous topic</h4>
     <p class="topless"><a href="modules.html"
-                          title="previous chapter"><span class="section-number">9.7. </span>Running Larch Scripts, and Modules</a></p>
+                          title="previous chapter"><span class="section-number">10.7. </span>Running Larch Scripts, and Modules</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
     <p class="topless"><a href="notpython.html"
-                          title="next chapter"><span class="section-number">9.9. </span>Differences between Larch and Python</a></p>
+                          title="next chapter"><span class="section-number">10.9. </span>Differences between Larch and Python</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -201,18 +201,18 @@
           <div class="body" role="main">
             
   <section id="builtin-functions">
-<h1><span class="section-number">9.8. </span>Builtin Functions<a class="headerlink" href="#builtin-functions" title="Link to this heading">¶</a></h1>
+<h1><span class="section-number">10.8. </span>Builtin Functions<a class="headerlink" href="#builtin-functions" title="Link to this heading">¶</a></h1>
 <p>Larch has several general built-in functions for basic manipulation of data and
 programming needs.  Many of these are copied directly from Python, but
 several are Larch-specifc.   Note that the advanced math and scientific
 functions are not listed here, but elsewhere in the documentation.</p>
 <section id="builtin-data-values">
-<h2><span class="section-number">9.8.1. </span>Builtin data values<a class="headerlink" href="#builtin-data-values" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">10.8.1. </span>Builtin data values<a class="headerlink" href="#builtin-data-values" title="Link to this heading">¶</a></h2>
 <p>The values <code class="docutils literal notranslate"><span class="pre">True</span></code>, <code class="docutils literal notranslate"><span class="pre">False</span></code>  represent the boolean values
 for true and false.  <code class="docutils literal notranslate"><span class="pre">None</span></code> is the null value.</p>
 </section>
 <section id="larch-specific-builtin-functions">
-<h2><span class="section-number">9.8.2. </span>Larch-Specific Builtin functions<a class="headerlink" href="#larch-specific-builtin-functions" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">10.8.2. </span>Larch-Specific Builtin functions<a class="headerlink" href="#larch-specific-builtin-functions" title="Link to this heading">¶</a></h2>
 <p>These built-in functions are specific to Larch (that is, not inherited from
 Python).  Many help you work with Larch groups or otherwise simplify common tasks.</p>
 <dl class="py function">
@@ -390,7 +390,7 @@ members.</p>
 
 </section>
 <section id="builtin-functions-inherited-from-python">
-<h2><span class="section-number">9.8.3. </span>Builtin functions inherited from Python<a class="headerlink" href="#builtin-functions-inherited-from-python" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">10.8.3. </span>Builtin functions inherited from Python<a class="headerlink" href="#builtin-functions-inherited-from-python" title="Link to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="abs">
 <span class="sig-name descname"><span class="pre">abs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abs" title="Link to this definition">¶</a></dt>
@@ -855,10 +855,10 @@ in length to the length of the shortest argument sequence.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="notpython.html" title="9.9. Differences between Larch and Python"
+          <a href="notpython.html" title="10.9. Differences between Larch and Python"
              >next</a> |</li>
         <li class="right" >
-          <a href="modules.html" title="9.7. Running Larch Scripts, and Modules"
+          <a href="modules.html" title="10.7. Running Larch Scripts, and Modules"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -866,8 +866,8 @@ in length to the length of the shortest argument sequence.</p>
    <li><a href="../xray.html">X-ray Databases</a>|</li>
    <li><a href="../xrf.html">XRF Analysis</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="../larchlang.html" ><span class="section-number">9. </span>Larch Macro Language Tutorial</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href=""><span class="section-number">9.8. </span>Builtin Functions</a></li> 
+          <li class="nav-item nav-item-1"><a href="../larchlang.html" ><span class="section-number">10. </span>Larch Macro Language Tutorial</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">10.8. </span>Builtin Functions</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

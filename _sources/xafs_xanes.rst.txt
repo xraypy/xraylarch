@@ -1,6 +1,8 @@
-====================================================================================================
-XANES Analysis:  Linear Combination Analysis,  Principal Component Analysis, Pre-edge Peak Fitting
-====================================================================================================
+.. include:: _config.rst
+
+===============================================================
+XANES Analysis:  Linear Methods, Pre-edge Peak Fitting
+===============================================================
 
 
 XANES is highly sensitive to oxidation state and coordination environment
@@ -180,15 +182,15 @@ The trained PCA group returned will have the following members:
           ============ ==================================================
            name             meaning
           ============ ==================================================
-	  x              x or energy value from model
+          x              x or energy value from model
           arrayname      array name used to train model
           labels         list of labels (filenames for each input group)
-	  ydat           2D array of input components, interpolated to `x`
-	  xmin           minimum `x` value used.
-	  xmax           maximum `x` value used.
-	  pcamodel       raw return value from scikit-learn :meth:`PCA.fit`.
-	  mean           mean value of `ydat`.
-	  components     list of components, ordered by variance score
+          ydat           2D array of input components, interpolated to `x`
+          xmin           minimum `x` value used.
+          xmax           maximum `x` value used.
+          pcamodel       raw return value from scikit-learn :meth:`PCA.fit`.
+          mean           mean value of `ydat`.
+          components     list of components, ordered by variance score
           variances      list of weights for each component.
           ============ ==================================================
 
@@ -210,7 +212,7 @@ The trained PCA group returned will have the following members:
           ============ ==================================================
            name             meaning
           ============ ==================================================
-	  x              x or energy value from model
+          x              x or energy value from model
           ydat           input data interpolated onto `x`
           yfit           linear least-squares fit using model components
           weights        weights for PCA components
@@ -231,7 +233,7 @@ the spectra have pre-edge subtraction and normalization done consistently.
 This may not be necessary if care was taken in the steps that generated the
 project file, but we include it here for completeness.
 
-.. literalinclude:: ../examples/pca/pca_aucyano.lar
+.. literalinclude:: ../examples/pca/pca_aucyano.py
 
 Next, we're ready to train the PCA model with the collection of standard
 spectra, so we make a list of groups `standards` and create a training

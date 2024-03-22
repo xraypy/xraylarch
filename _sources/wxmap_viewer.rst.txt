@@ -1,20 +1,18 @@
 .. _mapviewer_app:
 
-==========================
-GSECARS Mapviewr
+XRFMap Viewr
 ==========================
 
 .. _wxmplot:  https://newville.github.io/wxmplot
 .. _matplotlib: https://matplotlib.org/
 
 
-The GSECARS Mapviewer is one of the main GUI applications of Larch,
+The GSECARS XRFMap Viewer is one of the main GUI applications of Larch,
 allowing users to read and display HDF5 files containing X-ray fluorescence
-maps from synchrotron X-ray microprobes.  The program plays the dual role
-of displaying existing X-ray microprobe maps in HDF5 format and assembling
-those HDF5 X-ray microprobe map files from the raw data as collected APS
-beamline 13-ID-E or other microprobes using the same Epics scanning
-software used there.
+maps from synchrotron X-ray microprobes.  The program plays the dual role of
+displaying existing X-ray microprobe maps in HDF5 format and assembling those
+HDF5 X-ray microprobe map files from the raw data as collected APS beamline
+13-ID-E or other microprobes using the same Epics scanning software used there.
 
 
 

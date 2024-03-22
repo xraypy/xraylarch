@@ -6,19 +6,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>14. X-ray Databases &#8212; xraylarch 0.9.74 documentation</title>
+    <title>15. X-ray Databases &#8212; xraylarch 0.9.75 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
     
-    <script src="_static/documentation_options.js?v=516bc39e"></script>
+    <script src="_static/documentation_options.js?v=f5134787"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="15. X-ray Fluorescence Analysis" href="xrf.html" />
-    <link rel="prev" title="13.9. XAFS: Computing anomalous scattering factors from XAFS data" href="xafs_diffkk.html" />
+    <link rel="next" title="16. X-ray Fluorescence Analysis" href="xrf.html" />
+    <link rel="prev" title="14.9. XAFS: Computing anomalous scattering factors from XAFS data" href="xafs_diffkk.html" />
 
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
@@ -52,10 +52,10 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="xrf.html" title="15. X-ray Fluorescence Analysis"
+          <a href="xrf.html" title="16. X-ray Fluorescence Analysis"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="xafs_diffkk.html" title="13.9. XAFS: Computing anomalous scattering factors from XAFS data"
+          <a href="xafs_diffkk.html" title="14.9. XAFS: Computing anomalous scattering factors from XAFS data"
              accesskey="P">previous</a> |</li>
    <li>[<a href="index.html"> Larch</a>|</li>
    <li><a href="getting_started.html"> Getting Started</a>|</li>
@@ -63,7 +63,7 @@
    <li><a href="#">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
 
-        <li class="nav-item nav-item-this"><a href=""><span class="section-number">14. </span>X-ray Databases</a></li> 
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">15. </span>X-ray Databases</a></li> 
       </ul>
     </div>
 
@@ -72,8 +72,8 @@
   <div>
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
-<li><a class="reference internal" href="#">14. X-ray Databases</a><ul>
-<li><a class="reference internal" href="#x-ray-properties-of-the-elements">14.1. X-ray Properties of the Elements</a><ul>
+<li><a class="reference internal" href="#">15. X-ray Databases</a><ul>
+<li><a class="reference internal" href="#x-ray-properties-of-the-elements">15.1. X-ray Properties of the Elements</a><ul>
 <li><a class="reference internal" href="#xray.atomic_number"><code class="docutils literal notranslate"><span class="pre">atomic_number()</span></code></a></li>
 <li><a class="reference internal" href="#xray.atomic_symbol"><code class="docutils literal notranslate"><span class="pre">atomic_symbol()</span></code></a></li>
 <li><a class="reference internal" href="#xray.atomic_mass"><code class="docutils literal notranslate"><span class="pre">atomic_mass()</span></code></a></li>
@@ -96,7 +96,7 @@
 <li><a class="reference internal" href="#xray.f1f2_cl"><code class="docutils literal notranslate"><span class="pre">f1f2_cl()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#x-ray-properties-of-materials-and-chemicals">14.2. X-ray Properties of Materials and Chemicals</a><ul>
+<li><a class="reference internal" href="#x-ray-properties-of-materials-and-chemicals">15.2. X-ray Properties of Materials and Chemicals</a><ul>
 <li><a class="reference internal" href="#xray.chemparse"><code class="docutils literal notranslate"><span class="pre">chemparse()</span></code></a></li>
 <li><a class="reference internal" href="#xray.material_get"><code class="docutils literal notranslate"><span class="pre">material_get()</span></code></a></li>
 <li><a class="reference internal" href="#xray.material_add"><code class="docutils literal notranslate"><span class="pre">material_add()</span></code></a></li>
@@ -113,12 +113,12 @@
   <div>
     <h4>Previous topic</h4>
     <p class="topless"><a href="xafs_diffkk.html"
-                          title="previous chapter"><span class="section-number">13.9. </span>XAFS: Computing anomalous scattering factors from XAFS data</a></p>
+                          title="previous chapter"><span class="section-number">14.9. </span>XAFS: Computing anomalous scattering factors from XAFS data</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
     <p class="topless"><a href="xrf.html"
-                          title="next chapter"><span class="section-number">15. </span>X-ray Fluorescence Analysis</a></p>
+                          title="next chapter"><span class="section-number">16. </span>X-ray Fluorescence Analysis</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -147,7 +147,7 @@
             
   <p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
 <section id="module-_xray">
-<span id="x-ray-databases"></span><span id="xraydb-chapter"></span><h1><span class="section-number">14. </span>X-ray Databases<a class="headerlink" href="#module-_xray" title="Link to this heading">¶</a></h1>
+<span id="x-ray-databases"></span><span id="xraydb-chapter"></span><h1><span class="section-number">15. </span>X-ray Databases<a class="headerlink" href="#module-_xray" title="Link to this heading">¶</a></h1>
 <p>An important aspect of X-ray spectroscopies and scattering analysis is
 having access to tabulated values for X-ray properties of various elements
 and compounds.  Larch provides several functions to access these X-ray
@@ -178,7 +178,7 @@ file.  This implementation was originally done by Darren Dale from CHESS
 (see <a class="reference external" href="https://github.com/praxes/elam_physical_reference">https://github.com/praxes/elam_physical_reference</a>), with some
 additions and alterations made for Larch.</p>
 <section id="x-ray-properties-of-the-elements">
-<h2><span class="section-number">14.1. </span>X-ray Properties of the Elements<a class="headerlink" href="#x-ray-properties-of-the-elements" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">15.1. </span>X-ray Properties of the Elements<a class="headerlink" href="#x-ray-properties-of-the-elements" title="Link to this heading">¶</a></h2>
 <p>The <a class="reference internal" href="#xraydb-elem-funcs-table"><span class="std std-ref">Table of X-ray data functions</span></a> gives a brief
 description to the available functions for accessing these data.  More
 detailed descriptions of function arguments, returned values, and so on are
@@ -648,7 +648,7 @@ compatibility, but may be dropped in the future.</p>
 </div>
 </section>
 <section id="x-ray-properties-of-materials-and-chemicals">
-<h2><span class="section-number">14.2. </span>X-ray Properties of Materials and Chemicals<a class="headerlink" href="#x-ray-properties-of-materials-and-chemicals" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">15.2. </span>X-ray Properties of Materials and Chemicals<a class="headerlink" href="#x-ray-properties-of-materials-and-chemicals" title="Link to this heading">¶</a></h2>
 <p>Compositional data for several common materials are included with Larch,
 and can be read at run time.  The variable <code class="docutils literal notranslate"><span class="pre">_xray.materials</span></code> contains a
 dictionary of material names, with values of (chemical forumla, density)
@@ -890,10 +890,10 @@ factor <span class="math notranslate nohighlight">\(f_j\)</span>.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="xrf.html" title="15. X-ray Fluorescence Analysis"
+          <a href="xrf.html" title="16. X-ray Fluorescence Analysis"
              >next</a> |</li>
         <li class="right" >
-          <a href="xafs_diffkk.html" title="13.9. XAFS: Computing anomalous scattering factors from XAFS data"
+          <a href="xafs_diffkk.html" title="14.9. XAFS: Computing anomalous scattering factors from XAFS data"
              >previous</a> |</li>
    <li>[<a href="index.html"> Larch</a>|</li>
    <li><a href="getting_started.html"> Getting Started</a>|</li>
@@ -901,7 +901,7 @@ factor <span class="math notranslate nohighlight">\(f_j\)</span>.</p>
    <li><a href="#">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
 
-        <li class="nav-item nav-item-this"><a href=""><span class="section-number">14. </span>X-ray Databases</a></li> 
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">15. </span>X-ray Databases</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

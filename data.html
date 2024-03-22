@@ -6,19 +6,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>10. Reading and Writing Data &#8212; xraylarch 0.9.74 documentation</title>
+    <title>11. Reading and Writing Data &#8212; xraylarch 0.9.75 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
     
-    <script src="_static/documentation_options.js?v=516bc39e"></script>
+    <script src="_static/documentation_options.js?v=f5134787"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="11. Plotting and Displaying Data" href="plotting.html" />
-    <link rel="prev" title="9.9. Differences between Larch and Python" href="larchlang/notpython.html" />
+    <link rel="next" title="12. Plotting and Displaying Data" href="plotting.html" />
+    <link rel="prev" title="10.9. Differences between Larch and Python" href="larchlang/notpython.html" />
 
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
@@ -52,10 +52,10 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="plotting.html" title="11. Plotting and Displaying Data"
+          <a href="plotting.html" title="12. Plotting and Displaying Data"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="larchlang/notpython.html" title="9.9. Differences between Larch and Python"
+          <a href="larchlang/notpython.html" title="10.9. Differences between Larch and Python"
              accesskey="P">previous</a> |</li>
    <li>[<a href="index.html"> Larch</a>|</li>
    <li><a href="getting_started.html"> Getting Started</a>|</li>
@@ -63,7 +63,7 @@
    <li><a href="xray.html">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
 
-        <li class="nav-item nav-item-this"><a href=""><span class="section-number">10. </span>Reading and Writing Data</a></li> 
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">11. </span>Reading and Writing Data</a></li> 
       </ul>
     </div>
 
@@ -72,24 +72,24 @@
   <div>
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
-<li><a class="reference internal" href="#">10. Reading and Writing Data</a><ul>
-<li><a class="reference internal" href="#simple-plaintext-ascii-or-utf-8-column-files">10.1. Simple Plaintext (ASCII or UTF-8) Column Files</a><ul>
+<li><a class="reference internal" href="#">11. Reading and Writing Data</a><ul>
+<li><a class="reference internal" href="#simple-plaintext-ascii-or-utf-8-column-files">11.1. Simple Plaintext (ASCII or UTF-8) Column Files</a><ul>
 <li><a class="reference internal" href="#larch.io.read_ascii"><code class="docutils literal notranslate"><span class="pre">read_ascii()</span></code></a></li>
 <li><a class="reference internal" href="#larch.io.write_ascii"><code class="docutils literal notranslate"><span class="pre">write_ascii()</span></code></a></li>
 <li><a class="reference internal" href="#larch.io.write_group"><code class="docutils literal notranslate"><span class="pre">write_group()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#reading-xafs-data-interchange-xdi-files">10.2. Reading XAFS Data Interchange (XDI) Files</a><ul>
+<li><a class="reference internal" href="#reading-xafs-data-interchange-xdi-files">11.2. Reading XAFS Data Interchange (XDI) Files</a><ul>
 <li><a class="reference internal" href="#larch.io.read_xdi"><code class="docutils literal notranslate"><span class="pre">read_xdi()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#athena-project-files">10.3. Athena Project Files</a><ul>
-<li><a class="reference internal" href="#reading-athena-project-files">10.3.1. Reading Athena Project Files</a><ul>
+<li><a class="reference internal" href="#athena-project-files">11.3. Athena Project Files</a><ul>
+<li><a class="reference internal" href="#reading-athena-project-files">11.3.1. Reading Athena Project Files</a><ul>
 <li><a class="reference internal" href="#larch.io.read_athena"><code class="docutils literal notranslate"><span class="pre">read_athena()</span></code></a></li>
 <li><a class="reference internal" href="#larch.io.extract_athenagroup"><code class="docutils literal notranslate"><span class="pre">extract_athenagroup()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#creating-and-writing-to-athena-project-files">10.3.2. Creating and Writing to Athena Project Files</a><ul>
+<li><a class="reference internal" href="#creating-and-writing-to-athena-project-files">11.3.2. Creating and Writing to Athena Project Files</a><ul>
 <li><a class="reference internal" href="#larch.io.create_athena"><code class="docutils literal notranslate"><span class="pre">create_athena()</span></code></a></li>
 <li><a class="reference internal" href="#larch.io.AthenaProject"><code class="docutils literal notranslate"><span class="pre">AthenaProject</span></code></a><ul>
 <li><a class="reference internal" href="#larch.io.AthenaProject.add_group"><code class="docutils literal notranslate"><span class="pre">AthenaProject.add_group()</span></code></a></li>
@@ -100,47 +100,47 @@
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#converting-athena-project-files-to-hdf5">10.3.3. Converting Athena Project Files to HDF5</a><ul>
+<li><a class="reference internal" href="#converting-athena-project-files-to-hdf5">11.3.3. Converting Athena Project Files to HDF5</a><ul>
 <li><a class="reference internal" href="#larch.io.athena_to_hdf5"><code class="docutils literal notranslate"><span class="pre">athena_to_hdf5()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#reading-hdf5-files">10.4. Reading HDF5 Files</a><ul>
+<li><a class="reference internal" href="#reading-hdf5-files">11.4. Reading HDF5 Files</a><ul>
 <li><a class="reference internal" href="#larch.io.h5_group"><code class="docutils literal notranslate"><span class="pre">h5_group()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#reading-netcdf-files">10.5. Reading NetCDF Files</a><ul>
+<li><a class="reference internal" href="#reading-netcdf-files">11.5. Reading NetCDF Files</a><ul>
 <li><a class="reference internal" href="#larch.io.netcdf_group"><code class="docutils literal notranslate"><span class="pre">netcdf_group()</span></code></a></li>
 <li><a class="reference internal" href="#larch.io.netcdf_file"><code class="docutils literal notranslate"><span class="pre">netcdf_file()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#reading-tiff-images">10.6. Reading TIFF Images</a><ul>
+<li><a class="reference internal" href="#reading-tiff-images">11.6. Reading TIFF Images</a><ul>
 <li><a class="reference internal" href="#larch.io.read_tiff"><code class="docutils literal notranslate"><span class="pre">read_tiff()</span></code></a></li>
 <li><a class="reference internal" href="#larch.io.tiff_object"><code class="docutils literal notranslate"><span class="pre">tiff_object()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#working-with-epics-channel-access">10.7. Working with Epics Channel Access</a><ul>
+<li><a class="reference internal" href="#working-with-epics-channel-access">11.7. Working with Epics Channel Access</a><ul>
 <li><a class="reference internal" href="#larch.io.caget"><code class="docutils literal notranslate"><span class="pre">caget()</span></code></a></li>
 <li><a class="reference internal" href="#larch.io.caput"><code class="docutils literal notranslate"><span class="pre">caput()</span></code></a></li>
 <li><a class="reference internal" href="#larch.io.PV"><code class="docutils literal notranslate"><span class="pre">PV()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#reading-scan-data-from-aps-beamlines">10.8. Reading Scan Data from APS Beamlines</a><ul>
+<li><a class="reference internal" href="#reading-scan-data-from-aps-beamlines">11.8. Reading Scan Data from APS Beamlines</a><ul>
 <li><a class="reference internal" href="#larch.io.read_mda"><code class="docutils literal notranslate"><span class="pre">read_mda()</span></code></a></li>
 <li><a class="reference internal" href="#larch.io.read_gsescan"><code class="docutils literal notranslate"><span class="pre">read_gsescan()</span></code></a></li>
 <li><a class="reference internal" href="#larch.io.read_stepscan"><code class="docutils literal notranslate"><span class="pre">read_stepscan()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#reading-spec-bliss-files-via-silx-io-open">10.9. Reading Spec/BLISS files via <cite>silx.io.open</cite></a><ul>
+<li><a class="reference internal" href="#reading-spec-bliss-files-via-silx-io-open">11.9. Reading Spec/BLISS files via <cite>silx.io.open</cite></a><ul>
 <li><a class="reference internal" href="#larch.io.read_specfile"><code class="docutils literal notranslate"><span class="pre">read_specfile()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#reading-fdmnes-output-files">10.10. Reading FDMNES output files</a><ul>
+<li><a class="reference internal" href="#reading-fdmnes-output-files">11.10. Reading FDMNES output files</a><ul>
 <li><a class="reference internal" href="#larch.io.read_fdmnes"><code class="docutils literal notranslate"><span class="pre">read_fdmnes()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#saving-and-loading-larch-session-files-larix-files">10.11. Saving and Loading Larch Session Files: <cite>.larix</cite> Files</a><ul>
+<li><a class="reference internal" href="#saving-and-loading-larch-session-files-larix-files">11.11. Saving and Loading Larch Session Files: <cite>.larix</cite> Files</a><ul>
 <li><a class="reference internal" href="#larch.io.save_session"><code class="docutils literal notranslate"><span class="pre">save_session()</span></code></a></li>
 <li><a class="reference internal" href="#larch.io.read_session"><code class="docutils literal notranslate"><span class="pre">read_session()</span></code></a></li>
 <li><a class="reference internal" href="#larch.io.load_session"><code class="docutils literal notranslate"><span class="pre">load_session()</span></code></a></li>
@@ -155,12 +155,12 @@
   <div>
     <h4>Previous topic</h4>
     <p class="topless"><a href="larchlang/notpython.html"
-                          title="previous chapter"><span class="section-number">9.9. </span>Differences between Larch and Python</a></p>
+                          title="previous chapter"><span class="section-number">10.9. </span>Differences between Larch and Python</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
     <p class="topless"><a href="plotting.html"
-                          title="next chapter"><span class="section-number">11. </span>Plotting and Displaying Data</a></p>
+                          title="next chapter"><span class="section-number">12. </span>Plotting and Displaying Data</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -189,7 +189,7 @@
             
   <p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
 <section id="reading-and-writing-data">
-<span id="data-io-chapter"></span><h1><span class="section-number">10. </span>Reading and Writing Data<a class="headerlink" href="#reading-and-writing-data" title="Link to this heading">¶</a></h1>
+<span id="data-io-chapter"></span><h1><span class="section-number">11. </span>Reading and Writing Data<a class="headerlink" href="#reading-and-writing-data" title="Link to this heading">¶</a></h1>
 <p>Larch has several built-in functions for reading and writing scientific
 data.  The intention is that the types and varieties of supported files
 will increase.  In addition, because standard Python modules can be used
@@ -197,7 +197,7 @@ from Larch, many types of standard data and image types can be used by
 importing the appropriate Python module.  This chapter describes the Larch
 functions for data handling.</p>
 <section id="simple-plaintext-ascii-or-utf-8-column-files">
-<span id="read-ascii-function"></span><span id="module-larch.io"></span><h2><span class="section-number">10.1. </span>Simple Plaintext (ASCII or UTF-8) Column Files<a class="headerlink" href="#simple-plaintext-ascii-or-utf-8-column-files" title="Link to this heading">¶</a></h2>
+<span id="read-ascii-function"></span><span id="module-larch.io"></span><h2><span class="section-number">11.1. </span>Simple Plaintext (ASCII or UTF-8) Column Files<a class="headerlink" href="#simple-plaintext-ascii-or-utf-8-column-files" title="Link to this heading">¶</a></h2>
 <p>A simple way to store small amounts of numerical data - and one that is widely used in
 the XAFS community - is to store data in plaintext data files, with whitespaces
 separating numbers layed out as a table, with a fix number of columns and rows indicated
@@ -336,7 +336,7 @@ Use <cite>save_session</cite> instead.</p>
 
 </section>
 <section id="reading-xafs-data-interchange-xdi-files">
-<span id="read-xdi-function"></span><h2><span class="section-number">10.2. </span>Reading XAFS Data Interchange (XDI) Files<a class="headerlink" href="#reading-xafs-data-interchange-xdi-files" title="Link to this heading">¶</a></h2>
+<span id="read-xdi-function"></span><h2><span class="section-number">11.2. </span>Reading XAFS Data Interchange (XDI) Files<a class="headerlink" href="#reading-xafs-data-interchange-xdi-files" title="Link to this heading">¶</a></h2>
 <p>The X-ray Data Interchange Format has been developed as part of an effort to standardize
 the format of plaintext XAFS data files: see <a class="reference external" href="https://github.com/XraySpectroscopy/XAS-Data-Interchange/">XDI</a>.  This eliminates some of the
 challenges with plaintext files and allows consistent naming of arrays.  XDI files often
@@ -483,7 +483,7 @@ scalars values taken from XDI files.</p>
 </div></blockquote>
 </section>
 <section id="athena-project-files">
-<h2><span class="section-number">10.3. </span>Athena Project Files<a class="headerlink" href="#athena-project-files" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">11.3. </span>Athena Project Files<a class="headerlink" href="#athena-project-files" title="Link to this heading">¶</a></h2>
 <p>The popular Athena program for XAFS Analysis uses an “Athena Project File”
 to store many XAFS spectra and some processing parameters as used in
 Athena.  Larch can read and extract the <span class="math notranslate nohighlight">\(\mu(E)\)</span> data from these
@@ -491,7 +491,7 @@ project files - it does not read <span class="math notranslate nohighlight">\(\c
 and can also write <span class="math notranslate nohighlight">\(\mu(E)\)</span> data to Athena Project files.</p>
 <p>Larch does not read or support Artemis projects.</p>
 <section id="reading-athena-project-files">
-<span id="read-athena-function"></span><h3><span class="section-number">10.3.1. </span>Reading Athena Project Files<a class="headerlink" href="#reading-athena-project-files" title="Link to this heading">¶</a></h3>
+<span id="read-athena-function"></span><h3><span class="section-number">11.3.1. </span>Reading Athena Project Files<a class="headerlink" href="#reading-athena-project-files" title="Link to this heading">¶</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.read_athena">
 <span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_athena</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">match</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_preedge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_bkg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_fft</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_hashkey</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_athena" title="Link to this definition">¶</a></dt>
@@ -563,7 +563,7 @@ Project would be:</p>
 </div>
 </section>
 <section id="creating-and-writing-to-athena-project-files">
-<h3><span class="section-number">10.3.2. </span>Creating and Writing to Athena Project Files<a class="headerlink" href="#creating-and-writing-to-athena-project-files" title="Link to this heading">¶</a></h3>
+<h3><span class="section-number">11.3.2. </span>Creating and Writing to Athena Project Files<a class="headerlink" href="#creating-and-writing-to-athena-project-files" title="Link to this heading">¶</a></h3>
 <p>You can create an Athena Project File with <a class="reference internal" href="#larch.io.create_athena" title="larch.io.create_athena"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_athena()</span></code></a> and then
 add a group of XAFS data to that pct with the <code class="xref py py-meth docutils literal notranslate"><span class="pre">add_group()</span></code>
 method of that project file.  The group is expected to have array names of
@@ -657,7 +657,7 @@ Python list of groups for each group in the Athena Project.</p>
 </div>
 </section>
 <section id="converting-athena-project-files-to-hdf5">
-<h3><span class="section-number">10.3.3. </span>Converting Athena Project Files to HDF5<a class="headerlink" href="#converting-athena-project-files-to-hdf5" title="Link to this heading">¶</a></h3>
+<h3><span class="section-number">11.3.3. </span>Converting Athena Project Files to HDF5<a class="headerlink" href="#converting-athena-project-files-to-hdf5" title="Link to this heading">¶</a></h3>
 <p>An Athena Project File (.prj) can be easily converted to HDF5 (.h5) with the <a class="reference internal" href="#larch.io.athena_to_hdf5" title="larch.io.athena_to_hdf5"><code class="xref py py-func docutils literal notranslate"><span class="pre">athena_to_hdf5()</span></code></a>.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.athena_to_hdf5">
@@ -685,7 +685,7 @@ Python list of groups for each group in the Athena Project.</p>
 </section>
 </section>
 <section id="reading-hdf5-files">
-<h2><span class="section-number">10.4. </span>Reading HDF5 Files<a class="headerlink" href="#reading-hdf5-files" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">11.4. </span>Reading HDF5 Files<a class="headerlink" href="#reading-hdf5-files" title="Link to this heading">¶</a></h2>
 <p>HDF5 is an increasingly popular data format for scientific data, as it can
 efficiently hold very large arrays in a heirarchical format that holds
 “metadata” about the data, and can be explored with a variety of tools.
@@ -731,7 +731,7 @@ and schemas become standardized, better interfaces can easily be made on
 top of this approach.</p>
 </section>
 <section id="reading-netcdf-files">
-<h2><span class="section-number">10.5. </span>Reading NetCDF Files<a class="headerlink" href="#reading-netcdf-files" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">11.5. </span>Reading NetCDF Files<a class="headerlink" href="#reading-netcdf-files" title="Link to this heading">¶</a></h2>
 <p>NetCDF4 is an older and less flexible file format than HDF5, but is
 efficient for storing array data and still in wide use.</p>
 <dl class="py function">
@@ -748,7 +748,7 @@ efficient for storing array data and still in wide use.</p>
 
 </section>
 <section id="reading-tiff-images">
-<h2><span class="section-number">10.6. </span>Reading TIFF Images<a class="headerlink" href="#reading-tiff-images" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">11.6. </span>Reading TIFF Images<a class="headerlink" href="#reading-tiff-images" title="Link to this heading">¶</a></h2>
 <p>TIFF is a popular image format used by many cameras and detectors. The
 interface used in Larch is based on code from Chrisoph Gohlke.</p>
 <dl class="py function">
@@ -767,7 +767,7 @@ and multiple series.</p>
 
 </section>
 <section id="working-with-epics-channel-access">
-<h2><span class="section-number">10.7. </span>Working with Epics Channel Access<a class="headerlink" href="#working-with-epics-channel-access" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">11.7. </span>Working with Epics Channel Access<a class="headerlink" href="#working-with-epics-channel-access" title="Link to this heading">¶</a></h2>
 <p>Many synchrotron facilities use the Epics control system.  If the Epics
 Channel Access layer, which requires network access and configuration
 discussed elsewhere, are set correcty, then Larch can read and write data
@@ -801,7 +801,7 @@ which will be run with new values everytime the PV value changes.</p>
 
 </section>
 <section id="reading-scan-data-from-aps-beamlines">
-<h2><span class="section-number">10.8. </span>Reading Scan Data from APS Beamlines<a class="headerlink" href="#reading-scan-data-from-aps-beamlines" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">11.8. </span>Reading Scan Data from APS Beamlines<a class="headerlink" href="#reading-scan-data-from-aps-beamlines" title="Link to this heading">¶</a></h2>
 <p>This list is minimal, but can be expanded easily to accomodate more
 facilities and beamlines.</p>
 <dl class="py function">
@@ -826,7 +826,7 @@ very well tested – use with caution!</p>
 
 </section>
 <section id="reading-spec-bliss-files-via-silx-io-open">
-<h2><span class="section-number">10.9. </span>Reading Spec/BLISS files via <cite>silx.io.open</cite><a class="headerlink" href="#reading-spec-bliss-files-via-silx-io-open" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">11.9. </span>Reading Spec/BLISS files via <cite>silx.io.open</cite><a class="headerlink" href="#reading-spec-bliss-files-via-silx-io-open" title="Link to this heading">¶</a></h2>
 <p>Spec ASCII files (see <a class="reference external" href="https://www.certif.com/content/spec">spec</a>) and BLISS HDF5 files (see <a class="reference external" href="https://bliss.gitlab-pages.esrf.fr/bliss/master/">bliss</a>) are read via
 the <cite>silx.io.open</cite> module (see <a class="reference external" href="https://www.silx.org/">silx</a>).</p>
 <dl class="py function">
@@ -837,7 +837,7 @@ the <cite>silx.io.open</cite> module (see <a class="reference external" href="ht
 
 </section>
 <section id="reading-fdmnes-output-files">
-<h2><span class="section-number">10.10. </span>Reading FDMNES output files<a class="headerlink" href="#reading-fdmnes-output-files" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">11.10. </span>Reading FDMNES output files<a class="headerlink" href="#reading-fdmnes-output-files" title="Link to this heading">¶</a></h2>
 <p>ASCII files from the [FDMNES](<a class="reference external" href="http://fdmnes.neel.cnrs.fr/">http://fdmnes.neel.cnrs.fr/</a>) are read via</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.read_fdmnes">
@@ -850,7 +850,7 @@ order to shift the energy scale to absolute values, according to the <cite>E_edg
 variable. The parsed variables are stored in the <cite>group.header_dict</cite> dictionary.</p>
 </section>
 <section id="saving-and-loading-larch-session-files-larix-files">
-<span id="larch-session-files"></span><h2><span class="section-number">10.11. </span>Saving and Loading Larch Session Files: <cite>.larix</cite> Files<a class="headerlink" href="#saving-and-loading-larch-session-files-larix-files" title="Link to this heading">¶</a></h2>
+<span id="larch-session-files"></span><h2><span class="section-number">11.11. </span>Saving and Loading Larch Session Files: <cite>.larix</cite> Files<a class="headerlink" href="#saving-and-loading-larch-session-files-larix-files" title="Link to this heading">¶</a></h2>
 <p>A <em>Larch Session File</em>, with a <cite>.larix</cite> extension, contains all of the user-generated
 data within a Larch session.  All of the data – input data arrays, processed arrays,
 dictionaries, Journals, etc – from all of Groups, and all of processing parameters,
@@ -976,10 +976,10 @@ may be modified on loading</p></li>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="plotting.html" title="11. Plotting and Displaying Data"
+          <a href="plotting.html" title="12. Plotting and Displaying Data"
              >next</a> |</li>
         <li class="right" >
-          <a href="larchlang/notpython.html" title="9.9. Differences between Larch and Python"
+          <a href="larchlang/notpython.html" title="10.9. Differences between Larch and Python"
              >previous</a> |</li>
    <li>[<a href="index.html"> Larch</a>|</li>
    <li><a href="getting_started.html"> Getting Started</a>|</li>
@@ -987,7 +987,7 @@ may be modified on loading</p></li>
    <li><a href="xray.html">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
 
-        <li class="nav-item nav-item-this"><a href=""><span class="section-number">10. </span>Reading and Writing Data</a></li> 
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">11. </span>Reading and Writing Data</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

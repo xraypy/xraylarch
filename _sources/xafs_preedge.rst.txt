@@ -1,3 +1,5 @@
+.. include:: _config.rst
+
 ===================================================================
 XAFS: Pre-edge Subtraction, Normalization, and data treatment
 ===================================================================
@@ -213,7 +215,7 @@ If this is used in publication, a citation should be given to Weng :cite:`Weng`.
         fpp              matched :math:`\mu(E)` data
         f2               tabulated :math:`f''(E)` data
         f1               tabulated :math:`f'(E)` data (if ``return_f1`` is True)
-	mback_params     params group for the MBACK minimization function
+        mback_params     params group for the MBACK minimization function
        ==============   ===========================================================
 
 Notes:
@@ -319,7 +321,7 @@ large features near the edge.
         norm_poly        normalized :math:`\mu(E)` from :func:`pre_edge`.
         norm             normalized :math:`\mu(E)` from this method/
         mback_mu         tabulated :math:`f'(E)` scaler and pre-edge added
-	mback_params     params group for the MBACK minimization function
+        mback_params     params group for the MBACK minimization function
        ==============   ===========================================================
 
 
