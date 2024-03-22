@@ -2,7 +2,7 @@
 """Version information"""
 
 __release_version__ = '0.9.75'
-__date__    = '2024-March-20'
+__date__    = '2024-March-21'
 __authors__ = "M. Newville, M. Rovezzi, M. Koker, B. Ravel, and others"
 
 from ._version import __version__, __version_tuple__

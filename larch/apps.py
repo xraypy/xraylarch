@@ -54,7 +54,6 @@ class LarchApp(object):
         """make (or remake) desktop shortcuts for Larch apps"""
         bindir = 'Scripts' if uname == 'win' else 'bin'
         bindir = os.path.join(sys.prefix, bindir)
-        print("BINDIR ")
         script = self.script
         if not self.script.startswith('_'):
             script = os.path.normpath(os.path.join(bindir, self.script))
@@ -67,7 +66,6 @@ class LarchApp(object):
                 if os.path.exists(ticon):
                     icon = ticon
 
-        print("MAKE D short ", self.name, script)
         make_shortcut(script, name=self.name, folder=folder, icon=icon,
                       description=self.description,
                       terminal=(not self.is_wxapp))
