@@ -159,7 +159,7 @@ def clear_session(_larch=None):
             delattr(_larch.symtable, attr)
 
 
-def read_session(fname):
+def read_session(fname, clean_xasgroups=True):
     """read Larch Session File, returning data into new data in the
     current session
 
@@ -223,6 +223,14 @@ def read_session(fname):
                     except:
                         print("decode failed @## ", repr(val)[:50])
                 config[key] = val
+    if '_xasgroups' in symbols and clean_xasgroups:
+        missing = []
+        for name, group in symbols['_xasgroups'].items():
+            if group not in symbols:
+                missing.append(name)
+        for name in missing:
+            symbols['_xasgroups'].pop(name)
+
     return SessionStore(config, cmd_history, symbols)
 
 
@@ -307,7 +315,15 @@ def load_session(fname, ignore_groups=None, include_xasgroups=None, _larch=None,
             print(f"warning overwriting '{sym}'")
         setattr(symtab, sym, val)
 
-    symtab._xasgroups.update(s_xasgroups)
     symtab._feffpaths.update(s_feffpaths)
+
+    symtab._xasgroups.update(s_xasgroups)
+    missing = []
+    for name, group in symtab._xasgroups.items():
+        if group not in symtab:
+            missing.append(name)
+    for name in missing:
+        symtab._xasgroups.pop(name)
+
     for name in ('paths', 'runs'):
         symtab._feffcache[name].update(s_feffcache[name])
