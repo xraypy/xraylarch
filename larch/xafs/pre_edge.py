@@ -41,10 +41,16 @@ def find_e0(energy, mu=None, group=None, _larch=None):
     e1, ie0, estep1 = _finde0(energy, mu, estep=None, use_smooth=False)
     istart = max(3, ie0-75)
     istop  = min(ie0+75, len(energy)-3)
+    # sanity check: e0 should not be in first 5% of energy point: avoids common glitches
+    if ie0 < 0.05*len(energy):
+        e1 = energy.mean()
+        istart = max(3, ie0-20)
+        istop = len(energy)-3
+
     # for the smoothing energy, we use and energy step that is an average of
     # the observed minimimum energy step (which could be ridiculously low)
     # and a scaled value of the initial e0 (0.2 eV and 5000 eV, 0.4 eV at 10000 eV)
-
+    # print("Find E0 step 1 ", e1, ie0, len(energy), estep1, istart, istop)
     estep = 0.5*(max(0.01, min(1.0, estep1)) + max(0.01, min(1.0, e1/25000.)))
     e0, ix, ex = _finde0(energy[istart:istop], mu[istart:istop], estep=estep, use_smooth=True)
     if ix < 1 :
@@ -309,6 +315,13 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
         mu = mu.squeeze()
 
     energy, mu = remove_nans2(energy, mu)
+    energy = remove_dups(energy, tiny=TINY_ENERGY)
+    out_of_order = np.where(np.diff(np.argsort(energy))!=1)[0]
+    if len(out_of_order) > 0:
+        order = np.argsort(energy)
+        energy = energy[order]
+        mu = mu[order]
+
     if group is not None and e0 is None:
         e0 = getattr(group, 'e0', None)
     pre_dat = preedge(energy, mu, e0=e0, step=step, nnorm=nnorm,
