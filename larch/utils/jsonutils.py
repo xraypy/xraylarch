@@ -145,7 +145,8 @@ def encode4js(obj):
         return {'__class__': 'Model', 'value': obj.dumps()}
     elif isinstance(obj, ModelResult):
         return {'__class__': 'ModelResult', 'value': obj.dumps()}
-    elif isinstance(obj, Minimizer):
+
+    elif isinstance(obj, Minimizer) and not isinstance(obj, ModelResult):
         out = {'__class__': 'Minimizer'}
 
         for attr in ('userfcn', 'params', 'kw', 'scale_covar', 'max_nfev',
