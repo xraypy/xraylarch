@@ -141,6 +141,10 @@ def encode4js(obj):
             if obj.level == val:
                 level = key
         return {'__class__':  'Logger', 'name': obj.name, 'level': level}
+    elif isinstance(obj, Model):
+        return {'__class__': 'Model', 'value': obj.dumps()}
+    elif isinstance(obj, ModelResult):
+        return {'__class__': 'ModelResult', 'value': obj.dumps()}
     elif isinstance(obj, Minimizer):
         out = {'__class__': 'Minimizer'}
 
@@ -169,10 +173,6 @@ def encode4js(obj):
         return out
     elif isinstance(obj, Parameter):
         return {'__class__': 'Parameter', 'name': obj.name, 'state': obj.__getstate__()}
-    elif isinstance(obj, Model):
-        return {'__class__': 'Model', 'value': obj.dumps()}
-    elif isinstance(obj, ModelResult):
-        return {'__class__': 'ModelResult', 'value': obj.dumps()}
     elif isgroup(obj):
         try:
             classname = obj.__class__.__name__
@@ -321,9 +321,15 @@ def decode4js(obj):
             else:
                 out[key] = decode4js(val)
         if classname == 'Minimizer':
-            userfunc = out.pop('userfcn')
             params = out.pop('params')
-            kws = out.pop('kws')
+            userfunc = out.pop('userfcn', None)
+            kws = out.pop('kws', None)
+            if kws is None:
+                kws = {}
+            if 'kw' in out:
+                kwx = out.pop('kw', None)
+                if isinstance(kwx, dict):
+                    kws.update(kwx)
             for kname in ('scale_covar', 'max_nfev', 'nan_policy'):
                 kws[kname] = out.pop(kname)
             mini = Minimizer(userfunc, params, **kws)
