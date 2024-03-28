@@ -41,7 +41,6 @@ def find_e0(energy, mu=None, group=None, _larch=None):
     e1, ie0, estep1 = _finde0(energy, mu, estep=None, use_smooth=False)
     istart = max(3, ie0-75)
     istop  = min(ie0+75, len(energy)-3)
-
     # for the smoothing energy, we use and energy step that is an average of
     # the observed minimimum energy step (which could be ridiculously low)
     # and a scaled value of the initial e0 (0.2 eV and 5000 eV, 0.4 eV at 10000 eV)
@@ -60,22 +59,28 @@ def find_energy_step(energy, frac_ignore=0.01, nave=10):
     ignoring the smallest fraction of energy steps (frac_ignore),
     and averaging over the next `nave` values
     """
-    ediff = np.diff(energy)
     nskip = int(frac_ignore*len(energy))
+    e_ordered = np.where(np.diff(np.argsort(energy))==1)[0]  # where energy step are in order
+    ediff = np.diff(energy[e_ordered][nskip:-nskip])
     return ediff[np.argsort(ediff)][nskip:nskip+nave].mean()
 
 
-def _finde0(energy, mu, estep=None, use_smooth=True):
+def _finde0(energy, mu_input, estep=None, use_smooth=True):
     "internally used by find e0 "
 
     en = remove_dups(energy, tiny=TINY_ENERGY)
+    ordered = np.where(np.diff(np.argsort(en))==1)[0]
+    en = en[ordered]
+    mu = mu_input[ordered]
     if len(en.shape) > 1:
         en = en.squeeze()
     if len(mu.shape) > 1:
         mu = mu.squeeze()
     if estep is None:
         estep = find_energy_step(en)
-    nmin = max(2, int(len(en)*0.01))
+
+
+    nmin = max(3, int(len(en)*0.02))
     if use_smooth:
         dmu = smooth(en, np.gradient(mu)/np.gradient(en), xstep=estep, sigma=estep)
     else:
