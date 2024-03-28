@@ -418,10 +418,19 @@ class EnergyCalibrateDialog(wx.Dialog):
             return smooth(ref.xdat, y*scale-ref.dmude, xstep=estep, sigma=0.50)[i1:i2]
 
         params = Parameters()
-        params.add('eshift', value=ref.e0-dat.e0, min=-50, max=50)
-        params.add('scale', value=1, min=0, max=50)
-
-        result = minimize(resid, params, args=(ref, dat, i1, i2))
+        ex0 = ref.e0-dat.e0
+        emax = 50.0
+        if abs(ex0) > 75:
+            ex0 = 0.00
+            emax = (abs(ex0) + 75.0)
+        elif abs(ex0) > 10:
+            emax = (abs(ex0) + 75.0)
+        params.add('eshift', value=ex0, min=-emax, max=emax)
+        params.add('scale', value=1, min=1.e-8, max=50)
+        # print("Fit params ", params)
+        result = minimize(resid, params, args=(ref, dat, i1, i2),
+                          max_nfev=1000)
+        # print(fit_report(result))
         eshift = result.params['eshift'].value
         self.wids['eshift'].SetValue(eshift)
 
@@ -1737,7 +1746,7 @@ class ExportCSVDialog(wx.Dialog):
         elif yval in ('chir_mag', 'chir_re'):
             xarray = 'R'
         self.xarray_name.SetStringSelection(xarray)
-        
+
     def onSaveIndividualFiles(self, event=None):
         save_individual = self.save_individual_files.IsChecked()
         self.master_group.Enable(not save_individual)
