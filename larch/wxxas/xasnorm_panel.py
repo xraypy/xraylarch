@@ -583,7 +583,7 @@ class XASNormPanel(TaskPanel):
         self.controller.set_plot_erange(erange)
 
         ytitle = self.plotsel_op.GetStringSelection()
-        yarray_name = plot_choices[ytitle]
+        yarray_name = plot_choices.get(ytitle, 'norm')
         ylabel = getattr(plotlabels, yarray_name, ytitle)
         xlabel = getattr(dgroup, 'plot_xlabel', getattr(plotlabels, 'energy'))
 
@@ -1026,7 +1026,7 @@ class XASNormPanel(TaskPanel):
         dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab)]
 
         if not self.is_xasgroup(dgroup):
-            pchoice = PlotOne_Choices_nonxas[self.plotone_op.GetStringSelection()]
+            pchoice = PlotOne_Choices_nonxas.get(self.plotone_op.GetStringSelection(), 'norm')
             dgroup.plot_xlabel = 'x'
             dgroup.plot_ylabel = 'y'
             dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, 'ydat')]
@@ -1059,7 +1059,7 @@ class XASNormPanel(TaskPanel):
 
         req_attrs = ['e0', 'norm', 'dmude', 'd2mude', 'pre_edge']
 
-        pchoice = PlotOne_Choices[self.plotone_op.GetStringSelection()]
+        pchoice = PlotOne_Choices.get(self.plotone_op.GetStringSelection(), 'norm')
 
         if pchoice in ('mu', 'norm', 'i0', 'flat', 'dmude', 'd2mude'):
             lab = getattr(plotlabels, pchoice)
@@ -1202,7 +1202,7 @@ class XASNormPanel(TaskPanel):
 
         if multi:
             ylabel = self.plotsel_op.GetStringSelection()
-            yarray_name = plot_choices[ylabel]
+            yarray_name = plot_choices.get(ylabel, 'norm')
 
             if self.is_xasgroup(dgroup):
                 ylabel = getattr(plotlabels, yarray_name, ylabel)
