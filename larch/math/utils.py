@@ -136,6 +136,11 @@ def interp(x, y, xnew, kind='linear', fill_value=np.nan, **kws):
     above = np.where(xnew>x[-1])[0]
     if len(above) == 0 and len(below) == 0:
         return out
+
+    if (len(np.where(np.diff(np.argsort(x))!=1)[0]) > 0 or
+        len(np.where(np.diff(np.argsort(xdat))!=1)[0]) > 0):
+        return out
+    
     for span, isbelow in ((below, True), (above, False)):
         if len(span) < 1:
             continue
