@@ -134,6 +134,8 @@ class XASController():
         self.larch.eval('\n'.join(cmds))
 
         if needs_config:
+            # print("INSTALL GROUP, needs config", thisgroup)
+            # print('\n'.join(cmds))
             self.init_group_config(thisgroup)
 
         self.file_groups[filename] = groupname
@@ -366,35 +368,35 @@ class XASController():
 
     def merge_groups(self, grouplist, master=None, yarray='mu', outgroup=None):
         """merge groups"""
-        cmd = """%s = merge_groups(%s, master=%s,
-        xarray='energy', yarray='%s', kind='cubic', trim=True)
-        """
-        glist = "[%s]" % (', '.join(grouplist))
+        if master is None:
+            master = grouplist[0]
+        gmaster = self.get_group(master)
+        xarray = 'xdat' if gmaster.datatype=='raw' else 'energy'
         outgroup = fix_varname(outgroup.lower())
         if outgroup is None:
             outgroup = 'merged'
-
         outgroup = unique_name(outgroup, self.file_groups, max=1000)
 
-        cmd = cmd % (outgroup, glist, master, yarray)
+        glist = "[%s]" % (', '.join(grouplist))
+
+        cmd = f"""{outgroup} = merge_groups({glist}, master={master},
+        xarray='{xarray}', yarray='{yarray}', kind='cubic', trim=True)"""
         self.larch.eval(cmd)
 
-        if master is None:
-            master = grouplist[0]
         this = self.get_group(outgroup)
-        master = self.get_group(master)
-        if not hasattr(master, 'config'):
-            self.init_group_config(master)
+        if not hasattr(gmaster, 'config'):
+            self.init_group_config(gmaster)
         if not hasattr(this, 'config'):
             self.init_group_config(this)
-        this.config.xasnorm.update(master.config.xasnorm)
-        this.datatype = master.datatype
-        this.xdat = 1.0*this.energy
+        this.config.xasnorm.update(gmaster.config.xasnorm)
+        this.datatype = gmaster.datatype
+        if xarray == 'energy':
+            this.xdat = 1.0*this.energy
         this.ydat = 1.0*getattr(this, yarray)
         this.yerr =  getattr(this, 'd' + yarray, 1.0)
         if yarray != 'mu':
             this.mu = this.ydat
-        this.plot_xlabel = 'energy'
+        this.plot_xlabel = xarray
         this.plot_ylabel = yarray
         return this
 
