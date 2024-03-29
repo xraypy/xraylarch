@@ -48,7 +48,8 @@ def merge_groups(grouplist, master=None, xarray='energy', yarray='mu',
     yave = yvals.mean(axis=0)
     ystd = yvals.std(axis=0)
 
-    if trim:
+    xout_increasing = len(np.where(np.diff(np.argsort(xout))!=1)[0]) == 0
+    if trim and xout_increasing:
         xmin = min(xmins)
         xmax = min(xmaxs)
         ixmin = index_of(xout, xmin)
@@ -62,7 +63,7 @@ def merge_groups(grouplist, master=None, xarray='energy', yarray='mu',
     setattr(grp, yarray, yave)
     setattr(grp, yarray + '_std', ystd)
 
-    if kind == 'cubic':
+    if kind == 'cubic' and xout_increasing:
         y0 = getattr(master, yarray)
         # if the derivative gets much worse, use linear interpolation
         if max(np.diff(yave)) > 50*max(np.diff(y0)):
