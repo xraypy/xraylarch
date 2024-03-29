@@ -1184,7 +1184,7 @@ before clearing"""
                                controller=self.controller, filename=path,
                                read_ok_cb=self.onReadAthenaProject_OK)
             return
-    
+
         # check for Spec File
         if is_specfile(path):
             self.show_subframe('spec_import', SpecfileImporter,
@@ -1193,7 +1193,7 @@ before clearing"""
                                config=self.last_spec_config,
                                read_ok_cb=self.onReadSpecfile_OK)
             return
-    
+
         # check for Larch Session File
         if is_larch_session_file(path):
             self.onLoadSession(path=path)
@@ -1749,8 +1749,7 @@ before clearing"""
                 if now < (t + 60.0):
                     self.cursor_dat['xsel'] = x
                     self.cursor_dat['ysel'] = y
-                    msg =uu 'Selected Point at x=%.3f' % self.cursor_dat['xsel']
-                    print('cursor ', self.cursor_dat)
+                    msg = 'Selected Point at x=%.3f' % self.cursor_dat['xsel']
                     self.cursor_dat['callback'](**self.cursor_dat)
             else:
                 self.write_message('No Points selected from plot window!')
