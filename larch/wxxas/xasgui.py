@@ -1749,7 +1749,8 @@ before clearing"""
                 if now < (t + 60.0):
                     self.cursor_dat['xsel'] = x
                     self.cursor_dat['ysel'] = y
-                    msg = 'Selected Point at %.1f' % self.cursor_dat['xsel']
+                    msg =uu 'Selected Point at x=%.3f' % self.cursor_dat['xsel']
+                    print('cursor ', self.cursor_dat)
                     self.cursor_dat['callback'](**self.cursor_dat)
             else:
                 self.write_message('No Points selected from plot window!')

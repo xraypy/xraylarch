@@ -219,7 +219,8 @@ class XASNormPanel(TaskPanel):
         opts = {'digits': 3, 'increment': 0.05, 'value': 0, 'size': (FSIZEBIG, -1)}
 
         opts.update({'value': 1.0, 'digits': 3})
-        scale = self.add_floatspin('scale', action=self.onSet_Scale, **opts)
+        scale = self.add_floatspin('scale', action=self.onSet_Scale,
+                                               **opts)
 
         self.wids['norm_method'] = Choice(panel, choices=NORM_METHODS,
                                           size=(150, -1), action=self.onNormMethod)
@@ -252,7 +253,7 @@ class XASNormPanel(TaskPanel):
         panel.Add(trow, dcol=4, newrow=True)
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=4, newrow=True)
-        add_text('Non-XAS Data Scale:')
+        add_text('Raw Data Scale:')
         panel.Add(scale)
         panel.Add(SimpleText(panel, 'Copy to Selected Groups:'), style=RIGHT, dcol=2)
 
@@ -806,12 +807,15 @@ class XASNormPanel(TaskPanel):
         """
         if xsel is None or opt not in self.wids:
             return
-        e0 = self.wids['e0'].GetValue()
-        if opt == 'e0':
-            self.wids['e0'].SetValue(xsel)
-            self.wids['auto_e0'].SetValue(0)
-        elif opt in ('pre1', 'pre2', 'norm1', 'norm2'):
-            self.wids[opt].SetValue(xsel-e0)
+        if opt == 'scale':
+            self.wids['scale'].SetValue(kws['ysel'])
+        else:
+            e0 = self.wids['e0'].GetValue()
+            if opt == 'e0':
+                self.wids['e0'].SetValue(xsel)
+                self.wids['auto_e0'].SetValue(0)
+            elif opt in ('pre1', 'pre2', 'norm1', 'norm2'):
+                self.wids[opt].SetValue(xsel-e0)
         time.sleep(0.01)
         wx.CallAfter(self.onReprocess)
 
@@ -861,9 +865,10 @@ class XASNormPanel(TaskPanel):
         if not self.is_xasgroup(dgroup):
             self.skip_process = False
             dgroup.mu = dgroup.ydat * 1.0
-            opts = {'group': dgroup.groupname, 'scale': conf.get('scale', 1.0)}
-            self.larch_eval("{group:s}.scale = {scale:.8f}".format(**opts))
-            self.larch_eval("{group:s}.norm = {scale:.8f}*{group:s}.ydat".format(**opts))
+            scale = form.get('scale', conf.get('scale', 1.0))
+            gname = dgroup.groupname
+            self.larch_eval(f"{gname:s}.scale = {scale:.8f}")
+            self.larch_eval(f"{gname:s}.norm = {gname:s}.ydat/{scale:8f}")
             return
 
         en_units = getattr(dgroup, 'energy_units', None)
@@ -1035,7 +1040,7 @@ class XASNormPanel(TaskPanel):
             if not hasattr(dgroup, 'scale'):
                 dgroup.scale = 1.0
 
-            dgroup.norm = dgroup.norm*dgroup.scale
+            dgroup.norm = dgroup.ydat/dgroup.scale
             if pchoice == 'dmude':
                 dgroup.plot_ylabel = 'dy/dx'
                 dgroup.plot_yarrays = [('dmude', PLOTOPTS_1, 'dy/dx')]
