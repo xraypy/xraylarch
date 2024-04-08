@@ -1071,7 +1071,8 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             title = "%s: Step %s" % (prefix[:-1], form[:3])
             mclass = lm_models.StepModel
             mclass_kws['form'] = form
-            minst = mclass(form=form, prefix=prefix)
+            minst = mclass(form=form, prefix=prefix,
+                           independent_vars=['x', 'form'])
         else:
             if model in ModelFuncs:
                 mclass = getattr(lm_models, ModelFuncs[model])
