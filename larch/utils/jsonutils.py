@@ -190,6 +190,7 @@ def encode4js(obj):
             for item in dir(obj):
                 out[item] = encode4js(getattr(obj, item))
         return out
+
     elif isinstance(obj, ModuleType):
         return {'__class__': 'Module',  'value': obj.__name__}
     elif hasattr(obj, '__getstate__') and not callable(obj):
@@ -346,6 +347,7 @@ def decode4js(obj):
             out = path
         else:
             out = LarchGroupTypes[classname](**out)
+        out = LarchGroupTypes[classname](**out)
     elif classname == 'Method':
         mname = obj.get('__name__', '')
         if 'ufunc' in mname:
