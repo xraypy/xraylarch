@@ -13,7 +13,6 @@ the path represented by the feffNNNN.dat
 creates a group that contains the chi(k) for the sum of paths.
 """
 import os
-from pathlib import Path
 import numpy as np
 from copy import deepcopy
 from scipy.interpolate import UnivariateSpline
@@ -41,12 +40,9 @@ class FeffDatFile(Group):
     def __init__(self, filename=None,  **kws):
         kwargs = dict(name='feff.dat: %s' % filename)
         kwargs.update(kws)
-        Group.__init__(self)
-        if filename is not None and Path(filename).exists():
+        Group.__init__(self,  **kwargs)
+        if filename not in ('', None) and os.path.exists(filename):
             self._read(filename)
-        else:
-            self.__set_state_dict(**kws)
-
 
     def __repr__(self):
         if self.filename is not None:
@@ -126,22 +122,6 @@ class FeffDatFile(Group):
                 self.lam.tolist(), self.rep.tolist(), self.pha.tolist(),
                 self.amp.tolist())
 
-    def __set_state_dict(self, **kws):
-        for key, val in kws.items():
-            if key == 'reff':
-                self.__reff__ = val
-            elif key == 'nleg':
-                self.__nleg__ = val
-            elif key == 'rmass':
-                self.__rmass__ = val
-            elif key in ('filename', 'title', 'version', 'shell', 'absorber',
-                         'degen', 'norman', 'edge', 'gam_ch', 'exch', 'vmu',
-                         'vfermi', 'vint', 'rs_int', 'potentials', 'geom'):
-                setattr(self, key, val)
-
-            elif key in ('k', 'real_phc', 'mag_feff', 'pha_feff', 'red_fact',
-                         'lam', 'rep', 'pha', 'amp'):
-                setattr(self, key, np.array(val))
 
     def _read(self, filename):
         try:
@@ -256,34 +236,28 @@ class FeffPathGroup(Group):
         self.chi = None
 
         self.__def_degen = 1
-        self._feffdat = _feffdat
-        if _feffdat is None and filename not in ('', None):
-            if not Path(filename).exists():
-                # print(f"Feff Path file '{filename:s}' not found")
-                raise ValueError(f"Feff Path file '{filename:s}' not found")
+
+        if filename not in ('', None) and os.path.exists(filename):
             self._feffdat = FeffDatFile(filename=filename)
+
         if self._feffdat is not None:
-            print(f"Feff Path file '{filename:s}' ", type(self._feffdat))
-            self._feffdat.filename = self.filename
+            self.create_spline_coefs()
+            self.geom  = self._feffdat.geom
+            self.shell = self._feffdat.shell
+            self.absorber = self._feffdat.absorber
+            self.__def_degen  = self._feffdat.degen
 
-        self.create_spline_coefs()
+            self.hashkey = self.__geom2label()
+            if self.label in ('', None):
+                self.label = self.hashkey
 
-        self.geom  = self._feffdat.geom
-        self.shell = self._feffdat.shell
-        self.absorber = self._feffdat.absorber
-        self.__def_degen  = self._feffdat.degen
-
-        self.hashkey = self.__geom2label()
-        if self.label in ('', None):
-            self.label = self.hashkey
-
-        if feffrun in ('',  None):
-            try:
-                dirname, fpfile = os.path.split(filename)
-                parent, folder = os.path.split(dirname)
-                self.feffrun = folder
-            except:
-                pass
+            if feffrun in ('',  None):
+                try:
+                    dirname, fpfile = os.path.split(filename)
+                    parent, folder = os.path.split(dirname)
+                    self.feffrun = folder
+                except:
+                    pass
 
         self.init_path_params(degen=degen, s02=s02, e0=e0, ei=ei,
                               deltar=deltar, sigma2=sigma2, third=third,
