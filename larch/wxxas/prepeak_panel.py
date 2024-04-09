@@ -17,7 +17,7 @@ from lmfit import Parameter
 import lmfit.models as lm_models
 
 from larch import Group, site_config
-from larch.utils import uname, gformat, mkdir
+from larch.utils import uname, gformat, mkdir, fix_varname
 from larch.math import index_of
 from larch.io.export_modelresult import export_modelresult
 from larch.io import save_groups, read_groups
@@ -46,6 +46,7 @@ ModelChoices = {'other': ('<General Models>', 'Constant', 'Linear',
                           'Moffat', 'BreitWigner', 'Doniach', 'Lognormal'),
                 }
 
+
 # map of lmfit function name to Model Class
 ModelFuncs = {'constant': 'ConstantModel',
               'linear': 'LinearModel',
@@ -69,6 +70,29 @@ ModelFuncs = {'constant': 'ConstantModel',
               'exponential': 'ExponentialModel',
               'step': 'StepModel',
               'rectangle': 'RectangleModel'}
+
+ModelAbbrevs = {'Constant': 'const',
+               'Linear': 'line',
+               'Quadratic': 'quad',
+               'Exponential': 'exp',
+               'PowerLaw': 'pow',
+               'Linear Step': 'lin_step',
+               'Arctan Step': 'atan_step',
+               'ErrorFunction Step': 'erf_step',
+               'Logistic Step': 'logis_step',
+               'Rectangle': 'rect',
+               'Gaussian': 'gauss',
+               'Lorentzian': 'loren',
+               'Voigt': 'voigt',
+               'PseudoVoigt': 'pvoigt',
+               'DampedHarmonicOscillator': 'dho',
+               'Pearson7': 'pear7',
+               'StudentsT': 'studt',
+               'SkewedGaussian': 'sgauss',
+               'Moffat': 'moffat',
+               'BreitWigner': 'breit',
+               'Doniach': 'doniach',
+               'Lognormal': 'lognorm'}
 
 BaselineFuncs = ['No Baseline',
                  'Constant+Lorentzian',
@@ -120,6 +144,12 @@ COMMANDS['dofit'] = """# do fit
 peakresult = prepeaks_fit({group}, peakmodel, peakpars)
 peakresult.user_options = {user_opts:s}
 """
+
+
+def get_model_abbrev(modelname):
+    if modelname in ModelAbbrevs:
+        return ModelAbbrevs[modelname]
+    return fix_varname(modelname).lower()
 
 def get_xlims(x, xmin, xmax):
     xeps = min(np.diff(x))/ 5.
@@ -1041,7 +1071,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         self.larch_eval(cmd.format(**opts))
         self.controller.set_focus()
 
-    def addModel(self, event=None, model=None, prefix=None, isbkg=False):
+    def addModel(self, event=None, model=None, prefix=None, isbkg=False, opts=None):
         if model is None and event is not None:
             model = event.GetString()
         if model is None or model.startswith('<'):
@@ -1050,9 +1080,9 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         self.models_peaks.SetSelection(0)
         self.models_other.SetSelection(0)
 
+        mod_abbrev = get_model_abbrev(model)
         if prefix is None:
-            p = model[:5].lower()
-            curmodels = ["%s%i_" % (p, i+1) for i in range(1+len(self.fit_components))]
+            curmodels = ["%s%i_" % (mod_abbrev, i+1) for i in range(1+len(self.fit_components))]
             for comp in self.fit_components:
                 if comp in curmodels:
                     curmodels.remove(comp)
@@ -1063,10 +1093,12 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         title = "%s: %s " % (prefix[:-1], model)
         title = prefix[:-1]
         mclass_kws = {'prefix': prefix}
-        if 'step' in model.lower():
-            form = model.lower().replace('step', '').strip()
-            if form.startswith('err'):
-                form = 'erf'
+        if mod_abbrev.endswith('_step'):
+            if opts is None:
+                opts = {'form': 'linear'}
+            form = mod_abbrev.replace('_step', '').strip()
+            if form not in ('linear', 'erf', 'arctan', 'logistic'):
+                form = opts.get('form', 'linear')
             label = "Step(form='%s', prefix='%s')" % (form, prefix)
             title = "%s: Step %s" % (prefix[:-1], form[:3])
             mclass = lm_models.StepModel
@@ -1317,7 +1349,8 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         for comp in result.model.components:
             isbkg = comp.prefix in bkg_comps
             self.addModel(model=comp.func.__name__,
-                          prefix=comp.prefix, isbkg=isbkg)
+                          prefix=comp.prefix, isbkg=isbkg,
+                          opts=comp.opts)
 
         for comp in result.model.components:
             parwids = self.fit_components[comp.prefix].parwids
