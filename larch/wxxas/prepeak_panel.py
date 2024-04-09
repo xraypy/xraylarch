@@ -39,7 +39,7 @@ DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 ModelChoices = {'other': ('<General Models>', 'Constant', 'Linear',
                           'Quadratic', 'Exponential', 'PowerLaw',
                           'Linear Step', 'Arctan Step',
-                          'ErrorFunction Step', 'Logistic Step', 'Rectangle'),
+                          'ErrorFunction Step', 'Logisic Step', 'Rectangle'),
                 'peaks': ('<Peak Models>', 'Gaussian', 'Lorentzian',
                           'Voigt', 'PseudoVoigt', 'DampedHarmonicOscillator',
                           'Pearson7', 'StudentsT', 'SkewedGaussian',
@@ -76,10 +76,10 @@ ModelAbbrevs = {'Constant': 'const',
                'Quadratic': 'quad',
                'Exponential': 'exp',
                'PowerLaw': 'pow',
-               'Linear Step': 'lin_step',
+               'Linear Step': 'line_step',
                'Arctan Step': 'atan_step',
                'ErrorFunction Step': 'erf_step',
-               'Logistic Step': 'logis_step',
+               'Logistic Step': 'logi_step',
                'Rectangle': 'rect',
                'Gaussian': 'gauss',
                'Lorentzian': 'loren',
@@ -1093,12 +1093,17 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         title = "%s: %s " % (prefix[:-1], model)
         title = prefix[:-1]
         mclass_kws = {'prefix': prefix}
-        if mod_abbrev.endswith('_step'):
-            if opts is None:
-                opts = {'form': 'linear'}
+        if 'step' in mod_abbrev:
             form = mod_abbrev.replace('_step', '').strip()
+            for sname, fullname in (('lin', 'linear'), ('atan', 'arctan'),
+                                    ('err', 'erf'), ('logi', 'logistic')):
+                if form.startswith(sname):
+                    form = fullname
             if form not in ('linear', 'erf', 'arctan', 'logistic'):
+                if opts is None:
+                    opts = {'form': 'linear'}
                 form = opts.get('form', 'linear')
+
             label = "Step(form='%s', prefix='%s')" % (form, prefix)
             title = "%s: Step %s" % (prefix[:-1], form[:3])
             mclass = lm_models.StepModel
