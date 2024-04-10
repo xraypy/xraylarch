@@ -17,10 +17,10 @@
   sig2                 =  0.0086697 +/- 3.0785e-4  (init= 0.0000000)
  
 [[Correlations]] (unreported correlations are <  0.100)
-  amp, sig2            = +0.928
-  del_e0, del_r        = +0.920
-  del_r, sig2          = +0.159
-  amp, del_r           = +0.137
+  amp, sig2            =  0.928
+  del_e0, del_r        =  0.920
+  del_r, sig2          =  0.159
+  amp, del_r           =  0.137
  
 [[Dataset]]
   unique_id            = 'dc5vezx7'
