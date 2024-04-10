@@ -297,7 +297,7 @@ In order to get the GUI-needed package, you could install with
 
     pip install xraylarch[larix]
 
-(Note, you may need to type "``pip install xraylarch\[larix\]``" in some shells
+(Note, you may need to type ``pip install "xraylarch[larix]"`` in some shells
 and terminals).  This will also install all of the `wxPython` packages needed
 for the GUIs, as well as the libraries related to Jupyter.
 
@@ -322,25 +322,25 @@ There are other optional addons that can be installed with Larch, such as
 
 .. code:: bash
 
-    pip install xraylarch[dev]
+    pip install "xraylarch[dev]"
 
 to add development and testing packages, or
 
 .. code:: bash
 
-    pip install xraylarch[doc]
+    pip install "xraylarch[doc]"
 
 to add tools needed to build the docs, or
 
 .. code:: bash
 
-    pip install xraylarch[epics]
+    pip install "xraylarch[epics]"
 
 to add tools needed to use the Epics controls system, or
 
 .. code:: bash
 
-    pip install xraylarch[all]
+    pip install "xraylarch[all]"
 
 to install all these (and a few more packages)
 
@@ -357,9 +357,9 @@ to `PyPI`_.  This will allow updating can be done with
     pip install --upgrade xraylarch
 
 
-For versions up to 0.9.68, XAS Viewer and other Larch Applications would
-notify users as updates became available and prompt them to install the latest
-version.
+For versions up to 0.9.68, XAS Viewer (now Larix) and other Larch Applications
+would notify users as updates became available and prompt them to install the
+latest version.
 
 .. note::
 

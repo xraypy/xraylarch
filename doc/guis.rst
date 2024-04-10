@@ -78,7 +78,7 @@ load and run a text file of commands or save the commands run in a session
 to a file.
 
 The main Larch GUI also provides simple launchers for several of the main
-Larch Applications, including XAS Viewer.
+Larch Applications, including Larix.
 
 From the Larch GUI, one can browse and act on data.  This includes the
 ability make Simple plot of 1-D data, using `wxmplot`_.  This wraps

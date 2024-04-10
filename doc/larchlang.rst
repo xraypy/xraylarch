@@ -17,7 +17,7 @@ shell program.  This macro language is also used for communication between
 the Larch server process and Athena/Artemis.  Perhaps most importantly, it
 is also embedded in the Larch GUI applications so that you can "open the
 Larch buffer" and use the Larch/Python functions on the data that has been
-loaded into the GUI.  The *XAS Viewer* program really does all of its work
+loaded into the GUI.  The *Larix* program really does all of its work
 with the Larch buffer so that you can see the complete (if somewhat)
 verbose list of commands and functions it is running when processing your
 data.  You can take these commands as documentation of the processing steps

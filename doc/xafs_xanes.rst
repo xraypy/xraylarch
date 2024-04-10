@@ -93,7 +93,7 @@ pre-edge peak fitting.  These challenges include
  * making sure that the peaks overlap but do not exchange or become
    coincident.
 
-The XAS Viewer application helps with each of the tasks, and it is highly
+The Larix GUI application helps with each of the tasks, and it is highly
 recommended that you start with this GUI.  See :ref:`larix_preedge`.
 
 
