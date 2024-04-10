@@ -6,11 +6,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Larch &#8212; xraylarch 0.9.75 documentation</title>
+    <title>Larch &#8212; xraylarch 0.9.76 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
     
-    <script src="_static/documentation_options.js?v=f5134787"></script>
+    <script src="_static/documentation_options.js?v=c2ebcded"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -65,7 +65,7 @@
 
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper"><h3> Get Larch</h3>
-<p>Current version: <b>0.9.75</b></p>
+<p>Current version: <b>0.9.76</b></p>
 
 &nbsp; &nbsp; <a href="installation.html">Install Latest Version</a>  <br>
 &nbsp; &nbsp; <a href="https://github.com/xraypy/xraylarch"> Development Version</a> <br>
@@ -77,7 +77,7 @@
 
 &nbsp; &nbsp; <a href="getting_started.html"> Getting Started</a><br>
 
-&nbsp; &nbsp; <a href="xasviewer.html"> XAS Viewer </a><br>
+&nbsp; &nbsp; <a href="larix.html"> Larix (was XAS Viewer) </a><br>
 &nbsp; &nbsp; <a href="guis.html"> Other GUIs </a><br>
 &nbsp; &nbsp; <a href="data.html"> Reading Data </a><br>
 &nbsp; &nbsp; <a href="plotting.html"> Plotting Data</a><br>
@@ -126,7 +126,7 @@ then spun-off as separate libraries that can be used by the broader X-ray and
 scientific programming communities.</p>
 <p>Larch includes a few GUI applications that provide user-friendly and
 interactive data visualization for many common X-ray analysis tasks. The most
-notable of these are <a class="reference internal" href="xasviewer.html#larix-app"><span class="std std-ref">Larix</span></a> (formerly XAS Viewer), <a class="reference internal" href="wxmap_viewer.html#mapviewer-app"><span class="std std-ref">GSE
+notable of these are <a class="reference internal" href="larix.html#larix-app"><span class="std std-ref">Larix</span></a> (was XAS Viewer), <a class="reference internal" href="wxmap_viewer.html#mapviewer-app"><span class="std std-ref">GSE
 Map Viewer</span></a>, and <a class="reference internal" href="xrf_viewer.html#larchxrf-app"><span class="std std-ref">Larch XRF</span></a> (formerly XRF
 Viewer).</p>
 <p>Larch also provides a Python-like macro language - the “Larch language” - for
@@ -139,7 +139,7 @@ This macro language is not recommended for serious programming, but it is an
 important part of the Larch package and can be viewed as the bridge between
 using the GUIs for fully interactive, non-coding analysis, and writing
 batch-processing analysis scripts.</p>
-<p>Most of the GUIs (notably, <a class="reference internal" href="xasviewer.html#larix-app"><span class="std std-ref">Larix</span></a>) work by generating and
+<p>Most of the GUIs (notably, <a class="reference internal" href="larix.html#larix-app"><span class="std std-ref">Larix</span></a>) work by generating and
 executing this “Larch code”, with all of the real work done through this macro
 language.  This allows for self-documented and reproducible analysis sessions,
 and facilitates transitioning from GUI-only analyses to scripting, batch
@@ -149,7 +149,7 @@ GUI session becomes a Python program.  This macro language also allows Larch to
 be run as a background service so that other processes can use Larch as the
 analysis engine - this was the original motivation and is still an important
 consideration.  The popular <a class="reference external" href="https://bruceravel.github.io/demeter/">Demeter</a> XAFS application suite can use Larch in
-this way, though the <a class="reference internal" href="xasviewer.html#larix-app"><span class="std std-ref">Larix</span></a> now contains almost all of the
+this way, though the <a class="reference internal" href="larix.html#larix-app"><span class="std std-ref">Larix</span></a> now contains almost all of the
 features of <a class="reference external" href="https://bruceravel.github.io/demeter/">Demeter</a> and is much more actively being developed and
 maintained.</p>
 <p>Larch is distribute under an open-source license that is nearly identical to
@@ -182,7 +182,7 @@ license to redistrubute.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><a class="reference internal" href="xasviewer.html#larix-app"><span class="std std-ref">Larix</span></a> (was XAS Viewer)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="larix.html#larix-app"><span class="std std-ref">Larix</span></a> (was XAS Viewer)</p></td>
 <td><p>GUI</p></td>
 <td><p>XAFS Processing and Analysis: XANES pre-edge peak fitting, linear analysis, PCA/LASSO, EXAFS background subtraction, running Feff, EXAFS Feff-fitting</p></td>
 </tr>
@@ -257,18 +257,18 @@ license to redistrubute.</p>
 <li class="toctree-l2"><a class="reference internal" href="guis.html#basic-larch-gui">4.2. Basic Larch GUI</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="xasviewer.html">5. Larix (was XAS Viewer)</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/overview.html">5.1. Larix Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/iodata.html">5.2. Reading and Saving Data into Larix</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/dialogs.html">5.3. Pre-edge subtraction and Normalization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/dialogs.html#common-xas-processing-dialogs">5.4. Common XAS Processing Dialogs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/preedge.html">5.5. Pre-edge peak fitting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/preedge.html#linear-combination-analysis">5.6. Linear Combination Analysis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/preedge.html#principal-component-and-non-negative-factor-analysis">5.7. Principal Component and Non-negative Factor Analysis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/preedge.html#linear-regression-with-lasso-and-pls-to-predict-external-variable">5.8. Linear Regression with LASSO and PLS to predict external variable</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/preedge.html#exafs-processing-background-subtraction">5.9. EXAFS Processing: Background Subtraction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/preedge.html#exafs-processing-fourier-transforms">5.10. EXAFS Processing:  Fourier Transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/preedge.html#fitting-exafs-data-to-feff-paths">5.11. Fitting EXAFS data to Feff Paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="larix.html">5. Larix (was XAS Viewer)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="larix/overview.html">5.1. Larix Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larix/iodata.html">5.2. Reading and Saving Data into Larix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larix/dialogs.html">5.3. Pre-edge subtraction and Normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larix/dialogs.html#common-xas-processing-dialogs">5.4. Common XAS Processing Dialogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larix/preedge.html">5.5. Pre-edge peak fitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larix/preedge.html#linear-combination-analysis">5.6. Linear Combination Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larix/preedge.html#principal-component-and-non-negative-factor-analysis">5.7. Principal Component and Non-negative Factor Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larix/preedge.html#linear-regression-with-lasso-and-pls-to-predict-external-variable">5.8. Linear Regression with LASSO and PLS to predict external variable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larix/preedge.html#exafs-processing-background-subtraction">5.9. EXAFS Processing: Background Subtraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larix/preedge.html#exafs-processing-fourier-transforms">5.10. EXAFS Processing:  Fourier Transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larix/preedge.html#fitting-exafs-data-to-feff-paths">5.11. Fitting EXAFS data to Feff Paths</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="wxmap_viewer.html">6. XRFMap Viewr</a></li>

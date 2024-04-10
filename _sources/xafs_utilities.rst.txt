@@ -387,7 +387,7 @@ examples in the following sections in this chapter make use of these macros.
 
 .. function:: plot_prepeaks_fit(dgroup, show_init=False, subtract_baseline=False, show_residual=False, win=1, **kws):
 
-    Plot pre-edge peaks and fit, as XAS Viewer GUI
+    Plot pre-edge peaks and fit, as in the Larix GUI
 
 
     :param dgroup:      data group, after running pre-edge peak fit.
@@ -398,7 +398,7 @@ examples in the following sections in this chapter make use of these macros.
     :param kws:          additional keyword arguments are passed to plot()
 
     The `dgroup` group must have a `peakfit_history` subgroup. Currently,
-    this is automatically generated only using the XAS Viewer GUI or
+    this is automatically generated only using the Larix GUI or
     scripts written (and possibly altered) by it.
 
 

@@ -27,7 +27,7 @@ scientific programming communities.
 
 Larch includes a few GUI applications that provide user-friendly and
 interactive data visualization for many common X-ray analysis tasks. The most
-notable of these are :ref:`Larix <larix_app>` (formerly XAS Viewer), :ref:`GSE
+notable of these are :ref:`Larix <larix_app>` (was XAS Viewer), :ref:`GSE
 Map Viewer <mapviewer_app>`, and :ref:`Larch XRF <larchxrf_app>` (formerly XRF
 Viewer).
 
@@ -106,7 +106,7 @@ Table of Contents
    getting_started.rst
    overview.rst
    guis.rst
-   xasviewer.rst
+   larix.rst
    wxmap_viewer.rst
    xrd1d_viewer.rst
    qtrixs.rst

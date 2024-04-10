@@ -6,11 +6,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>1. Downloading and Installation &#8212; xraylarch 0.9.75 documentation</title>
+    <title>1. Downloading and Installation &#8212; xraylarch 0.9.76 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
     
-    <script src="_static/documentation_options.js?v=f5134787"></script>
+    <script src="_static/documentation_options.js?v=c2ebcded"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
@@ -136,7 +136,7 @@
             
   <section id="downloading-and-installation">
 <span id="install-chapter"></span><h1><span class="section-number">1. </span>Downloading and Installation<a class="headerlink" href="#downloading-and-installation" title="Link to this heading">¶</a></h1>
-<p>The latest release version of Larch is 0.9.75.</p>
+<p>The latest release version of Larch is 0.9.76.</p>
 <p>Larch is in active and continuing development.  We do not use a strict
 schedule, but for the past few years, new versions have typically been
 released every 3 months or so.</p>
@@ -358,7 +358,7 @@ library, without requiring the packages needed to make any of the GUIs work.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>xraylarch<span class="o">[</span>larix<span class="o">]</span>
 </pre></div>
 </div>
-<p>(Note, you may need to type “<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">xraylarch\[larix\]</span></code>” in some shells
+<p>(Note, you may need to type <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">&quot;xraylarch[larix]&quot;</span></code> in some shells
 and terminals).  This will also install all of the <cite>wxPython</cite> packages needed
 for the GUIs, as well as the libraries related to Jupyter.</p>
 <p>The most notable missing binary package is the <cite>wxPython</cite> package on Linux.
@@ -376,19 +376,19 @@ runnable Larch library with</p>
 </pre></div>
 </div>
 <p>There are other optional addons that can be installed with Larch, such as</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>xraylarch<span class="o">[</span>dev<span class="o">]</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;xraylarch[dev]&quot;</span>
 </pre></div>
 </div>
 <p>to add development and testing packages, or</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>xraylarch<span class="o">[</span>doc<span class="o">]</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;xraylarch[doc]&quot;</span>
 </pre></div>
 </div>
 <p>to add tools needed to build the docs, or</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>xraylarch<span class="o">[</span>epics<span class="o">]</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;xraylarch[epics]&quot;</span>
 </pre></div>
 </div>
 <p>to add tools needed to use the Epics controls system, or</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>xraylarch<span class="o">[</span>all<span class="o">]</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;xraylarch[all]&quot;</span>
 </pre></div>
 </div>
 <p>to install all these (and a few more packages)</p>
@@ -400,9 +400,9 @@ runnable Larch library with</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>xraylarch
 </pre></div>
 </div>
-<p>For versions up to 0.9.68, XAS Viewer and other Larch Applications would
-notify users as updates became available and prompt them to install the latest
-version.</p>
+<p>For versions up to 0.9.68, XAS Viewer (now Larix) and other Larch Applications
+would notify users as updates became available and prompt them to install the
+latest version.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Automatic updates using Larix (was XAS Viewer) have been unreliable for a
