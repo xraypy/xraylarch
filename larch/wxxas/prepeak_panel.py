@@ -749,8 +749,8 @@ class PrePeakPanel(TaskPanel):
 
         self.wids = {}
 
-        fsopts = dict(digits=2, increment=0.1, min_val=-9999,
-                      max_val=9999, size=(125, -1), with_pin=True)
+        fsopts = dict(digits=2, increment=0.1, min_val=-999999,
+                      max_val=999999, size=(125, -1), with_pin=True)
 
         ppeak_elo  = self.add_floatspin('ppeak_elo',  value=-13, **fsopts)
         ppeak_ehi  = self.add_floatspin('ppeak_ehi',  value=-3, **fsopts)

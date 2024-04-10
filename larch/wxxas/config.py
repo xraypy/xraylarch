@@ -58,7 +58,7 @@ def make_array_choice(opts):
 
 
 Linear_ArrayChoices = make_array_choice(['norm', 'flat', 'dmude', 'chi0', 'chi1', 'chi2'])
-PrePeak_ArrayChoices = make_array_choice(['norm', 'flat', 'deconv'])
+PrePeak_ArrayChoices = make_array_choice(['norm', 'flat', 'deconv', 'mu'])
 Regress_Choices = ['Partial Least Squares', 'LassoLars']
 
 PlotWindowChoices = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
