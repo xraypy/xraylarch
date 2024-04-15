@@ -8,8 +8,8 @@ from lmfit import Parameters, Minimizer, report_fit
 from xraydb import guess_edge
 from larch import Group, Make_CallArgs, parse_group_args
 
-from larch.math import (index_of, index_nearest, remove_dups, remove_nans2,
-                        interp, smooth, polyfit)
+from larch.math import (index_of, index_nearest, interp, smooth,
+                        polyfit, remove_dups, remove_nans, remove_nans2)
 from .xafsutils import set_xafsGroup, TINY_ENERGY
 
 MODNAME = '_xafs'
@@ -165,11 +165,12 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
     2  post-edge: a polynomial of order nnorm is fit to mu(energy)*energy**nvict
        between energy=[e0+norm1, e0+norm2]. nnorm, norm1, norm2 default to None,
        which will set:
-         nnorm = 2 in norm2-norm1>350, 1 if norm2-norm1>50, or 0 if less.
+         nnorm = 2 in norm2-norm1>300, 1 if norm2-norm1>30, or 0 if less.
          norm2 = max energy - e0, rounded to 5 eV
          norm1 = roughly min(150, norm2/3.0), rounded to 5 eV
     """
 
+    energy, mu = remove_nans2(energy, mu)
     energy = remove_dups(energy, tiny=TINY_ENERGY)
     if energy.size <= 1:
         raise ValueError("energy array must have at least 2 points")
@@ -186,11 +187,12 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
             pre1  = 2.0*round((energy[1] - e0)/2.0)
 
     pre1 = max(pre1,  (min(energy) - e0))
-    if pre2 is None:
-        pre2 = 5.0*round(pre1/15.0)
+    if pre2 is None or (pre2 < pre1 +5):
+        pre2 = 0.5*pre1
+    if (pre1 < -10) and (pre2 < pre1 + 2):
+        pre2 = pre1/2.0
     if pre1 > pre2:
         pre1, pre2 = pre2, pre1
-
     if norm2 is None:
         norm2 = 5.0*round((max(energy) - e0)/5.0)
     if norm2 < 0:
@@ -199,15 +201,14 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
     if norm1 is None:
         norm1 = min(25, 5.0*round(norm2/15.0))
 
-    if norm1 > norm2+5:
+    if norm1 > norm2:
         norm1, norm2 = norm2, norm1
 
     norm1 = min(norm1, norm2 - 10)
-
     if nnorm is None:
         nnorm = 2
-        if norm2-norm1 < 350: nnorm = 1
-        if norm2-norm1 <  50: nnorm = 0
+        if norm2-norm1 < 300: nnorm = 1
+        if norm2-norm1 <  30: nnorm = 0
     nnorm = max(min(nnorm, MAX_NNORM), 0)
     # preedge
     p1 = index_of(energy, pre1+e0)
@@ -216,7 +217,9 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
         p2 = min(len(energy), p1 + 2)
 
     omu  = mu*energy**nvict
-    ex, mx = remove_nans2(energy[p1:p2], omu[p1:p2])
+    ex = remove_nans(energy[p1:p2], interp=True)
+    mx = remove_nans(omu[p1:p2], interp=True)
+
     precoefs = polyfit(ex, mx, 1)
     pre_edge = (precoefs[0] + energy*precoefs[1]) * energy**(-nvict)
     # normalization
@@ -302,25 +305,25 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
          which will set:
               norm2 = max energy - e0, rounded to 5 eV
               norm1 = roughly min(150, norm2/3.0), rounded to 5 eV
-              nnorm = 2 in norm2-norm1>350, 1 if norm2-norm1>50, or 0 if less.
+              nnorm = 2 in norm2-norm1>300, 1 if norm2-norm1>30, or 0 if less.
       5. flattening fits a quadratic curve (no matter nnorm) to the post-edge
          normalized mu(E) and subtracts that curve from it.
     """
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
                                          fcn_name='pre_edge')
+    energy, mu = remove_nans2(energy, mu)
     if len(energy.shape) > 1:
         energy = energy.squeeze()
     if len(mu.shape) > 1:
         mu = mu.squeeze()
 
-    energy, mu = remove_nans2(energy, mu)
-    energy = remove_dups(energy, tiny=TINY_ENERGY)
     out_of_order = np.where(np.diff(np.argsort(energy))!=1)[0]
     if len(out_of_order) > 0:
         order = np.argsort(energy)
         energy = energy[order]
         mu = mu[order]
+    energy = remove_dups(energy, tiny=TINY_ENERGY)
 
     if group is not None and e0 is None:
         e0 = getattr(group, 'e0', None)
@@ -356,7 +359,9 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
         flat[:ie0] = norm[:ie0]
         group.flat = flat
 
-        enx, mux = remove_nans2(energy[p1:p2], norm[p1:p2])
+        enx = remove_nans(energy[p1:p2], interp=True)
+        mux = remove_nans(norm[p1:p2], interp=True)
+
         # enx, mux = (energy[p1:p2], norm[p1:p2])
         fpars = Parameters()
         ncoefs = len(pre_dat['norm_coefs'])
@@ -467,8 +472,11 @@ def energy_align(group, reference, array='dmude', emin=-15, emax=35):
     elif array == 'norm':
         ydat = group.norm[:]*1.0
         yref = reference.norm[:]*1.0
-    xdat, ydat = remove_nans2(xdat, ydat)
-    xref, yref = remove_nans2(xref, yref)
+
+    xdat = remove_nans(xdat[:], interp=True)
+    ydat = remove_nans(ydat[:], interp=True)
+    xref = remove_nans(xref[:], interp=True)
+    yref = remove_nans(yref[:], interp=True)
 
     i1 = index_of(xref, reference.e0-emin)
     i2 = index_of(xref, reference.e0+emax)
