@@ -216,22 +216,33 @@ def remove_dups(arr, tiny=1.e-6):
     return work+add
 
 
-def remove_nans(val, goodval=0.0, default=0.0):
+def remove_nans(val, goodval=0.0, default=0.0, interp=False):
     """
     remove nan / inf from an value (array or scalar),
     and replace with 'goodval'.
+
     """
+    isbad = ~np.isfinite(val)
+    if not np.any(isbad):
+        return val
+
     if isinstance(goodval, np.ndarray):
         goodval = goodval.mean()
     if np.any(~np.isfinite(goodval)):
         goodval = default
 
-    if np.any(~np.isfinite(val)):
-        if isinstance(val, np.ndarray):
-            isbad = np.any(~np.isfinite(val))
-            val[np.where(isbad)] = goodval
-        else:
-            val = goodval
+    if not isinstance(val, np.ndarray):
+        return goodval
+    if interp:
+        for i in np.where(isbad)[0]:
+            if i == 0:
+                val[i] = 2.0*val[1] - val[2]
+            elif i == len(val)-1:
+                val[i] = 2.0*val[i-1] - val[i-2]
+            else:
+                val[i] = 0.5*(val[i+1] + val[i-1])
+        isbad = ~np.isfinite(val)
+    val[np.where(isbad)] = goodval
     return val
 
 
