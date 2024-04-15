@@ -62,16 +62,12 @@ PlotSel_Choices_nonxas = {'Raw Data': 'mu',
 FSIZE = 120
 FSIZEBIG = 175
 
-def get_auto_nnorm(config):
+def get_auto_nnorm(norm1, norm2):
     "autoamatically set nnorm from range"
-    norm1 = config['norm1']
-    norm2 = config['norm2']
     nrange = abs(norm2 - norm1)
     nnorm = 2
-    if nrange < 350:
-        nnorm = 1
-    if nrange < 50:
-        norm = 0
+    if nrange < 300:   nnorm = 1
+    if nrange < 30:    nnorm = 0
     return nnorm
 
 
@@ -419,7 +415,6 @@ class XASNormPanel(TaskPanel):
                 val = opts.get(attr, None)
                 if val is not None:
                     self.wids[attr].SetValue(val)
-
             self.set_nnorm_widget(opts.get('nnorm'))
 
             self.wids['energy_shift'].SetValue(opts['energy_shift'])
@@ -458,16 +453,15 @@ class XASNormPanel(TaskPanel):
         wx.CallAfter(self.unset_skip_process)
 
     def set_nnorm_widget(self, nnorm=None):
-        nnorm_default = get_auto_nnorm(self.get_config())
+        conf = self.get_config()
+        nnorm_default = get_auto_nnorm(conf['norm1'], conf['norm2'])
         if nnorm in (None, 'auto'):
             nnorm = nnorm_default
         elif nnorm in NNORM_CHOICES:
             nnorm = int(NNORM_CHOICES[nnorm])
-
         nnorm_str = NNORM_STRINGS.get(nnorm, None)
         if nnorm_str is None:
             nnorm_str = NNORM_STRINGS.get(nnorm_default, '1')
-
         self.wids['nnorm'].SetStringSelection(nnorm_str)
         self.wids['auto_nnorm'].SetValue(0)
 
@@ -512,7 +506,8 @@ class XASNormPanel(TaskPanel):
 
         nnorm  = NNORM_CHOICES.get(self.wids['nnorm'].GetStringSelection(), 1)
         if nnorm is None:
-            nnorm = get_auto_nnorm(self.get_config())
+            nnorm = get_auto_nnorm(self.wids['norm1'].GetValue(),
+                                   self.wids['norm2'].GetValue())
 
         nvict = int(self.wids['nvict'].GetStringSelection())
         self.update_config({'norm_method': method, 'nnorm': nnorm, 'nvict': nvict})
@@ -646,7 +641,8 @@ class XASNormPanel(TaskPanel):
 
     def onAuto_NNORM(self, evt=None):
         if evt.IsChecked():
-            nnorm = get_auto_nnorm(self.get_config())
+            nnorm = get_auto_nnorm(self.wids['norm1'].GetValue(),
+                                   self.wids['norm2'].GetValue())
             self.set_nnorm_widget(nnorm)
             self.wids['auto_nnorm'].SetValue(0)
             time.sleep(0.001)
@@ -655,7 +651,8 @@ class XASNormPanel(TaskPanel):
     def onResetNorm(self, evt=None):
         auto_nnorm = self.wids['auto_nnorm'].GetValue()
         if auto_nnorm:
-            nnorm = get_auto_nnorm(self.get_config())
+            nnorm = get_auto_nnorm(self.wids['norm1'].GetValue(),
+                                   self.wids['norm2'].GetValue())
         self.set_nnorm_widget(nnorm)
 
         defaults = self.get_defaultconfig()
@@ -945,7 +942,7 @@ class XASNormPanel(TaskPanel):
             else:
                 val = f"{float(val):.2f}"
             copts.append(f"{attr}={val}")
-
+        # print("process PreEdge ", copts)
         self.larch_eval("pre_edge(%s)" % (', '.join(copts)))
         self.larch_eval("{group:s}.norm_poly = 1.0*{group:s}.norm".format(**form))
         if not hasattr(dgroup, 'e0'):
@@ -1018,6 +1015,7 @@ class XASNormPanel(TaskPanel):
             conf['atsym'] = getattr(dgroup.mback_params, 'atsym')
             conf['edge'] = getattr(dgroup.mback_params, 'edge')
         self.update_config(conf, dgroup=dgroup)
+        # print("process updated conf  ", dgroup, conf)
         wx.CallAfter(self.unset_skip_process)
 
 
