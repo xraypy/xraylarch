@@ -1,11 +1,12 @@
 import numpy as np
 
 from larch import Group, Make_CallArgs, parse_group_args
-from larch.math import index_of, interp1d, remove_dups
+from larch.math import (index_of, interp1d,
+                        remove_dups, remove_nans, remove_nans2)
 from .xafsutils import ktoe, etok, TINY_ENERGY
 
 @Make_CallArgs(["energy", "mu"])
-def sort_xafs(energy, mu=None, group=None, fix_repeats=True, overwrite=True):
+def sort_xafs(energy, mu=None, group=None, fix_repeats=True, remove_nans=True, overwrite=True):
     """sort energy, mu pair of XAFS data so that energy is monotonically increasing
 
     Arguments
@@ -13,7 +14,8 @@ def sort_xafs(energy, mu=None, group=None, fix_repeats=True, overwrite=True):
     energy       input energy array
     mu           input mu array
     group        output group
-    fix_repeats  bool, whether to fix repeated energies
+    fix_repeats  bool, whether to fix repeated energies [True]
+    remove_nans  bool, whether to fix nans [True]
     overwrite    bool, whether to overwrite arrays [True]
 
     Returns
@@ -28,7 +30,7 @@ def sort_xafs(energy, mu=None, group=None, fix_repeats=True, overwrite=True):
     """
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
-                                        fcn_name='sort_xafs')
+                                         fcn_name='sort_xafs')
 
     indices = np.argsort(energy)
     new_energy  = energy[indices]
@@ -36,6 +38,10 @@ def sort_xafs(energy, mu=None, group=None, fix_repeats=True, overwrite=True):
 
     if fix_repeats:
         new_energy = remove_dups(new_energy, tiny=TINY_ENERGY)
+    if remove_nans:
+        if (len(np.where(~np.isfinite(new_energy))[0]) > 0 or
+            len(np.where(~np.isfinite(new_mu))[0] > 0)):
+            new_energy, new_mu = remove_nans2(new_energy, new_mu)
 
     if not overwrite:
         group.sorted = Group(energy=new_energy, mu=new_mu)
