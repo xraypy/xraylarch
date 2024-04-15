@@ -516,21 +516,9 @@ class XASFrame(wx.Frame):
                                           {'fileroot': 'autosave'})
         froot= conf['fileroot']
 
-        recent_menu = wx.Menu()
-        for tstamp, fname in self.controller.get_recentfiles():
-            MenuItem(self, recent_menu,
-                     "%s [%s ago]" % (fname, time_ago(tstamp)),
-                     f"file saved {isotime(tstamp)}",
-                     partial(self.onLoadSession, path=fname))
-
-        recent_menu.AppendSeparator()
-        for tstamp, fname in self.controller.recent_autosave_sessions():
-            MenuItem(self, recent_menu,
-                     "%s [%s ago]" % (fname, time_ago(tstamp)),
-                     f"file saved {isotime(tstamp)}",
-                     partial(self.onLoadSession, path=fname))
-
-        fmenu.Append(-1, 'Recent Session Files',  recent_menu)
+        self.recent_menu = wx.Menu()
+        self.get_recent_session_menu()
+        fmenu.Append(-1, 'Recent Session Files',  self.recent_menu)
 
 
         MenuItem(self, fmenu, "&Auto-Save Larch Session",
@@ -1643,6 +1631,26 @@ before clearing"""
                       process=process, plot=plot)
 
     ##
+    def get_recent_session_menu(self):
+        """ get recent sessions files for Menu list"""
+        for menu_item in self.recent_menu.MenuItems:
+            self.recent_menu.Remove(menu_item)
+
+        for tstamp, fname in self.controller.get_recentfiles():
+            message =  f"{fname} [{time_ago(tstamp)} ago]"
+            MenuItem(self, self.recent_menu, message,
+                     f"file saved {isotime(tstamp)}",
+                     partial(self.onLoadSession, path=fname))
+
+        self.recent_menu.AppendSeparator()
+        for tstamp, fname in self.controller.recent_autosave_sessions():
+            message =  f"{fname} [{time_ago(tstamp)} ago]"
+            if abs(tstamp) < 5.0:
+                message =  f"{fname} [most recent]"
+            MenuItem(self, self.recent_menu, message,
+                     f"file saved {isotime(tstamp)}",
+                     partial(self.onLoadSession, path=fname))
+
     def onAutoSaveTimer(self, event=None):
         """autosave session periodically, using autosave_config settings
         and avoiding saving sessions while program is inactive.
@@ -1650,10 +1658,12 @@ before clearing"""
         conf = self.controller.get_config('autosave', {})
         savetime = conf.get('savetime', 600)
         symtab = self.larch.symtable
+
         if (time.time() > self.last_autosave + savetime and
             symtab._sys.last_eval_time > (self.last_autosave+60) and
             len(symtab._xasgroups) > 0):
             self.autosave_session()
+            self.get_recent_session_menu()
 
     def autosave_session(self, event=None):
         """autosave session now"""
@@ -1663,7 +1673,6 @@ before clearing"""
         stime = time.strftime("%H:%M")
         self.last_save_message = ("Session last saved", f"'{savefile}'", f"{stime}")
         self.write_message(f"Session saved to '{savefile}' at {stime}")
-
 
     ## float-spin / pin timer events
     def onPinTimer(self, event=None):
