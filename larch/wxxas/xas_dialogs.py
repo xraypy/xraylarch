@@ -1771,7 +1771,7 @@ class QuitDialog(wx.Dialog):
     """dialog for quitting, prompting to save project"""
 
     def __init__(self, parent, message, **kws):
-        title = "Quit Larch XAS Viewer?"
+        title = "Quit Larch Larix?"
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title, size=(500, 150))
         self.SetFont(Font(FONTSIZE))
         self.needs_save = True

@@ -251,7 +251,7 @@ def load_session(fname, ignore_groups=None, include_xasgroups=None, _larch=None,
         1. data in the following groups will be merged into existing session groups:
            `_feffpaths` : dict of "current feff paths"
            `_feffcache` : dict with cached feff paths and feff runs
-           `_xasgroups` : dict mapping "File Name" and "Group Name", used in `XAS Viewer`
+           `_xasgroups` : dict mapping "File Name" and "Group Name", used in `Larix`
 
         2. to avoid name clashes, group and file names in the `_xasgroups` dictionary
            may be modified on loading

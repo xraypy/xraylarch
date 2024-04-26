@@ -970,7 +970,7 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
 
 def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
                       show_residual=False):
-    """plot pre-edge peak fit, as from XAS Viewer
+    """plot pre-edge peak fit, as from Larix
 
     dgroup must have a 'peakfit_history' attribute
     """
