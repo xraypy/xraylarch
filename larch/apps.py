@@ -109,8 +109,6 @@ LarchApps = {
 
     'Larix': LarchApp(name='Larix', script='larix', icon='onecone',
                       description='XANES and EXAFS Analysis GUI for Larch'),
-    'XAS Viewer': LarchApp(name='XAS Viewer', script='larix', icon='onecone',
-                           description='XANES and EXAFS Analysis GUI for Larch'),
     'XRFMap Viewer': LarchApp(name='XRFMap Viewer', script='gse_mapviewer',
                               icon='gse_xrfmap', filetype='XRM Map File (.h5)',
                               description='XRFMap Viewing and Analysis'),
