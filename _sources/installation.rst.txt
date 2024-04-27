@@ -248,7 +248,7 @@ infrastructure and then install xraylarch with pip:
    mamba create -y --name xraylarch python=>3.11.5 scipy mkl_fft h5py matplotlib pandas
    mamba activate xraylarch
    mamba install -y -c conda-forge wxpython pymatgen jupyter "notebook<7.0"
-   mamba install -y -c scikit-image scikit-learn pycifrw plotly fabio pyfai
+   mamba install -y -c conda-forge scikit-image scikit-learn pycifrw plotly fabio pyfai
    mamba install -y -c conda-forge openbabel tomopy  # <- optional packages
    pip install "xraylarch[larix]"
 
