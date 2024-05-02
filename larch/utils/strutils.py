@@ -266,7 +266,7 @@ def random_varname(n, rng_seed=None):
     global rng
     if rng_seed is None:
         rng.seed(rng_seed)
-    return rng.choice(L[:26]) + ''.join([random.choice(L) for _ in range(n-1)])
+    return rng.choice(L[:26]) + ''.join([rng.choice(L) for _ in range(n-1)])
 
 
 def file2groupname(filename, slen=9, minlen=2, symtable=None, rng_seed=None):
