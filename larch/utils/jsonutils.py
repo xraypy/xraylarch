@@ -347,7 +347,6 @@ def decode4js(obj):
             out = path
         else:
             out = LarchGroupTypes[classname](**out)
-        out = LarchGroupTypes[classname](**out)
     elif classname == 'Method':
         mname = obj.get('__name__', '')
         if 'ufunc' in mname:
