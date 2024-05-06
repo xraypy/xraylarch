@@ -1196,9 +1196,11 @@ class XRFDisplayFrame(wx.Frame):
                     continue
                 yroi[r.left:r.right] = y[r.left:r.right]
             yroi = np.ma.masked_less(yroi, 0)
+            xroi = 1.0*x[:]
+            xroi[yroi< 0.0] = np.nan
             if yroi.max() > 0:
                 kwargs['color'] = self.conf.roi_color
-                panel.oplot(x, yroi, label='rois', **kwargs)
+                panel.oplot(xroi, yroi, label='rois', **kwargs)
         yscale = {False:'linear', True:'log'}[self.ylog_scale]
         panel.set_viewlimits()
         panel.set_logscale(yscale=yscale)
