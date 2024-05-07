@@ -12,7 +12,7 @@ from lmfit import Parameter, Parameters
 
 from larch import Group, isgroup, __date__, __version__, __release_version__
 from ..utils import (isotime, bytes2str, str2bytes, fix_varname, is_gzip,
-                     read_textfile, unique_name)
+                     read_textfile, unique_name, format_exception)
 from ..utils.jsonutils import encode4js, decode4js
 
 SessionStore = namedtuple('SessionStore', ('config', 'command_history', 'symbols'))
@@ -209,8 +209,8 @@ def read_session(fname, clean_xasgroups=True):
                 try:
                     symbols[symname] = decode4js(json.loads(line))
                 except:
+                    print(''.join(format_exception()))
                     print("decode failed:: ", symname, repr(line)[:50])
-
         else:
             if line.startswith('##') and ':' in line:
                 line = line[2:]
@@ -221,6 +221,7 @@ def read_session(fname, clean_xasgroups=True):
                     try:
                         val = decode4js(json.loads(val))
                     except:
+                        print(''.join(format_exception()))
                         print("decode failed @## ", repr(val)[:50])
                 config[key] = val
     if '_xasgroups' in symbols and clean_xasgroups:

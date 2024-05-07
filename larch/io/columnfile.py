@@ -12,14 +12,13 @@ from dateutil.parser import parse as dateparse
 from math import log10
 from larch import Group
 from larch.symboltable import isgroup
-from ..utils import read_textfile
+from ..utils import read_textfile, format_exception
 from .fileutils import fix_varname
 from .xafs_beamlines import guess_beamline
 
 nanresult = namedtuple('NanResult', ('file_ok', 'message', 'nan_rows',
                                      'nan_cols', 'inf_rows', 'inf_cols'))
 
-MODNAME = '_io'
 TINY = 1.e-7
 MAX_FILESIZE = 100*1024*1024  # 100 Mb limit
 COMMENTCHARS = '#;%*!$'
@@ -47,12 +46,15 @@ def look_for_nans(path):
     try:
         dat = read_ascii(path)
     except:
-        etype, emsg, etb = sys.exc_info()
+        print(''.join(format_exception()))
+        return nanresult(False, f'could not read file {path}',
+                             nan_rows, nan_cols, inf_rows, inf_cols)
     if len(dat.data) < 1:
-        return nanresult(False, 'no data in file', nan_rows, nan_cols, inf_rows, inf_cols)
-
+        return nanresult(False, f'no data in file {path}',
+                             nan_rows, nan_cols, inf_rows, inf_cols)
     if np.all(np.isfinite(dat.data)):
-        return nanresult(True, 'file ok', nan_rows, nan_cols, inf_rows, inf_cols)
+        return nanresult(True, 'file ok',
+                             nan_rows, nan_cols, inf_rows, inf_cols)
 
     msg = 'unknown'
     nanvals = np.where(np.isnan(dat.data))
