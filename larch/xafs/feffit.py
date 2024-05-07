@@ -252,10 +252,15 @@ class FeffitDataSet(Group):
             self.paths = {}
         self.pathlist = list(self.paths.values())
         # make datagroup from passed in data: copy of k, chi, delta_chi, epsilon_k
-        self.data = Group(__name__='Feffit DatasSet from %s' % repr(data),
-                          groupname=getattr(data, 'groupname', repr(data)),
-                          filename=getattr(data, 'filename', repr(data)),
-                          k=data.k[:]*1.0, chi=data.chi[:]*1.0)
+        if data is None:
+            self.data = Group(__name__='Feffit DatasSet (no data)',
+                              groupname=None,filename=None,
+                              k=np.arange(401)/20.0, chi=np.zeros(401))
+        else:
+            self.data = Group(__name__='Feffit DatasSet from %s' % repr(data),
+                            groupname=getattr(data, 'groupname', repr(data)),
+                            filename=getattr(data, 'filename', repr(data)),
+                            k=data.k[:]*1.0, chi=data.chi[:]*1.0)
         if hasattr(data, 'config'):
             self.data.config = deepcopy(data.config)
         else:
@@ -809,8 +814,7 @@ def feffit_conf_map(result, xpar, ypar, nsamples=41, nsigma=3.5):
                        scale_covar=False, **result.fit_kws)
 
     xvals, yvals, chi2_map = conf_interval2d(fitter, result.fit_details, xpar, ypar,
-                                             nsamples, nsamples, nsigma=nsigma, chi2_out=True,
-                                             callback=show_progress)
+                                             nsamples, nsamples, nsigma=nsigma, chi2_out=True)
 
     chi2_map = chi2_map * result.n_independent / result.fit_details.ndata
     chisqr0 = min(result.chi_square, chi2_map.min())
