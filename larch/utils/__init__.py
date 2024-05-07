@@ -37,6 +37,7 @@ def format_exception(with_traceback=True):
         for tline in format_tb(tb):
             if tline.endswith('\n'): tline = tline[:-1]
             out.append(tline)
+        out.append('\n')
     out.append(f"{etype.__name__}: {exc}")
     return out
 
