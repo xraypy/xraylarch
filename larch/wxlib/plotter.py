@@ -556,8 +556,6 @@ def _update_trace(x, y, trace=1, win=1, _larch=None, wxparent=None,
     wx_update(_larch=_larch)
 
 def wx_update(_larch=None, **kws):
-    if  hasattr(_larch, 'symtable'):
-        _larch.symtable.set_symbol('_sys.wx.force_wxupdate', True)
     try:
         _larch.symtable.get_symbol('_sys.wx.ping')(timeout=0.002)
     except:
