@@ -302,7 +302,7 @@ class PCAPanel(TaskPanel):
         self.larch_eval(cmd)
 
         dgroup = self.controller.get_group()
-        dgroup.update_config(form)
+        self.update_config(form, dgroup=dgroup)
         dgroup.journal.add('pca_fit', cmd)
 
         thisrow = [dgroup.filename,
