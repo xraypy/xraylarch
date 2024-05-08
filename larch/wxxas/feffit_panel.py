@@ -967,6 +967,7 @@ class FeffitPanel(TaskPanel):
             self.xasmain.process_exafs(dgroup)
 
         dconf = self.get_defaultconfig()
+
         if dgroup is None:
             return dconf
         if not hasattr(dgroup, 'config'):
@@ -981,11 +982,11 @@ class FeffitPanel(TaskPanel):
         for key in ('fit_kmin', 'fit_kmax', 'fit_dk',
                     'fit_rmin', 'fit_rmax', 'fit_dr',
                     'fit_kwindow', 'fit_rwindow'):
-            alt = key.replace('fit', 'fft')
             val = conf.get(key, -1)
-            if val in (None, -1, 'Auto') and alt in econf:
-                conf[key] = econf[alt]
-
+            if val in (None, -1, 'Auto'):
+                alt = key.replace('fit', 'fft')
+                if alt in econf:
+                    conf[key] = econf[alt]
         setattr(dgroup.config, self.configname, conf)
         self.config_saved = conf
         return conf
@@ -1019,9 +1020,13 @@ class FeffitPanel(TaskPanel):
             dgroup.config = Group()
         setattr(dgroup.config, self.configname, conf)
 
+        orig_dgroup = self.controller.get_group()
+        setattr(orig_dgroup.config, self.configname, conf)
+
     def fill_form(self, dat):
         dgroup = self.controller.get_group()
         conf = self.get_config(dat)
+
         for attr in ('fit_kmin', 'fit_kmax', 'fit_rmin', 'fit_rmax', 'fit_dk'):
             self.wids[attr].SetValue(conf[attr])
 
@@ -1108,6 +1113,7 @@ class FeffitPanel(TaskPanel):
     def onPlot(self, evt=None, dataset_name='_feffit_dataset',
                pargroup_name='_feffit_params', title=None, build_fitmodel=True,
                topwin=None, **kws):
+        # print("Feffit Main Panel onPlot ", build_fitmodel, kws)
 
         dataset = getattr(self.larch.symtable, dataset_name, None)
         if dataset is None:
@@ -1135,27 +1141,11 @@ class FeffitPanel(TaskPanel):
         refine_bkg = getattr(dataset, 'refine_bkg',
                              opts.get('refine_bkg', False))
 
-        # print("REFINE BKG ",
-        #       getattr(dataset, 'refine_bkg', None),
-        #       opts.get('refine_bkg', None),
-        #       hasattr(dataset, 'data_rebkg'))
-
         if refine_bkg and hasattr(dataset, 'data_rebkg'):
             data_name =  dataset_name + '.data_rebkg'
 
-        fname = opts['filename']
-        if title is None:
-            title = fname
-        if title is None:
-            title = 'Feff Sum'
-        if "'" in title:
-            title = title.replace("'", "\\'")
-
         exafs_conf = self.xasmain.get_nbpage('exafs')[1].read_form()
-        plot_rmax = exafs_conf['plot_rmax']
-
-        plot1 = opts['plot1_op']
-        plot2 = opts['plot2_op']
+        opts['plot_rmax'] = exafs_conf['plot_rmax']
 
         cmds = ["#### plot ",
                 f"#  build arrays for plotting: refine bkg? {refine_bkg}, {dgroup.groupname} / {dataset_name}"]
@@ -1163,7 +1153,7 @@ class FeffitPanel(TaskPanel):
         kweight = opts['plot_kw']
 
         ftargs = dict(kmin=opts['fit_kmin'], kmax=opts['fit_kmax'], dk=opts['fit_dk'],
-                      kwindow=opts['fit_kwindow'], kweight=kweight,
+                      kwindow=opts['fit_kwindow'], kweight=opts['plot_kw'],
                       rmin=opts['fit_rmin'], rmax=opts['fit_rmax'],
                       dr=opts.get('fit_dr', 0.1), rwindow='hanning')
 
@@ -1178,7 +1168,32 @@ class FeffitPanel(TaskPanel):
                                                     **ftargs))
 
         self.larch_eval('\n'.join(cmds))
+        self.plot_feffit_result(dataset_name, topwin=topwin, **opts)
+
+    def plot_feffit_result(self, dataset_name, topwin=None, **opts):
+
+        dataset = self.larch.eval(dataset_name)
+        if dataset is None:
+            dgroup = self.controller.get_group()a
+        else:
+            dgroup = dataset.data
+        data_name  = dataset_name + '.data'
+        model_name = dataset_name + '.model'
+
+        # print("data/model name ", data_name, model_name)
+        # print("dgroup ", dgroup, dataset)
+
+        title = fname = opts['filename']
+        if title is None:
+            title = 'Feff Sum'
+        if "'" in title:
+            title = title.replace("'", "\\'")
+
         needs_qspace = False
+        plot1 = opts['plot1_op']
+        plot2 = opts['plot2_op']
+        plot_rmax = opts['plot_rmax']
+        kweight = opts['plot_kw']
         cmds = []
         for i, plot in enumerate((plot1, plot2)):
             if plot in Plot2_Choices:
@@ -1219,10 +1234,8 @@ class FeffitPanel(TaskPanel):
                 cmds.append(f"{pcmd}({model_name:s}, label='Path sum'{pextra}, title='sum of paths'{newplot})")
             if opts[f'plot{i+1}_paths']:
                 voff = opts[f'plot{i+1}_voff']
-
                 for i, label in enumerate(paths.keys()):
                     if paths[label].use:
-
                         objname = f"{paths_name}['{label:s}']"
                         if needs_qspace:
                             xpath = paths.get(label)
@@ -1434,7 +1447,6 @@ class FeffitPanel(TaskPanel):
         if rfile is None:
             return
 
-
     def get_xranges(self, x):
         if self.dgroup is None:
             self.dgroup = self.controller.get_group()
@@ -1576,9 +1588,6 @@ class FeffitPanel(TaskPanel):
         filename = opts['filename']
         if dgroup is None:
             dgroup = opts['datagroup']
-
-        #print("DGROUP JOURNAL ")
-        #print(dgroup.journal)
 
         script.append("###\n### DATA \n###\n")
         script.append(COMMANDS['data_source'].format(groupname=groupname, filename=filename))
@@ -2018,7 +2027,21 @@ class FeffitResultFrame(wx.Frame):
         self.show_results()
 
     def onPlot(self, event=None):
+        result = self.get_fitresult()
+        if result is None:
+            return
+        dset   = result.datasets[0]
+        dgroup = dset.data
+        if not hasattr(dset.data, 'rwin'):
+            dset._residual(result.params)
+            dset.save_outputs()
+        trans  = dset.transform
+        dset.prepare_fit(result.params)
+        dset._residual(result.params)
+
+        opts = self.feffit_panel.read_form(dgroup=dgroup)
         opts = {'build_fitmodel': False}
+
         for key, meth in (('plot1_ftwins', 'IsChecked'),
                           ('plot2_ftwins', 'IsChecked'),
                           ('plot1_paths', 'IsChecked'),
@@ -2037,23 +2060,11 @@ class FeffitResultFrame(wx.Frame):
         opts['plot2_win'] = int(opts['plot2_win'])
         opts['plot_kw'] = int(opts['plot_kw'])
 
-        result = self.get_fitresult()
-        if result is None:
-            return
-        dset   = result.datasets[0]
-        dgroup = dset.data
-        if not hasattr(dset.data, 'rwin'):
-            dset._residual(result.params)
-            dset.save_outputs()
-        trans  = dset.transform
-        dset.prepare_fit(result.params)
-        dset._residual(result.params)
 
         result_name  = f'{self.datagroup.groupname}.feffit_history[{self.nfit}]'
         opts['label'] = f'{result_name}.label'
-        opts['dataset_name']  = f'{result_name}.datasets[0]'
+        opts['filename'] = self.datagroup.filename
         opts['pargroup_name'] = f'{result_name}.paramgroup'
-
         opts['title'] = f'{self.datagroup.filename}: {result.label}'
 
         for attr in ('kmin', 'kmax', 'dk', 'rmin', 'rmax', 'fitspace'):
@@ -2061,7 +2072,10 @@ class FeffitResultFrame(wx.Frame):
         opts['fit_kwstring'] = "%s" % getattr(trans, 'kweight')
         opts['kwindow']  = getattr(trans, 'window')
         opts['topwin'] = self
-        self.feffit_panel.onPlot(**opts)
+
+        exafs_conf = self.feffit_panel.xasmain.get_nbpage('exafs')[1].read_form()
+        opts['plot_rmax'] = exafs_conf['plot_rmax']
+        self.feffit_panel.plot_feffit_result(f'{result_name}.datasets[0]', **opts)
 
 
     def onSaveFitCommand(self, event=None):
