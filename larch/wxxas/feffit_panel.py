@@ -1174,7 +1174,7 @@ class FeffitPanel(TaskPanel):
 
         dataset = self.larch.eval(dataset_name)
         if dataset is None:
-            dgroup = self.controller.get_group()a
+            dgroup = self.controller.get_group()
         else:
             dgroup = dataset.data
         data_name  = dataset_name + '.data'
