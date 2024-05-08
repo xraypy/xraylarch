@@ -244,7 +244,7 @@ def autobk_delta_chi(group, err_sigma=1):
     after running autobk
     """
     d = getattr(group, 'autobk_details', None)
-    if d is None or d.covar is None:
+    if d is None or getattr(d, 'covar', None) is None:
         return
 
     nchi = len(group.chi)
