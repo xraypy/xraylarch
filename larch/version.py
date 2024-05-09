@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """Version information"""
 
-__release_version__ = '0.9.76'
-__date__    = '2024-April-10'
+__release_version__ = '0.9.78'
+__date__    = '2024-May-09'
 __authors__ = "M. Newville, M. Rovezzi, M. Koker, B. Ravel, and others"
 
 from ._version import __version__, __version_tuple__
