@@ -65,6 +65,25 @@ def setup_larchtypes():
                            }
 
 
+def unpack_minimizer(out):
+    "this will unpack a minimizer, which can appear in a few places"
+    params = out.pop('params')
+    userfunc = out.pop('userfcn', None)
+    kws = out.pop('kws', None)
+    if kws is None:
+        kws = {}
+    if 'kw' in out:
+        kwx = out.pop('kw', None)
+        if isinstance(kwx, dict):
+            kws.update(kwx)
+    for kname in ('scale_covar', 'max_nfev', 'nan_policy'):
+        kws[kname] = out.pop(kname)
+    mini = Minimizer(userfunc, params, **kws)
+    for kname in ('success', 'nfev', 'nfree', 'ndata', 'ier',
+                  'errorbars', 'message', 'lmdif_message', 'chisqr',
+                  'redchi', 'covar', 'userkws', 'userargs', 'result'):
+        setattr(mini, kname, out.pop(kname))
+    return mini
 
 
 def encode4js(obj):
@@ -310,6 +329,8 @@ def decode4js(obj):
         if dtype in HAS_STATE:
             out = HAS_STATE[dtype]()
             out.__setstate__(decode4js(obj.get('value')))
+        elif dtype == 'Minimizer':
+            out = unpack_minimizer(out['value'])
         else:
             print(f"Warning: cannot re-create stateful object of type '{dtype}'")
 
@@ -323,23 +344,7 @@ def decode4js(obj):
             else:
                 out[key] = decode4js(val)
         if classname == 'Minimizer':
-            params = out.pop('params')
-            userfunc = out.pop('userfcn', None)
-            kws = out.pop('kws', None)
-            if kws is None:
-                kws = {}
-            if 'kw' in out:
-                kwx = out.pop('kw', None)
-                if isinstance(kwx, dict):
-                    kws.update(kwx)
-            for kname in ('scale_covar', 'max_nfev', 'nan_policy'):
-                kws[kname] = out.pop(kname)
-            mini = Minimizer(userfunc, params, **kws)
-            for kname in ('success', 'nfev', 'nfree', 'ndata', 'ier',
-                          'errorbars', 'message', 'lmdif_message', 'chisqr',
-                          'redchi', 'covar', 'userkws', 'userargs', 'result'):
-                setattr(mini, kname, out.pop(kname))
-            out = mini
+            out = unpack_minimizer(out)
         elif classname == 'FeffDatFile':
             from larch.xafs import FeffDatFile
             path = FeffDatFile()
