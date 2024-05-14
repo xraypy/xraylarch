@@ -1233,6 +1233,11 @@ class FeffitPanel(TaskPanel):
             elif dataset.model is not None:
                 cmds.append(f"{pcmd}({model_name:s}, label='Path sum'{pextra}, title='sum of paths'{newplot})")
             if opts[f'plot{i+1}_paths']:
+                paths_name = dataset_name + '.paths'
+                try:
+                    paths = self._plain_larch_eval(paths_name)
+                except:
+                    paths = {}
                 voff = opts[f'plot{i+1}_voff']
                 for i, label in enumerate(paths.keys()):
                     if paths[label].use:
