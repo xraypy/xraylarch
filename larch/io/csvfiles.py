@@ -13,7 +13,7 @@ import csv
 import numpy as np
 from dateutil.parser import parse as dateparse
 from larch import Group
-from larch.math import interp
+from larch.math import interp, remove_dups
 from larch.utils import bytes2str, fix_varname, gformat
 
 maketrans = str.maketrans
@@ -32,7 +32,6 @@ def groups2csv(grouplist, filename, delim=',',
 
     """
     delim = delim.strip() + ' '
-
     def get_label(grp):
         'get label for group'
         for attr in ('filename', 'label', 'name', 'file', '__name__'):
@@ -80,11 +79,10 @@ def groups2csv(grouplist, filename, delim=',',
         label = get_label(g)
         buff.append("# %s: %s" % (label, g.filename))
         labels.append(label)
-        _x = getattr(g, x)
+        _x = remove_dups(getattr(g, x))
         _y = getattr(g, y)
-
         if ((len(_x) != npts) or (abs(_x -x0)).sum() > 1.0):
-            columns.append(interp(_x, _y, x0))
+            columns.append(interp(_x, _y, x0, kind='linear'))
         else:
             columns.append(_y)
 
