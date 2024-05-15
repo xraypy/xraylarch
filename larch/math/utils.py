@@ -152,10 +152,16 @@ def interp(x, y, xnew, kind='linear', fill_value=np.nan, **kws):
         sel = slice(None, ncoef) if isbelow  else slice(-ncoef, None)
         if kind.startswith('lin'):
             coefs = polyfit(x[sel], y[sel], 1)
-            out[span] = coefs[0] + coefs[1]*xnew[span]
+            out[span] = coefs[0]
+            if len(coefs) > 1:
+                out[span] += coefs[1]*xnew[span]
         elif kind.startswith('quad'):
             coefs = polyfit(x[sel], y[sel], 2)
-            out[span] = coefs[0] + xnew[span]*(coefs[1] + coefs[2]*xnew[span])
+            out[span] = coefs[0]
+            if len(coefs) > 1:
+                out[span] += coefs[1]*xnew[span]
+            if len(coefs) > 2:
+                out[span] += coefs[2]*xnew[span]**2
         elif kind.startswith('cubic'):
             out[span] = IUSpline(x[sel], y[sel])(xnew[span])
     return out
