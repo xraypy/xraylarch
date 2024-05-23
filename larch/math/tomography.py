@@ -22,6 +22,8 @@ try:
 except ImportError:
     pass
 
+TAU = 2.0 * np.pi
+
 # GLOBAL VARIABLES
 TOMOPY_ALG = ['gridrec', 'art', 'bart', 'mlem', 'osem', 'ospml_hybrid',
               'ospml_quad', 'pml_hybrid', 'pml_quad', 'sirt' ]
@@ -220,4 +222,4 @@ def tomo_reconstruction(sino, omega, algorithm='gridrec',
 
     tomo = tomopy.recon(sino, romega, algorithm=algorithm,
                         center=center, sinogram_order=sinogram_order, **recon_kws)
-    return center, tomo
+    return center, tomo*(sino.mean()/tomo.mean())
