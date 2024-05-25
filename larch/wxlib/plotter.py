@@ -16,7 +16,6 @@ import sys
 import wx
 from copy import deepcopy
 from wxmplot import PlotFrame, ImageFrame, StackedPlotFrame
-from wxmplot.interactive import get_wxapp
 
 import larch
 from ..utils import mkdir
@@ -281,7 +280,6 @@ def get_display(win=1, _larch=None, wxparent=None, size=None,
             _bot = max([g.Bottom for g in geoms])
             DISPLAY_LIMITS = [_left, _right, _top, _bot]
 
-
     win = max(1, min(MAX_WINDOWS, int(abs(win))))
     title   = 'Plot Window %i' % win
     symname = '%s.plot%i' % (_larch_name, win)
@@ -308,7 +306,7 @@ def get_display(win=1, _larch=None, wxparent=None, size=None,
 
     def _get_disp(symname, creator, win, ddict, wxparent,
                   size, height, width, _larch):
-        wxapp = get_wxapp()
+        wxapp = wx.GetApp()
         display = None
         new_display = False
         if win in ddict:
@@ -337,7 +335,7 @@ def get_display(win=1, _larch=None, wxparent=None, size=None,
             display = creator(window=win, wxparent=wxparent,
                               size=size, _larch=_larch)
             new_display = True
-            parent = wx.GetApp().GetTopWindow()
+            parent = wxapp.GetTopWindow()
             if parent is not None:
                 xpos, ypos = parent.GetPosition()
                 xsiz, ysiz = parent.GetSize()
