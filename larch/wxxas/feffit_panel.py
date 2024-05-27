@@ -106,6 +106,12 @@ _feffit_trans = feffit_transform(kmin={fit_kmin:.3f}, kmax={fit_kmax:.3f}, dk={f
                       window='{fit_kwindow:s}', fitspace='{fit_space:s}', rmin={fit_rmin:.3f}, rmax={fit_rmax:.3f})
 """
 
+
+COMMANDS['feffit_dataset_init'] = """# create empty dataset
+_feffit_dataset = feffit_dataset(transform=_feffit_trans)
+"""
+
+
 COMMANDS['paths_init'] = """# make sure dictionary for Feff Paths exists
 try:
     npaths = len(_feffpaths.keys())
@@ -137,6 +143,11 @@ COMMANDS['ff2chi']   = """# sum paths using a list of paths and a group of param
 _feffit_dataset = feffit_dataset(data={groupname:s}, transform={trans:s},
                                  refine_bkg={refine_bkg},
                                  paths={paths:s})
+_feffit_dataset.model = ff2chi({paths:s}, paramgroup=_feffit_params)
+"""
+
+COMMANDS['ff2chi_nodata']   = """# sum paths using a list of paths and a group of parameters
+_feffit_dataset = feffit_dataset(transform={trans:s}, paths={paths:s})
 _feffit_dataset.model = ff2chi({paths:s}, paramgroup=_feffit_params)
 """
 
@@ -991,37 +1002,52 @@ class FeffitPanel(TaskPanel):
         self.config_saved = conf
         return conf
 
-
     def process(self, dgroup=None, **kws):
+        # print("Feffit Panel Process ", dgroup, time.ctime())
         if dgroup is None:
             dgroup = self.controller.get_group()
 
         conf = self.get_config(dgroup=dgroup)
         conf.update(kws)
-        if dgroup is None:
-            return conf
 
         if self.params_need_update:
             self.params_panel.update()
             self.skip_unused_params()
             self.params_need_update = False
 
-        self.dgroup = dgroup
         opts = self.read_form(dgroup=dgroup)
+        if dgroup is not None:
+            self.dgroup = dgroup
+            for attr in ('fit_kmin', 'fit_kmax', 'fit_dk', 'fit_rmin',
+                         'fit_rmax', 'fit_kwindow', 'fit_rwindow',
+                         'fit_dr', 'fit_kwstring', 'fit_space',
+                         'fit_plot', 'plot1_paths'):
 
-        for attr in ('fit_kmin', 'fit_kmax', 'fit_dk', 'fit_rmin',
-                     'fit_rmax', 'fit_kwindow', 'fit_rwindow',
-                     'fit_dr', 'fit_kwstring', 'fit_space',
-                     'fit_plot', 'plot1_paths'):
+                conf[attr] = opts.get(attr, None)
 
-            conf[attr] = opts.get(attr, None)
+            if not hasattr(dgroup, 'config'):
+                dgroup.config = Group()
+            setattr(dgroup.config, self.configname, conf)
 
-        if not hasattr(dgroup, 'config'):
-            dgroup.config = Group()
-        setattr(dgroup.config, self.configname, conf)
+            orig_dgroup = self.controller.get_group()
+            if orig_dgroup is not None:
+                setattr(orig_dgroup.config, self.configname, conf)
+            # print("dgroup " , conf)
 
-        orig_dgroup = self.controller.get_group()
-        setattr(orig_dgroup.config, self.configname, conf)
+            try:
+                tchi = getattr(dgroup, 'chi', np.zeros(10))
+                has_data = 1.e-12 <  (tchi**2).sum()
+            except:
+                has_data = False
+            cmds = [COMMANDS['feffit_trans'].format(**conf)]
+            _feffit_dataset = getattr(self.larch.symtable, '_feffit_dataset', None)
+            if _feffit_dataset is None:
+                cmds.append(COMMANDS['feffit_dataset_init'])
+            if has_data:
+                cmds.append(f"_feffit_dataset.set_datagroup({dgroup.groupname})")
+                cmds.append(f"_feffit_dataset.refine_bkg = {opts['refine_bkg']}")
+            self.larch.eval('\n'.join(cmds))
+        return opts
 
     def fill_form(self, dat):
         dgroup = self.controller.get_group()
@@ -1113,25 +1139,27 @@ class FeffitPanel(TaskPanel):
     def onPlot(self, evt=None, dataset_name='_feffit_dataset',
                pargroup_name='_feffit_params', title=None, build_fitmodel=True,
                topwin=None, **kws):
-        # print("Feffit Main Panel onPlot ", build_fitmodel, kws)
 
         dataset = getattr(self.larch.symtable, dataset_name, None)
         if dataset is None:
             dgroup = self.controller.get_group()
         else:
-            dgroup = dataset.data
+            if dataset.has_data:
+                dgroup = dataset.data
+            else:
+                dgroup = self.controller.get_group()
+                #   print("no data?  dgroup  ", dataset.data, dgroup)
+                if dgroup is not None:
+                    self.larch.eval(f"_feffit_dataset.set_datagroup({dgroup.groupname})")
+                    dataset = getattr(self.larch.symtable, dataset_name, None)
+                    dgroup = dataset.data
+        # print("now data now dgroup  ", dataset, getattr(dataset, 'data', None), dgroup)
 
-        self.process(dgroup)
-        opts = self.read_form(dgroup=dgroup)
+        opts = self.process(dgroup)
         opts.update(**kws)
 
         if build_fitmodel:
-            self.build_fitmodel(dgroup)
-
-        dataset = self.larch.eval(dataset_name)
-        if dataset is None:
-            print("could not get dataset : ", dataset_name)
-            return
+            self.build_fitmodel(dgroup, opts=opts)
 
         model_name = dataset_name + '.model'
         paths_name = dataset_name + '.paths'
@@ -1146,9 +1174,9 @@ class FeffitPanel(TaskPanel):
 
         exafs_conf = self.xasmain.get_nbpage('exafs')[1].read_form()
         opts['plot_rmax'] = exafs_conf['plot_rmax']
-
+        groupname = getattr(dgroup, 'groupname', 'unknown')
         cmds = ["#### plot ",
-                f"#  build arrays for plotting: refine bkg? {refine_bkg}, {dgroup.groupname} / {dataset_name}"]
+                f"#  build arrays for plotting: refine bkg? {refine_bkg}, {groupname} / {dataset_name}"]
 
         kweight = opts['plot_kw']
 
@@ -1172,16 +1200,16 @@ class FeffitPanel(TaskPanel):
 
     def plot_feffit_result(self, dataset_name, topwin=None, **opts):
 
-        dataset = self.larch.eval(dataset_name)
+        dataset = getattr(self.larch.symtable, dataset_name, None)
         if dataset is None:
             dgroup = self.controller.get_group()
         else:
             dgroup = dataset.data
         data_name  = dataset_name + '.data'
         model_name = dataset_name + '.model'
+        has_data = getattr(dataset, 'has_data', True)
 
-        # print("data/model name ", data_name, model_name)
-        # print("dgroup ", dgroup, dataset)
+        print("plot_feffit_result/ dgroup, dataset: ", dgroup, dataset, has_data)
 
         title = fname = opts['filename']
         if title is None:
@@ -1221,17 +1249,22 @@ class FeffitPanel(TaskPanel):
                 pextra += f', show_chik=False'
                 needs_qspace = True
             else:
-                print(" do not know how to plot ", plot)
+                # print(" do not know how to plot ", plot)
                 continue
             with_win = opts[f'plot{i+1}_ftwins']
             newplot = f', show_window={with_win}, new=True'
             overplot = f', show_window=False, new=False'
+            extra = newplot
             if dgroup is not None:
-                cmds.append(f"{pcmd}({data_name:s}, label='data'{pextra}, title='{title}'{newplot})")
+                if has_data:
+                    cmds.append(f"{pcmd}({data_name:s}, label='data'{pextra}, title='{title}'{extra})")
+                    extra = overplot
                 if dataset.model is not None:
-                    cmds.append(f"{pcmd}({model_name:s}, label='model'{pextra}{overplot})")
+                    cmds.append(f"{pcmd}({model_name:s}, label='model'{pextra}{extra})")
+                    extra = overplot
             elif dataset.model is not None:
-                cmds.append(f"{pcmd}({model_name:s}, label='Path sum'{pextra}, title='sum of paths'{newplot})")
+                cmds.append(f"{pcmd}({model_name:s}, label='Path sum'{pextra}, title='sum of paths'{extra})")
+                extra = overplot
             if opts[f'plot{i+1}_paths']:
                 paths_name = dataset_name + '.paths'
                 try:
@@ -1472,7 +1505,7 @@ class FeffitPanel(TaskPanel):
             if name in text:
                 return self.paths_nb.GetPage(i)
 
-    def build_fitmodel(self, groupname=None):
+    def build_fitmodel(self, groupname=None, opts=None):
         """ use fit components to build model"""
         paths = []
         cmds = ["### set up feffit "]
@@ -1480,10 +1513,11 @@ class FeffitPanel(TaskPanel):
         if self.dgroup is None:
             self.dgroup = self.controller.get_group()
 
+        self.params_panel.update()
         cmds.extend(self.params_panel.generate_params())
 
-        self.process(self.dgroup)
-        opts = self.read_form(self.dgroup)
+        if opts is None:
+            opts = self.process(self.dgroup)
 
         cmds.append(COMMANDS['feffit_trans'].format(**opts))
 
@@ -1497,6 +1531,10 @@ class FeffitPanel(TaskPanel):
             cmds.append(COMMANDS['paths_init'])
         else:
             cmds.append(COMMANDS['paths_reset'])
+
+        _feffit_dataset = getattr(self.larch.symtable, '_feffit_dataset', None)
+        if _feffit_dataset is None:
+            cmds.append(COMMANDS['feffit_dataset_init'])
 
         paths_list = []
         opts['paths'] = []
@@ -1514,19 +1552,18 @@ class FeffitPanel(TaskPanel):
 
         paths_string = '[%s]' % (', '.join(paths_list))
 
-
-# _feffit_dataset = feffit_dataset(data={groupname:s}, transform={trans:s},
-#                                  refine_bkg={refine_bkg},
-#                                  paths={paths:s})
-# _feffit_dataset.model = ff2chi({paths:s}, paramgroup=_feffit_params)
-
-        cmds.append(COMMANDS['ff2chi'].format(paths=paths_string,
-                                              trans='_feffit_trans',
-                                              groupname=opts['groupname'],
-                                              refine_bkg=opts['refine_bkg'])
-                    )
+        gname = opts.get('groupname', None)
+        if gname is None:
+            cmds.append(COMMANDS['ff2chi_nodata'].format(paths=paths_string,
+                                                        trans='_feffit_trans')
+                                                        )
+        else:
+            cmds.append(COMMANDS['ff2chi'].format(paths=paths_string,
+                                                  trans='_feffit_trans',
+                                                  groupname=gname,
+                                                  refine_bkg=opts['refine_bkg'])
+                        )
         cmds.append('# end of build model')
-
         self.larch_eval("\n".join(cmds))
         return opts
 
