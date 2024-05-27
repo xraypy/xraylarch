@@ -251,16 +251,34 @@ class FeffitDataSet(Group):
         else:
             self.paths = {}
         self.pathlist = list(self.paths.values())
+
+        if transform is None:
+            transform = TransformGroup()
+        else:
+            trasform = copy(transform)
+        self.transform = transform
+
+        if model is None:
+            self.model = Group(__name__='Feffit Model for %s' % repr(data))
+            self.model.k = None
+        else:
+            self.model = model
         # make datagroup from passed in data: copy of k, chi, delta_chi, epsilon_k
+        self.set_datagroup(data, epsilon_k=epsilon_k, refine_bkg=refine_bkg)
+
+    def set_datagroup(self, data, epsilon_k=None, refine_bkg=False):
+        "set the data group for the Dataset"
         if data is None:
             self.data = Group(__name__='Feffit DatasSet (no data)',
                               groupname=None,filename=None,
                               k=np.arange(401)/20.0, chi=np.zeros(401))
+            self.has_data = False
         else:
             self.data = Group(__name__='Feffit DatasSet from %s' % repr(data),
                             groupname=getattr(data, 'groupname', repr(data)),
                             filename=getattr(data, 'filename', repr(data)),
                             k=data.k[:]*1.0, chi=data.chi[:]*1.0)
+            self.has_data = True
         if hasattr(data, 'config'):
             self.data.config = deepcopy(data.config)
         else:
@@ -275,23 +293,12 @@ class FeffitDataSet(Group):
         for attr in dat_attrs:
             if attr not in ('feffit_history',) and not hasattr(self.data, attr):
                 setattr(self.data, attr, getattr(data, attr, None))
-
-        if transform is None:
-            transform = TransformGroup()
-        else:
-            trasform = copy(transform)
-        self.transform = transform
-
-        if model is None:
-            self.model = Group(__name__='Feffit Model for %s' % repr(data))
-            self.model.k = None
-        else:
-            self.model = model
         self.hashkey = None
         self.bkg_spline = {}
         self._chi = None
         self._bkg = 0.0
         self._prepared = False
+
 
     def __generate_hashkey(self, other_hashkeys=None):
         """generate hash for dataset"""
