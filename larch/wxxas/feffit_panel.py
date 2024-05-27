@@ -30,7 +30,7 @@ from larch.math import index_of
 from larch.fitting import group2params, param
 from larch.utils.jsonutils import encode4js, decode4js
 from larch.inputText import is_complete
-from larch.utils import fix_varname, fix_filename, gformat, mkdir
+from larch.utils import fix_varname, fix_filename, gformat, mkdir, isValidName
 from larch.io.export_modelresult import export_modelresult
 from larch.xafs import feffit_report, feffpath
 from larch.xafs.feffdat import FEFFDAT_VALUES
@@ -1150,7 +1150,7 @@ class FeffitPanel(TaskPanel):
                 dgroup = self.controller.get_group()
                 #   print("no data?  dgroup  ", dataset.data, dgroup)
                 if dgroup is not None:
-                    self.larch.eval(f"_feffit_dataset.set_datagroup({dgroup.groupname})")
+                    self.larch.eval(f"{dataset_name}.set_datagroup({dgroup.groupname})")
                     dataset = getattr(self.larch.symtable, dataset_name, None)
                     dgroup = dataset.data
         # print("now data now dgroup  ", dataset, getattr(dataset, 'data', None), dgroup)
@@ -1200,7 +1200,11 @@ class FeffitPanel(TaskPanel):
 
     def plot_feffit_result(self, dataset_name, topwin=None, **opts):
 
-        dataset = getattr(self.larch.symtable, dataset_name, None)
+        if isValidName(dataset_name):
+            dataset = getattr(self.larch.symtable, dataset_name, None)
+        else:
+            dataset = self.larch.eval(dataset_name)
+
         if dataset is None:
             dgroup = self.controller.get_group()
         else:
@@ -1209,7 +1213,7 @@ class FeffitPanel(TaskPanel):
         model_name = dataset_name + '.model'
         has_data = getattr(dataset, 'has_data', True)
 
-        print("plot_feffit_result/ dgroup, dataset: ", dgroup, dataset, has_data)
+        #print("plot_feffit_result/ dgroup, dataset: ", dataset_name, dgroup, dataset, has_data)
 
         title = fname = opts['filename']
         if title is None:
@@ -1323,7 +1327,7 @@ class FeffitPanel(TaskPanel):
 
         if pathinfo is None and feffpath is None:
             raise ValueError("add_path needs a Feff Path or Path information")
-
+        self.params_need_update = True
         parent, fname = os.path.split(filename)
         parent, feffrun = os.path.split(parent)
 
@@ -1513,7 +1517,7 @@ class FeffitPanel(TaskPanel):
         if self.dgroup is None:
             self.dgroup = self.controller.get_group()
 
-        self.params_panel.update()
+        # self.params_panel.update()
         cmds.extend(self.params_panel.generate_params())
 
         if opts is None:
