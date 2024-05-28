@@ -5,6 +5,7 @@ Larch command-line shell
 import cmd
 import os
 import sys
+import signal
 from .interpreter import Interpreter
 
 from .site_config import history_file
@@ -48,9 +49,11 @@ class Shell(cmd.Cmd):
             except IOError:
                 print(f'could not read history from {history_file}')
 
+
         self.larch = Interpreter(historyfile=history_file,
                                  maxhistory=maxhist)
         self.larch.writer = StdWriter(_larch=self.larch)
+
         if with_wx and HAS_WXPYTHON:
             symtable = self.larch.symtable
             try:
@@ -59,13 +62,9 @@ class Shell(cmd.Cmd):
             except SystemExit:
                 with_wx = False
 
-        if with_wx and HAS_WXPYTHON:
             symtable.set_symbol('_sys.wx.wxapp', app)
             symtable.set_symbol('_sys.wx.force_wxupdate', False)
             symtable.set_symbol('_sys.wx.parent', None)
-
-            def on_ctrl_c(*args, **kws):
-                return 0
 
             from .wxlib import inputhook
             symtable.set_symbol('_sys.wx.inputhook', inputhook)
@@ -73,9 +72,11 @@ class Shell(cmd.Cmd):
                 symtable.set_symbol('_sys.wx.ping',   inputhook.ping_darwin)
             else:
                 symtable.set_symbol('_sys.wx.ping',   inputhook.ping)
-            inputhook.ON_INTERRUPT = on_ctrl_c
+
+            inputhook.ON_INTERRUPT = self.onCtrlC
             inputhook.WXLARCH_SYM = symtable
 
+        signal.signal(signal.SIGINT, self.onCtrlC)
         self.prompt = self.larch.input.prompt
         writer = self.larch.writer
         self.color_writer = (uname != 'win' and hasattr(writer, 'set_textstyle'))
@@ -89,8 +90,13 @@ class Shell(cmd.Cmd):
             writer.write("\n")
             if self.color_writer:
                 writer.set_textstyle('text')
+
         self.larch_execute = self.default
         self.larch.run_init_scripts()
+
+    def onCtrlC(self, *args, **kws):
+        self.larch.symtable.set_symbol('_sys.wx.keyboard_interrupt', True)
+        return 0
 
     def on_exit(self, text=None):
         "exit"
