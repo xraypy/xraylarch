@@ -15,7 +15,7 @@ from functools import partial
 
 import wx
 import wx.lib.scrolledpanel as scrolled
-
+import wx.lib.agw.flatnotebook as flat_nb
 from wx.adv import AboutBox, AboutDialogInfo
 
 from wx.richtext import RichTextCtrl
@@ -75,6 +75,10 @@ from larch.io.xas_data_source import open_xas_source
 
 from larch.xafs import pre_edge, pre_edge_baseline
 
+# FNB_STYLE = flat_nb.FNB_NO_X_BUTTON
+FNB_STYLE = flat_nb.FNB_X_ON_TAB
+FNB_STYLE |= flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
+
 LEFT = wx.ALIGN_LEFT
 CEN |=  wx.ALL
 FILE_WILDCARDS = "Data Files|*.0*;*.dat;*.DAT;*.xdi;*.prj;*.sp*c;*.h*5;*.larix|All files (*.*)|*.*"
@@ -83,7 +87,7 @@ ICON_FILE = 'onecone.ico'
 XASVIEW_SIZE = (1020, 830)
 PLOTWIN_SIZE = (550, 550)
 
-NB_PANELS = {'Normalization': XASNormPanel,
+NB_PANELS = {'XAS Normalization': XASNormPanel,
              'Pre-edge Peak': PrePeakPanel,
              'PCA':  PCAPanel,
              'Linear Combo': LinearComboPanel,
@@ -241,6 +245,104 @@ class PreferencesFrame(wx.Frame):
         self.controller.save_config()
 
 
+class PanelSelectionFrame(wx.Frame) :
+    """ Frame to select which Panels to show"""
+    def __init__(self, parent=None, pos=(-1, -1), db=None):
+
+        self.parent = parent
+        self.db = db
+
+        style    = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
+        labstyle  = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
+        rlabstyle = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
+        tstyle    = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
+
+        wx.Frame.__init__(self, None, -1,
+                          'Epics Instruments:  Select Instruments to Display')
+
+        font = parent.GetFont()
+
+        titlefont  = self.GetFont()
+        titlefont.PointSize += 2
+        titlefont.SetWeight(wx.BOLD)
+
+        sizer = wx.GridBagSizer(5, 5)
+        panel = scrolled.ScrolledPanel(self, size=(700, 750),
+                                       style=wx.GROW|wx.TAB_TRAVERSAL)
+        # title row
+        self.colors = GUIColors()
+        title = SimpleText(panel, 'Show Instruments:',
+                           font=titlefont,
+                           colour=self.colors.title, style=tstyle)
+        irow = 0
+        sizer.Add(title, (irow, 0), (1, 4), labstyle|wx.ALL, 3)
+        self.hideframes = {}
+        strlen = 24
+        for inst in self.db.get_all_instruments():
+            strlen = max(strlen, len(inst.name))
+
+        icol = 0
+        irow = 1
+        for inst in self.db.get_all_instruments():
+            isshown = inst.name in self.get_page_map()
+            iname = (inst.name + ' '*strlen)[:strlen]
+            cb = wx.CheckBox(panel, -1, iname)#, style=wx.ALIGN_RIGHT)
+            cb.SetValue(isshown)
+            self.hideframes[inst.name] = cb
+            sizer.Add(cb, (irow, icol), (1, 1), labstyle,  5)
+            icol += 1
+            if icol == 3:
+                icol = 0
+                irow += 1
+
+        irow += 1
+        sizer.Add(wx.StaticLine(panel, size=(200, -1), style=wx.LI_HORIZONTAL),
+                  (irow, 0), (1, 5), wx.ALIGN_CENTER|wx.GROW|wx.ALL, 5)
+
+        btn_ok     = Button(panel, 'OK',     size=(70, -1), action=self.OnOK)
+        btn_cancel = Button(panel, 'Cancel', size=(70, -1), action=self.OnCancel)
+
+        irow += 1
+        sizer.Add(btn_ok,     (irow, 0), (1, 1), labstyle|wx.ALL,  5)
+        sizer.Add(btn_cancel, (irow, 1), (1, 1), labstyle|wx.ALL,  5)
+
+        set_font_with_children(self, font)
+
+        pack(panel, sizer)
+        panel.SetupScrolling()
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        mainsizer.Add(panel, 1, wx.GROW|wx.ALL, 1)
+
+        self.SetMinSize((750, 450))
+        pack(self, mainsizer)
+        self.Show()
+        self.Raise()
+
+    def get_page_map(self):
+        out = {}
+        for i in range(self.parent.nb.GetPageCount()):
+            out[self.parent.nb.GetPageText(i)] = i
+        return out
+
+    def OnOK(self, event=None):
+        yesno = {True: 1, False: 0}
+
+        pagemap = self.get_page_map()
+        for pagename, cb in self.hideframes.items():
+            checked = cb.IsChecked()
+            if not checked and pagename in pagemap:
+                self.parent.nb.DeletePage(pagemap[pagename])
+                pagemap = self.get_page_map()
+
+            elif checked and pagename not in pagemap:
+                inst = self.db.get_instrument(pagename)
+                self.parent.add_instrument_page(inst.name)
+                pagemap = self.get_page_map()
+        self.Destroy()
+
+    def OnCancel(self, event=None):
+        self.Destroy()
+
 class XASFrame(wx.Frame):
     _about = f"""{LARIX_TITLE}
     Matt Newville <newville @ cars.uchicago.edu>
@@ -382,10 +484,13 @@ class XASFrame(wx.Frame):
 
         ir = 0
         sizer.Add(self.title, 0, CEN, 3)
-        self.nb = flatnotebook(panel, NB_PANELS,
+
+        self.nb = flatnotebook(panel,
+                               NB_PANELS,
                                panelkws=dict(xasmain=self,
                                              controller=self.controller),
                                on_change=self.onNBChanged,
+                               style=FNB_STYLE,
                                size=(700, 700))
 
         sizer.Add(self.nb, 1, LEFT|wx.EXPAND, 2)
@@ -393,6 +498,7 @@ class XASFrame(wx.Frame):
 
         pack(panel, sizer)
         splitter.SplitVertically(leftpanel, panel, 1)
+        print("Created NB ", self.nb.pagelist)
 
     def process_normalization(self, dgroup, force=True, use_form=True):
         self.get_nbpage('xasnorm')[1].process(dgroup, force=force, use_form=use_form)
@@ -1625,7 +1731,6 @@ before clearing"""
 
         self.controller.install_group(groupname, filename,
                                       source=source, journal=journal)
-
         self.nb.SetSelection(0)
         self.ShowFile(groupname=groupname, filename=filename,
                       process=process, plot=plot)
@@ -1781,9 +1886,9 @@ class XASViewer(LarchWxApp):
         LarchWxApp.__init__(self, **kws)
 
     def createApp(self):
-        frame = XASFrame(filename=self.filename,
+        self.frame = XASFrame(filename=self.filename,
                          check_version=self.check_version)
-        self.SetTopWindow(frame)
+        self.SetTopWindow(self.frame)
         return True
 
 def larix(**kws):
