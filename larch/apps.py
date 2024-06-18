@@ -84,10 +84,8 @@ class LarchApp(object):
         self.filename = None
         if 'filename' in args and args.filename is not None:
             self.filename = os.path.abspath(args.filename)
-        print('args ', args)
         self.wx_debug = args.wx_debug
         self.run_mode = args.run_mode
-
         if self.is_wxapp:
             set_locale()
             use_mpl_wxagg()
