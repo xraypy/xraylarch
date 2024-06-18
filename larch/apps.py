@@ -74,10 +74,19 @@ class LarchApp(object):
     def prep_cli(self):
         parser = ArgumentParser(description=self.description)
         parser.add_argument('filename', nargs='?',  help=self.filetype)
+
+        parser.add_argument('-m', '-mode', dest='run_mode', action='store_true',
+                            default='xas', help='set startup mode')
+        parser.add_argument('-w', '-wx_debug', dest='wx_debug', action='store_true',
+                            default=False, help='enable wxPython inspection and debugging')
+
         args = parser.parse_args()
         self.filename = None
         if 'filename' in args and args.filename is not None:
             self.filename = os.path.abspath(args.filename)
+        print('args ', args)
+        self.wx_debug = args.wx_debug
+        self.run_mode = args.run_mode
 
         if self.is_wxapp:
             set_locale()
@@ -133,8 +142,9 @@ def run_larix():
     """XANES and EXAFS Analysis GUI for Larch"""
     app = LarchApps['Larix']
     app.prep_cli()
-    from .wxxas import XASViewer
-    XASViewer(check_version=True, filename=app.filename).MainLoop()
+    from .wxxas import LarixApp
+    LarixApp(check_version=True, filename=app.filename,
+              mode=app.run_mode, wx_debug=app.wx_debug).MainLoop()
 
 run_xas_viewer = run_larix
 

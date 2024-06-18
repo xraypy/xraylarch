@@ -12,4 +12,4 @@ from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
                           DeconvolutionDialog, OverAbsorptionDialog,
                           QuitDialog, ExportCSVDialog)
 
-from .xasgui import XASFrame, XASViewer, LARIX_TITLE
+from .xasgui import LarixFrame, LarixApp, LARIX_TITLE

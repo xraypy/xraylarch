@@ -20,8 +20,6 @@ from wx.adv import AboutBox, AboutDialogInfo
 
 from wx.richtext import RichTextCtrl
 
-WX_DEBUG = True
-
 import larch
 from larch import Group, Journal, Entry
 from larch.io import save_session, read_session
@@ -84,8 +82,11 @@ CEN |=  wx.ALL
 FILE_WILDCARDS = "Data Files|*.0*;*.dat;*.DAT;*.xdi;*.prj;*.sp*c;*.h*5;*.larix|All files (*.*)|*.*"
 
 ICON_FILE = 'onecone.ico'
-XASVIEW_SIZE = (1020, 830)
+LARIX_SIZE = (1200, 850)
+LARIX_MINSIZE = (500, 250)
 PLOTWIN_SIZE = (550, 550)
+
+VALID_LARIX_MODES = ('xas', 'exafs', 'xanes', 'xrfmap', 'lmfit')
 
 NB_PANELS = {'XAS Normalization': XASNormPanel,
              'Pre-edge Peak': PrePeakPanel,
@@ -98,8 +99,7 @@ NB_PANELS = {'XAS Normalization': XASNormPanel,
 QUIT_MESSAGE = '''Really Quit? You may want to save your project before quitting.
  This is not done automatically!'''
 
-LARIX_TITLE = "Larix (was XAS Viewer): XAS Visualization and Analysis"
-
+LARIX_TITLE = "Larix: XAS Visualization and Analysis"
 
 def assign_gsescan_groups(group):
     labels = group.array_labels
@@ -343,13 +343,13 @@ class PanelSelectionFrame(wx.Frame) :
     def OnCancel(self, event=None):
         self.Destroy()
 
-class XASFrame(wx.Frame):
+class LarixFrame(wx.Frame):
     _about = f"""{LARIX_TITLE}
     Matt Newville <newville @ cars.uchicago.edu>
     """
     def __init__(self, parent=None, _larch=None, filename=None,
-                 check_version=True, **kws):
-        wx.Frame.__init__(self, parent, -1, size=XASVIEW_SIZE, style=FRAMESTYLE)
+                 wx_debug=False, mode='xas', check_version=True, **kws):
+        wx.Frame.__init__(self, parent, -1, size=LARIX_SIZE, style=FRAMESTYLE)
 
         if check_version:
             def version_checker():
@@ -357,6 +357,10 @@ class XASFrame(wx.Frame):
             version_thread = Thread(target=version_checker)
             version_thread.start()
 
+        self.wx_debug = wx_debug
+        self.mode = mode
+        if self.mode not in VALID_LARIX_MODES:
+            self.mode = 'xas'
         self.last_col_config = {}
         self.last_spec_config = {}
         self.last_session_file = None
@@ -393,7 +397,8 @@ class XASFrame(wx.Frame):
         self.subframes = {}
         self.plotframe = None
         self.SetTitle(title)
-        self.SetSize(XASVIEW_SIZE)
+        self.SetSize(LARIX_SIZE)
+        self.SetMinSize(LARIX_MINSIZE)
         self.SetFont(Font(FONTSIZE))
         self.createMainPanel()
         self.createMenus()
@@ -596,25 +601,39 @@ class XASFrame(wx.Frame):
     def createMenus(self):
         # ppnl = self.plotpanel
         self.menubar = wx.MenuBar()
-        fmenu = wx.Menu()
+        file_menu = wx.Menu()
+        session_menu = wx.Menu()
+        pref_menu = wx.Menu()
         group_menu = wx.Menu()
-        data_menu = wx.Menu()
+        xasdata_menu = wx.Menu()
         feff_menu = wx.Menu()
         m = {}
 
-        MenuItem(self, fmenu, "&Open Data File\tCtrl+O",
+        MenuItem(self, file_menu, "&Open Data File\tCtrl+O",
                  "Open Data File",  self.onReadDialog)
 
-        MenuItem(self, fmenu, "&Read Larch Session\tCtrl+R",
+        file_menu.AppendSeparator()
+        MenuItem(self, file_menu, "Save Selected Groups to Athena Project File",
+                 "Save Selected Groups to an Athena Project File",
+                 self.onExportAthenaProject)
+
+        MenuItem(self, file_menu, "Save Selected Groups to CSV File",
+                 "Save Selected Groups to a CSV File",
+                 self.onExportCSV)
+
+        MenuItem(self, file_menu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
+
+
+        MenuItem(self, session_menu, "&Read Larch Session\tCtrl+R",
                  "Read Previously Saved Session",  self.onLoadSession)
 
-        MenuItem(self, fmenu, "&Save Larch Session\tCtrl+S",
+        MenuItem(self, session_menu, "&Save Larch Session\tCtrl+S",
                  "Save Session to a File",  self.onSaveSession)
 
-        MenuItem(self, fmenu, "&Save Larch Session As ...\tCtrl+A",
+        MenuItem(self, session_menu, "&Save Larch Session As ...\tCtrl+A",
                  "Save Session to a File",  self.onSaveSessionAs)
 
-        MenuItem(self, fmenu, "Clear Larch Session",
+        MenuItem(self, session_menu, "Clear Larch Session",
                  "Clear all data from this Session",  self.onClearSession)
 
         # autosaved session
@@ -624,38 +643,28 @@ class XASFrame(wx.Frame):
 
         self.recent_menu = wx.Menu()
         self.get_recent_session_menu()
-        fmenu.Append(-1, 'Recent Session Files',  self.recent_menu)
+        session_menu.Append(-1, 'Recent Session Files',  self.recent_menu)
 
 
-        MenuItem(self, fmenu, "&Auto-Save Larch Session",
+        MenuItem(self, session_menu, "&Auto-Save Larch Session",
                  f"Save Session now",  self.autosave_session)
-        fmenu.AppendSeparator()
 
-        MenuItem(self, fmenu, "Save Selected Groups to Athena Project File",
-                 "Save Selected Groups to an Athena Project File",
-                 self.onExportAthenaProject)
+        session_menu.AppendSeparator()
 
-        MenuItem(self, fmenu, "Save Selected Groups to CSV File",
-                 "Save Selected Groups to a CSV File",
-                 self.onExportCSV)
-
-        MenuItem(self, fmenu, 'Save Larch History as Script\tCtrl+H',
-                 'Save Session History as Larch Script',
-                 self.onSaveLarchHistory)
-
-        fmenu.AppendSeparator()
-
-        MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L',
+        MenuItem(self, session_menu, 'Show Larch Buffer\tCtrl+L',
                  'Show Larch Programming Buffer',
                  self.onShowLarchBuffer)
 
-#         MenuItem(self, fmenu, 'wxInspect\tCtrl+I',
-#                  'Show wx inspection window',   self.onwxInspect)
+        MenuItem(self, session_menu, 'Save Larch History as Script\tCtrl+H',
+                 'Save Session History as Larch Script',
+                 self.onSaveLarchHistory)
 
-        MenuItem(self, fmenu, 'Edit Preferences\tCtrl+E', 'Customize Preferences',
+        if self.wx_debug:
+            MenuItem(self, session_menu, 'wx debug\tCtrl+I',
+                     'Show wx inspection window',   self.onwxInspect)
+
+        MenuItem(self, pref_menu, 'Edit Preferences\tCtrl+E', 'Customize Preferences',
                  self.onPreferences)
-
-        MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
 
         MenuItem(self, group_menu, "Copy This Group",
@@ -686,33 +695,35 @@ class XASFrame(wx.Frame):
         MenuItem(self, group_menu, "UnFreeze Selected Groups",
                  "UnFreeze Selected Groups", self.onUnFreezeGroups)
 
-        MenuItem(self, data_menu, "Deglitch Data",  "Deglitch Data",
+        MenuItem(self, xasdata_menu, "Deglitch Data",  "Deglitch Data",
                  self.onDeglitchData)
 
-        MenuItem(self, data_menu, "Calibrate Energy",
+        MenuItem(self, xasdata_menu, "Calibrate Energy",
                  "Calibrate Energy",
                  self.onEnergyCalibrateData)
 
-        MenuItem(self, data_menu, "Smooth Data", "Smooth Data",
+        MenuItem(self, xasdata_menu, "Smooth Data", "Smooth Data",
                  self.onSmoothData)
 
-        MenuItem(self, data_menu, "Deconvolve Data",
+        MenuItem(self, xasdata_menu, "Deconvolve Data",
                  "Deconvolution of Data",  self.onDeconvolveData)
 
-        MenuItem(self, data_menu, "Rebin Data", "Rebin Data",
+        MenuItem(self, xasdata_menu, "Rebin Data", "Rebin Data",
                  self.onRebinData)
 
-        MenuItem(self, data_menu, "Correct Over-absorption",
+        MenuItem(self, xasdata_menu, "Correct Over-absorption",
                  "Correct Over-absorption",
                  self.onCorrectOverAbsorptionData)
 
-        MenuItem(self, data_menu, "Add and Subtract Spectra",
+        MenuItem(self, xasdata_menu, "Add and Subtract Spectra",
                  "Calculations of Spectra",  self.onSpectraCalc)
 
 
-        self.menubar.Append(fmenu, "&File")
+        self.menubar.Append(file_menu, "&File")
+        self.menubar.Append(session_menu, "Sessions")
+        self.menubar.Append(pref_menu, "Preferences")
         self.menubar.Append(group_menu, "Groups")
-        self.menubar.Append(data_menu, "Data")
+        self.menubar.Append(xasdata_menu, "XAS Data")
 
         MenuItem(self, feff_menu, "Browse CIF Structures, Run Feff",
                  "Browse CIF Structure, run Feff", self.onCIFBrowse)
@@ -1879,20 +1890,25 @@ before clearing"""
             self.timers['pin'].Start(250)
 
 
-class XASViewer(LarchWxApp):
-    def __init__(self, filename=None, check_version=True, **kws):
+class LarixApp(LarchWxApp):
+    def __init__(self, filename=None, check_version=True, mode='xas',
+                 wx_debug=False, **kws):
         self.filename = filename
+        self.mode = mode
+        self.wx_debug = wx_debug
         self.check_version = check_version
-        LarchWxApp.__init__(self, **kws)
+        LarchWxApp.__init__(self,**kws)
 
     def createApp(self):
-        self.frame = XASFrame(filename=self.filename,
-                         check_version=self.check_version)
+        self.frame = LarixFrame(filename=self.filename,
+                                mode=self.mode,
+                                wx_debug=self.wx_debug,
+                                check_version=self.check_version)
         self.SetTopWindow(self.frame)
         return True
 
 def larix(**kws):
-    XASViewer(**kws)
+    LarixApp(**kws)
 
 if __name__ == "__main__":
     import argparse
@@ -1901,6 +1917,13 @@ if __name__ == "__main__":
         '-f', '--filename',
         dest='filename',
         help='data file to load')
+    parser.add_argument(
+        '-m', '--mode',
+        dest='mode',
+        help='mode to start larix')
+    parser.add_argument(
+        '-w', '--wx_debug',
+        dest='wx_debug',
+        help='wx debugging mode')
     args = parser.parse_args()
-    app = XASViewer(**vars(args))
-    app.MainLoop()
+    LarixApp(**vars(args)).MainLoop()
