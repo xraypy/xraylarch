@@ -895,7 +895,7 @@ class PrePeakPanel(TaskPanel):
     def fill_form(self, dat):
         if isinstance(dat, Group):
             if not hasattr(dat, 'norm'):
-                self.xasmain.process_normalization(dat)
+                self.parent.process_normalization(dat)
             if hasattr(dat, 'prepeaks'):
                 self.wids['ppeak_emin'].SetValue(dat.prepeaks.emin)
                 self.wids['ppeak_emax'].SetValue(dat.prepeaks.emax)
@@ -1456,7 +1456,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         for igroup, gname in enumerate(groups):
             dgroup = self.controller.get_group(gname)
             if not hasattr(dgroup, 'norm'):
-                self.xasmain.process_normalization(dgroup)
+                self.parent.process_normalization(dgroup)
             self.build_fitmodel(gname)
             opts['group'] = opts['gname']
             self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))

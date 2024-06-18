@@ -1,3 +1,5 @@
+from collections import namedtuple
+
 import wxmplot
 
 from larch.site_config import get_homedir
@@ -79,17 +81,43 @@ Feffit_KWChoices = {'1': '1', '2': '2', '3': '3',
 Feffit_SpaceChoices = {'R space':'r', 'k space':'k', 'wavelet': 'w'}
 Feffit_PlotChoices = {'K and R space': 'k+r', 'R space only': 'r'}
 
-
 Valid_DataTypes = ('string', 'float', 'int', 'bool', 'choice', 'path')
 
-PANELS = {'exafs': 'EXAFS Background Subtraction and Fourier Transforms',
-          'feffit': 'Feff Fitting of EXAFS Paths',
-          'lincombo': 'Linear Combination Analysis',
-          'pca': 'Principal Component Analysis',
-          'prepeaks': 'Pre-edge Peak Analysis',
-          'regression': 'Regression and Feature Selection',
-          'xasnorm': 'XAS Normalization',
-          }
+LARIX_MODES = ('xas', 'exafs', 'xanes', 'xrfmap', 'lmfit')
+
+AnalysisTab = namedtuple('AnalysisTab', ('constructor', 'enabled', 'key', 'desc'))
+
+LARIX_PANELS = {'XAS Normalization':
+                AnalysisTab('larch.wxxas.xasnorm_panel.XASNormPanel',  True, 'xasnorm',
+                            'Normalization and Pre-edge subtraction for XANES and EXAFS'),
+                'Pre-edge Peaks':
+                AnalysisTab('larch.wxxas.prepeak_panel.PrePeakPanel', True, 'prepeaks',
+                            'Curve Fitting for XANES Pre-edge Peaks'),
+                'XAS PCA':
+                AnalysisTab('larch.wxxas.pca_panel.PCAPanel', True, 'pca',
+                            'Principal Component Analysis for XANES and EXAFS'),
+                'XAS Linear Combo':
+                AnalysisTab('larch.wxxas.lincombo_panel.LinearComboPanel', True, 'lincombo',
+                            'Linear Combination Analysis for XANES and EXAFS'),
+                'XAS Regression':
+                AnalysisTab('larch.wxxas.regress_panel.RegressionPanel', True, 'regression',
+                            'Linear Regression and Feature Selection for XANES and EXAFS'),
+                'EXAFS':
+                AnalysisTab('larch.wxxas.exafs_panel.EXAFSPanel', True, 'exafs',
+                            'EXAFS Background Subtraction and Fourier Transforms'),
+                'FEFF Fitting':
+                AnalysisTab('larch.wxxas.feffit_panel.FeffitPanel', True, 'feffit',
+                            'EXAFS Path Fitting with FEFF calculations'),
+                }
+
+# PANELS = {'exafs': 'EXAFS Background Subtraction and Fourier Transforms',
+#           'feffit': 'Feff Fitting of EXAFS Paths',
+#           'lincombo': 'Linear Combination Analysis',
+#           'pca': 'Principal Component Analysis',
+#           'prepeaks': 'Pre-edge Peak Analysis',
+#           'regression': 'Regression and Feature Selection',
+#           'xasnorm': 'XAS Normalization',
+#           }
 
 class CVar:
     """configuration variable"""
@@ -116,7 +144,7 @@ class CVar:
 ##
 ## sections
 ##
-CONF_SECTIONS = {k:v for k, v in PANELS.items()}
+CONF_SECTIONS = {k:v.desc for k, v in LARIX_PANELS.items()}
 CONF_SECTIONS.update({'main': 'Main program configuration',
                       'pin': 'Pin icon to select points from plots',
                       'plot': 'General Plotting',

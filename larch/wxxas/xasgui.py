@@ -7,6 +7,7 @@ import sys
 import time
 import copy
 import platform
+from importlib import import_module
 from threading import Thread
 import numpy as np
 np.seterr(all='ignore')
@@ -47,16 +48,9 @@ from larch.fitting import fit_report
 from larch.site_config import icondir, home_dir, user_larchdir
 from larch.version import check_larchversion
 
-from .prepeak_panel import PrePeakPanel
-from .xasnorm_panel import XASNormPanel
-from .lincombo_panel import LinearComboPanel
-from .pca_panel import PCAPanel
-from .exafs_panel import EXAFSPanel
-from .feffit_panel import FeffitPanel
-from .regress_panel import RegressionPanel
 from .xas_controller import XASController
 from .taskpanel import GroupJournalFrame
-from .config import FULLCONF, CONF_SECTIONS,  CVar, ATHENA_CLAMPNAMES
+from .config import FULLCONF, CONF_SECTIONS,  CVar, ATHENA_CLAMPNAMES, LARIX_PANELS, LARIX_MODES
 
 from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
                           DeglitchDialog, ExportCSVDialog, RebinDataDialog,
@@ -85,16 +79,6 @@ ICON_FILE = 'onecone.ico'
 LARIX_SIZE = (1200, 850)
 LARIX_MINSIZE = (500, 250)
 PLOTWIN_SIZE = (550, 550)
-
-VALID_LARIX_MODES = ('xas', 'exafs', 'xanes', 'xrfmap', 'lmfit')
-
-NB_PANELS = {'XAS Normalization': XASNormPanel,
-             'Pre-edge Peak': PrePeakPanel,
-             'PCA':  PCAPanel,
-             'Linear Combo': LinearComboPanel,
-             'Regression': RegressionPanel,
-             'EXAFS':  EXAFSPanel,
-             'Feff Fitting': FeffitPanel}
 
 QUIT_MESSAGE = '''Really Quit? You may want to save your project before quitting.
  This is not done automatically!'''
@@ -245,20 +229,22 @@ class PreferencesFrame(wx.Frame):
         self.controller.save_config()
 
 
-class PanelSelectionFrame(wx.Frame) :
-    """ Frame to select which Panels to show"""
-    def __init__(self, parent=None, pos=(-1, -1), db=None):
-
+class PanelSelectionFrame(wx.Frame):
+    """select analysis panels to display"""
+    def __init__(self, parent, controller, **kws):
+        self.controller = controller
         self.parent = parent
-        self.db = db
+        wx.Frame.__init__(self, None, -1,  'Larix Configuration: Analysis Panels',
+                          style=FRAMESTYLE, size=(700, 725))
+
+        self.wids = {}
+        conf = self.controller.config
+        panels = self.controller.panels
 
         style    = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
         labstyle  = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
         rlabstyle = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
         tstyle    = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
-
-        wx.Frame.__init__(self, None, -1,
-                          'Epics Instruments:  Select Instruments to Display')
 
         font = parent.GetFont()
 
@@ -269,11 +255,21 @@ class PanelSelectionFrame(wx.Frame) :
         sizer = wx.GridBagSizer(5, 5)
         panel = scrolled.ScrolledPanel(self, size=(700, 750),
                                        style=wx.GROW|wx.TAB_TRAVERSAL)
-        # title row
-        self.colors = GUIColors()
-        title = SimpleText(panel, 'Show Instruments:',
-                           font=titlefont,
-                           colour=self.colors.title, style=tstyle)
+
+        title = SimpleText(panel, 'Select Larix Modes and Analysis Panels',
+                           size=(500, 25),
+                           font=Font(FONTSIZE+1), style=LEFT,
+                           colour=COLORS['nb_text'])
+
+        self.wids = wids = {}
+        BASIC_MODES = ('XANES and EXAFS (factory default)',
+                       'XANES only', 'EXAFS only',
+                       'General Peak Fitting',
+                       'XRF Mapping and Analysis', 'All')
+        wids['modechoice'] = Choice(panel, choices=BASIC_MODES, size=(350, -1),
+                                    action=self.on_modechoice)
+
+
         irow = 0
         sizer.Add(title, (irow, 0), (1, 4), labstyle|wx.ALL, 3)
         self.hideframes = {}
@@ -359,7 +355,7 @@ class LarixFrame(wx.Frame):
 
         self.wx_debug = wx_debug
         self.mode = mode
-        if self.mode not in VALID_LARIX_MODES:
+        if self.mode not in LARIX_MODES:
             self.mode = 'xas'
         self.last_col_config = {}
         self.last_spec_config = {}
@@ -490,20 +486,30 @@ class LarixFrame(wx.Frame):
         ir = 0
         sizer.Add(self.title, 0, CEN, 3)
 
-        self.nb = flatnotebook(panel,
-                               NB_PANELS,
-                               panelkws=dict(xasmain=self,
-                                             controller=self.controller),
+        self.nb = flatnotebook(panel, {},
+                               panelkws={'controller': self.controller},
                                on_change=self.onNBChanged,
                                style=FNB_STYLE,
                                size=(700, 700))
+        for key, atab in LARIX_PANELS.items():
+            self.add_analysis_panel(key, atab)
+        self.nb.SetSelection(0)
 
         sizer.Add(self.nb, 1, LEFT|wx.EXPAND, 2)
         panel.SetupScrolling()
 
         pack(panel, sizer)
         splitter.SplitVertically(leftpanel, panel, 1)
-        print("Created NB ", self.nb.pagelist)
+
+    def add_analysis_panel(self, name, atab):
+        if name not in self.controller.panels and atab.enabled:
+            cons = atab.constructor.split('.')
+            clsname = cons.pop()
+            module = '.'.join(cons)
+            cls = getattr(import_module(module), clsname)
+            nbpanel = cls(parent=self, controller=self.controller)
+            self.controller.panels[name] = nbpanel
+            self.nb.AddPage(nbpanel, name, True)
 
     def process_normalization(self, dgroup, force=True, use_form=True):
         self.get_nbpage('xasnorm')[1].process(dgroup, force=force, use_form=use_form)
@@ -862,7 +868,8 @@ class LarixFrame(wx.Frame):
             if filename is None:
                 return
 
-        if os.path.exists(filename) and warn_overwrite and uname != 'darwin':  # darwin prompts in FileSave!
+        if (os.path.exists(filename) and warn_overwrite and
+            uname != 'darwin'):  # darwin prompts in FileSave!
             if wx.ID_YES != Popup(self,
                                   "Overwrite existing Project File?",
                                   "Overwrite existing file?", style=wx.YES_NO):
@@ -992,7 +999,7 @@ before clearing"""
     def onGroupJournal(self, event=None):
         dgroup = self.controller.get_group()
         if dgroup is not None:
-            self.show_subframe('group_journal', GroupJournalFrame, xasmain=self)
+            self.show_subframe('group_journal', GroupJournalFrame, parent=self)
             self.subframes['group_journal'].set_group(dgroup)
 
 
@@ -1905,6 +1912,8 @@ class LarixApp(LarchWxApp):
                                 wx_debug=self.wx_debug,
                                 check_version=self.check_version)
         self.SetTopWindow(self.frame)
+        if self.wx_debug:
+            wx.GetApp().ShowInspectionTool()
         return True
 
 def larix(**kws):

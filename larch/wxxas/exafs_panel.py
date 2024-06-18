@@ -400,7 +400,7 @@ class EXAFSPanel(TaskPanel):
         opts = self.get_config(dgroup)
         self.dgroup = dgroup
         if not (hasattr(dgroup, 'norm') and hasattr(dgroup, 'e0')):
-            self.xasmain.process_normalization(dgroup)
+            self.parent.process_normalization(dgroup)
 
         self.skip_process = True
         wids = self.wids

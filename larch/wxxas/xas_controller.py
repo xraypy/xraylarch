@@ -22,7 +22,7 @@ from .config import XASCONF, CONF_FILE,  OLDCONF_FILE
 
 class XASController():
     """
-    class holding the Larch session and doing the processing work for XAS GUI
+    class holding the Larch session and doing the processing work for Larix
     """
     def __init__(self, wxparent=None, _larch=None):
         self.wxparent = wxparent
@@ -32,6 +32,7 @@ class XASController():
         self.plot_erange = None
         self.report_frame = None
         self.recentfiles = []
+        self.panels = {}
         self.larch = _larch
         if _larch is None:
             self.larch = larch.Interpreter()
