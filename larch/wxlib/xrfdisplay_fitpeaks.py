@@ -1235,7 +1235,7 @@ class FitSpectraFrame(wx.Frame):
                     imax = np.where(parr > 0.99*parr.max())[0][0]
                 except:  # probably means all counts are zero
                     imax = int(len(parr)/2.0)
-                scale = self.mca.counts[imax] / (parr[imax]+1.00)
+                scale = 5.0*self.mca.counts[imax] / (parr[imax]+1.00)
                 ampname = 'amp_%s' % nam
                 if nam in ('elastic', 'compton1', 'compton2', 'compton',
                            'background', 'pileup', 'escape'):
