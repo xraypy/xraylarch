@@ -76,7 +76,7 @@ CEN |=  wx.ALL
 FILE_WILDCARDS = "Data Files|*.0*;*.dat;*.DAT;*.xdi;*.prj;*.sp*c;*.h*5;*.larix|All files (*.*)|*.*"
 
 ICON_FILE = 'onecone.ico'
-LARIX_SIZE = (1200, 850)
+LARIX_SIZE = (1050, 850)
 LARIX_MINSIZE = (500, 250)
 PLOTWIN_SIZE = (550, 550)
 
