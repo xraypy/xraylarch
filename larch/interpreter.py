@@ -21,7 +21,6 @@ from .inputText import InputText, BLANK_TEXT
 from .larchlib import (LarchExceptionHolder, ReturnedNone,
                        Procedure, StdWriter)
 from .closure import Closure
-from .utils import debugtime
 
 UNSAFE_ATTRS = ('__subclasses__', '__bases__', '__globals__', '__code__',
                 '__closure__', '__func__', '__self__', '__module__',

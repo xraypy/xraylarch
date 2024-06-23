@@ -27,7 +27,7 @@ from wxutils import (SimpleText, EditableListBox, Font, pack, Popup,
 from pyshortcuts import platform
 from . import FONTSIZE, FONTSIZE_FW
 from ..math import index_of
-from ..utils import bytes2str, debugtime, get_cwd
+from ..utils import bytes2str, get_cwd
 from ..io import GSEMCA_File
 from ..site_config import icondir
 from ..interpreter import Interpreter
