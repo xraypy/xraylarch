@@ -83,7 +83,6 @@ Feffit_PlotChoices = {'K and R space': 'k+r', 'R space only': 'r'}
 
 Valid_DataTypes = ('string', 'float', 'int', 'bool', 'choice', 'path')
 
-LARIX_MODES = ('xas', 'exafs', 'xanes', 'xrfmap', 'lmfit')
 
 AnalysisTab = namedtuple('AnalysisTab', ('constructor', 'enabled', 'key', 'desc'))
 
@@ -110,14 +109,14 @@ LARIX_PANELS = {'XAS Normalization':
                             'EXAFS Path Fitting with FEFF calculations'),
                 }
 
-# PANELS = {'exafs': 'EXAFS Background Subtraction and Fourier Transforms',
-#           'feffit': 'Feff Fitting of EXAFS Paths',
-#           'lincombo': 'Linear Combination Analysis',
-#           'pca': 'Principal Component Analysis',
-#           'prepeaks': 'Pre-edge Peak Analysis',
-#           'regression': 'Regression and Feature Selection',
-#           'xasnorm': 'XAS Normalization',
-#           }
+all_keys = [atab.key for atab in LARIX_PANELS.values()]
+LARIX_MODES = {'XANES and EXAFS': ('xasnorm', 'prepeaks', 'pca', 'lincombo', 'exafs', 'feffit'),
+                'EXAFS only': ('xasnorm', 'exafs', 'feffit'),
+                'XANES only': ('xasnorm', 'prepeaks', 'pca', 'lincombo'),
+                # 'XRF Mapping and Analysis': ('maproi', 'mapareas', 'maptomo', 'mapxrf'),
+                # 'XRD 1D': ('xrd1d',),
+                # 'General Visualization and Fitting':  ('rawdata', 'lmfit'),
+                'All': all_keys}
 
 class CVar:
     """configuration variable"""
