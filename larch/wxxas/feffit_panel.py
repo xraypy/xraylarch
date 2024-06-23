@@ -769,7 +769,7 @@ class FeffitPanel(TaskPanel):
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
             if not hasattr(dgroup, 'chi'):
-                self.xasmain.process_exafs(dgroup)
+                self.parent.process_exafs(dgroup)
             self.fill_form(dgroup)
         except:
             pass # print(" Cannot Fill feffit panel from group ")
@@ -975,7 +975,7 @@ class FeffitPanel(TaskPanel):
         if dgroup is None:
             conf = None
         if not hasattr(dgroup, 'chi'):
-            self.xasmain.process_exafs(dgroup)
+            self.parent.process_exafs(dgroup)
 
         dconf = self.get_defaultconfig()
 
@@ -1172,7 +1172,7 @@ class FeffitPanel(TaskPanel):
         if refine_bkg and hasattr(dataset, 'data_rebkg'):
             data_name =  dataset_name + '.data_rebkg'
 
-        exafs_conf = self.xasmain.get_nbpage('exafs')[1].read_form()
+        exafs_conf = self.parent.get_nbpage('exafs')[1].read_form()
         opts['plot_rmax'] = exafs_conf['plot_rmax']
         groupname = getattr(dgroup, 'groupname', 'unknown')
         cmds = ["#### plot ",
@@ -1435,9 +1435,9 @@ class FeffitPanel(TaskPanel):
             sx,sy = self.GetSize()
             self.SetSize((sx, sy+1))
             self.SetSize((sx, sy))
-            ipage, pagepanel = self.xasmain.get_nbpage('feffit')
-            self.xasmain.nb.SetSelection(ipage)
-            self.xasmain.Raise()
+            ipage, pagepanel = self.parent.get_nbpage('feffit')
+            self.parent.nb.SetSelection(ipage)
+            self.parent.Raise()
 
     def get_pathkeys(self):
         _feffpaths = getattr(self.larch.symtable, '_feffpaths', {})
@@ -2119,7 +2119,7 @@ class FeffitResultFrame(wx.Frame):
         opts['kwindow']  = getattr(trans, 'window')
         opts['topwin'] = self
 
-        exafs_conf = self.feffit_panel.xasmain.get_nbpage('exafs')[1].read_form()
+        exafs_conf = self.feffit_panel.parent.get_nbpage('exafs')[1].read_form()
         opts['plot_rmax'] = exafs_conf['plot_rmax']
         self.feffit_panel.plot_feffit_result(f'{result_name}.datasets[0]', **opts)
 

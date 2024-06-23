@@ -13,7 +13,7 @@ from xraydb import (material_mu, mu_elam, ck_probability, xray_edge,
 from xraydb.xray import XrayLine
 
 from .. import Group
-from ..math import index_of, interp, savitzky_golay, hypermet, erfc
+from ..math import index_of, interp, interp1d, savitzky_golay, hypermet, erfc
 from ..xafs import ftwindow
 from ..utils import group2dict, json_dump, json_load, gformat, unixpath
 
@@ -246,7 +246,7 @@ class XRF_Model:
         self.mu_lines = {}
         self.mu_energies = []
         self.fit_iter = 0
-        self.fit_toler = 5.e-3
+        self.fit_toler = 1.e-4
         self.fit_step = 1.e-4
         self.max_nfev = 1000
         self.fit_log = False
@@ -409,11 +409,9 @@ class XRF_Model:
             self.escape_amp = pars.get('escape_amp', 0.0) * self.escape_scale
             if not self.use_escape:
                 self.escape_amp = 0
-
         # detector attenuation: calc only if needed
         if (not self.fit_in_progress) or self.params['det_thickness'].vary:
             self.det_atten = self.detector.absorbance(energy, thickness=pars['det_thickness'])
-
         # filter attenuation: calc only if needed
         filt_pars = [self.params['filterlen_%s' % f.material] for f in self.filters]
         if (not self.fit_in_progress) or any([f.vary for f in filt_pars]):
@@ -425,7 +423,6 @@ class XRF_Model:
                     self.filt_atten *= fx
 
         self.atten = self.det_atten * self.filt_atten
-
         # matrix corrections #1: get X-ray line energies, only if needed
         if ((not self.fit_in_progress) or len(self.mu_energies)==0):
             self.mu_lines = {}
@@ -437,7 +434,6 @@ class XRF_Model:
 
             self.mu_energies.append(1000*self.xray_energy)
             self.mu_energies = np.array(self.mu_energies)
-
         # print("Mu energies ", self.mu_energies, len(self.mu_energies))
         # matrix
         # if self.matrix_atten is None:
@@ -459,11 +455,10 @@ class XRF_Model:
                                  sigma=sigma, step=step, tail=tail,
                                  beta=beta, gamma=gamma)
             comp *= amp * self.atten * self.count_time
-            comp += self.escape_amp * interp(energy-self.escape_energy, comp, energy)
+            comp += self.escape_amp * interp1d(energy-self.escape_energy, comp, energy)
 
             self.comps[elem.symbol] = comp
             self.eigenvalues[elem.symbol] = amp
-
 
         # scatter peaks for Rayleigh and Compton
         for peak in self.scatter:
@@ -481,20 +476,17 @@ class XRF_Model:
                             sigma=sigma, step=step, tail=tail, beta=beta,
                             gamma=gamma)
             comp *= amp * self.atten * self.count_time
-            comp += self.escape_amp * interp(energy-self.escape_energy, comp, energy)
+            comp += self.escape_amp * interp1d(energy-self.escape_energy, comp, energy)
             self.comps[p] = comp
             self.eigenvalues[p] = amp
-
         if self.bgr is not None:
             bgr_amp = pars.get('background_amp', 0.0)
             self.comps['background'] = bgr_amp * self.bgr
             self.eigenvalues['background'] = bgr_amp
-
         # calculate total spectrum
         total = 0. * energy
         for comp in self.comps.values():
             total += comp
-
         if self.use_pileup:
             pamp = pars.get('pileup_amp', 0.0)
             npts = len(energy)
@@ -502,7 +494,6 @@ class XRF_Model:
             self.comps['pileup'] = pileup
             self.eigenvalues['pileup'] = pamp
             total += pileup
-
         # remove tiny values so that log plots are usable
         floor = 1.e-10*max(total)
         total[np.where(total<floor)] = floor
@@ -531,7 +522,7 @@ class XRF_Model:
     def fit_spectrum(self, mca, energy_min=None, energy_max=None,
                      fit_toler=None, fit_step=None, max_nfev=None):
         if fit_toler is not None:
-            self.fit_toler = max(1.e-7, min(0.25, fit_toler))
+            self.fit_toler = max(1.e-7, min(0.001, fit_toler))
         if fit_step is not None:
             self.fit_step = max(1.e-7, min(0.1, fit_step))
         if max_nfev is not None:
@@ -578,8 +569,8 @@ class XRF_Model:
         self.fit_in_progress = True
         self.result = minimize(self.__resid, self.params, kws=userkws,
                                method='leastsq', maxfev=self.max_nfev,
-                               scale_covar=True,
-                               gtol=tol, ftol=tol, epsfcn=self.fit_step)
+                               scale_covar=True, epsfcn=self.fit_step,
+                               gtol=tol, ftol=tol, xtol=tol)
 
         self.fit_report = fit_report(self.result, min_correl=0.5)
         pars = self.result.params

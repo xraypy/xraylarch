@@ -7,6 +7,7 @@ import sys
 import time
 import copy
 import platform
+from importlib import import_module
 from threading import Thread
 import numpy as np
 np.seterr(all='ignore')
@@ -15,12 +16,10 @@ from functools import partial
 
 import wx
 import wx.lib.scrolledpanel as scrolled
-
+import wx.lib.agw.flatnotebook as flat_nb
 from wx.adv import AboutBox, AboutDialogInfo
 
 from wx.richtext import RichTextCtrl
-
-WX_DEBUG = True
 
 import larch
 from larch import Group, Journal, Entry
@@ -49,16 +48,9 @@ from larch.fitting import fit_report
 from larch.site_config import icondir, home_dir, user_larchdir
 from larch.version import check_larchversion
 
-from .prepeak_panel import PrePeakPanel
-from .xasnorm_panel import XASNormPanel
-from .lincombo_panel import LinearComboPanel
-from .pca_panel import PCAPanel
-from .exafs_panel import EXAFSPanel
-from .feffit_panel import FeffitPanel
-from .regress_panel import RegressionPanel
 from .xas_controller import XASController
 from .taskpanel import GroupJournalFrame
-from .config import FULLCONF, CONF_SECTIONS,  CVar, ATHENA_CLAMPNAMES
+from .config import FULLCONF, CONF_SECTIONS,  CVar, ATHENA_CLAMPNAMES, LARIX_PANELS, LARIX_MODES
 
 from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
                           DeglitchDialog, ExportCSVDialog, RebinDataDialog,
@@ -75,27 +67,23 @@ from larch.io.xas_data_source import open_xas_source
 
 from larch.xafs import pre_edge, pre_edge_baseline
 
+# FNB_STYLE = flat_nb.FNB_NO_X_BUTTON
+FNB_STYLE = flat_nb.FNB_X_ON_TAB
+FNB_STYLE |= flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
+
 LEFT = wx.ALIGN_LEFT
 CEN |=  wx.ALL
 FILE_WILDCARDS = "Data Files|*.0*;*.dat;*.DAT;*.xdi;*.prj;*.sp*c;*.h*5;*.larix|All files (*.*)|*.*"
 
 ICON_FILE = 'onecone.ico'
-XASVIEW_SIZE = (1020, 830)
+LARIX_SIZE = (1050, 850)
+LARIX_MINSIZE = (500, 250)
 PLOTWIN_SIZE = (550, 550)
-
-NB_PANELS = {'Normalization': XASNormPanel,
-             'Pre-edge Peak': PrePeakPanel,
-             'PCA':  PCAPanel,
-             'Linear Combo': LinearComboPanel,
-             'Regression': RegressionPanel,
-             'EXAFS':  EXAFSPanel,
-             'Feff Fitting': FeffitPanel}
 
 QUIT_MESSAGE = '''Really Quit? You may want to save your project before quitting.
  This is not done automatically!'''
 
-LARIX_TITLE = "Larix (was XAS Viewer): XAS Visualization and Analysis"
-
+LARIX_TITLE = "Larix: XAS Visualization and Analysis"
 
 def assign_gsescan_groups(group):
     labels = group.array_labels
@@ -240,14 +228,109 @@ class PreferencesFrame(wx.Frame):
     def onSave(self, event=None):
         self.controller.save_config()
 
+class PanelSelectionFrame(wx.Frame):
+    """select analysis panels to display"""
+    def __init__(self, parent, controller, **kws):
+        self.controller = controller
+        self.parent = parent
+        wx.Frame.__init__(self, None, -1,  'Larix Configuration: Analysis Panels',
+                          style=FRAMESTYLE, size=(700, 725))
+        self.wids = {}
 
-class XASFrame(wx.Frame):
+        style    = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
+        labstyle  = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
+        rlabstyle = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
+        tstyle    = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
+
+        font = parent.GetFont()
+
+        titlefont  = self.GetFont()
+        titlefont.PointSize += 2
+        titlefont.SetWeight(wx.BOLD)
+
+        sizer = wx.GridBagSizer(5, 5)
+        panel = scrolled.ScrolledPanel(self, size=(700, 750),
+                                       style=wx.GROW|wx.TAB_TRAVERSAL)
+
+        title = SimpleText(panel, 'Select Larix Modes and Analysis Panels',
+                           size=(500, 25),
+                           font=Font(FONTSIZE+1), style=LEFT,
+                           colour=COLORS['nb_text'])
+
+        self.wids = wids = {}
+        MODES = list(LARIX_MODES.keys())
+
+        wids['modechoice'] = Choice(panel, choices=MODES, size=(350, -1),
+                                    action=self.on_modechoice)
+
+        page_map = self.parent.get_panels()
+        irow = 0
+        sizer.Add(title, (irow, 0), (1, 4), labstyle|wx.ALL, 3)
+        self.selections = {}
+        strlen = 30
+        for pagename in page_map:
+            strlen = max(strlen, len(pagename))
+
+        for name, atab in LARIX_PANELS.items():
+            iname = (name + ' '*strlen)[:strlen]
+            cb = wx.CheckBox(panel, -1, iname)#, style=wx.ALIGN_RIGHT)
+            cb.SetValue(name in page_map)
+            desc = SimpleText(panel, LARIX_PANELS[name].desc)
+            self.selections[name] = cb
+            irow += 1
+            sizer.Add(cb, (irow, 0), (1, 1), labstyle,  5)
+            sizer.Add(desc, (irow, 1), (1, 1), labstyle,  5)
+
+        irow += 1
+        sizer.Add(wx.StaticLine(panel, size=(200, -1), style=wx.LI_HORIZONTAL),
+                  (irow, 0), (1, 5), wx.ALIGN_CENTER|wx.GROW|wx.ALL, 5)
+
+        btn_ok     = Button(panel, 'Apply', size=(70, -1), action=self.OnOK)
+        btn_cancel = Button(panel, 'Done', size=(70, -1), action=self.OnCancel)
+
+        irow += 1
+        sizer.Add(btn_ok,     (irow, 0), (1, 1), labstyle|wx.ALL,  5)
+        sizer.Add(btn_cancel, (irow, 1), (1, 1), labstyle|wx.ALL,  5)
+
+        pack(panel, sizer)
+        panel.SetupScrolling()
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        mainsizer.Add(panel, 1, wx.GROW|wx.ALL, 1)
+
+        self.SetMinSize((750, 450))
+        pack(self, mainsizer)
+        self.Show()
+        self.Raise()
+
+    def on_modechoice(self, event=None):
+        panels = LARIX_MODES.get(event.GetString(), [])
+        all_keys = {atab.key:name for name, atab in LARIX_PANELS.items()}
+        for name in self.selections:
+            self.selections[name].SetValue(False)
+
+        for pan in panels:
+            name = all_keys.get(pan, None)
+            if name in self.selections:
+                self.selections[name].SetValue(True)
+
+    def OnOK(self, event=None):
+        for i in range(self.parent.nb.GetPageCount()):
+            self.parent.nb.DeletePage(0)
+
+        for name, cb in self.selections.items():
+            if cb.IsChecked():
+                self.parent.add_analysis_panel(name)
+
+    def OnCancel(self, event=None):
+        self.Destroy()
+
+class LarixFrame(wx.Frame):
     _about = f"""{LARIX_TITLE}
     Matt Newville <newville @ cars.uchicago.edu>
     """
     def __init__(self, parent=None, _larch=None, filename=None,
-                 check_version=True, **kws):
-        wx.Frame.__init__(self, parent, -1, size=XASVIEW_SIZE, style=FRAMESTYLE)
+                 wx_debug=False, mode='xas', check_version=True, **kws):
+        wx.Frame.__init__(self, parent, -1, size=LARIX_SIZE, style=FRAMESTYLE)
 
         if check_version:
             def version_checker():
@@ -255,6 +338,10 @@ class XASFrame(wx.Frame):
             version_thread = Thread(target=version_checker)
             version_thread.start()
 
+        self.wx_debug = wx_debug
+        self.mode = mode
+        if self.mode not in LARIX_MODES:
+            self.mode = 'xas'
         self.last_col_config = {}
         self.last_spec_config = {}
         self.last_session_file = None
@@ -291,7 +378,8 @@ class XASFrame(wx.Frame):
         self.subframes = {}
         self.plotframe = None
         self.SetTitle(title)
-        self.SetSize(XASVIEW_SIZE)
+        self.SetSize(LARIX_SIZE)
+        self.SetMinSize(LARIX_MINSIZE)
         self.SetFont(Font(FONTSIZE))
         self.createMainPanel()
         self.createMenus()
@@ -382,17 +470,43 @@ class XASFrame(wx.Frame):
 
         ir = 0
         sizer.Add(self.title, 0, CEN, 3)
-        self.nb = flatnotebook(panel, NB_PANELS,
-                               panelkws=dict(xasmain=self,
-                                             controller=self.controller),
+
+        self.nb = flatnotebook(panel, {},
+                               panelkws={'controller': self.controller},
                                on_change=self.onNBChanged,
+                               style=FNB_STYLE,
                                size=(700, 700))
+        for key in LARIX_PANELS:
+            self.add_analysis_panel(key)
+        self.nb.SetSelection(0)
 
         sizer.Add(self.nb, 1, LEFT|wx.EXPAND, 2)
         panel.SetupScrolling()
 
         pack(panel, sizer)
         splitter.SplitVertically(leftpanel, panel, 1)
+
+    def get_panels(self):
+        "return current mapping of displayed panels"
+        out = {}
+        for i in range(self.nb.GetPageCount()):
+            out[self.nb.GetPageText(i)] = i
+        return out
+
+    def add_analysis_panel(self, name):
+        atab = LARIX_PANELS.get(name, None)
+        if atab is None:
+            return
+
+        current_panels = self.get_panels()
+        if name not in current_panels and atab.enabled:
+            cons = atab.constructor.split('.')
+            clsname = cons.pop()
+            module = '.'.join(cons)
+            cls = getattr(import_module(module), clsname)
+            nbpanel = cls(parent=self, controller=self.controller)
+            # self.controller.panels[name] = nbpanel
+            self.nb.AddPage(nbpanel, name, True)
 
     def process_normalization(self, dgroup, force=True, use_form=True):
         self.get_nbpage('xasnorm')[1].process(dgroup, force=force, use_form=use_form)
@@ -490,25 +604,39 @@ class XASFrame(wx.Frame):
     def createMenus(self):
         # ppnl = self.plotpanel
         self.menubar = wx.MenuBar()
-        fmenu = wx.Menu()
+        file_menu = wx.Menu()
+        session_menu = wx.Menu()
+        pref_menu = wx.Menu()
         group_menu = wx.Menu()
-        data_menu = wx.Menu()
+        xasdata_menu = wx.Menu()
         feff_menu = wx.Menu()
         m = {}
 
-        MenuItem(self, fmenu, "&Open Data File\tCtrl+O",
+        MenuItem(self, file_menu, "&Open Data File\tCtrl+O",
                  "Open Data File",  self.onReadDialog)
 
-        MenuItem(self, fmenu, "&Read Larch Session\tCtrl+R",
+        file_menu.AppendSeparator()
+        MenuItem(self, file_menu, "Save Selected Groups to Athena Project File",
+                 "Save Selected Groups to an Athena Project File",
+                 self.onExportAthenaProject)
+
+        MenuItem(self, file_menu, "Save Selected Groups to CSV File",
+                 "Save Selected Groups to a CSV File",
+                 self.onExportCSV)
+
+        MenuItem(self, file_menu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
+
+
+        MenuItem(self, session_menu, "&Read Larch Session\tCtrl+R",
                  "Read Previously Saved Session",  self.onLoadSession)
 
-        MenuItem(self, fmenu, "&Save Larch Session\tCtrl+S",
+        MenuItem(self, session_menu, "&Save Larch Session\tCtrl+S",
                  "Save Session to a File",  self.onSaveSession)
 
-        MenuItem(self, fmenu, "&Save Larch Session As ...\tCtrl+A",
+        MenuItem(self, session_menu, "&Save Larch Session As ...\tCtrl+A",
                  "Save Session to a File",  self.onSaveSessionAs)
 
-        MenuItem(self, fmenu, "Clear Larch Session",
+        MenuItem(self, session_menu, "Clear Larch Session",
                  "Clear all data from this Session",  self.onClearSession)
 
         # autosaved session
@@ -518,39 +646,32 @@ class XASFrame(wx.Frame):
 
         self.recent_menu = wx.Menu()
         self.get_recent_session_menu()
-        fmenu.Append(-1, 'Recent Session Files',  self.recent_menu)
+        session_menu.Append(-1, 'Recent Session Files',  self.recent_menu)
 
 
-        MenuItem(self, fmenu, "&Auto-Save Larch Session",
+        MenuItem(self, session_menu, "&Auto-Save Larch Session",
                  f"Save Session now",  self.autosave_session)
-        fmenu.AppendSeparator()
 
-        MenuItem(self, fmenu, "Save Selected Groups to Athena Project File",
-                 "Save Selected Groups to an Athena Project File",
-                 self.onExportAthenaProject)
+        session_menu.AppendSeparator()
 
-        MenuItem(self, fmenu, "Save Selected Groups to CSV File",
-                 "Save Selected Groups to a CSV File",
-                 self.onExportCSV)
-
-        MenuItem(self, fmenu, 'Save Larch History as Script\tCtrl+H',
-                 'Save Session History as Larch Script',
-                 self.onSaveLarchHistory)
-
-        fmenu.AppendSeparator()
-
-        MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L',
+        MenuItem(self, session_menu, 'Show Larch Buffer\tCtrl+L',
                  'Show Larch Programming Buffer',
                  self.onShowLarchBuffer)
 
-#         MenuItem(self, fmenu, 'wxInspect\tCtrl+I',
-#                  'Show wx inspection window',   self.onwxInspect)
+        MenuItem(self, session_menu, 'Save Larch History as Script\tCtrl+H',
+                 'Save Session History as Larch Script',
+                 self.onSaveLarchHistory)
 
-        MenuItem(self, fmenu, 'Edit Preferences\tCtrl+E', 'Customize Preferences',
+        if self.wx_debug:
+            MenuItem(self, session_menu, 'wx debug\tCtrl+I',
+                     'Show wx inspection window',   self.onwxInspect)
+
+        MenuItem(self, pref_menu, 'Select Analysis Panels and Modes',
+                'Select Analysis Panels and Modes',
+                 self.onPanelSelect)
+
+        MenuItem(self, pref_menu, 'Edit Preferences\tCtrl+E', 'Customize Preferences',
                  self.onPreferences)
-
-        MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
-
 
         MenuItem(self, group_menu, "Copy This Group",
                  "Copy This Group", self.onCopyGroup)
@@ -580,33 +701,35 @@ class XASFrame(wx.Frame):
         MenuItem(self, group_menu, "UnFreeze Selected Groups",
                  "UnFreeze Selected Groups", self.onUnFreezeGroups)
 
-        MenuItem(self, data_menu, "Deglitch Data",  "Deglitch Data",
+        MenuItem(self, xasdata_menu, "Deglitch Data",  "Deglitch Data",
                  self.onDeglitchData)
 
-        MenuItem(self, data_menu, "Calibrate Energy",
+        MenuItem(self, xasdata_menu, "Calibrate Energy",
                  "Calibrate Energy",
                  self.onEnergyCalibrateData)
 
-        MenuItem(self, data_menu, "Smooth Data", "Smooth Data",
+        MenuItem(self, xasdata_menu, "Smooth Data", "Smooth Data",
                  self.onSmoothData)
 
-        MenuItem(self, data_menu, "Deconvolve Data",
+        MenuItem(self, xasdata_menu, "Deconvolve Data",
                  "Deconvolution of Data",  self.onDeconvolveData)
 
-        MenuItem(self, data_menu, "Rebin Data", "Rebin Data",
+        MenuItem(self, xasdata_menu, "Rebin Data", "Rebin Data",
                  self.onRebinData)
 
-        MenuItem(self, data_menu, "Correct Over-absorption",
+        MenuItem(self, xasdata_menu, "Correct Over-absorption",
                  "Correct Over-absorption",
                  self.onCorrectOverAbsorptionData)
 
-        MenuItem(self, data_menu, "Add and Subtract Spectra",
+        MenuItem(self, xasdata_menu, "Add and Subtract Spectra",
                  "Calculations of Spectra",  self.onSpectraCalc)
 
 
-        self.menubar.Append(fmenu, "&File")
+        self.menubar.Append(file_menu, "&File")
+        self.menubar.Append(session_menu, "Sessions")
+        self.menubar.Append(pref_menu, "Preferences")
         self.menubar.Append(group_menu, "Groups")
-        self.menubar.Append(data_menu, "Data")
+        self.menubar.Append(xasdata_menu, "XAS Data")
 
         MenuItem(self, feff_menu, "Browse CIF Structures, Run Feff",
                  "Browse CIF Structure, run Feff", self.onCIFBrowse)
@@ -745,7 +868,8 @@ class XASFrame(wx.Frame):
             if filename is None:
                 return
 
-        if os.path.exists(filename) and warn_overwrite and uname != 'darwin':  # darwin prompts in FileSave!
+        if (os.path.exists(filename) and warn_overwrite and
+            uname != 'darwin'):  # darwin prompts in FileSave!
             if wx.ID_YES != Popup(self,
                                   "Overwrite existing Project File?",
                                   "Overwrite existing file?", style=wx.YES_NO):
@@ -761,6 +885,10 @@ class XASFrame(wx.Frame):
 
     def onPreferences(self, evt=None):
         self.show_subframe('preferences', PreferencesFrame,
+                           controller=self.controller)
+
+    def onPanelSelect(self, evt=None):
+        self.show_subframe('panel_select', PanelSelectionFrame,
                            controller=self.controller)
 
     def onLoadSession(self, evt=None, path=None):
@@ -875,7 +1003,7 @@ before clearing"""
     def onGroupJournal(self, event=None):
         dgroup = self.controller.get_group()
         if dgroup is not None:
-            self.show_subframe('group_journal', GroupJournalFrame, xasmain=self)
+            self.show_subframe('group_journal', GroupJournalFrame, parent=self)
             self.subframes['group_journal'].set_group(dgroup)
 
 
@@ -1625,7 +1753,6 @@ before clearing"""
 
         self.controller.install_group(groupname, filename,
                                       source=source, journal=journal)
-
         self.nb.SetSelection(0)
         self.ShowFile(groupname=groupname, filename=filename,
                       process=process, plot=plot)
@@ -1774,20 +1901,27 @@ before clearing"""
             self.timers['pin'].Start(250)
 
 
-class XASViewer(LarchWxApp):
-    def __init__(self, filename=None, check_version=True, **kws):
+class LarixApp(LarchWxApp):
+    def __init__(self, filename=None, check_version=True, mode='xas',
+                 wx_debug=False, **kws):
         self.filename = filename
+        self.mode = mode
+        self.wx_debug = wx_debug
         self.check_version = check_version
-        LarchWxApp.__init__(self, **kws)
+        LarchWxApp.__init__(self,**kws)
 
     def createApp(self):
-        frame = XASFrame(filename=self.filename,
-                         check_version=self.check_version)
-        self.SetTopWindow(frame)
+        self.frame = LarixFrame(filename=self.filename,
+                                mode=self.mode,
+                                wx_debug=self.wx_debug,
+                                check_version=self.check_version)
+        self.SetTopWindow(self.frame)
+        if self.wx_debug:
+            wx.GetApp().ShowInspectionTool()
         return True
 
 def larix(**kws):
-    XASViewer(**kws)
+    LarixApp(**kws)
 
 if __name__ == "__main__":
     import argparse
@@ -1796,6 +1930,13 @@ if __name__ == "__main__":
         '-f', '--filename',
         dest='filename',
         help='data file to load')
+    parser.add_argument(
+        '-m', '--mode',
+        dest='mode',
+        help='mode to start larix')
+    parser.add_argument(
+        '-w', '--wx_debug',
+        dest='wx_debug',
+        help='wx debugging mode')
     args = parser.parse_args()
-    app = XASViewer(**vars(args))
-    app.MainLoop()
+    LarixApp(**vars(args)).MainLoop()

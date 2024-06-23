@@ -60,23 +60,6 @@ def fit_dialog_window(dialog, panel):
     dialog.SetSize((max(w0, w1)+25, max(h0, h1)+25))
 
 
-
-def add_floatspin(name, value, panel, with_pin=True, xasmain=None,
-                  callback=None, relative_e0=False, **kws):
-    """create FloatSpin with Pin button for onSelPoint"""
-    if with_pin and xasmain is not None:
-        pin_action = partial(xasmain.onSelPoint, opt=name,
-                             relative_e0=relative_e0,
-                             callback=callback)
-        fspin, pinb = FloatSpinWithPin(panel, value=value,
-                                       pin_action=pin_action,
-                                       **kws)
-    else:
-        fspin = FloatSpin(panel, value=value, **kws)
-        pinb = None
-    return fspin, pinb
-
-
 def get_view_limits(ppanel):
     "get last zoom limits for a plot panel"
     xlim = ppanel.axes.get_xlim()

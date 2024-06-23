@@ -272,7 +272,7 @@ class PCAPanel(TaskPanel):
         for gname in groups:
             grp = self.controller.get_group(gname)
             if not hasattr(grp, 'norm'):
-                self.xasmain.process_normalization(grp)
+                self.parent.process_normalization(grp)
             cmd = f"pca_fit({gname:s}, pca_result, ncomps={ncomps:d})"
             self.larch_eval(cmd)
             grp.journal.add('pca_fit', cmd)
@@ -328,7 +328,7 @@ class PCAPanel(TaskPanel):
         for gname in groups:
             grp = self.controller.get_group(gname)
             if not hasattr(grp, 'norm'):
-                self.xasmain.process_normalization(grp)
+                self.parent.process_normalization(grp)
 
         groups = ', '.join(groups)
         opts = dict(groups=groups, arr='norm', elo=form['elo'], ehi=form['ehi'])

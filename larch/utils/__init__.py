@@ -13,7 +13,7 @@ import logging
 from charset_normalizer import from_bytes
 from .gformat import gformat, getfloat_attr
 from .paths import uname, bindir, nativepath, unixpath, get_homedir, get_cwd
-from .debugtime import debugtime, debugtimer
+from .debugtimer import debugtimer
 
 from .strutils import (fixName, isValidName, isNumber, bytes2str,
                        str2bytes, fix_filename, fix_varname,

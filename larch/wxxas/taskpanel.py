@@ -22,7 +22,7 @@ from larch.wxlib import (BitmapButton, SetTip, GridPanel, FloatCtrl,
 from larch.xafs import etok, ktoe
 from larch.utils import group2dict
 from larch.utils.strutils import break_longstring
-from .config import PANELS
+from .config import LARIX_PANELS
 
 LEFT = wx.ALIGN_LEFT
 CEN |=  wx.ALL
@@ -54,8 +54,8 @@ def update_confval(dest, source, attr, pref=''):
 
 class GroupJournalFrame(wx.Frame):
     """ edit parameters"""
-    def __init__(self, parent, dgroup=None, xasmain=None, **kws):
-        self.xasmain = xasmain
+    def __init__(self, parent, dgroup=None, **kws):
+        self.parent = parent
         self.dgroup = dgroup
         self.n_entries = 0
         wx.Frame.__init__(self, None, -1,  'Group Journal',
@@ -102,14 +102,14 @@ class GroupJournalFrame(wx.Frame):
         panel.Add(self.datagrid, dcol=5, drow=9, newrow=True, style=LEFT|wx.GROW|wx.ALL)
         panel.pack()
 
-        self.xasmain.timers['journal_updater'] = wx.Timer(self.xasmain)
-        self.xasmain.Bind(wx.EVT_TIMER, self.onRefresh,
-                          self.xasmain.timers['journal_updater'])
+        self.parent.timers['journal_updater'] = wx.Timer(self.parent)
+        self.parent.Bind(wx.EVT_TIMER, self.onRefresh,
+                         self.parentd.timers['journal_updater'])
         self.Bind(wx.EVT_CLOSE,  self.onClose)
         self.SetSize((950, 725))
         self.Show()
         self.Raise()
-        self.xasmain.timers['journal_updater'].Start(1000)
+        self.parent.timers['journal_updater'].Start(1000)
 
         if dgroup is not None:
             wx.CallAfter(self.set_group, dgroup=dgroup)
@@ -123,7 +123,7 @@ class GroupJournalFrame(wx.Frame):
 
 
     def onClose(self, event=None):
-        self.xasmain.timers['journal_updater'].Stop()
+        self.parent.timers['journal_updater'].Stop()
         self.Destroy()
 
     def onRefresh(self, event=None):
@@ -155,7 +155,7 @@ class GroupJournalFrame(wx.Frame):
             fh.write('\n'.join(buff))
 
         msg = f"Exported journal for {self.dgroup.filename} to '{fname}'"
-        writer = getattr(self.xasmain, 'write_message', sys.stdout)
+        writer = getattr(self.parent, 'write_message', sys.stdout)
         writer(msg)
 
 
@@ -204,17 +204,13 @@ class GroupJournalFrame(wx.Frame):
 class TaskPanel(wx.Panel):
     """generic panel for main tasks.   meant to be subclassed
     """
-    def __init__(self, parent, controller, xasmain=None, panel=None, **kws):
+    def __init__(self, parent, controller, panel=None, **kws):
         wx.Panel.__init__(self, parent, -1, size=(550, 625), **kws)
         self.parent = parent
-        self.xasmain = xasmain or parent
         self.controller = controller
         self.larch = controller.larch
         self.title = 'Generic Panel'
-        self.configname = None
-        if panel in PANELS:
-            self.configname = panel
-            self.title = PANELS[panel]
+        self.configname = panel
 
         self.wids = {}
         self.subframes = {}
@@ -241,8 +237,9 @@ class TaskPanel(wx.Panel):
         return getattr(dgroup, 'datatype', 'raw').startswith('xa')
 
     def ensure_xas_processed(self, dgroup):
-        if self.is_xasgroup(dgroup) and (not hasattr(dgroup, 'norm') or not hasattr(dgroup, 'e0')):
-            self.xasmain.process_normalization(dgroup, force=True)
+        if self.is_xasgroup(dgroup) and (not hasattr(dgroup, 'norm') or
+                                         not hasattr(dgroup, 'e0')):
+            self.parent.process_normalization(dgroup, force=True)
 
     def make_fit_xspace_widgets(self, elo=-1, ehi=1):
         self.wids['fitspace_label'] = SimpleText(self.panel, 'Fit Range (eV):')
@@ -438,7 +435,7 @@ class TaskPanel(wx.Panel):
         if parent is None:
             parent = self.panel
         if with_pin:
-            pin_action = partial(self.xasmain.onSelPoint, opt=name,
+            pin_action = partial(self.parent.onSelPoint, opt=name,
                                  relative_e0=relative_e0,
                                  callback=self.pin_callback)
             fspin, pinb = FloatSpinWithPin(parent, value=value,
