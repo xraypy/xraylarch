@@ -228,7 +228,6 @@ class PreferencesFrame(wx.Frame):
     def onSave(self, event=None):
         self.controller.save_config()
 
-
 class PanelSelectionFrame(wx.Frame):
     """select analysis panels to display"""
     def __init__(self, parent, controller, **kws):
@@ -236,10 +235,7 @@ class PanelSelectionFrame(wx.Frame):
         self.parent = parent
         wx.Frame.__init__(self, None, -1,  'Larix Configuration: Analysis Panels',
                           style=FRAMESTYLE, size=(700, 725))
-
         self.wids = {}
-        conf = self.controller.config
-        panels = self.controller.panels
 
         style    = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
         labstyle  = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
@@ -262,47 +258,39 @@ class PanelSelectionFrame(wx.Frame):
                            colour=COLORS['nb_text'])
 
         self.wids = wids = {}
-        BASIC_MODES = ('XANES and EXAFS (factory default)',
-                       'XANES only', 'EXAFS only',
-                       'General Peak Fitting',
-                       'XRF Mapping and Analysis', 'All')
-        wids['modechoice'] = Choice(panel, choices=BASIC_MODES, size=(350, -1),
+        MODES = list(LARIX_MODES.keys())
+
+        wids['modechoice'] = Choice(panel, choices=MODES, size=(350, -1),
                                     action=self.on_modechoice)
 
-
+        page_map = self.parent.get_panels()
         irow = 0
         sizer.Add(title, (irow, 0), (1, 4), labstyle|wx.ALL, 3)
-        self.hideframes = {}
-        strlen = 24
-        for inst in self.db.get_all_instruments():
-            strlen = max(strlen, len(inst.name))
+        self.selections = {}
+        strlen = 30
+        for pagename in page_map:
+            strlen = max(strlen, len(pagename))
 
-        icol = 0
-        irow = 1
-        for inst in self.db.get_all_instruments():
-            isshown = inst.name in self.get_page_map()
-            iname = (inst.name + ' '*strlen)[:strlen]
+        for name, atab in LARIX_PANELS.items():
+            iname = (name + ' '*strlen)[:strlen]
             cb = wx.CheckBox(panel, -1, iname)#, style=wx.ALIGN_RIGHT)
-            cb.SetValue(isshown)
-            self.hideframes[inst.name] = cb
-            sizer.Add(cb, (irow, icol), (1, 1), labstyle,  5)
-            icol += 1
-            if icol == 3:
-                icol = 0
-                irow += 1
+            cb.SetValue(name in page_map)
+            desc = SimpleText(panel, LARIX_PANELS[name].desc)
+            self.selections[name] = cb
+            irow += 1
+            sizer.Add(cb, (irow, 0), (1, 1), labstyle,  5)
+            sizer.Add(desc, (irow, 1), (1, 1), labstyle,  5)
 
         irow += 1
         sizer.Add(wx.StaticLine(panel, size=(200, -1), style=wx.LI_HORIZONTAL),
                   (irow, 0), (1, 5), wx.ALIGN_CENTER|wx.GROW|wx.ALL, 5)
 
-        btn_ok     = Button(panel, 'OK',     size=(70, -1), action=self.OnOK)
-        btn_cancel = Button(panel, 'Cancel', size=(70, -1), action=self.OnCancel)
+        btn_ok     = Button(panel, 'Apply', size=(70, -1), action=self.OnOK)
+        btn_cancel = Button(panel, 'Done', size=(70, -1), action=self.OnCancel)
 
         irow += 1
         sizer.Add(btn_ok,     (irow, 0), (1, 1), labstyle|wx.ALL,  5)
         sizer.Add(btn_cancel, (irow, 1), (1, 1), labstyle|wx.ALL,  5)
-
-        set_font_with_children(self, font)
 
         pack(panel, sizer)
         panel.SetupScrolling()
@@ -314,27 +302,24 @@ class PanelSelectionFrame(wx.Frame):
         self.Show()
         self.Raise()
 
-    def get_page_map(self):
-        out = {}
-        for i in range(self.parent.nb.GetPageCount()):
-            out[self.parent.nb.GetPageText(i)] = i
-        return out
+    def on_modechoice(self, event=None):
+        panels = LARIX_MODES.get(event.GetString(), [])
+        all_keys = {atab.key:name for name, atab in LARIX_PANELS.items()}
+        for name in self.selections:
+            self.selections[name].SetValue(False)
+
+        for pan in panels:
+            name = all_keys.get(pan, None)
+            if name in self.selections:
+                self.selections[name].SetValue(True)
 
     def OnOK(self, event=None):
-        yesno = {True: 1, False: 0}
+        for i in range(self.parent.nb.GetPageCount()):
+            self.parent.nb.DeletePage(0)
 
-        pagemap = self.get_page_map()
-        for pagename, cb in self.hideframes.items():
-            checked = cb.IsChecked()
-            if not checked and pagename in pagemap:
-                self.parent.nb.DeletePage(pagemap[pagename])
-                pagemap = self.get_page_map()
-
-            elif checked and pagename not in pagemap:
-                inst = self.db.get_instrument(pagename)
-                self.parent.add_instrument_page(inst.name)
-                pagemap = self.get_page_map()
-        self.Destroy()
+        for name, cb in self.selections.items():
+            if cb.IsChecked():
+                self.parent.add_analysis_panel(name)
 
     def OnCancel(self, event=None):
         self.Destroy()
@@ -491,8 +476,8 @@ class LarixFrame(wx.Frame):
                                on_change=self.onNBChanged,
                                style=FNB_STYLE,
                                size=(700, 700))
-        for key, atab in LARIX_PANELS.items():
-            self.add_analysis_panel(key, atab)
+        for key in LARIX_PANELS:
+            self.add_analysis_panel(key)
         self.nb.SetSelection(0)
 
         sizer.Add(self.nb, 1, LEFT|wx.EXPAND, 2)
@@ -501,14 +486,26 @@ class LarixFrame(wx.Frame):
         pack(panel, sizer)
         splitter.SplitVertically(leftpanel, panel, 1)
 
-    def add_analysis_panel(self, name, atab):
-        if name not in self.controller.panels and atab.enabled:
+    def get_panels(self):
+        "return current mapping of displayed panels"
+        out = {}
+        for i in range(self.nb.GetPageCount()):
+            out[self.nb.GetPageText(i)] = i
+        return out
+
+    def add_analysis_panel(self, name):
+        atab = LARIX_PANELS.get(name, None)
+        if atab is None:
+            return
+
+        current_panels = self.get_panels()
+        if name not in current_panels and atab.enabled:
             cons = atab.constructor.split('.')
             clsname = cons.pop()
             module = '.'.join(cons)
             cls = getattr(import_module(module), clsname)
             nbpanel = cls(parent=self, controller=self.controller)
-            self.controller.panels[name] = nbpanel
+            # self.controller.panels[name] = nbpanel
             self.nb.AddPage(nbpanel, name, True)
 
     def process_normalization(self, dgroup, force=True, use_form=True):
@@ -669,9 +666,12 @@ class LarixFrame(wx.Frame):
             MenuItem(self, session_menu, 'wx debug\tCtrl+I',
                      'Show wx inspection window',   self.onwxInspect)
 
+        MenuItem(self, pref_menu, 'Select Analysis Panels and Modes',
+                'Select Analysis Panels and Modes',
+                 self.onPanelSelect)
+
         MenuItem(self, pref_menu, 'Edit Preferences\tCtrl+E', 'Customize Preferences',
                  self.onPreferences)
-
 
         MenuItem(self, group_menu, "Copy This Group",
                  "Copy This Group", self.onCopyGroup)
@@ -885,6 +885,10 @@ class LarixFrame(wx.Frame):
 
     def onPreferences(self, evt=None):
         self.show_subframe('preferences', PreferencesFrame,
+                           controller=self.controller)
+
+    def onPanelSelect(self, evt=None):
+        self.show_subframe('panel_select', PanelSelectionFrame,
                            controller=self.controller)
 
     def onLoadSession(self, evt=None, path=None):
