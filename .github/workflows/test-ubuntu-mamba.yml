@@ -9,7 +9,7 @@ jobs:
       max-parallel: 5
       fail-fast: false
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11']
+        python-version: ['3.9', '3.10', '3.11', '3.12']
     defaults:
       run:
         shell: bash -l {0}
@@ -27,11 +27,10 @@ jobs:
     - name: Install conda dependencies
       run: |
         printenv
-        mamba install -y -c conda-forge python=${{ matrix.python-version }} "numpy>=1.23" "scipy>=1.8" "matplotlib>=3.6" "h5py>=3.5" "wxpython>=4.1" scikit-image scikit-learn pycifrw pandas jupyter plotly pyparsing pytest pytest-cov coverage
+        mamba install -y -c conda-forge python=${{ matrix.python-version }} "numpy>=1.23" "scipy>=1.8" "matplotlib>=3.6" "h5py>=3.5" "wxpython>=4.2" scikit-image scikit-learn pycifrw pandas jupyter plotly pyparsing pytest pytest-cov coverage
     - name: Install xraylarch and other dependencies with pip
       run: |
-        pip install lmfit peakutils pyepics pyshortcuts termcolor sphinx dill pycifrw xraydb wxmplot wxutils fabio silx imageio charset-normalizer
-        pip install .
+        pip install ".[all]"
     - name: Run test suite
       run: |
         cd tests
