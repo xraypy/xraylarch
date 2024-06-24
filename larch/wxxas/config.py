@@ -86,37 +86,42 @@ Valid_DataTypes = ('string', 'float', 'int', 'bool', 'choice', 'path')
 
 AnalysisTab = namedtuple('AnalysisTab', ('constructor', 'enabled', 'key', 'desc'))
 
-LARIX_PANELS = {'XAS Normalization':
-                AnalysisTab('larch.wxxas.xasnorm_panel.XASNormPanel',  True, 'xasnorm',
-                            'Normalization and Pre-edge subtraction for XANES and EXAFS'),
-                'Pre-edge Peaks':
-                AnalysisTab('larch.wxxas.prepeak_panel.PrePeakPanel', True, 'prepeaks',
-                            'Curve Fitting for XANES Pre-edge Peaks'),
-                'XAS PCA':
-                AnalysisTab('larch.wxxas.pca_panel.PCAPanel', True, 'pca',
-                            'Principal Component Analysis for XANES and EXAFS'),
-                'XAS Linear Combo':
-                AnalysisTab('larch.wxxas.lincombo_panel.LinearComboPanel', True, 'lincombo',
-                            'Linear Combination Analysis for XANES and EXAFS'),
-                'XAS Regression':
-                AnalysisTab('larch.wxxas.regress_panel.RegressionPanel', True, 'regression',
-                            'Linear Regression and Feature Selection for XANES and EXAFS'),
-                'EXAFS':
-                AnalysisTab('larch.wxxas.exafs_panel.EXAFSPanel', True, 'exafs',
-                            'EXAFS Background Subtraction and Fourier Transforms'),
-                'FEFF Fitting':
-                AnalysisTab('larch.wxxas.feffit_panel.FeffitPanel', True, 'feffit',
-                            'EXAFS Path Fitting with FEFF calculations'),
-                }
+LARIX_PANELS = {
+    'Column Data':
+    AnalysisTab('larch.wxxas.rawdata_panel.DataPanel', True, 'rawdata',
+                'Read and Manipulate Data from Column Data files'),
+    'XAS Normalization':
+    AnalysisTab('larch.wxxas.xasnorm_panel.XASNormPanel',  True, 'xasnorm',
+                'Normalization and Pre-edge subtraction for XANES and EXAFS'),
+    'Pre-edge Peaks':
+    AnalysisTab('larch.wxxas.prepeak_panel.PrePeakPanel', True, 'prepeaks',
+                'Curve Fitting for XANES Pre-edge Peaks'),
+    'XAS PCA':
+    AnalysisTab('larch.wxxas.pca_panel.PCAPanel', True, 'pca',
+            'Principal Component Analysis for XANES and EXAFS'),
+    'XAS Linear Combo':
+    AnalysisTab('larch.wxxas.lincombo_panel.LinearComboPanel', True, 'lincombo',
+                'Linear Combination Analysis for XANES and EXAFS'),
+    'XAS Regression':
+    AnalysisTab('larch.wxxas.regress_panel.RegressionPanel', True, 'regression',
+            'Linear Regression and Feature Selection for XANES and EXAFS'),
+    'EXAFS':
+    AnalysisTab('larch.wxxas.exafs_panel.EXAFSPanel', True, 'exafs',
+                'EXAFS Background Subtraction and Fourier Transforms'),
+    'FEFF Fitting':
+    AnalysisTab('larch.wxxas.feffit_panel.FeffitPanel', True, 'feffit',
+                'EXAFS Path Fitting with FEFF calculations'),
+}
 
 all_keys = [atab.key for atab in LARIX_PANELS.values()]
-LARIX_MODES = {'XANES and EXAFS': ('xasnorm', 'prepeaks', 'pca', 'lincombo', 'exafs', 'feffit'),
-                'EXAFS only': ('xasnorm', 'exafs', 'feffit'),
-                'XANES only': ('xasnorm', 'prepeaks', 'pca', 'lincombo'),
-                # 'XRF Mapping and Analysis': ('maproi', 'mapareas', 'maptomo', 'mapxrf'),
-                # 'XRD 1D': ('xrd1d',),
-                # 'General Visualization and Fitting':  ('rawdata', 'lmfit'),
-                'All': all_keys}
+LARIX_MODES = {'All': all_keys,
+               'General Data Visualization and Fitting':  ('rawdata', 'lmfit'),
+               'XANES and EXAFS': ('xasnorm', 'prepeaks', 'pca', 'lincombo', 'exafs', 'feffit'),
+               'EXAFS only': ('xasnorm', 'exafs', 'feffit'),
+               'XANES only': ('xasnorm', 'prepeaks', 'pca', 'lincombo'),
+               'XRF Mapping and Analysis': ('maproi', 'mapareas', 'maptomo', 'mapxrf'),
+               'XRD 1D': ('xrd1d',),
+               }
 
 class CVar:
     """configuration variable"""

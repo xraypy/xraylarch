@@ -234,7 +234,7 @@ class PanelSelectionFrame(wx.Frame):
         self.controller = controller
         self.parent = parent
         wx.Frame.__init__(self, None, -1,  'Larix Configuration: Analysis Panels',
-                          style=FRAMESTYLE, size=(700, 725))
+                          style=FRAMESTYLE, size=(650, 500))
         self.wids = {}
 
         style    = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
@@ -256,6 +256,8 @@ class PanelSelectionFrame(wx.Frame):
                            size=(500, 25),
                            font=Font(FONTSIZE+1), style=LEFT,
                            colour=COLORS['nb_text'])
+        modetitle = SimpleText(panel, 'Analysis Mode: ')
+        panetitle = SimpleText(panel, 'Select Individual Analysis Panels: ')
 
         self.wids = wids = {}
         MODES = list(LARIX_MODES.keys())
@@ -265,7 +267,15 @@ class PanelSelectionFrame(wx.Frame):
 
         page_map = self.parent.get_panels()
         irow = 0
-        sizer.Add(title, (irow, 0), (1, 4), labstyle|wx.ALL, 3)
+        sizer.Add(title, (irow, 0), (1, 2), labstyle|wx.ALL, 3)
+        irow = 1
+        sizer.Add(modetitle, (irow, 0), (1, 1), labstyle|wx.ALL, 3)
+        sizer.Add(wids['modechoice'], (irow, 1), (1, 1), labstyle|wx.ALL, 3)
+        irow += 1
+        sizer.Add(HLine(panel, (325, 3)), (irow, 0), (1, 2), labstyle|wx.ALL, 3)
+        irow += 1
+        sizer.Add(panetitle, (irow, 0), (1, 2), labstyle|wx.ALL, 3)
+
         self.selections = {}
         strlen = 30
         for pagename in page_map:
@@ -282,15 +292,14 @@ class PanelSelectionFrame(wx.Frame):
             sizer.Add(desc, (irow, 1), (1, 1), labstyle,  5)
 
         irow += 1
-        sizer.Add(wx.StaticLine(panel, size=(200, -1), style=wx.LI_HORIZONTAL),
-                  (irow, 0), (1, 5), wx.ALIGN_CENTER|wx.GROW|wx.ALL, 5)
+        sizer.Add(HLine(panel, (325, 3)), (irow, 0), (1, 2), labstyle|wx.ALL, 3)
 
         btn_ok     = Button(panel, 'Apply', size=(70, -1), action=self.OnOK)
         btn_cancel = Button(panel, 'Done', size=(70, -1), action=self.OnCancel)
 
         irow += 1
-        sizer.Add(btn_ok,     (irow, 0), (1, 1), labstyle|wx.ALL,  5)
-        sizer.Add(btn_cancel, (irow, 1), (1, 1), labstyle|wx.ALL,  5)
+        sizer.Add(btn_ok,     (irow, 0), (1, 1), labstyle|wx.ALL, 3)
+        sizer.Add(btn_cancel, (irow, 1), (1, 1), labstyle|wx.ALL, 3)
 
         pack(panel, sizer)
         panel.SetupScrolling()
@@ -320,6 +329,7 @@ class PanelSelectionFrame(wx.Frame):
         for name, cb in self.selections.items():
             if cb.IsChecked():
                 self.parent.add_analysis_panel(name)
+        self.parent.nb.SetSelection(0)
 
     def OnCancel(self, event=None):
         self.Destroy()
@@ -503,10 +513,15 @@ class LarixFrame(wx.Frame):
             cons = atab.constructor.split('.')
             clsname = cons.pop()
             module = '.'.join(cons)
-            cls = getattr(import_module(module), clsname)
-            nbpanel = cls(parent=self, controller=self.controller)
-            # self.controller.panels[name] = nbpanel
-            self.nb.AddPage(nbpanel, name, True)
+            try:
+                cls = getattr(import_module(module), clsname)
+            except (ImportError, KeyError):
+                cls = None
+                print(f"cannot find analysis panel {atab}")
+            if cls is not None:
+                nbpanel = cls(parent=self, controller=self.controller)
+                # self.controller.panels[name] = nbpanel
+                self.nb.AddPage(nbpanel, name, True)
 
     def process_normalization(self, dgroup, force=True, use_form=True):
         self.get_nbpage('xasnorm')[1].process(dgroup, force=force, use_form=use_form)
