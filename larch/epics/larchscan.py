@@ -93,7 +93,7 @@ import random
 from datetime import timedelta
 
 from larch import Group
-from larch.utils import debugtime, fix_varname
+from larch.utils import fix_varname
 
 try:
     from epics import PV, caget, caput, get_pv, poll
