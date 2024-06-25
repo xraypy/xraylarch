@@ -6,13 +6,14 @@ import wx
 from wx.adv import AboutBox, AboutDialogInfo, SplashScreen
 import wx.adv
 import wx.lib
+from  wx.lib.mixins.inspection import InspectionMixin
 
 from larch.site_config import icondir
 
 LARIX_TITLE = "Larix: XAS Visualization and Analysis"
 ICON_FILE = 'onecone.ico'
 
-class LarixApp(wx.App):
+class LarixApp(wx.App, InspectionMixin):
     def __init__(self, _larch=None, filename=None, check_version=True,
                  mode='xas', with_c_locale=True, with_wx_inspect=False, **kws):
         self._larch = _larch
@@ -25,6 +26,7 @@ class LarixApp(wx.App):
 
     def OnInit(self):
         wx.SystemOptions.SetOption("mac.window-plain-transition", 1)
+        print("launch larix ", self.with_wx_inspect)
         LarixSplashScreen(filename=self.filename,
                           check_version=self.check_version,
                           mode=self.mode,
@@ -61,6 +63,4 @@ class LarixSplashScreen(SplashScreen):
 
         self.frame = LarixFrame(**self.kws)
         wx.GetApp().SetTopWindow(self.frame)
-        if self.kws.get('wx_debug', False):
-           wx.GetApp().ShowInspectionTool()
         return True
