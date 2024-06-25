@@ -339,7 +339,7 @@ class LarixFrame(wx.Frame):
     Matt Newville <newville @ cars.uchicago.edu>
     """
     def __init__(self, parent=None, _larch=None, filename=None,
-                 wx_debug=False, mode='xas', check_version=True, **kws):
+                 with_wx_inspect=False, mode='xas', check_version=True, **kws):
         wx.Frame.__init__(self, parent, -1, size=LARIX_SIZE, style=FRAMESTYLE)
 
         if check_version:
@@ -348,7 +348,7 @@ class LarixFrame(wx.Frame):
             version_thread = Thread(target=version_checker)
             version_thread.start()
 
-        self.wx_debug = wx_debug
+        self.with_wx_inspect = with_wx_inspect
         self.mode = mode
         if self.mode not in LARIX_MODES:
             self.mode = 'xas'
@@ -677,8 +677,8 @@ class LarixFrame(wx.Frame):
                  'Save Session History as Larch Script',
                  self.onSaveLarchHistory)
 
-        if self.wx_debug:
-            MenuItem(self, session_menu, 'wx debug\tCtrl+I',
+        if self.with_wx_inspect:
+            MenuItem(self, session_menu, 'wx inspect\tCtrl+I',
                      'Show wx inspection window',   self.onwxInspect)
 
         MenuItem(self, pref_menu, 'Select Analysis Panels and Modes',
@@ -1918,21 +1918,21 @@ before clearing"""
 
 class LarixApp(LarchWxApp):
     def __init__(self, filename=None, check_version=True, mode='xas',
-                 wx_debug=False, **kws):
+                 with_wx_inspect=False, **kws):
         self.filename = filename
         self.mode = mode
-        self.wx_debug = wx_debug
+        self.with_wx_inspect = with_wx_inspect
         self.check_version = check_version
         LarchWxApp.__init__(self,**kws)
 
     def createApp(self):
         self.frame = LarixFrame(filename=self.filename,
                                 mode=self.mode,
-                                wx_debug=self.wx_debug,
+                                with_wx_inspect=self.with_wx_inspect,
                                 check_version=self.check_version)
         self.SetTopWindow(self.frame)
-        if self.wx_debug:
-            wx.GetApp().ShowInspectionTool()
+        # if self.with_wx_inspect:
+        #    wx.GetApp().ShowInspectionTool()
         return True
 
 def larix(**kws):
@@ -1950,8 +1950,8 @@ if __name__ == "__main__":
         dest='mode',
         help='mode to start larix')
     parser.add_argument(
-        '-w', '--wx_debug',
-        dest='wx_debug',
+        '-w', '--wx_inspect',
+        dest='wx_inspect',
         help='wx debugging mode')
     args = parser.parse_args()
     LarixApp(**vars(args)).MainLoop()
