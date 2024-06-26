@@ -185,14 +185,16 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
             pre1  = 5.0*round((energy[1] - e0)/5.0)
         else:
             pre1  = 2.0*round((energy[1] - e0)/2.0)
-
     pre1 = max(pre1,  (min(energy) - e0))
-    if pre2 is None or (pre2 < pre1 +5):
+    if pre2 is None:
         pre2 = 0.5*pre1
-    if (pre1 < -10) and (pre2 < pre1 + 2):
-        pre2 = pre1/2.0
     if pre1 > pre2:
         pre1, pre2 = pre2, pre1
+    ipre1 = index_of(energy-e0, pre1)
+    ipre2 = index_of(energy-e0, pre2)
+    if ipre2 < ipre1 + 2 + nvict:
+        pre2 = (energy-e0)[int(ipre1 + 2 + nvict)]
+
     if norm2 is None:
         norm2 = 5.0*round((max(energy) - e0)/5.0)
     if norm2 < 0:
