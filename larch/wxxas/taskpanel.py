@@ -379,9 +379,10 @@ class TaskPanel(wx.Panel):
         """set/update processing configuration for a group"""
         if dgroup is None:
             dgroup = self.controller.get_group()
-        conf = getattr(dgroup, 'config', None)
-        if conf is None:
-            conf = getattr(dgroup.config, self.configname, None)
+        conf = None
+        dconf = getattr(dgroup, 'config', None)
+        if dconf is not None:
+            conf = getattr(dconf, self.configname, None)
         if conf is None:
             conf = self.get_defaultconfig()
 
