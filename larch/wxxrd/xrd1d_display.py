@@ -34,7 +34,7 @@ from larch.xrd import (d_from_q,twth_from_q,q_from_twth,
                        d_from_twth,twth_from_d,q_from_d,
                        lambda_from_E, E_from_lambda, calc_broadening,
                        instrumental_fit_uvw,peaklocater,peakfitter,
-                       xrd1d, peakfinder_methods, save1D, read_poni)
+                       xrd1d, save1D, read_poni)
 
 from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          SetTip, GridPanel, get_icon, SimpleText, pack,

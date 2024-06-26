@@ -5,7 +5,6 @@ Diffraction functions require for fitting and analyzing data.
 mkak 2017.02.06 (originally written spring 2016)
 '''
 
-
 ##########################################################################
 # IMPORT PYTHON PACKAGES
 
@@ -17,6 +16,7 @@ from scipy import optimize,signal,interpolate
 from .xrd_tools import (d_from_q, d_from_twth, twth_from_d, twth_from_q,
                         q_from_d, q_from_twth)
 
+from ..math import peak_indices
 
 ##########################################################################
 # FUNCTIONS
@@ -43,38 +43,15 @@ def peaklocater(ipeaks,x):
 
     return np.array(xypeaks)
 
-def peakfinder_methods():
 
-    methods = []
-    try:
-        import peakutils
-        methods += ['peakutils.indexes']
-    except:
-        pass
-    try:
-        from scipy import signal
-        methods += ['scipy.signal.find_peaks_cwt']
-    except:
-        pass
-
-    return methods
-
-
-def peakfinder(y, method='scipy.signal.find_peaks_cwt',
+def peakfinder(y, method='scipy',
                widths=20, gapthrsh=5, thres=0.0, min_dist=10):
     '''
     Returns indices for peaks in y from dataset
     '''
-
-    if method == 'peakutils.indexes':
-        try:
-            import peakutils
-        except:
-            print('python package peakutils not installed')
-            widths = np.arange(1,int(len(y)/widths))
-            peak_indices = signal.find_peaks_cwt(y, widths, gap_thresh=gapthrsh)
-        peak_indices = peakutils.indexes(y, thres=thres, min_dist=min_dist)
-    elif method == 'scipy.signal.find_peaks_cwt':
+    if method.startswith('peak'):
+        peak_indices = peak_indices(y, threshold=thres, min_dist=min_dist)
+    else:
         ## scipy.signal.find_peaks_cwt(vector, widths, wavelet=None, max_distances=None,
         ##                   gap_thresh=None, min_length=None, min_snr=1, noise_perc=10)
         widths = np.arange(1,int(len(y)/widths))

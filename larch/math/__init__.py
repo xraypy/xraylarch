@@ -13,6 +13,7 @@ from .lineshapes import (gaussian, lorentzian, voigt, pvoigt, hypermet,
                          expgaussian, doniach, skewed_voigt,
                          students_t, logistic, erf, erfc, wofz)
 
+from .peaks import peak_indices
 from .fitpeak import fit_peak
 from .convolution1D import glinbroad
 from .lincombo_fitting import lincombo_fit, lincombo_fitall, groups2matrix

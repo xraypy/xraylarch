@@ -9,18 +9,14 @@ import numpy as np
 from lmfit import Parameters, Minimizer, Model
 from lmfit.models import (LorentzianModel, GaussianModel, VoigtModel,
                           ConstantModel, LinearModel, QuadraticModel)
-try:
-    import peakutils
-    HAS_PEAKUTILS = True
-except ImportError:
-    HAS_PEAKUTILS = False
 
 from xraydb import guess_edge, xray_edge, core_width
 
 from larch import Group, Make_CallArgs, isgroup, parse_group_args
 # now we can reliably import other std and xafs modules...
 
-from larch.math import (index_of, index_nearest, remove_nans2)
+from larch.math import (index_of, index_nearest, remove_nans2,
+                        peak_indices)
 
 from larch.fitting import dict2params
 from .xafsutils import set_xafsGroup
@@ -202,7 +198,7 @@ def pre_edge_baseline(energy, norm=None, group=None, form='linear+lorentzian',
     elo = group.prepeaks.elo
     ehi = group.prepeaks.ehi
 
-    dele = 1.e-13 + min(np.diff(energy))/5.0
+    dele = 1.e-11 + min(np.diff(energy))/5.0
 
     imin = index_of(energy, emin+dele)
     ilo  = index_of(energy, elo+dele)
@@ -289,9 +285,8 @@ def pre_edge_baseline(energy, norm=None, group=None, form='linear+lorentzian',
         dcen = abs(cen_minus - cen_plus) / 2.0
 
         # locate peak positions
-        if HAS_PEAKUTILS:
-            peak_ids = peakutils.peak.indexes(peaks, thres=0.05, min_dist=2)
-            peak_energies = [edat[pid] for pid in peak_ids]
+        peak_ids = peak_indices(peaks, threshold=0.05, min_dist=2)
+        peak_energies = [edat[pid] for pid in peak_ids]
 
     group = set_xafsGroup(group, _larch=_larch)
     group.prepeaks = Group(energy=edat, norm=norm, baseline=baseline,

@@ -17,8 +17,6 @@ import wx.lib.scrolledpanel as scrolled
 import wx.dataview as dv
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
-from peakutils import peak
-
 from lmfit import Parameter, Minimizer
 
 from wxutils import (SimpleText, FloatCtrl, FloatSpin, Choice, Font, pack,
@@ -36,6 +34,7 @@ from .parameter import ParameterPanel
 
 from larch import Group
 
+from ..math import peak_indices
 from ..xrf import xrf_background, MCA, FanoFactors
 from ..utils import json_dump, json_load, gformat
 from ..utils.jsonutils import encode4js, decode4js
@@ -964,7 +963,7 @@ class FitSpectraFrame(wx.Frame):
 
     def onElems_GuessPeaks(self, event=None):
         mca = self.mca
-        _indices = peak.indexes(mca.counts*1.0, min_dist=5, thres=0.025)
+        _indices = peak_indices(mca.counts*1.0, min_dist=5, threshold=0.025)
         peak_energies = mca.energy[_indices]
 
         elrange = range(10, 92)
