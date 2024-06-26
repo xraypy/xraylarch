@@ -5,8 +5,8 @@ from .xrd import XRD, xrd1d, read_xrd_data, create_xrd, create_xrd1d, calculate_
 from .xrd_bgr import xrd_background
 
 from .xrd_fitting import (peakfinder, peaklocater, peakfitter, peakfilter,
-                          peakfinder_methods, data_gaussian_fit,
-                          instrumental_fit_uvw, calc_broadening)
+                          data_gaussian_fit, instrumental_fit_uvw,
+                          calc_broadening)
 
 from .xrd_pyFAI import (integrate_xrd, integrate_xrd_row, read_lambda,
                         calc_cake, save1D, return_ai, twth_from_xy,
