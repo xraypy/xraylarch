@@ -51,8 +51,7 @@ def onCtrlC(*args, **kws):
             WXLARCH_SYM.set_symbol('_sys.wx.keyboard_interrupt', True)
         except AttributeError:
             pass
-    else:
-        raise KeyboardInterrupt
+    raise KeyboardInterrupt
     return 0
 
 def capture_CtrlC():
@@ -244,5 +243,5 @@ py_inphook.value = cast(cback, c_void_p).value
 # import for Darwin!
 if sys.platform == 'darwin':
     from .allow_idle_macosx import allow_idle
-    allow_idle()
+    # allow_idle()
 #     print("no allow idle")
