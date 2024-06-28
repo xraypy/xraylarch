@@ -252,7 +252,7 @@ class ImageDisplay(ImageFrame):
         if iy is not None:  set('%s_iy' % self.symname, iy)
         if val is not None: set('%s_val' % self.symname, val)
 
-def get_display(win=1, _larch=None, wxparent=None, size=None,
+def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
                 wintitle=None, xrf=False, image=False, stacked=False,
                 theme=None, linewidth=None, markersize=None,
                 show_grid=None, show_fullbox=None, height=None,
@@ -305,7 +305,7 @@ def get_display(win=1, _larch=None, wxparent=None, size=None,
         title = wintitle
 
     def _get_disp(symname, creator, win, ddict, wxparent,
-                  size, height, width, _larch):
+                  size, position, height, width, _larch):
         wxapp = wx.GetApp()
         display = None
         new_display = False
@@ -336,7 +336,9 @@ def get_display(win=1, _larch=None, wxparent=None, size=None,
                               size=size, _larch=_larch)
             new_display = True
             parent = wxapp.GetTopWindow()
-            if parent is not None:
+            if position is not None:
+                display.SetPosition(position)
+            elif parent is not None:                
                 xpos, ypos = parent.GetPosition()
                 xsiz, ysiz = parent.GetSize()
                 x = xpos + xsiz*0.75
@@ -364,7 +366,7 @@ def get_display(win=1, _larch=None, wxparent=None, size=None,
 
 
     display, isnew  = _get_disp(symname, creator, win, display_dict, wxparent,
-                                size, height, width, _larch)
+                                size, position, height, width, _larch)
     if isnew and creator in (PlotDisplay, StackedPlotDisplay):
         if theme is not None:
             PLOTOPTS['theme'] = theme
@@ -392,7 +394,7 @@ def get_display(win=1, _larch=None, wxparent=None, size=None,
     except:
         display_dict.pop(win)
         display, isnew = _get_disp(symname, creator, win, display_dict, wxparent,
-                                   size, _larch)
+                                   size, position, _larch)
         display.SetTitle(title)
     if  hasattr(_larch, 'symtable'):
         _larch.symtable.set_symbol(symname, display)
