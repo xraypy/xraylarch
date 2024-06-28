@@ -50,14 +50,6 @@ Plot_EnergyRanges = {'full E range': None,
                      'E0 -100:+500eV': (-100, 500)}
 
 
-PlotOne_Choices_nonxas = {'Raw Data': 'mu',
-                          'Scaled Data': 'norm',
-                          'Derivative': 'dmude',
-                          'Data + Derivative': 'norm+dmude'}
-
-PlotSel_Choices_nonxas = {'Raw Data': 'mu',
-                          'Scaled Data': 'norm',
-                          'Derivative': 'dmude'}
 
 FSIZE = 120
 FSIZEBIG = 175
@@ -215,8 +207,6 @@ class XASNormPanel(TaskPanel):
         opts = {'digits': 3, 'increment': 0.05, 'value': 0, 'size': (FSIZEBIG, -1)}
 
         opts.update({'value': 1.0, 'digits': 3})
-        scale = self.add_floatspin('scale', action=self.onSet_Scale,
-                                               **opts)
 
         self.wids['norm_method'] = Choice(panel, choices=NORM_METHODS,
                                           size=(150, -1), action=self.onNormMethod)
@@ -232,8 +222,6 @@ class XASNormPanel(TaskPanel):
 
         use_auto = Button(panel, 'Use Default Settings', size=(200, -1),
                           action=self.onResetNorm)
-        copy_auto = Button(panel, 'Copy', size=(60, -1),
-                           action=self.onCopyAuto)
 
         def CopyBtn(name):
             return Button(panel, 'Copy', size=(60, -1),
@@ -249,18 +237,14 @@ class XASNormPanel(TaskPanel):
         panel.Add(trow, dcol=4, newrow=True)
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=4, newrow=True)
-        add_text('Raw Data Scale:')
-        panel.Add(scale)
-        panel.Add(SimpleText(panel, 'Copy to Selected Groups:'), style=RIGHT, dcol=2)
-
-        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=4, newrow=True)
         add_text('XAS Data:')
-        panel.Add(use_auto, dcol=2)
-        panel.Add(copy_auto, dcol=1, style=RIGHT)
+        panel.Add(use_auto, dcol=1)
+        panel.Add(SimpleText(panel, 'Copy to Selected Groups:'), style=RIGHT, dcol=2)        
 
         add_text('Element and Edge: ', newrow=True)
         panel.Add(atpanel, dcol=2)
-
+        panel.Add(CopyBtn('atsym'), dcol=1, style=RIGHT)
+        
         add_text('Energy Reference : ')
         panel.Add(self.wids['energy_ref'], dcol=2)
         panel.Add(CopyBtn('energy_ref'), dcol=1, style=RIGHT)
@@ -433,17 +417,6 @@ class XASNormPanel(TaskPanel):
             self.wids['show_pre'].SetValue(opts['show_pre'])
             self.wids['show_norm'].SetValue(opts['show_norm'])
 
-            self.wids['scale'].Disable()
-
-        else:
-            self.plotone_op.SetChoices(list(PlotOne_Choices_nonxas.keys()))
-            self.plotsel_op.SetChoices(list(PlotSel_Choices_nonxas.keys()))
-
-            self.wids['scale'].SetValue(opts['scale'])
-            for attr in ('pre1', 'pre2', 'norm1', 'norm2', 'nnorm', 'edge',
-                         'atsym', 'step', 'norm_method'):
-                self.wids[attr].Disable()
-            self.wids['scale'].Enable()
 
         frozen = opts.get('is_frozen', False)
         frozen = getattr(dgroup, 'is_frozen', frozen)
@@ -492,7 +465,6 @@ class XASNormPanel(TaskPanel):
         form_opts['norm_method'] = self.wids['norm_method'].GetStringSelection().lower()
         form_opts['edge'] = self.wids['edge'].GetStringSelection().title()
         form_opts['atsym'] = self.wids['atsym'].GetStringSelection().title()
-        form_opts['scale'] = self.wids['scale'].GetValue()
         form_opts['energy_ref'] = self.wids['energy_ref'].GetStringSelection()
         return form_opts
 
@@ -572,8 +544,6 @@ class XASNormPanel(TaskPanel):
         dgroup = self.controller.get_group(groupname)
 
         plot_choices = PlotSel_Choices
-        if not self.is_xasgroup(dgroup):
-            plot_choices = PlotSel_Choices_nonxas
 
         erange = Plot_EnergyRanges[self.plot_erange.GetStringSelection()]
         self.controller.set_plot_erange(erange)
@@ -776,15 +746,6 @@ class XASNormPanel(TaskPanel):
         time.sleep(0.01)
         wx.CallAfter(self.onReprocess)
 
-    def onSet_Scale(self, evt=None, value=None):
-        "handle setting non-XAFS scale value"
-        scale = self.wids['scale'].GetValue()
-        if scale < 0:
-            self.wids['scale'].SetValue(abs(scale))
-        self.update_config({'scale': self.wids['scale'].GetValue()})
-        autoset_fs_increment(self.wids['scale'], abs(scale))
-        time.sleep(0.01)
-        wx.CallAfter(self.onReprocess)
 
     def onSet_Ranges(self, evt=None, **kws):
         conf = {}
@@ -804,15 +765,13 @@ class XASNormPanel(TaskPanel):
         """
         if xsel is None or opt not in self.wids:
             return
-        if opt == 'scale':
-            self.wids['scale'].SetValue(kws['ysel'])
-        else:
-            e0 = self.wids['e0'].GetValue()
-            if opt == 'e0':
-                self.wids['e0'].SetValue(xsel)
-                self.wids['auto_e0'].SetValue(0)
-            elif opt in ('pre1', 'pre2', 'norm1', 'norm2'):
-                self.wids[opt].SetValue(xsel-e0)
+
+        e0 = self.wids['e0'].GetValue()
+        if opt == 'e0':
+            self.wids['e0'].SetValue(xsel)
+            self.wids['auto_e0'].SetValue(0)
+        elif opt in ('pre1', 'pre2', 'norm1', 'norm2'):
+            self.wids[opt].SetValue(xsel-e0)
         time.sleep(0.01)
         wx.CallAfter(self.onReprocess)
 
@@ -859,14 +818,6 @@ class XASNormPanel(TaskPanel):
             if eref_sel in (val, key):
                 self.wids['energy_ref'].SetStringSelection(key)
 
-        if not self.is_xasgroup(dgroup):
-            self.skip_process = False
-            dgroup.mu = dgroup.ydat * 1.0
-            scale = form.get('scale', conf.get('scale', 1.0))
-            gname = dgroup.groupname
-            self.larch_eval(f"{gname:s}.scale = {scale:.8f}")
-            self.larch_eval(f"{gname:s}.norm = {gname:s}.ydat/{scale:8f}")
-            return
 
         en_units = getattr(dgroup, 'energy_units', None)
         if en_units is None:
@@ -948,7 +899,7 @@ class XASNormPanel(TaskPanel):
         if not hasattr(dgroup, 'e0'):
             self.skip_process = False
             dgroup.mu = dgroup.ydat * 1.0
-            opts = {'group': dgroup.groupname, 'scale': conf.get('scale', 1.0)}
+            opts = {'group': dgroup.groupname}
             return
 
         norm_method = form['norm_method'].lower()
@@ -1027,38 +978,6 @@ class XASNormPanel(TaskPanel):
         dgroup.plot_y2label = None
         dgroup.plot_xlabel = plotlabels.energy
         dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab)]
-
-        if not self.is_xasgroup(dgroup):
-            pchoice = PlotOne_Choices_nonxas.get(self.plotone_op.GetStringSelection(), 'norm')
-            dgroup.plot_xlabel = 'x'
-            dgroup.plot_ylabel = 'y'
-            dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, 'ydat')]
-            dgroup.dmude = np.gradient(dgroup.ydat)/np.gradient(dgroup.xdat)
-            dgroup.d2mude = np.gradient(dgroup.dmude)/np.gradient(dgroup.xdat)
-            if not hasattr(dgroup, 'scale'):
-                dgroup.scale = 1.0
-
-            dgroup.norm = dgroup.ydat/dgroup.scale
-            if pchoice == 'dmude':
-                dgroup.plot_ylabel = 'dy/dx'
-                dgroup.plot_yarrays = [('dmude', PLOTOPTS_1, 'dy/dx')]
-            elif pchoice == 'd2mude':
-                dgroup.plot_ylabel = 'd2y/dx2'
-                dgroup.plot_yarrays = [('d2mude', PLOTOPTS_1, 'd2y/dx')]
-            elif pchoice == 'norm':
-                dgroup.plot_ylabel = 'scaled y'
-                dgroup.plot_yarrays = [('norm', PLOTOPTS_1, 'y/scale')]
-            elif pchoice == 'norm+dmude':
-                lab = plotlabels.norm
-                dgroup.plot_y2label = 'dy/dx'
-                dgroup.plot_yarrays = [('norm', PLOTOPTS_1, 'y'),
-                                       ('dmude', PLOTOPTS_D, 'dy/dx')]
-            elif pchoice == 'norm+d2mude':
-                lab = plotlabels.norm
-                dgroup.plot_y2label = 'd2y/dx2'
-                dgroup.plot_yarrays = [('norm', PLOTOPTS_1, 'y'),
-                                       ('d2normde', PLOTOPTS_D, 'd2y/dx2')]
-            return
 
         req_attrs = ['e0', 'norm', 'dmude', 'd2mude', 'pre_edge']
 
@@ -1200,9 +1119,6 @@ class XASNormPanel(TaskPanel):
             popts['y2label'] = dgroup.plot_y2label
 
         plot_choices = PlotSel_Choices
-        if not self.is_xasgroup(dgroup):
-            plot_choices = PlotSel_Choices_nonxas
-
         if multi:
             ylabel = self.plotsel_op.GetStringSelection()
             yarray_name = plot_choices.get(ylabel, 'norm')
