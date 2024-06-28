@@ -50,7 +50,8 @@ from larch.version import check_larchversion
 
 from .xas_controller import XASController
 from .taskpanel import GroupJournalFrame
-from .config import FULLCONF, CONF_SECTIONS,  CVar, ATHENA_CLAMPNAMES, LARIX_PANELS, LARIX_MODES
+from .config import (FULLCONF, CONF_SECTIONS,  CVar, ATHENA_CLAMPNAMES,
+                     LARIX_PANELS, LARIX_MODES)
 
 from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
                           DeglitchDialog, ExportCSVDialog, RebinDataDialog,
@@ -260,11 +261,13 @@ class PanelSelectionFrame(wx.Frame):
         panetitle = SimpleText(panel, 'Select Individual Analysis Panels: ')
 
         self.wids = wids = {}
-        MODES = list(LARIX_MODES.keys())
+        self.current_mode = LARIX_MODES.get(self.parent.mode, 'xas')
+        modenames = [m[0] for m in LARIX_MODES.values()]
 
-        wids['modechoice'] = Choice(panel, choices=MODES, size=(350, -1),
+        wids['modechoice'] = Choice(panel, choices=modenames, size=(350, -1),
                                     action=self.on_modechoice)
-
+        wids['modechoice'].SetStringSelection(LARIX_MODES[self.current_mode][0])
+        
         page_map = self.parent.get_panels()
         irow = 0
         sizer.Add(title, (irow, 0), (1, 2), labstyle|wx.ALL, 3)
@@ -281,11 +284,11 @@ class PanelSelectionFrame(wx.Frame):
         for pagename in page_map:
             strlen = max(strlen, len(pagename))
 
-        for name, atab in LARIX_PANELS.items():
-            iname = (name + ' '*strlen)[:strlen]
+        for key, atab in LARIX_PANELS.items():
+            iname = (atab.title + ' '*strlen)[:strlen]
             cb = wx.CheckBox(panel, -1, iname)#, style=wx.ALIGN_RIGHT)
-            cb.SetValue(name in page_map)
-            desc = SimpleText(panel, LARIX_PANELS[name].desc)
+            cb.SetValue(atab.title in page_map)
+            desc = SimpleText(panel, LARIX_PANELS[key].desc)
             self.selections[name] = cb
             irow += 1
             sizer.Add(cb, (irow, 0), (1, 1), labstyle,  5)
@@ -312,17 +315,26 @@ class PanelSelectionFrame(wx.Frame):
         self.Raise()
 
     def on_modechoice(self, event=None):
-        panels = LARIX_MODES.get(event.GetString(), [])
-        all_keys = {atab.key:name for name, atab in LARIX_PANELS.items()}
+        modename = event.GetString()
+        self.current_mode = 'xas'
+        panels = LARIX_MODES['xas'][1]
+        for key, dat in LARIX_MODES.items():
+            if dat[0] == modename:
+                self.current_mode = key
+                panels = dat[1]
+        print("mode choice ", modename, self.current_mode, panels)
+        self.Freeze()
         for name in self.selections:
             self.selections[name].SetValue(False)
 
-        for pan in panels:
-            name = all_keys.get(pan, None)
+        for name in panels:
             if name in self.selections:
                 self.selections[name].SetValue(True)
-
+        self.Thaw()
+        
     def OnOK(self, event=None):
+        self.parent.Hide()
+        self.parent.Freeze()
         for i in range(self.parent.nb.GetPageCount()):
             self.parent.nb.DeletePage(0)
 
@@ -330,7 +342,10 @@ class PanelSelectionFrame(wx.Frame):
             if cb.IsChecked():
                 self.parent.add_analysis_panel(name)
         self.parent.nb.SetSelection(0)
-
+        self.parent.mode = self.current_mode
+        self.parent.Thaw()
+        self.parent.Show()
+        
     def OnCancel(self, event=None):
         self.Destroy()
 
@@ -404,10 +419,6 @@ class LarixFrame(wx.Frame):
         self.statusbar.SetStatusText('ready', 1)
         self.timers['autosave'].Start(30_000)
 
-        plotframe = self.controller.get_display(stacked=False)
-        xpos, ypos = self.GetPosition()
-        xsiz, ysiz = self.GetSize()
-        wx.CallAfter(plotframe.SetPosition, (xpos+xsiz+2, ypos))
         if self.current_filename is not None:
             wx.CallAfter(self.onRead, self.current_filename)
 
@@ -420,7 +431,10 @@ class LarixFrame(wx.Frame):
                     self.statusbar.SetStatusText(f'Larch Version {self.vinfo.local_version}', 1)
                 else:
                     self.statusbar.SetStatusText(f'Larch Version {self.vinfo.local_version} (latest)', 1)
-
+        xpos, ypos = self.GetPosition()
+        xsiz, ysiz = self.GetSize()
+        plotpos = (xpos+xsiz+2, ypos)
+        self.controller.get_display(stacked=False, position=plotpos)
 
     def createMainPanel(self):
         display0 = wx.Display(0)
@@ -486,7 +500,7 @@ class LarixFrame(wx.Frame):
                                on_change=self.onNBChanged,
                                style=FNB_STYLE,
                                size=(700, 700))
-        for key in LARIX_PANELS:
+        for key, atab in LARIX_PANELS.items():
             self.add_analysis_panel(key)
         self.nb.SetSelection(0)
 
@@ -532,11 +546,17 @@ class LarixFrame(wx.Frame):
     def get_nbpage(self, name):
         "get nb page by name"
         name = name.lower()
-        out = (0, self.nb.GetCurrentPage())
-        for i, page in enumerate(self.nb.pagelist):
-            if name in page.__class__.__name__.lower():
-                out = (i, page)
-        return out
+        out = 0
+        tabname = PANELS_MAP.get(name, None)
+        atab = LARIX_PANELS.get(tabname, None)
+        current_panels = self.get_panels()
+        if tabname not in current_panels:
+            self.add_analysis_panel(tabname)
+        print("GET NB PAGE A: ", name, current_panels)
+        i = current_panels.get(tabname, 0)
+        page = self.nb.GetPage(i)
+        print('GET NB PAGE ', name, tabname, i, page)
+        return i, page
 
     def onNBChanged(self, event=None):
         callback = getattr(self.nb.GetCurrentPage(), 'onPanelExposed', None)
@@ -1761,14 +1781,21 @@ before clearing"""
                       process=True, plot=True):
         """add groupname / filename to list of available data groups"""
         if isinstance(groupname, Group):
+            dgroup = groupname
             groupname = groupname.groupname
+        else:
+            dgroup = self.controller.get_group(groupname)            
+
         if filename is None:
-            g = getattr(self.controller.symtable, groupname)
-            filename = g.filename
+            filename = dgroup.filename
 
         self.controller.install_group(groupname, filename,
                                       source=source, journal=journal)
-        self.nb.SetSelection(0)
+        dtype = getattr(dgroup, 'datatype', 'raw')
+        startpage = 'xasnorm' if dtype == 'xas' else 'rawdata'
+        ipage, pagepanel = self.get_nbpage(startpage)
+        print("START PAGE ", dgroup, dtype, ipage, startpage, pagepanel)
+        self.nb.SetSelection(ipage)
         self.ShowFile(groupname=groupname, filename=filename,
                       process=process, plot=plot)
 

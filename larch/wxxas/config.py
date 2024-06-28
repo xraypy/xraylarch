@@ -84,45 +84,45 @@ Feffit_PlotChoices = {'K and R space': 'k+r', 'R space only': 'r'}
 Valid_DataTypes = ('string', 'float', 'int', 'bool', 'choice', 'path')
 
 
-AnalysisTab = namedtuple('AnalysisTab', ('constructor', 'enabled', 'key', 'desc'))
+AnalysisTab = namedtuple('AnalysisTab', ('title', 'constructor', 'desc'))
 
 LARIX_PANELS = {
-    'Column Data':
-    AnalysisTab('larch.wxxas.rawdata_panel.DataPanel', True, 'rawdata',
-                'Read and Manipulate Data from Column Data files'),
-    'XAS Normalization':
-    AnalysisTab('larch.wxxas.xasnorm_panel.XASNormPanel',  True, 'xasnorm',
+    'xydata':
+    AnalysisTab('XY Data', 'larch.wxxas.xydata_panel.XYDataPanel',  
+                'Read and Manipulate XY Data from Column Data files'),
+    'xasnorm':
+    AnalysisTab('XAS Normalization', 'larch.wxxas.xasnorm_panel.XASNormPanel',
                 'Normalization and Pre-edge subtraction for XANES and EXAFS'),
-    'Pre-edge Peaks':
-    AnalysisTab('larch.wxxas.prepeak_panel.PrePeakPanel', True, 'prepeaks',
+    'prepeaks':
+    AnalysisTab('Pre-edge Peaks', 'larch.wxxas.prepeak_panel.PrePeakPanel',
                 'Curve Fitting for XANES Pre-edge Peaks'),
-    'XAS PCA':
-    AnalysisTab('larch.wxxas.pca_panel.PCAPanel', True, 'pca',
+    'pca':
+    AnalysisTab('XAS PCA', 'larch.wxxas.pca_panel.PCAPanel', 
             'Principal Component Analysis for XANES and EXAFS'),
-    'XAS Linear Combo':
-    AnalysisTab('larch.wxxas.lincombo_panel.LinearComboPanel', True, 'lincombo',
+    'lincombo': 
+    AnalysisTab('XAS Linear Combo', 'larch.wxxas.lincombo_panel.LinearComboPanel', 
                 'Linear Combination Analysis for XANES and EXAFS'),
-    'XAS Regression':
-    AnalysisTab('larch.wxxas.regress_panel.RegressionPanel', True, 'regression',
+    'regression': 
+    AnalysisTab('XAS Regression', 'larch.wxxas.regress_panel.RegressionPanel',
             'Linear Regression and Feature Selection for XANES and EXAFS'),
-    'EXAFS':
-    AnalysisTab('larch.wxxas.exafs_panel.EXAFSPanel', True, 'exafs',
+    'exafs': 
+    AnalysisTab('EXAFS', 'larch.wxxas.exafs_panel.EXAFSPanel', 
                 'EXAFS Background Subtraction and Fourier Transforms'),
-    'FEFF Fitting':
-    AnalysisTab('larch.wxxas.feffit_panel.FeffitPanel', True, 'feffit',
+    'feffit': 
+    AnalysisTab('FEFF Fitting', 'larch.wxxas.feffit_panel.FeffitPanel',
                 'EXAFS Path Fitting with FEFF calculations'),
 }
 
-all_keys = [atab.key for atab in LARIX_PANELS.values()]
-LARIX_MODES = {'All': all_keys,
-               'General Data Visualization and Fitting':  ('rawdata', 'lmfit'),
-               'XANES and EXAFS': ('xasnorm', 'prepeaks', 'pca', 'lincombo', 'exafs', 'feffit'),
-               'EXAFS only': ('xasnorm', 'exafs', 'feffit'),
-               'XANES only': ('xasnorm', 'prepeaks', 'pca', 'lincombo'),
-               'XRF Mapping and Analysis': ('maproi', 'mapareas', 'maptomo', 'mapxrf'),
-               'XRD 1D': ('xrd1d',),
-               }
-
+LARIX_MODES = {
+    'all': ('All', [k for k  in LARIX_PANELS]),
+    'xydata': ('General XY Data Visualization and Fitting', ('xydata', 'lmfit')), 
+    'xas': ('XANES and EXAFS', ('xasnorm', 'prepeaks', 'pca', 'lincombo', 'exafs', 'feffit')),
+    'exafs': ('EXAFS only', ('xasnorm', 'exafs', 'feffit')),
+    'xanes': ('XANES only', ('xasnorm', 'prepeaks', 'pca', 'lincombo')),
+    'xrf': ('XRF Mapping and Analysis', ('maproi', 'mapareas', 'maptomo', 'mapxrf')),
+    'xrd1d': ('XRD 1D', ('xrd1d', )),
+    }
+    
 class CVar:
     """configuration variable"""
     def __init__(self, name, value, dtype, choices=None, desc='a variable',
@@ -280,10 +280,14 @@ xasnorm = [CVar('auto_e0',  True, 'bool', desc='whether to automatically set E0'
            CVar('norm1', 150, 'float',  step=5, desc='low-energy fit range for normalization curve,\nrelative to E0'),
            CVar('norm2',  -1, 'float',  step=5, desc='high-energy fit range for normalization curve,\nelative to E0 (set to -1 for "auto")'),
            CVar('show_norm',  False, 'bool', desc='whether to show normalization energy range (norm1, norm2)'),
-
-           CVar('scale',  1.0, 'float', step=0.1, desc='scale to use to "normalize" non-XAS data'),
            ]
 
+xydata = [ CVar('scale',  1.0, 'float', step=0.1, desc='scale to use to "normalize" X-Y data'),
+           CVar('xshift',  0.0, 'float', step=0.1, desc='shift X array of X-Y data'),
+          ]
+
+xrd1d = [ CVar('scale',  1.0, 'float', step=0.1, desc='scale to use to "normalize" 1D XRD data'),
+         ]
 
 XASCONF = {}
 FULLCONF= {}
@@ -291,7 +295,9 @@ FULLCONF= {}
 _locals = locals()
 
 for section in ('main', 'autosave', 'pin', 'plot', 'xasnorm', 'exafs',
-                'feffit', 'prepeaks', 'lincombo', 'pca', 'regression'):
+                'feffit', 'prepeaks', 'lincombo', 'pca', 'regression',
+                'xydata', 'xrd1d'):
+
     sname = section
     XASCONF[sname] = {}
     FULLCONF[sname] = {}
