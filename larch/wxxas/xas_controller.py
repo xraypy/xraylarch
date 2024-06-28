@@ -326,11 +326,13 @@ class XASController():
         "close all displays, as at exit"
         self.symtable._plotter.close_all_displays()
 
-    def get_display(self, win=1, stacked=False):
+    def get_display(self, win=1, stacked=False,
+                    size=None, position=None):
         wintitle='Larch XAS Plot Window %i' % win
 
         conf = self.get_config('plot')
-        opts = dict(wintitle=wintitle, stacked=stacked, win=win)
+        opts = dict(wintitle=wintitle, stacked=stacked,
+                    size=size, position=position, win=win)
         opts.update(conf)
         return self.symtable._plotter.get_display(**opts)
 
