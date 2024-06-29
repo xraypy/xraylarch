@@ -26,7 +26,6 @@ class LarixApp(wx.App, InspectionMixin):
 
     def OnInit(self):
         wx.SystemOptions.SetOption("mac.window-plain-transition", 1)
-        print("launch larix ", self.with_wx_inspect)
         LarixSplashScreen(filename=self.filename,
                           check_version=self.check_version,
                           mode=self.mode,
