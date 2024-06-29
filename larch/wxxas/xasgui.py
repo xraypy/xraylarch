@@ -261,13 +261,13 @@ class PanelSelectionFrame(wx.Frame):
         panetitle = SimpleText(panel, 'Select Individual Analysis Panels: ')
 
         self.wids = wids = {}
-        self.current_mode = LARIX_MODES.get(self.parent.mode, 'xas')
+        self.current_mode = self.parent.mode
         modenames = [m[0] for m in LARIX_MODES.values()]
 
         wids['modechoice'] = Choice(panel, choices=modenames, size=(350, -1),
                                     action=self.on_modechoice)
         wids['modechoice'].SetStringSelection(LARIX_MODES[self.current_mode][0])
-        
+
         page_map = self.parent.get_panels()
         irow = 0
         sizer.Add(title, (irow, 0), (1, 2), labstyle|wx.ALL, 3)
@@ -289,7 +289,7 @@ class PanelSelectionFrame(wx.Frame):
             cb = wx.CheckBox(panel, -1, iname)#, style=wx.ALIGN_RIGHT)
             cb.SetValue(atab.title in page_map)
             desc = SimpleText(panel, LARIX_PANELS[key].desc)
-            self.selections[name] = cb
+            self.selections[key] = cb
             irow += 1
             sizer.Add(cb, (irow, 0), (1, 1), labstyle,  5)
             sizer.Add(desc, (irow, 1), (1, 1), labstyle,  5)
@@ -317,12 +317,10 @@ class PanelSelectionFrame(wx.Frame):
     def on_modechoice(self, event=None):
         modename = event.GetString()
         self.current_mode = 'xas'
-        panels = LARIX_MODES['xas'][1]
         for key, dat in LARIX_MODES.items():
             if dat[0] == modename:
                 self.current_mode = key
-                panels = dat[1]
-        print("mode choice ", modename, self.current_mode, panels)
+        panels = LARIX_MODES[self.current_mode][1]
         self.Freeze()
         for name in self.selections:
             self.selections[name].SetValue(False)
@@ -331,7 +329,7 @@ class PanelSelectionFrame(wx.Frame):
             if name in self.selections:
                 self.selections[name].SetValue(True)
         self.Thaw()
-        
+
     def OnOK(self, event=None):
         self.parent.Hide()
         self.parent.Freeze()
@@ -345,7 +343,7 @@ class PanelSelectionFrame(wx.Frame):
         self.parent.mode = self.current_mode
         self.parent.Thaw()
         self.parent.Show()
-        
+
     def OnCancel(self, event=None):
         self.Destroy()
 
@@ -500,8 +498,10 @@ class LarixFrame(wx.Frame):
                                on_change=self.onNBChanged,
                                style=FNB_STYLE,
                                size=(700, 700))
+        panels = LARIX_MODES[self.mode][1]
         for key, atab in LARIX_PANELS.items():
-            self.add_analysis_panel(key)
+            if key in panels:
+                self.add_analysis_panel(key)
         self.nb.SetSelection(0)
 
         sizer.Add(self.nb, 1, LEFT|wx.EXPAND, 2)
@@ -523,7 +523,7 @@ class LarixFrame(wx.Frame):
             return
 
         current_panels = self.get_panels()
-        if name not in current_panels and atab.enabled:
+        if name not in current_panels:
             cons = atab.constructor.split('.')
             clsname = cons.pop()
             module = '.'.join(cons)
@@ -534,8 +534,7 @@ class LarixFrame(wx.Frame):
                 print(f"cannot find analysis panel {atab}")
             if cls is not None:
                 nbpanel = cls(parent=self, controller=self.controller)
-                # self.controller.panels[name] = nbpanel
-                self.nb.AddPage(nbpanel, name, True)
+                self.nb.AddPage(nbpanel, atab.title, True)
 
     def process_normalization(self, dgroup, force=True, use_form=True):
         self.get_nbpage('xasnorm')[1].process(dgroup, force=force, use_form=use_form)
@@ -1784,7 +1783,7 @@ before clearing"""
             dgroup = groupname
             groupname = groupname.groupname
         else:
-            dgroup = self.controller.get_group(groupname)            
+            dgroup = self.controller.get_group(groupname)
 
         if filename is None:
             filename = dgroup.filename
