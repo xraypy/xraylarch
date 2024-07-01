@@ -35,7 +35,7 @@ def ensure_radians(a):
     """ensure angle data is in radians, not degrees,
     converts degrees to radians if a peak-to-peak > 32 or step size > 0.2
     """
-    if a.ptp() > 32 or np.diff(a).mean() > 0.20:
+    if np.ptp(a) > 32 or np.diff(a).mean() > 0.20:
         a = np.radians(a)
     return a
 

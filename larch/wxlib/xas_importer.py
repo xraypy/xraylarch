@@ -846,7 +846,7 @@ class XasImporter(wx.Frame):
             buff.append("{group}.mu = {group}.ydat")
             buff.append("sort_xafs({group}, overwrite=True, fix_repeats=True)")
         else:
-            buff.append("{group}.scale = 1./({group}.ydat.ptp()+1.e-16)")
+            buff.append("{group}.scale = 1./(ptp({group}.ydat))+1.e-16)")
         script = "\n".join(buff)
 
         self.array_sel["xarr"] = xarr

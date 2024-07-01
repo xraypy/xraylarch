@@ -94,7 +94,7 @@ def _finde0(energy, mu_input, estep=None, use_smooth=True):
     # find points of high derivative
     dmu[np.where(~np.isfinite(dmu))] = -1.0
     dm_min = dmu[nmin:-nmin].min()
-    dm_ptp = max(1.e-10, dmu[nmin:-nmin].ptp())
+    dm_ptp = max(1.e-10, np.ptp(dmu[nmin:-nmin]))
     dmu = (dmu - dm_min)/dm_ptp
 
     dhigh = 0.60 if len(en) > 20 else 0.30

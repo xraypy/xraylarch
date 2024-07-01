@@ -29,7 +29,7 @@ def peak_indices(y, threshold=0.1, min_dist=1):
     ndarray
         Array with numeric indexes of the peaks that were detected.
     """
-    thres = threshold * y.ptp()+ y.min()
+    thres = threshold * np.ptp(y) + y.min()
     min_dist = int(min_dist)
 
     # compute first order difference

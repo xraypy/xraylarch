@@ -512,6 +512,6 @@ class ROI_Averager():
 
     def get_cps(self):
         valid = np.where(self.times > 0)[0]
-        if len(valid) < 1 or  self.times[valid].ptp() < 0.5:
+        if len(valid) < 1 or  np.ptp(self.times[valid]) < 0.5:
             return 0
-        return self.data[valid].sum() / self.times[valid].ptp()
+        return self.data[valid].sum() / np.ptp(self.times[valid])

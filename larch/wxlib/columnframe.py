@@ -1126,7 +1126,7 @@ class ColumnDataFileFrame(wx.Frame) :
             buff.append("{group}.mu = {group}.ydat")
             buff.append("sort_xafs({group}, overwrite=True, fix_repeats=True)")
         else:
-            buff.append("{group}.scale = 1./({group}.ydat.ptp()+1.e-15)")
+            buff.append("{group}.scale = 1./(ptp({group}.ydat)+1.e-15)")
 
         array_desc = dict(xdat=self.workgroup.plot_xlabel,
                           ydat=self.workgroup.plot_ylabel,
