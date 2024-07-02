@@ -546,15 +546,20 @@ class LarixFrame(wx.Frame):
         "get nb page by name"
         name = name.lower()
         out = 0
-        tabname = PANELS_MAP.get(name, None)
-        atab = LARIX_PANELS.get(tabname, None)
+        print("GET NB PAGE ", name, LARIX_PANELS.get(name, 'gg'))
+        if name not in LARIX_PANELS:
+            print("unknown panel : ", name)
+            return 0, self.nb.GetPage(0)
+
+        atab = LARIX_PANELS[name]
+        title = atab.title
         current_panels = self.get_panels()
-        if tabname not in current_panels:
-            self.add_analysis_panel(tabname)
-        print("GET NB PAGE A: ", name, current_panels)
-        i = current_panels.get(tabname, 0)
+        if title not in current_panels:
+            self.add_analysis_panel(name)
+        # print("GET NB PAGE A: ", name, current_panels)
+        i = current_panels.get(title, 0)
         page = self.nb.GetPage(i)
-        print('GET NB PAGE ', name, tabname, i, page)
+        # print('GET NB PAGE ', name,  title, i, page)
         return i, page
 
     def onNBChanged(self, event=None):
@@ -603,7 +608,7 @@ class LarixFrame(wx.Frame):
         if dgroup is None:
             return
 
-        if (getattr(dgroup, 'datatype', 'raw').startswith('xa') and not
+        if (getattr(dgroup, 'datatype', 'xyda').startswith('xa') and not
             (hasattr(dgroup, 'norm') and hasattr(dgroup, 'e0'))):
             self.process_normalization(dgroup, force=True, use_form=False)
         if filename is None:
@@ -624,6 +629,7 @@ class LarixFrame(wx.Frame):
         self.controller.group = dgroup
         self.controller.groupname = groupname
         cur_panel = self.nb.GetCurrentPage()
+        print("Got CUR PANEL  ", cur_panel)
         if process:
             cur_panel.fill_form(dgroup)
             cur_panel.skip_process = False
@@ -1790,8 +1796,8 @@ before clearing"""
 
         self.controller.install_group(groupname, filename,
                                       source=source, journal=journal)
-        dtype = getattr(dgroup, 'datatype', 'raw')
-        startpage = 'xasnorm' if dtype == 'xas' else 'rawdata'
+        dtype = getattr(dgroup, 'datatype', 'xydata')
+        startpage = 'xasnorm' if dtype == 'xas' else 'xydata'
         ipage, pagepanel = self.get_nbpage(startpage)
         print("START PAGE ", dgroup, dtype, ipage, startpage, pagepanel)
         self.nb.SetSelection(ipage)

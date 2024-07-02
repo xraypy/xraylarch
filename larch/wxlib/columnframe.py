@@ -40,7 +40,7 @@ ARR_OPS = ('+', '-', '*', '/')
 YERR_OPS = ('Constant', 'Sqrt(Y)', 'Array')
 CONV_OPS  = ('Lorenztian', 'Gaussian')
 
-DATATYPES = ('raw', 'xas')
+DATATYPES = ('xydata', 'xas')
 ENUNITS_TYPES = ('eV', 'keV', 'degrees', 'not energy')
 
 
@@ -601,7 +601,7 @@ class ColumnDataFileFrame(wx.Frame) :
         self.array_labels = [l.lower() for l in group.array_labels]
 
         if self.workgroup.datatype is None:
-            self.workgroup.datatype = 'raw'
+            self.workgroup.datatype = 'xydata'
             en_units = 'not energy'
             for arrlab in self.array_labels[:3]:
                 arrlab  = arrlab.lower()
@@ -619,7 +619,7 @@ class ColumnDataFileFrame(wx.Frame) :
         if config is not None:
             self.config.update(config)
             dtype = config.get('datatype', None)
-            if dtype in ('xas', 'raw'):
+            if dtype in ('xas', 'xydata'):
                 self.workgroup.datatype = dtype
 
         if self.config['yarr2'] is None and 'i0' in self.array_labels:
@@ -1119,7 +1119,7 @@ class ColumnDataFileFrame(wx.Frame) :
             expr = self.expressions[aname]
             buff.append(f"{{group}}.{aname} = {expr}")
 
-        if getattr(self.workgroup, 'datatype', 'raw') == 'xas':
+        if getattr(self.workgroup, 'datatype', 'xytype') == 'xas':
             if self.reader == 'read_gsescan':
                 buff.append("{group}.xdat = {group}.x")
             buff.append("{group}.energy = {group}.xdat")
@@ -1214,7 +1214,7 @@ class ColumnDataFileFrame(wx.Frame) :
         self.onUpdate()
 
         self.monod_val.Disable()
-        if self.datatype.GetStringSelection().strip().lower() == 'raw':
+        if self.datatype.GetStringSelection().strip().lower() == 'xydata':
             self.en_units.SetSelection(4)
         else:
             eguess = guess_energy_units(workgroup.xdat)
@@ -1240,7 +1240,7 @@ class ColumnDataFileFrame(wx.Frame) :
             workgroup.xdat = 1.0*np.arange(npts)
         else:
             workgroup.xdat = 1.0*self.workgroup.data[ix, :]
-        if self.datatype.GetStringSelection().strip().lower() != 'raw':
+        if self.datatype.GetStringSelection().strip().lower() != 'xydata':
             eguess =  guess_energy_units(workgroup.xdat)
             if eguess.startswith('eV'):
                 self.en_units.SetStringSelection('eV')
@@ -1250,7 +1250,7 @@ class ColumnDataFileFrame(wx.Frame) :
     def read_form(self, **kws):
         """return form configuration"""
         datatype = self.datatype.GetStringSelection().strip().lower()
-        if self.workgroup.datatype == 'raw' and datatype == 'xas':
+        if self.workgroup.datatype == 'xydata' and datatype == 'xas':
             self.workgroup.datatype = 'xas'
             eguess = guess_energy_units(self.workgroup.xdat)
             if eguess.startswith('keV'):
@@ -1260,7 +1260,7 @@ class ColumnDataFileFrame(wx.Frame) :
                 self.monod_val.Enable()
             else:
                 self.en_units.SetSelection(0)
-        if datatype == 'raw':
+        if datatype == 'xydata':
             self.en_units.SetStringSelection('not energy')
 
         ypop = self.ypop.GetStringSelection().strip()
