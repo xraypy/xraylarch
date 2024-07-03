@@ -338,7 +338,7 @@ def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
             parent = wxapp.GetTopWindow()
             if position is not None:
                 display.SetPosition(position)
-            elif parent is not None:                
+            elif parent is not None:
                 xpos, ypos = parent.GetPosition()
                 xsiz, ysiz = parent.GetSize()
                 x = xpos + xsiz*0.75
@@ -962,10 +962,10 @@ def get_zoomlimits(plotpanel, dgroup):
             _ax =  list(zoom_lims[0].keys())[-1]
             if all([_ax.get_xlabel() == dgroup.plot_xlabel,
                     _ax.get_ylabel() == dgroup.plot_ylabel,
-                    min(dgroup.xdat) <= view_lims[1],
-                    max(dgroup.xdat) >= view_lims[0],
-                    min(dgroup.ydat) <= view_lims[3],
-                    max(dgroup.ydat) >= view_lims[2]]):
+                    min(dgroup.xplot) <= view_lims[1],
+                    max(dgroup.xplot) >= view_lims[0],
+                    min(dgroup.yplot) <= view_lims[3],
+                    max(dgroup.yplot) >= view_lims[2]]):
                 out = (_ax, view_lims, zoom_lims)
     return out
 

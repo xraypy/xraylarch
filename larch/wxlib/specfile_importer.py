@@ -37,7 +37,7 @@ ARR_OPS = ('+', '-', '*', '/')
 YERR_OPS = ('Constant', 'Sqrt(Y)', 'Array')
 CONV_OPS  = ('Lorenztian', 'Gaussian')
 
-XDATATYPES = ('raw', 'xas')
+XDATATYPES = ('xydata', 'xas')
 ENUNITS_TYPES = ('eV', 'keV', 'degrees', 'not energy')
 
 
@@ -75,7 +75,7 @@ class SpecfileImporter(wx.Frame) :
         self.array_labels = [l.lower() for l in self.curscan.array_labels]
 
         if self.workgroup.datatype is None:
-            self.workgroup.datatype = 'raw'
+            self.workgroup.datatype = 'xydata'
             for arrlab in self.array_labels[:4]:
                 if 'ener' in arrlab.lower():
                     self.workgroup.datatype = 'xas'
@@ -340,10 +340,10 @@ class SpecfileImporter(wx.Frame) :
 
         workgroup = self.workgroup
         if xname.startswith('_index') or ix >= ncol:
-            workgroup.xdat = 1.0*np.arange(npts)
+            workgroup.xplot = 1.0*np.arange(npts)
         else:
-            workgroup.xdat = 1.0*rdata[ix, :]
-        eguess =  guess_energy_units(workgroup.xdat)
+            workgroup.xplot = 1.0*rdata[ix, :]
+        eguess =  guess_energy_units(workgroup.xplot)
         if eguess.startswith('eV'):
             self.en_units.SetStringSelection('eV')
         elif eguess.startswith('keV'):
@@ -395,7 +395,7 @@ class SpecfileImporter(wx.Frame) :
             self.yarr2.SetStringSelection(y2sel)
 
         xsel = self.xarr.GetStringSelection()
-        self.workgroup.datatype = 'xas' if 'en' in xsel else 'raw'
+        self.workgroup.datatype = 'xas' if 'en' in xsel else 'xydata'
         self.datatype.SetStringSelection(self.workgroup.datatype)
 
         self.scanheader.SetValue('\n'.join(self.curscan.scan_header))
@@ -518,30 +518,30 @@ class SpecfileImporter(wx.Frame) :
             val = getattr(self.workgroup, attr)
             buff.append("{group}.%s = '%s'" % (attr, val))
 
-        xexpr = self.expressions['xdat']
+        xexpr = self.expressions['xplot']
         en_units = conf['en_units']
         if en_units.startswith('deg'):
             buff.append(f"mono_dspace = {dspace:.9f}")
-            buff.append(f"{{group}}.xdat = PLANCK_HC/(2*mono_dspace*sin(DEG2RAD*({expr:s})))")
+            buff.append(f"{{group}}.xplot = PLANCK_HC/(2*mono_dspace*sin(DEG2RAD*({expr:s})))")
         elif en_units.startswith('keV'):
-            buff.append(f"{{group}}.xdat = 1000.0*{xexpr:s}")
+            buff.append(f"{{group}}.xdplot = 1000.0*{xexpr:s}")
         else:
-            buff.append(f"{{group}}.xdat = {xexpr:s}")
+            buff.append(f"{{group}}.xplot = {xexpr:s}")
 
-        for aname in ('ydat', 'yerr'):
+        for aname in ('yplot', 'yerr'):
             expr = self.expressions[aname]
             buff.append(f"{{group}}.{aname} = {expr}")
 
-        if getattr(self.workgroup, 'datatype', 'raw') == 'xas':
-            buff.append("{group}.energy = {group}.xdat")
-            buff.append("{group}.mu = {group}.ydat")
+        if getattr(self.workgroup, 'datatype', 'xydata') == 'xas':
+            buff.append("{group}.energy = {group}.xplot")
+            buff.append("{group}.mu = {group}.yplot")
             buff.append("sort_xafs({group}, overwrite=True, fix_repeats=True)")
         else:
-            buff.append("{group}.scale = 1./(ptp({group}.ydat.ptp)+1.e-16)")
+            buff.append("{group}.scale = 1./(ptp({group}.yplot)+1.e-16)")
         script = "\n".join(buff)
 
-        self.config['array_desc'] = dict(xdat=self.workgroup.plot_xlabel,
-                                         ydat=self.workgroup.plot_ylabel,
+        self.config['array_desc'] = dict(xplot=self.workgroup.plot_xlabel,
+                                         yplot=self.workgroup.plot_ylabel,
                                          yerr=self.expressions['yerr'])
         if self.read_ok_cb is not None:
             self.read_ok_cb(script, self.path, scanlist,
@@ -581,15 +581,15 @@ class SpecfileImporter(wx.Frame) :
         rdata = self.curscan.data
         ncol, npts = rdata.shape
         if xname.startswith('_index') or ix >= ncol:
-            workgroup.xdat = 1.0*np.arange(npts)
+            workgroup.xplot = 1.0*np.arange(npts)
         else:
-            workgroup.xdat = 1.0*rdata[ix, :]
+            workgroup.xplot = 1.0*rdata[ix, :]
 
         self.monod_val.Disable()
-        if self.datatype.GetStringSelection().strip().lower() == 'raw':
+        if self.datatype.GetStringSelection().strip().lower() == 'xydata':
             self.en_units.SetSelection(4)
         else:
-            eguess = guess_energy_units(workgroup.xdat)
+            eguess = guess_energy_units(workgroup.xplot)
             if eguess.startswith('keV'):
                 self.en_units.SetSelection(1)
             elif eguess.startswith('deg'):
@@ -607,7 +607,7 @@ class SpecfileImporter(wx.Frame) :
     def read_form(self, **kws):
         """return form configuration"""
         datatype = self.datatype.GetStringSelection().strip().lower()
-        if datatype == 'raw':
+        if datatype == 'xydata':
             self.en_units.SetStringSelection('not energy')
 
         conf = {'datatype': datatype,
@@ -631,7 +631,7 @@ class SpecfileImporter(wx.Frame) :
 
 
     def onUpdate(self, value=None, evt=None):
-        """column selections changed calc xdat and ydat"""
+        """column selections changed calc xplot and yplot"""
         workgroup = self.workgroup
         workgroup.data = self.curscan.data
         workgroup.filename = self.curscan.filename
@@ -651,7 +651,7 @@ class SpecfileImporter(wx.Frame) :
                      xlabel=workgroup.plot_xlabel,
                      label=workgroup.plot_ylabel)
         try:
-            self.plotpanel.plot(workgroup.xdat, workgroup.ydat, **popts)
+            self.plotpanel.plot(workgroup.xplot, workgroup.yplot, **popts)
         except:
             pass
 

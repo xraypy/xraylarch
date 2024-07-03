@@ -94,9 +94,14 @@ plotlabels = Group(k       = r'$k \rm\,(\AA^{-1})$',
                    chirpha = r'${{\rm Phase}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$',
                    e0color = '#B2B282',
                    chirlab = chirlab,
-                   ydat = r'$y$',
-                   ynorm = r'scaled $y$',
+                   x = r'$x$',
+                   y = r'$y$',
                    xdat = r'$x$',
+                   ydat = r'$y$',
+                   xplot = r'$x$',
+                   yplot= r'$y$',
+                   ynorm = r'scaled $y$',
+                   xshift = r'shifted $x$',
                    dydx = r'$dy/dx$',
                    d2ydx = r'$d^2y/dx^2$',
                        )
@@ -976,7 +981,7 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
     #endif
     ppeak = dgroup.prepeaks
 
-    px0, px1, py0, py1 = extend_plotrange(dgroup.xdat, dgroup.ydat,
+    px0, px1, py0, py1 = extend_plotrange(dgroup.xplot, dgroup.yplot,
                                           xmin=ppeak.emin, xmax=ppeak.emax)
 
     title = "pre_edge baseline\n %s" % dgroup.filename
@@ -988,15 +993,15 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
                  marker='None', markersize=4, win=win, _larch=_larch)
     popts.update(kws)
 
-    ydat = dgroup.ydat
-    xdat = dgroup.xdat
+    yplot = dgroup.yplot
+    xplot = dgroup.xplot
     if subtract_baseline:
-        xdat = ppeak.energy
-        ydat = ppeak.baseline
+        xplot = ppeak.energy
+        yplot = ppeak.baseline
         popts['label'] = 'baseline subtracted peaks'
-        _plot(xdat, ydat, **popts)
+        _plot(xplot, yplot, **popts)
     else:
-        _plot(xdat, ydat, **popts)
+        _plot(xplot, yplot, **popts)
         popts['new'] = False
         popts['label'] = 'baseline'
         _oplot(ppeak.energy, ppeak.baseline, **popts)
@@ -1011,7 +1016,7 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
 
     if show_peakrange:
         for x in (ppeak.elo, ppeak.ehi):
-            y = ydat[index_of(xdat, x)]
+            y = yplot[index_of(xplot, x)]
             _plot_marker(x, y, color='#222255', marker='o', size=8, **popts)
 
     redraw(win=win, xmin=px0, xmax=px1, ymin=py0, ymax=py1,
@@ -1042,12 +1047,12 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     #endif
 
     opts = pkfit.user_options
-    xeps = min(diff(dgroup.xdat)) / 5.
-    xdat = 1.0*pkfit.energy
-    ydat = 1.0*pkfit.norm
+    xeps = min(diff(dgroup.xplot)) / 5.
+    xplot = 1.0*pkfit.energy
+    yplot = 1.0*pkfit.norm
 
-    xdat_full = 1.0*dgroup.xdat
-    ydat_full = 1.0*dgroup.ydat
+    xplot_full = 1.0*dgroup.xplot
+    yplot_full = 1.0*dgroup.yplot
 
     if show_init:
         yfit   = pkfit.init_fit
@@ -1058,7 +1063,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
         ycomps = pkfit.ycomps
         ylabel = 'best fit'
 
-    baseline = 0.*ydat
+    baseline = 0.*yplot
     if ycomps is not None:
         for label, ycomp in ycomps.items():
             if label in opts['bkg_components']:
@@ -1070,15 +1075,15 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
                     linewidth=3, marker='None', markersize=4)
 
     if subtract_baseline:
-        ydat -= baseline
+        yplot -= baseline
         yfit -= baseline
-        ydat_full = 1.0*ydat
-        xdat_full = 1.0*xdat
+        yplot_full = 1.0*yplot
+        xplot_full = 1.0*xplot
         plotopts['ylabel'] = '%s-baseline' % plotopts['ylabel']
 
-    dx0, dx1, dy0, dy1 = extend_plotrange(xdat_full, ydat_full,
+    dx0, dx1, dy0, dy1 = extend_plotrange(xplot_full, yplot_full,
                                           xmin=opts['emin'], xmax=opts['emax'])
-    fx0, fx1, fy0, fy1 = extend_plotrange(xdat, yfit,
+    fx0, fx1, fy0, fy1 = extend_plotrange(xplot, yfit,
                                           xmin=opts['emin'], xmax=opts['emax'])
 
     ncolor = 0
@@ -1087,22 +1092,22 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     dymin = dymax = None
     if show_residual:
         popts['stacked'] = True
-        _fitplot(xdat, ydat, yfit, label='data', label2=ylabel, **plotopts)
-        dy = yfit - ydat
+        _fitplot(xplot, yplot, yfit, label='data', label2=ylabel, **plotopts)
+        dy = yfit - yplot
         dymax, dymin = dy.max(), dy.min()
         dymax += 0.05 * (dymax - dymin)
         dymin -= 0.05 * (dymax - dymin)
     else:
-        _plot(xdat_full, ydat_full, new=True, label='data',
+        _plot(xplot_full, yplot_full, new=True, label='data',
               color=LineColors[0], **plotopts)
-        _oplot(xdat, yfit, label=ylabel, color=LineColors[1], **plotopts)
+        _oplot(xplot, yfit, label=ylabel, color=LineColors[1], **plotopts)
         ncolor = 1
 
     if ycomps is not None:
         ncomps = len(ycomps)
         if not subtract_baseline:
             ncolor += 1
-            _oplot(xdat, baseline, label='baseline', delay_draw=True,
+            _oplot(xplot, baseline, label='baseline', delay_draw=True,
                    style='short dashed', marker='None', markersize=5,
                    color=LineColors[ncolor], **popts)
 
@@ -1111,7 +1116,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
             if label in opts['bkg_components']:
                 continue
             ncolor =  (ncolor+1) % 10
-            _oplot(xdat, ycomp, label=label, delay_draw=(icomp != ncomps-1),
+            _oplot(xplot, ycomp, label=label, delay_draw=(icomp != ncomps-1),
                    style='short dashed', marker='None', markersize=5,
                    color=LineColors[ncolor], **popts)
 
@@ -1218,7 +1223,7 @@ def plot_pca_fit(dgroup, win=1, with_components=False, _larch=None, **kws):
                  linewidth=3, new=True, marker='None', markersize=4,
                  stacked=True, win=win, _larch=_larch)
     popts.update(kws)
-    _fitplot(result.x, result.ydat, result.yfit,
+    _fitplot(result.x, result.yplot, result.yfit,
              label='data', label2='PCA fit', **popts)
 
     disp = get_display(win=win, stacked=True, _larch=_larch)

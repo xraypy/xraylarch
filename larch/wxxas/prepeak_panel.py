@@ -1021,6 +1021,7 @@ i0 = index_of({gname:s}.energy, {gname:s}.prepeaks.energy[0])
 i1 = index_of({gname:s}.energy, {gname:s}.prepeaks.energy[-1])
 {gname:s}.prepeaks.full_baseline = {gname:s}.norm*1.0
 {gname:s}.prepeaks.full_baseline[i0:i1+1] = {gname:s}.prepeaks.baseline
+
 write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks.full_baseline,
              header=header, label='energy           norm            baseline')
              """

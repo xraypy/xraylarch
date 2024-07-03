@@ -185,7 +185,7 @@ class DeadtimeCorrectionFrame(wx.Frame):
         self.Raise()
 
     def get_en_i0(self):
-        en = self.group.xdat
+        en = self.group.xplot
         i0 = 1.0
         if self.config['i0'] != '1.0':
             i0 = self.group.data[self.config['i0'], :]
@@ -410,7 +410,7 @@ class MultiColumnFrame(wx.Frame) :
         group = self.group
         self.config['i0']  = self.wids['i0'].GetSelection()
         channels = []
-        x = self.group.xdat
+        x = self.group.xplot
         popts = dict(marker=None, markersize=0, linewidth=2.5,
                      ylabel='selected arrays', show_legend=True,
                      xlabel=self.group.plot_xlabel, delay_draw=True)
@@ -433,7 +433,7 @@ class MultiColumnFrame(wx.Frame) :
 
     def onPlot(self, event=None, index=None):
         if index is not None:
-            x = self.group.xdat
+            x = self.group.xplot
             y = self.group.data[index, :]
             try:
                 label = self.group.array_labels[index]
@@ -1104,32 +1104,33 @@ class ColumnDataFileFrame(wx.Frame) :
             val = getattr(self.workgroup, attr)
             buff.append("{group}.%s = '%s'" % (attr, val))
 
-        xexpr = self.expressions['xdat']
+        xexpr = self.expressions['xplot']
         en_units = conf['en_units']
         if en_units.startswith('deg'):
             monod = conf['monod']
             buff.append(f"monod = {monod:.9f}")
-            buff.append(f"{{group}}.xdat = PLANCK_HC/(2*monod*sin(DEG2RAD*({xexpr:s})))")
+            buff.append(f"{{group}}.xplot = PLANCK_HC/(2*monod*sin(DEG2RAD*({xexpr:s})))")
         elif en_units.startswith('keV'):
-            buff.append(f"{{group}}.xdat = 1000.0*{xexpr:s}")
+            buff.append(f"{{group}}.xplot = 1000.0*{xexpr:s}")
         else:
-            buff.append(f"{{group}}.xdat = {xexpr:s}")
+            buff.append(f"{{group}}.xplot = {xexpr:s}")
 
-        for aname in ('ydat', 'yerr'):
+        for aname in ('yplot', 'yerr'):
             expr = self.expressions[aname]
             buff.append(f"{{group}}.{aname} = {expr}")
 
-        if getattr(self.workgroup, 'datatype', 'xytype') == 'xas':
+
+            if getattr(self.workgroup, 'datatype', 'xytype') == 'xas':
             if self.reader == 'read_gsescan':
-                buff.append("{group}.xdat = {group}.x")
-            buff.append("{group}.energy = {group}.xdat")
-            buff.append("{group}.mu = {group}.ydat")
+                buff.append("{group}.xplot = {group}.x")
+            buff.append("{group}.energy = {group}.xplot")
+            buff.append("{group}.mu = {group}.yplot")
             buff.append("sort_xafs({group}, overwrite=True, fix_repeats=True)")
         else:
-            buff.append("{group}.scale = 1./(ptp({group}.ydat)+1.e-15)")
+            buff.append("{group}.scale = 1./(ptp({group}.yplot)+1.e-15)")
 
-        array_desc = dict(xdat=self.workgroup.plot_xlabel,
-                          ydat=self.workgroup.plot_ylabel,
+        array_desc = dict(xplot=self.workgroup.plot_xlabel,
+                          yplot=self.workgroup.plot_ylabel,
                           yerr=self.expressions['yerr'])
 
         reffile = refgroup = None
@@ -1141,7 +1142,7 @@ class ColumnDataFileFrame(wx.Frame) :
 
             buff.append("# reference group")
             buff.append("{refgroup} = deepcopy({group})")
-            buff.append(f"{{refgroup}}.ydat = {{refgroup}}.mu = {refexpr}")
+            buff.append(f"{{refgroup}}.yplot = {{refgroup}}.mu = {refexpr}")
             buff.append(f"{{refgroup}}.plot_ylabel = '{self.workgroup.yrlabel}'")
             buff.append("{refgroup}.energy_ref = {group}.energy_ref = '{refgroup}'")
             buff.append("# end reference group")
@@ -1208,16 +1209,16 @@ class ColumnDataFileFrame(wx.Frame) :
         workgroup = self.workgroup
         ncol, npts = self.workgroup.data.shape
         if xname.startswith('_index') or ix >= ncol:
-            workgroup.xdat = 1.0*np.arange(npts)
+            workgroup.xplot = 1.0*np.arange(npts)
         else:
-            workgroup.xdat = 1.0*self.workgroup.data[ix, :]
+            workgroup.xplot = 1.0*self.workgroup.data[ix, :]
         self.onUpdate()
 
         self.monod_val.Disable()
         if self.datatype.GetStringSelection().strip().lower() == 'xydata':
             self.en_units.SetSelection(4)
         else:
-            eguess = guess_energy_units(workgroup.xdat)
+            eguess = guess_energy_units(workgroup.xplot)
             if eguess.startswith('keV'):
                 self.en_units.SetSelection(1)
             elif eguess.startswith('deg'):
@@ -1237,11 +1238,11 @@ class ColumnDataFileFrame(wx.Frame) :
         ncol, npts = workgroup.data.shape
 
         if xname.startswith('_index') or ix >= ncol:
-            workgroup.xdat = 1.0*np.arange(npts)
+            workgroup.xplot = 1.0*np.arange(npts)
         else:
-            workgroup.xdat = 1.0*self.workgroup.data[ix, :]
+            workgroup.xplot = 1.0*self.workgroup.data[ix, :]
         if self.datatype.GetStringSelection().strip().lower() != 'xydata':
-            eguess =  guess_energy_units(workgroup.xdat)
+            eguess =  guess_energy_units(workgroup.xplot)
             if eguess.startswith('eV'):
                 self.en_units.SetStringSelection('eV')
             elif eguess.startswith('keV'):
@@ -1252,7 +1253,7 @@ class ColumnDataFileFrame(wx.Frame) :
         datatype = self.datatype.GetStringSelection().strip().lower()
         if self.workgroup.datatype == 'xydata' and datatype == 'xas':
             self.workgroup.datatype = 'xas'
-            eguess = guess_energy_units(self.workgroup.xdat)
+            eguess = guess_energy_units(self.workgroup.xplot)
             if eguess.startswith('keV'):
                 self.en_units.SetSelection(1)
             elif eguess.startswith('deg'):
@@ -1298,7 +1299,7 @@ class ColumnDataFileFrame(wx.Frame) :
         return conf
 
     def onUpdate(self, evt=None, **kws):
-        """column selections changed calc xdat and ydat"""
+        """column selections changed calc xplot and yplot"""
         workgroup = self.workgroup
         try:
             ncol, npts = self.workgroup.data.shape
@@ -1319,10 +1320,10 @@ class ColumnDataFileFrame(wx.Frame) :
                      ylabel=workgroup.plot_ylabel,
                      label=workgroup.plot_ylabel)
 
-        self.plotpanel.plot(workgroup.xdat, workgroup.ydat, **popts)
+        self.plotpanel.plot(workgroup.xplot, workgroup.yplot, **popts)
         if conf['has_yref']:
             yrlabel = getattr(workgroup, 'plot_yrlabel', 'reference')
-            self.plotpanel.oplot(workgroup.xdat, workgroup.yref,
+            self.plotpanel.oplot(workgroup.xplot, workgroup.yref,
                                  y2label=yrlabel,
                                  linewidth=2.0, color='#E08070',
                                  label=yrlabel, zorder=-40, side='right')
@@ -1344,26 +1345,26 @@ def create_arrays(dgroup, datatype='xas', ix=0, xarr='energy', en_units='eV',
     build arrays and values for datagroup based on configuration as from ColumnFile
     """
     ncol, npts = dgroup.data.shape
-    exprs = dict(xdat=None, ydat=None, yerr=None, yref=None)
+    exprs = dict(xplot=None, yplot=None, yerr=None, yref=None)
 
     if not hasattr(dgroup, 'index'):
         dgroup.index = 1.0*np.arange(npts)
 
     if xarr.startswith('_index') or ix >= ncol:
-        dgroup.xdat = 1.0*np.arange(npts)
+        dgroup.xplot = 1.0*np.arange(npts)
         xarr = '_index'
-        exprs['xdat'] = 'arange({npts})'
+        exprs['xplot'] = 'arange({npts})'
     else:
-        dgroup.xdat = 1.0*dgroup.data[ix, :]
-        exprs['xdat'] = '{group}.data[{ix}, : ]'
+        dgroup.xplot = 1.0*dgroup.data[ix, :]
+        exprs['xplot'] = '{group}.data[{ix}, : ]'
 
     xlabel = xarr
     monod = float(monod)
     if en_units.startswith('deg'):
-        dgroup.xdat = PLANCK_HC/(2*monod*np.sin(DEG2RAD*dgroup.xdat))
+        dgroup.xplot = PLANCK_HC/(2*monod*np.sin(DEG2RAD*dgroup.xplot))
         xlabel = xarr + ' (eV)'
     elif en_units.startswith('keV'):
-        dgroup.xdat *= 1000.0
+        dgroup.xplot *= 1000.0
         xlabel = xarr + ' (eV)'
 
     def pre_op(opstr, arr):
@@ -1399,8 +1400,8 @@ def create_arrays(dgroup, datatype='xas', ix=0, xarr='energy', en_units='eV',
         ydarr1 = dgroup.data[iy1, :]
         yexpr1 = '{group}.data[{iy1}, : ]'
 
-    dgroup.ydat = ydarr1
-    exprs['ydat'] = yexpr1
+    dgroup.yplot = ydarr1
+    exprs['yplot'] = yexpr1
 
     if yarr2 == '0.0':
         ydarr2 = np.zeros(npts)*1.0
@@ -1413,19 +1414,19 @@ def create_arrays(dgroup, datatype='xas', ix=0, xarr='energy', en_units='eV',
         yexpr2 = '{group}.data[{iy2}, : ]'
 
     if yop in ('+', '-', '*', '/'):
-        exprs['ydat'] = f"{yexpr1}{yop}{yexpr2}"
+        exprs['yplot'] = f"{yexpr1}{yop}{yexpr2}"
         if yop == '+':
-            dgroup.ydat = ydarr1 + ydarr2
+            dgroup.yplot = ydarr1 + ydarr2
         elif yop == '-':
-            dgroup.ydat = ydarr1 - ydarr2
+            dgroup.yplot = ydarr1 - ydarr2
         elif yop == '*':
-            dgroup.ydat = ydarr1 * ydarr2
+            dgroup.yplot = ydarr1 * ydarr2
         elif yop == '/':
-            dgroup.ydat = ydarr1 / ydarr2
+            dgroup.yplot = ydarr1 / ydarr2
 
-    ysuf, ypop, dgroup.ydat = pre_op(ypop, dgroup.ydat)
+    ysuf, ypop, dgroup.yplot = pre_op(ypop, dgroup.yplot)
     ypopx = ypop.replace('log', 'safe_log')
-    exprs['ydat'] = f"{ypopx}{exprs['ydat']}{ysuf}"
+    exprs['yplot'] = f"{ypopx}{exprs['yplot']}{ysuf}"
     ylabel = f"{ypop}{ylabel}{ysuf}"
 
     # error
@@ -1437,8 +1438,8 @@ def create_arrays(dgroup, datatype='xas', ix=0, xarr='energy', en_units='eV',
         yderr = dgroup.data[iyerr, :]
         exprs['yerr'] = '{group}.data[{iyerr}, :]'
     elif yerr_op.startswith('sqrt'):
-        yderr = np.sqrt(dgroup.ydat)
-        exprs['yerr'] = 'sqrt({group}.ydat)'
+        yderr = np.sqrt(dgroup.yplot)
+        exprs['yerr'] = 'sqrt({group}.yplot)'
 
     # reference
     yrlabel = None
@@ -1491,20 +1492,20 @@ def create_arrays(dgroup, datatype='xas', ix=0, xarr='energy', en_units='eV',
 
 
     try:
-        npts = min(len(dgroup.xdat), len(dgroup.ydat))
+        npts = min(len(dgroup.xplot), len(dgroup.yplot))
     except AttributeError:
         return
     except ValueError:
         return
 
-    en = dgroup.xdat
+    en = dgroup.xplot
     dgroup.datatype    = datatype
     dgroup.npts        = npts
     dgroup.plot_xlabel = xlabel
     dgroup.plot_ylabel = ylabel
-    dgroup.xdat        = np.array(dgroup.xdat[:npts])
-    dgroup.ydat        = np.array(dgroup.ydat[:npts])
-    dgroup.y           = dgroup.ydat
+    dgroup.xplot       = np.array(dgroup.xplot[:npts])
+    dgroup.yplot       = np.array(dgroup.yplot[:npts])
+    dgroup.y           = dgroup.yplot
     dgroup.yerr        = yderr
     if isinstance(yderr, np.ndarray):
         dgroup.yerr    = np.array(yderr[:npts])
@@ -1512,8 +1513,8 @@ def create_arrays(dgroup, datatype='xas', ix=0, xarr='energy', en_units='eV',
         dgroup.plot_yrlabel = yrlabel
 
     if dgroup.datatype == 'xas':
-        dgroup.energy = dgroup.xdat
-        dgroup.mu     = dgroup.ydat
+        dgroup.energy = dgroup.xplot
+        dgroup.mu     = dgroup.yplot
 
     return dict(xarr=xarr, ypop=ypop, yop=yop, yarr1=yarr1, yarr2=yarr2,
                 monod=monod, en_units=en_units, yerr_op=yerr_op,
@@ -1525,7 +1526,7 @@ def energy_may_need_rebinning(workgroup):
     "test if energy may need rebinning"
     if getattr(workgroup, 'datatype', '?') != 'xas':
         return False
-    en = getattr(workgroup, 'xdat', [-8.0e12])
+    en = getattr(workgroup, 'xplot', [-8.0e12])
     if len(en) < 2:
         return False
     if not isinstance(en, np.ndarray):

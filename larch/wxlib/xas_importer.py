@@ -8,24 +8,9 @@ import wx.lib.scrolledpanel as scrolled
 import wx.lib.agw.flatnotebook as fnb
 from wxmplot import PlotPanel
 
-from wxutils import (
-    SimpleText,
-    FloatCtrl,
-    GUIColors,
-    Button,
-    Choice,
-    FileCheckList,
-    pack,
-    Popup,
-    Check,
-    MenuItem,
-    CEN,
-    RIGHT,
-    LEFT,
-    FRAMESTYLE,
-    HLine,
-    Font,
-)
+from wxutils import (SimpleText, FloatCtrl, GUIColors, Button, Choice,
+        FileCheckList, pack, Popup, Check, MenuItem, CEN, RIGHT, LEFT,
+        FRAMESTYLE, HLine, Font)
 
 import larch
 from larch import Group
@@ -45,7 +30,7 @@ ARR_OPS = ("+", "-", "*", "/")
 YERR_OPS = ("Constant", "Sqrt(Y)", "Array")
 CONV_OPS = ("Lorenztian", "Gaussian")
 
-XDATATYPES = ("raw", "xas")
+XDATATYPES = ("xydata", "xas")
 ENUNITS_TYPES = ("eV", "keV", "degrees", "not energy")
 
 
@@ -141,10 +126,10 @@ class AddColumnsFrame(wx.Frame):
                 sel.append(int(name[4:]))
         self.selected_columns = np.array(sel)
         narr, npts = self.group.raw.data.shape
-        ydat = np.zeros(npts, dtype=np.float)
+        yplot = np.zeros(npts, dtype=np.float)
         for i in sel:
-            ydat += self.group.raw.data[i, :]
-        return ydat
+            yplot += self.group.raw.data[i, :]
+        return yplot
 
     def get_label(self):
         label_in = self.wids["arrayname"].GetValue()
@@ -159,17 +144,17 @@ class AddColumnsFrame(wx.Frame):
         return label
 
     def onOK(self, event=None):
-        ydat = self.make_sum()
-        npts = len(ydat)
+        yplot = self.make_sum()
+        npts = len(yplot)
         label = self.get_label()
         self.group.array_labels.append(label)
-        new = np.append(self.group.raw.data, ydat.reshape(1, npts), axis=0)
+        new = np.append(self.group.raw.data, yplot.reshape(1, npts), axis=0)
         self.group.raw.data = new
         self.on_ok(label, self.selected_columns)
 
     def onPlot(self, event=None):
-        ydat = self.make_sum()
-        xdat = self.group.xdat
+        yplot = self.make_sum()
+        xplot = self.group.xplot
         label = self.get_label()
         label = "%s (not saved)" % label
         popts = dict(
@@ -180,7 +165,7 @@ class AddColumnsFrame(wx.Frame):
             label=label,
             xlabel=self.group.plot_xlabel,
         )
-        self.parent.plotpanel.plot(xdat, ydat, **popts)
+        self.parent.plotpanel.plot(xplot, yplot, **popts)
 
     def onSelColumns(self, event=None):
         pattern = self.wids["tc_nums"].GetValue().split(",")
@@ -633,10 +618,10 @@ class XasImporter(wx.Frame):
 
         workgroup = self.workgroup
         if xname.startswith("_index") or ix >= ncol:
-            workgroup.xdat = 1.0 * np.arange(npts)
+            workgroup.xplot = 1.0 * np.arange(npts)
         else:
-            workgroup.xdat = 1.0 * rdata[ix, :]
-        eguess = guess_energy_units(workgroup.xdat)
+            workgroup.xplot = 1.0 * rdata[ix, :]
+        eguess = guess_energy_units(workgroup.xplot)
         if eguess.startswith("eV"):
             self.en_units.SetStringSelection("eV")
         elif eguess.startswith("keV"):
@@ -802,7 +787,7 @@ class XasImporter(wx.Frame):
         elif yerr_op.lower().startswith("array"):
             yerr_expr = "%%s.data[%i, :]" % yerr_idx
         elif yerr_op.startswith("sqrt"):
-            yerr_expr = "sqrt(%s.ydat)"
+            yerr_expr = "sqrt(%s.yplot)"
         self.expressions["yerr"] = yerr_expr
 
         # generate script to pass back to calling program:
@@ -826,27 +811,27 @@ class XasImporter(wx.Frame):
             val = getattr(self.workgroup, attr)
             buff.append("{group}.%s = '%s'" % (attr, val))
 
-        expr = self.expressions["xdat"].replace("%s", "{group:s}")
+        expr = self.expressions["xplot"].replace("%s", "{group:s}")
         if en_units.startswith("deg"):
             buff.append(f"mono_dspace = {dspace:.9f}")
             buff.append(
-                f"{{group}}.xdat = PLANCK_HC/(2*mono_dspace*sin(DEG2RAD*({expr:s})))"
+                f"{{group}}.xplot = PLANCK_HC/(2*mono_dspace*sin(DEG2RAD*({expr:s})))"
             )
         elif en_units.startswith("keV"):
-            buff.append(f"{{group}}.xdat = 1000.0*{expr:s}")
+            buff.append(f"{{group}}.xplot = 1000.0*{expr:s}")
         else:
-            buff.append(f"{{group}}.xdat = {expr:s}")
+            buff.append(f"{{group}}.xplot = {expr:s}")
 
-        for aname in ("ydat", "yerr"):
+        for aname in ("yplot", "yerr"):
             expr = self.expressions[aname].replace("%s", "{group:s}")
             buff.append("{group}.%s = %s" % (aname, expr))
 
-        if getattr(self.workgroup, "datatype", "raw") == "xas":
-            buff.append("{group}.energy = {group}.xdat")
-            buff.append("{group}.mu = {group}.ydat")
+        if getattr(self.workgroup, "datatype", "xydata") == "xas":
+            buff.append("{group}.energy = {group}.xplot")
+            buff.append("{group}.mu = {group}.yplot")
             buff.append("sort_xafs({group}, overwrite=True, fix_repeats=True)")
         else:
-            buff.append("{group}.scale = 1./(ptp({group}.ydat))+1.e-16)")
+            buff.append("{group}.scale = 1./(ptp({group}.yplot))+1.e-16)")
         script = "\n".join(buff)
 
         self.array_sel["xarr"] = xarr
@@ -897,15 +882,15 @@ class XasImporter(wx.Frame):
         rdata = self.curscan.data
         ncol, npts = rdata.shape
         if xname.startswith("_index") or ix >= ncol:
-            workgroup.xdat = 1.0 * np.arange(npts)
+            workgroup.xplot = 1.0 * np.arange(npts)
         else:
-            workgroup.xdat = 1.0 * rdata[ix, :]
+            workgroup.xplot = 1.0 * rdata[ix, :]
 
         self.monod_val.Disable()
-        if self.datatype.GetStringSelection().strip().lower() == "raw":
+        if self.datatype.GetStringSelection().strip().lower() == "xydata":
             self.en_units.SetSelection(4)
         else:
-            eguess = guess_energy_units(workgroup.xdat)
+            eguess = guess_energy_units(workgroup.xplot)
             if eguess.startswith("keV"):
                 self.en_units.SetSelection(1)
             elif eguess.startswith("deg"):
@@ -921,7 +906,7 @@ class XasImporter(wx.Frame):
         self.onUpdate()
 
     def onUpdate(self, value=None, evt=None):
-        """column selections changed calc xdat and ydat"""
+        """column selections changed calc xplot and yplot"""
         # dtcorr = self.dtcorr.IsChecked()
         workgroup = self.workgroup
         rdata = self.curscan.data
@@ -936,26 +921,26 @@ class XasImporter(wx.Frame):
         iy2 = self.yarr2.GetSelection()
         yop = self.yop.GetStringSelection().strip()
 
-        exprs = dict(xdat=None, ydat=None, yerr=None)
+        exprs = dict(xplot=None, yplot=None, yerr=None)
 
         ncol, npts = rdata.shape
         workgroup.index = 1.0 * np.arange(npts)
         if xname.startswith("_index") or ix >= ncol:
-            workgroup.xdat = 1.0 * np.arange(npts)
+            workgroup.xplot = 1.0 * np.arange(npts)
             xname = "_index"
-            exprs["xdat"] = "arange(%i)" % npts
+            exprs["xplot"] = "arange(%i)" % npts
         else:
-            workgroup.xdat = 1.0 * rdata[ix, :]
-            exprs["xdat"] = "%%s.data[%i, : ]" % ix
+            workgroup.xplot = 1.0 * rdata[ix, :]
+            exprs["xplot"] = "%%s.data[%i, : ]" % ix
 
         xlabel = xname
         en_units = self.en_units.GetStringSelection()
         if en_units.startswith("deg"):
             dspace = float(self.monod_val.GetValue())
-            workgroup.xdat = PLANCK_HC / (2 * dspace * np.sin(DEG2RAD * workgroup.xdat))
+            workgroup.xplot = PLANCK_HC / (2 * dspace * np.sin(DEG2RAD * workgroup.xplot))
             xlabel = xname + " (eV)"
         elif en_units.startswith("keV"):
-            workgroup.xdat *= 1000.0
+            workgroup.xplot *= 1000.0
             xlabel = xname + " (eV)"
 
         workgroup.datatype = self.datatype.GetStringSelection().strip().lower()
@@ -998,22 +983,22 @@ class XasImporter(wx.Frame):
             yarr2 = rdata[iy2, :]
             yexpr2 = "%%s.data[%i, : ]" % iy2
 
-        workgroup.ydat = yarr1
+        workgroup.yplot = yarr1
 
-        exprs["ydat"] = yexpr1
+        exprs["yplot"] = yexpr1
         if yop in ("+", "-", "*", "/"):
-            exprs["ydat"] = "%s %s %s" % (yexpr1, yop, yexpr2)
+            exprs["yplot"] = "%s %s %s" % (yexpr1, yop, yexpr2)
             if yop == "+":
-                workgroup.ydat = yarr1.__add__(yarr2)
+                workgroup.yplot = yarr1.__add__(yarr2)
             elif yop == "-":
-                workgroup.ydat = yarr1.__sub__(yarr2)
+                workgroup.yplot = yarr1.__sub__(yarr2)
             elif yop == "*":
-                workgroup.ydat = yarr1.__mul__(yarr2)
+                workgroup.yplot = yarr1.__mul__(yarr2)
             elif yop == "/":
-                workgroup.ydat = yarr1.__truediv__(yarr2)
+                workgroup.yplot = yarr1.__truediv__(yarr2)
 
-        ysuf, ypop, workgroup.ydat = pre_op(self.ypop, workgroup.ydat)
-        exprs["ydat"] = "%s%s%s" % (ypop, exprs["ydat"], ysuf)
+        ysuf, ypop, workgroup.yplot = pre_op(self.ypop, workgroup.yplot)
+        exprs["yplot"] = "%s%s%s" % (ypop, exprs["yplot"], ysuf)
 
         yerr_op = self.yerr_op.GetStringSelection().lower()
         exprs["yerr"] = "1"
@@ -1025,8 +1010,8 @@ class XasImporter(wx.Frame):
             yerr = rdata[iyerr, :]
             exprs["yerr"] = "%%s.data[%i, :]" % iyerr
         elif yerr_op.startswith("sqrt"):
-            yerr = np.sqrt(workgroup.ydat)
-            exprs["yerr"] = "sqrt(%s.ydat)"
+            yerr = np.sqrt(workgroup.yplot)
+            exprs["yerr"] = "sqrt(%s.yplot)"
 
         self.expressions = exprs
         self.array_sel = {
@@ -1037,13 +1022,13 @@ class XasImporter(wx.Frame):
             "yarr2": yname2,
         }
         try:
-            npts = min(len(workgroup.xdat), len(workgroup.ydat))
+            npts = min(len(workgroup.xplot), len(workgroup.yplot))
         except AttributeError:
             return
         except ValueError:
             return
 
-        en = workgroup.xdat
+        en = workgroup.xplot
         if (workgroup.datatype == "xas") and (
             (
                 len(en) > 1000
@@ -1057,16 +1042,16 @@ class XasImporter(wx.Frame):
         workgroup.npts = npts
         workgroup.plot_xlabel = xlabel
         workgroup.plot_ylabel = ylabel
-        workgroup.xdat = np.array(workgroup.xdat[:npts])
-        workgroup.ydat = np.array(workgroup.ydat[:npts])
-        workgroup.y = workgroup.ydat
+        workgroup.xplot = np.array(workgroup.xplot[:npts])
+        workgroup.yplot = np.array(workgroup.yplot[:npts])
+        workgroup.y = workgroup.yplot
         workgroup.yerr = yerr
         if isinstance(yerr, np.ndarray):
             workgroup.yerr = np.array(yerr[:npts])
 
         if workgroup.datatype == "xas":
-            workgroup.energy = workgroup.xdat
-            workgroup.mu = workgroup.ydat
+            workgroup.energy = workgroup.xplot
+            workgroup.mu = workgroup.yplot
 
         path, fname = os.path.split(workgroup.filename)
         popts = dict(
@@ -1079,7 +1064,7 @@ class XasImporter(wx.Frame):
             label="%s: %s" % (fname, workgroup.plot_ylabel),
         )
         try:
-            self.plotpanel.plot(workgroup.xdat, workgroup.ydat, **popts)
+            self.plotpanel.plot(workgroup.xplot, workgroup.yplot, **popts)
         except Exception:
             pass
 
