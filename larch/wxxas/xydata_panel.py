@@ -36,16 +36,15 @@ PLOTOPTS_D = dict(style='solid', zorder=2, side='right', marker='None')
 Plot_EnergyRanges = {'full X range': None }
 
 PlotOne_Choices = {'XY Data': 'ydat',
-                   'I0 (Normalization array)': 'i0',
-                   'Scaled Data': 'norm',
-                   'Derivative ': 'dnormdx',
-                   'XY Data + Derivative': 'ydat+dnormdx',
-                   'Scaled Data + Derivative': 'norm+dnormdx',
+                   'Scaled Data': 'ynorm',
+                   'Derivative ': 'dydx',
+                   'XY Data + Derivative': 'ydat+dydx',
+                   'Scaled Data + Derivative': 'ynorm+dydx',
                    }
 
 PlotSel_Choices = {'XY Data': 'ydat',
-                   'Scaled Data': 'norm',
-                   'Derivative': 'dnormdx'}
+                   'Scaled Data': 'ynorm',
+                   'Derivative': 'dydx'}
 
 FSIZE = 120
 FSIZEBIG = 175
@@ -108,7 +107,7 @@ class XYDataPanel(TaskPanel):
         xshift = self.add_floatspin('xshift', action=self.onSet_XShift,
                                                 digits=3, increment=0.05, value=1,
                                                 size=(FSIZEBIG, -1))
-        
+
         self.wids['is_frozen'] = Check(panel, default=False, label='Freeze Group',
                                        action=self.onFreezeGroup)
 
@@ -132,7 +131,7 @@ class XYDataPanel(TaskPanel):
 
         add_text('XY Data:')
         panel.Add(use_auto, dcol=1)
-        panel.Add(SimpleText(panel, 'Copy to Selected Groups:'), style=RIGHT, dcol=2)        
+        panel.Add(SimpleText(panel, 'Copy to Selected Groups:'), style=RIGHT, dcol=2)
 
         add_text('Scale Factor:')
         panel.Add(scale)
@@ -141,7 +140,7 @@ class XYDataPanel(TaskPanel):
         add_text('Shift X scale:' )
         panel.Add(xshift)
         panel.Add(CopyBtn('xshift'), dcol=2, style=RIGHT)
-        
+
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=4, newrow=True)
         panel.Add(self.wids['is_frozen'], newrow=True)
         panel.Add(copy_all, dcol=3, style=RIGHT)
@@ -188,7 +187,7 @@ class XYDataPanel(TaskPanel):
 
         self.plotone_op.SetChoices(list(PlotOne_Choices.keys()))
         self.plotsel_op.SetChoices(list(PlotSel_Choices.keys()))
-        
+
         self.wids['scale'].SetValue(opts['scale'])
         self.wids['scale'].Enable()
 
@@ -257,9 +256,9 @@ class XYDataPanel(TaskPanel):
         self.controller.set_plot_erange(erange)
 
         ytitle = self.plotsel_op.GetStringSelection()
-        yarray_name = plot_choices.get(ytitle, 'norm')
+        yarray_name = plot_choices.get(ytitle, 'ynorm')
         ylabel = getattr(plotlabels, yarray_name, ytitle)
-        xlabel = getattr(dgroup, 'plot_xlabel', getattr(plotlabels, 'x'))
+        xlabel = getattr(dgroup, 'plot_xlabel', getattr(plotlabels, 'xdat'))
 
         voff = self.wids['plot_voff'].GetValue()
         plot_traces = []
@@ -295,7 +294,7 @@ class XYDataPanel(TaskPanel):
                 ppanel.conf.init_trace(i,  linecolors[i%ncols], 'dashed')
 
 
-        ppanel.plot_many(plot_traces, xlabel=plotlabels.energy, ylabel=ylabel,
+        ppanel.plot_many(plot_traces, xlabel=plotlabels.xdat, ylabel=ylabel,
                          zoom_limits=zoom_limits, show_legend=True)
         set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
         ppanel.canvas.draw()
@@ -304,7 +303,7 @@ class XYDataPanel(TaskPanel):
     def onUseDefaults(self, evt=None):
         print("on use defaults")
 
-        
+
     def onCopyAuto(self, evt=None):
         opts = dict(scale=1)
         for checked in self.controller.filelist.GetCheckedStrings():
@@ -366,7 +365,7 @@ class XYDataPanel(TaskPanel):
         autoset_fs_increment(self.wids['xshift'], abs(xshift))
         time.sleep(0.01)
         wx.CallAfter(self.onReprocess)
-        
+
     def pin_callback(self, opt='__', xsel=None, relative_e0=True, **kws):
         """
         get last selected point from a specified plot window
@@ -379,13 +378,8 @@ class XYDataPanel(TaskPanel):
             return
         if opt == 'scale':
             self.wids['scale'].SetValue(kws['ysel'])
-        else:
-            e0 = self.wids['e0'].GetValue()
-            if opt == 'e0':
-                self.wids['e0'].SetValue(xsel)
-                self.wids['auto_e0'].SetValue(0)
-            elif opt in ('pre1', 'pre2', 'norm1', 'norm2'):
-                self.wids[opt].SetValue(xsel-e0)
+        elif opt == 'xshift':
+            self.wids['xshift'].SetValue(kws['xsel'])
         time.sleep(0.01)
         wx.CallAfter(self.onReprocess)
 
@@ -427,24 +421,24 @@ class XYDataPanel(TaskPanel):
         form['group'] = dgroup.groupname
 
         self.skip_process = False
-        dgroup.mu = dgroup.ydat * 1.0
         scale = form.get('scale', conf.get('scale', 1.0))
         gname = dgroup.groupname
         self.larch_eval(f"{gname:s}.scale = {scale:.8f}")
-        self.larch_eval(f"{gname:s}.norm = {gname:s}.ydat/{scale:8f}")
+        self.larch_eval(f"{gname:s}.ynorm = {gname:s}.ydat/{scale:8f}")
+        self.larch_eval(f"{gname:s}.dydx  = gradient({gname:s}.ynorm)/gradient({gname:s}.xdat)")
+        self.larch_eval(f"{gname:s}.d2ydx  = gradient({gname:s}.d2ydx)/gradient({gname:s}.xdat)")
         self.unset_skip_process()
         return
 
 
-
     def get_plot_arrays(self, dgroup):
-        lab = plotlabels.norm
+        lab = plotlabels.ynorm
         if dgroup is None:
             return
 
         dgroup.plot_y2label = None
-        dgroup.plot_xlabel = plotlabels.energy
-        dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab)]
+        dgroup.plot_xlabel = plotlabels.xdat
+        dgroup.plot_yarrays = [('ynorm', PLOTOPTS_1, lab)]
 
         '''
         if not self.is_xasgroup(dgroup):
@@ -479,24 +473,24 @@ class XYDataPanel(TaskPanel):
                                        ('d2normde', PLOTOPTS_D, 'd2y/dx2')]
             return
         '''
-        req_attrs = ['y', 'i0', 'norm', 'dydx', 'd2ydx']
+        req_attrs = ['y', 'i0', 'ynorm', 'dydx', 'd2ydx']
 
-        pchoice = PlotOne_Choices.get(self.plotone_op.GetStringSelection(), 'norm')
+        pchoice = PlotOne_Choices.get(self.plotone_op.GetStringSelection(), 'ynorm')
 
-        if pchoice in ('ydat', 'i0', 'norm', 'dmude', 'd2mude'):
+        if pchoice in ('ydat', 'i0', 'ynorm', 'dydx', 'd2ydx'):
             lab = getattr(plotlabels, pchoice)
             dgroup.plot_yarrays = [(pchoice, PLOTOPTS_1, lab)]
 
-        elif pchoice == 'norm+dmude':
-            lab = plotlabels.norm
-            dgroup.plot_y2label = lab2 = plotlabels.dmude
-            dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab),
-                                   ('dmude', PLOTOPTS_D, lab2)]
+        elif pchoice == 'ynorm+dydx':
+            lab = plotlabels.ynorm
+            dgroup.plot_y2label = lab2 = plotlabels.dydx
+            dgroup.plot_yarrays = [('ynorm', PLOTOPTS_1, lab),
+                                   ('dydx', PLOTOPTS_D, lab2)]
 
-        elif pchoice == 'norm+i0':
-            lab = plotlabels.norm
+        elif pchoice == 'ynorm+i0':
+            lab = plotlabels.ynorm
             dgroup.plot_y2label = lab2 = plotlabels.i0
-            dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab),
+            dgroup.plot_yarrays = [('ynorm', PLOTOPTS_1, lab),
                                    ('i0', PLOTOPTS_D, lab2)]
 
         dgroup.plot_ylabel = lab
@@ -507,7 +501,7 @@ class XYDataPanel(TaskPanel):
         if needs_proc:
             self.process(dgroup=dgroup, force=True)
 
-        y4e0 = dgroup.ydat = getattr(dgroup, dgroup.plot_yarrays[0][0], dgroup.mu)
+        y4e0 = dgroup.ydat = getattr(dgroup, dgroup.plot_yarrays[0][0], dgroup.ydat)
         dgroup.plot_extras = []
 
         popts = {'marker': 'o', 'markersize': 5,
@@ -515,19 +509,6 @@ class XYDataPanel(TaskPanel):
                  'markerfacecolor': '#888',
                  'markeredgecolor': '#A00'}
 
-        if self.wids['show_e0'].IsChecked():
-            ie0 = index_of(dgroup.energy, dgroup.e0)
-            dgroup.plot_extras.append(('marker', dgroup.e0, y4e0[ie0], popts))
-
-        if self.wids['show_pre'].IsChecked() or self.wids['show_norm'].IsChecked():
-            popts['markersize'] = 4
-            wids = []
-            if self.wids['show_pre'].IsChecked():  wids.extend(['pre1', 'pre2'])
-            if self.wids['show_norm'].IsChecked():  wids.extend(['norm1', 'norm2'])
-            for wid in wids:
-                val = self.wids[wid].GetValue()
-                ival = min(len(y4e0)-1, index_of(dgroup.energy, dgroup.e0 + val))
-                dgroup.plot_extras.append(('marker', dgroup.e0+val, y4e0[ival], popts))
 
     def plot(self, dgroup, title=None, plot_yarrays=None, yoff=0,
              delay_draw=True, multi=False, new=True, with_extras=True, **kws):
@@ -551,12 +532,9 @@ class XYDataPanel(TaskPanel):
             print("Cannot plot group ", groupname)
 
         if ((getattr(dgroup, 'plot_yarrays', None) is None or
-             getattr(dgroup, 'energy', None) is None or
-             getattr(dgroup, 'mu', None) is None or
-             getattr(dgroup, 'e0', None) is None or
-             getattr(dgroup, 'dmude', None) is None or
-             getattr(dgroup, 'd2mude', None) is None or
-             getattr(dgroup, 'norm', None) is None)):
+             getattr(dgroup, 'dydx', None) is None or
+             getattr(dgroup, 'd2ydx', None) is None or
+             getattr(dgroup, 'ynorm', None) is None)):
             self.process(dgroup=dgroup)
         self.get_plot_arrays(dgroup)
 
@@ -584,12 +562,10 @@ class XYDataPanel(TaskPanel):
             popts['y2label'] = dgroup.plot_y2label
 
         plot_choices = PlotSel_Choices
-        if not self.is_xasgroup(dgroup):
-            plot_choices = PlotSel_Choices_nonxas
 
         if multi:
             ylabel = self.plotsel_op.GetStringSelection()
-            yarray_name = plot_choices.get(ylabel, 'norm')
+            yarray_name = plot_choices.get(ylabel, 'ynorm')
 
             if self.is_xasgroup(dgroup):
                 ylabel = getattr(plotlabels, yarray_name, ylabel)
@@ -615,8 +591,7 @@ class XYDataPanel(TaskPanel):
             if 'linewidth' in popts:
                 linewidth = popts.pop('linewidth')
             popts['delay_draw'] = delay_draw
-            if yaname == 'norm_mback' and not hasattr(dgroup, yaname):
-                self.process(dgroup=dgroup, force=True, force_mback=True)
+
             if yaname == 'i0' and not hasattr(dgroup, yaname):
                 dgroup.i0 = np.ones(len(dgroup.xdat))
             plotcmd(dgroup.xdat, getattr(dgroup, yaname)+yoff, linewidth=linewidth, **popts)

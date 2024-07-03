@@ -518,23 +518,33 @@ class LarixFrame(wx.Frame):
         return out
 
     def add_analysis_panel(self, name):
+        """make sure an analysis panel is displayed ,
+           and return its current index in the set of panels
+           or None to signal "unknonwn panel name"
+        """
         atab = LARIX_PANELS.get(name, None)
         if atab is None:
-            return
+            return None
 
         current_panels = self.get_panels()
-        if name not in current_panels:
-            cons = atab.constructor.split('.')
-            clsname = cons.pop()
-            module = '.'.join(cons)
-            try:
-                cls = getattr(import_module(module), clsname)
-            except (ImportError, KeyError):
-                cls = None
-                print(f"cannot find analysis panel {atab}")
-            if cls is not None:
-                nbpanel = cls(parent=self, controller=self.controller)
-                self.nb.AddPage(nbpanel, atab.title, True)
+        #print("Add panel , current = ", name, atab.title)
+        if atab.title in current_panels:
+            return current_panels[atab.title]
+        # not in current tabs, so add it
+        cons = atab.constructor.split('.')
+        clsname = cons.pop()
+        module = '.'.join(cons)
+        try:
+            cls = getattr(import_module(module), clsname)
+        except (ImportError, KeyError):
+            cls = None
+            print(f"cannot find analysis panel {atab}")
+        if cls is not None:
+            # print("Add panel , current = ", name, atab)
+            nbpanel = cls(parent=self, controller=self.controller)
+            self.nb.AddPage(nbpanel, atab.title, True)
+        current_panels = self.get_panels()
+        return current_panels.get(atab.title, None)
 
     def process_normalization(self, dgroup, force=True, use_form=True):
         self.get_nbpage('xasnorm')[1].process(dgroup, force=force, use_form=use_form)
@@ -546,21 +556,19 @@ class LarixFrame(wx.Frame):
         "get nb page by name"
         name = name.lower()
         out = 0
-        print("GET NB PAGE ", name, LARIX_PANELS.get(name, 'gg'))
         if name not in LARIX_PANELS:
             print("unknown panel : ", name)
             return 0, self.nb.GetPage(0)
+        # print("GET NB PAGE ", name, LARIX_PANELS.get(name, 'gg'))
 
         atab = LARIX_PANELS[name]
-        title = atab.title
         current_panels = self.get_panels()
-        if title not in current_panels:
-            self.add_analysis_panel(name)
-        # print("GET NB PAGE A: ", name, current_panels)
-        i = current_panels.get(title, 0)
-        page = self.nb.GetPage(i)
-        # print('GET NB PAGE ', name,  title, i, page)
-        return i, page
+        if atab.title in current_panels:
+            ipage = current_panels[atab.title]
+        else:
+            ipage = self.add_analysis_panel(name)
+        # print("GET NB PAGE ", ipage, self.nb.GetPage(ipage))
+        return ipage, self.nb.GetPage(ipage)
 
     def onNBChanged(self, event=None):
         callback = getattr(self.nb.GetCurrentPage(), 'onPanelExposed', None)
@@ -608,7 +616,9 @@ class LarixFrame(wx.Frame):
         if dgroup is None:
             return
 
-        if (getattr(dgroup, 'datatype', 'xyda').startswith('xa') and not
+        print("This ShowFile ", groupname, getattr(dgroup, 'datatype', 'xydata'))
+
+        if (getattr(dgroup, 'datatype', 'xydata').startswith('xa') and not
             (hasattr(dgroup, 'norm') and hasattr(dgroup, 'e0'))):
             self.process_normalization(dgroup, force=True, use_form=False)
         if filename is None:
@@ -1799,7 +1809,8 @@ before clearing"""
         dtype = getattr(dgroup, 'datatype', 'xydata')
         startpage = 'xasnorm' if dtype == 'xas' else 'xydata'
         ipage, pagepanel = self.get_nbpage(startpage)
-        print("START PAGE ", dgroup, dtype, ipage, startpage, pagepanel)
+        print("START PAGE ", dgroup, dtype, startpage)
+        print("..get_nbpage says::  ", startpage, ipage, pagepanel)
         self.nb.SetSelection(ipage)
         self.ShowFile(groupname=groupname, filename=filename,
                       process=process, plot=plot)

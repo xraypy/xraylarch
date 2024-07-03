@@ -93,7 +93,13 @@ plotlabels = Group(k       = r'$k \rm\,(\AA^{-1})$',
                    chirim  = r'${{\rm Im}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$',
                    chirpha = r'${{\rm Phase}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$',
                    e0color = '#B2B282',
-                   chirlab = chirlab)
+                   chirlab = chirlab,
+                   ydat = r'$y$',
+                   ynorm = r'scaled $y$',
+                   xdat = r'$x$',
+                   dydx = r'$dy/dx$',
+                   d2ydx = r'$d^2y/dx^2$',
+                       )
 
 def safetitle(t):
     if "'" in t:
