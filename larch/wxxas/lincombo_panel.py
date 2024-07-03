@@ -489,8 +489,8 @@ class LinComboResultFrame(wx.Frame):
         cmdstr = f"""{new_group} = group(name="{groupname}", groupname="{groupname}", filename="{filename}")"""
         controller.larch.eval(cmdstr)
         g = controller.symtable.get_group(new_group)
-        g.energy = g.xdat = xarr
-        g.mu = g.ydat = g.norm = yfit
+        g.energy = g.xplot = xarr
+        g.mu = g.yplot = g.norm = yfit
         g.i0 = i0
         g.datatype = 'xas'
         controller.install_group(groupname, filename, source="exported from Linear Combo / Fit Results")

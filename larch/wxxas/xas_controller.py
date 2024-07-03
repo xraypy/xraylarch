@@ -122,7 +122,7 @@ class XASController():
 
         cmds.append(f"{groupname:s}.journal = journal({jopts:s})")
 
-        datatype = getattr(thisgroup, 'datatype', 'raw')
+        datatype = getattr(thisgroup, 'datatype', 'xydata')
         if datatype == 'xas':
             cmds.append(f"{groupname:s}.energy_orig = {groupname:s}.energy[:]")
             array_labels = getattr(thisgroup, 'array_labels', [])
@@ -374,7 +374,7 @@ class XASController():
         if master is None:
             master = grouplist[0]
         gmaster = self.get_group(master)
-        xarray = 'xdat' if gmaster.datatype=='raw' else 'energy'
+        xarray = 'xplot' if gmaster.datatype=='xydata' else 'energy'
         outgroup = fix_varname(outgroup.lower())
         if outgroup is None:
             outgroup = 'merged'
@@ -394,11 +394,11 @@ class XASController():
         this.config.xasnorm.update(gmaster.config.xasnorm)
         this.datatype = gmaster.datatype
         if xarray == 'energy':
-            this.xdat = 1.0*this.energy
-        this.ydat = 1.0*getattr(this, yarray)
+            this.xplot = 1.0*this.energy
+        this.yplot = 1.0*getattr(this, yarray)
         this.yerr =  getattr(this, 'd' + yarray, 1.0)
         if yarray != 'mu':
-            this.mu = this.ydat
+            this.mu = this.yplot
         this.plot_xlabel = xarray
         this.plot_ylabel = yarray
         return this
@@ -443,7 +443,7 @@ class XASController():
             plotcmd = newplot
 
         dgroup = self.get_group(groupname)
-        if not hasattr(dgroup, 'xdat'):
+        if not hasattr(dgroup, 'xplot'):
             print("Cannot plot group ", groupname)
 
         if ((getattr(dgroup, 'plot_yarrays', None) is None or
@@ -480,7 +480,7 @@ class XASController():
                 popts['label'] = yalabel
             popts['delay_draw'] = (i != narr)
 
-            plotcmd(dgroup.xdat, getattr(dgroup, yaname), **popts)
+            plotcmd(dgroup.xplot, getattr(dgroup, yaname), **popts)
             plotcmd = oplot
 
         if plot_extras is not None:

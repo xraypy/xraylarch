@@ -1405,7 +1405,7 @@ before clearing"""
 
         if len(multi_chans) > 0:
             if (multi_chans[0] == config['iy1'] and multi_i0 == config['iy2']
-                and 'log' not in config['expressions']['ydat']):
+                and 'log' not in config['expressions']['yplot']):
                 yname = config['array_labels'][config['iy1']]
                 # filename = f"{spath}:{yname}"
                 multi_chans.pop(0)
@@ -1431,13 +1431,13 @@ before clearing"""
             jrnl = {'source_desc': f"{fname}: scan{scan} {yname}"}
             dgroup = self.install_group(gname, displayname, journal=jrnl)
             if len(multi_chans) > 0:
-                ydatline = None
+                yplotline = None
                 for line in script.split('\n'):
-                    if line.startswith("{group}.ydat ="):
-                        ydatline = line.replace("{group}", "{ngroup}")
+                    if line.startswith("{group}.yplot ="):
+                        yplotline = line.replace("{group}", "{ngroup}")
                 mscript = '\n'.join(["{ngroup} = deepcopy({group})",
-                                     ydatline,
-                                    "{ngroup}.mu = {ngroup}.ydat",
+                                     yplotline,
+                                    "{ngroup}.mu = {ngroup}.yplot",
                                      "{ngroup}.plot_ylabel = '{ylabel}'"])
                 i0 = '1.0'
                 if multi_i0  < len(config['array_labels']):
@@ -1449,8 +1449,8 @@ before clearing"""
                     dname = f"{fname} scan{scan} {yname}"
                     ngroup = file2groupname(dname, symtable=self.larch.symtable)
                     njournal = {'source': path,
-                                'xdat': array_desc['xdat'].format(group=ngroup),
-                                'ydat': ylabel,
+                                'xplot': array_desc['xplot'].format(group=ngroup),
+                                'yplot': ylabel,
                                 'source_desc': f"{fname}: scan{scan} {yname}",
                                 'yerr': array_desc['yerr'].format(group=ngroup)}
                     cmd = mscript.format(group=gname, ngroup=ngroup,
@@ -1645,7 +1645,7 @@ before clearing"""
 
         if len(multi_chans) > 0:
             if (multi_chans[0] == config['iy1'] and multi_i0 == config['iy2']
-                and 'log' not in config['expressions']['ydat']):
+                and 'log' not in config['expressions']['yplot']):
                 yname = config['array_labels'][config['iy1']]
                 filename = f"{spath}:{yname}"
                 multi_chans.pop(0)
@@ -1664,10 +1664,10 @@ before clearing"""
         journal = {'source': path}
         refjournal = {}
 
-        if 'xdat' in array_desc:
-            journal['xdat'] = array_desc['xdat'].format(group=groupname)
-        if 'ydat' in array_desc:
-            journal['ydat'] = ylab = array_desc['ydat'].format(group=groupname)
+        if 'xplot' in array_desc:
+            journal['xplot'] = array_desc['xplot'].format(group=groupname)
+        if 'yplot' in array_desc:
+            journal['yplot'] = ylab = array_desc['yplot'].format(group=groupname)
             journal['source_desc'] = f'{spath}: {ylab}'
         if 'yerr' in array_desc:
             journal['yerr'] = array_desc['yerr'].format(group=groupname)
@@ -1675,13 +1675,13 @@ before clearing"""
         self.install_group(groupname, filename, source=path, journal=journal)
 
         def install_multichans(config):
-            ydatline = None
+            yplotline = None
             for line in script.split('\n'):
-                if line.startswith("{group}.ydat ="):
-                    ydatline = line.replace("{group}", "{ngroup}")
+                if line.startswith("{group}.yplot ="):
+                    yplotline = line.replace("{group}", "{ngroup}")
             mscript = '\n'.join(["{ngroup} = deepcopy({group})",
-                                 ydatline,
-                                 "{ngroup}.mu = {ngroup}.ydat",
+                                 yplotline,
+                                 "{ngroup}.mu = {ngroup}.yplot",
                                  "{ngroup}.plot_ylabel = '{ylabel}'"])
             i0 = '1.0'
             if multi_i0  < len(config['array_labels']):
@@ -1693,8 +1693,8 @@ before clearing"""
                 fname = f"{spath}:{yname}"
                 ngroup = file2groupname(fname, symtable=self.larch.symtable)
                 njournal = {'source': path,
-                            'xdat': array_desc['xdat'].format(group=ngroup),
-                            'ydat': ylabel,
+                            'xplot': array_desc['xplot'].format(group=ngroup),
+                            'yplot': ylabel,
                             'source_desc': f"{spath}: {ylabel}",
                             'yerr': array_desc['yerr'].format(group=ngroup)}
                 cmd = mscript.format(group=config['group'], ngroup=ngroup,
@@ -1707,10 +1707,10 @@ before clearing"""
 
         if has_yref:
 
-            if 'xdat' in array_desc:
-                refjournal['xdat'] = array_desc['xdat'].format(group=refgroup)
+            if 'xplot' in array_desc:
+                refjournal['xplot'] = array_desc['xplot'].format(group=refgroup)
             if 'yref' in array_desc:
-                refjournal['ydat'] = ydx = array_desc['yref'].format(group=refgroup)
+                refjournal['yplot'] = ydx = array_desc['yref'].format(group=refgroup)
                 refjournal['source_desc'] = f'{spath:s}: {ydx:s}'
             self.install_group(refgroup, config['reffile'],
                                source=path, journal=refjournal)
@@ -1724,7 +1724,7 @@ before clearing"""
                 en = thisgroup.energy
             except:
                 do_rebin = True
-                en = thisgroup.energy = thisgroup.xdat
+                en = thisgroup.energy = thisgroup.xplot
             # test for rebinning:
             #  too many data points
             #  unsorted energy data or data in angle
@@ -1763,10 +1763,10 @@ before clearing"""
             if has_yref:
                 self.larch.eval(f"{gname}.energy_ref = {refgroup}.energy_ref = '{refgroup}'\n")
 
-            if 'xdat' in array_desc:
-                journal['xdat'] = array_desc['xdat'].format(group=gname)
-            if 'ydat' in array_desc:
-                journal['ydat'] = ydx = array_desc['ydat'].format(group=gname)
+            if 'xplot' in array_desc:
+                journal['xplot'] = array_desc['xplot'].format(group=gname)
+            if 'yplot' in array_desc:
+                journal['yplot'] = ydx = array_desc['yplot'].format(group=gname)
                 journal['source_desc'] = f'{spath:s}: {ydx:s}'
             if 'yerr' in array_desc:
                 journal['yerr'] = array_desc['yerr'].format(group=gname)
@@ -1776,10 +1776,10 @@ before clearing"""
                 install_multichans(config)
 
             if has_yref:
-                if 'xdat' in array_desc:
-                    refjournal['xdat'] = array_desc['xdat'].format(group=refgroup)
+                if 'xplot' in array_desc:
+                    refjournal['xplot'] = array_desc['xplot'].format(group=refgroup)
                 if 'yref' in array_desc:
-                    refjournal['ydat'] = ydx = array_desc['yref'].format(group=refgroup)
+                    refjournal['yplot'] = ydx = array_desc['yref'].format(group=refgroup)
                     refjournal['source_desc'] = f'{spath:s}: {ydx:s}'
 
                 self.install_group(refgroup, reffile, source=path, journal=refjournal, plot=False)

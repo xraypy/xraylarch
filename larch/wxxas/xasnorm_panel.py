@@ -239,12 +239,12 @@ class XASNormPanel(TaskPanel):
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=4, newrow=True)
         add_text('XAS Data:')
         panel.Add(use_auto, dcol=1)
-        panel.Add(SimpleText(panel, 'Copy to Selected Groups:'), style=RIGHT, dcol=2)        
+        panel.Add(SimpleText(panel, 'Copy to Selected Groups:'), style=RIGHT, dcol=2)
 
         add_text('Element and Edge: ', newrow=True)
         panel.Add(atpanel, dcol=2)
         panel.Add(CopyBtn('atsym'), dcol=1, style=RIGHT)
-        
+
         add_text('Energy Reference : ')
         panel.Add(self.wids['energy_ref'], dcol=2)
         panel.Add(CopyBtn('energy_ref'), dcol=1, style=RIGHT)
@@ -582,7 +582,7 @@ class XASNormPanel(TaskPanel):
                 popts['xmin'] = dgroup.e0 + erange[0]
                 popts['xmax'] = dgroup.e0 + erange[1]
 
-            trace = {'xdata': dgroup.xdat,
+            trace = {'xdata': dgroup.xplot,
                      'ydata': getattr(dgroup, yarray_name) + ix*voff,
                      'label': dgroup.filename, 'new': newplot}
             trace.update(popts)
@@ -833,7 +833,7 @@ class XASNormPanel(TaskPanel):
             if res.ok:
                 en_units = res.units
                 dgroup.mono_dspace = res.dspace
-                dgroup.xdat = dgroup.energy = res.energy
+                dgroup.xplot = dgroup.energy = res.energy
         dgroup.energy_units = en_units
 
         if not hasattr(dgroup, 'e0'):
@@ -866,7 +866,7 @@ class XASNormPanel(TaskPanel):
         if abs(eshift-ediff) > 1.e-5 or abs(eshift-eshift_current) > 1.e-5:
             if abs(eshift) > 1e15: eshift = 0.0
             cmds.extend(["{group:s}.energy_shift = {eshift:.4f}",
-                         "{group:s}.energy = {group:s}.xdat = {group:s}.energy_orig + {group:s}.energy_shift"])
+                         "{group:s}.energy = {group:s}.xplot = {group:s}.energy_orig + {group:s}.energy_shift"])
 
         if len(cmds) > 0:
             self.larch_eval(('\n'.join(cmds)).format(group=dgroup.groupname, eshift=eshift))
@@ -898,7 +898,7 @@ class XASNormPanel(TaskPanel):
         self.larch_eval("{group:s}.norm_poly = 1.0*{group:s}.norm".format(**form))
         if not hasattr(dgroup, 'e0'):
             self.skip_process = False
-            dgroup.mu = dgroup.ydat * 1.0
+            dgroup.mu = dgroup.yplot * 1.0
             opts = {'group': dgroup.groupname}
             return
 
@@ -1042,7 +1042,7 @@ class XASNormPanel(TaskPanel):
         if needs_proc:
             self.process(dgroup=dgroup, force=True)
 
-        y4e0 = dgroup.ydat = getattr(dgroup, dgroup.plot_yarrays[0][0], dgroup.mu)
+        y4e0 = dgroup.yplot = getattr(dgroup, dgroup.plot_yarrays[0][0], dgroup.mu)
         dgroup.plot_extras = []
 
         popts = {'marker': 'o', 'markersize': 5,
@@ -1082,7 +1082,7 @@ class XASNormPanel(TaskPanel):
         if groupname is None:
             return
 
-        if not hasattr(dgroup, 'xdat'):
+        if not hasattr(dgroup, 'xplot'):
             print("Cannot plot group ", groupname)
 
         if ((getattr(dgroup, 'plot_yarrays', None) is None or
@@ -1150,8 +1150,8 @@ class XASNormPanel(TaskPanel):
             if yaname == 'norm_mback' and not hasattr(dgroup, yaname):
                 self.process(dgroup=dgroup, force=True, force_mback=True)
             if yaname == 'i0' and not hasattr(dgroup, yaname):
-                dgroup.i0 = np.ones(len(dgroup.xdat))
-            plotcmd(dgroup.xdat, getattr(dgroup, yaname)+yoff, linewidth=linewidth, **popts)
+                dgroup.i0 = np.ones(len(dgroup.xplot))
+            plotcmd(dgroup.xplot, getattr(dgroup, yaname)+yoff, linewidth=linewidth, **popts)
             plotcmd = ppanel.oplot
 
         if with_extras and plot_extras is not None:

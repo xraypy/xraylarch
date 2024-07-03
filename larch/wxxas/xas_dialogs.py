@@ -189,9 +189,9 @@ class OverAbsorptionDialog(wx.Dialog):
         self.plot_results()
 
     def on_apply(self, event=None):
-        xdat, ydat = self.data
+        xplot, yplot = self.data
         dgroup = self.dgroup
-        dgroup.xdat = dgroup.energy = xdat
+        dgroup.xplot = dgroup.energy = xplot
         self.parent.process_normalization(dgroup)
         dgroup.journal.add('fluor_corr_command', self.cmd)
         self.plot_results()
@@ -387,18 +387,18 @@ class EnergyCalibrateDialog(wx.Dialog):
         ensure_en_orig(dat)
         ensure_en_orig(ref)
 
-        dat.xdat = dat.energy_orig[:]
-        ref.xdat = ref.energy_orig[:]
-        estep = find_energy_step(dat.xdat)
+        dat.xplot = dat.energy_orig[:]
+        ref.xplot = ref.energy_orig[:]
+        estep = find_energy_step(dat.xplot)
         i1 = index_of(ref.energy_orig, ref.e0-20)
         i2 = index_of(ref.energy_orig, ref.e0+20)
 
         def resid(pars, ref, dat, i1, i2):
             "fit residual"
-            newx = dat.xdat + pars['eshift'].value
+            newx = dat.xplot + pars['eshift'].value
             scale = pars['scale'].value
-            y = interp(newx, dat.dmude, ref.xdat, kind='cubic')
-            return smooth(ref.xdat, y*scale-ref.dmude, xstep=estep, sigma=0.50)[i1:i2]
+            y = interp(newx, dat.dmude, ref.xplot, kind='cubic')
+            return smooth(ref.xplot, y*scale-ref.dmude, xstep=estep, sigma=0.50)[i1:i2]
 
         params = Parameters()
         ex0 = ref.e0-dat.e0
@@ -431,7 +431,7 @@ class EnergyCalibrateDialog(wx.Dialog):
         self.plot_results()
 
     def on_apply_one(self, event=None):
-        xdat, ydat = self.data
+        xplot, yplot = self.data
         dgroup = self.dgroup
         eshift = self.wids['eshift'].GetValue()
 
@@ -441,7 +441,7 @@ class EnergyCalibrateDialog(wx.Dialog):
         norm_page.wids['energy_shift'].SetValue(eshift)
 
         dgroup.energy_shift = eshift
-        dgroup.xdat = dgroup.energy = eshift + dgroup.energy_orig[:]
+        dgroup.xplot = dgroup.energy = eshift + dgroup.energy_orig[:]
         dgroup.journal.add('energy_shift ', eshift)
         self.parent.process_normalization(dgroup)
         self.plot_results()
@@ -456,7 +456,7 @@ class EnergyCalibrateDialog(wx.Dialog):
             dgroup.energy_shift = eshift
             norm_page.wids['energy_shift'].SetValue(eshift)
 
-            dgroup.xdat = dgroup.energy = eshift + dgroup.energy_orig[:]
+            dgroup.xplot = dgroup.energy = eshift + dgroup.energy_orig[:]
             dgroup.journal.add('energy_shift ', eshift)
             self.parent.process_normalization(dgroup)
 
@@ -468,7 +468,7 @@ class EnergyCalibrateDialog(wx.Dialog):
         ngroup = self.controller.copy_group(fname, new_filename=new_fname)
 
         ensure_en_orig(ngroup)
-        ngroup.xdat = ngroup.energy = eshift + ngroup.energy_orig[:]
+        ngroup.xplot = ngroup.energy = eshift + ngroup.energy_orig[:]
         ngroup.energy_shift = 0
         ngroup.energy_ref = ngroup.groupname
 
@@ -689,10 +689,10 @@ class RebinDataDialog(wx.Dialog):
             self.plot_results()
 
     def on_apply(self, event=None):
-        xdat, ydat, yerr, e0 = self.data
+        xplot, yplot, yerr, e0 = self.data
         dgroup = self.dgroup
-        dgroup.energy = dgroup.xdat = xdat
-        dgroup.mu     = dgroup.ydat = ydat
+        dgroup.energy = dgroup.xplot = xplot
+        dgroup.mu     = dgroup.yplot = yplot
         dgroup.journal.add('rebin_command ', self.cmd)
         self.parent.process_normalization(dgroup)
         self.plot_results()
@@ -702,9 +702,9 @@ class RebinDataDialog(wx.Dialog):
         fname = wids['grouplist'].GetStringSelection()
         new_fname = wids['save_as_name'].GetValue()
         ngroup = self.controller.copy_group(fname, new_filename=new_fname)
-        xdat, ydat, yerr, de0 = self.data
-        ngroup.energy = ngroup.xdat = xdat
-        ngroup.mu     = ngroup.ydat = ydat
+        xplot, yplot, yerr, de0 = self.data
+        ngroup.energy = ngroup.xplot = xplot
+        ngroup.mu     = ngroup.yplot = yplot
 
         ogroup = self.controller.get_group(fname)
         olddesc = ogroup.journal.get('source_desc').value
@@ -891,10 +891,10 @@ class SmoothDataDialog(wx.Dialog):
         self.plot_results()
 
     def on_apply(self, event=None):
-        xdat, ydat = self.data
+        xplot, yplot = self.data
         dgroup = self.dgroup
-        dgroup.energy = xdat
-        dgroup.mu     = ydat
+        dgroup.energy = xplot
+        dgroup.mu     = yplot
         dgroup.journal.add('smooth_command', self.cmd)
         self.parent.process_normalization(dgroup)
         self.plot_results()
@@ -905,9 +905,9 @@ class SmoothDataDialog(wx.Dialog):
         new_fname = wids['save_as_name'].GetValue()
         ngroup = self.controller.copy_group(fname, new_filename=new_fname)
 
-        xdat, ydat = self.data
-        ngroup.energy = ngroup.xdat = xdat
-        ngroup.mu     = ngroup.ydat = ydat
+        xplot, yplot = self.data
+        ngroup.energy = ngroup.xplot = xplot
+        ngroup.mu     = ngroup.yplot = yplot
 
         ogroup = self.controller.get_group(fname)
         olddesc = ogroup.journal.get('source_desc').value
@@ -1021,9 +1021,9 @@ class DeconvolutionDialog(wx.Dialog):
         fname = wids['grouplist'].GetStringSelection()
         new_fname = wids['save_as_name'].GetValue()
         ngroup = self.controller.copy_group(fname, new_filename=new_fname)
-        xdat, ydat = self.data
-        ngroup.energy = ngroup.xdat = xdat
-        ngroup.mu     = ngroup.ydat = ydat
+        xplot, yplot = self.data
+        ngroup.energy = ngroup.xplot = xplot
+        ngroup.mu     = ngroup.yplot = yplot
 
         ogroup = self.controller.get_group(fname)
         olddesc = ogroup.journal.get('source_desc').value
@@ -1054,10 +1054,10 @@ class DeconvolutionDialog(wx.Dialog):
         self.plot_results()
 
     def on_apply(self, event=None):
-        xdat, ydat = self.data
+        xplot, yplot = self.data
         dgroup = self.dgroup
-        dgroup.energy = xdat
-        dgroup.mu     = ydat
+        dgroup.energy = xplot
+        dgroup.mu     = yplot
         dgroup.journal.add('deconvolve_command ', self.cmd)
         self.parent.process_normalization(dgroup)
         self.plot_results()
@@ -1101,15 +1101,15 @@ class DeglitchDialog(wx.Dialog):
         groupnames = list(self.controller.file_groups.keys())
 
         self.reset_data_history()
-        xdat, ydat = self.data
+        xplot, yplot = self.data
 
-        xrange = (max(xdat) - min(xdat))
-        xmax = int(max(xdat) + xrange/5.0)
-        xmin = int(min(xdat) - xrange/5.0)
+        xrange = (max(xplot) - min(xplot))
+        xmax = int(max(xplot) + xrange/5.0)
+        xmin = int(min(xplot) - xrange/5.0)
 
         lastx, lasty = self.controller.get_cursor()
         if lastx is None:
-            lastx = max(xdat)
+            lastx = max(xplot)
 
         wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
                            title="Select Points to Remove")
@@ -1220,23 +1220,23 @@ class DeglitchDialog(wx.Dialog):
 
     def get_xydata(self, datatype='mu'):
         if hasattr(self.dgroup, 'energy'):
-            xdat = self.dgroup.energy[:]
+            xplot = self.dgroup.energy[:]
         else:
-            xdat = self.dgroup.xdat[:]
-        ydat = self.dgroup.ydat[:]
+            xplot = self.dgroup.xplot[:]
+        yplot = self.dgroup.yplot[:]
         if datatype == 'mu' and hasattr(self.dgroup, 'mu'):
-            ydat = self.dgroup.mu[:]
+            yplot = self.dgroup.mu[:]
         elif datatype == 'norm':
             if not hasattr(self.dgroup, 'norm'):
                 self.parent.process_normalization(dgroup)
-            ydat = self.dgroup.norm[:]
+            yplot = self.dgroup.norm[:]
         elif datatype in ('chie', 'chiew'):
             if not hasattr(self.dgroup, 'chie'):
                 self.parent.process_exafs(self.dgroup)
-            ydat = self.dgroup.chie[:]
+            yplot = self.dgroup.chie[:]
             if datatype == 'chiew':
-                ydat = self.dgroup.chie[:] * (xdat-self.dgroup.e0)
-        return (xdat, ydat)
+                yplot = self.dgroup.chie[:] * (xplot-self.dgroup.e0)
+        return (xplot, yplot)
 
     def on_groupchoice(self, event=None):
         self.dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
@@ -1293,12 +1293,12 @@ class DeglitchDialog(wx.Dialog):
         self.plot_results()
 
     def on_apply(self, event=None):
-        xdat, ydat = self.get_xydata(datatype='raw')
+        xplot, yplot = self.get_xydata(datatype='xydata')
         mask = self.xmasks[-1]
         dgroup = self.dgroup
-        energies_removed  = xdat[np.where(~mask)].tolist()
-        dgroup.energy = dgroup.xdat = xdat[mask]
-        dgroup.mu     = dgroup.ydat = ydat[mask]
+        energies_removed  = xplot[np.where(~mask)].tolist()
+        dgroup.energy = dgroup.xplot = xplot[mask]
+        dgroup.mu     = dgroup.yplot = yplot[mask]
         self.reset_data_history()
         dgroup.journal.add('deglitch_removed_energies', energies_removed)
         self.parent.process_normalization(dgroup)
@@ -1308,12 +1308,12 @@ class DeglitchDialog(wx.Dialog):
         fname = self.wids['grouplist'].GetStringSelection()
         new_fname = self.wids['save_as_name'].GetValue()
         ngroup = self.controller.copy_group(fname, new_filename=new_fname)
-        xdat, ydat = self.get_xydata(datatype='mu')
+        xplot, yplot = self.get_xydata(datatype='mu')
         mask = self.xmasks[-1]
-        energies_removed  = xdat[np.where(~mask)].tolist()
+        energies_removed  = xplot[np.where(~mask)].tolist()
 
-        ngroup.energy = ngroup.xdat = xdat[mask]
-        ngroup.mu     = ngroup.ydat = ydat[mask]
+        ngroup.energy = ngroup.xplot = xplot[mask]
+        ngroup.mu     = ngroup.yplot = yplot[mask]
         ngroup.energy_orig = 1.0*ngroup.energy
 
         ogroup = self.controller.get_group(fname)
@@ -1328,12 +1328,12 @@ class DeglitchDialog(wx.Dialog):
     def plot_results(self, event=None, keep_limits=True):
         ppanel = self.controller.get_display(stacked=False).panel
 
-        xdat, ydat = self.data
+        xplot, yplot = self.data
 
-        xmin = min(xdat) - 0.025*(max(xdat) - min(xdat))
-        xmax = max(xdat) + 0.025*(max(xdat) - min(xdat))
-        ymin = min(ydat) - 0.025*(max(ydat) - min(ydat))
-        ymax = max(ydat) + 0.025*(max(ydat) - min(ydat))
+        xmin = min(xplot) - 0.025*(max(xplot) - min(xplot))
+        xmax = max(xplot) + 0.025*(max(xplot) - min(xplot))
+        ymin = min(yplot) - 0.025*(max(yplot) - min(yplot))
+        ymax = max(yplot) + 0.025*(max(yplot) - min(yplot))
 
         dgroup = self.dgroup
 
@@ -1361,12 +1361,12 @@ class DeglitchDialog(wx.Dialog):
 
         xlim, ylim = get_view_limits(ppanel)
 
-        ppanel.plot(xdat, ydat, zorder=10, marker=None, linewidth=3,
+        ppanel.plot(xplot, yplot, zorder=10, marker=None, linewidth=3,
                     label='original', ylabel=ylabel, **opts)
 
         if len(self.xmasks) > 1:
             mask = self.xmasks[-1]
-            ppanel.oplot(xdat[mask], ydat[mask], zorder=15,
+            ppanel.oplot(xplot[mask], yplot[mask], zorder=15,
                          marker='o', markersize=3, linewidth=2.0,
                          label='current', show_legend=True, **opts)
 
@@ -1521,7 +1521,7 @@ class SpectraCalcDialog(wx.Dialog):
         group_a = self.group_a = groups.pop('a')
         xname = 'energy'
         if not hasattr(group_a, xname):
-            xname = 'xdat'
+            xname = 'xplot'
 
         cmds = [SPECCALC_SETUP.format(group=group_a.groupname,
                                       xname=xname, yname=self.yname)]
@@ -1985,7 +1985,7 @@ class LoadSessionDialog(wx.Frame):
         self.grouplist.SetCheckedStrings([])
 
     def onShowGroup(self, event=None):
-        """column selections changed calc xdat and ydat"""
+        """column selections changed calc xplot and yplot"""
         fname = event.GetString()
         gname = self.allgroups.get(fname, None)
         if gname in self.session.symbols:
@@ -2000,21 +2000,21 @@ class LoadSessionDialog(wx.Frame):
         grp = self.session.symbols[gname]
         plottype = SESSION_PLOTS.get(self.wids['plotopt'].GetStringSelection(), 'norm')
         xdef = np.zeros(1)
-        xdat = getattr(grp, 'energy', xdef)
-        ydat = getattr(grp, 'mu', xdef)
+        xplot = getattr(grp, 'energy', xdef)
+        yplot = getattr(grp, 'mu', xdef)
         xlabel = plotlabels.energy
         ylabel = plotlabels.mu
         if plottype == 'norm' and hasattr(grp, 'norm'):
-            ydat = getattr(grp, 'norm', xdef)
+            yplot = getattr(grp, 'norm', xdef)
             ylabel = plotlabels.norm
         elif plottype == 'chikw' and hasattr(grp, 'chi'):
-            xdat = getattr(grp, 'k', xdef)
-            ydat = getattr(grp, 'chi', xdef)
-            ydat = ydat*xdat*xdat
+            xplot = getattr(grp, 'k', xdef)
+            yplot = getattr(grp, 'chi', xdef)
+            yplot = yplot*xplot*xplot
             xlabel = plotlabels.chikw.format(2)
 
-        if len(ydat) > 1:
-            self.plotpanel.plot(xdat, ydat, xlabel=xlabel,
+        if len(yplot) > 1:
+            self.plotpanel.plot(xplot, yplot, xlabel=xlabel,
                                 ylabel=ylabel, title=fname)
 
 

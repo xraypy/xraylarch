@@ -35,14 +35,14 @@ PLOTOPTS_D = dict(style='solid', zorder=2, side='right', marker='None')
 
 Plot_EnergyRanges = {'full X range': None }
 
-PlotOne_Choices = {'XY Data': 'ydat',
+PlotOne_Choices = {'XY Data': 'yplot',
                    'Scaled Data': 'ynorm',
                    'Derivative ': 'dydx',
-                   'XY Data + Derivative': 'ydat+dydx',
+                   'XY Data + Derivative': 'yplot+dydx',
                    'Scaled Data + Derivative': 'ynorm+dydx',
                    }
 
-PlotSel_Choices = {'XY Data': 'ydat',
+PlotSel_Choices = {'XY Data': 'yplot',
                    'Scaled Data': 'ynorm',
                    'Derivative': 'dydx'}
 
@@ -258,7 +258,7 @@ class XYDataPanel(TaskPanel):
         ytitle = self.plotsel_op.GetStringSelection()
         yarray_name = plot_choices.get(ytitle, 'ynorm')
         ylabel = getattr(plotlabels, yarray_name, ytitle)
-        xlabel = getattr(dgroup, 'plot_xlabel', getattr(plotlabels, 'xdat'))
+        xlabel = getattr(dgroup, 'plot_xlabel', getattr(plotlabels, 'xplot'))
 
         voff = self.wids['plot_voff'].GetValue()
         plot_traces = []
@@ -275,7 +275,7 @@ class XYDataPanel(TaskPanel):
             dgroup = self.controller.get_group(groupname)
             if dgroup is None:
                 continue
-            trace = {'xdata': dgroup.xdat,
+            trace = {'xdata': dgroup.xplot,
                      'ydata': getattr(dgroup, yarray_name) + ix*voff,
                      'label': dgroup.filename, 'new': newplot}
             trace.update(popts)
@@ -294,7 +294,7 @@ class XYDataPanel(TaskPanel):
                 ppanel.conf.init_trace(i,  linecolors[i%ncols], 'dashed')
 
 
-        ppanel.plot_many(plot_traces, xlabel=plotlabels.xdat, ylabel=ylabel,
+        ppanel.plot_many(plot_traces, xlabel=plotlabels.xplot, ylabel=ylabel,
                          zoom_limits=zoom_limits, show_legend=True)
         set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
         ppanel.canvas.draw()
@@ -424,9 +424,9 @@ class XYDataPanel(TaskPanel):
         scale = form.get('scale', conf.get('scale', 1.0))
         gname = dgroup.groupname
         self.larch_eval(f"{gname:s}.scale = {scale:.8f}")
-        self.larch_eval(f"{gname:s}.ynorm = {gname:s}.ydat/{scale:8f}")
-        self.larch_eval(f"{gname:s}.dydx  = gradient({gname:s}.ynorm)/gradient({gname:s}.xdat)")
-        self.larch_eval(f"{gname:s}.d2ydx  = gradient({gname:s}.d2ydx)/gradient({gname:s}.xdat)")
+        self.larch_eval(f"{gname:s}.ynorm = {gname:s}.yplot/{scale:8f}")
+        self.larch_eval(f"{gname:s}.dydx  = gradient({gname:s}.ynorm)/gradient({gname:s}.xplot)")
+        self.larch_eval(f"{gname:s}.d2ydx  = gradient({gname:s}.d2ydx)/gradient({gname:s}.xplot)")
         self.unset_skip_process()
         return
 
@@ -437,7 +437,7 @@ class XYDataPanel(TaskPanel):
             return
 
         dgroup.plot_y2label = None
-        dgroup.plot_xlabel = plotlabels.xdat
+        dgroup.plot_xlabel = plotlabels.xplot
         dgroup.plot_yarrays = [('ynorm', PLOTOPTS_1, lab)]
 
         '''
@@ -445,13 +445,13 @@ class XYDataPanel(TaskPanel):
             pchoice = PlotOne_Choices_nonxas.get(self.plotone_op.GetStringSelection(), 'norm')
             dgroup.plot_xlabel = 'x'
             dgroup.plot_ylabel = 'y'
-            dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, 'ydat')]
-            dgroup.dmude = np.gradient(dgroup.ydat)/np.gradient(dgroup.xdat)
-            dgroup.d2mude = np.gradient(dgroup.dmude)/np.gradient(dgroup.xdat)
+            dgroup.plot_yarrays = [('yplot', PLOTOPTS_1, 'yplot')]
+            dgroup.dmude = np.gradient(dgroup.yplot)/np.gradient(dgroup.xplot)
+            dgroup.d2mude = np.gradient(dgroup.dmude)/np.gradient(dgroup.xplot)
             if not hasattr(dgroup, 'scale'):
                 dgroup.scale = 1.0
 
-            dgroup.norm = dgroup.ydat/dgroup.scale
+            dgroup.norm = dgroup.yplot/dgroup.scale
             if pchoice == 'dmude':
                 dgroup.plot_ylabel = 'dy/dx'
                 dgroup.plot_yarrays = [('dmude', PLOTOPTS_1, 'dy/dx')]
@@ -477,7 +477,7 @@ class XYDataPanel(TaskPanel):
 
         pchoice = PlotOne_Choices.get(self.plotone_op.GetStringSelection(), 'ynorm')
 
-        if pchoice in ('ydat', 'i0', 'ynorm', 'dydx', 'd2ydx'):
+        if pchoice in ('yplot', 'i0', 'ynorm', 'dydx', 'd2ydx'):
             lab = getattr(plotlabels, pchoice)
             dgroup.plot_yarrays = [(pchoice, PLOTOPTS_1, lab)]
 
@@ -501,7 +501,7 @@ class XYDataPanel(TaskPanel):
         if needs_proc:
             self.process(dgroup=dgroup, force=True)
 
-        y4e0 = dgroup.ydat = getattr(dgroup, dgroup.plot_yarrays[0][0], dgroup.ydat)
+        y4e0 = dgroup.yplot = getattr(dgroup, dgroup.plot_yarrays[0][0], dgroup.yplot)
         dgroup.plot_extras = []
 
         popts = {'marker': 'o', 'markersize': 5,
@@ -528,7 +528,7 @@ class XYDataPanel(TaskPanel):
         if groupname is None:
             return
 
-        if not hasattr(dgroup, 'xdat'):
+        if not hasattr(dgroup, 'xplot'):
             print("Cannot plot group ", groupname)
 
         if ((getattr(dgroup, 'plot_yarrays', None) is None or
@@ -593,8 +593,8 @@ class XYDataPanel(TaskPanel):
             popts['delay_draw'] = delay_draw
 
             if yaname == 'i0' and not hasattr(dgroup, yaname):
-                dgroup.i0 = np.ones(len(dgroup.xdat))
-            plotcmd(dgroup.xdat, getattr(dgroup, yaname)+yoff, linewidth=linewidth, **popts)
+                dgroup.i0 = np.ones(len(dgroup.xplot))
+            plotcmd(dgroup.xplot, getattr(dgroup, yaname)+yoff, linewidth=linewidth, **popts)
             plotcmd = ppanel.oplot
 
         if with_extras and plot_extras is not None:

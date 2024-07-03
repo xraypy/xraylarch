@@ -126,9 +126,9 @@ if not hasattr({group}.prepeaks, 'fit_history'): {group}.prepeaks.fit_history = 
 """
 
 COMMANDS['prepeaks_setup'] = """# setup prepeaks
-if not hasattr({group}, 'energy'): {group:s}.energy = 1.0*{group:s}.xdat
-{group:s}.xdat = 1.0*{group:s}.energy
-{group:s}.ydat = 1.0*{group:s}.{array_name:s}
+if not hasattr({group}, 'energy'): {group:s}.energy = 1.0*{group:s}.xplot
+{group:s}.xplot = 1.0*{group:s}.energy
+{group:s}.yplot = 1.0*{group:s}.{array_name:s}
 prepeaks_setup(energy={group:s}, arrayname='{array_name:s}', elo={elo:.3f}, ehi={ehi:.3f},
                emin={emin:.3f}, emax={emax:.3f})
 """
@@ -136,7 +136,7 @@ prepeaks_setup(energy={group:s}, arrayname='{array_name:s}', elo={elo:.3f}, ehi=
 COMMANDS['set_yerr_const'] = "{group}.prepeaks.norm_std = {group}.yerr*ones(len({group}.prepeaks.norm))"
 COMMANDS['set_yerr_array'] = """
 {group}.prepeaks.norm_std = 1.0*{group}.yerr[{imin:d}:{imax:d}]
-yerr_min = 1.e-9*{group}.prepeaks.ydat.mean()
+yerr_min = 1.e-9*{group}.prepeaks.yplot.mean()
 {group}.prepeaks.norm_std[where({group}.yerr < yerr_min)] = yerr_min
 """
 
@@ -509,11 +509,11 @@ class PrePeakFitResultFrame(wx.Frame):
         pkfit = self.get_fitresult()
         result = pkfit.result
         if outfile is not None:
-            i1, i2 = get_xlims(dgroup.xdat,
+            i1, i2 = get_xlims(dgroup.xplot,
                                pkfit.user_options['emin'],
                                pkfit.user_options['emax'])
-            x = dgroup.xdat[i1:i2]
-            y = dgroup.ydat[i1:i2]
+            x = dgroup.xplot[i1:i2]
+            y = dgroup.yplot[i1:i2]
             yerr = None
             if hasattr(dgroup, 'yerr'):
                 yerr = 1.0*dgroup.yerr
@@ -942,8 +942,8 @@ class PrePeakPanel(TaskPanel):
         bline_form  = opts.get('baseline_form', 'no baseline')
         if bline_form.startswith('no base'):
             return
-        cmd = """{gname:s}.ydat = 1.0*{gname:s}.{array_name:s}
-pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s}, form='{baseline_form:s}',
+        cmd = """{gname:s}.yplot = 1.0*{gname:s}.{array_name:s}
+pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.yplot, group={gname:s}, form='{baseline_form:s}',
 elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})"""
         self.larch_eval(cmd.format(**opts))
 
@@ -1280,10 +1280,9 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         xmin, xmax = min(xcur), max(xcur)
 
         dgroup = getattr(self.larch.symtable, self.controller.groupname)
-        x, y = dgroup.xdat, dgroup.ydat
-        i0 = index_of(dgroup.xdat, xmin)
-        i1 = index_of(dgroup.xdat, xmax)
-        x, y = dgroup.xdat[i0:i1+1], dgroup.ydat[i0:i1+1]
+        i0 = index_of(dgroup.xplot, xmin)
+        i1 = index_of(dgroup.xplot, xmax)
+        x, y = dgroup.xplot[i0:i1+1], dgroup.yplot[i0:i1+1]
 
         mod = self.pick2_group.mclass(prefix=self.pick2_group.prefix)
         parwids = self.pick2_group.parwids
@@ -1299,10 +1298,10 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             if name in parwids:
                 parwids[name].value.SetValue(param.value)
 
-        dgroup._tmp = mod.eval(guesses, x=dgroup.xdat)
+        dgroup._tmp = mod.eval(guesses, x=dgroup.xplot)
         plotframe = self.controller.get_display(win=1)
         plotframe.cursor_hist = []
-        plotframe.oplot(dgroup.xdat, dgroup._tmp)
+        plotframe.oplot(dgroup.xplot, dgroup._tmp)
         self.pick2erase_panel = plotframe.panel
 
         self.pick2erase_timer.Start(60000)
@@ -1475,7 +1474,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                     bkg_comps.append(label)
 
             opts['bkg_components'] = bkg_comps
-            imin, imax = self.get_xranges(dgroup.xdat)
+            imin, imax = self.get_xranges(dgroup.xplot)
             cmds = ["## do peak fit for group %s / %s " % (gname, dgroup.filename) ]
 
             yerr_type = 'set_yerr_const'
@@ -1535,7 +1534,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                 bkg_comps.append(label)
         opts['bkg_components'] = bkg_comps
 
-        imin, imax = self.get_xranges(dgroup.xdat)
+        imin, imax = self.get_xranges(dgroup.xplot)
 
         cmds = ["## do peak fit: "]
         yerr_type = 'set_yerr_const'
