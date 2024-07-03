@@ -132,8 +132,8 @@ def prepeaks_setup(energy, norm=None, arrayname=None, group=None, emin=None, ema
         group.prepeaks.elo = elo
         group.prepeaks.ehi = ehi
 
-    group.prepeaks.xdat = edat
-    group.prepeaks.ydat = norm
+    group.prepeaks.xplot = edat
+    group.prepeaks.yplot = norm
     return
 
 @Make_CallArgs(["energy", "norm"])
