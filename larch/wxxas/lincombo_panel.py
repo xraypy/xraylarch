@@ -532,8 +532,7 @@ class LinComboResultFrame(wx.Frame):
             out.append(compdata)
 
         label = ' '.join(label)
-        _larch = self.parent.controller.larch
-        write_ascii(path, header=header, label=label, _larch=_larch, *out)
+        write_ascii(path, header=header, label=label, *out)
 
 
     def onSaveGroupStats(self, evt=None):
@@ -580,8 +579,7 @@ class LinComboResultFrame(wx.Frame):
             out.append(dat)
 
         out = np.array(out).transpose()
-        _larch = self.parent.controller.larch
-        write_ascii(path, header=header, label=label, _larch=_larch, *out)
+        write_ascii(path, header=header, label=label, *out)
 
     def onSaveGroupMultiFits(self, evt=None):
         "Save Data and Best N Fits for the current group"
@@ -612,8 +610,7 @@ class LinComboResultFrame(wx.Frame):
         for i, res in enumerate(results):
             out.append(results[i].yfit)
 
-        _larch = self.parent.controller.larch
-        write_ascii(path, header=header, label=label, _larch=_larch, *out)
+        write_ascii(path, header=header, label=label, *out)
 
     def onSaveAllStats(self, evt=None):
         "Save All Statistics and Weights "
