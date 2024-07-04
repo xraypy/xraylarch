@@ -180,7 +180,7 @@ class SpecfileImporter(wx.Frame) :
         yerrval_lab = SimpleText(panel, ' Value:')
 
         self.ysuf = SimpleText(panel, '')
-        self.message = SimpleText(panel, '', font=Font(11),
+        self.message = SimpleText(panel, '-', font=Font(11),
                            colour=self.colors.title, style=LEFT)
 
         self.ypop.SetStringSelection(self.config['ypop'])
@@ -208,9 +208,6 @@ class SpecfileImporter(wx.Frame) :
         self.yarr1.SetSelection(iysel)
         self.yarr2.SetSelection(iy2sel)
         self.yerr_arr.SetSelection(iyesel)
-
-        self.info_message = SimpleText(panel, '    ', font=Font(12),
-                                       colour=wx.Colour(100, 10, 10), style=LEFT)
 
         bpanel = wx.Panel(panel)
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -524,7 +521,7 @@ class SpecfileImporter(wx.Frame) :
             buff.append(f"mono_dspace = {dspace:.9f}")
             buff.append(f"{{group}}.xplot = PLANCK_HC/(2*mono_dspace*sin(DEG2RAD*({expr:s})))")
         elif en_units.startswith('keV'):
-            buff.append(f"{{group}}.xdplot = 1000.0*{xexpr:s}")
+            buff.append(f"{{group}}.xplot = 1000.0*{xexpr:s}")
         else:
             buff.append(f"{{group}}.xplot = {xexpr:s}")
 
@@ -643,7 +640,7 @@ class SpecfileImporter(wx.Frame) :
         conf.update(cout)
 
         if energy_may_need_rebinning(workgroup):
-            self.info_message.SetLabel("Warning: XAS data may need to be rebinned!")
+            self.message.SetLabel("Warning: XAS data may need to be rebinned!")
 
         path, fname = os.path.split(workgroup.filename)
         popts = dict(marker='o', markersize=4, linewidth=1.5, title=fname,
