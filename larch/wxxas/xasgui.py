@@ -1053,7 +1053,7 @@ before clearing"""
     def onGroupJournal(self, event=None):
         dgroup = self.controller.get_group()
         if dgroup is not None:
-            self.show_subframe('group_journal', GroupJournalFrame, parent=self)
+            self.show_subframe('group_journal', GroupJournalFrame)
             self.subframes['group_journal'].set_group(dgroup)
 
 
@@ -1197,6 +1197,7 @@ before clearing"""
             OverAbsorptionDialog(self, self.controller).Show()
 
     def onSpectraCalc(self, event=None):
+
         if self.has_datagroup():
             SpectraCalcDialog(self, self.controller).Show()
 

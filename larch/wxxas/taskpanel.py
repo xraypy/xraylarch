@@ -104,7 +104,7 @@ class GroupJournalFrame(wx.Frame):
 
         self.parent.timers['journal_updater'] = wx.Timer(self.parent)
         self.parent.Bind(wx.EVT_TIMER, self.onRefresh,
-                         self.parentd.timers['journal_updater'])
+                         self.parent.timers['journal_updater'])
         self.Bind(wx.EVT_CLOSE,  self.onClose)
         self.SetSize((950, 725))
         self.Show()
