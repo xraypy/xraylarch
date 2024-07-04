@@ -591,7 +591,7 @@ class ColumnDataFileFrame(wx.Frame) :
         self.path = filename
 
         group = self.read_column_file(self.path)
-
+        print("COLUMN FILE Read ", self.path, getattr(group, 'datatype', '?'))
         self.subframes = {}
         self.workgroup  = Group(raw=group)
         for attr in ('path', 'filename', 'groupname', 'datatype',
@@ -600,14 +600,20 @@ class ColumnDataFileFrame(wx.Frame) :
 
         self.array_labels = [l.lower() for l in group.array_labels]
 
+        has_energy = False
+        en_units = 'unknown'
+        for arrlab in self.array_labels[:4]:
+            arrlab  = arrlab.lower()
+            if arrlab.startswith('en') or 'ener' in arrlab:
+                en_units = 'eV'
+                has_energy = True
+
+
         if self.workgroup.datatype is None:
+            if has_energy:
+                self.workgroup.datatype = 'xas'
             self.workgroup.datatype = 'xydata'
-            en_units = 'not energy'
-            for arrlab in self.array_labels[:3]:
-                arrlab  = arrlab.lower()
-                if arrlab.startswith('en') or 'ener' in arrlab:
-                    en_units = 'eV'
-                    self.workgroup.datatype = 'xas'
+        en_units = 'eV' if self.workgroup.datatype == 'xas' else 'unknown'
 
         self.read_ok_cb = read_ok_cb
         self.config = dict(xarr=None, yarr1=None, yarr2=None, yop='/',
@@ -615,12 +621,10 @@ class ColumnDataFileFrame(wx.Frame) :
                            yerr_op='constant', yerr_val=1, yerr_arr=None,
                            yrpop='', yrop='/', yref1='', yref2='',
                            has_yref=False, dtc_config={}, multicol_config={})
-        # print(" READ COL FILE xxx ", config)
         if config is not None:
+            if 'datatype' in config:
+                config.pop('datatype')
             self.config.update(config)
-            dtype = config.get('datatype', None)
-            if dtype in ('xas', 'xydata'):
-                self.workgroup.datatype = dtype
 
         if self.config['yarr2'] is None and 'i0' in self.array_labels:
             self.config['yarr2'] = 'i0'
@@ -1120,7 +1124,7 @@ class ColumnDataFileFrame(wx.Frame) :
             buff.append(f"{{group}}.{aname} = {expr}")
 
 
-            if getattr(self.workgroup, 'datatype', 'xytype') == 'xas':
+        if getattr(self.workgroup, 'datatype', 'xytype') == 'xas':
             if self.reader == 'read_gsescan':
                 buff.append("{group}.xplot = {group}.x")
             buff.append("{group}.energy = {group}.xplot")

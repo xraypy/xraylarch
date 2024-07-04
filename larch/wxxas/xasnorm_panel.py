@@ -623,7 +623,7 @@ class XASNormPanel(TaskPanel):
         if auto_nnorm:
             nnorm = get_auto_nnorm(self.wids['norm1'].GetValue(),
                                    self.wids['norm2'].GetValue())
-        self.set_nnorm_widget(nnorm)
+            self.set_nnorm_widget(nnorm)
 
         defaults = self.get_defaultconfig()
 

@@ -616,7 +616,7 @@ class LarixFrame(wx.Frame):
         if dgroup is None:
             return
 
-        print("This ShowFile ", groupname, getattr(dgroup, 'datatype', 'xydata'))
+        # print("This ShowFile ", groupname, getattr(dgroup, 'datatype', 'xydata'))
 
         if (getattr(dgroup, 'datatype', 'xydata').startswith('xa') and not
             (hasattr(dgroup, 'norm') and hasattr(dgroup, 'e0'))):
@@ -639,7 +639,7 @@ class LarixFrame(wx.Frame):
         self.controller.group = dgroup
         self.controller.groupname = groupname
         cur_panel = self.nb.GetCurrentPage()
-        print("Got CUR PANEL  ", cur_panel)
+        # print("Got CUR PANEL  ", cur_panel)
         if process:
             cur_panel.fill_form(dgroup)
             cur_panel.skip_process = False
@@ -1365,19 +1365,6 @@ before clearing"""
             self.onLoadSession(path=path)
             return
 
-        # check XAS data source (HDF5 and SPEC)
-        # try:
-        #     data_source = open_xas_source(path)
-        # except Exception:
-        #     pass
-        # else:
-        #     self.show_subframe('xas_import', XasImporter,
-        #                     filename=path,
-        #                     data_source=data_source,
-        #                     _larch=self.larch_buffer.larchshell,
-        #                     last_array_sel=self.last_array_sel_spec,
-        #                     read_ok_cb=self.onReadXasDataSource_OK)
-        #     return
 
         # default to Column File
         self.show_subframe('readfile', ColumnDataFileFrame, filename=path,
@@ -1809,8 +1796,8 @@ before clearing"""
         dtype = getattr(dgroup, 'datatype', 'xydata')
         startpage = 'xasnorm' if dtype == 'xas' else 'xydata'
         ipage, pagepanel = self.get_nbpage(startpage)
-        print("START PAGE ", dgroup, dtype, startpage)
-        print("..get_nbpage says::  ", startpage, ipage, pagepanel)
+        # print("START PAGE ", dgroup, dtype, startpage)
+        # print("..get_nbpage says::  ", startpage, ipage, pagepanel)
         self.nb.SetSelection(ipage)
         self.ShowFile(groupname=groupname, filename=filename,
                       process=process, plot=plot)
