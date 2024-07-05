@@ -38,6 +38,16 @@ elif platform == 'darwin':
     FONTSIZE_FW = 12
 
 
+def DarwinHLine(parent, size=(700, 3)):
+    """Horizontal line for MacOS
+    h = HLine(parent, size=(700, 3)
+    """
+    msize = (size[0], int(size[1]*0.75))
+    line = wx.Panel(parent, size=msize)
+    line.SetBackgroundColour((196,196,196))
+    return line
+
+
 if HAS_WXPYTHON:
     from . import larchframe
     from . import larchfilling
@@ -87,6 +97,12 @@ if HAS_WXPYTHON:
 
     from . import xafsplots
     from .xafsplots import plotlabels
+
+    if platform == 'darwin':
+        HLine = DarwinHLine
+
+    FONTSIZE_FW = 12
+
 
     _larch_builtins['_plotter'] = dict(plot=_plot, oplot=_oplot,
                                        newplot=_newplot, plot_text=_plot_text,
