@@ -2,16 +2,16 @@ import time
 import sys
 import os
 import locale
+from  threading import Thread
 import wx
-from wx.adv import AboutBox, AboutDialogInfo, SplashScreen
-import wx.adv
-import wx.lib
+import wx.adv, wx.richtext
 from  wx.lib.mixins.inspection import InspectionMixin
 
 from larch.site_config import icondir
 
 LARIX_TITLE = "Larix: XAS Visualization and Analysis"
 ICON_FILE = 'onecone.ico'
+SPLASH_STYLE = wx.adv.SPLASH_CENTRE_ON_SCREEN|wx.adv.SPLASH_TIMEOUT
 
 class LarixApp(wx.App, InspectionMixin):
     def __init__(self, _larch=None, filename=None, check_version=True,
@@ -45,21 +45,21 @@ class LarixApp(wx.App, InspectionMixin):
             self._initial_locale = wx.Locale(lang, lang[:2], lang)
             locale.setlocale(locale.LC_ALL, lang)
 
-class LarixSplashScreen(SplashScreen):
+class LarixSplashScreen(wx.adv.SplashScreen):
     def __init__(self, **kws):
         self.kws = kws
         bmp = wx.Image(os.path.join(icondir, ICON_FILE)).ConvertToBitmap()
-        SplashScreen.__init__(self, bmp,
-                              wx.adv.SPLASH_CENTRE_ON_SCREEN|wx.adv.SPLASH_TIMEOUT,
-                              8000, None, -1)
-        self.Raise()
+        wx.adv.SplashScreen.__init__(self, bmp, SPLASH_STYLE, 9000, None, -1)
+        self.import_thread = Thread(target=self.importer)
+        self.import_thread.start()
         wx.CallAfter(self.ShowMain)
 
-    def ShowMain(self):
-        self.Show()
-        wx.Yield()
+    def importer(self, evt=None):
         from larch.wxxas.xasgui import LarixFrame
 
+    def ShowMain(self):
+        self.import_thread.join()
+        from larch.wxxas.xasgui import LarixFrame
         self.frame = LarixFrame(**self.kws)
         wx.GetApp().SetTopWindow(self.frame)
         return True
