@@ -1124,14 +1124,18 @@ class ColumnDataFileFrame(wx.Frame) :
             buff.append(f"{{group}}.{aname} = {expr}")
 
 
-        if getattr(self.workgroup, 'datatype', 'xytype') == 'xas':
+        dtype = getattr(self.workgroup, 'datatype', 'xytype')
+        if dtype == 'xas':
             if self.reader == 'read_gsescan':
                 buff.append("{group}.xplot = {group}.x")
-            buff.append("{group}.energy = {group}.xplot")
-            buff.append("{group}.mu = {group}.yplot")
+            buff.append("{group}.energy = {group}.xplot[:]")
+            buff.append("{group}.mu = {group}.yplot[:]")
             buff.append("sort_xafs({group}, overwrite=True, fix_repeats=True)")
-        else:
-            buff.append("{group}.scale = 1./(ptp({group}.yplot)+1.e-15)")
+        elif dtype == 'xydata':
+            buff.append("{group}.x = {group}.xplot[:]")
+            buff.append("{group}.y = {group}.yplot[:]")
+            buff.append("{group}.scale = (ptp({group}.yplot)+1.e-15)")
+            buff.append("{group}.xshift = 0.0")
 
         array_desc = dict(xplot=self.workgroup.plot_xlabel,
                           yplot=self.workgroup.plot_ylabel,

@@ -1052,6 +1052,11 @@ class XasImporter(wx.Frame):
         if workgroup.datatype == "xas":
             workgroup.energy = workgroup.xplot
             workgroup.mu = workgroup.yplot
+        elif workgroup.datatype == 'xydata':
+            workgroup.x = workgroup.xplot[:]
+            workgroup.y = workgroup.yplot[:]
+            workgroup.xshift = 0.0
+            workgroup.scale = np.ptp(workgroup.y+1.e-15)
 
         path, fname = os.path.split(workgroup.filename)
         popts = dict(

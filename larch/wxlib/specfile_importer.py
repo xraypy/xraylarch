@@ -529,12 +529,17 @@ class SpecfileImporter(wx.Frame) :
             expr = self.expressions[aname]
             buff.append(f"{{group}}.{aname} = {expr}")
 
-        if getattr(self.workgroup, 'datatype', 'xydata') == 'xas':
-            buff.append("{group}.energy = {group}.xplot")
-            buff.append("{group}.mu = {group}.yplot")
+        dtype = getattr(self.workgroup, 'datatype', 'xytype')
+        if dtype == 'xas':
+            buff.append("{group}.energy = {group}.xplot"[:])
+            buff.append("{group}.mu = {group}.yplot[:]")
             buff.append("sort_xafs({group}, overwrite=True, fix_repeats=True)")
-        else:
-            buff.append("{group}.scale = 1./(ptp({group}.yplot)+1.e-16)")
+        elif dtype == 'xydata':
+            buff.append("{group}.x = {group}.xplot[:]")
+            buff.append("{group}.y = {group}.yplot[:]")
+            buff.append("{group}.scale = (ptp({group}.yplot)+1.e-15)")
+            buff.append("{group}.xshift = 0.0")
+
         script = "\n".join(buff)
 
         self.config['array_desc'] = dict(xplot=self.workgroup.plot_xlabel,
