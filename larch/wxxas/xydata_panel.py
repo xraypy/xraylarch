@@ -35,14 +35,14 @@ PLOTOPTS_D = dict(style='solid', zorder=2, side='right', marker='None')
 
 # Plot_EnergyRanges = {'full X range': None }
 
-PlotOne_Choices = {'XY Data': 'yplot',
+PlotOne_Choices = {'XY Data': 'y',
                    'Scaled Data': 'ynorm',
                    'Derivative ': 'dydx',
-                   'XY Data + Derivative': 'yplot+dydx',
+                   'XY Data + Derivative': 'y+dydx',
                    'Scaled Data + Derivative': 'ynorm+dydx',
                    }
 
-PlotSel_Choices = {'XY Data': 'yplot',
+PlotSel_Choices = {'XY Data': 'y',
                    'Scaled Data': 'ynorm',
                    'Derivative': 'dydx'}
 
@@ -82,7 +82,7 @@ class XYDataPanel(TaskPanel):
         voff_lab = wx.StaticText(parent=trow, label='  Y Offset:', size=(80, vxsize),
                                  style=wx.RIGHT|wx.ALIGN_CENTRE_HORIZONTAL|wx.ST_NO_AUTORESIZE)
 
-        self.plotone_op.SetSelection(1)
+        self.plotone_op.SetSelection(0)
         self.plotsel_op.SetSelection(1)
 
         tsizer = wx.GridBagSizer(3, 3)
@@ -96,11 +96,11 @@ class XYDataPanel(TaskPanel):
         pack(trow, tsizer)
 
         scale = self.add_floatspin('scale', action=self.onSet_Scale,
-                                                digits=3, increment=0.05, value=1,
+                                                digits=3, increment=0.05, value=1.0,
                                                 size=(FSIZEBIG, -1))
 
         xshift = self.add_floatspin('xshift', action=self.onSet_XShift,
-                                                digits=3, increment=0.05, value=1,
+                                                digits=3, increment=0.05, value=0.0,
                                                 size=(FSIZEBIG, -1))
 
         self.wids['is_frozen'] = Check(panel, default=False, label='Freeze Group',
@@ -130,7 +130,8 @@ class XYDataPanel(TaskPanel):
 
         add_text('Scale Factor:')
         panel.Add(scale)
-        panel.Add(CopyBtn('scale'), dcol=2, style=RIGHT)
+        panel.Add(SimpleText(panel, 'Scaled Data = Y /(Scale Factor)'))
+        panel.Add(CopyBtn('scale'), dcol=1, style=RIGHT)
 
         add_text('Shift X scale:' )
         panel.Add(xshift)
@@ -170,7 +171,8 @@ class XYDataPanel(TaskPanel):
                 fname =file2groupname('unknown_group',
                                       symtable=self._larch.symtable)
 
-        conf['xshift'] = getattr(dgroup,'xshift', conf['xshift'])
+        for attr in ('scale', 'xshift'):
+            conf[attr] = getattr(dgroup, attr, conf[attr])
 
         setattr(dgroup.config, self.configname, conf)
         return conf
@@ -184,7 +186,7 @@ class XYDataPanel(TaskPanel):
         self.plotsel_op.SetChoices(list(PlotSel_Choices.keys()))
 
         self.wids['scale'].SetValue(opts['scale'])
-        self.wids['scale'].Enable()
+        self.wids['xshift'].SetValue(opts['xshift'])
 
         frozen = opts.get('is_frozen', False)
         frozen = getattr(dgroup, 'is_frozen', frozen)
@@ -199,7 +201,6 @@ class XYDataPanel(TaskPanel):
     def read_form(self):
         "read form, return dict of values"
         form_opts = {}
-
         form_opts['scale'] = self.wids['scale'].GetValue()
         form_opts['xshift'] = self.wids['xshift'].GetValue()
         return form_opts
@@ -448,6 +449,11 @@ class XYDataPanel(TaskPanel):
             lab = getattr(plotlabels, pchoice)
             dgroup.plot_yarrays = [(pchoice, PLOTOPTS_1, lab)]
 
+        elif pchoice == 'y+dydx':
+            lab = plotlabels.y
+            dgroup.plot_y2label = lab2 = plotlabels.dydx
+            dgroup.plot_yarrays = [('y', PLOTOPTS_1, lab),
+                                   ('dydx', PLOTOPTS_D, lab2)]
         elif pchoice == 'ynorm+dydx':
             lab = plotlabels.ynorm
             dgroup.plot_y2label = lab2 = plotlabels.dydx
