@@ -96,11 +96,11 @@ class XYDataPanel(TaskPanel):
         pack(trow, tsizer)
 
         scale = self.add_floatspin('scale', action=self.onSet_Scale,
-                                                digits=3, increment=0.05, value=1.0,
+                                                digits=6, increment=0.05, value=1.0,
                                                 size=(FSIZEBIG, -1))
 
         xshift = self.add_floatspin('xshift', action=self.onSet_XShift,
-                                                digits=3, increment=0.05, value=0.0,
+                                                digits=6, increment=0.05, value=0.0,
                                                 size=(FSIZEBIG, -1))
 
         self.wids['is_frozen'] = Check(panel, default=False, label='Freeze Group',
@@ -118,6 +118,7 @@ class XYDataPanel(TaskPanel):
 
         add_text = self.add_text
         HLINEWID = 700
+
         panel.Add(SimpleText(panel, 'XY Data, General',
                              size=(650, -1), **self.titleopts), style=LEFT, dcol=4)
         panel.Add(trow, dcol=4, newrow=True)
@@ -246,8 +247,6 @@ class XYDataPanel(TaskPanel):
         dgroup = self.controller.get_group(groupname)
 
         plot_choices = PlotSel_Choices
-        if not self.is_xasgroup(dgroup):
-            plot_choices = PlotSel_Choices_nonxas
 
         ytitle = self.plotsel_op.GetStringSelection()
         yarray_name = plot_choices.get(ytitle, 'ynorm')

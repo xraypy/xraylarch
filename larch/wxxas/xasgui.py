@@ -1646,6 +1646,7 @@ before clearing"""
 
         self.larch.eval(script.format(**config))
 
+
         if config is not None:
             self.last_col_config = config
 
@@ -1662,15 +1663,20 @@ before clearing"""
 
         self.install_group(groupname, filename, source=path, journal=journal)
 
+        dtype = getattr(config, 'datatype', 'xydata')
         def install_multichans(config):
             yplotline = None
+            yarray = 'mu' if dtype == 'xas' else 'y'
             for line in script.split('\n'):
                 if line.startswith("{group}.yplot ="):
                     yplotline = line.replace("{group}", "{ngroup}")
-            mscript = '\n'.join(["{ngroup} = deepcopy({group})",
-                                 yplotline,
-                                 "{ngroup}.mu = {ngroup}.yplot",
-                                 "{ngroup}.plot_ylabel = '{ylabel}'"])
+            mscript = ["{ngroup} = deepcopy({group})",
+                       yplotline,
+                      "{ngroup}.{yarray} = {ngroup}.yplot[:]",
+                      "{ngroup}.plot_ylabel = '{ylabel}'" ]
+            if dtype == 'xydata':
+                mscript.append("{ngroup}.scale = ptp({ngroup}.y+1.e-15)")
+
             i0 = '1.0'
             if multi_i0  < len(config['array_labels']):
                 i0 = config['array_labels'][multi_i0]
@@ -1685,8 +1691,10 @@ before clearing"""
                             'yplot': ylabel,
                             'source_desc': f"{spath}: {ylabel}",
                             'yerr': array_desc['yerr'].format(group=ngroup)}
-                cmd = mscript.format(group=config['group'], ngroup=ngroup,
-                                     iy1=mchan, iy2=multi_i0, ylabel=ylabel)
+                cmd = '\n'.join(mscript).format(group=config['group'],
+                                                ngroup=ngroup, ylabel=ylabel,
+                                                iy1=mchan, iy2=multi_i0,
+                                                yarray=yarray)
                 self.larch.eval(cmd)
                 self.install_group(ngroup, fname, source=path, journal=njournal)
 
