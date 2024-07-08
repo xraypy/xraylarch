@@ -11,7 +11,7 @@ from numpy import array, exp, log, sin, arcsin
 
 from .. import Group
 from ..larchlib import get_dll
-from ..utils.strutils import bytes2str, str2bytes
+from ..utils import read_textfile, bytes2str, str2bytes
 from ..utils.physical_constants import RAD2DEG, PLANCK_HC
 
 class XDIFileStruct(Structure):
@@ -120,6 +120,14 @@ class XDIFile(object):
         """
         if filename is None and self.filename is not None:
             filename = self.filename
+
+        text = read_textfile(filename)
+        lines = text.split('\n')
+        if len(text) < 256 or len(lines) < 6:
+            msg = [f'Error reading XDIFile {filename}',
+                   'data file too small to be valid XDI']
+            raise ValueError('\n'.join(msg))
+
         pxdi = pointer(XDIFileStruct())
 
         xdilib = get_xdilib()
