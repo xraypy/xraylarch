@@ -981,7 +981,10 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
     #endif
     ppeak = dgroup.prepeaks
 
-    px0, px1, py0, py1 = extend_plotrange(dgroup.xplot, dgroup.yplot,
+    yplot = getattr(dgroup, 'yplot', getattr(dgroup, 'ydat', None))
+    xplot = getattr(dgroup, 'xplot', getattr(dgroup, 'x', None))
+
+    px0, px1, py0, py1 = extend_plotrange(xplot, yplot,
                                           xmin=ppeak.emin, xmax=ppeak.emax)
 
     title = "pre_edge baseline\n %s" % dgroup.filename
@@ -993,8 +996,6 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
                  marker='None', markersize=4, win=win, _larch=_larch)
     popts.update(kws)
 
-    yplot = dgroup.yplot
-    xplot = dgroup.xplot
     if subtract_baseline:
         xplot = ppeak.energy
         yplot = ppeak.baseline
@@ -1223,7 +1224,11 @@ def plot_pca_fit(dgroup, win=1, with_components=False, _larch=None, **kws):
                  linewidth=3, new=True, marker='None', markersize=4,
                  stacked=True, win=win, _larch=_larch)
     popts.update(kws)
-    _fitplot(result.x, result.yplot, result.yfit,
+    yplot = getattr(result, 'yplot', getattr(result, 'ydat', None))
+    if yplot is None:
+        raise ValueError('cannot find y data for PCA plot')
+
+    _fitplot(result.x, yplot, result.yfit,
              label='data', label2='PCA fit', **popts)
 
     disp = get_display(win=win, stacked=True, _larch=_larch)
