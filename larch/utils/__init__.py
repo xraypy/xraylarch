@@ -125,22 +125,11 @@ def copy_group(group, _larch=None):
     from larch import Group
     out = Group(datatype=getattr(group, 'datatype', 'unknown'),
                 copied_from=getattr(group, 'groupname', repr(group)))
-
-    class NoCopy:
-        c = 'no copy'
-
     for attr in dir(group):
-        val = NoCopy
         try:
-            val = copy.deepcopy(getattr(group, attr))
-        except ValueError:
-            try:
-                val = copy.copy(getattr(group, attr))
-            except:
-                val = NoCopy
-
-        if val != NoCopy:
-            setattr(out, attr, val)
+            setattr(out, attr, copy.deepcopy(getattr(group, attr)))
+        except:
+            print(f"cannot copy attribute {attr} from {group}")
     return out
 
 def copy_xafs_group(group, _larch=None):
