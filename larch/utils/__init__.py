@@ -139,21 +139,14 @@ def copy_xafs_group(group, _larch=None):
                 copied_from=getattr(group, 'groupname', repr(group)))
 
     for attr in dir(group):
-        do_copy = True
-        if attr in ('xdat', 'ydat', 'i0', 'data', 'yerr',
-                    'energy', 'mu'):
-            val = getattr(group, attr)*1.0
-        elif attr in ('norm', 'flat', 'deriv', 'deconv',
-                      'post_edge', 'pre_edge', 'norm_mback',
-                      'norm_vict', 'norm_poly'):
-            do_copy = False
-        else:
+        if attr not in ('norm', 'flat', 'deriv', 'deconv',
+                        'post_edge', 'pre_edge', 'norm_mback',
+                        'norm_vict', 'norm_poly'):
             try:
                 val = copy.deepcopy(getattr(group, attr))
+                setattr(out, attr, val)
             except ValueError:
-                do_copy = False
-        if do_copy:
-            setattr(out, attr, val)
+                pass
     return out
 
 
