@@ -53,7 +53,7 @@ def read_filterdata(flist, _larch):
             out[name]  = materials[name]
     return out
 
-def VarChoice(p, default=0, size=(75, -1)):
+def VarChoice(p, default=0, size=(90, -1)):
     if default in (False, 'False', 'Fix', 'No'):
         default = 0
     else:
@@ -258,7 +258,7 @@ class FitSpectraFrame(wx.Frame):
         p = GridPanel(self)
         self.selected_elems = []
         self.ptable = PeriodicTablePanel(p, multi_select=True, fontsize=11,
-                                         size=(360, 180),
+                                         size=(400, 200),
                                          tooltip_msg=tooltips['ptable'],
                                          onselect=self.onElemSelect)
         cnf = self.config
@@ -374,14 +374,14 @@ class FitSpectraFrame(wx.Frame):
                                    default=True, action=self.onUsePileupEscape)
         wids['escape_amp'] = FloatSpin(pdet, value=escape_amp,
                                          min_val=0, max_val=100, digits=3,
-                                         increment=0.01, size=(100, -1))
+                                         increment=0.01, size=(125, -1))
 
         wids['pileup_use'] = Check(pdet, label='Include Pileup in Fit',
                                    default=True,
                                    action=self.onUsePileupEscape)
         wids['pileup_amp'] = FloatSpin(pdet, value=pileup_amp,
                                          min_val=0, max_val=100, digits=3,
-                                         increment=0.01, size=(100, -1))
+                                         increment=0.01, size=(125, -1))
 
         wids['escape_amp_vary'] = VarChoice(pdet, default=True)
         wids['pileup_amp_vary'] = VarChoice(pdet, default=(pileup_amp>0.002))
@@ -389,35 +389,35 @@ class FitSpectraFrame(wx.Frame):
 
         wids['cal_slope'] = FloatSpin(pdet, value=cal_slope,
                                       min_val=0, max_val=100,
-                                      digits=4, increment=0.01, size=(100, -1))
+                                      digits=4, increment=0.01, size=(125, -1))
         wids['cal_offset'] = FloatSpin(pdet, value=cal_offset,
                                       min_val=-500, max_val=500,
-                                      digits=4, increment=0.01, size=(100, -1))
+                                      digits=4, increment=0.01, size=(125, -1))
 
         wids['cal_vary'] = Check(pdet, label='Vary Calibration in Fit', default=True)
 
         wids['det_mat'] = Choice(pdet, choices=Detector_Materials,
-                                 size=(70, -1), default=0,
+                                 size=(125, -1), default=0,
                                  action=self.onDetMaterial)
 
-        wids['det_thk'] = FloatSpin(pdet, value=0.400, size=(100, -1),
+        wids['det_thk'] = FloatSpin(pdet, value=0.400, size=(125, -1),
                                      increment=0.010, min_val=0, max_val=10,
                                      digits=4)
 
         wids['det_noise_vary'] = VarChoice(pdet, default=1)
 
-        opts = dict(size=(100, -1), min_val=0, max_val=500, digits=3,
+        opts = dict(size=(125, -1), min_val=0, max_val=500, digits=3,
                     increment=0.10)
         wids['en_xray'] = FloatSpin(pdet, value=self.mca.incident_energy,
                                     action=self.onSetXrayEnergy, **opts)
         wids['en_min'] = FloatSpin(pdet, value=en_min, **opts)
         wids['en_max'] = FloatSpin(pdet, value=en_max, **opts)
         wids['flux_in'] = FloatCtrl(pdet, value=5.e10, gformat=True,
-                                    minval=0, size=(100, -1))
+                                    minval=0, size=(125, -1))
 
         opts.update({'increment': 0.005})
         wids['det_noise'] = FloatSpin(pdet, value=det_noise, **opts)
-        wids['det_efano'] = SimpleText(pdet, size=(200, -1),
+        wids['det_efano'] = SimpleText(pdet, size=(250, -1),
                                        label='E_Fano= %.4e' % FanoFactors['Si'])
 
         opts.update(digits=1, max_val=90, min_val=0, increment=1)
@@ -432,11 +432,11 @@ class FitSpectraFrame(wx.Frame):
                        'flux_in'):
             wids[notyet].Disable()
 
-        wids['fit_toler'] = Choice(pdet, choices=FitTols, size=(90, -1))
+        wids['fit_toler'] = Choice(pdet, choices=FitTols, size=(125, -1))
         wids['fit_toler'].SetStringSelection('1.e-4')
-        wids['fit_step'] = Choice(pdet, choices=FitSteps, size=(90, -1))
+        wids['fit_step'] = Choice(pdet, choices=FitSteps, size=(125, -1))
         wids['fit_step'].SetStringSelection('1.e-4')
-        wids['fit_maxnfev'] = Choice(pdet, choices=FitMaxNFevs, size=(90, -1))
+        wids['fit_maxnfev'] = Choice(pdet, choices=FitMaxNFevs, size=(125, -1))
         wids['fit_maxnfev'].SetStringSelection('1000')
 
         pdet.AddText(' Beam Energy, Fit Range :', colour='#880000', dcol=2)
@@ -450,7 +450,7 @@ class FitSpectraFrame(wx.Frame):
         pdet.Add(wids['en_max'])
         pdet.AddText('   Fit Step Size: ', newrow=True)
         pdet.Add(wids['fit_step'])
-        pdet.AddText('Fit Tolerance: ')
+        pdet.AddText('Fit Tolerance:  ')
         pdet.Add(wids['fit_toler'])
         pdet.AddText('   Fit Max Evaluations: ', newrow=True)
         pdet.Add(wids['fit_maxnfev'])
@@ -461,7 +461,7 @@ class FitSpectraFrame(wx.Frame):
         pdet.Add(wids['cal_vary'], dcol=2)
         pdet.AddText('   Offset (keV): ', newrow=True)
         pdet.Add(wids['cal_offset'])
-        pdet.AddText('Slope (keV/bin): ')
+        pdet.AddText('Slope (keV/bin) :  ')
         pdet.Add(wids['cal_slope'])
 
         addLine(pdet)
@@ -617,7 +617,7 @@ class FitSpectraFrame(wx.Frame):
         return pan
 
     def fitresult_page(self, **kws):
-        sizer = wx.GridBagSizer(10, 5)
+        sizer = wx.GridBagSizer(3, 3)
         panel = scrolled.ScrolledPanel(self)
         # title row
         wids = self.owids
@@ -765,7 +765,7 @@ class FitSpectraFrame(wx.Frame):
         return panel
 
     def composition_page(self, **kws):
-        sizer = wx.GridBagSizer(10, 5)
+        sizer = wx.GridBagSizer(3, 3)
         panel = scrolled.ScrolledPanel(self)
         wids = self.owids
         title = SimpleText(panel, 'Composition Results', font=Font(FONTSIZE+1),
@@ -794,12 +794,12 @@ class FitSpectraFrame(wx.Frame):
                                        action=self.onCompSelectFit)
 
         self.compscale_lock = 0.0
-        wids['comp_elemchoice'] = Choice(panel, choices=[''], size=(100, -1))
+        wids['comp_elemchoice'] = Choice(panel, choices=[''], size=(125, -1))
         # action=self.onCompSetElemAbundance)
         wids['comp_elemscale'] = FloatSpin(panel, value=1.0, digits=5, min_val=0,
                                            increment=0.01,
                                            action=self.onCompSetElemAbundance)
-        wids['comp_units'] = Choice(panel, choices=CompositionUnits, size=(100, -1))
+        wids['comp_units'] = Choice(panel, choices=CompositionUnits, size=(125, -1))
         wids['comp_scale'] = FloatCtrl(panel, value=0, size=(200, -1), precision=5,
                                        minval=0, action=self.onCompSetScale)
 
@@ -1226,6 +1226,7 @@ class FitSpectraFrame(wx.Frame):
         self._larch.symtable.get_symbol('_xrfmodel')
         self.xrfmod = self._larch.symtable.get_symbol('_xrfmodel')
         floor = 1.e-12*max(self.mca.counts)
+
         if match_amplitudes:
             total = 0.0 * self.mca.counts
             for name, parr in self.xrfmod.comps.items():
@@ -1234,7 +1235,7 @@ class FitSpectraFrame(wx.Frame):
                     imax = np.where(parr > 0.99*parr.max())[0][0]
                 except:  # probably means all counts are zero
                     imax = int(len(parr)/2.0)
-                scale = 5.0*self.mca.counts[imax] / (parr[imax]+1.00)
+                scale = 2.0*self.mca.counts[imax] / (parr[imax]+1.00)
                 ampname = 'amp_%s' % nam
                 if nam in ('elastic', 'compton1', 'compton2', 'compton',
                            'background', 'pileup', 'escape'):
@@ -1242,7 +1243,7 @@ class FitSpectraFrame(wx.Frame):
                     if nam in ('background', 'pileup', 'escape'):
                         scale = 1.0
                     if nam in ('compton2',):
-                        scale /= 5.0
+                        scale *= 0.5
 
                 paramval = self.xrfmod.params[ampname].value
                 s = f"_xrfmodel.params['{ampname}'].value = {paramval*scale:.5f}"
@@ -1310,8 +1311,10 @@ class FitSpectraFrame(wx.Frame):
         self.plot_model(init=True, with_comps=False)
 
     def onFitIteration(self, iter=0, pars=None):
-        print("XRF Fit iteration %d" % iter)
+        # print("XRF Fit iteration %d" % iter)
         # self.wids['fit_message'].SetLabel("Fit iteration %d" % iter)
+        pass
+
 
     def onFitModel(self, event=None):
         self.build_model()
