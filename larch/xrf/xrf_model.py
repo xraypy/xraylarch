@@ -456,7 +456,7 @@ class XRF_Model:
                                  beta=beta, gamma=gamma)
             comp *= amp * self.atten * self.count_time
             comp += self.escape_amp * interp1d(energy-self.escape_energy, comp, energy)
-
+            comp[np.where(np.isnan(comp))] = 0.0
             self.comps[elem.symbol] = comp
             self.eigenvalues[elem.symbol] = amp
 
@@ -477,6 +477,7 @@ class XRF_Model:
                             gamma=gamma)
             comp *= amp * self.atten * self.count_time
             comp += self.escape_amp * interp1d(energy-self.escape_energy, comp, energy)
+            comp[np.where(np.isnan(comp))] = 0.0
             self.comps[p] = comp
             self.eigenvalues[p] = amp
         if self.bgr is not None:
