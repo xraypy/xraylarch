@@ -413,9 +413,9 @@ class XRFDisplayFrame(wx.Frame):
         xlines.SetFont(self.font_fixedwidth)
         self.wids['xray_lines'] = xlines
 
-        xw = (60, 110, 90, 90)
-        if platform=='win':
-            xw = (60, 110, 90, 90)
+        xw = (55, 105, 90, 95)
+        if platform=='darwin':
+            xw = (55, 80, 65, 120)
         xlines.AppendTextColumn('Line',         width=xw[0])
         xlines.AppendTextColumn('Energy(keV)',  width=xw[1])
         xlines.AppendTextColumn('Strength',     width=xw[2])
