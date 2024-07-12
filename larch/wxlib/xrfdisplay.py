@@ -19,13 +19,15 @@ import numpy as np
 import matplotlib
 from matplotlib.ticker import LogFormatter, FuncFormatter
 
-from wxmplot import PlotPanel
-from wxutils import (SimpleText, EditableListBox, Font, pack, Popup,
-                     get_icon, SetTip, Button, Check, MenuItem, Choice,
-                     FileOpen, FileSave, fix_filename, HLine, GridPanel,
-                     CEN, LEFT, RIGHT, PeriodicTablePanel)
 from pyshortcuts import platform
-from . import FONTSIZE, FONTSIZE_FW
+
+from wxmplot import PlotPanel
+from . import (SimpleText, EditableListBox, Font, pack, Popup,
+               get_icon, SetTip, Button, Check, MenuItem, Choice,
+               FileOpen, FileSave, fix_filename, HLine, GridPanel,
+               CEN, LEFT, RIGHT, PeriodicTablePanel,
+               FONTSIZE, FONTSIZE_FW)
+
 from ..math import index_of
 from ..utils import bytes2str, get_cwd
 from ..io import GSEMCA_File
@@ -132,7 +134,7 @@ class XRFDisplayFrame(wx.Frame):
         self._menus = []
         self.createMainPanel()
         self.createMenus()
-        self.SetFont(Font(9, serif=True))
+        self.SetFont(wx.Font(9, wx.SWISS, wx.NORMAL, wx.NORMAL))
         self.statusbar = self.CreateStatusBar(4)
         self.statusbar.SetStatusWidths([-5, -3, -3, -4])
         statusbar_fields = ["XRF Display", " ", " ", " "]
@@ -411,13 +413,13 @@ class XRFDisplayFrame(wx.Frame):
         xlines.SetFont(self.font_fixedwidth)
         self.wids['xray_lines'] = xlines
 
-        xw = (60, 100, 80, 100)
+        xw = (60, 110, 90, 90)
         if platform=='win':
-            xw = (65, 105, 85, 100)
-        xlines.AppendTextColumn(' Line ',         width=xw[0])
-        xlines.AppendTextColumn(' Energy(keV) ',  width=xw[1])
-        xlines.AppendTextColumn(' Strength ',     width=xw[2])
-        xlines.AppendTextColumn(' Levels ',       width=xw[3])
+            xw = (60, 110, 90, 90)
+        xlines.AppendTextColumn('Line',         width=xw[0])
+        xlines.AppendTextColumn('Energy(keV)',  width=xw[1])
+        xlines.AppendTextColumn('Strength',     width=xw[2])
+        xlines.AppendTextColumn('Levels',       width=xw[3])
         for col in (0, 1, 2, 3):
             this = xlines.Columns[col]
             this.Sortable = False
