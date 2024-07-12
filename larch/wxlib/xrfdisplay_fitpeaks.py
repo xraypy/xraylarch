@@ -141,7 +141,7 @@ Filter_Materials = ['None', 'air', 'nitrogen', 'helium', 'kapton',
 
 
 DEF_CONFIG = { "mca_name": "", "escape_use": True, "escape_amp": 0.25,
-               "pileup_use": True, "pileup_amp": 0.1, "escape_amp_vary":
+               "pileup_use": True, "pileup_amp": 0.2, "escape_amp_vary":
                True, "pileup_amp_vary": True, "cal_slope": 0.01,
                "cal_offset": 0, "cal_vary": True, "det_mat": "Si", "det_thk":
                0.4, "det_noise_vary": True,
@@ -228,12 +228,13 @@ class FitSpectraFrame(wx.Frame):
                                        action=self.onShowModel)
         self.wids['btn_fit'] = Button(pan, 'Fit Model', size=(150, -1),
                                        action=self.onFitModel)
+        self.wids['fit_message'] = SimpleText(pan, ' ', size=(300, -1), style=LEFT)
 
         pan.AddText("  XRF Spectrum: ", colour='#880000')
         pan.Add(self.wids['mca_name'], dcol=3)
         pan.Add(self.wids['btn_calc'], newrow=True)
         pan.Add(self.wids['btn_fit'])
-
+        pan.Add(self.wids['fit_message'])
         self.panels = {}
         self.panels['Beam & Detector']  = self.beamdet_page
         self.panels['Filters & Matrix'] = self.materials_page
@@ -371,11 +372,11 @@ class FitSpectraFrame(wx.Frame):
         cal_offset = getattr(mca, 'offset',  0)
         cal_slope = getattr(mca, 'slope',  0.010)
         det_noise = getattr(mca, 'det_noise',  0.035)
-        escape_amp = getattr(mca, 'escape_amp', 0.10)
+        escape_amp = getattr(mca, 'escape_amp', 0.25)
 
         if not hasattr(self.mca, 'pileup_scale'):
             self.mca.predict_pileup()
-        pileup_amp = max(0.001, getattr(mca, 'pileup_scale', 0.05))
+        pileup_amp = max(0.001, getattr(mca, 'pileup_scale', 0.25))
 
         wids = self.wids
         pdet = GridPanel(self, itemstyle=LEFT)
@@ -1322,11 +1323,13 @@ class FitSpectraFrame(wx.Frame):
     def onShowModel(self, event=None):
         self.build_model()
         self.plot_model(init=True, with_comps=False)
+        self.wids['fit_message'].SetLabel("Initial Model Built")
 
     def onFitIteration(self, iter=0, pars=None):
-        # print("XRF Fit iteration %d" % iter)
-        # self.wids['fit_message'].SetLabel("Fit iteration %d" % iter)
-        pass
+        if iter % 10 == 0:
+            nvar = len([p for p in pars.values() if p.vary])
+            print(f"XRF Fit iteration {iter}, {nvar} variables")
+        # pass
 
 
     def onFitModel(self, event=None):
@@ -1352,7 +1355,13 @@ class FitSpectraFrame(wx.Frame):
         dgroup = self._larch.symtable.get_group(self.mcagroup)
         self.xrfresults = self._larch.symtable.get_symbol(XRFRESULTS_GROUP)
 
-        xrfresult = self.xrfresults[0]
+        try:
+            xrfresult = self.xrfresults[0]
+            self.wids['fit_message'].SetLabel("Fit Complete")
+        except:
+            self.wids['fit_message'].SetLabel("fit failed, cannot get result")
+            return
+
         xrfresult.script = "%s\n%s" % (self.model_script, fit_script)
         xrfresult.label = "fit %d" % (len(self.xrfresults))
         self.plot_model(init=True, with_comps=False)

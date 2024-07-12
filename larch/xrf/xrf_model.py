@@ -508,7 +508,7 @@ class XRF_Model:
         self.fit_iter += 1
         model = self.calc_spectrum(self.best_en, params=params)
         if callable(self.iter_callback):
-            self.iter_callback(iter=self.fit_iter, pars=pars)
+            self.iter_callback(iter=self.fit_iter, pars=params)
         return ((data - model) * self.fit_weight)[self.imin:self.imax]
 
     def set_fit_weight(self, energy, counts, emin, emax, ewid=0.050):
