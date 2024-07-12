@@ -17,15 +17,16 @@ import wx.lib.scrolledpanel as scrolled
 import wx.dataview as dv
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
+from pyshortcuts import platform
 from lmfit import Parameter, Minimizer
 
-from wxutils import (SimpleText, FloatCtrl, FloatSpin, Choice, Font, pack,
-                     Button, Check, HLine, GridPanel, RowPanel, CEN, LEFT,
-                     RIGHT, FileSave, GUIColors, FRAMESTYLE, BitmapButton,
-                     SetTip, GridPanel, Popup, FloatSpinWithPin, get_icon,
-                     fix_filename, flatnotebook, PeriodicTablePanel)
+from . import (SimpleText, FloatCtrl, FloatSpin, Choice, Font, pack,
+               Button, Check, HLine, GridPanel, RowPanel, CEN, LEFT,
+               RIGHT, FileSave, GUIColors, FRAMESTYLE, BitmapButton,
+               SetTip, GridPanel, Popup, FloatSpinWithPin, get_icon,
+               fix_filename, flatnotebook, PeriodicTablePanel,
+               FONTSIZE, FONTSIZE_FW)
 
-from . import FONTSIZE, FONTSIZE_FW
 from xraydb import (material_mu, xray_edge, materials, add_material,
                     atomic_number, atomic_symbol, xray_line)
 # from .notebooks import flatnotebook
@@ -212,15 +213,17 @@ class FitSpectraFrame(wx.Frame):
         wx.Frame.__init__(self, parent, -1, 'Fit XRF Spectra',
                           size=size, style=wx.DEFAULT_FRAME_STYLE)
 
-        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.NORMAL)   # fixed width
-
+        mainfont = wx.Font(FONTSIZE_FW-1, wx.SWISS, wx.NORMAL, wx.NORMAL)
+        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL,
+                                       wx.NORMAL)
+        self.SetFont(mainfont)
 
         self.wids = {}
         self.owids = {}
 
         pan = GridPanel(self)
         self.mca_label = self.mca.label
-        self.wids['mca_name'] = SimpleText(pan, self.mca_label, size=(300, -1), style=LEFT)
+        self.wids['mca_name'] = SimpleText(pan, self.mca_label, size=(550, -1), style=LEFT)
         self.wids['btn_calc'] = Button(pan, 'Calculate Model', size=(150, -1),
                                        action=self.onShowModel)
         self.wids['btn_fit'] = Button(pan, 'Fit Model', size=(150, -1),
@@ -257,10 +260,20 @@ class FitSpectraFrame(wx.Frame):
         wids = self.wids
         p = GridPanel(self)
         self.selected_elems = []
-        self.ptable = PeriodicTablePanel(p, multi_select=True, fontsize=11,
-                                         size=(400, 200),
+        ptable_fontsize = 11 if platform=='darwin' else 9
+
+        ptpanel = wx.Panel(p)
+        self.ptable = PeriodicTablePanel(ptpanel, multi_select=True,
+                                         fontsize=ptable_fontsize,
+                                         size=(360, 180),
                                          tooltip_msg=tooltips['ptable'],
                                          onselect=self.onElemSelect)
+        ptsizer = wx.BoxSizer(wx.HORIZONTAL)
+        ptsizer.Add((50,50),  1, wx.ALIGN_LEFT|wx.GROW, 2)
+        ptsizer.Add(self.ptable, 0, wx.ALIGN_CENTER|wx.ALL, 2)
+        ptsizer.Add((5, 5), 1, wx.ALIGN_LEFT|wx.GROW, 2)
+        pack(ptpanel, ptsizer)
+
         cnf = self.config
         for name, xmax, xinc in (('step',   1, 0.005),
                                  ('gamma', 10, 0.01),
@@ -273,40 +286,41 @@ class FitSpectraFrame(wx.Frame):
                                     increment=xinc, tooltip=tooltips[name])
             wids[vname] = VarChoice(p, default=cnf[vname])
 
-        btn_from_peaks = Button(p, 'Guess Peaks', size=(150, -1),
+        btn_from_peaks = Button(p, 'Guess Peaks', size=(175, -1),
                                 action=self.onElems_GuessPeaks)
         # tooltip='Guess elements from peak locations')
-        btn_from_rois = Button(p, 'Use ROIS as Peaks', size=(150, -1),
+        btn_from_rois = Button(p, 'Use ROIS as Peaks', size=(175, -1),
                                action=self.onElems_FromROIS)
-        btn_clear_elems = Button(p, 'Clear All Peaks', size=(150, -1),
+        btn_clear_elems = Button(p, 'Clear All Peaks', size=(175, -1),
                                  action=self.onElems_Clear)
         wx.CallAfter(self.onElems_GuessPeaks)
 
         p.AddText('Elements to model:', colour='#880000', dcol=2)
-        p.Add((2, 2), newrow=True)
-        p.Add(self.ptable, dcol=5, drow=5)
+        p.Add(ptpanel, dcol=5, drow=5, pad=5,
+              style=wx.ALIGN_RIGHT|wx.ALL|wx.GROW,
+              newrow=True)
         irow = p.irow
 
-        p.Add(btn_from_peaks,   icol=6, dcol=2, irow=irow)
-        p.Add(btn_from_rois,    icol=6, dcol=2, irow=irow+1)
-        p.Add(btn_clear_elems,  icol=6, dcol=2, irow=irow+2)
+        p.Add(btn_from_peaks,   icol=5, dcol=2, irow=irow)
+        p.Add(btn_from_rois,    icol=5, dcol=2, irow=irow+1)
+        p.Add(btn_clear_elems,  icol=5, dcol=2, irow=irow+2)
         p.irow += 5
 
         p.Add((2, 2), newrow=True)
-        p.AddText('  Step: ')
+        p.AddText(' Step: ')
         p.Add(wids['peak_step'])
         p.Add(wids['peak_step_vary'])
 
-        p.AddText('  Gamma : ')
+        p.AddText(' Gamma : ')
         p.Add(wids['peak_gamma'])
         p.Add(wids['peak_gamma_vary'])
 
         p.Add((2, 2), newrow=True)
-        p.AddText('  Beta: ')
+        p.AddText(' Beta: ')
         p.Add(wids['peak_beta'])
         p.Add(wids['peak_beta_vary'])
 
-        p.AddText('  Tail: ')
+        p.AddText(' Tail: ', size=(120, -1))
         p.Add(wids['peak_tail'])
         p.Add(wids['peak_tail_vary'])
         p.Add((2, 2), newrow=True)
@@ -337,7 +351,7 @@ class FitSpectraFrame(wx.Frame):
                                         max_val=xmax, increment=xinc,
                                         tooltip=tooltips[att])
 
-                p.AddText(title)
+                p.AddText(title, size=(120, -1))
                 p.Add(wids[label])
                 p.Add(wids[f'{label:s}_vary'])
                 if newrow:
@@ -368,7 +382,6 @@ class FitSpectraFrame(wx.Frame):
 
         def addLine(pan):
             pan.Add(HLine(pan, size=(650, 3)), dcol=6, newrow=True)
-
 
         wids['escape_use'] = Check(pdet, label='Include Escape in Fit',
                                    default=True, action=self.onUsePileupEscape)
