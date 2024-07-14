@@ -1,0 +1,51 @@
+=================== FEFFIT RESULTS ====================
+[[Statistics]]
+  n_function_calls     = 36
+  n_variables          = 4
+  n_data_points        = 104
+  n_independent        = 15.2602829
+  chi_square           = 112.726669
+  reduced chi_square   = 10.0109979
+  r-factor             = 0.00272181
+  Akaike info crit     = 38.5161779
+  Bayesian info crit   = 41.4171921
+ 
+[[Variables]]
+  amp                  =  0.9305631 +/- 0.0391214  (init= 1.0000000)
+  del_e0               =  4.3577673 +/- 0.5113492  (init= 0.0000000)
+  del_r                = -0.0060167 +/- 0.0026133  (init= 0.0000000)
+  sig2                 =  0.0086697 +/- 3.0785e-4  (init= 0.0000000)
+ 
+[[Correlations]] (unreported correlations are <  0.100)
+  amp, sig2            =  0.928
+  del_e0, del_r        =  0.920
+  del_r, sig2          =  0.159
+  amp, del_r           =  0.137
+ 
+[[Dataset]]
+  unique_id            = 'dmde5wld'
+  fit space            = 'r'
+  r-range              = 1.400, 3.000
+  k-range              = 3.000, 17.000
+  k window, dk         = 'kaiser', 4.000
+  paths used in fit    = ['feffcu01.dat']
+  k-weight             = 2
+  epsilon_k            = Array(mean=6.1896e-4, std=0.0016546)
+  epsilon_r            = 0.0208038
+  n_independent        = 15.260
+ 
+[[Paths]]
+ = Path 'p3tf6mewg' = Cu K Edge
+    feffdat file = feffcu01.dat, from feff run ''
+    geometry  atom      x        y        z      ipot
+              Cu       0.0000,  0.0000,  0.0000  0 (absorber)
+              Cu       0.0000, -1.8016,  1.8016  1
+     reff   =  2.5478000
+     degen  =  12.000000
+     n*s02  =  0.9305631 +/- 0.0391214  := 'amp'
+     e0     =  4.3577673 +/- 0.5113492  := 'del_e0'
+     r      =  2.5417833 +/- 0.0026133  := 'reff + del_r'
+     deltar = -0.0060167 +/- 0.0026133  := 'del_r'
+     sigma2 =  0.0086697 +/- 3.0785e-4  := 'sig2'
+
+=======================================================

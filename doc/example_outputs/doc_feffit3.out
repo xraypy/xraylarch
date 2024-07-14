@@ -1,0 +1,104 @@
+=================== FEFFIT RESULTS ====================
+[[Statistics]]
+  n_function_calls     = 25
+  n_variables          = 5
+  n_data_points        = 390
+  n_independent        = 56.4760609
+  chi_square           = 2965.82273
+  reduced chi_square   = 57.6155727
+  r-factor             = 0.01636032
+  Akaike info crit     = 233.706924
+  Bayesian info crit   = 243.876008
+ 
+[[Variables]]
+  alpha                =  5.2949e-6 +/- 6.6608e-6  (init= 0.0000000)
+  amp                  =  0.8884690 +/- 0.0307237  (init= 1.0000000)
+  del_e0               =  5.3732949 +/- 0.6134197  (init= 2.0000000)
+  dr_off               = -3.0553e-4 +/- 0.0027193  (init= 0.0000000)
+  theta                =  232.89303 +/- 8.0553391  (init= 250.00000)
+ 
+[[Correlations]] (unreported correlations are <  0.100)
+  amp, theta           = -0.854
+  del_e0, dr_off       =  0.799
+  alpha, dr_off        = -0.380
+  alpha, del_e0        =  0.107
+ 
+[[Dataset 1 of 3]]
+  unique_id            = 'dzhvfzs6'
+  fit space            = 'r'
+  r-range              = 1.400, 3.400
+  k-range              = 3.000, 17.000
+  k window, dk         = 'kaiser', 4.000
+  paths used in fit    = ['feff0001.dat']
+  k-weight             = 2
+  epsilon_k            = Array(mean=0.0011445, std=9.5328e-4)
+  epsilon_r            = 0.0384678
+  n_independent        = 18.825
+ 
+[[Paths]]
+ = Path 'p3tf6mewg' = Cu K Edge
+    feffdat file = feff0001.dat, from feff run ''
+    geometry  atom      x        y        z      ipot
+              Cu       0.0000,  0.0000,  0.0000  0 (absorber)
+              Cu       0.0000, -1.8016,  1.8016  1
+     reff   =  2.5478000
+     degen  =  12.000000
+     n*s02  =  0.8884690 +/- 0.0307237  := 'amp'
+     e0     =  5.3732949 +/- 0.6134197  := 'del_e0'
+     r      =  2.5476294 +/- 0.0026594  := 'reff + dr_off + 10*alpha*reff'
+     deltar = -1.7063e-4 +/- 0.0026594  := 'dr_off + 10*alpha*reff'
+     sigma2 =  0.0032777 +/- 1.1337e-4  := 'sigma2_eins(10, theta)'
+
+[[Dataset 2 of 3]]
+  unique_id            = 'de4mv6pn'
+  fit space            = 'r'
+  r-range              = 1.400, 3.400
+  k-range              = 3.000, 17.000
+  k window, dk         = 'kaiser', 4.000
+  paths used in fit    = ['feff0001.dat']
+  k-weight             = 2
+  epsilon_k            = Array(mean=0.0010793, std=0.0010405)
+  epsilon_r            = 0.0362771
+  n_independent        = 18.825
+ 
+[[Paths]]
+ = Path 'p3tf6mewg' = Cu K Edge
+    feffdat file = feff0001.dat, from feff run ''
+    geometry  atom      x        y        z      ipot
+              Cu       0.0000,  0.0000,  0.0000  0 (absorber)
+              Cu       0.0000, -1.8016,  1.8016  1
+     reff   =  2.5478000
+     degen  =  12.000000
+     n*s02  =  0.8884690 +/- 0.0307237  := 'amp'
+     e0     =  5.3732949 +/- 0.6134197  := 'del_e0'
+     r      =  2.5481690 +/- 0.0025219  := 'reff + dr_off + 50*alpha*reff'
+     deltar =  3.6899e-4 +/- 0.0025219  := 'dr_off + 50*alpha*reff'
+     sigma2 =  0.0033405 +/- 1.2575e-4  := 'sigma2_eins(50, theta)'
+
+[[Dataset 3 of 3]]
+  unique_id            = 'durzhxyo'
+  fit space            = 'r'
+  r-range              = 1.400, 3.400
+  k-range              = 3.000, 17.000
+  k window, dk         = 'kaiser', 4.000
+  paths used in fit    = ['feff0001.dat']
+  k-weight             = 2
+  epsilon_k            = Array(mean=7.3125e-4, std=0.0013139)
+  epsilon_r            = 0.0245778
+  n_independent        = 18.825
+ 
+[[Paths]]
+ = Path 'p3tf6mewg' = Cu K Edge
+    feffdat file = feff0001.dat, from feff run ''
+    geometry  atom      x        y        z      ipot
+              Cu       0.0000,  0.0000,  0.0000  0 (absorber)
+              Cu       0.0000, -1.8016,  1.8016  1
+     reff   =  2.5478000
+     degen  =  12.000000
+     n*s02  =  0.8884690 +/- 0.0307237  := 'amp'
+     e0     =  5.3732949 +/- 0.6134197  := 'del_e0'
+     r      =  2.5495180 +/- 0.0029344  := 'reff + dr_off + 150*alpha*reff'
+     deltar =  0.0017180 +/- 0.0029344  := 'dr_off + 150*alpha*reff'
+     sigma2 =  0.0050382 +/- 2.9419e-4  := 'sigma2_eins(150, theta)'
+
+=======================================================
