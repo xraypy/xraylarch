@@ -66,13 +66,24 @@ def read_groups(fname):
     return out
 
 
-def save_session(fname=None, _larch=None):
+def save_session(fname=None, symbols=None, histbuff=None,
+                auto_xasgroups=False, _larch=None):
     """save all groups and data into a Larch Save File (.larix)
     A portable compressed json file, that can be loaded with `read_session()`
 
 
     Arguments:
         fname (str):   name of output save file.
+        symbols [list of obj or None]: objects to save. Default is None,
+                      saving all non-core (user-supplied) objects.
+        histbuff [list of str or None]: command history, Default is None,
+                     saving the full history of the current session.
+        auto_xasgroups [bool]: whether to automatically generate the
+                    `_xasgroups` dictionary for "XAS Groups" as used by
+                     Larix, which will include all symbols that are Groups
+                     and have both 'filename' and 'groupname' attributes.
+
+    Notes:
 
     See Also:
         read_session, load_session, clear_session
@@ -111,28 +122,45 @@ def save_session(fname=None, _larch=None):
         buff.append('##Larch %s: %s' % (attr, json.dumps(getattr(config, attr, None))))
     buff.append("##</CONFIG>")
 
-    try:
-        histbuff = _larch.input.history.get(session_only=True)
-    except:
-        histbuff = None
+
+    if histbuff is None:
+        try:
+            histbuff = _larch.input.history.get(session_only=True)
+        except:
+            histbuff = None
 
     if histbuff is not None:
         buff.append("##<Session Commands>")
         buff.extend(["%s" % l for l in histbuff])
         buff.append("##</Session Commands>")
 
-    syms = []
-    for attr in symtab.__dir__(): # insert order, not alphabetical order
-        if attr in core_groups:
-            continue
-        syms.append(attr)
-    buff.append("##<Symbols: count=%d>"  % len(syms))
+    if symbols is None:
+        symbols = []
+        for attr in symtab.__dir__(): # insert order, not alphabetical order
+            if attr not in core_groups:
+                symbols.append(attr)
+    nsyms = len(symbols)
 
-    for attr in dir(symtab):
-        if attr in core_groups:
-            continue
-        buff.append('<:%s:>' % attr)
-        buff.append(json.dumps(encode4js(getattr(symtab, attr))))
+    _xasgroups = None
+    if '_xasgroups' not in symbols and auto_xasgroups:
+        nsyms +=1
+        _xasgroups = {}
+        for s in symbols:
+            if isgroup(s):
+                gname = getattr(s, 'groupname', None)
+                fname = getattr(s, 'filename', None)
+                if gname is not None and fname is not None:
+                    _xasgroups[fname] = gname
+
+    buff.append("##<Symbols: count=%d>"  % len(symbols))
+    if _xasgroups is not None:
+        buff.append('<:_xasgroups:>')
+        buff.append(json.dumps(encode4js(_xasgrouops)))
+
+    for attr in symbols:
+        if attr not in core_groups:
+            buff.append(f'<:{attr}:>')
+            buff.append(json.dumps(encode4js(getattr(symtab, attr))))
 
     buff.append("##</Symbols>")
     buff.append("")
