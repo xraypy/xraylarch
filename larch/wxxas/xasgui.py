@@ -1620,6 +1620,10 @@ before clearing"""
         if groupname is None:
             return
         array_desc = config.get('array_desc', {})
+        if 'xplot' not in array_desc and 'xdat' in array_desc:  # back compat
+            array_desc['xplot'] = copy.copy(array_desc['xdat'])
+        if 'yplot' not in array_desc and 'ydat' in array_desc:  # back compat
+            array_desc['yplot'] = copy.copy(array_desc['ydat'])
 
         if hasattr(self.larch.symtable, groupname):
             groupname = file2groupname(filename,
@@ -1645,7 +1649,6 @@ before clearing"""
 
 
         self.larch.eval(script.format(**config))
-
 
         if config is not None:
             self.last_col_config = config

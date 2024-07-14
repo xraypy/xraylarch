@@ -1,5 +1,4 @@
 import os
-import copy
 import time
 import shutil
 from glob import glob
@@ -121,6 +120,11 @@ class XASController():
             cmds.append(f"{groupname:s}.config = group(__name__='larix config')")
 
         cmds.append(f"{groupname:s}.journal = journal({jopts:s})")
+
+        if hasattr(thisgroup, 'xdat') and not hasattr(thisgroup, 'xplot'):
+            thisgroup.xplot = deepcopy(thisgroup.xdat)
+        if hasattr(thisgroup, 'ydat') and not hasattr(thisgroup, 'yplot'):
+            thisgroup.yplot = deepcopy(thisgroup.ydat)
 
         datatype = getattr(thisgroup, 'datatype', 'xydata')
         if datatype == 'xas':
@@ -418,7 +422,7 @@ class XASController():
         for attr in dir(ogroup):
             val = getattr(ogroup, attr, None)
             if val is not None:
-                setattr(ngroup, attr, copy.deepcopy(val))
+                setattr(ngroup, attr, deepcopy(val))
 
         if new_filename is None:
             new_filename = filename + '_1'
@@ -444,7 +448,10 @@ class XASController():
 
         dgroup = self.get_group(groupname)
         if not hasattr(dgroup, 'xplot'):
-            print("Cannot plot group ", groupname)
+            if hasattr(dgroup, 'xdat'):
+                dgroup.xplot = deepcopy(dgroup.xdat)
+            else:
+                print("Cannot plot group ", groupname)
 
         if ((getattr(dgroup, 'plot_yarrays', None) is None or
              getattr(dgroup, 'energy', None) is None or
