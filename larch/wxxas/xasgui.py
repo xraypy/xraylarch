@@ -1618,7 +1618,8 @@ before clearing"""
         filename = config.get('filename', spath)
         groupname = config.get('groupname', None)
         if groupname is None:
-            return
+            groupname = file2groupname(filename,
+                                       symtable=self.larch.symtable)
         array_desc = config.get('array_desc', {})
         if 'xplot' not in array_desc and 'xdat' in array_desc:  # back compat
             array_desc['xplot'] = copy.copy(array_desc['xdat'])

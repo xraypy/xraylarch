@@ -5,6 +5,7 @@ XANES Normalization panel
 import os
 import time
 import wx
+from copy import deepcopy
 import numpy as np
 
 from functools import partial
@@ -1083,7 +1084,10 @@ class XASNormPanel(TaskPanel):
             return
 
         if not hasattr(dgroup, 'xplot'):
-            print("Cannot plot group ", groupname)
+            if hasattr(dgroup, 'xdat'):
+                dgroup.xplot = deepcopy(dgroup.xdat)
+            elif hasattr(dgroup, 'energy'):
+                dgroup.xplot = deepcopy(dgroup.energy)
 
         if ((getattr(dgroup, 'plot_yarrays', None) is None or
              getattr(dgroup, 'energy', None) is None or
