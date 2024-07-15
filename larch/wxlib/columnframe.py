@@ -1086,8 +1086,9 @@ class ColumnDataFileFrame(wx.Frame) :
             conf['multicol_config'] = {'channels': [], 'i0': conf['iy2']}
 
         self.expressions = conf['expressions']
-        filename = conf['user_filename']
+        filename = conf['filename']
         groupname = conf['groupname']
+
         conf['array_labels'] = self.workgroup.array_labels
 
         # generate script to pass back to calling program:
@@ -1298,7 +1299,7 @@ class ColumnDataFileFrame(wx.Frame) :
                 'iry2': self.yref2.GetSelection(),
                 'yrpop': self.yrpop.GetStringSelection().strip(),
                 'yrop': self.yop.GetStringSelection().strip(),
-                'user_filename': self.wid_filename.GetValue(),
+                'filename': self.wid_filename.GetValue(),
                 'groupname': fix_varname(self.wid_groupname.GetValue()),
                 'reffile': self.wid_reffilename.GetValue(),
                 'refgroup': fix_varname(self.wid_refgroupname.GetValue()),
