@@ -74,8 +74,8 @@ def save_session(fname=None, symbols=None, histbuff=None,
 
     Arguments:
         fname (str):   name of output save file.
-        symbols [list of obj or None]: objects to save. Default is None,
-                      saving all non-core (user-supplied) objects.
+        symbols [list of obj or None]: symbol names to save. Default is None,
+                      saving all non-core (user-generated) objects.
         histbuff [list of str or None]: command history, Default is None,
                      saving the full history of the current session.
         auto_xasgroups [bool]: whether to automatically generate the
@@ -145,17 +145,18 @@ def save_session(fname=None, symbols=None, histbuff=None,
     if '_xasgroups' not in symbols and auto_xasgroups:
         nsyms +=1
         _xasgroups = {}
-        for s in symbols:
-            if isgroup(s):
-                gname = getattr(s, 'groupname', None)
-                fname = getattr(s, 'filename', None)
+        for sname in symbols:
+            obj = getattr(symtab, sname, None)
+            if isgroup(obj):
+                gname = getattr(obj, 'groupname', None)
+                fname = getattr(obj, 'filename', None)
                 if gname is not None and fname is not None:
                     _xasgroups[fname] = gname
 
     buff.append("##<Symbols: count=%d>"  % len(symbols))
     if _xasgroups is not None:
         buff.append('<:_xasgroups:>')
-        buff.append(json.dumps(encode4js(_xasgrouops)))
+        buff.append(json.dumps(encode4js(_xasgroups)))
 
     for attr in symbols:
         if attr not in core_groups:
