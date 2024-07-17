@@ -500,9 +500,9 @@ endtry
         self.assertTrue(isinstance(astnode, ast.Module))
         self.assertTrue(isinstance(astnode.body[0], ast.Assign))
         self.assertTrue(isinstance(astnode.body[0].targets[0], ast.Name))
-        self.assertTrue(isinstance(astnode.body[0].value, ast.Num))
+        self.assertTrue(isinstance(astnode.body[0].value, ast.Constant))
         self.assertTrue(astnode.body[0].targets[0].id == 'x')
-        self.assertTrue(astnode.body[0].value.n == 1)
+        self.assertTrue(astnode.body[0].value.value == 1)
         dumped = self.session._larch.dump(astnode.body[0])
         self.assertTrue(dumped.startswith('Assign'))
 
