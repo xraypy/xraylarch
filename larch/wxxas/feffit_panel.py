@@ -286,7 +286,7 @@ class EditParamsFrame(wx.Frame):
         spanel = scrolled.ScrolledPanel(self, size=(500, 275))
         spanel.SetBackgroundColour('#EEEEEE')
 
-        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
+        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.NORMAL)
 
         self.dvc = dv.DataViewCtrl(spanel, style=DVSTYLE)
         self.dvc.SetFont(self.font_fixedwidth)
@@ -1796,7 +1796,7 @@ class FeffitResultFrame(wx.Frame):
                                         size=(250, -1))
         set_color(self.filelist, 'list_fg', bg='list_bg')
 
-        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
+        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.NORMAL)
 
         panel = scrolled.ScrolledPanel(splitter)
 

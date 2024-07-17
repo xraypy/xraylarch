@@ -59,7 +59,7 @@ class ParameterWidgets(object):
     wid   = ParameterPanel(parent_wid, param)
     """
     def __init__(self, parent, param,  name_size=None, prefix=None,
-                 expr_size=120, stderr_size=120, float_size=80,
+                 expr_size=125, stderr_size=120, float_size=85,
                  minmax_size=60, with_skip=False, widgets=PAR_WIDS):
 
         self.parent = parent
@@ -93,7 +93,7 @@ class ParameterWidgets(object):
             if name in (None, 'None', ''):
                 name = ''
             if name_size is None:
-                name_size = min(50, len(param.name)*10)
+                name_size = min(50, len(param.name)*10) + 10
             self.name = wx.StaticText(parent, label=name,
                                       size=(name_size, -1))
             self.widgets.append(self.name)
@@ -133,7 +133,7 @@ class ParameterWidgets(object):
 
         if 'vary' in widgets:
             vchoices = VARY_CHOICES_SKIP if with_skip else VARY_CHOICES
-            self.vary = Choice(parent, size=(90, -1),
+            self.vary = Choice(parent, size=(100, -1),
                                choices=vchoices,
                                action=self.onVaryChoice)
             self.widgets.append(self.vary)
@@ -183,7 +183,7 @@ class ParameterWidgets(object):
             elif maxval == 0:
                 bounds_choice = BOUNDS_neg
 
-            self.bounds = Choice(parent, size=(90, -1),
+            self.bounds = Choice(parent, size=(110, -1),
                                  choices=BOUNDS_CHOICES,
                                  action=self.onBOUNDSChoice)
             self.widgets.append(self.bounds)

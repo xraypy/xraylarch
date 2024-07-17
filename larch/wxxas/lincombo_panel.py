@@ -162,7 +162,7 @@ class LinComboResultFrame(wx.Frame):
 
         self.SetMinSize((650, 600))
 
-        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
+        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.NORMAL)
 
         self.wids = wids = {}
         wids['plot_one'] = Button(panel, 'Plot This Fit', size=(125, -1),
@@ -737,7 +737,7 @@ class LinearComboPanel(TaskPanel):
         coltypes = ['str', 'float:12,4', 'float:12,4', 'float:12,4']
         coldefs  = ['', 1.0/MAX_COMPONENTS, 0.0, 1.0]
 
-        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
+        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.NORMAL)
         wids['table'] = DataTableGrid(panel, nrows=MAX_COMPONENTS,
                                       collabels=collabels,
                                       datatypes=coltypes, defaults=coldefs,

@@ -222,8 +222,7 @@ class PrePeakFitResultFrame(wx.Frame):
         panel = scrolled.ScrolledPanel(splitter)
 
         panel.SetMinSize((775, 575))
-
-        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
+        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.NORMAL)
 
         # title row
         self.wids = wids = {}
@@ -300,11 +299,13 @@ class PrePeakFitResultFrame(wx.Frame):
         sizer.Add(subtitle, (irow, 1), (1, 1), LEFT)
 
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
+
         sview.SetFont(self.font_fixedwidth)
+
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
-        sview.AppendTextColumn(' Label',  width=120)
-        sview.AppendTextColumn(' N_data', width=75)
-        sview.AppendTextColumn(' N_vary', width=75)
+        sview.AppendTextColumn('Label',  width=120)
+        sview.AppendTextColumn('N_data', width=75)
+        sview.AppendTextColumn('N_vary', width=75)
         sview.AppendTextColumn('\u03c7\u00B2', width=110)
         sview.AppendTextColumn('reduced \u03c7\u00B2', width=110)
         sview.AppendTextColumn('Akaike Info', width=110)
@@ -758,22 +759,22 @@ class PrePeakPanel(TaskPanel):
         ppeak_emax = self.add_floatspin('ppeak_emax', value=0, **fsopts)
 
         self.loadresults_btn = Button(pan, 'Load Fit Result',
-                                      action=self.onLoadFitResult, size=(150, -1))
+                                      action=self.onLoadFitResult, size=(165, -1))
         self.showresults_btn = Button(pan, 'Show Fit Results',
-                                      action=self.onShowResults, size=(150, -1))
+                                      action=self.onShowResults, size=(165, -1))
         self.showresults_btn.Disable()
 
         self.fitbline_btn  = Button(pan,'Fit Baseline', action=self.onFitBaseline,
-                                    size=(150, -1))
+                                    size=(165, -1))
 
         self.plotmodel_btn = Button(pan,
                                     'Plot Current Model',
-                                    action=self.onPlotModel,  size=(150, -1))
+                                    action=self.onPlotModel,  size=(165, -1))
         self.fitmodel_btn = Button(pan, 'Fit Current Group',
-                                   action=self.onFitModel,  size=(150, -1))
+                                   action=self.onFitModel,  size=(165, -1))
         self.fitmodel_btn.Disable()
         self.fitselected_btn = Button(pan, 'Fit Selected Groups',
-                                   action=self.onFitSelected,  size=(150, -1))
+                                      action=self.onFitSelected,  size=(165, -1))
         self.fitselected_btn.Disable()
         self.fitmodel_btn.Disable()
 

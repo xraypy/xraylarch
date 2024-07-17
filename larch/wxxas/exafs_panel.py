@@ -134,7 +134,7 @@ class EXAFSPanel(TaskPanel):
         sx.Add(self.wids['show_ek0'], 0, LEFT, 4)
         pack(ek0_panel, sx)
 
-        wids['push_e0'] = Button(panel, 'Use as Normalization E0', size=(180, -1),
+        wids['push_e0'] = Button(panel, 'Use as Normalization E0', size=(190, -1),
                                  action=self.onPushE0)
         wids['push_e0'].SetToolTip('Use this value for E0 in the Normalization Tab')
 

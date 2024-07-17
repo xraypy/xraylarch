@@ -31,7 +31,7 @@ FONTSIZE = 10
 FONTSIZE_FW = 10
 if platform == 'win':
     FONTSIZE = 10
-    FONTSIZE_FW = 10
+    FONTSIZE_FW = 11
     locale.setlocale(locale.LC_ALL, 'C')
 elif platform == 'darwin':
     FONTSIZE = 11
@@ -100,9 +100,6 @@ if HAS_WXPYTHON:
 
     if platform == 'darwin':
         HLine = DarwinHLine
-
-    FONTSIZE_FW = 12
-
 
     _larch_builtins['_plotter'] = dict(plot=_plot, oplot=_oplot,
                                        newplot=_newplot, plot_text=_plot_text,

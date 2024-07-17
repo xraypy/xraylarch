@@ -126,7 +126,7 @@ class RegressionPanel(TaskPanel):
         coltypes = ['str', 'float:12,4', 'float:12,4', 'str']
         coldefs  = ['', 0.0, 0.0, '']
 
-        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
+        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.NORMAL)
 
         wids['table'] = DataTableGrid(panel, nrows=MAX_ROWS,
                                       collabels=collabels,
