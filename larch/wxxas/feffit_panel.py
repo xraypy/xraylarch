@@ -1738,7 +1738,7 @@ class FeffitPanel(TaskPanel):
 class FeffitResultFrame(wx.Frame):
     def __init__(self, parent=None, feffit_panel=None, datagroup=None, **kws):
         wx.Frame.__init__(self, None, -1, title='Feffit Results',
-                          style=FRAMESTYLE, size=(950, 700), **kws)
+                          style=FRAMESTYLE, size=(1000, 700), **kws)
 
         self.outforms = {'chik': 'chi(k), no k-weight',
                          'chikw': 'chi(k), k-weighted',
@@ -1911,14 +1911,14 @@ class FeffitResultFrame(wx.Frame):
         sview.SetFont(self.font_fixedwidth)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
         sview.AppendTextColumn(' # ', width=40)
-        sview.AppendTextColumn('Label', width=125)
-        sview.AppendTextColumn('Npaths', width=65)
-        sview.AppendTextColumn('Nvary', width=55)
-        sview.AppendTextColumn('Nidp',  width=55)
-        sview.AppendTextColumn('\u03c7\u00B2', width=70)
-        sview.AppendTextColumn('reduced \u03c7\u00B2', width=90)
-        sview.AppendTextColumn('R Factor', width=80)
-        sview.AppendTextColumn('Akaike Info', width=85)
+        sview.AppendTextColumn('Label', width=135)
+        sview.AppendTextColumn('Npaths', width=80)
+        sview.AppendTextColumn('Nvary', width=80)
+        sview.AppendTextColumn('Nidp',  width=92)
+        sview.AppendTextColumn('\u03c7\u00B2', width=92)
+        sview.AppendTextColumn('reduced \u03c7\u00B2', width=122)
+        sview.AppendTextColumn('R Factor', width=100)
+        # sview.AppendTextColumn('Akaike Info', width=85)
 
 
         for col in range(sview.ColumnCount):
@@ -1945,10 +1945,10 @@ class FeffitResultFrame(wx.Frame):
         pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         pview.SetFont(self.font_fixedwidth)
         self.wids['paramsdata'] = []
-        pview.AppendTextColumn('Parameter',         width=175)
-        pview.AppendTextColumn('Best-Fit Value',    width=125)
-        pview.AppendTextColumn('Standard Error',    width=125)
-        pview.AppendTextColumn('Info ',             width=225)
+        pview.AppendTextColumn('Parameter',         width=180)
+        pview.AppendTextColumn('Best Value',    width=140)
+        pview.AppendTextColumn('1-\u03c3 Uncertainty', width=150)
+        pview.AppendTextColumn('Info ',             width=250)
 
         for col in range(4):
             this = pview.Columns[col]
@@ -2308,7 +2308,7 @@ class FeffitResultFrame(wx.Frame):
         for i, res in enumerate(self.feffit_history):
             args = ["%d" % (i+1), res.label, "%.d" % (len(res.datasets[0].paths))]
             for attr in ('nvarys', 'n_independent', 'chi_square',
-                         'chi2_reduced', 'rfactor', 'aic'):
+                         'chi2_reduced', 'rfactor'):
                 val = getattr(res, attr)
                 if isinstance(val, int):
                     val = '%d' % val

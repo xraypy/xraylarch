@@ -303,12 +303,12 @@ class PrePeakFitResultFrame(wx.Frame):
         sview.SetFont(self.font_fixedwidth)
 
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
-        sview.AppendTextColumn('Label',  width=120)
-        sview.AppendTextColumn('N_data', width=75)
-        sview.AppendTextColumn('N_vary', width=75)
-        sview.AppendTextColumn('\u03c7\u00B2', width=110)
-        sview.AppendTextColumn('reduced \u03c7\u00B2', width=110)
-        sview.AppendTextColumn('Akaike Info', width=110)
+        sview.AppendTextColumn('Label',  width=175)
+        sview.AppendTextColumn('N_data', width=85)
+        sview.AppendTextColumn('N_vary', width=85)
+        sview.AppendTextColumn('\u03c7\u00B2', width=130)
+        sview.AppendTextColumn('reduced \u03c7\u00B2', width=130)
+        sview.AppendTextColumn('Akaike Info', width=130)
 
         for col in range(sview.ColumnCount):
             this = sview.Columns[col]
@@ -316,7 +316,7 @@ class PrePeakFitResultFrame(wx.Frame):
             this.Alignment = wx.ALIGN_RIGHT if col > 0 else wx.ALIGN_LEFT
             this.Renderer.Alignment = this.Alignment
 
-        sview.SetMinSize((725, 150))
+        sview.SetMinSize((750, 150))
 
         irow += 1
         sizer.Add(sview, (irow, 0), (1, 5), LEFT)
@@ -337,10 +337,10 @@ class PrePeakFitResultFrame(wx.Frame):
         pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         pview.SetFont(self.font_fixedwidth)
         self.wids['paramsdata'] = []
-        pview.AppendTextColumn('Parameter',         width=150)
-        pview.AppendTextColumn('Best-Fit Value',    width=125)
-        pview.AppendTextColumn('Standard Error',    width=125)
-        pview.AppendTextColumn('Info ',             width=300)
+        pview.AppendTextColumn('Parameter',         width=180)
+        pview.AppendTextColumn('Best Value',    width=140)
+        pview.AppendTextColumn('1-\u03c3 Uncertainty', width=150)
+        pview.AppendTextColumn('Info ',             width=250)
 
         for col in range(4):
             this = pview.Columns[col]
@@ -348,7 +348,7 @@ class PrePeakFitResultFrame(wx.Frame):
             this.Alignment = wx.ALIGN_RIGHT if col in (1, 2) else wx.ALIGN_LEFT
             this.Renderer.Alignment = this.Alignment
 
-        pview.SetMinSize((725, 200))
+        pview.SetMinSize((750, 200))
         pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
 
         irow += 1
