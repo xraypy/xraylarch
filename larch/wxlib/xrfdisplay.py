@@ -416,6 +416,8 @@ class XRFDisplayFrame(wx.Frame):
         xw = (55, 105, 90, 95)
         if platform=='darwin':
             xw = (55, 80, 65, 120)
+        elif platform=='win':
+            xw = (55, 120, 90, 90)
         xlines.AppendTextColumn('Line',         width=xw[0])
         xlines.AppendTextColumn('Energy(keV)',  width=xw[1])
         xlines.AppendTextColumn('Strength',     width=xw[2])
