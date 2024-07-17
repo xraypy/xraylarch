@@ -210,8 +210,6 @@ class SymbolTable(Group):
             self._sys.searchGroups.append(grp)
         self._sys.core_groups = tuple(self._sys.searchGroups[:])
 
-        # self.__callbacks = {}
-
         self._sys.modules = {'_main':self}
         for gname in self.core_groups:
             self._sys.modules[gname] = getattr(self, gname)
@@ -453,19 +451,6 @@ class SymbolTable(Group):
         sym = self._lookup(name, create=False)
         parent, child = self.get_parent(name)
         delattr(parent, child)
-
-    def clear_callbacks(self, name, index=None):
-        """clear 1 or all callbacks for a symbol
-        """
-        pass
-
-    def add_callback(self, name, func, args=None, kws=None):
-        """disabled:
-        set a callback to be called when set_symbol() is called
-        for a named variable
-        """
-        print("adding callback on symbol disabled")
-
 
     def get_parent(self, name):
         """return parent group, child name for an absolute symbol name
