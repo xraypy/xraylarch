@@ -497,8 +497,8 @@ class FeffitParamsPanel(wx.Panel):
             if any([pname.endswith('_%s' % phash) for phash in hashkeys]):
                 continue
             if pname not in self.parwids and not hasattr(par, '_is_pathparam'):
-                pwids = ParameterWidgets(self.panel, par, name_size=100,
-                                         expr_size=150,   float_size=70,
+                pwids = ParameterWidgets(self.panel, par, name_size=120,
+                                         expr_size=200,   float_size=85,
                                          with_skip=True,
                                          widgets=('name', 'value',
                                                   'minval', 'maxval',

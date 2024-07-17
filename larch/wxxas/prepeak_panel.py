@@ -1182,7 +1182,8 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             if 'expr' in hints:
                 par.expr = hints['expr']
 
-            pwids = ParameterWidgets(panel, par, name_size=100, expr_size=150,
+            pwids = ParameterWidgets(panel, par, name_size=110,
+                                     expr_size=200,
                                      float_size=80, prefix=prefix,
                                      widgets=('name', 'value',  'minval',
                                               'maxval', 'vary', 'expr'))
@@ -1196,7 +1197,8 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             pname = "%s%s" % (prefix, sname)
             if 'expr' in hint and pname not in parnames:
                 par = Parameter(name=pname, value=0, expr=hint['expr'])
-                pwids = ParameterWidgets(panel, par, name_size=100, expr_size=400,
+                pwids = ParameterWidgets(panel, par, name_size=110,
+                                         expr_size=400,
                                          float_size=80, prefix=prefix,
                                          widgets=('name', 'value', 'expr'))
                 parwids[par.name] = pwids

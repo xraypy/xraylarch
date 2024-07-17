@@ -59,7 +59,7 @@ class ParameterWidgets(object):
     wid   = ParameterPanel(parent_wid, param)
     """
     def __init__(self, parent, param,  name_size=None, prefix=None,
-                 expr_size=125, stderr_size=120, float_size=85,
+                 expr_size=150, stderr_size=120, float_size=85,
                  minmax_size=60, with_skip=False, widgets=PAR_WIDS):
 
         self.parent = parent
