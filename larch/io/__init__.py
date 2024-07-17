@@ -14,7 +14,6 @@ from .fileutils import (increment_filename, new_filename, new_dirname,
 from .columnfile import (read_ascii, write_ascii, write_group, set_array_labels,
                          guess_filereader, look_for_nans, read_fdmnes, sum_fluor_channels)
 from .xdi import read_xdi, XDIFile, XDIFileException
-from .mda import read_mda
 from .hdf5group import h5file, h5group, netcdf_file, netcdf_group
 from .xsp3_hdf5 import read_xsp3_hdf5
 from .xrf_netcdf import read_xrf_netcdf
@@ -83,7 +82,6 @@ __exports__ = dict(increment_filename=increment_filename,
                    read_gsemca=gsemca_group,
                    read_gsexdi=read_gsexdi,
                    gsexdi_deadtime_correct=gsexdi_deadtime_correct,
-                   read_mda=read_mda,
                    read_stepscan=read_stepscan,
                    read_tiff=read_tiff,
                    merge_groups=merge_groups,
