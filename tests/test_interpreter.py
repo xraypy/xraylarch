@@ -10,14 +10,8 @@ import unittest
 from sys import version_info
 from tempfile import NamedTemporaryFile
 
-PY3 = version_info[0] == 3
-PY33Plus = PY3 and version_info[1] >= 3
-PY35Plus = PY3 and version_info[1] >= 5
 
-if PY3:
-    from io import StringIO
-else:
-    from cStringIO import StringIO
+from io import StringIO
 
 from larch import Interpreter
 
@@ -29,7 +23,6 @@ try:
 except ImportError:
     print("Warning: numpy not available... functionality will be limited.")
     pass
-
 
 
 class TestCase(unittest.TestCase):
@@ -746,9 +739,9 @@ class TestEval(TestCase):
         self.assertTrue(isinstance(astnode, ast.Module))
         self.assertTrue(isinstance(astnode.body[0], ast.Assign))
         self.assertTrue(isinstance(astnode.body[0].targets[0], ast.Name))
-        self.assertTrue(isinstance(astnode.body[0].value, ast.Num))
+        self.assertTrue(isinstance(astnode.body[0].value, ast.Constant))
         self.assertTrue(astnode.body[0].targets[0].id == 'x')
-        self.assertTrue(astnode.body[0].value.n == 1)
+        self.assertTrue(astnode.body[0].value.value == 1)
         dumped = self.interp.dump(astnode.body[0])
         self.assertTrue(dumped.startswith('Assign'))
 

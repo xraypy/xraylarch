@@ -996,9 +996,9 @@ class Interpreter:
         args = [tnode.arg for tnode in node.args.args[:offset]]
         doc = None
         if (isinstance(node.body[0], ast.Expr) and
-            isinstance(node.body[0].value, ast.Str)):
+            isinstance(node.body[0].value, ast.Constant)):
             docnode = node.body[0]
-            doc = docnode.value.s
+            doc = docnode.value.value
 
         vararg = self.run(node.args.vararg)
         varkws = self.run(node.args.kwarg)
