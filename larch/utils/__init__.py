@@ -7,7 +7,6 @@ from gzip import GzipFile
 import io
 import copy
 import json
-import numpy as np
 import logging
 
 from charset_normalizer import from_bytes
