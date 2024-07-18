@@ -19,6 +19,7 @@ import wx.lib.scrolledpanel as scrolled
 
 import wx.dataview as dv
 
+from pyshortcuts import platform
 from lmfit import Parameter
 from lmfit.model import (save_modelresult, load_modelresult,
                          save_model, load_model)
@@ -1897,7 +1898,6 @@ class FeffitResultFrame(wx.Frame):
         sizer.Add(SimpleText(panel, 'Fit Label:', style=LEFT), (irow, 0), (1, 1), LEFT)
         sizer.Add(lpanel, (irow, 1), (1, 4), LEFT)
 
-
         irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(FONTSIZE+2),
                            colour=COLORS['title'], style=LEFT)
@@ -1910,16 +1910,19 @@ class FeffitResultFrame(wx.Frame):
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.SetFont(self.font_fixedwidth)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
-        sview.AppendTextColumn(' # ', width=40)
-        sview.AppendTextColumn('Label', width=135)
-        sview.AppendTextColumn('Npaths', width=80)
-        sview.AppendTextColumn('Nvary', width=80)
-        sview.AppendTextColumn('Nidp',  width=92)
-        sview.AppendTextColumn('\u03c7\u00B2', width=92)
-        sview.AppendTextColumn('reduced \u03c7\u00B2', width=122)
-        sview.AppendTextColumn('R Factor', width=100)
-        # sview.AppendTextColumn('Akaike Info', width=85)
 
+        xw = (40, 135, 80, 80, 92, 92, 122, 100)
+        if platform=='darwin':
+            xw = (30, 125, 60, 60, 75, 75, 90, 90)
+
+        sview.AppendTextColumn(' # ', width=xw[0])
+        sview.AppendTextColumn('Label', width=xw[1])
+        sview.AppendTextColumn('Npaths', width=xw[2])
+        sview.AppendTextColumn('Nvary', width=xw[3])
+        sview.AppendTextColumn('Nidp',  width=xw[4])
+        sview.AppendTextColumn('\u03c7\u00B2', width=xw[5])
+        sview.AppendTextColumn('reduced \u03c7\u00B2', width=xw[6])
+        sview.AppendTextColumn('R Factor', width=xw[7])
 
         for col in range(sview.ColumnCount):
             this = sview.Columns[col]
@@ -1945,10 +1948,14 @@ class FeffitResultFrame(wx.Frame):
         pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         pview.SetFont(self.font_fixedwidth)
         self.wids['paramsdata'] = []
-        pview.AppendTextColumn('Parameter',         width=180)
-        pview.AppendTextColumn('Best Value',    width=140)
-        pview.AppendTextColumn('1-\u03c3 Uncertainty', width=150)
-        pview.AppendTextColumn('Info ',             width=250)
+        xw = (180, 140, 150, 250)
+        if platform=='darwin':
+            xw = (180, 110, 110, 250)
+
+        pview.AppendTextColumn('Parameter',  width=xw[0])
+        pview.AppendTextColumn('Best Value', width=xw[1])
+        pview.AppendTextColumn('1-\u03c3 Uncertainty', width=xw[2])
+        pview.AppendTextColumn('Info ',     width=xw[3])
 
         for col in range(4):
             this = pview.Columns[col]

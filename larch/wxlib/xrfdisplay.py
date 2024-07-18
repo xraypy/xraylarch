@@ -432,7 +432,8 @@ class XRFDisplayFrame(wx.Frame):
 
         xlines.SetMinSize((300, 240))
         xlines.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED,
-                    self.onSelectXrayLine)
+
+        self.onSelectXrayLine)
         store = xlines.GetStore()
 
         # main layout

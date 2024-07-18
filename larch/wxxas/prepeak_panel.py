@@ -13,8 +13,8 @@ import wx.lib.scrolledpanel as scrolled
 import wx.dataview as dv
 
 from lmfit import Parameter
-
 import lmfit.models as lm_models
+from pyshortcuts import platform
 
 from larch import Group, site_config
 from larch.utils import uname, gformat, mkdir, fix_varname
@@ -302,13 +302,18 @@ class PrePeakFitResultFrame(wx.Frame):
 
         sview.SetFont(self.font_fixedwidth)
 
+        xw = (175, 85, 85, 130, 130, 130)
+        if platform=='darwin':
+            xw = (160, 75, 75, 110, 110, 120)
+
+
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
-        sview.AppendTextColumn('Label',  width=175)
-        sview.AppendTextColumn('N_data', width=85)
-        sview.AppendTextColumn('N_vary', width=85)
-        sview.AppendTextColumn('\u03c7\u00B2', width=130)
-        sview.AppendTextColumn('reduced \u03c7\u00B2', width=130)
-        sview.AppendTextColumn('Akaike Info', width=130)
+        sview.AppendTextColumn('Label',  width=xw[0])
+        sview.AppendTextColumn('N_data', width=xw[1])
+        sview.AppendTextColumn('N_vary', width=xw[2])
+        sview.AppendTextColumn('\u03c7\u00B2', width=xw[3])
+        sview.AppendTextColumn('reduced \u03c7\u00B2', width=xw[4])
+        sview.AppendTextColumn('Akaike Info', width=xw[5])
 
         for col in range(sview.ColumnCount):
             this = sview.Columns[col]
@@ -337,10 +342,14 @@ class PrePeakFitResultFrame(wx.Frame):
         pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         pview.SetFont(self.font_fixedwidth)
         self.wids['paramsdata'] = []
-        pview.AppendTextColumn('Parameter',         width=180)
-        pview.AppendTextColumn('Best Value',    width=140)
-        pview.AppendTextColumn('1-\u03c3 Uncertainty', width=150)
-        pview.AppendTextColumn('Info ',             width=250)
+
+        xw = (180, 140, 150, 250)
+        if platform=='darwin':
+            xw = (180, 110, 110, 250)
+        pview.AppendTextColumn('Parameter',  width=xw[0])
+        pview.AppendTextColumn('Best Value', width=xw[1])
+        pview.AppendTextColumn('1-\u03c3 Uncertainty', width=xw[2])
+        pview.AppendTextColumn('Info ',     width=xw[3])
 
         for col in range(4):
             this = pview.Columns[col]
