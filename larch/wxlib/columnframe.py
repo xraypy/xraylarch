@@ -1244,7 +1244,10 @@ class ColumnDataFileFrame(wx.Frame) :
         ix  = self.xarr.GetSelection()
         xname = self.xarr.GetStringSelection()
         workgroup = self.workgroup
-        ncol, npts = workgroup.data.shape
+        try:
+            ncol, npts = workgroup.data.shape
+        except (AttributeError,  ValueError):
+            return
 
         if xname.startswith('_index') or ix >= ncol:
             workgroup.xplot = 1.0*np.arange(npts)
