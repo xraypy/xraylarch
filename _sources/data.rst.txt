@@ -161,14 +161,14 @@ Reading Athena Project Files
 
 Notes:
      1. To limit the imported groups, use the pattern in `match`,
-	using '*' to match 'all', '?' to match any single character,
-	or [sequence] to match any of a sequence of letters.  The match
-	will always be insensitive to case.
+        using '*' to match 'all', '?' to match any single character,
+        or [sequence] to match any of a sequence of letters.  The match
+        will always be insensitive to case.
      2. `do_preedge`, `do_bkg`, and `do_fft` will attempt to reproduce the
-	pre-edge, background subtraction, and FFT from Athena by using
-	the parameters saved in the project file.
+        pre-edge, background subtraction, and FFT from Athena by using
+        the parameters saved in the project file.
      3. `use_hashkey=True` will name groups from the internal 5 character
-	string used by Athena, instead of the group label.
+        string used by Athena, instead of the group label.
 
 A simple example of reading an Athena Project file::
 
@@ -309,14 +309,14 @@ data heirarchy of the HDF5 file, and pick out the needed data::
     larch> show(g)
     == Group test.h5: 3 symbols ==
       attrs: {u'Collection Time': ': Sat Feb 4 13:29:00 2012', u'Version': '1.0.0',
-	      u'Beamline': 'GSECARS, 13-IDC / APS', u'Title': 'Epics Scan Data'}
+              u'Beamline': 'GSECARS, 13-IDC / APS', u'Title': 'Epics Scan Data'}
       data: <Group test.h5/data>
       h5_file: <HDF5 file "test.h5" (mode r)>
     larch>show(g.data)
     == Group test.h5/data: 5 symbols ==
       attrs: {u'scan_prefix': '13IDC:', u'start_time': ': Sat Feb 4 13:29:00 2012',
-	    u'correct_deadtime': 'True', u'dimension': 2,
-	    u'stop_time': ': Sat Feb 4 13:44:52 2009'}
+            u'correct_deadtime': 'True', u'dimension': 2,
+            u'stop_time': ': Sat Feb 4 13:44:52 2009'}
       environ: <Group test.h5/data/environ>
       full_xrf: <Group test.h5/data/full_xrf>
       merged_xrf: <Group test.h5/data/merged_xrf>
@@ -398,12 +398,6 @@ Reading Scan Data from APS Beamlines
 
 This list is minimal, but can be expanded easily to accomodate more
 facilities and beamlines.
-
-.. function:: read_mda(filename, maxdim=4)
-
-   read a binary MDA (multi-Dimensional Array) file from the Epics SScan
-   Record, and return a group based on the scans it contains.  This is not
-   very well tested -- use with caution!
 
 .. function:: read_gsescan(filename)
 

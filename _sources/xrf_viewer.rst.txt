@@ -1,7 +1,7 @@
 .. _larchxrf_app:
 
 ============================
-The Larrh XRF Application
+The Larch XRF Application
 ============================
 
 .. _wxmplot:  https://newville.github.io/wxmplot
@@ -9,3 +9,13 @@ The Larrh XRF Application
 
 
 The Larch XRF application allows display and analysis of X-ray fluorescene spectra.
+
+
+.. _xrfviewer_fig1:
+
+.. figure::  _images/xrf_display1.png
+    :target: _images/xrf_display1.png
+    :width: 85%
+    :align: center
+
+    X-ray Fluorescence spectrum in the Larch XRF Viewing App

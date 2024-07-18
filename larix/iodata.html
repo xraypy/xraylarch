@@ -6,12 +6,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>5.2. Reading and Saving Data into Larix &#8212; xraylarch 0.9.78 documentation</title>
+    <title>5.2. Reading and Saving Data into Larix &#8212; xraylarch 0.9.80 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css?v=dfcb3266" />
     
-    <script src="../_static/documentation_options.js?v=8e89ea36"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/documentation_options.js?v=d8986006"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -101,7 +101,7 @@
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -109,7 +109,7 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -195,7 +195,8 @@ reading the file</p></li>
 remembered the next time you read in data.  When reading in multiple files,
 the array choices will be assumed to be the same for all files.</p>
 <figure class="align-center" id="id1">
-<span id="fig-larix-dataimport"></span><a class="reference external image-reference" href="../_images/Larix_TextFileImport.png"><img alt="../_images/Larix_TextFileImport.png" src="../_images/Larix_TextFileImport.png" style="width: 55%;" /></a>
+<span id="fig-larix-dataimport"></span><a class="reference external image-reference" href="../_images/Larix_TextFileImport.png"><img alt="../_images/Larix_TextFileImport.png" src="../_images/Larix_TextFileImport.png" style="width: 55%;" />
+</a>
 <figcaption>
 <p><span class="caption-number">Figure 5.2.1.1 </span><span class="caption-text">Plain text Data file importer.</span><a class="headerlink" href="#id1" title="Link to this image">¶</a></p>
 </figcaption>
@@ -208,7 +209,8 @@ shown in <a class="reference internal" href="#fig-larix-athenaimporter"><span cl
 and read in.  When reading Athena Project files, many of the processing
 parameters saved in the project for each Group will be read and used by Larix.</p>
 <figure class="align-center" id="id2">
-<span id="fig-larix-athenaimporter"></span><a class="reference external image-reference" href="../_images/Larix_AthenaImporter.png"><img alt="../_images/Larix_AthenaImporter.png" src="../_images/Larix_AthenaImporter.png" style="width: 60%;" /></a>
+<span id="fig-larix-athenaimporter"></span><a class="reference external image-reference" href="../_images/Larix_AthenaImporter.png"><img alt="../_images/Larix_AthenaImporter.png" src="../_images/Larix_AthenaImporter.png" style="width: 60%;" />
+</a>
 <figcaption>
 <p><span class="caption-number">Figure 5.2.2.1 </span><span class="caption-text">Athena Project importer.</span><a class="headerlink" href="#id2" title="Link to this image">¶</a></p>
 </figcaption>
@@ -223,7 +225,8 @@ are typically ordered by the time at which they were collected.</p>
 selected.  As for all XAS data, the energy is expected to be in eV: for
 data with energy units of keV, be sure to specify the energy units!</p>
 <figure class="align-center" id="id3">
-<span id="fig-larix-h5specimporter"></span><a class="reference external image-reference" href="../_images/Larix_H5SpecImporter.png"><img alt="../_images/Larix_H5SpecImporter.png" src="../_images/Larix_H5SpecImporter.png" style="width: 75%;" /></a>
+<span id="fig-larix-h5specimporter"></span><a class="reference external image-reference" href="../_images/Larix_H5SpecImporter.png"><img alt="../_images/Larix_H5SpecImporter.png" src="../_images/Larix_H5SpecImporter.png" style="width: 75%;" />
+</a>
 <figcaption>
 <p><span class="caption-number">Figure 5.2.3.1 </span><span class="caption-text">Larch Session Importer for HDF5 Spec data files from the Bliss data
 collection at ESRF.</span><a class="headerlink" href="#id3" title="Link to this image">¶</a></p>
@@ -263,7 +266,8 @@ the configuration of the saved session (including computer name, operating
 system, versions), and the command history from that session.  Those will
 not be merged into the current session, but can be useful to inspect.</p>
 <figure class="align-center" id="id4">
-<span id="fig-larix-larix1"></span><a class="reference external image-reference" href="../_images/Larix_SessionImport.png"><img alt="../_images/Larix_SessionImport.png" src="../_images/Larix_SessionImport.png" style="width: 75%;" /></a>
+<span id="fig-larix-larix1"></span><a class="reference external image-reference" href="../_images/Larix_SessionImport.png"><img alt="../_images/Larix_SessionImport.png" src="../_images/Larix_SessionImport.png" style="width: 75%;" />
+</a>
 <figcaption>
 <p><span class="caption-number">Figure 5.2.4.1 </span><span class="caption-text">Larch Session Importer for Larix, showing XAS groups to be read
 into the existing session.</span><a class="headerlink" href="#id4" title="Link to this image">¶</a></p>
@@ -320,7 +324,7 @@ to save the Session before exiting.</p>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     </div>
   </body>
 </html>

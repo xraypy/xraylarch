@@ -25,7 +25,6 @@ that holds energy at each point (or "channel") in the array and a `counts`
 array that holds the counts in each channel.
 
 
-
 .. _xrf_fig1:
 
 .. figure::  _images/xrf_display1.png

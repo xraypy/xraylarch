@@ -6,12 +6,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>14.4. XAFS: Post-edge Background Subtraction &#8212; xraylarch 0.9.78 documentation</title>
+    <title>14.4. XAFS: Post-edge Background Subtraction &#8212; xraylarch 0.9.80 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
     
-    <script src="_static/documentation_options.js?v=8e89ea36"></script>
-    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/documentation_options.js?v=d8986006"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -114,7 +114,7 @@
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -122,7 +122,7 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -494,13 +494,15 @@ using all the default inputs would be:</p>
 <p>with the resulting outputs looking like this:</p>
 <div class="figure compound align-center" id="fig-xafs2">
 <figure class="align-center" id="id3">
-<span id="fig-xafs2a"></span><a class="reference external image-reference" href="_images/xafs_autobk1a.png"><img alt="_images/xafs_autobk1a.png" src="_images/xafs_autobk1a.png" style="width: 100%;" /></a>
+<span id="fig-xafs2a"></span><a class="reference external image-reference" href="_images/xafs_autobk1a.png"><img alt="_images/xafs_autobk1a.png" src="_images/xafs_autobk1a.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-number">Figure 14.4.3.1 </span><span class="caption-text"><span class="math notranslate nohighlight">\(\mu(E)\)</span> and background <span class="math notranslate nohighlight">\(\mu_0(E)\)</span></span><a class="headerlink" href="#id3" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <figure class="align-center" id="id4">
-<span id="fig-xafs2b"></span><a class="reference external image-reference" href="_images/xafs_autobk1b.png"><img alt="_images/xafs_autobk1b.png" src="_images/xafs_autobk1b.png" style="width: 100%;" /></a>
+<span id="fig-xafs2b"></span><a class="reference external image-reference" href="_images/xafs_autobk1b.png"><img alt="_images/xafs_autobk1b.png" src="_images/xafs_autobk1b.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-number">Figure 14.4.3.2 </span><span class="caption-text">resulting <span class="math notranslate nohighlight">\(k\chi(k)\)</span></span><a class="headerlink" href="#id4" title="Link to this image">¶</a></p>
 </figcaption>
@@ -531,10 +533,12 @@ here to demonstrate the method for passing arguments to <a class="reference inte
 <p>The resulting outputs looks OK:</p>
 <div class="figure compound align-center" id="fig-xafs3">
 <figure class="align-default" id="fig-xafs3a">
-<a class="reference external image-reference" href="_images/xafs_autobk2a.png"><img alt="_images/xafs_autobk2a.png" src="_images/xafs_autobk2a.png" style="width: 100%;" /></a>
+<a class="reference external image-reference" href="_images/xafs_autobk2a.png"><img alt="_images/xafs_autobk2a.png" src="_images/xafs_autobk2a.png" style="width: 100%;" />
+</a>
 </figure>
 <figure class="align-default" id="fig-xafs3b">
-<a class="reference external image-reference" href="_images/xafs_autobk2b.png"><img alt="_images/xafs_autobk2b.png" src="_images/xafs_autobk2b.png" style="width: 100%;" /></a>
+<a class="reference external image-reference" href="_images/xafs_autobk2b.png"><img alt="_images/xafs_autobk2b.png" src="_images/xafs_autobk2b.png" style="width: 100%;" />
+</a>
 </figure>
 <p><span class="caption-text">Example usage of <a class="reference internal" href="#autobk" title="autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> for <span class="math notranslate nohighlight">\(\rm FeAsO4 \cdot (nH_2O)\)</span>.</span></p>
 </div><p id="fig-xafs3">A close examimation of <span class="math notranslate nohighlight">\(k^2\chi(k)\)</span> suggests we might be able to do
@@ -576,7 +580,8 @@ clamp:</p>
 </div>
 <p>results in the following comparison:</p>
 <figure class="align-default" id="id5">
-<span id="xafs-fig4"></span><a class="reference external image-reference" href="_images/xafs_autobk3.png"><img alt="_images/xafs_autobk3.png" src="_images/xafs_autobk3.png" style="width: 65%;" /></a>
+<span id="xafs-fig4"></span><a class="reference external image-reference" href="_images/xafs_autobk3.png"><img alt="_images/xafs_autobk3.png" src="_images/xafs_autobk3.png" style="width: 65%;" />
+</a>
 <figcaption>
 <p><span class="caption-number">Figure 14.4.3.3 </span><span class="caption-text">Influence of spline clamps of <span class="math notranslate nohighlight">\(\chi(k)\)</span></span><a class="headerlink" href="#id5" title="Link to this image">¶</a></p>
 </figcaption>
@@ -651,7 +656,7 @@ function.</p>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     </div>
   </body>
 </html>

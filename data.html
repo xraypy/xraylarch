@@ -6,12 +6,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>11. Reading and Writing Data &#8212; xraylarch 0.9.78 documentation</title>
+    <title>11. Reading and Writing Data &#8212; xraylarch 0.9.80 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
     
-    <script src="_static/documentation_options.js?v=8e89ea36"></script>
-    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/documentation_options.js?v=d8986006"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -127,7 +127,6 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#reading-scan-data-from-aps-beamlines">11.8. Reading Scan Data from APS Beamlines</a><ul>
-<li><a class="reference internal" href="#larch.io.read_mda"><code class="docutils literal notranslate"><span class="pre">read_mda()</span></code></a></li>
 <li><a class="reference internal" href="#larch.io.read_gsescan"><code class="docutils literal notranslate"><span class="pre">read_gsescan()</span></code></a></li>
 <li><a class="reference internal" href="#larch.io.read_stepscan"><code class="docutils literal notranslate"><span class="pre">read_stepscan()</span></code></a></li>
 </ul>
@@ -169,7 +168,7 @@
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -177,7 +176,7 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -805,14 +804,6 @@ which will be run with new values everytime the PV value changes.</p>
 <p>This list is minimal, but can be expanded easily to accomodate more
 facilities and beamlines.</p>
 <dl class="py function">
-<dt class="sig sig-object py" id="larch.io.read_mda">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_mda</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_mda" title="Link to this definition">¶</a></dt>
-<dd><p>read a binary MDA (multi-Dimensional Array) file from the Epics SScan
-Record, and return a group based on the scans it contains.  This is not
-very well tested – use with caution!</p>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="larch.io.read_gsescan">
 <span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_gsescan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_gsescan" title="Link to this definition">¶</a></dt>
 <dd><p>read a (old-style) GSECARS Escan data file into a group.</p>
@@ -873,17 +864,40 @@ analysis session. Instead, it will return a new set of data that you might have 
 unpack or extract the groups and arrays of interest.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.save_session">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">save_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_larch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.save_session" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">save_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">histbuff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_xasgroups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_larch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.save_session" title="Link to this definition">¶</a></dt>
 <dd><p>save all groups and data into a Larch Save File (.larix)
 A portable compressed json file, that can be loaded with <cite>read_session()</cite></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of output save file.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of output save file.</p></li>
+<li><p><strong>None</strong><strong>]</strong> (<em>histbuff</em><em> [</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em> of </em><em>str or</em>) – names of symbols to save. [None]
+saving all non-core (user-generated) objects.</p></li>
+<li><p><strong>None</strong><strong>]</strong> – command history, [None]
+saving the full history of the current session.</p></li>
+<li><p><strong>[</strong><strong>bool</strong><strong>]</strong> (<em>auto_xasgroups</em>) – whether to automatically generate the
+<cite>_xasgroups</cite> dictionary for “XAS Groups” as used by
+Larix, which will include all symbols that are Groups
+and have both ‘filename’ and ‘groupname’ attributes.</p></li>
+</ul>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<ol class="arabic simple">
+<li><p>if <cite>symbols</cite> is <cite>None</cite> (default), all variables outside of the
+core groups will be saved: this effectively saves “the whole session”.
+A limited list of symbol names can also be provided, saving part of
+a project (say, one or two data sets).</p></li>
+<li><p>if <cite>histbuff</cite> is <cite>None</cite> (default), the full list of commands in
+the session will be saved.</p></li>
+<li><p>auto_xasgroups will generate an <cite>_xasgroups</cite> dictionary (used by
+Larix to decide what groups to present as “Data Groups”) from the
+supplied or available symbols: every Group with a “groupname” and
+“filename” will be included.</p></li>
+</ol>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
-<p>read_session, load_session, clear_session</p>
+<p>read_session, load_session, clear_sessio</p>
 </div>
 </dd></dl>
 
@@ -992,7 +1006,7 @@ may be modified on loading</p></li>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     </div>
   </body>
 </html>

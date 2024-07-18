@@ -468,7 +468,7 @@ This simply follows the essential steps:
 
 running this example prints out the following report:
 
-.. literalinclude:: ../examples/feffit/doc_feffit1.out
+.. literalinclude:: example_outputs/doc_feffit1.out
 
 and generates the plots shown below
 
@@ -564,7 +564,7 @@ vary independently for each path.
 
 The output for this fit is a bit longer, being:
 
-.. literalinclude:: ../examples/feffit/doc_feffit2.out
+.. literalinclude:: example_outputs/doc_feffit2.out
 
 With plots of data and fits as shown below.
 
@@ -663,7 +663,7 @@ characteristic (here, Einstein) temperature which will determine the value of
 :math:`\sigma^2`, and two parameters for the linear temperature dependence
 of :math:`R`. The output for this fit is:
 
-.. literalinclude:: ../examples/feffit/doc_feffit3.out
+.. literalinclude:: example_outputs/doc_feffit3.out
 
 Note that an uncertainty is estimated for the Path parameters, including
 ``sigma2``, which is calculated with the :func:`sigma2_eins` function.
@@ -782,7 +782,7 @@ used in the fit.
 
 The resulting output is
 
-.. literalinclude:: ../examples/feffit/doc_feffit4.out
+.. literalinclude:: example_outputs/doc_feffit4.out
 
 with plots:
 
@@ -839,9 +839,9 @@ with::
 
 which gives
 
-.. literalinclude:: ../examples/feffit/doc_feffit5_r.out
+.. literalinclude:: example_outputs/doc_feffit5_r.out
 
-.. literalinclude:: ../examples/feffit/doc_feffit5_q.out
+.. literalinclude:: example_outputs/doc_feffit5_q.out
 
 We can see that the results are not very different -- the best fit values
 and uncertainties for the varied parameters are quite close for the fit in
@@ -858,7 +858,7 @@ Now, we can try the fit in unfiltered 'K' space::
 
 (we need to specify only one k-weight for a k-space fit) which gives:
 
-.. literalinclude:: ../examples/feffit/doc_feffit5_k.out
+.. literalinclude:: example_outputs/doc_feffit5_k.out
 
 This has pretty similar best-fit values, but dramatically larger estimates
 of the errors.  The spectrum is really very poorly fit in k-space because
@@ -876,7 +876,7 @@ of wavelet transforms (see Section :ref:`xafs-wavelet_sec`).  For this, we
 specify both k and R ranges, and the fit is done on the wavelet
 transform. This gives:
 
-.. literalinclude:: ../examples/feffit/doc_feffit5_w.out
+.. literalinclude:: example_outputs/doc_feffit5_w.out
 
 As you can see, the results are all pretty similar.
 
