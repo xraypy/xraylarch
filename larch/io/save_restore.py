@@ -74,29 +74,28 @@ def save_session(fname=None, symbols=None, histbuff=None,
     Arguments:
         fname (str):   name of output save file.
         symbols [list of str or None]: names of symbols to save. [None]
-                      saving all non-core (user-generated) objects.
+               saving all non-core (user-generated) objects.
         histbuff [list of str or None]: command history, [None]
-                     saving the full history of the current session.
+               saving the full history of the current session.
         auto_xasgroups [bool]: whether to automatically generate the
-                    `_xasgroups` dictionary for "XAS Groups" as used by
-                     Larix, which will include all symbols that are Groups
-                     and have both 'filename' and 'groupname' attributes.
+               `_xasgroups` dictionary for "XAS Groups" as used by
+               Larix, which will include all symbols that are Groups
+               and have both 'filename' and 'groupname' attributes.
 
     Notes:
-       1. if `symbols` is `None` (default), all variables outside of the
-          core groups will be saved: this effectively saves "the whole session".
-          A limited list of symbol names can also be provided, saving part of
-          a project (say, one or two data sets).
-       2. if `histbuff` is `None` (default), the full list of commands in
-          the session will be saved.
-       3. auto_xasgroups will generate an `_xasgroups` dictionary (used by
-          Larix to decide what groups to present as "Data Groups") from the
-          supplied or available symbols: every Group with a "groupname" and
-          "filename" will be included.
-
+        1. if `symbols` is `None` (default), all variables outside of the
+           core groups will be saved: this effectively saves "the whole session".
+           A limited list of symbol names can also be provided, saving part of
+           a project (say, one or two data sets).
+        2. if `histbuff` is `None` (default), the full list of commands in
+           the session will be saved.
+        3. auto_xasgroups will generate an `_xasgroups` dictionary (used by
+           Larix to decide what groups to present as "Data Groups") from the
+           supplied or available symbols: every Group with a "groupname" and
+           "filename" will be included.
 
     See Also:
-        read_session, load_session, clear_session
+        read_session, load_session, clear_sessio
 
     """
     if fname is None:
