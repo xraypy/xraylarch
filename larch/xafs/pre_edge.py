@@ -401,8 +401,8 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
     for attr in ('pre1', 'pre2', 'norm1', 'norm2', 'nnorm', 'nvict'):
         setattr(group.pre_edge_details, attr, pre_dat.get(attr, None))
 
-    group.pre_edge_details.pre_slope  = pre_dat['precoefs'][0]
-    group.pre_edge_details.pre_offset = pre_dat['precoefs'][1]
+    group.pre_edge_details.pre_slope  = pre_dat['precoefs'][1]
+    group.pre_edge_details.pre_offset = pre_dat['precoefs'][0]
 
     for i in range(MAX_NNORM):
         if hasattr(group, 'norm_c%i' % i):
