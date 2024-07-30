@@ -43,7 +43,7 @@ except ImportError:
 __author__ = ["Beatriz G. Foschiani", "Mauro Rovezzi"]
 __email__ = ["beatrizgfoschiani@gmail.com", "mauro.rovezzi@esrf.fr"]
 __credits__ = ["Jade Chongsathapornpong", "Marius Retegan"]
-__version__ = "2023.3.0"
+__version__ = "2024.1.0"
 
 
 # initialize the logger
