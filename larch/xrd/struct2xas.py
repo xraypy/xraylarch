@@ -369,7 +369,7 @@ class Struct2XAS:
             The lists inside the list contain the following respective
             information:
             [
-            abs_idx,        # index identifier of the absorber site
+            abs_idx,         # index identifier of the absorber site
                              #     used by self.set_abs_site().
             species_string,  #  The specie for absorber sites.
             frac_coords,     # Fractional coordinate position
@@ -618,6 +618,7 @@ class Struct2XAS:
         """
         abs_sites = self.get_abs_sites()
         idx_abs_site = abs_sites[self.abs_site][-1]
+        coord_env_list = []
 
         if self.is_cif:
             from pymatgen.analysis.bond_valence import BVAnalyzer
@@ -642,7 +643,6 @@ class Struct2XAS:
             except ValueError:
                 valences = "undefined"
 
-            coord_env_list = []
             se = lgf.compute_structure_environments(
                 max_cn=6,
                 valences=valences,
@@ -659,32 +659,26 @@ class Struct2XAS:
                 strategy=strategy, structure_environments=se
             )
             coord_env_ce = lse.coordination_environments[idx_abs_site]
-            ngbs_sites = lse._all_nbs_sites
-            coord_env_list.append(
-                [
-                    f"Coord. Env. for Site {abs_sites[self.abs_site][0]}",
-                    coord_env_ce,
-                    ngbs_sites,
-                ]
-            )
+            coord_env = lse._all_nbs_sites
 
         if self.is_xyz:
             from pymatgen.analysis.local_env import CrystalNN
 
             obj = CrystalNN()
-            coord_env_list = []
+
             coord_env = obj.get_nn_info(self.struct, idx_abs_site)
             for site in coord_env:
                 site["site"].cart_coords = self.struct[site["site_index"]].coords
             coord_dict = obj.get_cn_dict(self.struct, idx_abs_site)
-            coord_env_list.append(
-                [
-                    f"Coord. Env. for Site {abs_sites[self.abs_site][0]}",
-                    {"ce_symbol": f"Elements Dict = {coord_dict}"},
-                    coord_env,
-                ]
-            )
+            coord_env_ce = {"ce_symbol": f"Elements Dict = {coord_dict}"}
 
+        coord_env_list.append(
+            [
+                f"Coord. Env. for Site {abs_sites[self.abs_site][0]}",
+                coord_env_ce,
+                coord_env,
+            ]
+        )
         return coord_env_list
 
     def get_coord_envs_info(self):
@@ -696,7 +690,11 @@ class Struct2XAS:
         abs_site_coord = self.get_abs_sites()[self.abs_site][4]
 
         elems_dist = []
-        for site in coord_env[2]:
+        sites = coord_env[2]
+        if len(sites) == 0:
+            logger.warning("Empty coordination environment")
+            return None
+        for site in sites:
             if self.is_cif:
                 coord_sym = [
                     coord_env[1][i]["ce_symbol"] for i in range(len(coord_env[1]))
