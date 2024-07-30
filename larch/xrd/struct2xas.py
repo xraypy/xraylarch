@@ -4,6 +4,7 @@
 """
 Struct2XAS: convert CIFs and XYZs files to FDMNES and FEFF inputs
 """
+
 # main imports
 import os
 import json
