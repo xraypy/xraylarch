@@ -9,7 +9,8 @@ Struct2XAS: convert CIFs and XYZs files to FDMNES and FEFF inputs
 import os
 import json
 import time
-from typing import Union, List#, Any, Dict
+from dataclasses import dataclass
+from typing import Union, List  # , Any, Dict
 
 # import tempfile
 import numpy as np
@@ -113,6 +114,14 @@ def structure_folders():
     return folders
 
 
+@dataclass
+class Job:
+    num: int  #: index of the job
+    description: str  #: description
+    type: Union[str, None]  #: 'fdmnes', 'feff'
+    timestamp: str  #: creation timestamp
+
+
 class Struct2XAS:
     """Class to convert data from CIF and XYZ files to FDMNES and FEFF inputs"""
 
@@ -149,7 +158,6 @@ class Struct2XAS:
             For creating the object from cif file, a pymatgen structure is
             generated with symmetry information from cif file.
         """
-
         self.file = file
         self.abs_atom = abs_atom
         self.frame = 0
@@ -162,6 +170,8 @@ class Struct2XAS:
         self.species = self._get_species()
         self.parent_path = user_larchdir
         self.folders = structure_folders()
+        self.njob = 0
+        self.jobs = []
         logger.info(
             f"Frames: {self.nframes}, Absorbing sites: {self.nabs_sites}. (Indexes for frames and abs_sites start at 0)"
         )
@@ -772,6 +782,7 @@ class Struct2XAS:
     def make_input_fdmnes(
         self,
         parent_path: str = None,
+        newjob: Union[str, None] = False,
         template: str = None,
         radius: float = 7,
         green: str = True,
@@ -782,13 +793,15 @@ class Struct2XAS:
 
         Arguments
         ---------
-        radius : float, [7]
-            radius for fdmnes calculation in Angstrom
         parent_path : str, [None]
             path to the parent directory where the input files are stored
             if None it will create a temporary directory
+        newjob : str or None [None]
+            if a string, a new job is created with the given description
         template : str, [None]
             full path to the template file
+        radius : float, [7]
+            radius for fdmnes calculation in Angstrom
         green : boolean [True]
             True: use `Green` (muffin-tin potentials, faster)
             False: use finite-difference method (slower)
@@ -805,12 +818,23 @@ class Struct2XAS:
         if parent_path is None:
             parent_path = self.folders["fdmnes"]
 
+        if newjob is not None:
+            self.njob += 1
+            job = Job(
+                num=self.njob,
+                description=newjob,
+                type="fdmnes",
+                timestamp=_get_timestamp(),
+            )
+            self.jobs.append(job)
+    
         self.outdir = os.path.join(
             parent_path,
             self.file_name,
             self.abs_atom,
             f"frame{self.frame}",
             f"site{self.abs_site}",
+            f"job{self.njob}",
         )
 
         if template is None:
@@ -977,12 +1001,13 @@ class Struct2XAS:
     def make_input_feff(
         self,
         parent_path: str = None,
+        newjob: Union[str, None] = False,
         template: str = None,
         radius: float = 7,
         feff_comment: str = "*",
         edge: str = "K",
         sig2: Union[float, None] = None,
-        debye: Union[List[float, float], None] = None,
+        debye: Union[List[float], None] = None,
         **kwargs,
     ):
         """
@@ -990,13 +1015,15 @@ class Struct2XAS:
 
         Arguments
         ---------
-        radius : float, [7]
-            radius for feff calculation [Angstrom].
         parent_path : str, [None]
             path to the parent directory where the input files are stored
             if None it will create a temporary directory
+        newjob : str or None [None]
+            if a string, a new job is created with the given description
         template : str, [None]
             full path to the template file
+        radius : float, [7]
+            radius for feff calculation [Angstrom].
         feff_coment : str, ["*"]
             comment character used in the input file
         sig2 : float or None, [None]
@@ -1020,12 +1047,23 @@ class Struct2XAS:
         if parent_path is None:
             parent_path = self.folders["feff"]
 
+        if newjob is not None:
+            self.njob += 1
+            job = Job(
+                num=self.njob,
+                description=newjob,
+                type="feff",
+                timestamp=_get_timestamp(),
+            )
+            self.jobs.append(job)
+
         self.outdir = os.path.join(
             parent_path,
             self.file_name,
             self.abs_atom,
             f"frame{self.frame}",
             f"site{self.abs_site}",
+            f"job{self.njob}",
         )
 
         if template is None:
