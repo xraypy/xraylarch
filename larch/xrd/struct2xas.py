@@ -9,7 +9,9 @@ Struct2XAS: convert CIFs and XYZs files to FDMNES and FEFF inputs
 import os
 import json
 import time
-import tempfile
+from typing import Union, List#, Any, Dict
+
+# import tempfile
 import numpy as np
 
 # pymatgen
@@ -20,7 +22,8 @@ from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
 import larch.utils.logging as logging
 from larch.utils import mkdir, unixpath
-from larch.utils.strutils import fix_filename, unique_name, strict_ascii
+
+# from larch.utils.strutils import fix_filename, unique_name, strict_ascii
 from larch.site_config import user_larchdir
 from larch.io import read_ascii
 from larch.math.convolution1D import lin_gamma, conv
@@ -767,7 +770,12 @@ class Struct2XAS:
         return atoms
 
     def make_input_fdmnes(
-        self, radius=7, parent_path=None, template=None, green=True, **kwargs
+        self,
+        parent_path: str = None,
+        template: str = None,
+        radius: float = 7,
+        green: str = True,
+        **kwargs,
     ):
         """
         Create a fdmnes input from a template.
@@ -794,15 +802,6 @@ class Struct2XAS:
         directory structure: {parent_path}/fdmnes/{self.file_name}/{self.abs_atom}/frame{self.frame}/site{self.abs_site}/
 
         """
-        replacements = {}
-        replacements.update(**kwargs)
-        replacements["version"] = __version__
-
-        if template is None:
-            template = os.path.join(
-                os.path.dirname(os.path.realpath(__file__)), "templates", "fdmnes.tmpl"
-            )
-
         if parent_path is None:
             parent_path = self.folders["fdmnes"]
 
@@ -813,6 +812,16 @@ class Struct2XAS:
             f"frame{self.frame}",
             f"site{self.abs_site}",
         )
+
+        if template is None:
+            template = os.path.join(
+                os.path.dirname(os.path.realpath(__file__)), "templates", "fdmnes.tmpl"
+            )
+        assert os.path.isfile(template), "wrong template path"
+
+        replacements = {}
+        replacements.update(**kwargs)
+        replacements["version"] = __version__
 
         method = "green" if green else ""
         absorber = ""
@@ -941,9 +950,9 @@ class Struct2XAS:
 
         logger.info(f"written FDMNES input -> {fnout}")
 
-    def make_sbatch(self, template: str = None, **kwargs):
+    def make_sbatch(self, template: str, **kwargs):
         """Generates a SBATCH file (SLURM workload manager) using a template
-        
+
         Arguments
         ---------
 
@@ -956,22 +965,24 @@ class Struct2XAS:
         Returns
         -------
         None: writes `job.sbatch`
-        
+
         """
-        assert os.path.isfile(template), "template file not existing"
-        with open(os.path.join(self.outdir, "job.sbatch"), "w") as fp, open(template) as tp:
+        assert os.path.isfile(template), "wrong template path"
+        with open(os.path.join(self.outdir, "job.sbatch"), "w") as fp, open(
+            template
+        ) as tp:
             fp.write(tp.read().format(**kwargs))
             logger.info(f"written {fp.name}")
 
     def make_input_feff(
         self,
-        radius=7,
-        parent_path=None,
-        template=None,
-        feff_comment="*",
-        edge="K",
-        sig2=None,
-        debye=None,
+        parent_path: str = None,
+        template: str = None,
+        radius: float = 7,
+        feff_comment: str = "*",
+        edge: str = "K",
+        sig2: Union[float, None] = None,
+        debye: Union[List[float, float], None] = None,
         **kwargs,
     ):
         """
@@ -1005,12 +1016,10 @@ class Struct2XAS:
         None -> writes FEFF input to disk
         directory structure: {parent_path}/feff/{self.file_name}/{self.abs_atom}/frame{self.frame}/site{self.abs_site}/
         """
-        replacements = {}
-        replacements.update(**kwargs)
-        replacements["version"] = __version__
 
         if parent_path is None:
             parent_path = self.folders["feff"]
+
         self.outdir = os.path.join(
             parent_path,
             self.file_name,
@@ -1025,6 +1034,11 @@ class Struct2XAS:
                 "templates",
                 "feff_exafs.tmpl",
             )
+        assert os.path.isfile(template), "wrong template path"
+
+        replacements = {}
+        replacements.update(**kwargs)
+        replacements["version"] = __version__
 
         if sig2 is None:
             use_sig2 = "*"
@@ -1364,7 +1378,9 @@ def convolve_data(
     return group
 
 
-def save_cif_from_mp(api_key, material_id, parent_path=None):
+def save_cif_from_mp(
+    api_key: str, material_id: str, parent_path: str = None
+) -> list[str, str]:
     """Collect a CIF file from the Materials Project Database, given the material id
 
     Parameters
@@ -1398,7 +1414,7 @@ def save_cif_from_mp(api_key, material_id, parent_path=None):
     return [parent_path, outfn]
 
 
-def save_mp_structure(api_key, material_id, parent_path=None):
+def save_mp_structure(api_key: str, material_id: str, parent_path: str = None) -> str:
     """Save structure from Materials Project Database as json, given the material id
 
     Parameters
