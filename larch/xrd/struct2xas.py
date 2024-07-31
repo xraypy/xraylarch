@@ -7,6 +7,7 @@ Struct2XAS: convert CIFs and XYZs files to FDMNES and FEFF inputs
 
 # main imports
 import os
+import stat
 import json
 import time
 from dataclasses import dataclass
@@ -1014,11 +1015,17 @@ class Struct2XAS:
 
         """
         assert os.path.isfile(template), "wrong template path"
-        with open(os.path.join(self.outdir, "job.sbatch"), "w") as fp, open(
-            template
-        ) as tp:
+        batch_script = os.path.join(self.outdir, "job.sbatch")
+        with open(batch_script, "w") as fp, open(template) as tp:
             fp.write(tp.read().format(**kwargs))
             logger.info(f"written {fp.name}")
+
+        # Make the SLURM batch script executable.
+        current_permissions = os.stat(batch_script)
+        os.chmod(
+            batch_script,
+            current_permissions.st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH,
+        )
 
     def make_input_feff(
         self,
