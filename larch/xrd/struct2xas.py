@@ -941,6 +941,28 @@ class Struct2XAS:
 
         logger.info(f"written FDMNES input -> {fnout}")
 
+    def make_sbatch(self, template: str = None, **kwargs):
+        """Generates a SBATCH file (SLURM workload manager) using a template
+        
+        Arguments
+        ---------
+
+        template: str
+            path to the SBATCH template file
+
+        **kwargs
+            keyword arguments to be replaced in the template file
+
+        Returns
+        -------
+        None: writes `job.sbatch`
+        
+        """
+        assert os.path.isfile(template), "template file not existing"
+        with open(os.path.join(self.outdir, "job.sbatch"), "w") as fp, open(template) as tp:
+            fp.write(tp.read().format(**kwargs))
+            logger.info(f"written {fp.name}")
+
     def make_input_feff(
         self,
         radius=7,
