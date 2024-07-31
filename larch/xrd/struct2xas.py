@@ -120,12 +120,15 @@ class Job:
     description: str  #: description
     type: Union[str, None]  #: 'fdmnes', 'feff'
     timestamp: str  #: creation timestamp
+    path: Union[str, None]  #: path for the calculation
 
 
 class Struct2XAS:
     """Class to convert data from CIF and XYZ files to FDMNES and FEFF inputs"""
 
-    def __init__(self, file: str, abs_atom: str, parent_path: Union[str, None]) -> None:
+    def __init__(
+        self, file: str, abs_atom: str, parent_path: Union[str, None] = None
+    ) -> None:
         """
 
         Arguments
@@ -788,7 +791,7 @@ class Struct2XAS:
     def make_input_fdmnes(
         self,
         parent_path: str = None,
-        newjob: Union[str, None] = False,
+        newjob: Union[str, None] = None,
         template: str = None,
         radius: float = 7,
         green: str = True,
@@ -831,18 +834,19 @@ class Struct2XAS:
         if parent_path is None:
             parent_path = self.parent_path
 
-        if newjob is not None:
+        if (newjob is not None) or (self.njob == 0):
             self.njob += 1
             job = Job(
                 num=self.njob,
                 description=newjob,
                 type="fdmnes",
                 timestamp=_get_timestamp(),
+                path=None,
             )
             self.jobs.append(job)
-
-        self.outdir = os.path.join(
-            parent_path,
+        else:
+            job = self.jobs[self.njob - 1]
+        calc_path = os.path.join(
             "fdmnes",
             self.file_name,
             self.abs_atom,
@@ -850,6 +854,8 @@ class Struct2XAS:
             f"site{self.abs_site}",
             f"job{self.njob}",
         )
+        job.path = calc_path
+        self.outdir = os.path.join(parent_path, calc_path)
 
         if template is None:
             template = os.path.join(
@@ -986,7 +992,7 @@ class Struct2XAS:
         with open(os.path.join(self.outdir, "fdmfile.txt"), "w") as fp:
             fp.write("1\njob_inp.txt")
 
-        logger.info(f"written FDMNES input -> {fnout}")
+        logger.info(f"written input for `/{job.path}`")
 
     def make_sbatch(self, template: str, **kwargs):
         """Generates a SBATCH file (SLURM workload manager) using a template
@@ -1015,7 +1021,7 @@ class Struct2XAS:
     def make_input_feff(
         self,
         parent_path: str = None,
-        newjob: Union[str, None] = False,
+        newjob: Union[str, None] = None,
         template: str = None,
         radius: float = 7,
         feff_comment: str = "*",
@@ -1068,18 +1074,19 @@ class Struct2XAS:
         if parent_path is None:
             parent_path = self.parent_path
 
-        if newjob is not None:
+        if (newjob is not None) or (self.njob == 0):
             self.njob += 1
             job = Job(
                 num=self.njob,
                 description=newjob,
-                type="feff",
+                type="fdmnes",
                 timestamp=_get_timestamp(),
+                path=None,
             )
             self.jobs.append(job)
-
-        self.outdir = os.path.join(
-            parent_path,
+        else:
+            job = self.jobs[self.njob - 1]
+        calc_path = os.path.join(
             "feff",
             self.file_name,
             self.abs_atom,
@@ -1087,6 +1094,8 @@ class Struct2XAS:
             f"site{self.abs_site}",
             f"job{self.njob}",
         )
+        job.path = calc_path
+        self.outdir = os.path.join(parent_path, calc_path)
 
         if template is None:
             template = os.path.join(
