@@ -125,7 +125,7 @@ class Job:
 class Struct2XAS:
     """Class to convert data from CIF and XYZ files to FDMNES and FEFF inputs"""
 
-    def __init__(self, file, abs_atom) -> None:
+    def __init__(self, file: str, abs_atom: str, parent_path: Union[str, None]) -> None:
         """
 
         Arguments
@@ -147,7 +147,7 @@ class Struct2XAS:
             Structures from xyz files are always considered non-symmetric for
             the lack of lattice information. For creating the object from an
             XYZ file, a non-symmetric `structure` object from pymatgen is
-            generated (spacegroup: P1) from a `molecule` one via
+            generated (spacegroup: P1) from a `molecule` via
             :func:`xyz2struct`. The lattice parameters chosen for this
             structure are arbitrary and are based on the size of the molecule,
             as are the fractional coordinates. Therefore, the analysis of this
@@ -168,10 +168,16 @@ class Struct2XAS:
         self.nabs_sites = len(self.get_abs_sites())
         self.elems = self._get_elems()
         self.species = self._get_species()
-        self.parent_path = user_larchdir
+        if parent_path is None:
+            self.parent_path = user_larchdir
+        else:
+            self.parent_path = parent_path
         self.folders = structure_folders()
         self.njob = 0
         self.jobs = []
+        self.tmpl_fdmnes = None
+        self.tmpl_feff = None
+        self.tmpl_sbatch = None
         logger.info(
             f"Frames: {self.nframes}, Absorbing sites: {self.nabs_sites}. (Indexes for frames and abs_sites start at 0)"
         )
@@ -795,7 +801,7 @@ class Struct2XAS:
         ---------
         parent_path : str, [None]
             path to the parent directory where the input files are stored
-            if None it will create a temporary directory
+            (under `fdmnes` directory)
         newjob : str or None [None]
             if a string, a new job is created with the given description
         template : str, [None]
@@ -812,11 +818,18 @@ class Struct2XAS:
         Returns
         -------
         None -> writes FDMNES input to disk
-        directory structure: {parent_path}/fdmnes/{self.file_name}/{self.abs_atom}/frame{self.frame}/site{self.abs_site}/
+        directory structure:
+          + {parent_path}
+          |+ fdmnes
+          ||+ {file_name}
+          |||+ {abs_atom}
+          ||||+ frame{nframe}
+          |||||+ site{abs_site}
+          ||||||+ job{njob}
 
         """
         if parent_path is None:
-            parent_path = self.folders["fdmnes"]
+            parent_path = self.parent_path
 
         if newjob is not None:
             self.njob += 1
@@ -827,9 +840,10 @@ class Struct2XAS:
                 timestamp=_get_timestamp(),
             )
             self.jobs.append(job)
-    
+
         self.outdir = os.path.join(
             parent_path,
+            "fdmnes",
             self.file_name,
             self.abs_atom,
             f"frame{self.frame}",
@@ -1017,7 +1031,7 @@ class Struct2XAS:
         ---------
         parent_path : str, [None]
             path to the parent directory where the input files are stored
-            if None it will create a temporary directory
+            (under "feff" directory)
         newjob : str or None [None]
             if a string, a new job is created with the given description
         template : str, [None]
@@ -1041,11 +1055,18 @@ class Struct2XAS:
         Returns
         -------
         None -> writes FEFF input to disk
-        directory structure: {parent_path}/feff/{self.file_name}/{self.abs_atom}/frame{self.frame}/site{self.abs_site}/
+        directory structure:
+          + {parent_path}
+          |+ feff
+          ||+ {file_name}
+          |||+ {abs_atom}
+          ||||+ frame{nframe}
+          |||||+ site{abs_site}
+          ||||||+ job{njob}
         """
 
         if parent_path is None:
-            parent_path = self.folders["feff"]
+            parent_path = self.parent_path
 
         if newjob is not None:
             self.njob += 1
@@ -1059,6 +1080,7 @@ class Struct2XAS:
 
         self.outdir = os.path.join(
             parent_path,
+            "feff",
             self.file_name,
             self.abs_atom,
             f"frame{self.frame}",
@@ -1428,8 +1450,8 @@ def save_cif_from_mp(
     material id : str
         material id (format mp-xxxx) from Materials Project
     parent_path : str
-        path where to store the CIF files
-        if None, a temporary one is created
+        output where to store the CIF files
+        if None, user_larchdir + 'mp_structs' is used
 
     Returns
     -------
@@ -1462,7 +1484,7 @@ def save_mp_structure(api_key: str, material_id: str, parent_path: str = None) -
     material id : str
         material id (format mp-xxxx) from Materials Project
     parent_path : str
-        path where to store the Structure files
+        output path where to store the Structure files
         if None, user_larchdir + 'mp_structs' is used
 
     Returns
