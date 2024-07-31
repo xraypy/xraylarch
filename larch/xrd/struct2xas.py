@@ -176,12 +176,13 @@ class Struct2XAS:
         else:
             self.parent_path = parent_path
         self.folders = structure_folders()
+        self.calc_path = None
         self.njob = 0
         self.jobs = []
         self.tmpl_fdmnes = None
         self.tmpl_feff = None
         self.tmpl_sbatch = None
-        logger.info(
+        logger.debug(
             f"Frames: {self.nframes}, Absorbing sites: {self.nabs_sites}. (Indexes for frames and abs_sites start at 0)"
         )
 
@@ -856,6 +857,7 @@ class Struct2XAS:
         )
         job.path = calc_path
         self.outdir = os.path.join(parent_path, calc_path)
+        self.calc_path = calc_path
 
         if template is None:
             template = os.path.join(
@@ -1096,6 +1098,7 @@ class Struct2XAS:
         )
         job.path = calc_path
         self.outdir = os.path.join(parent_path, calc_path)
+        self.calc_path = calc_path
 
         if template is None:
             template = os.path.join(
