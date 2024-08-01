@@ -982,7 +982,9 @@ class Struct2XAS:
         try:
             os.makedirs(self.outdir, mode=0o755)
         except FileExistsError:
-            pass
+            errmsg = f"`job{job.num}` already exists -> use `newjob` or remove it"
+            logger.error(errmsg)
+            raise FileExistsError(errmsg)
 
         # Write the input file.
         fnout = os.path.join(self.outdir, "job_inp.txt")
@@ -1001,10 +1003,8 @@ class Struct2XAS:
 
         Arguments
         ---------
-
         template: str
             path to the SBATCH template file
-
         **kwargs
             keyword arguments to be replaced in the template file
 
