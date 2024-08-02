@@ -12,7 +12,7 @@ from dateutil.parser import parse as dateparse
 from math import log10
 from larch import Group
 from larch.symboltable import isgroup
-from ..utils import read_textfile, format_exception
+from ..utils import read_textfile, format_exception, gformat
 from .fileutils import fix_varname
 from .xafs_beamlines import guess_beamline
 
@@ -120,48 +120,6 @@ def getfloats(txt, allow_times=True):
 def colname(txt):
     return fix_varname(txt.strip().lower()).replace('.', '_')
 
-
-def lformat(val, length=12):
-    """Format a number with fixed-length format, somewhat like '%g' except that
-
-        a) the length of the output string will be the requested length.
-        b) positive numbers will have a leading blank.
-        b) the precision will be as high as possible.
-        c) trailing zeros will not be trimmed.
-
-    The precision will typically be length-7, but may be better than
-    that for values with absolute value between 1.e-5 and 1.e8.
-
-    Arguments:
-    val       value to be formatted
-    length    length of output string
-
-    Returns
-    -------
-    string of specified length.
-
-    Notes
-    ------
-     Positive values will have leading blank.
-
-    """
-    try:
-        expon = int(log10(abs(val)))
-    except (OverflowError, ValueError):
-        expon = 0
-    length = max(length, 7)
-    form = 'e'
-    prec = length - 7
-    if abs(expon) > 99:
-        prec -= 1
-    elif ((expon > 0 and expon < (prec+4)) or
-          (expon <= 0 and -expon < (prec-1))):
-        form = 'f'
-        prec += 4
-        if expon > 0:
-            prec -= expon
-    fmt = '{0: %i.%i%s}' % (length, prec, form)
-    return fmt.format(val)
 
 def parse_labelline(labelline, header):
     """
@@ -597,7 +555,7 @@ def write_ascii(filename, *args, commentchar='#', label=None, header=None):
 
     arrays = np.array(arrays)
     for i in range(arraylen):
-        w = [" %s" % lformat(val[i], length=14) for val in arrays]
+        w = [" %s" % gformat(val[i], length=14) for val in arrays]
         buff.append('  '.join(w))
     buff.append('')
 
