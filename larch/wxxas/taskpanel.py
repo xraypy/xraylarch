@@ -240,6 +240,11 @@ class TaskPanel(wx.Panel):
         if self.is_xasgroup(dgroup) and (not hasattr(dgroup, 'norm') or
                                          not hasattr(dgroup, 'e0')):
             self.parent.process_normalization(dgroup, force=True)
+        if not hasattr(dgroup, 'xplot'):
+            if hasattr(dgroup, 'xdat'):
+                dgroup.xplot = deepcopy(dgroup.xdat)
+            elif hasattr(dgroup, 'energy'):
+                dgroup.xplot = deepcopy(dgroup.energy)
 
     def make_fit_xspace_widgets(self, elo=-1, ehi=1):
         self.wids['fitspace_label'] = SimpleText(self.panel, 'Fit Range (eV):')

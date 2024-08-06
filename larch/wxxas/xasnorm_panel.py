@@ -63,7 +63,6 @@ def get_auto_nnorm(norm1, norm2):
     if nrange < 30:    nnorm = 0
     return nnorm
 
-
 class XASNormPanel(TaskPanel):
     """XAS normalization Panel"""
     def __init__(self, parent, controller=None, **kws):
@@ -1083,11 +1082,7 @@ class XASNormPanel(TaskPanel):
         if groupname is None:
             return
 
-        if not hasattr(dgroup, 'xplot'):
-            if hasattr(dgroup, 'xdat'):
-                dgroup.xplot = deepcopy(dgroup.xdat)
-            elif hasattr(dgroup, 'energy'):
-                dgroup.xplot = deepcopy(dgroup.energy)
+        self.ensure_xas_processed(dgroup)
 
         if ((getattr(dgroup, 'plot_yarrays', None) is None or
              getattr(dgroup, 'energy', None) is None or
