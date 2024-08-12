@@ -561,6 +561,7 @@ class XASNormPanel(TaskPanel):
             elif  norm_method.startswith('area'):
                 yarray_name = 'norm_area'
                 ylabel = "%s (Area)" % ylabel
+
         voff = self.wids['plot_voff'].GetValue()
         plot_traces = []
         newplot = True
@@ -576,7 +577,7 @@ class XASNormPanel(TaskPanel):
             dgroup = self.controller.get_group(groupname)
             if dgroup is None:
                 continue
-            self.ensure_xas_processed(dgroup)
+            self.ensure_xas_processed(dgroup, force_mback =('mback' in yarray_name))
 
             if erange is not None and hasattr(dgroup, 'e0') and 'xmin' not in popts:
                 popts['xmin'] = dgroup.e0 + erange[0]
@@ -1082,16 +1083,7 @@ class XASNormPanel(TaskPanel):
         if groupname is None:
             return
 
-        self.ensure_xas_processed(dgroup)
-
-        if ((getattr(dgroup, 'plot_yarrays', None) is None or
-             getattr(dgroup, 'energy', None) is None or
-             getattr(dgroup, 'mu', None) is None or
-             getattr(dgroup, 'e0', None) is None or
-             getattr(dgroup, 'dmude', None) is None or
-             getattr(dgroup, 'd2mude', None) is None or
-             getattr(dgroup, 'norm', None) is None)):
-            self.process(dgroup=dgroup)
+        self.ensure_xas_processed(dgroup, force_mback=True)
         self.get_plot_arrays(dgroup)
 
         if plot_yarrays is None and hasattr(dgroup, 'plot_yarrays'):
