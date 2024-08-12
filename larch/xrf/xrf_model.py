@@ -35,6 +35,7 @@ predict_methods = {'lstsq': lstsq, 'nnls': nnls}
 #    Ge              3.0               0.130      0.000 3900
 FanoFactors = {'Si':  0.4209e-3, 'Ge': 0.3900e-3}
 
+XRAY_EDGES = ('M5', 'M4', 'M3', 'M2', 'M1', 'L3', 'L2', 'L1', 'K')
 
 class XRF_Material:
     def __init__(self, material='Si', thickness=0.050, density=None,
@@ -117,51 +118,25 @@ class XRF_Element:
 
         en_xray_ev = xray_energy * 1000.0
         en_low_ev  = energy_min * 1000.0
-        self.mu = 1.0
-        self.edges = ['K']
-        self.fyields = {}
-
         self.mu = mu_elam(symbol, en_xray_ev, kind='photo')
         self.edges = []
+        self.fyields = {edge: 0.0 for edge in XRAY_EDGES}
+        self.taus = {edge: 0.0 for edge in XRAY_EDGES}
+        jumps = {}
         for ename, xedge in xray_edges(self.symbol).items():
             if ename.lower() in ('k', 'l1', 'l2', 'l3', 'm5'):
                 if (xedge.energy < en_xray_ev and xedge.energy > en_low_ev):
                     self.edges.append(ename)
                     self.fyields[ename] = xedge.fyield
+                    jumps[ename] = xedge.jump_ratio
 
-        # currently, we consider only one edge per element
-        if 'K' in self.edges:
-            self.edges = ['K']
-        if 'L3' in self.edges:
-            tmp = []
-            for ename in self.edges:
-                if ename.lower().startswith('l'):
-                    tmp.append(ename)
-            self.edges = tmp
-
-        # apply CK corrections to fluorescent yields
-        if 'L3' in self.edges:
-            nlines = 1.0
-            ck13 = ck_probability(symbol, 'L1', 'L3')
-            ck12 = ck_probability(symbol, 'L1', 'L2')
-            ck23 = ck_probability(symbol, 'L2', 'L3')
-            fy3  = self.fyields['L3']
-            fy2  = self.fyields.get('L2', 0)
-            fy1  = self.fyields.get('L1', 0)
-            if 'L2' in self.edges:
-                nlines = 2.0
-                fy3 = fy3 + fy2*ck23
-                fy2 = fy2 * (1 - ck23)
-                if 'L1' in self.edges:
-                    nlines = 3.0
-                    fy3 = fy3 + fy1 * (ck13 + ck12*ck23)
-                    fy2 = fy2 + fy1 * ck12
-                    fy1 = fy1 * (1 - ck12 - ck13 - ck12*ck23)
-                    self.fyields['L1'] = fy1
-                self.fyields['L2'] = fy2
-            self.fyields['L3'] = fy3/nlines
-            self.fyields['L2'] = fy2/nlines
-            self.fyields['L1'] = fy1/nlines
+        # tau is sub-shell strength
+        for ename in XRAY_EDGES:
+            if ename in self.edges and ename in jumps:
+                jump = max(1.000001, jumps[ename])
+                self.taus[ename] = jump - 1.0
+                for key in self.taus:
+                    self.taus[key] = self.taus[key]/jump
 
         # look up X-ray lines, keep track of very close lines
         # so that they can be consolidated
@@ -447,9 +422,11 @@ class XRF_Model:
             if amp is None:
                 continue
             for key, line in elem.lines.items():
+                ilevel = line.initial_level
                 ecen = 0.001*line.energy
                 nlines += 1
-                line_amp = line.intensity * elem.mu * elem.fyields[line.initial_level]
+                line_amp = (line.intensity * elem.mu *
+                            elem.fyields[ilevel] * elem.taus[ilevel])
                 sigma = self.det_sigma(ecen, det_noise)
                 comp += hypermet(energy, amplitude=line_amp, center=ecen,
                                  sigma=sigma, step=step, tail=tail,
