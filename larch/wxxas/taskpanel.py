@@ -236,10 +236,15 @@ class TaskPanel(wx.Panel):
     def is_xasgroup(self, dgroup):
         return getattr(dgroup, 'datatype', 'raw').startswith('xa')
 
-    def ensure_xas_processed(self, dgroup):
-        if self.is_xasgroup(dgroup) and (not hasattr(dgroup, 'norm') or
-                                         not hasattr(dgroup, 'e0')):
-            self.parent.process_normalization(dgroup, force=True)
+    def ensure_xas_processed(self, dgroup, force_mback=False):
+        if self.is_xasgroup(dgroup):
+            req_attrs = ['e0', 'mu', 'dmude', 'norm', 'pre_edge']
+            if force_mback:
+                req_attrs.append('norm_mback')
+
+            if not all([hasattr(dgroup, attr) for attr in req_attrs]):
+                self.parent.process_normalization(dgroup, force=True,
+                                                force_mback=force_mback)
         if not hasattr(dgroup, 'xplot'):
             if hasattr(dgroup, 'xdat'):
                 dgroup.xplot = deepcopy(dgroup.xdat)

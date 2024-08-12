@@ -546,8 +546,9 @@ class LarixFrame(wx.Frame):
         current_panels = self.get_panels()
         return current_panels.get(atab.title, None)
 
-    def process_normalization(self, dgroup, force=True, use_form=True):
-        self.get_nbpage('xasnorm')[1].process(dgroup, force=force, use_form=use_form)
+    def process_normalization(self, dgroup, force=True, use_form=True, force_mback=False):
+        self.get_nbpage('xasnorm')[1].process(dgroup, force=force,
+                                              force_mback=False, use_form=use_form)
 
     def process_exafs(self, dgroup, force=True):
         self.get_nbpage('exafs')[1].process(dgroup, force=force)
