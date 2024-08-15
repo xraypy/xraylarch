@@ -7,6 +7,7 @@ The emphasis here is on mathematical expressions, and so
 numpy functions are imported if available and used.
 """
 import os
+from pathlib import Path
 import sys
 import types
 import ast
@@ -400,7 +401,7 @@ class Interpreter:
 
     def run_init_scripts(self):
         for fname in site_config.init_files:
-            if os.path.exists(fname):
+            if Path(fname).exists():
                 try:
                     self.runfile(fname)
                 except:
@@ -1048,7 +1049,7 @@ class Interpreter:
         """
         st_sys = self.symtable._sys
         for idir in st_sys.path:
-            if idir not in sys.path and os.path.exists(idir):
+            if idir not in sys.path and Path(idir).exists():
                 sys.path.append(idir)
 
         # step 1  import the module to a global location
@@ -1066,11 +1067,11 @@ class Interpreter:
             islarch = False
             larchname = "%s.lar" % name
             for dirname in st_sys.path:
-                if not os.path.exists(dirname):
+                if not Path(dirname).exists():
                     continue
                 if larchname in sorted(os.listdir(dirname)):
                     islarch = True
-                    modname = os.path.abspath(os.path.join(dirname, larchname))
+                    modname = Path(dirname, larchname).absolute()
                     try:
                         thismod = self.runfile(modname, new_module=name)
                     except:

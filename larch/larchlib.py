@@ -2,7 +2,6 @@
 """
 Helper classes for larch interpreter
 """
-from __future__ import division
 import sys, os, time
 from datetime import datetime
 import ast
@@ -11,6 +10,8 @@ import traceback
 import toml
 import inspect
 from collections import namedtuple
+from pathlib import Path
+
 import ctypes
 import ctypes.util
 
@@ -132,9 +133,9 @@ class LarchExceptionHolder:
         for tb in traceback.extract_tb(self.exc_info[2]):
             if not (sys.prefix in tb[0] and
                     ('ast.py' in tb[0] or
-                     os.path.join('larch', 'utils') in tb[0] or
-                     os.path.join('larch', 'interpreter') in tb[0] or
-                     os.path.join('larch', 'symboltable') in tb[0])):
+                     Path('larch', 'utils') in tb[0] or
+                     Path('larch', 'interpreter') in tb[0] or
+                     Path('larch', 'symboltable') in tb[0])):
                 tblist.append(tb)
         if len(tblist) > 0:
             out.append(''.join(traceback.format_list(tblist)))
@@ -352,7 +353,7 @@ def add2path(envvar='PATH', dirname='.'):
         os.environ[envvar] = dirname
     else:
         paths = oldpath.split(sep)
-        paths.insert(0, os.path.abspath(dirname))
+        paths.insert(0, Path(dirname).absolute())
         os.environ[envvar] = sep.join(paths)
     return oldpath
 
@@ -377,13 +378,13 @@ def get_dll(libname):
     # normally, we expect the dll to be here in the larch dlls tree
     # if we find it there, use that one
     fname = _dylib_formats[uname] % libname
-    dllpath = os.path.join(bindir, fname)
-    if os.path.exists(dllpath):
+    dllpath = Path(bindir, fname)
+    if Path(dllpath).exists():
         return loaddll(dllpath)
 
     # if not found in the larch dlls tree, try your best!
     dllpath = ctypes.util.find_library(libname)
-    if dllpath is not None and os.path.exists(dllpath):
+    if dllpath is not None and Path(dllpath).exists():
         return loaddll(dllpath)
     return None
 
@@ -397,8 +398,8 @@ def read_workdir(conffile):
     """
 
     try:
-        w_file = os.path.join(user_larchdir, conffile)
-        if os.path.exists(w_file):
+        w_file = Path(user_larchdir, conffile).absolute()
+        if Path(w_file).exists():
             line = open(w_file, 'r').readlines()
             workdir = line[0][:-1]
             os.chdir(workdir)
@@ -414,7 +415,7 @@ def save_workdir(conffile):
     """
 
     try:
-        w_file = os.path.join(user_larchdir, conffile)
+        w_file = Path(user_larchdir, conffile).absolute()
         fh = open(w_file, 'w', encoding=sys.getdefaultencoding())
         fh.write("%s\n" % get_cwd())
         fh.close()
@@ -428,9 +429,9 @@ def read_config(conffile):
 
     returns dictionary / configuration
     """
-    cfile = os.path.join(user_larchdir, conffile)
+    cfile = Path(user_larchdir, conffile).absolute()
     out = None
-    if os.path.exists(cfile):
+    if Path(cfile).exists():
         data = read_textfile(cfile)
         try:
             out = toml.loads(data)
@@ -443,7 +444,7 @@ def save_config(conffile, config):
     compare read_confif(conffile) which will read this value
 
     """
-    cfile = os.path.join(user_larchdir, conffile)
+    cfile = Path(user_larchdir, conffile).absolute()
     dat = toml.dumps(config).encode('utf-8')
     with open(cfile, 'wb') as fh:
         fh.write(dat)
