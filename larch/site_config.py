@@ -39,9 +39,9 @@ home_dir = get_homedir()
 
 icondir = Path(Path(__file__).parent, 'icons').absolute()
 
-user_larchdir = pjoin(home_dir, '.larch')
+user_larchdir = pjoin(home_dir, '.larch').absolute().as_posix()
 if uname == 'win':
-    user_larchdir = pjoin(home_dir, 'larch')
+    user_larchdir = pjoin(home_dir, 'larch').absolute().as_posix()
 
 if 'LARCHDIR' in os.environ:
     user_larchdir = nativepath(os.environ['LARCHDIR'])
