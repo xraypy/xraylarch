@@ -133,9 +133,9 @@ class LarchExceptionHolder:
         for tb in traceback.extract_tb(self.exc_info[2]):
             if not (sys.prefix in tb[0] and
                     ('ast.py' in tb[0] or
-                     Path('larch', 'utils') in tb[0] or
-                     Path('larch', 'interpreter') in tb[0] or
-                     Path('larch', 'symboltable') in tb[0])):
+                     Path('larch', 'utils').as_posix() in tb[0] or
+                     Path('larch', 'interpreter').as_posix() in tb[0] or
+                     Path('larch', 'symboltable').as_posix() in tb[0])):
                 tblist.append(tb)
         if len(tblist) > 0:
             out.append(''.join(traceback.format_list(tblist)))
