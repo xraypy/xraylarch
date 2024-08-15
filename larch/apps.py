@@ -236,7 +236,7 @@ def run_larch():
     # create desktop icons
     if args.makeicons:
         larchdir = Path(get_desktop(), 'Larch').absolute()
-        if Path(larchdir).exists()
+        if Path(larchdir).exists():
             shutil.rmtree(larchdir)
 
         for n, app in LarchApps.items():
