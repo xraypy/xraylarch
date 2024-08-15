@@ -1,6 +1,7 @@
 import sys
 import os
 import platform
+import pathlib
 
 HAS_PWD = True
 try:
@@ -9,13 +10,19 @@ except ImportError:
     HAS_PWD = False
 
 def unixpath(d):
-    return d.replace('\\', '/')
+    if isinstance(d, str):
+        return d.replace('\\', '/')
+    elif isinstance(d, pathlib.Path):
+        return pathlib.Path(p.as_posix())
 
 def winpath(d):
     "ensure path uses windows delimiters"
-    if d.startswith('//'): d = d[1:]
-    d = d.replace('/','\\')
-    return d
+    if isinstance(d, str):
+        if d.startswith('//'): d = d[1:]
+        d = d.replace('/','\\')
+        return d
+    elif isinstance(d, pathlib.Path):
+        return pathlib.Path(p.as_posix())
 
 # uname = 'win', 'linux', or 'darwin'
 uname = sys.platform.lower()
