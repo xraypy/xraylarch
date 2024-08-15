@@ -18,7 +18,7 @@ from numpy.random import randint
 
 from larch import Group, repr_value
 from larch import __version__ as larch_version
-from larch.utils.strutils import bytes2str, str2bytes, fix_varname, asfloat
+from larch.utils import bytes2str, str2bytes, fix_varname, asfloat, unixpath
 
 from xraydb import guess_edge
 import asteval
@@ -49,7 +49,7 @@ def _read_raw_athena(filename):
     # try gzip
     text = None
     try:
-        fh = GzipFile(filename)
+        fh = GzipFile(unixpath(filename))
         text = bytes2str(fh.read())
     except Exception:
         errtype, errval, errtb = sys.exc_info()
@@ -711,10 +711,8 @@ class AthenaProject(object):
         buff.extend(["", "@journal = {};", "", "1;", "", "",
                      "# Local Variables:", "# truncate-lines: t",
                      "# End:", ""])
-        fopen =open
-        if use_gzip:
-            fopen = GzipFile
-        fh = fopen(self.filename, 'w')
+        fopen = GzipFile if use_gzip else open
+        fh = fopen(unixpath(self.filename), 'w')
         fh.write(str2bytes("\n".join([bytes2str(t) for t in buff])))
         fh.close()
 
