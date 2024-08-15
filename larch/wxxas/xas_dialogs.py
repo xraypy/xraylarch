@@ -14,7 +14,7 @@ from xraydb import guess_edge
 from larch import Group, isgroup
 from larch.math import index_of, index_nearest, interp
 from larch.utils.strutils import file2groupname, unique_name
-from larch.io import unixpath
+from larch.utils import unixpath
 
 from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl, FloatSpin,
                          set_color, FloatSpinWithPin, get_icon, SimpleText,
@@ -2047,7 +2047,7 @@ class LoadSessionDialog(wx.Frame):
             if fname not in sel_groups:
                 ignore.append(gname)
 
-        fname = self.filename.replace('\\','/')
+        fname = unixpath(self.filename)
         if fname.endswith('/'):
             fname = fname[:-1]
         lcmd = [f"load_session('{fname}'"]

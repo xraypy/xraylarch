@@ -442,29 +442,21 @@ class RegressionPanel(TaskPanel):
             ExceptionPopup(self, title, message)
             return
 
-        dlg = wx.FileDialog(self, message="Save Regression Model",
-                            defaultDir=get_cwd(),
-                            defaultFile=self.save_modelfile,
-                            wildcard=MODEL_WILDCARDS,
-                            style=wx.FD_SAVE)
-        fname = None
-        if dlg.ShowModal() == wx.ID_OK:
-            fname = dlg.GetPath()
-        dlg.Destroy()
+        fname = FileSave(self, "Save Regression Model",
+                         defaultDir=get_cwd(),
+                         defaultFile=self.save_modelfile,
+                         wildcard=MODEL_WILDCARDS)
+
         if fname is None:
             return
         save_groups(fname, ['#regression model 1.0', reg_model])
         self.write_message('Wrote Regression Model to %s ' % fname)
 
     def onLoadModel(self, event=None):
-        dlg = wx.FileDialog(self, message="Load Regression Model",
-                            defaultDir=get_cwd(),
-                            wildcard=MODEL_WILDCARDS, style=wx.FD_OPEN)
+        fname = FileOpen(self, "Load Regression Model",
+                         defaultDir=get_cwd(),
+                         wildcard=MODEL_WILDCARDS)
 
-        fname = None
-        if dlg.ShowModal() == wx.ID_OK:
-            fname = dlg.GetPath()
-        dlg.Destroy()
         if fname is None:
             return
         dat = read_groups(fname)
@@ -481,14 +473,9 @@ class RegressionPanel(TaskPanel):
         self.use_regmodel(reg_model)
 
     def onLoadCSV(self, event=None):
-        dlg = wx.FileDialog(self, message="Load CSV Data File",
-                            defaultDir=get_cwd(),
-                            wildcard=CSV_WILDCARDS, style=wx.FD_OPEN)
-
-        fname = None
-        if dlg.ShowModal() == wx.ID_OK:
-            fname = dlg.GetPath()
-        dlg.Destroy()
+        fname = FileOpen(self, "Load CSV Data File",
+                         defaultDir=get_cwd(),
+                         wildcard=CSV_WILDCARDS)
         if fname is None:
             return
 

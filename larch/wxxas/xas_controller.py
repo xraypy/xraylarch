@@ -11,7 +11,7 @@ import larch
 from larch import Group, Journal, Entry
 from larch.larchlib import read_config, save_config
 from larch.utils import (group2dict, unique_name, fix_varname, get_cwd,
-                         asfloat, get_sessionid, mkdir)
+                         asfloat, get_sessionid, mkdir, unixpath)
 from larch.wxlib.plotter import last_cursor_pos
 from larch.wxlib import ExceptionPopup
 from larch.io import fix_varname, save_session
@@ -35,8 +35,8 @@ class XASController():
         self.larch = _larch
         if _larch is None:
             self.larch = larch.Interpreter()
-        self.larix_folder = os.path.join(user_larchdir, 'larix')
-        self.config_file = os.path.join(self.larix_folder, CONF_FILE)
+        self.larix_folder = unixpath(os.path.join(user_larchdir, 'larix'))
+        self.config_file = unixpath(os.path.join(self.larix_folder, CONF_FILE))
         self.init_larch_session()
         self.init_workdir()
 
@@ -62,7 +62,7 @@ class XASController():
 
 
         # may migrate old 'xas_viewer.conf' file to 'larix.conf'
-        old_config_file = os.path.join(self.larix_folder, OLDCONF_FILE)
+        old_config_file = unixpath(os.path.join(self.larix_folder, OLDCONF_FILE))
         if (os.path.exists(old_config_file)
             and not os.path.exists(self.config_file)):
             shutil.move(old_config_file, self.config_file)
@@ -192,7 +192,8 @@ class XASController():
     def save_workdir(self):
         """save last workdir and recent session files"""
         try:
-            with open(os.path.join(self.larix_folder, 'workdir.txt'), 'w') as fh:
+            fname = unixpath(os.path.join(self.larix_folder, 'workdir.txt'))
+            with open(fname, 'w') as fh:
                 fh.write("%s\n" % get_cwd())
         except:
             pass
@@ -207,7 +208,8 @@ class XASController():
         buffer = '\n'.join(buffer)
 
         try:
-            with open(os.path.join(self.larix_folder, 'recent_sessions.txt'), 'w') as fh:
+            fname = unixpath(os.path.join(self.larix_folder, 'recent_sessions.txt'))
+            with open(fname, 'w') as fh:
                 fh.write(buffer)
         except:
             pass
@@ -215,7 +217,7 @@ class XASController():
     def init_workdir(self):
         """set initial working folder, read recent session files"""
         if self.config['main'].get('use_last_workdir', False):
-            wfile = os.path.join(self.larix_folder, 'workdir.txt')
+            wfile = unixpath(os.path.join(self.larix_folder, 'workdir.txt'))
             if os.path.exists(wfile):
                 try:
                     with open(wfile, 'r') as fh:
@@ -228,7 +230,7 @@ class XASController():
             except:
                 pass
 
-        rfile = os.path.join(self.larix_folder, 'recent_sessions.txt')
+        rfile = unixpath(os.path.join(self.larix_folder, 'recent_sessions.txt'))
         if os.path.exists(rfile):
             with open(rfile, 'r') as fh:
                 for line in fh.readlines():
@@ -247,7 +249,7 @@ class XASController():
         nhistory = max(8, int(conf.get('nhistory', 4)))
 
         fname =  f"{fileroot:s}_{get_sessionid():s}.larix"
-        savefile = os.path.join(self.larix_folder, fname)
+        savefile = unixpath(os.path.join(self.larix_folder, fname))
         for i in reversed(range(1, nhistory)):
             curf = savefile.replace('.larix', f'_{i:d}.larix' )
             if os.path.exists(curf):
@@ -267,7 +269,7 @@ class XASController():
         def get_autosavefiles():
             dat = []
             for afile in os.listdir(self.larix_folder):
-                ffile = os.path.join(self.larix_folder, afile)
+                ffile = unixpath(os.path.join(self.larix_folder, afile))
                 if afile.endswith('.larix'):
                     mtime = os.stat(ffile).st_mtime
                     words = afile.replace('.larix', '').split('_')
@@ -308,7 +310,7 @@ class XASController():
         max_hist = int(conf.get('maxfiles', 10))
         flist = []
         for afile in os.listdir(self.larix_folder):
-            ffile = os.path.join(self.larix_folder, afile)
+            ffile = unixpath(os.path.join(self.larix_folder, afile))
             if ffile.endswith('.larix'):
                 mtime = os.stat(ffile).st_mtime
                 flist.append((os.stat(ffile).st_mtime, ffile))

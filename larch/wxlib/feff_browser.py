@@ -12,7 +12,7 @@ import larch
 from larch.site_config import user_larchdir
 from larch.utils import unixpath, mkdir, read_textfile
 from larch.wxlib import (GridPanel, GUIColors, Button, pack, SimpleText,
-                         FileOpen, FileSave, Font, LEFT, FRAMESTYLE,
+                         Font, LEFT, FRAMESTYLE,
                          FONTSIZE, MenuItem, EditableListBox, OkCancel,
                          FileCheckList, Choice, HLine, ReportFrame, Popup,
                          LarchWxApp)

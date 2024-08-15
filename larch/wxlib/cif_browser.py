@@ -608,6 +608,7 @@ class CIFFrame(wx.Frame):
         path = FileSave(self, message='Save Feff File',
                         wildcard=wildcard,
                         default_file=fname)
+        path = unixpath(path)
         if path is not None:
             with open(path, 'w', encoding=sys.getdefaultencoding()) as fh:
                 fh.write(fefftext)
@@ -624,6 +625,7 @@ class CIFFrame(wx.Frame):
         path = FileSave(self, message='Save CIF File',
                         wildcard=wildcard,
                         default_file=fname)
+        path = unixpath(path)
         if path is not None:
             with open(path, 'w', encoding=sys.getdefaultencoding()) as fh:
                 fh.write(cc.ciftext)
@@ -633,7 +635,7 @@ class CIFFrame(wx.Frame):
         wildcard = 'CIF files (*.cif)|*.cif|All files (*.*)|*.*'
         path = FileOpen(self, message='Open CIF File',
                         wildcard=wildcard, default_file='My.cif')
-
+        path = unixpath(path)
         if path is not None:
             try:
                 cif_data = parse_cif_file(path)
@@ -664,6 +666,7 @@ class CIFFrame(wx.Frame):
         wildcard = 'Feff input files (*.inp)|*.inp|All files (*.*)|*.*'
         path = FileOpen(self, message='Open Feff Input File',
                         wildcard=wildcard, default_file='feff.inp')
+        path = unixpath(path)
         if path is not None:
             fefftext = None
             _, fname = os.path.split(path)

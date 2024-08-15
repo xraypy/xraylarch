@@ -1480,13 +1480,8 @@ class FeffitPanel(TaskPanel):
         return result
 
     def onLoadFitResult(self, event=None):
-        dlg = wx.FileDialog(self, message="Load Saved Feffit Model",
-                            wildcard=ModelWcards, style=wx.FD_OPEN)
-        rfile = None
-        if dlg.ShowModal() == wx.ID_OK:
-            rfile = dlg.GetPath()
-        dlg.Destroy()
-
+        rfile = FileOpen(self, "Load Saved Feffit Model",
+                            wildcard=ModelWcards)
         if rfile is None:
             return
 

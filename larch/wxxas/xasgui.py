@@ -25,7 +25,8 @@ import larch
 from larch import Group, Journal, Entry
 from larch.io import save_session, read_session
 from larch.math import index_of
-from larch.utils import isotime, time_ago, get_cwd, is_gzip, uname
+from larch.utils import (isotime, time_ago, get_cwd,
+                         is_gzip, uname, unixpath)
 from larch.utils.strutils import (file2groupname, unique_name,
                                   common_startstring, asfloat)
 
@@ -1328,10 +1329,11 @@ before clearing"""
         def file_mtime(x):
             return os.stat(x).st_mtime
 
+        self.paths2read = [unixpath(p) for p in self.paths2read]
         self.paths2read = sorted(self.paths2read, key=file_mtime)
 
         path = self.paths2read.pop(0)
-        path = path.replace('\\', '/')
+
         do_read = True
         if path in self.controller.file_groups:
             do_read = (wx.ID_YES == Popup(self,
@@ -1743,7 +1745,6 @@ before clearing"""
         gname = None
 
         for path in self.paths2read:
-            path = path.replace('\\', '/')
             filedir, spath = os.path.split(path)
             fname = spath
             if len(multi_chans) > 0:
