@@ -9,11 +9,12 @@ try:
 except ImportError:
     HAS_PWD = False
 
+
 def unixpath(d):
     if isinstance(d, str):
         return d.replace('\\', '/')
     elif isinstance(d, pathlib.Path):
-        return pathlib.Path(p.as_posix())
+        return pathlib.Path(d.as_posix())
 
 def winpath(d):
     "ensure path uses windows delimiters"
@@ -22,7 +23,7 @@ def winpath(d):
         d = d.replace('/','\\')
         return d
     elif isinstance(d, pathlib.Path):
-        return pathlib.Path(p.as_posix())
+        return pathlib.Path(d.as_posix())
 
 # uname = 'win', 'linux', or 'darwin'
 uname = sys.platform.lower()
