@@ -46,7 +46,7 @@ from larch.wxlib import (LarchPanel, LarchFrame, EditableListBox, SimpleText,
 from larch.wxxas.xas_dialogs import fit_dialog_window
 from larch.utils.strutils import bytes2str, version_ge
 from larch.utils import get_cwd
-from larch.io import nativepath
+from larch.io import unixpath
 from larch.site_config import icondir
 from larch.version import check_larchversion
 
@@ -1917,8 +1917,8 @@ class MapViewerFrame(wx.Frame):
             basedir = os.path.abspath(str(dlg.GetPath()))
             try:
                 if len(basedir)  > 0:
-                    os.chdir(nativepath(basedir))
-                    save_workdir(nativepath(basedir))
+                    os.chdir(unixpath(basedir))
+                    save_workdir(unixpath(basedir))
             except OSError:
                 print( 'Changed folder failed')
                 pass
@@ -2076,8 +2076,8 @@ class MapViewerFrame(wx.Frame):
         self.ShowFile(filename=fname)
         if parent is not None and len(parent) > 0:
             try:
-                os.chdir(nativepath(parent))
-                save_workdir(nativepath(parent))
+                os.chdir(unixpath(parent))
+                save_workdir(unixpath(parent))
             except:
                 pass
 

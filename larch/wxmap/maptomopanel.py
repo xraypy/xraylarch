@@ -39,7 +39,6 @@ from  ..wxlib import (EditableListBox, SimpleText,
                        Choice, Check, GridPanel, FileSave, HLine)
 from ..wxlib.plotter import _plot
 from ..utils.strutils import bytes2str, version_ge
-from ..io import nativepath
 from ..math.tomography import TOMOPY_ALG, TOMOPY_FILT, center_score
 
 from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
@@ -415,7 +414,7 @@ class TomographyPanel(GridPanel):
         # remove the first and last:
         domega  = abs(np.diff(omega).mean())
         # if abs(omega[-1] - omega[0]) > 360+2*domega:
-        #    if not args['hotcols']:                    
+        #    if not args['hotcols']:
         #        omega = omega[1:-1]
         #        print("TRIMMED OMEGA ", domega, omega.shape)
         #    args['hotcols'] = True
@@ -477,7 +476,7 @@ class TomographyPanel(GridPanel):
             title = '%s: %s' % (fname, title)
             info  = 'Intensity: [%g, %g]' %(sino.min(), sino.max())
             subtitle = None
-       
+
         return title, subtitles, info, x, omega, sino_order, sino
 
     def onSaveTomograph(self, event=None):
