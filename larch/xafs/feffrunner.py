@@ -1,11 +1,13 @@
 import sys
 import os
-from os.path import realpath, isdir, isfile, join, basename, dirname, abspath
+from os.path import  isdir, isfile, join, basename, dirname, abspath
+
 import glob
 from shutil import copy, move
 import subprocess
 import time
 import re
+from pathlib import Path
 from optparse import OptionParser
 from subprocess import Popen, PIPE
 
@@ -15,8 +17,8 @@ from larch.utils import isotime, bytes2str, uname, bindir, get_cwd
 def find_exe(exename):
     if uname == 'win' and not exename.endswith('.exe'):
         exename = "%s.exe" % exename
-    exefile = join(bindir, exename)
-    if os.path.exists(exefile) and os.access(exefile, os.X_OK):
+    exefile = Path(bindir, exename)
+    if exefile.exists() and os.access(exefile, os.X_OK):
         return exefile
 
 class FeffRunner(Group):
@@ -85,8 +87,8 @@ class FeffRunner(Group):
         self.chargetransfer = []
 
     def __repr__(self):
-        fullfile = os.path.join(self.folder, self.feffinp)
-        return '<External Feff Group: %s>' % fullfile
+        ffile = Path.join(self.folder, self.feffinp)
+        return f'<External Feff Group: {ffile:s}>'
 
     def run(self, feffinp=None, folder=None, exe='feff8l'):
         """
@@ -104,7 +106,7 @@ class FeffRunner(Group):
             raise Exception("no feff.inp file was specified")
 
         savefile = '.save_.inp'
-        here = abspath(get_cwd())
+        here = Path(get_cwd()).absolute()
         os.chdir(abspath(self.folder))
 
         feffinp_dir, feffinp_file = os.path.split(self.feffinp)
@@ -278,18 +280,20 @@ Examples:
     if len(args) == 0:
         args = ['.']
 
-    curdir = abspath(get_cwd())
+    curdir = Path(get_cwd()).absolute()
     for arg in args:
-        if os.path.isfile(arg):
-            feff6l(feffinp=arg)
-        elif os.path.isdir(arg):
-            feffinp = os.path.join(arg, 'feff.inp')
-            if os.path.exists(feffinp):
-                os.chdir(abspath(arg))
-                feff6l(folder=arg)
+        parg = Path(arg).absolute()
+        if parg.isfile():
+            feff6l(feffinp=parg.as_posix())
+        elif parg.isdir():
+            feffinp = Path(parg, 'feff.inp').absolute()
+            if feffinp.exists():
+                os.chdir(parg)
+                feff6l(folder=parg.as_posix())
             else:
-                msg = "Could not find feff.inp file in folder '{:s}'"
-                sys.stdout.write(msg.format(abspath(os.curdir)))
+                cdir = Path(get_cwd()).absolute().as_posix()
+                msg = "Could not find feff.inp file in folder '{cdir}'"
+                sys.stdout.write(msg)
             os.chdir(curdir)
 
 

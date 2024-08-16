@@ -8,8 +8,7 @@ of scientific data files.
 
 from .fileutils import (increment_filename, new_filename, new_dirname,
                         fix_filename, fix_varname, pathOf, unixpath,
-                        winpath, nativepath, strip_quotes, get_timestamp,
-                        asciikeys)
+                        strip_quotes, get_timestamp, asciikeys)
 
 from .columnfile import (read_ascii, write_ascii, write_group, set_array_labels,
                          guess_filereader, look_for_nans, read_fdmnes, sum_fluor_channels)
@@ -58,8 +57,6 @@ __exports__ = dict(increment_filename=increment_filename,
                    fix_varname=fix_varname,
                    pathOf=pathOf,
                    unixpath=unixpath,
-                   winpath=winpath,
-                   nativepath=nativepath,
                    strip_quotes=strip_quotes,
                    get_timestamp=get_timestamp,
                    asciikeys=asciikeys,

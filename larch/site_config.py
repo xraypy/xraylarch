@@ -13,7 +13,7 @@ from subprocess import check_call, CalledProcessError, TimeoutExpired
 
 from packaging.version import parse as version_parse
 
-from .utils import (uname, get_homedir, nativepath, unixpath,
+from .utils import (uname, get_homedir, unixpath,
                     log_warning, log_error)
 from .version import __version__, __release_version__
 
@@ -40,11 +40,9 @@ home_dir = get_homedir()
 icondir = Path(Path(__file__).parent, 'icons').absolute()
 
 user_larchdir = pjoin(home_dir, '.larch').absolute().as_posix()
-if uname == 'win':
-    user_larchdir = pjoin(home_dir, 'larch').absolute().as_posix()
 
 if 'LARCHDIR' in os.environ:
-    user_larchdir = nativepath(os.environ['LARCHDIR'])
+    user_larchdir = unixpath(os.environ['LARCHDIR'])
 
 # on Linux, check for HOME/.local/share,
 # make with mode=711 if needed
@@ -59,7 +57,7 @@ init_files = [pjoin(user_larchdir, 'init.lar')]
 if 'LARCHSTARTUP' in os.environ:
     startup = os.environ['LARCHSTARTUP']
     if Path(startup).exists():
-        init_files = [nativepath(startup)]
+        init_files = [unixpath(startup)]
 
 # history file:
 history_file = pjoin(user_larchdir, 'history.lar')
