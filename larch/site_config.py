@@ -25,7 +25,7 @@ larch_release_version = __release_version__
 
 def pjoin(*args):
     "simple join"
-    return Path(*args).absolute()
+    return Path(*args).absolute().as_posix()
 
 def update_larch(with_larix=True):
     "pip upgrade larch"
@@ -39,7 +39,7 @@ home_dir = get_homedir()
 
 icondir = Path(Path(__file__).parent, 'icons').absolute()
 
-user_larchdir = pjoin(home_dir, '.larch').absolute().as_posix()
+user_larchdir = pjoin(home_dir, '.larch')
 
 if 'LARCHDIR' in os.environ:
     user_larchdir = unixpath(os.environ['LARCHDIR'])

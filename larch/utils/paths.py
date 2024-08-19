@@ -14,7 +14,7 @@ def unixpath(d):
     if isinstance(d, str):
         return d.replace('\\', '/')
     elif isinstance(d, Path):
-        return Path(d.as_posix())
+        return d.as_posix()
 
 def winpath(d):
     "ensure path uses windows delimiters"
@@ -90,7 +90,7 @@ def get_cwd():
     and readable directory.
     """
     try:
-        return Path('.').absolute()
+        return Path('.').absolute().as_posix()
     except:
         home = get_homedir()
         os.chdir(home)
