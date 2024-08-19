@@ -18,7 +18,7 @@ Plotting macros for XAFS data sets and fits
  ---------------- -----------------------------------------------------
 """
 
-import os
+from pathlib import Path
 from numpy import gradient, ndarray, diff, where, arange, argmin
 from matplotlib.ticker import FuncFormatter
 
@@ -121,12 +121,7 @@ def _get_title(dgroup, title=None):
         t = getattr(dgroup, attr, None)
         if t is not None:
             if attr == 'filename':
-                folder, file = os.path.split(t)
-                if folder == '':
-                    t = file
-                else:
-                    top, folder = os.path.split(folder)
-                    t = '/'.join((folder, file))
+                t = '/'.join(Path(t).absolute().parts[-2:])
             return safetitle(t)
         if data_group is not None:
             t = getattr(data_group, attr, None)

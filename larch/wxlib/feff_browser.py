@@ -4,6 +4,8 @@ import time
 import logging
 import shutil
 from datetime import datetime, timedelta
+from pathlib import Path
+
 import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.dataview as dv
@@ -306,13 +308,13 @@ class FeffResultsPanel(wx.Panel):
     def onShowFeffInp(self, event=None):
         if self.feffresult is not None:
             text = None
-            fname = unixpath(os.path.join(self.feffresult.folder, 'feff.inp'))
-            if os.path.exists(fname):
+            fname = Path(self.feffresult.folder, 'feff.inp')
+            if fname.exists():
                 text = read_textfile(fname)
             else:
-                fname = unixpath(os.path.join(user_larchdir, 'feff',
-                                              self.feffresult.folder, 'feff.inp'))
-                if os.path.exists(fname):
+                fname = Path(user_larchdir, 'feff',
+                                 self.feffresult.folder, 'feff.inp')
+                if fname.exists():
                     text = read_textfile(fname)
             if text is not None:
                 self.show_report(text, title=f'Feff.inp for {self.feffresult.folder:s}',
@@ -322,7 +324,7 @@ class FeffResultsPanel(wx.Panel):
     def show_report(self, text, title='Text', default_filename='out.txt', wildcard=None):
         if wildcard is None:
             wildcard='Text Files (*.txt)|*.txt'
-        default_filename = os.path.split(default_filename)[1]
+        default_filename = Path(default_filename).name
         try:
             self.report_frame.set_text(text)
             self.report_frame.SetTitle(title)
@@ -337,11 +339,11 @@ class FeffResultsPanel(wx.Panel):
 
     def onImportPath(self, event=None):
         folder = self.feffresult.folder
-        _, fname = os.path.split(folder)
+        fname = Path(folder).name
         for data in self.model.data:
             if data[5]:
                 fname = data[0]
-                fullpath = unixpath(os.path.join(folder, fname))
+                fullpath = Path(folder, fname).as_posix()
                 for pathinfo in self.feffresult.paths:
                     if pathinfo.filename == fname:
                         self.path_importer(fullpath, pathinfo)
@@ -381,7 +383,7 @@ class FeffResultsFrame(wx.Frame):
             self.larch.symtable._sys._feffruns = {}
         self.parent = parent
 
-        self.feff_folder = unixpath(os.path.join(user_larchdir, 'feff'))
+        self.feff_folder = unixpath(Path(user_larchdir, 'feff'))
         mkdir(self.feff_folder)
 
         self.SetTitle(title)
@@ -467,11 +469,11 @@ class FeffResultsFrame(wx.Frame):
         self.fefflist.Clear()
         self.feffruns = {}
         flist = os.listdir(self.feff_folder)
-        flist = sorted(flist, key=lambda t: -os.stat(unixpath(os.path.join(self.feff_folder, t))).st_mtime)
+        flist = sorted(flist, key=lambda t: -os.stat(Path(self.feff_folder, t)).st_mtime)
         _feffruns = self.larch.symtable._sys._feffruns
         for path in flist:
-            fullpath = unixpath(os.path.join(self.feff_folder, path))
-            if os.path.isdir(fullpath):
+            fullpath = Path(self.feff_folder, path)
+            if fullpath.is_dir():
                 try:
                     _feffruns[path] = thisrun = get_feff_pathinfo(fullpath)
                     if ((len(thisrun.paths) < 1) or
@@ -506,7 +508,7 @@ class FeffResultsFrame(wx.Frame):
         dlg.Destroy()
         if remove:
             for checked in self.fefflist.GetCheckedStrings():
-                shutil.rmtree(unixpath(os.path.join(self.feff_folder, checked)))
+                shutil.rmtree(unixpath(Pathn(self.feff_folder, checked)))
             self.onSearch()
 
     def onFeffFolder(self, event=None):
@@ -517,8 +519,8 @@ class FeffResultsFrame(wx.Frame):
         dlg.SetPath(self.feff_folder)
         if  dlg.ShowModal() == wx.ID_CANCEL:
             return None
-        self.feff_folder = os.path.abspath(dlg.GetPath())
-        mkdir(self.feff_folder)
+        self.feff_folder = Path(dlg.GetPath()).absolute()
+        Path.mkdir(self.feff_folder, mode=755, parents=True, exist_ok=True)
 
     def onImportFeffCalc(self, event=None):
         "prompt to import Feff calculation folder"
@@ -528,13 +530,13 @@ class FeffResultsFrame(wx.Frame):
         dlg.SetPath(self.feff_folder)
         if  dlg.ShowModal() == wx.ID_CANCEL:
             return None
-        path = os.path.abspath(dlg.GetPath())
-        if os.path.exists(path):
+        path = Path(dlg.GetPath()).absolute()
+        if path.exists():
             flist = os.listdir(path)
             if ('paths.dat' in flist and 'files.dat' in flist and
                 'feff0001.dat' in flist and 'feff.inp' in flist):
-                _, dname = os.path.split(path)
-                dest = unixpath(os.path.join(self.feff_folder, dname))
+                dname = Path(path).name
+                dest = unixpath(Path(self.feff_folder, dname))
                 shutil.copytree(path, dest)
                 self.onSearch()
             else:

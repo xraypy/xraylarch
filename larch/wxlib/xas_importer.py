@@ -1,8 +1,7 @@
-import os
 import re
 import numpy as np
 from functools import partial
-
+from pathlib import Path
 import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.agw.flatnotebook as fnb
@@ -358,7 +357,6 @@ class XasImporter(wx.Frame):
 
         self.parent = parent
         self.path = filename
-        # self.filename = os.path.basename(filename)
         self.extra_sums = {}
         self._larch = _larch
         self.scans = self.data_source.get_sorted_scan_names()
@@ -1058,7 +1056,7 @@ class XasImporter(wx.Frame):
             workgroup.xshift = 0.0
             workgroup.scale = np.ptp(workgroup.y+1.e-15)
 
-        path, fname = os.path.split(workgroup.filename)
+        fname = Path(workgroup.filename).name
         popts = dict(
             marker="o",
             markersize=4,

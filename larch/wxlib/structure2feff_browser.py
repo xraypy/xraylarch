@@ -5,6 +5,7 @@ Read Structure input file, Make Feff input file, and run Feff
 
 import os
 import sys
+from pathlib import Path
 import numpy as np
 np.seterr(all='ignore')
 
@@ -63,14 +64,14 @@ class Structure2FeffFrame(wx.Frame):
         self.createMainPanel()
         self.createMenus()
 
-        self.feff_folder = unixpath(os.path.join(user_larchdir, 'feff'))
+        self.feff_folder = Path(user_larchdir, 'feff').as_posix()
         mkdir(self.feff_folder)
 
         self.runs_list = []
         for fname in os.listdir(self.feff_folder):
-            full = os.path.join(self.feff_folder, fname)
-            if os.path.isdir(full):
-                self.runs_list.append(fname)
+            full = Path(self.feff_folder, fname).absolute()
+            if full.is_dir():
+                self.runs_list.append(full.name)
 
         self.statusbar = self.CreateStatusBar(2, style=wx.STB_DEFAULT_STYLE)
         self.statusbar.SetStatusWidths([-3, -1])
@@ -280,13 +281,13 @@ class Structure2FeffFrame(wx.Frame):
         fname = self.wids['run_folder'].GetValue()
         fname = unique_name(fix_filename(fname), self.runs_list)
         self.runs_list.append(fname)
-        folder = unixpath(os.path.join(self.feff_folder, fname))
+        folder = Path(self.feff_folder, fname).absolute()
         mkdir(folder)
 
         ix, p = self.get_nbpage('Feff Output')
         self.nb.SetSelection(ix)
 
-        self.folder = folder
+        self.folder = folder.as_posix()
         out = self.wids['feffout_text']
         out.Clear()
         out.SetInsertionPoint(0)
@@ -295,29 +296,30 @@ class Structure2FeffFrame(wx.Frame):
         out.WriteText('###\n########\n')
         out.SetInsertionPoint(out.GetLastPosition())
 
-        fname = unixpath(os.path.join(folder, 'feff.inp'))
+        fname = Path(folder, 'feff.inp').absolute()
         with open(fname, 'w', encoding=sys.getdefaultencoding()) as fh:
             fh.write(strict_ascii(fefftext))
 
         if structure_fname is not None:
-            cname = unixpath(os.path.join(folder, structure_fname))
+            cname = Path(folder, structure_fname).absolute()
             with open(cname, 'w', encoding=sys.getdefaultencoding()) as fh:
                 fh.write(strict_ascii(structure_text))
 
-        wx.CallAfter(self.run_feff, folder, version8=version8)
+        wx.CallAfter(self.run_feff, self.folder, version8=version8)
 
-    def run_feff(self, folder=None, version8=True):
-        _, dname = os.path.split(folder)
+    def run_feff(self, folder, version8=True):
+        folder = Path(folder).absolute()
+        dname = folder.name
         prog, cmd = feff8l, 'feff8l'
         if not version8:
             prog, cmd = feff6l, 'feff6l'
-        command = f"{cmd:s}(folder='{folder:s}')"
+        command = f"{cmd:s}(folder='{folder}')"
         self.larch.eval(f"## running Feff as:\n#  {command:s}\n##\n")
 
-        prog(folder=folder, message_writer=self.feff_output)
+        prog(folder=folder.as_posix(), message_writer=self.feff_output)
         self.larch.eval("## gathering results:\n")
-        self.larch.eval(f"_sys._feffruns['{dname:s}'] = get_feff_pathinfo('{folder:s}')")
-        this_feffrun = self.larch.symtable._sys._feffruns[f'{dname:s}']
+        self.larch.eval(f"_sys._feffruns['{dname}'] = get_feff_pathinfo('{folder}')")
+        this_feffrun = self.larch.symtable._sys._feffruns[f'{dname}']
         self.feffresults.set_feffresult(this_feffrun)
         ix, p = self.get_nbpage('Feff Results')
         self.nb.SetSelection(ix)
@@ -327,7 +329,7 @@ class Structure2FeffFrame(wx.Frame):
             if (fname.endswith('.json') or fname.endswith('.pad') or
                 fname.endswith('.bin') or fname.startswith('log') or
                 fname in ('chi.dat', 'xmu.dat', 'misc.dat')):
-                os.unlink(unixpath(os.path.join(folder, fname)))
+                os.unlink(Path(folder, fname).absolute())
 
     def feff_output(self, text):
         out = self.wids['feffout_text']
@@ -380,13 +382,10 @@ class Structure2FeffFrame(wx.Frame):
                         wildcard=wildcard, default_file='My.cif')
 
         if path is not None:
-
             fmt = path.split('.')[-1]
-            fname = os.path.basename(path)
-
+            fname = Path(path).name
             with open(path, 'r', encoding=sys.getdefaultencoding()) as f:
                 structure_text = f.read()
-
 
             self.current_structure = structure2feff.parse_structure(structure_text=structure_text, fmt=fmt, fname=fname)
 
@@ -432,8 +431,7 @@ class Structure2FeffFrame(wx.Frame):
                         wildcard=wildcard, default_file='feff.inp')
         if path is not None:
             fefftext = None
-            _, fname = os.path.split(path)
-            fname = fname.replace('.inp', '_run')
+            fname = Path(path).name.replace('.inp', '_run')
             fname = unique_name(fix_filename(fname), self.runs_list)
             fefftext = read_textfile(path)
             if fefftext is not None:
@@ -451,7 +449,7 @@ class Structure2FeffFrame(wx.Frame):
         dlg.SetPath(self.feff_folder)
         if  dlg.ShowModal() == wx.ID_CANCEL:
             return None
-        self.feff_folder = os.path.abspath(dlg.GetPath())
+        self.feff_folder = Path(dlg.GetPath()).absolute().as_posix()
         mkdir(self.feff_folder)
 
     def onNBChanged(self, event=None):

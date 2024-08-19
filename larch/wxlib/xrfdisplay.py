@@ -4,11 +4,10 @@ GUI Frame for XRF display, reading larch MCA group
 
 """
 import sys
-import os
 import time
 import copy
 from functools import partial
-
+from pathlib import Path
 import wx
 import wx.lib.mixins.inspection
 import wx.lib.scrolledpanel as scrolled
@@ -484,7 +483,7 @@ class XRFDisplayFrame(wx.Frame):
         if not symtab.has_group(XRFGROUP):
             self.larch.eval(MAKE_XRFGROUP_CMD)
 
-        fico = os.path.join(icondir, ICON_FILE)
+        fico = Path(icondir, ICON_FILE).as_posix()
         try:
             self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
         except:
@@ -1297,7 +1296,7 @@ class XRFDisplayFrame(wx.Frame):
 
         filename = None
         if dlg.ShowModal() == wx.ID_OK:
-            filename = os.path.abspath(dlg.GetPath())
+            filename = Path(dlg.GetPath()).absolute().as_posix()
         dlg.Destroy()
 
         if filename is None:
@@ -1320,8 +1319,7 @@ class XRFDisplayFrame(wx.Frame):
         if not deffile.endswith('.mca'):
             deffile = deffile + '.mca'
 
-        _, deffile = os.path.split(deffile)
-        deffile = fix_filename(str(deffile))
+        deffile = fix_filename(Path(deffile).name)
         outfile = FileSave(self, "Save MCA File",
                            default_file=deffile,
                            wildcard=FILE_WILDCARDS)
@@ -1343,8 +1341,7 @@ class XRFDisplayFrame(wx.Frame):
         if not deffile.endswith('.dat'):
             deffile = deffile + '.dat'
 
-        _, deffile = os.path.split(deffile)
-        deffile = fix_filename(str(deffile))
+        deffile = fix_filename(Path(deffile).name)
         ASCII_WILDCARDS = "Data File (*.dat)|*.dat|All files (*.*)|*.*"
         outfile = FileSave(self, "Save ASCII File for MCA Data",
                            default_file=deffile,
@@ -1400,12 +1397,8 @@ class XRFDisplayFrame(wx.Frame):
                 read = (wx.ID_YES == Popup(self, "Re-read file '%s'?" % path,
                                            'Re-read file?', style=wx.YES_NO))
         dlg.Destroy()
+        return path
 
-        if read:
-            try:
-                parent, fname = os.path.split(path)
-            except:
-                return
 
 class XRFApp(LarchWxApp):
     def __init__(self, filename=None, **kws):

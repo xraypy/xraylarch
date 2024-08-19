@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 #
 import sys
-import os
 import time
+from pathlib import Path
+
 import wx
 
+from ..site_config import get_homedir
 DEFAULT_HISTORYFILE = '.wxlarch_hist'
 MAX_HISTORY = 5000
 
@@ -20,8 +22,7 @@ class ReadlineTextCtrl(wx.TextCtrl):
         self.hist_file = historyfile
         self.hist_buff = []
         if self.hist_file is None:
-            self.hist_file= os.path.join(os.environ.get('HOME','.'),
-                                         DEFAULT_HISTORYFILE)
+            self.hist_file= Path(get_homedir(), DEFAULT_HISTORYFILE).as_posix()
         # self.LoadHistory()
         self.hist_mark = len(self.hist_buff)
         self.hist_sessionstart = self.hist_mark
@@ -168,7 +169,7 @@ class ReadlineTextCtrl(wx.TextCtrl):
         fout.close()
 
     def LoadHistory(self):
-        if os.path.exists(self.hist_file):
+        if Path(self.hist_file).exists():
             self.hist_buff = []
             for txt in open(self.hist_file,'r').readlines():
                 stxt = txt.strip()
