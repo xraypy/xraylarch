@@ -1330,7 +1330,7 @@ class FeffitPanel(TaskPanel):
         if pathinfo is None and feffpath is None:
             raise ValueError("add_path needs a Feff Path or Path information")
         self.params_need_update = True
-        pfile = Path(filenam).absolute()
+        pfile = Path(filename).absolute()
         fname = pfile.name
         feffrun = pfile.parent.name
 

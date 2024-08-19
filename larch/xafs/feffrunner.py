@@ -157,7 +157,7 @@ class FeffRunner(Group):
                 copy('feff.inp', savefile)
             copy(feffinp_file, 'feff.inp')
 
-        logname = Path(program).name.as_posix()
+        logname = Path(program).name
         if logname.endswith('.exe'):
             logname = logname[:4]
 
