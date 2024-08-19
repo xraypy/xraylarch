@@ -12,7 +12,7 @@ the path represented by the feffNNNN.dat
 
 creates a group that contains the chi(k) for the sum of paths.
 """
-import os
+from pathlib import Path
 import numpy as np
 from copy import deepcopy
 from scipy.interpolate import UnivariateSpline
@@ -41,7 +41,7 @@ class FeffDatFile(Group):
         kwargs = dict(name='feff.dat: %s' % filename)
         kwargs.update(kws)
         Group.__init__(self,  **kwargs)
-        if filename not in ('', None) and os.path.exists(filename):
+        if filename not in ('', None) and Path(filename).exists():
             self._read(filename)
 
     def __repr__(self):
@@ -237,7 +237,7 @@ class FeffPathGroup(Group):
 
         self.__def_degen = 1
 
-        if filename not in ('', None) and os.path.exists(filename):
+        if filename not in ('', None) and Path(filename).exists():
             self._feffdat = FeffDatFile(filename=filename)
 
         if self._feffdat is not None:
@@ -253,9 +253,7 @@ class FeffPathGroup(Group):
 
             if feffrun in ('',  None):
                 try:
-                    dirname, fpfile = os.path.split(filename)
-                    parent, folder = os.path.split(dirname)
-                    self.feffrun = folder
+                    self.feffrun = Path(filename).parent.name
                 except:
                     pass
 
@@ -695,7 +693,7 @@ def feffpath(filename='', label='', feffrun='', s02=None, degen=None,
     ---------
         a FeffPath Group.
     """
-    if filename != '' and not os.path.exists(filename):
+    if filename != '' and not Path(filename).exists():
         raise ValueError(f"Feff Path file '{filename:s}' not found")
     return FeffPathGroup(filename=filename, label=label, feffrun=feffrun,
                          s02=s02, degen=degen, e0=e0, ei=ei, deltar=deltar,

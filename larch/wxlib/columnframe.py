@@ -2,13 +2,12 @@
 """
 
 """
-import os
 import re
 from copy import deepcopy
 
 import numpy as np
 np.seterr(all='ignore')
-
+from pathlib import Path
 from functools import partial
 
 import wx
@@ -974,7 +973,9 @@ class ColumnDataFileFrame(wx.Frame) :
 
     def read_column_file(self, path):
         """read column file, generally as initial read"""
-        parent, filename = os.path.split(path)
+        path = Path(path).absolute()
+        filename = path.name
+        path = path.as_posix()
         reader, text = guess_filereader(path, return_text=True)
 
         if reader == 'read_specfile':
@@ -1326,7 +1327,7 @@ class ColumnDataFileFrame(wx.Frame) :
         if energy_may_need_rebinning(workgroup):
             self.info_message.SetLabel("Warning: XAS data may need to be rebinned!")
 
-        path, fname = os.path.split(workgroup.filename)
+        fname = Path(workgroup.filename).name
         popts = dict(marker='o', markersize=4, linewidth=1.5, title=fname,
                      xlabel=workgroup.plot_xlabel,
                      ylabel=workgroup.plot_ylabel,

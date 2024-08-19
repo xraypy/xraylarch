@@ -4,6 +4,7 @@
 
 from __future__ import print_function
 import os
+from pathlib import Path
 import sys
 import time
 from collections import deque
@@ -152,7 +153,7 @@ class HistoryBuffer(object):
     def load(self, filename=None):
         if filename is not None:
             self.filename = filename
-        if os.path.exists(self.filename):
+        if Path(filename).exists():
             self.clear()
             text = read_textfile(filename).split('\n')
             for hline in text:

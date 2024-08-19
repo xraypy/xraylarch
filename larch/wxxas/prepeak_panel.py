@@ -500,7 +500,6 @@ class PrePeakFitResultFrame(wx.Frame):
         with open(path, 'w', encoding=sys.getdefaultencoding()) as fh:
             fh.write('\n'.join(out))
 
-
     def onSaveFitResult(self, event=None):
         deffile = self.datagroup.filename.replace('.', '_') + 'peak.modl'
         sfile = FileSave(self, 'Save Fit Model', default_file=deffile,
@@ -1339,13 +1338,8 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
 
 
     def onLoadFitResult(self, event=None):
-        dlg = wx.FileDialog(self, message="Load Saved Pre-edge Model",
-                            wildcard=ModelWcards, style=wx.FD_OPEN)
-        rfile = None
-        if dlg.ShowModal() == wx.ID_OK:
-            rfile = dlg.GetPath()
-        dlg.Destroy()
-
+        rfile = FileOpen(self, "Load Saved Pre-edge Model",
+                         wildcard=ModelWcards)
         if rfile is None:
             return
 

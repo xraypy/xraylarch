@@ -1,13 +1,12 @@
 """
 main Larch Applications
 """
-import os
 import sys
 import locale
 import inspect
 import shutil
 from argparse import ArgumentParser
-
+from  pathlib import Path
 
 import matplotlib
 from pyshortcuts import make_shortcut, ico_ext, get_desktop
@@ -53,17 +52,16 @@ class LarchApp(object):
     def make_desktop_shortcut(self, folder='Larch'):
         """make (or remake) desktop shortcuts for Larch apps"""
         bindir = 'Scripts' if uname == 'win' else 'bin'
-        bindir = os.path.join(sys.prefix, bindir)
+        bindir = Path(sys.prefix, bindir).absolute()
         script = self.script
         if not self.script.startswith('_'):
-            script = os.path.normpath(os.path.join(bindir, self.script))
+            script = Path(bindir, self.script).absolute()
 
-
-        icon = os.path.join(icondir, self.icon)
+        icon = Path(icondir, self.icon)
         if isinstance(ico_ext, (list, tuple)):
             for ext in ico_ext:
                 ticon = f"{self.icon:s}.{ext:s}"
-                if os.path.exists(ticon):
+                if Path(ticon).exists():
                     icon = ticon
 
         make_shortcut(script, name=self.name, folder=folder, icon=icon,
@@ -83,7 +81,7 @@ class LarchApp(object):
         args = parser.parse_args()
         self.filename = None
         if 'filename' in args and args.filename is not None:
-            self.filename = os.path.abspath(args.filename)
+            self.filename = Path(args.filename).absolute()
         self.wx_inspect = args.wx_inspect
         self.run_mode = args.run_mode
         if self.is_wxapp:
@@ -237,8 +235,8 @@ def run_larch():
 
     # create desktop icons
     if args.makeicons:
-        larchdir = os.path.join(get_desktop(), 'Larch')
-        if os.path.exists(larchdir):
+        larchdir = Path(get_desktop(), 'Larch').absolute()
+        if Path(larchdir).exists():
             shutil.rmtree(larchdir)
 
         for n, app in LarchApps.items():

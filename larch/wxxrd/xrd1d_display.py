@@ -24,10 +24,10 @@ from lmfit.lineshapes import gaussian
 
 import larch
 from larch.larchlib import read_workdir, save_workdir
-from larch.utils import nativepath, get_cwd, gformat, fix_filename
+from larch.utils import get_cwd, gformat, fix_filename
 from larch.utils.physical_constants import PLANCK_HC
 from larch.xray import XrayBackground
-from larch.wxxas import RemoveDialog
+from larch.wxxas.xas_dialogs import RemoveDialog
 from larch.io import tifffile
 
 from larch.xrd import (d_from_q,twth_from_q,q_from_twth,

@@ -313,8 +313,8 @@ def multi_plot(plotsets):
     fig = PlotlyFigure(two_yaxis=two_axis)
     fig.clear()
 
-    sopts = dict(title=None, xlabel=None, ylabel=None,
-                xmin=None, xmax=None, ymin=None, ymax=None)
+    sopts = dict(title=None, xlabel=None, ylabel=None)
+    ropts = dict(xmin=None, xmax=None, ymin=None, ymax=None)
 
     for pset in plotsets[:]:
         xdata = pset['xdata']
@@ -324,15 +324,20 @@ def multi_plot(plotsets):
         for w in ('label', 'color', 'style', 'linewidth', 'marker', 'side'):
             if w in pset:
                 popts[w] = pset[w]
-        for w in ('xmin', 'xmax', 'ymin', 'ymax', 'title', 'xlabel', 'ylabel'):
+        for w in ('title', 'xlabel', 'ylabel'):
             if w in pset:
                 sopts[w] = pset[w]
+
+        for w in ('xmin', 'xmax', 'ymin', 'ymax'):
+            if w in pset:
+                ropts[w] = pset[w]
 
         fig.add_plot(xdata, ydata, **popts)
 
     sopts['xaxis_title'] = sopts.pop('xlabel')
     sopts['yaxis_title'] = sopts.pop('ylabel')
-    return fig.show(**sopts)
+    fig.style.update(sopts)
+    return fig.show(**ropts)
 
 def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
             show_pre=False, show_post=False, show_e0=False, with_deriv=False,

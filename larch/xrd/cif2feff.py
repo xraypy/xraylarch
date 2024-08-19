@@ -56,7 +56,7 @@ def read_cif_structure(ciftext):
                 parse_ok = False
 
     try:
-        cstruct = cifstructs.get_structures()[0]
+        cstruct = cifstructs.parse_structures()[0]
     except:
         raise ValueError('could not get structure from text of CIF file')
 

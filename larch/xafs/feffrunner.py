@@ -1,11 +1,12 @@
 import sys
 import os
-from os.path import realpath, isdir, isfile, join, basename, dirname, abspath
+
 import glob
 from shutil import copy, move
 import subprocess
 import time
 import re
+from pathlib import Path
 from optparse import OptionParser
 from subprocess import Popen, PIPE
 
@@ -14,9 +15,9 @@ from larch.utils import isotime, bytes2str, uname, bindir, get_cwd
 
 def find_exe(exename):
     if uname == 'win' and not exename.endswith('.exe'):
-        exename = "%s.exe" % exename
-    exefile = join(bindir, exename)
-    if os.path.exists(exefile) and os.access(exefile, os.X_OK):
+        exename = f"{exename}.exe"
+    exefile = Path(bindir, exename)
+    if exefile.exists() and os.access(exefile, os.X_OK):
         return exefile
 
 class FeffRunner(Group):
@@ -85,8 +86,8 @@ class FeffRunner(Group):
         self.chargetransfer = []
 
     def __repr__(self):
-        fullfile = os.path.join(self.folder, self.feffinp)
-        return '<External Feff Group: %s>' % fullfile
+        ffile = Path(self.folder, self.feffinp)
+        return f'<External Feff Group: {ffile}>'
 
     def run(self, feffinp=None, folder=None, exe='feff8l'):
         """
@@ -104,16 +105,16 @@ class FeffRunner(Group):
             raise Exception("no feff.inp file was specified")
 
         savefile = '.save_.inp'
-        here = abspath(get_cwd())
-        os.chdir(abspath(self.folder))
+        here = Path.cwd().absolute()
+        os.chdir(Path(self.folder).absolute())
 
-        feffinp_dir, feffinp_file = os.path.split(self.feffinp)
-        feffinp_dir = dirname(self.feffinp)
-        if len(feffinp_dir) > 0:
+        pfeff = Path(self.feffinp)
+        feffinp_dir, feffinp_file = pfeff.parent, pfeff.name
+        if feffinp_dir.exists():
             os.chdir(feffinp_dir)
 
-        if not isfile(feffinp_file):
-            raise Exception("feff.inp file '%s' could not be found" % feffinp_file)
+        if not Path(feffinp_file).is_file():
+            raise Exception(f"feff.inp file '{feffinp_file}' could not be found")
 
         if exe in (None, 'feff8l'):
             for module in self.Feff8l_modules:
@@ -126,7 +127,7 @@ class FeffRunner(Group):
         ## find program to run:
         program = None
         if exe in self.Feff8l_modules:
-            exe = "feff8l_%s" % exe
+            exe = f"feff8l_{exe}"
 
         resolved_exe = find_exe(exe)
         if resolved_exe is not None:
@@ -148,25 +149,25 @@ class FeffRunner(Group):
 
         if program is None:  # Give up!
             os.chdir(here)
-            raise Exception("'%s' executable cannot be found" % exe)
+            raise Exception(f"'{exe}' executable cannot be found")
 
         ## preserve an existing feff.inp file if this is not called feff.inp
         if feffinp_file != 'feff.inp':
-            if isfile('feff.inp'):
+            if Path('feff.inp').is_file():
                 copy('feff.inp', savefile)
             copy(feffinp_file, 'feff.inp')
 
-        _, logname = os.path.split(program)
+        logname = Path(program).name.as_posix()
         if logname.endswith('.exe'):
             logname = logname[:4]
 
-        log = 'feffrun_%s.log' % logname
+        log = f'feffrun_{logname}.log'
 
-        if isfile(log):
+        if Path(log).is_file():
             os.unlink(log)
 
         f = open(log, 'a')
-        header = "\n======== running Feff module %s ========\n" % exe
+        header = f"\n======== running Feff module {exe} ========\n"
 
         def write(msg):
             msg = bytes2str(msg)
@@ -217,7 +218,7 @@ class FeffRunner(Group):
             f.write(line)
         f.close
 
-        if isfile(savefile):
+        if Path(savefile).is_file():
             move(savefile, 'feff.inp')
         os.chdir(here)
         return None
@@ -278,18 +279,20 @@ Examples:
     if len(args) == 0:
         args = ['.']
 
-    curdir = abspath(get_cwd())
+    curdir = Path(get_cwd()).absolute()
     for arg in args:
-        if os.path.isfile(arg):
-            feff6l(feffinp=arg)
-        elif os.path.isdir(arg):
-            feffinp = os.path.join(arg, 'feff.inp')
-            if os.path.exists(feffinp):
-                os.chdir(abspath(arg))
-                feff6l(folder=arg)
+        parg = Path(arg).absolute()
+        if parg.is_file():
+            feff6l(feffinp=parg.as_posix())
+        elif parg.is_dir():
+            feffinp = Path(parg, 'feff.inp').absolute()
+            if feffinp.exists():
+                os.chdir(parg)
+                feff6l(folder=parg.as_posix())
             else:
-                msg = "Could not find feff.inp file in folder '{:s}'"
-                sys.stdout.write(msg.format(abspath(os.curdir)))
+                cdir = Path.cwd().absolute()
+                msg = "Could not find feff.inp file in folder '{cdir}'"
+                sys.stdout.write(msg)
             os.chdir(curdir)
 
 
@@ -385,10 +388,10 @@ Example:
             sys.stdout.write(msg)
             logfile.write(msg)
 
-        write("#= Feff85l %s\n" % isotime())
+        write(f"#= Feff85l {isotime()}\n")
         for mod in modules:
-            write("#= Feff85l %s module\n" % mod)
-            exe = find_exe('feff8l_%s' % mod)
+            write(f"#= Feff85l {mod} module\n")
+            exe = find_exe(f'feff8l_{mod}')
             proc = Popen(exe, stdout=PIPE, stderr=PIPE)
             while True:
                 msg = bytes2str(proc.stdout.read())
@@ -399,24 +402,26 @@ Example:
                 msg = bytes2str(proc.stderr.read())
                 if msg == '':
                     break
-                write("#ERROR %s" % msg)
+                write(f"#ERROR {msg}")
             logfile.flush()
         for fname in glob.glob('log*.dat'):
             try:
                 os.unlink(fname)
             except IOError:
                 pass
-        write("#= Feff85l done %s\n" % isotime())
+        write(f"#= Feff85l done {isotime()}\n")
 
-    for dirname in args:
-        if os.path.exists(dirname) and os.path.isdir(dirname):
-            thisdir = abspath(os.curdir)
-            os.chdir(dirname)
-            if os.path.exists(FEFFINP) and os.path.isfile(FEFFINP):
+    for dname in args:
+        pdir = Path(dname).absolute()
+        if pdir.exists() and pdir.is_dir():
+            thisdir = Path.cwd().absolute()
+            os.chdir(pdir)
+            pfeff = Path(FEFFINP)
+            if pfeff.exists() and pfeff.is_file():
                 run_feff8l(modules)
             else:
-                msg = "Could not find feff.inp file in folder '{:s}'"
-                sys.stdout.write(msg.format(abspath(os.curdir)))
+                msg = f"Could not find feff.inp file in folder '{pdir}'"
+                sys.stdout.write(msg)
             os.chdir(thisdir)
         else:
-            print("Could not find folder '{:s}'".format(dirname))
+            print(f"Could not find folder '{pdir}'")

@@ -5,6 +5,7 @@ import sys
 import os
 import time
 from functools import partial
+from pathlib import Path
 import wx
 import wx.lib.mixins.inspection
 
@@ -208,8 +209,8 @@ class LarchPanel(wx.Panel):
                  historyfile='history_larchgui.lar', **kwds):
         self.parent = parent
         if not historyfile.startswith(larch.site_config.user_larchdir):
-            historyfile = os.path.join(larch.site_config.user_larchdir,
-                                       historyfile)
+            historyfile = Path(larch.site_config.user_larchdir,
+                                       historyfile).as_posix()
 
         wx.Panel.__init__(self, parent, -1, size=(750, 725))
 
@@ -371,9 +372,9 @@ class LarchFrame(wx.Frame):
         self.onSelectFont(fsize=self.fontsize)
         # larchdir = larch.site_config.larchdir
 
-        fico = os.path.join(larch.site_config.icondir, ICON_FILE)
-        if os.path.exists(fico):
-            self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
+        fico = Path(larch.site_config.icondir, ICON_FILE).absolute()
+        if fico.exists():
+            self.SetIcon(wx.Icon(fico.as_posix(), wx.BITMAP_TYPE_ICO))
         self.mainpanel.write_banner()
         if with_raise:
             self.Raise()
@@ -502,7 +503,7 @@ class LarchFrame(wx.Frame):
                             style=wx.FD_OPEN|wx.FD_CHANGE_DIR)
         path = None
         if dlg.ShowModal() == wx.ID_OK:
-            path = os.path.abspath(dlg.GetPath()).replace('\\', '/')
+            path = Path(dlg.GetPath()).absolute().as_posix()
         dlg.Destroy()
 
         if path is None:
@@ -513,7 +514,7 @@ class LarchFrame(wx.Frame):
                                creator=AthenaImporter,
                                read_ok_cb=self.onReadAthenaProject_OK)
         else:
-            filedir, filename = os.path.split(path)
+            filename = Path(path).fname
             pref = fix_varname((filename + '_'*8)[:8]).replace('.', '_').lower()
 
             count, maxcount = 1, 9999
@@ -570,9 +571,9 @@ class LarchFrame(wx.Frame):
                             wildcard=wildcard,
                             style=wx.FD_OPEN|wx.FD_CHANGE_DIR)
         if dlg.ShowModal() == wx.ID_OK:
-            fout = os.path.abspath(dlg.GetPath())
-            path, fname = os.path.split(fout)
-            os.chdir(path)
+            fout = Path(dlg.GetPath()).absolute()
+            fname = fout.name
+            os.chdir(fout.parent)
             text = "run('%s')" % fname
             self.larchshell.write("%s\n" % text)
             wx.CallAfter(self.larchshell.eval, text)
@@ -586,7 +587,7 @@ class LarchFrame(wx.Frame):
                             defaultFile=deffile,
                             style=wx.FD_SAVE|wx.FD_CHANGE_DIR)
         if dlg.ShowModal() == wx.ID_OK:
-            fout = os.path.abspath(dlg.GetPath())
+            fout = Path(dlg.GetPath()).absolute().as_posix()
             self._larch.input.history.save(fout, session_only=True)
             self.SetStatusText("Wrote %s" % fout, 0)
         dlg.Destroy()

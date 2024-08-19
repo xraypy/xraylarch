@@ -28,8 +28,6 @@ By default, that header will defined all the text before the data table.
 
 """
 
-import re
-
 import numpy as np
 from .fileutils import fix_varname
 

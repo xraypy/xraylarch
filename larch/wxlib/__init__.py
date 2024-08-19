@@ -52,19 +52,32 @@ if HAS_WXPYTHON:
     from . import larchframe
     from . import larchfilling
     from . import readlinetextctrl
-
+    from larch.utils import unixpath
+    import wxutils as wxu
     from wxutils import (set_sizer, pack, SetTip, Font, HLine, Check, MenuItem,
                          Popup, RIGHT, LEFT, CEN , LTEXT, FRAMESTYLE, hms,
                          DateTimeCtrl, Button, TextCtrl, ToggleButton,
                          BitmapButton, Choice, YesNo, SimpleText,
                          LabeledTextCtrl, HyperText, get_icon, OkCancel,
-                         FileOpen, FileSave, SelectWorkdir, fix_filename,
-                         SavedParameterDialog, GridPanel, RowPanel, make_steps,
-                         set_float, FloatCtrl, EditableListBox, COLORS,
-                         GUIColors, set_color, FileCheckList, FileDropTarget,
-                         NumericCombo, FloatSpin, FloatSpinWithPin,
-                         flatnotebook, PeriodicTablePanel, gcd, ExceptionPopup,
-                         show_wxsizes, panel_pack)
+                         fix_filename, SavedParameterDialog, GridPanel,
+                         RowPanel, make_steps, set_float, FloatCtrl,
+                         EditableListBox, COLORS, GUIColors, set_color,
+                         FileCheckList, FileDropTarget, NumericCombo,
+                         FloatSpin, FloatSpinWithPin, flatnotebook,
+                         PeriodicTablePanel, gcd, ExceptionPopup, show_wxsizes,
+                         panel_pack)
+
+    def FileOpen(parent, message, **kws):
+        "File Open dialog wrapper."
+        return unixpath(wxu.FileOpen(parent, message, **kws))
+
+    def FileSave(parent, message, **kws):
+        "File Save dialog"
+        return unixpath(wxu.FileSave(parent, message, **kws))
+
+    def SelectWorkdir(parent,  **kws):
+        "prompt for and change into a working directory "
+        return unixpath(wxu.SelectWorkdir(parent, **kws))
 
     from .larchframe import LarchFrame, LarchPanel
     from .columnframe import ColumnDataFileFrame, EditColumnFrame

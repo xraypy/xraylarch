@@ -13,7 +13,7 @@ import larch
 from larch.utils import isotime
 from larch.utils.strutils import fix_varname, fix_filename, bytes2str, version_ge
 
-from larch.io import (nativepath, new_filename, read_xrf_netcdf,
+from larch.io import (unixpath, new_filename, read_xrf_netcdf,
                       read_xsp3_hdf5, read_xrd_netcdf, read_xrd_hdf5)
 
 from larch.xrf import MCA, ROI
@@ -74,8 +74,8 @@ def strlist(alist):
 
 def isGSEXRM_MapFolder(fname):
     "return whether folder a valid Scan Folder (raw data)"
-    if (fname is None or not os.path.exists(fname) or
-        not os.path.isdir(fname)):
+    if (fname is None or not Path(fname).exists() or
+        not Path(fname).isdir()):
         return False
     flist = os.listdir(fname)
     for f in ('Master.dat', 'Environ.dat', 'Scan.ini'):
@@ -84,7 +84,7 @@ def isGSEXRM_MapFolder(fname):
 
     has_xrmdata = False
 
-    header, rows = readMasterFile(os.path.join(fname, 'Master.dat'))
+    header, rows = readMasterFile(Path(fname, 'Master.dat'))
     try:
         for f in rows[0]:
             if f in flist:
@@ -103,8 +103,8 @@ def test_h5group(group, folder=None):
         return None, None
     status = GSEXRM_FileStatus.hasdata
     vers = h5str(group.attrs.get('Version',''))
-    fullpath = group.attrs.get('Map_Folder','')
-    _parent, _folder = os.path.split(fullpath)
+    fullpath = group.attrs.get('Map_Folder','.')
+    _folder = Path(fullpath).name
     if folder is not None and folder != _folder:
         status = GSEXRM_FileStatus.wrongfolder
     return status, vers
@@ -350,7 +350,7 @@ class GSEXRM_MapFile(object):
         #         "'%s' does not have write access" % self.filename)
 
         # create empty HDF5 if needed
-        if self.status == GSEXRM_FileStatus.empty and os.path.exists(self.filename):
+        if self.status == GSEXRM_FileStatus.empty and Path(self.filename).exists():
             try:
                 flines = open(self.filename, 'r').readlines()
                 if len(flines) < 3:
@@ -368,9 +368,8 @@ class GSEXRM_MapFile(object):
             if self.status == GSEXRM_FileStatus.wrongfolder:
                 self.filename = new_filename(self.filename)
                 cfile = FastMapConfig()
-                cfile.Read(os.path.join(self.folder, self.ScanFile))
+                cfile.Read(Path(self.folder, self.ScanFile))
                 cfile.config['scan']['filename'] = self.filename
-                # cfile.Save(os.path.join(self.folder, self.ScanFile))
             print("Create HDF5 File  ")
             self.h5root = h5py.File(self.filename, 'w')
             self.write_access = True
@@ -415,10 +414,8 @@ class GSEXRM_MapFile(object):
         print("Initialized done ", self.status, self.version, self.root)
 
     def __repr__(self):
-        fname = ''
-        if self.filename is not None:
-            fpath, fname = os.path.split(self.filename)
-        return "GSEXRM_MapFile('%s')" % fname
+        fname = '' if self.filename is None else self.filename
+        return f"GSEXRM_MapFile('{Path(self.filename).name}')"
 
 
     def getFileStatus(self, filename=None, root=None, folder=None):
@@ -430,8 +427,7 @@ class GSEXRM_MapFile(object):
         folder = self.folder
         # print("getFileStatus 0 ", filename, folder)
         if folder is not None:
-            folder = os.path.abspath(folder)
-            parent, folder = os.path.split(folder)
+            folder = Path(folder).absolute().name
         self.status = GSEXRM_FileStatus.err_notfound
         self.root, self.version = '', ''
         if root not in ('', None):
@@ -862,7 +858,7 @@ class GSEXRM_MapFile(object):
         if self.has_xrd1d and self.xrdcalfile is None:
             self.xrdcalfile = bytes2str(self.xrmmap['xrd1d'].attrs.get('calfile',''))
         if self.xrdcalfile in (None, ''):
-            calfile = os.path.join(nativepath(self.folder), self.XRDCALFile)
+            calfile = os.path.join(unixpath(self.folder), self.XRDCALFile)
             if os.path.exists(calfile):
                 self.xrdcalfile = calfile
 
@@ -1962,7 +1958,7 @@ class GSEXRM_MapFile(object):
 
     def import_areas(self, filename, overwrite=False):
         '''import areas from datafile exported by export_areas()'''
-        fname = os.path.split(filename)[1]
+        fname = Path(filename).name
         if fname.endswith('.h5_Areas.npz'):
             fname = fname.replace('.h5_Areas.npz', '')
 
@@ -2206,7 +2202,7 @@ class GSEXRM_MapFile(object):
             tpath = tpath.replace('_raw','')
             dtcorrect = False
         elif tpath.endswith('counts'):
-            tpath = os.path.split(tpath)[0]
+            tpath = Path(tpath).absolute().parent.as_posix()
 
         ## build path for saving data in tomo-group
         grp = self.xrmmap
@@ -2312,7 +2308,7 @@ class GSEXRM_MapFile(object):
         "reads master file for toplevel scan info"
         if self.folder is None or not isGSEXRM_MapFolder(self.folder):
             return
-        self.masterfile = os.path.join(nativepath(self.folder), self.MasterFile)
+        self.masterfile = unixpath(Path(self.folder, self.MasterFile))
         header, rows, mtime = [], [], -1
         if self.scandb is not None:
             # check that this map folder is the one currently running from scandb:
@@ -2320,7 +2316,7 @@ class GSEXRM_MapFile(object):
                 db_folder = toppath(self.scandb.get_info('map_folder'))
             except:
                 db_folder = None
-            disk_folder = toppath(os.path.abspath(self.folder))
+            disk_folder = toppath(Path(self.folder).absolute().as_posix())
 
             if db_folder == disk_folder: # this is the current map
                 mastertext = self.scandb.get_slewscanstatus()
@@ -2382,7 +2378,7 @@ class GSEXRM_MapFile(object):
         # print("read_master scan version = ", self.scan_version)
         self.stop_time = time.ctime(self.master_modtime)
         try:
-            last_file = os.path.join(self.folder,rows[-1][2])
+            last_file = Path(self.folder, rows[-1][2])
             self.stop_time = time.ctime(os.stat(last_file).st_ctime)
         except:
             pass
@@ -2395,7 +2391,8 @@ class GSEXRM_MapFile(object):
                 self.rowdata[i].insert(4, addxrd)
 
         cfile = FastMapConfig()
-        cfile.Read(os.path.join(self.folder, self.ScanFile))
+        cfile.Read(Path(self.folder, self.ScanFile))
+
         mapconf = self.mapconf = cfile.config
 
         if self.filename is None:
@@ -2699,10 +2696,9 @@ class GSEXRM_MapFile(object):
                 _mca.add_roi(roi, left=lim0, right=lim1)
 
         _mca.areaname = _mca.title = name
-        path, fname = os.path.split(self.filename)
+        fname = Path(self.filename).name
         _mca.filename = fix_filename(fname)
-        fmt = "Data from File '%s', detector '%s', area '%s'"
-        _mca.info  =  fmt % (self.filename, dgroup, name)
+        mca.info = f"Data from File '{self.filename}', detector '{dgroup}', area '{name}'"
 
         return _mca
 
@@ -2748,12 +2744,11 @@ class GSEXRM_MapFile(object):
             xpix, ypix = counts.shape
             xrd = XRD(data2D=counts, xpixels=xpix, ypixels=ypix, name=name, **kws)
 
-        path, fname = os.path.split(self.filename)
+        fname = Path(self.filename).name
         xrd.filename = fname
         xrd.areaname = xrd.title = name
         xrd.mapname = mapdat.name
-        fmt = "Data from File '%s', detector '%s', area '%s'"
-        xrd.info  =  fmt % (self.filename, mapdat.name, name)
+        xrd.info = f"Data from File '{self.filename}', detector '{mapdat.name}', area '{name}'"
         xrd.q = mapdat['q'][()]
         return xrd
 
@@ -2770,12 +2765,12 @@ class GSEXRM_MapFile(object):
 
         xmin, xmax, ymin, ymax = sx.start, sx.stop, sy.start, sy.stop
 
-        xrd_file = os.path.join(self.folder, self.rowdata[0][4])
-        if os.path.exists(xrd_file):
+        xrd_file = Path(self.folder, self.rowdata[0][4]).as_posix()
+        if Path(xrd_file).exists():
             print("Reading XRD Patterns for rows %d to %d" %(ymin, ymax-1))
             data = None
             for yrow in range(ymin, ymax+1):
-                xrd_file = os.path.join(self.folder, self.rowdata[yrow][4])
+                xrd_file = Path(self.folder, self.rowdata[yrow][4]).as_posix()
                 print(f"read XRD for row {yrow:d}: {xrd_file:s}")
                 h5file = h5py.File(xrd_file, 'r')
                 rowdat = h5file['entry/data/data'][1:,:,:]
@@ -2834,12 +2829,12 @@ class GSEXRM_MapFile(object):
         sy, sx = [slice(min(_a), max(_a)+1) for _a in np.where(area)]
         xmin, xmax, ymin, ymax = sx.start, sx.stop, sy.start, sy.stop
         nx, ny = (xmax-xmin), (ymax-ymin)
-        xrd_file = os.path.join(self.folder, self.rowdata[0][4])
-        if os.path.exists(xrd_file):
+        xrd_file = Path(self.folder, self.rowdata[0][4]).as_posix()
+        if Path(xrd_file).exists():
             print("Reading XRD Patterns for rows %d to %d" %(ymin+1, ymax))
             data = None
             for yrow in range(ymin, ymax+1):
-                xrd_file = os.path.join(self.folder, self.rowdata[yrow][4])
+                xrd_file = Path(self.folder, self.rowdata[yrow][4]).as_posix()
                 print(f"read XRD for row {yrow:d}: {xrd_file:s}")
                 h5file = h5py.File(xrd_file, 'r')
                 rowdat = h5file['entry/data/data'][1:,:,:]
@@ -2860,11 +2855,10 @@ class GSEXRM_MapFile(object):
         # data.max(), data.mean())
         xrd = XRD(data2D=data, name=name, **kws)
         # print("made xrd ", xrd, kws)
-        path, fname = os.path.split(self.filename)
+        fname = Path(self.filename).name
         xrd.filename = fname
         xrd.areaname = xrd.title = areaname
-        fmt = "Data from File '%s', XRD 2d, area '%s'"
-        xrd.info  =  fmt % (self.filename, areaname)
+        xrd.info = f"Data from File '{self.filename}', XRD 2d, area '{areaname}'"
         xrd.ponifile = self.xrdcalfile
         return xrd
 

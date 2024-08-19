@@ -14,6 +14,7 @@ import time
 import os
 import sys
 import wx
+from pathlib import Path
 from copy import deepcopy
 from wxmplot import PlotFrame, ImageFrame, StackedPlotFrame
 
@@ -25,7 +26,7 @@ from ..site_config import user_larchdir
 
 from .xrfdisplay import XRFDisplayFrame
 
-mplconfdir = os.path.join(user_larchdir, 'matplotlib')
+mplconfdir = Path(user_larchdir, 'matplotlib').as_posix()
 mkdir(mplconfdir)
 os.environ['MPLCONFIGDIR'] = mplconfdir
 
@@ -913,9 +914,9 @@ def _saveplot(fname, dpi=300, format=None, win=1, _larch=None, wxparent=None,
               size=None, facecolor='w', edgecolor='w', quality=90,
               image=False, **kws):
     """formats: png (default), svg, pdf, jpeg, tiff"""
-    thisdir = os.path.abspath(os.curdir)
+    thisdir = Path.cwd().as_posix()
     if format is None:
-        pref, suffix = os.path.splitext(fname)
+        suffix = Path(fname).name
         if suffix is not None:
             if suffix.startswith('.'):
                 suffix = suffix[1:]

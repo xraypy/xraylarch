@@ -31,7 +31,7 @@ from io import StringIO
 from string import ascii_letters
 from base64 import b64encode, b64decode
 from collections import namedtuple
-from gzip import GzipFile
+
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import atexit

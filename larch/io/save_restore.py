@@ -11,8 +11,8 @@ from lmfit import Parameter, Parameters
 # from lmfit.minimizer import Minimizer, MinimizerResult
 
 from larch import Group, isgroup, __date__, __version__, __release_version__
-from ..utils import (isotime, bytes2str, str2bytes, fix_varname, is_gzip,
-                     read_textfile, unique_name, format_exception)
+from ..utils import (isotime, bytes2str, str2bytes, fix_varname,
+                     read_textfile, unique_name, format_exception, unixpath)
 from ..utils.jsonutils import encode4js, decode4js
 
 SessionStore = namedtuple('SessionStore', ('config', 'command_history', 'symbols'))
@@ -43,7 +43,7 @@ def save_groups(fname, grouplist):
 
     buff.append("")
 
-    fh = GzipFile(fname, "w")
+    fh = GzipFile(unixpath(fname), "w")
     fh.write(str2bytes("\n".join(buff)))
     fh.close()
 
@@ -175,7 +175,7 @@ def save_session(fname=None, symbols=None, histbuff=None,
     buff.append("##</Symbols>")
     buff.append("")
 
-    fh = GzipFile(fname, "w")
+    fh = GzipFile(unixpath(fname), "w")
     fh.write(str2bytes("\n".join(buff)))
     fh.close()
 

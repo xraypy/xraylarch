@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from datetime import datetime
 from collections import namedtuple
 from larch.utils import read_textfile
@@ -10,7 +11,7 @@ class FeffCalcResults:
     def __init__(self, folder=None, header=None, ipots=None,
                  paths=None, datetime=None, absorber=None,
                  shell=None, input_text=None):
-        self.folder = folder
+        self.folder = Path(folder).absolute().as_posix()
         self.header = header
         self.ipots = ipots
         self.paths = paths
@@ -33,15 +34,15 @@ class FeffCalcResults:
 def get_feff_pathinfo(folder):
     """get list of Feff path info for a Feff folder
     """
-    fdat = os.path.join(folder, 'files.dat')
-    pdat = os.path.join(folder, 'paths.dat')
-    f001 = os.path.join(folder, 'feff0001.dat')
-    finp = os.path.join(folder, 'feff.inp')
+    fdat = Path(folder, 'files.dat')
+    pdat = Path(folder, 'paths.dat')
+    f001 = Path(folder, 'feff0001.dat')
+    finp = Path(folder, 'feff.inp')
 
     # check for valid, complete calculation
-    if (not os.path.exists(fdat) or not os.path.exists(pdat) or
-        not os.path.exists(f001) or not os.path.exists(finp)):
-        return FeffCalcResults(os.path.abspath(folder), absorber=None,
+    if (not fdat.exists() or not pdat.exists() or
+        not f001.exists() or not finp.exists()):
+        return FeffCalcResults(folder,  absorber=None,
                                shell=None, ipots=[], header='',
                                paths=[], datetime=None)
 
@@ -134,7 +135,7 @@ def get_feff_pathinfo(folder):
     except:
         input_text = '<not available>'
 
-    return FeffCalcResults(os.path.abspath(folder),
+    return FeffCalcResults(folder,
                            absorber=absorber,
                            shell=shell,
                            ipots=ipots,

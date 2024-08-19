@@ -4,12 +4,12 @@ Code to read and write Athena Project files
 
 """
 
-import os
 import io
 import sys
 import time
 import json
 import platform
+from pathlib import Path
 from fnmatch import fnmatch
 from gzip import GzipFile
 from copy import deepcopy
@@ -18,7 +18,7 @@ from numpy.random import randint
 
 from larch import Group, repr_value
 from larch import __version__ as larch_version
-from larch.utils.strutils import bytes2str, str2bytes, fix_varname, asfloat
+from larch.utils import bytes2str, str2bytes, fix_varname, asfloat, unixpath
 
 from xraydb import guess_edge
 import asteval
@@ -49,7 +49,7 @@ def _read_raw_athena(filename):
     # try gzip
     text = None
     try:
-        fh = GzipFile(filename)
+        fh = GzipFile(unixpath(filename))
         text = bytes2str(fh.read())
     except Exception:
         errtype, errval, errtb = sys.exc_info()
@@ -624,7 +624,7 @@ class AthenaProject(object):
         self.journal = None
         self.filename = filename
         if filename is not None:
-            if os.path.exists(filename) and is_athena_project(filename):
+            if Path(filename).exists() and is_athena_project(filename):
                 self.read(filename)
 
     def add_group(self, group, signal=None):
@@ -711,10 +711,8 @@ class AthenaProject(object):
         buff.extend(["", "@journal = {};", "", "1;", "", "",
                      "# Local Variables:", "# truncate-lines: t",
                      "# End:", ""])
-        fopen =open
-        if use_gzip:
-            fopen = GzipFile
-        fh = fopen(self.filename, 'w')
+        fopen = GzipFile if use_gzip else open
+        fh = fopen(unixpath(self.filename), 'w')
         fh.write(str2bytes("\n".join([bytes2str(t) for t in buff])))
         fh.close()
 
@@ -756,12 +754,12 @@ class AthenaProject(object):
         """
         if filename is not None:
             self.filename = filename
-        if not os.path.exists(self.filename):
+        if not Path(self.filename).exists():
             raise IOError("%s '%s': cannot find file" % (ERR_MSG, self.filename))
 
         from larch.xafs import pre_edge, autobk, xftf
 
-        if not os.path.exists(filename):
+        if not Path(filename).exists():
             raise IOError("file '%s' not found" % filename)
 
         text = _read_raw_athena(filename)
@@ -927,7 +925,7 @@ def read_athena(filename, match=None, do_preedge=True, do_bkg=False,
            zn_data = read_athena('Zn on Stuff.prj', match='*merge*', do_bkg=True, do_fft=True)
 
     """
-    if not os.path.exists(filename):
+    if not Path(filename).exists():
         raise IOError("%s '%s': cannot find file" % (ERR_MSG, filename))
 
     aprj = AthenaProject()

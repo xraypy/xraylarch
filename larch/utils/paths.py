@@ -1,6 +1,7 @@
 import sys
 import os
 import platform
+from pathlib import Path
 
 HAS_PWD = True
 try:
@@ -8,14 +9,21 @@ try:
 except ImportError:
     HAS_PWD = False
 
+
 def unixpath(d):
-    return d.replace('\\', '/')
+    if isinstance(d, str):
+        return d.replace('\\', '/')
+    elif isinstance(d, Path):
+        return d.as_posix()
 
 def winpath(d):
     "ensure path uses windows delimiters"
-    if d.startswith('//'): d = d[1:]
-    d = d.replace('/','\\')
-    return d
+    if isinstance(d, str):
+        if d.startswith('//'): d = d[1:]
+        d = d.replace('/','\\')
+        return d
+    elif isinstance(d, Path):
+        return Path(d.as_posix())
 
 # uname = 'win', 'linux', or 'darwin'
 uname = sys.platform.lower()
@@ -71,7 +79,7 @@ def get_homedir():
     # finally, use current folder
     if homedir is None:
         homedir = os.path.abspath('.')
-    return nativepath(homedir)
+    return unixpath(homedir)
 
 def get_cwd():
     """get current working directory
@@ -82,7 +90,7 @@ def get_cwd():
     and readable directory.
     """
     try:
-        return os.getcwd()
+        return Path('.').absolute().as_posix()
     except:
         home = get_homedir()
         os.chdir(home)

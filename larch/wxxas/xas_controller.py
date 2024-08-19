@@ -2,16 +2,17 @@ import os
 import time
 import shutil
 from glob import glob
-import numpy as np
+from pathlib import Path
 from copy import deepcopy
 
+import numpy as np
 import wx
 
 import larch
 from larch import Group, Journal, Entry
 from larch.larchlib import read_config, save_config
 from larch.utils import (group2dict, unique_name, fix_varname, get_cwd,
-                         asfloat, get_sessionid, mkdir)
+                         asfloat, get_sessionid, mkdir, unixpath)
 from larch.wxlib.plotter import last_cursor_pos
 from larch.wxlib import ExceptionPopup
 from larch.io import fix_varname, save_session
@@ -35,8 +36,8 @@ class XASController():
         self.larch = _larch
         if _larch is None:
             self.larch = larch.Interpreter()
-        self.larix_folder = os.path.join(user_larchdir, 'larix')
-        self.config_file = os.path.join(self.larix_folder, CONF_FILE)
+        self.larix_folder = Path(user_larchdir, 'larix').as_posix()
+        self.config_file = Path(self.larix_folder, CONF_FILE).as_posix()
         self.init_larch_session()
         self.init_workdir()
 
@@ -47,12 +48,12 @@ class XASController():
         config = {}
         config.update(XASCONF)
         # may migrate old 'xas_viewer' folder to 'larix' folder
-        xasv_folder = os.path.join(user_larchdir, 'xas_viewer')
-        if (os.path.exists(xasv_folder) and not os.path.exists(self.larix_folder)):
+        xasv_folder = Path(user_larchdir, 'xas_viewer')
+        if Path(xasv_folder).exists() and not Path(self.larix_folder).exists():
             print("Migrating xas_viewer to larix folder")
             shutil.move(xasv_folder, self.larix_folder)
 
-        if not os.path.exists(self.larix_folder):
+        if not Path(self.larix_folder).exists():
             try:
                 mkdir(self.larix_folder)
             except:
@@ -62,12 +63,11 @@ class XASController():
 
 
         # may migrate old 'xas_viewer.conf' file to 'larix.conf'
-        old_config_file = os.path.join(self.larix_folder, OLDCONF_FILE)
-        if (os.path.exists(old_config_file)
-            and not os.path.exists(self.config_file)):
+        old_config_file = Path(self.larix_folder, OLDCONF_FILE).as_posix()
+        if Path(old_config_file).exists() and not Path(self.config_file).exists():
             shutil.move(old_config_file, self.config_file)
 
-        if os.path.exists(self.config_file):
+        if Path(self.config_file).exists():
             user_config = read_config(self.config_file)
             if user_config is not None:
                 for sname in config:
@@ -192,8 +192,8 @@ class XASController():
     def save_workdir(self):
         """save last workdir and recent session files"""
         try:
-            with open(os.path.join(self.larix_folder, 'workdir.txt'), 'w') as fh:
-                fh.write("%s\n" % get_cwd())
+            with open(Path(self.larix_folder, 'workdir.txt'), 'w') as fh:
+                fh.write(f"{get_cwd()}\n")
         except:
             pass
 
@@ -207,7 +207,7 @@ class XASController():
         buffer = '\n'.join(buffer)
 
         try:
-            with open(os.path.join(self.larix_folder, 'recent_sessions.txt'), 'w') as fh:
+            with open(Path(self.larix_folder, 'recent_sessions.txt'), 'w') as fh:
                 fh.write(buffer)
         except:
             pass
@@ -215,8 +215,8 @@ class XASController():
     def init_workdir(self):
         """set initial working folder, read recent session files"""
         if self.config['main'].get('use_last_workdir', False):
-            wfile = os.path.join(self.larix_folder, 'workdir.txt')
-            if os.path.exists(wfile):
+            wfile = Path(self.larix_folder, 'workdir.txt')
+            if wfile.exists():
                 try:
                     with open(wfile, 'r') as fh:
                         workdir = fh.readlines()[0][:-1]
@@ -228,8 +228,8 @@ class XASController():
             except:
                 pass
 
-        rfile = os.path.join(self.larix_folder, 'recent_sessions.txt')
-        if os.path.exists(rfile):
+        rfile = Path(self.larix_folder, 'recent_sessions.txt')
+        if rfile.exists():
             with open(rfile, 'r') as fh:
                 for line in fh.readlines():
                     if len(line) < 2 or line.startswith('#'):
@@ -247,15 +247,16 @@ class XASController():
         nhistory = max(8, int(conf.get('nhistory', 4)))
 
         fname =  f"{fileroot:s}_{get_sessionid():s}.larix"
-        savefile = os.path.join(self.larix_folder, fname)
+        savefile = Path(self.larix_folder, fname).as_posix()
         for i in reversed(range(1, nhistory)):
             curf = savefile.replace('.larix', f'_{i:d}.larix' )
-            if os.path.exists(curf):
+            if Path(curf).exists():
                 newf = savefile.replace('.larix', f'_{i+1:d}.larix' )
                 shutil.move(curf, newf)
-        if os.path.exists(savefile):
+        if Path(savefile).exists():
             curf = savefile.replace('.larix', '_1.larix' )
             shutil.move(savefile, curf)
+        print("SAVE SESSION ", savefile)
         save_session(savefile, _larch=self.larch)
         return savefile
 
@@ -267,7 +268,7 @@ class XASController():
         def get_autosavefiles():
             dat = []
             for afile in os.listdir(self.larix_folder):
-                ffile = os.path.join(self.larix_folder, afile)
+                ffile = Path(self.larix_folder, afile)
                 if afile.endswith('.larix'):
                     mtime = os.stat(ffile).st_mtime
                     words = afile.replace('.larix', '').split('_')
@@ -276,7 +277,7 @@ class XASController():
                         words.pop()
                     except:
                         version = 0
-                    dat.append((ffile, version, mtime))
+                    dat.append((ffile.as_posix(), version, mtime))
             return sorted(dat, key=lambda x: x[2])
 
         dat = get_autosavefiles()
@@ -308,9 +309,8 @@ class XASController():
         max_hist = int(conf.get('maxfiles', 10))
         flist = []
         for afile in os.listdir(self.larix_folder):
-            ffile = os.path.join(self.larix_folder, afile)
+            ffile = Path(self.larix_folder, afile).as_posix()
             if ffile.endswith('.larix'):
-                mtime = os.stat(ffile).st_mtime
                 flist.append((os.stat(ffile).st_mtime, ffile))
 
         return sorted(flist, key=lambda x: x[0], reverse=True)[:max_hist]
@@ -462,7 +462,7 @@ class XASController():
             plot_yarrays = dgroup.plot_yarrays
 
         popts = kws
-        path, fname = os.path.split(dgroup.filename)
+        fname = Path(dgroup.filename).name
         if not 'label' in popts:
             popts['label'] = dgroup.plot_ylabel
 

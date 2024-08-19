@@ -11,7 +11,7 @@ import logging
 
 from charset_normalizer import from_bytes
 from .gformat import gformat, getfloat_attr
-from .paths import uname, bindir, nativepath, unixpath, get_homedir, get_cwd
+from .paths import uname, bindir, unixpath, get_homedir, get_cwd
 from .debugtimer import debugtimer
 
 from .strutils import (fixName, isValidName, isNumber, bytes2str,
@@ -71,7 +71,7 @@ def log_critical(msg):
 
 def is_gzip(filename):
     "is a file gzipped?"
-    with open(filename, 'rb') as fh:
+    with open(unixpath(filename), 'rb') as fh:
         return fh.read(3) == b'\x1f\x8b\x08'
     return False
 
@@ -106,7 +106,7 @@ def read_textfile(filename, size=None):
             text = decode(text)
     else:
         fopen = GzipFile if is_gzip(filename) else open
-        with fopen(filename, 'rb') as fh:
+        with fopen(unixpath(filename), 'rb') as fh:
             text = decode(fh.read(size))
     return text.replace('\r\n', '\n').replace('\r', '\n')
 
@@ -195,7 +195,7 @@ def json_dump(data, filename):
     dump object or group to file using json
     """
     from .jsonutils import encode4js
-    with open(filename, 'w') as fh:
+    with open(unixpath(filename), 'w') as fh:
         fh.write(json.dumps(encode4js(data)))
         fh.write('\n')
 
@@ -204,7 +204,7 @@ def json_load(filename):
     load object from json dump file
     """
     from .jsonutils import decode4js
-    with open(filename, 'rb') as fh:
+    with open(unixpath(filename), 'rb') as fh:
         data = fh.read().decode('utf-8')
     return decode4js(json.loads(data))
 

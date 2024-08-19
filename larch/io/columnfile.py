@@ -6,13 +6,14 @@ import os
 import sys
 import time
 import string
+from pathlib import Path
 from collections import namedtuple
 import numpy as np
 from dateutil.parser import parse as dateparse
 from math import log10
 from larch import Group
 from larch.symboltable import isgroup
-from ..utils import read_textfile, format_exception
+from ..utils import read_textfile, format_exception, gformat
 from .fileutils import fix_varname
 from .xafs_beamlines import guess_beamline
 
@@ -120,48 +121,6 @@ def getfloats(txt, allow_times=True):
 def colname(txt):
     return fix_varname(txt.strip().lower()).replace('.', '_')
 
-
-def lformat(val, length=12):
-    """Format a number with fixed-length format, somewhat like '%g' except that
-
-        a) the length of the output string will be the requested length.
-        b) positive numbers will have a leading blank.
-        b) the precision will be as high as possible.
-        c) trailing zeros will not be trimmed.
-
-    The precision will typically be length-7, but may be better than
-    that for values with absolute value between 1.e-5 and 1.e8.
-
-    Arguments:
-    val       value to be formatted
-    length    length of output string
-
-    Returns
-    -------
-    string of specified length.
-
-    Notes
-    ------
-     Positive values will have leading blank.
-
-    """
-    try:
-        expon = int(log10(abs(val)))
-    except (OverflowError, ValueError):
-        expon = 0
-    length = max(length, 7)
-    form = 'e'
-    prec = length - 7
-    if abs(expon) > 99:
-        prec -= 1
-    elif ((expon > 0 and expon < (prec+4)) or
-          (expon <= 0 and -expon < (prec-1))):
-        form = 'f'
-        prec += 4
-        if expon > 0:
-            prec -= expon
-    fmt = '{0: %i.%i%s}' % (length, prec, form)
-    return fmt.format(val)
 
 def parse_labelline(labelline, header):
     """
@@ -333,7 +292,7 @@ def read_ascii(filename, labels=None, simple_labels=False,
         read_xdi, write_ascii
 
     """
-    if not os.path.isfile(filename):
+    if not Path(filename).is_file():
         raise OSError("File not found: '%s'" % filename)
     if os.stat(filename).st_size > MAX_FILESIZE:
         raise OSError("File '%s' too big for read_ascii()" % filename)
@@ -402,11 +361,11 @@ def read_ascii(filename, labels=None, simple_labels=False,
                 header_attrs[key] = words[1].strip()
 
 
-    path, fname = os.path.split(filename)
+    fpath = Path(filename).absolute()
+    filename = fpath.as_posix()
     attrs = {'filename': filename}
     group = Group(name='ascii_file %s' % filename,
-                  path=filename,
-                  filename=fname,
+                  path=filename, filename=fpath.name,
                   header=headers, data=[], array_labels=[])
 
     if len(data) == 0:
@@ -597,7 +556,7 @@ def write_ascii(filename, *args, commentchar='#', label=None, header=None):
 
     arrays = np.array(arrays)
     for i in range(arraylen):
-        w = [" %s" % lformat(val[i], length=14) for val in arrays]
+        w = [" %s" % gformat(val[i], length=14) for val in arrays]
         buff.append('  '.join(w))
     buff.append('')
 

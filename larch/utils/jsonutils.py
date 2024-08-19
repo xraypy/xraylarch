@@ -8,6 +8,7 @@ import numpy as np
 import h5py
 from datetime import datetime
 from collections import namedtuple
+from pathlib import Path, PosixPath
 from types import ModuleType
 import importlib
 import logging
@@ -119,6 +120,8 @@ def encode4js(obj):
         return obj.decode('utf-8')
     elif isinstance(obj, datetime):
         return {'__class__': 'Datetime', 'isotime': obj.isoformat()}
+    elif isinstance(obj, (Path, PosixPath)):
+        return {'__class__': 'Path', 'value': obj.as_posix()}
     elif isinstance(obj,(complex, np.complex128)):
         return {'__class__': 'Complex', 'value': (obj.real, obj.imag)}
     elif isinstance(obj, io.IOBase):
@@ -280,6 +283,8 @@ def decode4js(obj):
             out[key] = decode4js(val)
     elif classname == 'Datetime':
         obj = datetime.fromisoformat(obj['isotime'])
+    elif classname in ('Path', 'PosixPath'):
+        obj = Path(obj['value'])
 
     elif classname == 'IOBase':
         mode = 'r'

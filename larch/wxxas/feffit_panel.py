@@ -1480,13 +1480,8 @@ class FeffitPanel(TaskPanel):
         return result
 
     def onLoadFitResult(self, event=None):
-        dlg = wx.FileDialog(self, message="Load Saved Feffit Model",
-                            wildcard=ModelWcards, style=wx.FD_OPEN)
-        rfile = None
-        if dlg.ShowModal() == wx.ID_OK:
-            rfile = dlg.GetPath()
-        dlg.Destroy()
-
+        rfile = FileOpen(self, "Load Saved Feffit Model",
+                            wildcard=ModelWcards)
         if rfile is None:
             return
 
@@ -1600,18 +1595,19 @@ class FeffitPanel(TaskPanel):
         curr_syms = self.get_used_params()
         pargroup = self.get_paramgroup()
         parpanel = self.params_panel
-        # print(group2params(pargroup).keys())
         for pname, par in group2params(pargroup).items():
-            if pname not in curr_syms and pname in parpanel.parwids:
-                par.skip = parpanel.parwids[pname].param.skip = True
-                parpanel.parwids[pname].vary.SetStringSelection('skip')
-                parpanel.parwids[pname].onVaryChoice()
-
-            elif (pname in curr_syms and pname in parpanel.parwids
-                  and parpanel.parwids[pname].param.skip):
-                par.skip = parpanel.parwids[pname].param.skip = False
-                parpanel.parwids[pname].vary.SetStringSelection('vary')
-                parpanel.parwids[pname].onVaryChoice()
+            if pname in parpanel.parwids:
+                ppar = parpanel.parwids[pname]
+                _skip = False
+                _str = ppar.vary.GetStringSelection()
+                if pname not in curr_syms:
+                    _skip = True
+                    _str = 'skip'
+                elif (pname in curr_syms and getattr(ppar, 'skip', False)):
+                    _str = 'vary'
+                ppar.skip = ppar.param.skip = par.skip = _skip
+                ppar.vary.SetStringSelection(_str)
+                ppar.onVaryChoice()
             parpanel.update()
 
     def onFitModel(self, event=None, dgroup=None):

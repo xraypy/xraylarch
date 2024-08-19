@@ -2,8 +2,8 @@
 """
 
 """
-import os
-import re
+from pathlib import Path
+
 import numpy as np
 np.seterr(all='ignore')
 
@@ -52,11 +52,11 @@ class SpecfileImporter(wx.Frame) :
             return None
 
         self.parent = parent
-        self.path = filename
-        path, fname = os.path.split(filename)
-        self.filename = fname
+        fpath = Path(filename).absolute()
+        self.path = fpath.as_posix()
+        self.filename = fpath.name
         self._larch = _larch
-        self.specfile = open_specfile(filename)
+        self.specfile = open_specfile(self.path)
         self.scans = []
         curscan = None
         for scandata in self.specfile.get_scans():
@@ -647,8 +647,8 @@ class SpecfileImporter(wx.Frame) :
         if energy_may_need_rebinning(workgroup):
             self.message.SetLabel("Warning: XAS data may need to be rebinned!")
 
-        path, fname = os.path.split(workgroup.filename)
-        popts = dict(marker='o', markersize=4, linewidth=1.5, title=fname,
+        popts = dict(marker='o', markersize=4, linewidth=1.5,
+                     title=Path(workgroup.filename).name,
                      ylabel=workgroup.plot_ylabel,
                      xlabel=workgroup.plot_xlabel,
                      label=workgroup.plot_ylabel)

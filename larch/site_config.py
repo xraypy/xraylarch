@@ -7,12 +7,13 @@ site configuration for larch:
 """
 import sys
 import os
-import importlib.metadata
+from pathlib import Path
+
 from subprocess import check_call, CalledProcessError, TimeoutExpired
 
 from packaging.version import parse as version_parse
 
-from .utils import (uname, get_homedir, nativepath, unixpath,
+from .utils import (uname, get_homedir, unixpath,
                     log_warning, log_error)
 from .version import __version__, __release_version__
 
@@ -24,7 +25,7 @@ larch_release_version = __release_version__
 
 def pjoin(*args):
     "simple join"
-    return nativepath(os.path.join(*args))
+    return Path(*args).absolute().as_posix()
 
 def update_larch(with_larix=True):
     "pip upgrade larch"
@@ -36,22 +37,18 @@ def update_larch(with_larix=True):
 #                 = get_homedir() + 'larch'  (#win)
 home_dir = get_homedir()
 
-here, i_am = os.path.split(__file__)
-icondir = os.path.join(here, 'icons')
+icondir = Path(Path(__file__).parent, 'icons').absolute()
 
 user_larchdir = pjoin(home_dir, '.larch')
-if uname == 'win':
-    user_larchdir = unixpath(pjoin(home_dir, 'larch'))
 
 if 'LARCHDIR' in os.environ:
-    user_larchdir = nativepath(os.environ['LARCHDIR'])
+    user_larchdir = unixpath(os.environ['LARCHDIR'])
 
 # on Linux, check for HOME/.local/share,
 # make with mode=711 if needed
 if uname in ('linux', 'darwin') and os.getuid() > 0:
-    lshare = os.path.join(home_dir, '.local', 'share')
-    if not os.path.exists(lshare):
-        os.makedirs(lshare, mode=457) # for octal 711
+    lshare = Path(home_dir, '.local', 'share').absolute()
+    lshare.mkdir(mode=457, parents=True, exist_ok=True) # for octal 711
 
 
 # initialization larch files to be run on startup
@@ -59,8 +56,8 @@ init_files = [pjoin(user_larchdir, 'init.lar')]
 
 if 'LARCHSTARTUP' in os.environ:
     startup = os.environ['LARCHSTARTUP']
-    if os.path.exists(startup):
-        init_files = [nativepath(startup)]
+    if Path(startup).exists():
+        init_files = [unixpath(startup)]
 
 # history file:
 history_file = pjoin(user_larchdir, 'history.lar')
@@ -78,9 +75,9 @@ def make_user_larchdirs():
 
     def make_dir(dname):
         "create directory"
-        if not os.path.exists(dname):
+        if not Path(dname).exists():
             try:
-                os.mkdir(dname, mode=493)
+                Path(dname).mkdir(mode=493, parents=True)
             except PermissionError:
                 log_warning(f'no permission to create directory {dname}')
             except (OSError, TypeError):
@@ -88,7 +85,7 @@ def make_user_larchdirs():
 
     def write_file(fname, text):
         "write wrapper"
-        if not os.path.exists(fname):
+        if not Path(fname).exists():
             try:
                 with open(fname, 'w', encoding=sys.getdefaultencoding()) as fileh:
                     fileh.write(f'# {text}\n')

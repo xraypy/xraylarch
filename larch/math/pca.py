@@ -22,7 +22,7 @@ from lmfit import minimize, Parameters
 
 from .. import Group
 from .utils import interp, index_of
-from larch.utils import str2bytes, bytes2str, read_textfile
+from larch.utils import str2bytes, bytes2str, read_textfile, unixpath
 
 from .lincombo_fitting import get_arrays, get_label, groups2matrix
 
@@ -171,7 +171,7 @@ def save_pca_model(pca_model, filename):
     buff = ['##Larch PCA Model: 1.0 : %s' % time.strftime('%Y-%m-%d %H:%M:%S')]
     buff.append('%s' % json.dumps(encode4js(pca_model)))
 
-    fh = GzipFile(filename, "w")
+    fh = GzipFile(unixpath(filename), "w")
     fh.write(str2bytes("\n".join(buff)))
     fh.close()
 

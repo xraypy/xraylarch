@@ -2,13 +2,12 @@
 """
 fitting GUI for XRF display
 """
-import os
 import sys
 import time
 import copy
 from functools import partial
 from threading import Thread
-
+from pathlib import Path
 import json
 import numpy as np
 import wx
@@ -195,9 +194,9 @@ class FitSpectraFrame(wx.Frame):
 
         opts = getattr(xrfgroup, 'fitconfig', None)
         if opts is None:
-            xrf_conffile = os.path.join(user_larchdir, 'xrf_fitconfig.json')
-            if os.path.exists(xrf_conffile):
-                opts = json_load(xrf_conffile)
+            xrf_conffile = Path(user_larchdir, 'xrf_fitconfig.json')
+            if xrf_conffile.exists():
+                opts = json_load(xrf_conffile.as_posix())
         if opts is not None:
             self.config.update(opts)
 
@@ -1222,7 +1221,7 @@ class FitSpectraFrame(wx.Frame):
 
         xrfgroup = self._larch.symtable.get_group(XRFGROUP)
         setattr(xrfgroup, 'fitconfig', opts)
-        json_dump(opts, os.path.join(user_larchdir, 'xrf_fitconfig.json'))
+        json_dump(opts, Path(user_larchdir, 'xrf_fitconfig.json'))
 
 
         syms = ["'%s'" % self.ptable.syms[iz-1] for iz in elemz]

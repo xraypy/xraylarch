@@ -9,6 +9,7 @@ import sys
 from time import time, sleep, ctime
 import signal
 import socket
+from pathlib import Path
 from subprocess import Popen
 from threading import Thread
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
@@ -301,13 +302,13 @@ def spawn_server(port=4966, wait=True, timeout=30):
     optionally waiting to confirm connection
     """
     topdir = sys.exec_prefix
-    pyexe = os.path.join(topdir, 'bin', 'python')
+    pyexe = Path(topdir, 'bin', 'python').as_posix()
     bindir = 'bin'
     if uname.startswith('win'):
         bindir = 'Scripts'
         pyexe = pyexe + '.exe'
 
-    args = [pyexe, os.path.join(topdir, bindir, 'larch'),
+    args = [pyexe, Path(topdir, bindir, 'larch').as_posix(),
             '-r', '-p', '%d' % port]
     pipe = Popen(args)
     if wait:

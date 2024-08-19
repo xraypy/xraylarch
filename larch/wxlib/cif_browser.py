@@ -10,7 +10,7 @@ import copy
 # from threading import Thread
 import numpy as np
 np.seterr(all='ignore')
-
+from pathlib import Path
 from functools import partial
 import wx
 import wx.lib.scrolledpanel as scrolled
@@ -86,12 +86,12 @@ class CIFFrame(wx.Frame):
 
         if with_feff:
             self.larch.eval("if not hasattr('_sys', '_feffruns'): _sys._feffruns = {}")
-            self.feff_folder = unixpath(os.path.join(user_larchdir, 'feff'))
+            self.feff_folder = unixpath(Path(user_larchdir, 'feff'))
             mkdir(self.feff_folder)
             self.feffruns_list = []
             for fname in os.listdir(self.feff_folder):
-                full = os.path.join(self.feff_folder, fname)
-                if os.path.isdir(full):
+                full = Path(self.feff_folder, fname).absolute()
+                if full.is_dir():
                     self.feffruns_list.append(fname)
 
         self.statusbar = self.CreateStatusBar(2, style=wx.STB_DEFAULT_STYLE)
@@ -530,13 +530,13 @@ class CIFFrame(wx.Frame):
         # asite = int(self.wids['feff_site'].GetStringSelection())
         # mineral = cc.get_mineralname()
         # folder = f'{catom:s}{asite:d}_{edge:s}_{mineral}_cif{cc.ams_id:d}'
-        # folder = unixpath(os.path.join(self.feff_folder, folder))
+        # folder = unixpath(Path(self.feff_folder, folder))
         version8 = '8' == self.wids['feffvers'].GetStringSelection()
 
         fname = self.wids['feff_runfolder'].GetValue()
         fname = unique_name(fix_filename(fname), self.feffruns_list)
         self.feffruns_list.append(fname)
-        self.folder = folder = unixpath(os.path.join(self.feff_folder, fname))
+        self.folder = folder = unixpath(Path(self.feff_folder, fname))
         mkdir(self.folder)
         ix, p = self.get_nbpage('Feff Output')
         self.nb.SetSelection(ix)
@@ -544,24 +544,24 @@ class CIFFrame(wx.Frame):
         out = self.wids['feffout_text']
         out.Clear()
         out.SetInsertionPoint(0)
-        out.WriteText(f'########\n###\n# Run Feff in folder: {folder:s}\n')
+        out.WriteText(f'########\n###\n# Run Feff in folder: {folder}\n')
         out.SetInsertionPoint(out.GetLastPosition())
         out.WriteText('###\n########\n')
         out.SetInsertionPoint(out.GetLastPosition())
 
-        fname = unixpath(os.path.join(folder, 'feff.inp'))
+        fname = unixpath(Path(folder, 'feff.inp').absolute())
         with open(fname, 'w', encoding=sys.getdefaultencoding()) as fh:
             fh.write(strict_ascii(fefftext))
 
         if cif_fname is not None:
-            cname = unixpath(os.path.join(folder, fix_filename(cif_fname)))
+            cname = unixpath(Path(folder, fix_filename(cif_fname)))
             with open(cname, 'w', encoding=sys.getdefaultencoding()) as fh:
                 fh.write(strict_ascii(ciftext))
         wx.CallAfter(self.run_feff, folder, version8=version8)
 
     def run_feff(self, folder=None, version8=True):
-        print("RUN FEFF ", folder)
-        _, dname = os.path.split(folder)
+        # print("RUN FEFF ", folder)
+        dname = Path(folder).name
         prog, cmd = feff8l, 'feff8l'
         if not version8:
             prog, cmd = feff6l, 'feff6l'
@@ -581,7 +581,7 @@ class CIFFrame(wx.Frame):
             if (fname.endswith('.json') or fname.endswith('.pad') or
                 fname.endswith('.bin') or fname.startswith('log') or
                 fname in ('chi.dat', 'xmu.dat', 'misc.dat')):
-                os.unlink(unixpath(os.path.join(folder, fname)))
+                os.unlink(unixpath(Path(folder, fname).absolute()))
 
     def feff_output(self, text):
         out = self.wids['feffout_text']
@@ -608,6 +608,7 @@ class CIFFrame(wx.Frame):
         path = FileSave(self, message='Save Feff File',
                         wildcard=wildcard,
                         default_file=fname)
+        path = unixpath(path)
         if path is not None:
             with open(path, 'w', encoding=sys.getdefaultencoding()) as fh:
                 fh.write(fefftext)
@@ -624,6 +625,7 @@ class CIFFrame(wx.Frame):
         path = FileSave(self, message='Save CIF File',
                         wildcard=wildcard,
                         default_file=fname)
+        path = unixpath(path)
         if path is not None:
             with open(path, 'w', encoding=sys.getdefaultencoding()) as fh:
                 fh.write(cc.ciftext)
@@ -633,7 +635,7 @@ class CIFFrame(wx.Frame):
         wildcard = 'CIF files (*.cif)|*.cif|All files (*.*)|*.*'
         path = FileOpen(self, message='Open CIF File',
                         wildcard=wildcard, default_file='My.cif')
-
+        path = unixpath(path)
         if path is not None:
             try:
                 cif_data = parse_cif_file(path)
@@ -664,9 +666,10 @@ class CIFFrame(wx.Frame):
         wildcard = 'Feff input files (*.inp)|*.inp|All files (*.*)|*.*'
         path = FileOpen(self, message='Open Feff Input File',
                         wildcard=wildcard, default_file='feff.inp')
+        path = unixpath(path)
         if path is not None:
             fefftext = None
-            _, fname = os.path.split(path)
+            fname = Path(path).name
             fname = fname.replace('.inp', '_run')
             fname = unique_name(fix_filename(fname), self.feffruns_list)
             fefftext = read_textfile(path)
@@ -685,7 +688,7 @@ class CIFFrame(wx.Frame):
         dlg.SetPath(self.feff_folder)
         if  dlg.ShowModal() == wx.ID_CANCEL:
             return None
-        self.feff_folder = os.path.abspath(dlg.GetPath())
+        self.feff_folder = Path(dlg.GetPath()).absolute().as_posix()
         mkdir(self.feff_folder)
 
     def onNBChanged(self, event=None):
