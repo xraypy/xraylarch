@@ -11,7 +11,7 @@ import logging
 
 from charset_normalizer import from_bytes
 from .gformat import gformat, getfloat_attr
-from .paths import uname, bindir, unixpath, get_homedir, get_cwd
+from .paths import uname, bindir, unixpath, get_homedir, path_split, get_cwd
 from .debugtimer import debugtimer
 
 from .strutils import (fixName, isValidName, isNumber, bytes2str,

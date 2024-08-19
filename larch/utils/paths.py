@@ -36,7 +36,7 @@ if uname.startswith('linux'):
     uname = 'linux'
 
 def path_split(path):
-    "emulate os.path.split"
+    "emulate os.path.split, returning posix path and filename"
     p = Path(path).absolute()
     return p.parent.as_posix(), p.name
 

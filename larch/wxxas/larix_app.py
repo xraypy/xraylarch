@@ -1,8 +1,8 @@
 import time
 import sys
-import os
 import locale
 from  threading import Thread
+from pathlib import Path
 import wx
 import wx.adv, wx.richtext
 from  wx.lib.mixins.inspection import InspectionMixin
@@ -48,7 +48,7 @@ class LarixApp(wx.App, InspectionMixin):
 class LarixSplashScreen(wx.adv.SplashScreen):
     def __init__(self, **kws):
         self.kws = kws
-        bmp = wx.Image(os.path.join(icondir, ICON_FILE)).ConvertToBitmap()
+        bmp = wx.Image(Path(icondir, ICON_FILE).as_posix()).ConvertToBitmap()
         wx.adv.SplashScreen.__init__(self, bmp, SPLASH_STYLE, 9000, None, -1)
         self.import_thread = Thread(target=self.importer)
         self.import_thread.start()

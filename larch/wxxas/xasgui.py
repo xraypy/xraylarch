@@ -27,7 +27,7 @@ from larch import Group, Journal, Entry
 from larch.io import save_session, read_session
 from larch.math import index_of
 from larch.utils import (isotime, time_ago, get_cwd,
-                         is_gzip, uname, unixpath)
+                         is_gzip, uname, path_split)
 from larch.utils.strutils import (file2groupname, unique_name,
                                   common_startstring, asfloat)
 
@@ -1332,7 +1332,7 @@ before clearing"""
         def file_mtime(x):
             return os.stat(x).st_mtime
 
-        self.paths2read = [unixpath(p) for p in self.paths2read]
+        self.paths2read = [Path(p).as_posix() for p in self.paths2read]
         self.paths2read = sorted(self.paths2read, key=file_mtime)
 
         path = self.paths2read.pop(0)
@@ -1510,7 +1510,7 @@ before clearing"""
         script = "{group:s} = _prj.{prjgroup:s}"
         cur_panel = self.nb.GetCurrentPage()
         cur_panel.skip_plotting = True
-        parent, spath = os.path.split(path)
+        parent, spath = path_split(path)
         labels = []
         groups_added = []
 
@@ -1622,7 +1622,7 @@ before clearing"""
         overwrite: whether to overwrite the current datagroup, as when
         editing a datagroup
         """
-        filedir, spath = os.path.split(path)
+        filedir, spath = path_split(path)
         filename = config.get('filename', spath)
         groupname = config.get('groupname', None)
         if groupname is None:
@@ -1750,7 +1750,7 @@ before clearing"""
         gname = None
 
         for path in self.paths2read:
-            filedir, spath = os.path.split(path)
+            filedir, spath = path_split(path)
             fname = spath
             if len(multi_chans) > 0:
                 yname = config['array_labels'][config['iy1']]

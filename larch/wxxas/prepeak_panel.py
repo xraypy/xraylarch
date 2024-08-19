@@ -1,6 +1,6 @@
 import time
-import os
 import sys
+from pathlib import Path
 import numpy as np
 np.seterr(all='ignore')
 
@@ -446,7 +446,7 @@ class PrePeakFitResultFrame(wx.Frame):
                         default_file=deffile, wildcard=wcards)
         if path is None:
             return
-        if os.path.exists(path) and uname != 'darwin':  # darwin prompts in FileSave!
+        if Path(path).exists() and uname != 'darwin':  # darwin prompts in FileSave!
             if wx.ID_YES != Popup(self,
                                   "Overwrite existing Statistics File?",
                                   "Overwrite existing file?", style=wx.YES_NO):
@@ -1601,4 +1601,4 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         confdir = self.controller.larix_folder
         if fname is None:
             fname = 'autosave_peakfile.modl'
-        save_groups(os.path.join(confdir, fname), ['#peakfit 1.0', result])
+        save_groups(Path(confdir, fname).as_posix(), ['#peakfit 1.0', result])
