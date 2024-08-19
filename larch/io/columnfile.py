@@ -6,6 +6,7 @@ import os
 import sys
 import time
 import string
+from pathlib import Path
 from collections import namedtuple
 import numpy as np
 from dateutil.parser import parse as dateparse
@@ -291,7 +292,7 @@ def read_ascii(filename, labels=None, simple_labels=False,
         read_xdi, write_ascii
 
     """
-    if not os.path.isfile(filename):
+    if not Path(filename).is_file():
         raise OSError("File not found: '%s'" % filename)
     if os.stat(filename).st_size > MAX_FILESIZE:
         raise OSError("File '%s' too big for read_ascii()" % filename)
@@ -360,11 +361,11 @@ def read_ascii(filename, labels=None, simple_labels=False,
                 header_attrs[key] = words[1].strip()
 
 
-    path, fname = os.path.split(filename)
+    fpath = Path(filename).absolute()
+    filename = fpath.as_posix()
     attrs = {'filename': filename}
     group = Group(name='ascii_file %s' % filename,
-                  path=filename,
-                  filename=fname,
+                  path=filename, filename=fpath.name,
                   header=headers, data=[], array_labels=[])
 
     if len(data) == 0:

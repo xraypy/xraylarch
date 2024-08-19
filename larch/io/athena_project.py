@@ -4,12 +4,12 @@ Code to read and write Athena Project files
 
 """
 
-import os
 import io
 import sys
 import time
 import json
 import platform
+from pathlib import Path
 from fnmatch import fnmatch
 from gzip import GzipFile
 from copy import deepcopy
@@ -624,7 +624,7 @@ class AthenaProject(object):
         self.journal = None
         self.filename = filename
         if filename is not None:
-            if os.path.exists(filename) and is_athena_project(filename):
+            if Path(filename).exists() and is_athena_project(filename):
                 self.read(filename)
 
     def add_group(self, group, signal=None):
@@ -754,12 +754,12 @@ class AthenaProject(object):
         """
         if filename is not None:
             self.filename = filename
-        if not os.path.exists(self.filename):
+        if not Path(self.filename).exists():
             raise IOError("%s '%s': cannot find file" % (ERR_MSG, self.filename))
 
         from larch.xafs import pre_edge, autobk, xftf
 
-        if not os.path.exists(filename):
+        if not Path(filename).exists():
             raise IOError("file '%s' not found" % filename)
 
         text = _read_raw_athena(filename)
@@ -925,7 +925,7 @@ def read_athena(filename, match=None, do_preedge=True, do_bkg=False,
            zn_data = read_athena('Zn on Stuff.prj', match='*merge*', do_bkg=True, do_fft=True)
 
     """
-    if not os.path.exists(filename):
+    if not Path(filename).exists():
         raise IOError("%s '%s': cannot find file" % (ERR_MSG, filename))
 
     aprj = AthenaProject()
