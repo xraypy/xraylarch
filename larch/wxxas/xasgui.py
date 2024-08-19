@@ -7,6 +7,7 @@ import sys
 import time
 import copy
 import platform
+from pathlib import Path
 from importlib import import_module
 from threading import Thread
 import numpy as np
@@ -386,7 +387,7 @@ class LarixFrame(wx.Frame):
         self.larch = self.larch_buffer.larchshell
 
         self.controller = XASController(wxparent=self, _larch=self.larch)
-        iconfile = os.path.join(icondir, ICON_FILE)
+        iconfile = Path(icondir, ICON_FILE).as_posix()
         self.SetIcon(wx.Icon(iconfile, wx.BITMAP_TYPE_ICO))
 
         self.last_autosave = 0
@@ -844,7 +845,7 @@ class LarixFrame(wx.Frame):
 
         if outfile is None:
             return
-        if os.path.exists(outfile) and uname != 'darwin':  # darwin prompts in FileSave!
+        if Path(outfile).exists() and uname != 'darwin':  # darwin prompts in FileSave!
             if wx.ID_YES != Popup(self,
                                   "Overwrite existing CSV File?",
                                   "Overwrite existing file?", style=wx.YES_NO):
@@ -913,14 +914,14 @@ class LarixFrame(wx.Frame):
             return
         savegroups = [self.controller.get_group(gname) for gname in grouplist]
         if prompt:
-            _, filename = os.path.split(filename)
+            filename = Path(filename).name
             wcards  = 'Project Files (*.prj)|*.prj|All files (*.*)|*.*'
             filename = FileSave(self, 'Save Groups to Project File',
                                 default_file=filename, wildcard=wcards)
             if filename is None:
                 return
 
-        if (os.path.exists(filename) and warn_overwrite and
+        if (Path(filename).exists() and warn_overwrite and
             uname != 'darwin'):  # darwin prompts in FileSave!
             if wx.ID_YES != Popup(self,
                                   "Overwrite existing Project File?",
@@ -967,7 +968,9 @@ class LarixFrame(wx.Frame):
 
         LoadSessionDialog(self, _session, path, self.controller).Show()
         self.last_session_read = path
-        fdir, fname = os.path.split(path)
+        fpath = Path(fpath).absolute()
+        fname = fpath.name
+        fdir = fpath.parent.as_posix()
         if self.controller.chdir_on_fileopen() and len(fdir) > 0:
             os.chdir(fdir)
             self.controller.set_workdir()
@@ -991,14 +994,14 @@ class LarixFrame(wx.Frame):
             if fname is None:
                 fname = time.strftime('%Y%b%d_%H%M') + '.larix'
 
-            _, fname = os.path.split(fname)
+            fname = Path(fname).name
             wcards  = 'Larch Project Files (*.larix)|*.larix|All files (*.*)|*.*'
             fname = FileSave(self, 'Save Larch Session File',
                              default_file=fname, wildcard=wcards)
             if fname is None:
                 return
 
-            if os.path.exists(fname) and uname != 'darwin':  # darwin prompts in FileSave!
+            if Path(fname).exists() and uname != 'darwin':  # darwin prompts in FileSave!
                 if wx.ID_YES != Popup(self, "Overwrite existing Project File?",
                                       "Overwrite existing file?", style=wx.YES_NO):
                     return
@@ -1012,8 +1015,8 @@ class LarixFrame(wx.Frame):
     def onClearSession(self, evt=None):
         conf = self.controller.get_config('autosave',
                                           {'fileroot': 'autosave'})
-        afile = os.path.join(self.controller.larix_folder,
-                             conf['fileroot']+'.larix')
+        afile = Path(self.controller.larix_folder,
+                         conf['fileroot']+'.larix').as_posix()
 
         msg = f"""Session will be saved to
          '{afile:s}'
@@ -1343,7 +1346,9 @@ before clearing"""
             self.onRead(path)
 
     def onRead(self, path):
-        filedir, filename = os.path.split(os.path.abspath(path))
+        fpath = Path(path).absolute()
+        filedir = fpath.parent.as_posix()
+        filename = fpath.name
         if self.controller.chdir_on_fileopen() and len(filedir) > 0:
             os.chdir(filedir)
             self.controller.set_workdir()
@@ -1380,7 +1385,7 @@ before clearing"""
         """read groups from a list of scans from a specfile"""
         self.larch.eval("_specfile = specfile('{path:s}')".format(path=path))
         dgroup = None
-        _path, fname = os.path.split(path)
+        fname = Path(path).name
         first_group = None
         cur_panel = self.nb.GetCurrentPage()
         cur_panel.skip_plotting = True
@@ -1461,7 +1466,7 @@ before clearing"""
         """read groups from a list of scans from a xas data source"""
         self.larch.eval("_data_source = open_xas_source('{path:s}')".format(path=path))
         dgroup = None
-        _path, fname = os.path.split(path)
+        fname = Path(path).name
         first_group = None
         cur_panel = self.nb.GetCurrentPage()
         cur_panel.skip_plotting = True

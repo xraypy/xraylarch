@@ -1,5 +1,4 @@
 import time
-import os
 import sys
 import ast
 import shutil
@@ -10,6 +9,7 @@ from copy import deepcopy
 from sys import exc_info
 from string import printable
 from functools import partial
+from pathlib import Path
 
 import numpy as np
 np.seterr(all='ignore')
@@ -595,8 +595,9 @@ class FeffPathPanel(wx.Panel):
         panel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LEFT)
 
         self.fullpath = filename
-        par, feffdat_file = os.path.split(filename)
-        parent_folder, dirname = os.path.split(par)
+        pfile = Path(filename).absolute()
+        feffdat_file = pfile.name
+        dirname = pfile.parent.name
 
         self.user_label = user_label
 
@@ -1329,8 +1330,9 @@ class FeffitPanel(TaskPanel):
         if pathinfo is None and feffpath is None:
             raise ValueError("add_path needs a Feff Path or Path information")
         self.params_need_update = True
-        parent, fname = os.path.split(filename)
-        parent, feffrun = os.path.split(parent)
+        pfile = Path(filenam).absolute()
+        fname = pfile.name
+        feffrun = pfile.parent.name
 
         feffcache = getattr(self.larch.symtable, '_feffcache', None)
         if feffcache is None:
@@ -1426,7 +1428,7 @@ class FeffitPanel(TaskPanel):
         pdat.update(pathpanel.get_expressions())
 
         if title not in feffcache['paths']:
-            if os.path.exists(filename):
+            if Path(filename).exists():
                 self.larch_eval(COMMANDS['cache_path'].format(**pdat))
             else:
                 print(f"cannot file Feff data file '{filename}'")
@@ -1571,6 +1573,7 @@ class FeffitPanel(TaskPanel):
     def get_used_params(self):
         used_syms = []
         path_pages = {}
+
         for i in range(self.paths_nb.GetPageCount()):
             text = self.paths_nb.GetPageText(i).strip()
             path_pages[text] = self.paths_nb.GetPage(i)
@@ -1721,10 +1724,10 @@ class FeffitPanel(TaskPanel):
         confdir = self.controller.larix_folder
         if fname is None:
             fname = 'feffit_script.lar'
-        fullname = os.path.join(confdir, fname)
-        if os.path.exists(fullname):
-            backup = os.path.join(confdir, 'feffit_script_BAK.lar')
-            shutil.copy(fullname, backup)
+        fullpath = Path(confdir, fname)
+        fullnane = fullpath.as_posix()
+        if fulllpath.exists():
+            shutil.copy(fullname, Path(confdir, 'feffit_script_BAK.lar').as_posix())
         with open(fullname, 'w', encoding=sys.getdefaultencoding()) as fh:
             fh.write(text)
         return fullname
