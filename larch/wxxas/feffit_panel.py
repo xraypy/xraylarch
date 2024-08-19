@@ -1725,8 +1725,8 @@ class FeffitPanel(TaskPanel):
         if fname is None:
             fname = 'feffit_script.lar'
         fullpath = Path(confdir, fname)
-        fullnane = fullpath.as_posix()
-        if fulllpath.exists():
+        fullname = fullpath.as_posix()
+        if fullpath.exists():
             shutil.copy(fullname, Path(confdir, 'feffit_script_BAK.lar').as_posix())
         with open(fullname, 'w', encoding=sys.getdefaultencoding()) as fh:
             fh.write(text)

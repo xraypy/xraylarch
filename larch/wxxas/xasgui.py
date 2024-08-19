@@ -968,7 +968,7 @@ class LarixFrame(wx.Frame):
 
         LoadSessionDialog(self, _session, path, self.controller).Show()
         self.last_session_read = path
-        fpath = Path(fpath).absolute()
+        fpath = Path(path).absolute()
         fname = fpath.name
         fdir = fpath.parent.as_posix()
         if self.controller.chdir_on_fileopen() and len(fdir) > 0:

@@ -256,7 +256,6 @@ class XASController():
         if Path(savefile).exists():
             curf = savefile.replace('.larix', '_1.larix' )
             shutil.move(savefile, curf)
-        print("SAVE SESSION ", savefile)
         save_session(savefile, _larch=self.larch)
         return savefile
 
