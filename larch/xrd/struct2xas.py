@@ -267,9 +267,10 @@ class Struct2XAS:
             self.molecules = None
             self.mol = None
             self.nframes = 1
-            self.cif = CifParser(self.file)
+            self.cif = CifParser(self.file, occupancy_tolerance=10, site_tolerance=5e-3)
             self.struct = Structure.from_file(self.file)
-            # self.struct = self.cif.get_structures()[0]  #: NOT WORKING!
+            # self.struct = self.cif.parse_structures()[0] #: TODO
+            # self.struct = self.cif.get_structures()[0]  #: DEPRECATED / NOT WORKING!
             logger.debug("structure created from a CIF file")
         elif self.file_ext == ".xyz":
             self.is_xyz = True
