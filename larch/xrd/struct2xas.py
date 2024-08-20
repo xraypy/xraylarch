@@ -984,7 +984,6 @@ class Struct2XAS:
             os.makedirs(self.outdir, mode=0o755)
         except FileExistsError:
             errmsg = f"`job{job.num}` already exists -> use `newjob` or remove it"
-            logger.error(errmsg)
             raise FileExistsError(errmsg)
 
         # Write the input file.
