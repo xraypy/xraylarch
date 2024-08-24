@@ -15,7 +15,7 @@ from larch.utils import (group2dict, unique_name, fix_varname, get_cwd,
                          asfloat, get_sessionid, mkdir, unixpath)
 from larch.wxlib.plotter import last_cursor_pos
 from larch.wxlib import ExceptionPopup
-from larch.io import fix_varname, save_session
+from larch.io import save_session
 from larch.site_config import home_dir, user_larchdir
 
 from .config import XASCONF, CONF_FILE,  OLDCONF_FILE
@@ -351,7 +351,6 @@ class XASController():
             flist = getattr(topwin, 'filelist', topwin)
         time.sleep(0.025)
         topwin.Raise()
-        flist.SetFocus()
 
     def get_group(self, groupname=None):
         if groupname is None:

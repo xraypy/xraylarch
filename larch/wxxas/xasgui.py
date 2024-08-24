@@ -29,7 +29,7 @@ from larch.math import index_of
 from larch.utils import (isotime, time_ago, get_cwd,
                          is_gzip, uname, path_split)
 from larch.utils.strutils import (file2groupname, unique_name,
-                                  common_startstring, asfloat)
+                                  common_startstring, asfloat, fix_varname)
 
 from larch.larchlib import read_workdir, save_workdir, read_config, save_config
 
@@ -63,7 +63,7 @@ from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
                           fit_dialog_window)
 
 from larch.io import (read_ascii, read_xdi, read_gsexdi, gsescan_group,
-                      fix_varname, groups2csv, is_athena_project,
+                          groups2csv, is_athena_project,
                       is_larch_session_file,
                       AthenaProject, make_hashkey, is_specfile, open_specfile)
 from larch.io.xas_data_source import open_xas_source
@@ -435,6 +435,8 @@ class LarixFrame(wx.Frame):
         xsiz, ysiz = self.GetSize()
         plotpos = (xpos+xsiz+2, ypos)
         self.controller.get_display(stacked=False, position=plotpos)
+        self.Raise()
+
 
     def createMainPanel(self):
         display0 = wx.Display(0)

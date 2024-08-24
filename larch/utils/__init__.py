@@ -14,11 +14,10 @@ from .gformat import gformat, getfloat_attr
 from .paths import uname, bindir, unixpath, get_homedir, path_split, get_cwd
 from .debugtimer import debugtimer
 
-from .strutils import (fixName, isValidName, isNumber, bytes2str,
-                       str2bytes, fix_filename, fix_varname,
-                       isLiteralStr, strip_comments, asfloat,
-                       find_delims, version_ge, unique_name,
-                       get_sessionid, strict_ascii)
+from .strutils import (fixName, isValidName, isNumber, bytes2str, str2bytes,
+                       fix_filename, fix_varname, strip_quotes, isLiteralStr,
+                       strip_comments, asfloat, find_delims, version_ge,
+                       unique_name, get_sessionid, strict_ascii)
 
 from .shellutils import (_more, _parent, ls, cd, cwd, mkdir)
 
@@ -222,4 +221,7 @@ _larch_builtins = dict(copy=copy.copy, deepcopy=copy.deepcopy, more= _more,
                        copy_group=copy_group, copy_xafs_group=copy_xafs_group,
                        dict2group=dict2group, debugtimer=debugtimer,
                        isotime=isotime, json_dump=json_dump,
-                       json_load=json_load, gformat=gformat)
+                       json_load=json_load, gformat=gformat,
+                       fix_filename=fix_filename,
+                       fix_varname=fix_varname,
+                       strip_quotes=strip_quotes)

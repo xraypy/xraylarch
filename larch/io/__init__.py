@@ -6,8 +6,8 @@ Functions for Input/Output, especially reading specific types
 of scientific data files.
 '''
 
-from .fileutils import (increment_filename, new_filename, new_dirname,
-                        fix_filename, fix_varname, strip_quotes)
+from .fileutils import (increment_filename, new_filename, new_dirname)
+
 
 from .columnfile import (read_ascii, write_ascii, write_group, set_array_labels,
                          guess_filereader, look_for_nans, read_fdmnes, sum_fluor_channels)
@@ -52,9 +52,6 @@ def read_tiff(fname, *args, **kws):
 __exports__ = dict(increment_filename=increment_filename,
                    new_filename=new_filename,
                    new_dirname=new_dirname,
-                   fix_filename=fix_filename,
-                   fix_varname=fix_varname,
-                   strip_quotes=strip_quotes,
                    read_ascii=read_ascii,
                    look_for_nans=look_for_nans,
                    set_array_labels=set_array_labels,

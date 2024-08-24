@@ -10,10 +10,10 @@ import multiprocessing as mp
 from functools import partial
 
 import larch
-from larch.utils import isotime
-from larch.utils.strutils import fix_varname, fix_filename, bytes2str, version_ge
+from larch.utils import (isotime, fix_varname, fix_filename,
+                             bytes2str, version_ge, unixpath)
 
-from larch.io import (unixpath, new_filename, read_xrf_netcdf,
+from larch.io import (new_filename, read_xrf_netcdf,
                       read_xsp3_hdf5, read_xrd_netcdf, read_xrd_hdf5)
 
 from larch.xrf import MCA, ROI
