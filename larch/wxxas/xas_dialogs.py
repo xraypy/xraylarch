@@ -437,7 +437,7 @@ class EnergyCalibrateDialog(wx.Dialog):
 
         ensure_en_orig(dgroup)
 
-        idx, norm_page = self.parent.get_nbpage('norm')
+        idx, norm_page = self.parent.get_nbpage('xasnorm')
         norm_page.wids['energy_shift'].SetValue(eshift)
 
         dgroup.energy_shift = eshift
@@ -448,7 +448,7 @@ class EnergyCalibrateDialog(wx.Dialog):
 
     def on_apply_sel(self, event=None):
         eshift = self.wids['eshift'].GetValue()
-        idx, norm_page = self.parent.get_nbpage('norm')
+        idx, norm_page = self.parent.get_nbpage('xasnorm')
         for checked in self.controller.filelist.GetCheckedStrings():
             fname  = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(fname)
