@@ -562,7 +562,7 @@ class LarixFrame(wx.Frame):
         name = name.lower()
         out = 0
         if name not in LARIX_PANELS:
-            print("unknown panel : ", name)
+            print("unknown panel : ", name, LARIX_PANELS)
             return 0, self.nb.GetPage(0)
         # print("GET NB PAGE ", name, LARIX_PANELS.get(name, 'gg'))
 
@@ -671,6 +671,18 @@ class LarixFrame(wx.Frame):
                  "Open Data File",  self.onReadDialog)
 
         file_menu.AppendSeparator()
+
+        MenuItem(self, file_menu, "&Read Larch Session\tCtrl+R",
+                 "Read Previously Saved Session",  self.onLoadSession)
+
+        MenuItem(self, file_menu, "&Save Larch Session\tCtrl+S",
+                 "Save Session to a File",  self.onSaveSession)
+
+        MenuItem(self, file_menu, "&Save Larch Session As ...\tCtrl+A",
+                 "Save Session to a File",  self.onSaveSessionAs)
+
+
+        file_menu.AppendSeparator()
         MenuItem(self, file_menu, "Save Selected Groups to Athena Project File",
                  "Save Selected Groups to an Athena Project File",
                  self.onExportAthenaProject)
@@ -682,13 +694,13 @@ class LarixFrame(wx.Frame):
         MenuItem(self, file_menu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
 
-        MenuItem(self, session_menu, "&Read Larch Session\tCtrl+R",
+        MenuItem(self, session_menu, "&Read Larch Session",
                  "Read Previously Saved Session",  self.onLoadSession)
 
-        MenuItem(self, session_menu, "&Save Larch Session\tCtrl+S",
+        MenuItem(self, session_menu, "&Save Larch Session",
                  "Save Session to a File",  self.onSaveSession)
 
-        MenuItem(self, session_menu, "&Save Larch Session As ...\tCtrl+A",
+        MenuItem(self, session_menu, "&Save Larch Session As ...",
                  "Save Session to a File",  self.onSaveSessionAs)
 
         MenuItem(self, session_menu, "Clear Larch Session",
@@ -1351,34 +1363,35 @@ before clearing"""
         fpath = Path(path).absolute()
         filedir = fpath.parent.as_posix()
         filename = fpath.name
+        fullpath = fpath.as_posix()
         if self.controller.chdir_on_fileopen() and len(filedir) > 0:
             os.chdir(filedir)
             self.controller.set_workdir()
 
         # check for athena projects
-        if is_athena_project(path):
+        if is_athena_project(fullpath):
             self.show_subframe('athena_import', AthenaImporter,
-                               controller=self.controller, filename=path,
+                               controller=self.controller, filename=fullpath,
                                read_ok_cb=self.onReadAthenaProject_OK)
             return
 
         # check for Spec File
-        if is_specfile(path):
+        if is_specfile(fullpath):
             self.show_subframe('spec_import', SpecfileImporter,
-                               filename=path,
+                               filename=fullpath,
                                _larch=self.larch_buffer.larchshell,
                                config=self.last_spec_config,
                                read_ok_cb=self.onReadSpecfile_OK)
             return
 
         # check for Larch Session File
-        if is_larch_session_file(path):
-            self.onLoadSession(path=path)
+        if is_larch_session_file(fullpath):
+            self.onLoadSession(path=fullpath)
             return
 
 
         # default to Column File
-        self.show_subframe('readfile', ColumnDataFileFrame, filename=path,
+        self.show_subframe('readfile', ColumnDataFileFrame, filename=fullpath,
                         config=self.last_col_config,
                         _larch=self.larch_buffer.larchshell,
                         read_ok_cb=self.onRead_OK)
@@ -1531,6 +1544,8 @@ before clearing"""
 
             jrnl = {'source_desc': f'{spath:s}: {gname:s}'}
             self.larch.eval(script.format(group=gid, prjgroup=gname))
+
+            print("## ATHENA -> INSTALL GROUP ", ig, gid, label, path)
             dgroup = self.install_group(gid, label, process=False,
                                         source=path, journal=jrnl)
             groups_added.append(gid)
@@ -1818,8 +1833,6 @@ before clearing"""
         dtype = getattr(dgroup, 'datatype', 'xydata')
         startpage = 'xasnorm' if dtype == 'xas' else 'xydata'
         ipage, pagepanel = self.get_nbpage(startpage)
-        # print("START PAGE ", dgroup, dtype, startpage)
-        # print("..get_nbpage says::  ", startpage, ipage, pagepanel)
         self.nb.SetSelection(ipage)
         self.ShowFile(groupname=groupname, filename=filename,
                       process=process, plot=plot)
