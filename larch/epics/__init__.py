@@ -11,7 +11,6 @@ try:
 except ImportError:
     HAS_PYEPICS = False
 
-from . import larchscan
 
 def pv_fullname(name):
     """ make sure an Epics PV name ends with .VAL or .SOMETHING!
@@ -104,11 +103,3 @@ For further details, consult the pyepics documentation
     _larch_builtins = {'_epics': dict(PV=PV, caget=caget, caput=caput,
                                       cainifo=cainfo, pv_units=pv_units,
                                       pv_fullname=pv_fullname)}
-
-    if larchscan.HAS_EPICSSCAN:
-        _larch_builtins['_scan'] = dict(scan_from_db=larchscan.scan_from_db,
-                                        connect_scandb=larchscan.connect_scandb,
-                                        do_scan=larchscan.do_scan,
-                                        do_slewscan=larchscan.do_scan,
-                                        get_dbinfo=larchscan.get_dbinfo,
-                                        set_dbinfo=larchscan.set_dbinfo)
