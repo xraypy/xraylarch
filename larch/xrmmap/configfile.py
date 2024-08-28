@@ -4,8 +4,6 @@ import os
 import sys
 import time
 from configparser import  ConfigParser
-from io import StringIO
-
 
 conf_sects = {'general': {},
               'xps':{'bools':('use_ftp',)},
@@ -76,7 +74,7 @@ class FastMapConfig(object):
                     conf_found = True
                     break
         if not conf_found:
-            self.cp.readfp(StringIO(default_conf))
+            self.cp.read_string(default_conf)
             self._process_data()
 
     def Read(self,fname=None):

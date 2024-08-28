@@ -566,10 +566,11 @@ class GSEXRM_MapFile(object):
 
         if xrd1dbkgdfile is not None:
             self.xrd1dbkgdfile= xrd1dbkgdfile
-        if Path(Self.xrd1dbkgdfile).exists():
-            print(f'xrd1d background file loaded: {self.xrd1dbkgdfile}')
-            xrd1dgrp.attrs['1Dbkgdfile'] = f'{self.xrd1dbkgdfile}'
-            self.bkgd_xrd1d = read_xrd_data(self.xrd1dbkgdfile)*self.bkgdscale
+        if self.xrd1dbkgdfile is not None:
+            if Path(self.xrd1dbkgdfile).exists():
+                print(f'xrd1d background file loaded: {self.xrd1dbkgdfile}')
+                xrd1dgrp.attrs['1Dbkgdfile'] = f'{self.xrd1dbkgdfile}'
+                self.bkgd_xrd1d = read_xrd_data(self.xrd1dbkgdfile)*self.bkgdscale
 
         if xrd2dbkgdfile is not None:
             self.xrd2dbkgdfile= xrd2dbkgdfile
