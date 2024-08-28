@@ -554,11 +554,12 @@ class GSEXRM_MapFile(object):
 
         if xrdcalfile is not None:
             self.xrdcalfile = xrdcalfile
-        pcal = Path(self.xrdcalfile).absolute()
-        if pcal.exists():
-            self.xrdcalfile = pcal.as_posix()
-            print(f'Calibration file loaded: {self.xrdcalfile}')
-            xrd1dgrp.attrs['calfile'] = self.xrdcalfile
+        if self.xrdcalfile is not None:
+            pcal = Path(self.xrdcalfile).absolute()
+            if pcal.exists():
+                self.xrdcalfile = pcal.as_posix()
+                print(f'Calibration file loaded: {self.xrdcalfile}')
+                xrd1dgrp.attrs['calfile'] = self.xrdcalfile
 
 
         self.flip = flip if flip is not None else self.flip
