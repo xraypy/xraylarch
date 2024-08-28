@@ -2044,7 +2044,9 @@ class MapViewerFrame(wx.Frame):
 
 
     def add_xrmfile(self, xrmfile):
-        fname = Path(xrmfile.filename).name
+        fpath = Path(xrmfile.filename)
+        fname = fpath.name
+        parent = fpath.parent.as_posix()
         # print("Add XRM File ", fname)
         # look for group with this name or for next available group
         for i in range(1000):
