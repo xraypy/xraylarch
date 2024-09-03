@@ -2702,7 +2702,7 @@ class GSEXRM_MapFile(object):
         _mca.areaname = _mca.title = name
         fname = Path(self.filename).name
         _mca.filename = fix_filename(fname)
-        mca.info = f"Data from File '{self.filename}', detector '{dgroup}', area '{name}'"
+        _mca.info = f"Data from File '{self.filename}', detector '{dgroup}', area '{name}'"
 
         return _mca
 
