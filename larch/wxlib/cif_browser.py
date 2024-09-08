@@ -410,10 +410,17 @@ class CIFFrame(wx.Frame):
                 mineral = cif.get_mineralname()
                 year = cif.publication.year
                 journal= cif.publication.journalname
-                label = f'{label}: {mineral}, {year} {journal}'
+                cid = cif.ams_id
+                label = f'{label}: {mineral}, {year} {journal} ({cid})'
             except:
                 label = None
             if label is not None:
+                if label in self.cif_selections:
+                    lorig, n = label, 1
+                    while label in self.cif_selections and n < 10:
+                        n += 1
+                        label = f'{lorig} (v{n})'
+
                 self.cif_selections[label] =  cif.ams_id
                 self.ciflist.Append(label)
 
