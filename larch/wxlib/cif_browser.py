@@ -46,7 +46,7 @@ CEN |=  wx.ALL
 FNB_STYLE = fnb.FNB_NO_X_BUTTON|fnb.FNB_SMART_TABS
 FNB_STYLE |= fnb.FNB_NO_NAV_BUTTONS|fnb.FNB_NODRAG
 
-MAINSIZE = (1000, 650)
+MAINSIZE = (1150, 650)
 
 class CIFFrame(wx.Frame):
     _about = """Larch Crystallographic Information File Browser
@@ -112,9 +112,8 @@ class CIFFrame(wx.Frame):
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
         splitter.SetMinimumPaneSize(250)
 
-        leftpanel = wx.Panel(splitter)
-        self.ciflist = EditableListBox(leftpanel,
-                                       self.onShowCIF, size=(300,-1))
+        leftpanel = wx.Panel(splitter, size=(375, -1))
+        self.ciflist = EditableListBox(leftpanel, self.onShowCIF, size=(375, -1))
         set_color(self.ciflist, 'list_fg', bg='list_bg')
         self.cif_selections = {}
 
@@ -124,14 +123,17 @@ class CIFFrame(wx.Frame):
 
         # right hand side
         rightpanel = scrolled.ScrolledPanel(splitter)
-        panel = wx.Panel(rightpanel)
+        panel = wx.Panel(rightpanel, size=(725, -1))
+
+        self.ciflist.SetMinSize((375, 250))
+        rightpanel.SetMinSize((400, 250))
+
         sizer = wx.GridBagSizer(2, 2)
 
         self.title = SimpleText(panel, 'Search American Mineralogical CIF Database:',
                                 size=(700, -1), style=LEFT)
         self.title.SetFont(Font(FONTSIZE+2))
         wids = self.wids = {}
-
 
         minlab = SimpleText(panel, ' Mineral Name: ')
         minhint= SimpleText(panel, ' example: hem* ')
@@ -170,7 +172,6 @@ class CIFFrame(wx.Frame):
                                        label='Only Structures with Full Occupancy')
 
         wids['search']   = Button(panel, 'Search for CIFs',  action=self.onSearch)
-
 
 
         ir = 0
@@ -348,9 +349,11 @@ class CIFFrame(wx.Frame):
         r_sizer = wx.BoxSizer(wx.VERTICAL)
         r_sizer.Add(panel, 0, LEFT|wx.GROW|wx.ALL)
         r_sizer.Add(self.nb, 1, LEFT|wx.GROW, 2)
+
         pack(rightpanel, r_sizer)
         rightpanel.SetupScrolling()
         splitter.SplitVertically(leftpanel, rightpanel, 1)
+
 
     def get_nbpage(self, name):
         "get nb page by name"
@@ -411,7 +414,7 @@ class CIFFrame(wx.Frame):
                 year = cif.publication.year
                 journal= cif.publication.journalname
                 cid = cif.ams_id
-                label = f'{label}: {mineral}, {year} {journal} ({cid})'
+                label = f'{label}: {mineral}, {year} {journal} [{cid}]'
             except:
                 label = None
             if label is not None:
