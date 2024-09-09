@@ -13,10 +13,12 @@ try:
     from pymatgen.io.cif import CifParser
     from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
     from pymatgen.core import Molecule, IMolecule, IStructure
+    from pymatgen.core import __version__ as pmg_version
 except:
     CifParser = SpacegroupAnalyzer = None
     Molecule = IMolecule = IStructure = None
-
+    pmg_version = None
+    
 from larch.utils.physical_constants import ATOM_SYMS, ATOM_NAMES
 
 __version__ = '1'

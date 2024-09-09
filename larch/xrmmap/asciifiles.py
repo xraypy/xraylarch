@@ -55,12 +55,16 @@ def parseEnviron(text):
     return env_desc, env_addr, env_vals
 
 def readScanConfig(folder):
-    sfile = os.path.join(folder, 'Scan.ini')
-    if not os.path.exists(sfile):
-        raise IOError('No configuration file found')
+    sfile = Path(folder, 'Scan.ini')
+    text = None
+    if sfile.exists():
+        with open(sfile, 'r') as fh:
+            text = fh.read()
+    if text is None:
+        raise IOError('No configuration file found: ', sfile.as_posix())
 
     cp = ConfigParser()
-    cp.read(sfile)
+    cp.read_string(text)
     timestamp = os.stat(sfile).st_mtime
     scan = {'timestamp': timestamp}
     for key in cp.sections():
@@ -71,10 +75,11 @@ def readScanConfig(folder):
     # return scan, general, timestamp
     return scan
 
-def readROIFile(hfile,xrd=False):
-
+def readROIFile(hfile, xrd=False):
+    with open(hfile, 'r') as fh:
+        text = fh.read()
     cp =  ConfigParser()
-    cp.read(hfile)
+    cp.read_string(text)
     output = []
 
     if xrd:

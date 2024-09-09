@@ -30,7 +30,7 @@ from larch.larchlib import read_workdir, save_workdir
 from larch.utils.strutils import bytes2str
 from larch.utils import get_cwd
 from larch.wxlib import LarchWxApp
-from larch.io import tifffile, unixpath
+from larch.io import tifffile
 from larch.xrd import (integrate_xrd,E_from_lambda,xrd1d,read_lambda,
                        calc_cake,twth_from_q,twth_from_d,
                        return_ai,twth_from_xy,q_from_xy,eta_from_xy)
@@ -908,11 +908,11 @@ class XRD2DViewerFrame(wx.Frame):
                            style=style)
 
         if dlg.ShowModal() == wx.ID_OK:
-            basedir = os.path.abspath(str(dlg.GetPath()))
+            basedir = Path(dlg.GetPath()).absolute().as_posix()
             try:
                 if len(basedir)  > 0:
-                    os.chdir(unixpath(basedir))
-                    save_workdir(unixpath(basedir))
+                    os.chdir(basedir)
+                    save_workdir(basedir)
             except OSError:
                 print( 'Changed folder failed')
                 pass

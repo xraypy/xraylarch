@@ -24,10 +24,10 @@ from .athena_importer import AthenaImporter
 from . import inputhook
 
 from larch.io import (read_ascii, read_xdi, read_gsexdi,
-                      gsescan_group, fix_varname,
+                      gsescan_group,
                       is_athena_project, AthenaProject)
 from larch.version import make_banner, version_data
-from larch.utils import get_cwd
+from larch.utils import get_cwd, fix_varname
 
 FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (*.*)|*.*"
 

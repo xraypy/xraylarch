@@ -38,13 +38,6 @@ try:
 except:
     pass
 
-HAS_SCANDB = False
-try:
-    from epicsscan import ScanDB
-    HAS_SCANDB = True
-except:
-    pass
-
 class DetectorSelectDialog(wx.Dialog):
     """Connect to an Epics MCA detector
     Can be either XIA xMAP  or Quantum XSPress3
@@ -125,7 +118,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def __init__(self, parent=None, _larch=None, prefix=None,
                  det_type='ME-4', ioc_type='Xspress3', nmca=4,
-                 size=(725, 580), environ_file=None, scandb_conn=None,
+                 size=(725, 580), environ_file=None,
                  title='Epics XRF Display', output_title='XRF', **kws):
 
         self.det_type = det_type
@@ -133,12 +126,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.nmca = nmca
         self.det_fore = 1
         self.det_back = 0
-        self.scandb = None
         self.environ = []
         if environ_file is not None:
             self.read_environfile(environ_file)
-        if HAS_SCANDB and scandb_conn is not None:
-            self.ConnectScanDB(**scandb_conn)
 
         self.onConnectEpics(event=None, prefix=prefix)
 
@@ -177,26 +167,6 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.connect_to_detector(prefix=self.prefix, ioc_type=self.ioc_type,
                                  det_type=self.det_type, nmca=self.nmca)
 
-    def ConnectScanDB(self, **kws):
-        if not HAS_SCANDB:
-            return
-        self.scandb = ScanDB(**kws)
-        if self.scandb is not None:
-            basedir = self.scandb.get_info('user_folder')
-            fileroot = self.scandb.get_info('server_fileroot')
-        basedir = str(basedir)
-        fileroot = str(fileroot)
-        if basedir.startswith(fileroot):
-            basedir = basedir[len(fileroot):]
-        fullpath = os.path.join(fileroot, basedir)
-        fullpath = fullpath.replace('\\', '/').replace('//', '/')
-        curdir = get_cwd()
-        try:
-            os.chdir(fullpath)
-        except:
-            os.chdir(curdir)
-        self.scandb.connect_pvs()
-
     def onSaveMCAFile(self, event=None, **kws):
         tmp = '''
         # print('SaveMCA File')
@@ -216,23 +186,14 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                            default_file=deffile,
                            wildcard=FILE_WILDCARDS)
 
-        environ = []
-        if HAS_SCANDB and self.scandb is not None:
-            c, table = self.scandb.get_table('pvs')
-            pvrows = self.scandb.query(table).all()
-            for row in pvrows:
-                addr = str(row.name)
-                desc = str(row.notes)
-                val  = self.scandb.pvs[addr].get(as_string=True)
-                environ.append((addr, val, desc))
-
-        elif len(self.environ) > 0:
+        env = []
+        if len(self.environ) > 0:
             for pvname, desc in self.environ:
                 val  = caget(pvname, as_string=True)
-                environ.append((pvname, val, desc))
+                env.append((pvname, val, desc))
 
         if outfile is not None:
-            self.det.save_mcafile(outfile, environ=environ)
+            self.det.save_mcafile(outfile, environ=env)
 
     def onSaveColumnFile(self, event=None, **kws):
         print( '  EPICS-XRFDisplay onSaveColumnFile not yet implemented  ')
@@ -679,7 +640,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 class EpicsXRFApp(LarchWxApp):
     def __init__(self, _larch=None, prefix=None,
                  det_type='ME-4', ioc_type='Xspress3', nmca=4,
-                 size=(725, 580), environ_file=None, scandb_conn=None,
+                 size=(725, 580), environ_file=None,
                  title='Epics XRF Display', output_title='XRF', **kws):
         self.prefix = prefix
         self.det_type = det_type
@@ -687,7 +648,6 @@ class EpicsXRFApp(LarchWxApp):
         self.nmca = nmca
         self.size = size
         self.environ_file = environ_file
-        self.scandb_conn = scandb_conn
         self.title = title
         self.output_title = output_title
         LarchWxApp.__init__(self, _larch=_larch, **kws)
@@ -698,7 +658,6 @@ class EpicsXRFApp(LarchWxApp):
                                      ioc_type=self.ioc_type,
                                      nmca=self.nmca, size=self.size,
                                      environ_file=self.environ_file,
-                                     scandb_conn=self.scandb_conn,
                                      title=self.title,
                                      output_title=self.output_title,
                                      _larch=self._larch)

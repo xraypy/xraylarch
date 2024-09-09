@@ -7,6 +7,7 @@ import sys
 import time
 import copy
 import platform
+from pathlib import Path
 from importlib import import_module
 from threading import Thread
 import numpy as np
@@ -26,9 +27,9 @@ from larch import Group, Journal, Entry
 from larch.io import save_session, read_session
 from larch.math import index_of
 from larch.utils import (isotime, time_ago, get_cwd,
-                         is_gzip, uname, unixpath)
+                         is_gzip, uname, path_split)
 from larch.utils.strutils import (file2groupname, unique_name,
-                                  common_startstring, asfloat)
+                                  common_startstring, asfloat, fix_varname)
 
 from larch.larchlib import read_workdir, save_workdir, read_config, save_config
 
@@ -62,7 +63,7 @@ from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
                           fit_dialog_window)
 
 from larch.io import (read_ascii, read_xdi, read_gsexdi, gsescan_group,
-                      fix_varname, groups2csv, is_athena_project,
+                          groups2csv, is_athena_project,
                       is_larch_session_file,
                       AthenaProject, make_hashkey, is_specfile, open_specfile)
 from larch.io.xas_data_source import open_xas_source
@@ -386,7 +387,7 @@ class LarixFrame(wx.Frame):
         self.larch = self.larch_buffer.larchshell
 
         self.controller = XASController(wxparent=self, _larch=self.larch)
-        iconfile = os.path.join(icondir, ICON_FILE)
+        iconfile = Path(icondir, ICON_FILE).as_posix()
         self.SetIcon(wx.Icon(iconfile, wx.BITMAP_TYPE_ICO))
 
         self.last_autosave = 0
@@ -434,6 +435,8 @@ class LarixFrame(wx.Frame):
         xsiz, ysiz = self.GetSize()
         plotpos = (xpos+xsiz+2, ypos)
         self.controller.get_display(stacked=False, position=plotpos)
+        self.Raise()
+
 
     def createMainPanel(self):
         display0 = wx.Display(0)
@@ -559,7 +562,7 @@ class LarixFrame(wx.Frame):
         name = name.lower()
         out = 0
         if name not in LARIX_PANELS:
-            print("unknown panel : ", name)
+            print("unknown panel : ", name, LARIX_PANELS)
             return 0, self.nb.GetPage(0)
         # print("GET NB PAGE ", name, LARIX_PANELS.get(name, 'gg'))
 
@@ -668,6 +671,18 @@ class LarixFrame(wx.Frame):
                  "Open Data File",  self.onReadDialog)
 
         file_menu.AppendSeparator()
+
+        MenuItem(self, file_menu, "&Read Larch Session\tCtrl+R",
+                 "Read Previously Saved Session",  self.onLoadSession)
+
+        MenuItem(self, file_menu, "&Save Larch Session\tCtrl+S",
+                 "Save Session to a File",  self.onSaveSession)
+
+        MenuItem(self, file_menu, "&Save Larch Session As ...\tCtrl+A",
+                 "Save Session to a File",  self.onSaveSessionAs)
+
+
+        file_menu.AppendSeparator()
         MenuItem(self, file_menu, "Save Selected Groups to Athena Project File",
                  "Save Selected Groups to an Athena Project File",
                  self.onExportAthenaProject)
@@ -679,13 +694,13 @@ class LarixFrame(wx.Frame):
         MenuItem(self, file_menu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
 
-        MenuItem(self, session_menu, "&Read Larch Session\tCtrl+R",
+        MenuItem(self, session_menu, "&Read Larch Session",
                  "Read Previously Saved Session",  self.onLoadSession)
 
-        MenuItem(self, session_menu, "&Save Larch Session\tCtrl+S",
+        MenuItem(self, session_menu, "&Save Larch Session",
                  "Save Session to a File",  self.onSaveSession)
 
-        MenuItem(self, session_menu, "&Save Larch Session As ...\tCtrl+A",
+        MenuItem(self, session_menu, "&Save Larch Session As ...",
                  "Save Session to a File",  self.onSaveSessionAs)
 
         MenuItem(self, session_menu, "Clear Larch Session",
@@ -844,7 +859,7 @@ class LarixFrame(wx.Frame):
 
         if outfile is None:
             return
-        if os.path.exists(outfile) and uname != 'darwin':  # darwin prompts in FileSave!
+        if Path(outfile).exists() and uname != 'darwin':  # darwin prompts in FileSave!
             if wx.ID_YES != Popup(self,
                                   "Overwrite existing CSV File?",
                                   "Overwrite existing file?", style=wx.YES_NO):
@@ -913,14 +928,14 @@ class LarixFrame(wx.Frame):
             return
         savegroups = [self.controller.get_group(gname) for gname in grouplist]
         if prompt:
-            _, filename = os.path.split(filename)
+            filename = Path(filename).name
             wcards  = 'Project Files (*.prj)|*.prj|All files (*.*)|*.*'
             filename = FileSave(self, 'Save Groups to Project File',
                                 default_file=filename, wildcard=wcards)
             if filename is None:
                 return
 
-        if (os.path.exists(filename) and warn_overwrite and
+        if (Path(filename).exists() and warn_overwrite and
             uname != 'darwin'):  # darwin prompts in FileSave!
             if wx.ID_YES != Popup(self,
                                   "Overwrite existing Project File?",
@@ -967,7 +982,9 @@ class LarixFrame(wx.Frame):
 
         LoadSessionDialog(self, _session, path, self.controller).Show()
         self.last_session_read = path
-        fdir, fname = os.path.split(path)
+        fpath = Path(path).absolute()
+        fname = fpath.name
+        fdir = fpath.parent.as_posix()
         if self.controller.chdir_on_fileopen() and len(fdir) > 0:
             os.chdir(fdir)
             self.controller.set_workdir()
@@ -991,14 +1008,14 @@ class LarixFrame(wx.Frame):
             if fname is None:
                 fname = time.strftime('%Y%b%d_%H%M') + '.larix'
 
-            _, fname = os.path.split(fname)
+            fname = Path(fname).name
             wcards  = 'Larch Project Files (*.larix)|*.larix|All files (*.*)|*.*'
             fname = FileSave(self, 'Save Larch Session File',
                              default_file=fname, wildcard=wcards)
             if fname is None:
                 return
 
-            if os.path.exists(fname) and uname != 'darwin':  # darwin prompts in FileSave!
+            if Path(fname).exists() and uname != 'darwin':  # darwin prompts in FileSave!
                 if wx.ID_YES != Popup(self, "Overwrite existing Project File?",
                                       "Overwrite existing file?", style=wx.YES_NO):
                     return
@@ -1012,8 +1029,8 @@ class LarixFrame(wx.Frame):
     def onClearSession(self, evt=None):
         conf = self.controller.get_config('autosave',
                                           {'fileroot': 'autosave'})
-        afile = os.path.join(self.controller.larix_folder,
-                             conf['fileroot']+'.larix')
+        afile = Path(self.controller.larix_folder,
+                         conf['fileroot']+'.larix').as_posix()
 
         msg = f"""Session will be saved to
          '{afile:s}'
@@ -1329,7 +1346,7 @@ before clearing"""
         def file_mtime(x):
             return os.stat(x).st_mtime
 
-        self.paths2read = [unixpath(p) for p in self.paths2read]
+        self.paths2read = [Path(p).as_posix() for p in self.paths2read]
         self.paths2read = sorted(self.paths2read, key=file_mtime)
 
         path = self.paths2read.pop(0)
@@ -1343,35 +1360,38 @@ before clearing"""
             self.onRead(path)
 
     def onRead(self, path):
-        filedir, filename = os.path.split(os.path.abspath(path))
+        fpath = Path(path).absolute()
+        filedir = fpath.parent.as_posix()
+        filename = fpath.name
+        fullpath = fpath.as_posix()
         if self.controller.chdir_on_fileopen() and len(filedir) > 0:
             os.chdir(filedir)
             self.controller.set_workdir()
 
         # check for athena projects
-        if is_athena_project(path):
+        if is_athena_project(fullpath):
             self.show_subframe('athena_import', AthenaImporter,
-                               controller=self.controller, filename=path,
+                               controller=self.controller, filename=fullpath,
                                read_ok_cb=self.onReadAthenaProject_OK)
             return
 
         # check for Spec File
-        if is_specfile(path):
+        if is_specfile(fullpath):
             self.show_subframe('spec_import', SpecfileImporter,
-                               filename=path,
+                               filename=fullpath,
                                _larch=self.larch_buffer.larchshell,
                                config=self.last_spec_config,
                                read_ok_cb=self.onReadSpecfile_OK)
             return
 
         # check for Larch Session File
-        if is_larch_session_file(path):
-            self.onLoadSession(path=path)
+        if is_larch_session_file(fullpath):
+            self.onLoadSession(path=fullpath)
             return
 
 
         # default to Column File
-        self.show_subframe('readfile', ColumnDataFileFrame, filename=path,
+        self.show_subframe('readfile', ColumnDataFileFrame, filename=fullpath,
                         config=self.last_col_config,
                         _larch=self.larch_buffer.larchshell,
                         read_ok_cb=self.onRead_OK)
@@ -1380,7 +1400,7 @@ before clearing"""
         """read groups from a list of scans from a specfile"""
         self.larch.eval("_specfile = specfile('{path:s}')".format(path=path))
         dgroup = None
-        _path, fname = os.path.split(path)
+        fname = Path(path).name
         first_group = None
         cur_panel = self.nb.GetCurrentPage()
         cur_panel.skip_plotting = True
@@ -1461,7 +1481,7 @@ before clearing"""
         """read groups from a list of scans from a xas data source"""
         self.larch.eval("_data_source = open_xas_source('{path:s}')".format(path=path))
         dgroup = None
-        _path, fname = os.path.split(path)
+        fname = Path(path).name
         first_group = None
         cur_panel = self.nb.GetCurrentPage()
         cur_panel.skip_plotting = True
@@ -1505,7 +1525,7 @@ before clearing"""
         script = "{group:s} = _prj.{prjgroup:s}"
         cur_panel = self.nb.GetCurrentPage()
         cur_panel.skip_plotting = True
-        parent, spath = os.path.split(path)
+        parent, spath = path_split(path)
         labels = []
         groups_added = []
 
@@ -1524,6 +1544,8 @@ before clearing"""
 
             jrnl = {'source_desc': f'{spath:s}: {gname:s}'}
             self.larch.eval(script.format(group=gid, prjgroup=gname))
+
+            print("## ATHENA -> INSTALL GROUP ", ig, gid, label, path)
             dgroup = self.install_group(gid, label, process=False,
                                         source=path, journal=jrnl)
             groups_added.append(gid)
@@ -1617,7 +1639,7 @@ before clearing"""
         overwrite: whether to overwrite the current datagroup, as when
         editing a datagroup
         """
-        filedir, spath = os.path.split(path)
+        filedir, spath = path_split(path)
         filename = config.get('filename', spath)
         groupname = config.get('groupname', None)
         if groupname is None:
@@ -1745,7 +1767,7 @@ before clearing"""
         gname = None
 
         for path in self.paths2read:
-            filedir, spath = os.path.split(path)
+            filedir, spath = path_split(path)
             fname = spath
             if len(multi_chans) > 0:
                 yname = config['array_labels'][config['iy1']]
@@ -1811,8 +1833,6 @@ before clearing"""
         dtype = getattr(dgroup, 'datatype', 'xydata')
         startpage = 'xasnorm' if dtype == 'xas' else 'xydata'
         ipage, pagepanel = self.get_nbpage(startpage)
-        # print("START PAGE ", dgroup, dtype, startpage)
-        # print("..get_nbpage says::  ", startpage, ipage, pagepanel)
         self.nb.SetSelection(ipage)
         self.ShowFile(groupname=groupname, filename=filename,
                       process=process, plot=plot)

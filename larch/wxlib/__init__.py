@@ -13,6 +13,7 @@ fileprompt       launch file browser to select files.
 '''
 
 import locale
+from pathlib import Path
 
 from pyshortcuts import platform
 import os
@@ -52,7 +53,6 @@ if HAS_WXPYTHON:
     from . import larchframe
     from . import larchfilling
     from . import readlinetextctrl
-    from larch.utils import unixpath
     import wxutils as wxu
     from wxutils import (set_sizer, pack, SetTip, Font, HLine, Check, MenuItem,
                          Popup, RIGHT, LEFT, CEN , LTEXT, FRAMESTYLE, hms,
@@ -69,15 +69,15 @@ if HAS_WXPYTHON:
 
     def FileOpen(parent, message, **kws):
         "File Open dialog wrapper."
-        return unixpath(wxu.FileOpen(parent, message, **kws))
+        return Path(wxu.FileOpen(parent, message, **kws)).absolute().as_posix()
 
     def FileSave(parent, message, **kws):
         "File Save dialog"
-        return unixpath(wxu.FileSave(parent, message, **kws))
+        return Path(wxu.FileSave(parent, message, **kws)).absolute().as_posix()
 
     def SelectWorkdir(parent,  **kws):
         "prompt for and change into a working directory "
-        return unixpath(wxu.SelectWorkdir(parent, **kws))
+        return Path(wxu.SelectWorkdir(parent, **kws)).absolute().as_posix()
 
     from .larchframe import LarchFrame, LarchPanel
     from .columnframe import ColumnDataFileFrame, EditColumnFrame

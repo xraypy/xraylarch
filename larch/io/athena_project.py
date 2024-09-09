@@ -3,7 +3,6 @@
 Code to read and write Athena Project files
 
 """
-
 import io
 import sys
 import time
@@ -179,6 +178,7 @@ def make_athena_args(group, hashkey=None, **kws):
     args['bkg_spl2e'] = '%.5f' % emax
     args['bkg_spl1'] = '0'
     args['bkg_spl2'] = '%.5f' % etok(emax)
+    args['bkg_eshift'] = getattr(group, 'energy_shift', 0.0)
 
     autobk_details = getattr(group, 'autobk_details', None)
     autobk_args = getattr(autobk_details, 'call_args', None)
@@ -632,6 +632,8 @@ class AthenaProject(object):
         from larch.xafs import pre_edge
 
         x = athena_array(group, 'energy')
+        if hasattr(group, 'energy_orig'):
+            x = athena_array(group, 'energy_orig')
         yname = None
         for _name in ('mu', 'mutrans', 'mufluor'):
             if hasattr(group, _name):
@@ -809,9 +811,7 @@ class AthenaProject(object):
 
             if is_xmu and (do_preedge or do_bkg):
                 pars = clean_bkg_params(this.athena_params.bkg)
-                eshift = getattr(this.athena_params.bkg, 'eshift', None)
-                if eshift is not None:
-                    this.energy = this.energy + eshift
+                this.energy_shift = getattr(this.athena_params.bkg, 'eshift', 0.)
                 pre_edge(this,  e0=float(pars.e0),
                          pre1=float(pars.pre1), pre2=float(pars.pre2),
                          norm1=float(pars.nor1), norm2=float(pars.nor2),

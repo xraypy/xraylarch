@@ -5,12 +5,11 @@ Downloading and Installation
 ====================================
 
 .. _Larch Repository (github.com): https://github.com/xraypy/xraylarch
-.. _Anaconda Python:               https://www.continuum.io/
+.. _Anaconda Python:               https://www.anaconda.com/
 .. _PyPI:                          https://pypi.org
 .. _Conda:                         https://conda.io
 .. _Python.org:                    https://python.org/
-.. _Anaconda Downloads:            https://www.continuum.io/downloads
-.. _Miniconda Downloads:           https://docs.conda.io/en/latest/miniconda.html
+.. _Mambaforge Python:             https://github.com/conda-forge/miniforge/releases
 .. _lmfit:                         https://lmfit.github.io/lmfit-py/
 .. _xraydb:                        https://xraypy.github.io/XrayDB/
 .. _Larch Releases (github.com):   https://github.com/xraypy/xraylarch/releases
@@ -24,7 +23,8 @@ Downloading and Installation
 .. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2023-10-Linux-x86_64.sh
 .. _Docs and Examples:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2023-10_docs-examples.zip
 
-.. _Ifeffit Mailing List: https://millenia.cars.aps.anl.gov/mailman/listinfo/ifeffit/
+.. _Ifeffit Mailing List: https://millenia.cars.aps.anl.gov/mailman3/lists/ifeffit.millenia.cars.aps.anl.gov/
+
 .. _Demeter: https://bruceravel.github.io/demeter/
 .. _Larch Github Pages: https://github.com/xraypy/xraylarch
 .. _Larch Github Issues: https://github.com/xraypy/xraylarch/issues
@@ -202,7 +202,7 @@ macOS), and then type::
 If this script fails, report it to the `Larch Github Issues`_ (including
 the error trace and the `GetLarch.log` file).
 
-The scripts will download and install `Mambaforge Python` which uses Anaconda
+The scripts will download and install `Mambaforge Python`_ which uses Anaconda
 Python and the `conda-forge` channel as the basis of an installation that will
 be essentially identical to the environment installed by the binary installers,
 that is, the whole environment is stored in a folder called `xraylarch` in your

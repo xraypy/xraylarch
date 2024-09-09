@@ -35,10 +35,18 @@ if os.name == 'nt':
 if uname.startswith('linux'):
     uname = 'linux'
 
+def path_split(path):
+    "emulate os.path.split, returning posix path and filename"
+    p = Path(path).absolute()
+    return p.parent.as_posix(), p.name
+
 # bindir = location of local binaries
 nbits = platform.architecture()[0].replace('bit', '')
-topdir = os.path.split(os.path.split(os.path.abspath(__file__))[0])[0]
-bindir = os.path.abspath(os.path.join(topdir, 'bin', '%s%s' % (uname, nbits)))
+
+_here = Path(__file__).absolute()
+topdir = _here.parents[1].as_posix()
+bindir = Path(topdir, 'bin', f"{uname}{nbits}").as_posix()
+
 
 def get_homedir():
     "determine home directory"

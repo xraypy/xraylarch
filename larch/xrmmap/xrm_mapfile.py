@@ -4,16 +4,17 @@ import uuid
 import time
 import h5py
 import numpy as np
+from pathlib import Path
 import scipy.stats as stats
 import json
 import multiprocessing as mp
 from functools import partial
 
 import larch
-from larch.utils import isotime
-from larch.utils.strutils import fix_varname, fix_filename, bytes2str, version_ge
+from larch.utils import (isotime, fix_varname, fix_filename,
+                             bytes2str, version_ge, unixpath)
 
-from larch.io import (unixpath, new_filename, read_xrf_netcdf,
+from larch.io import (new_filename, read_xrf_netcdf,
                       read_xsp3_hdf5, read_xrd_netcdf, read_xrd_hdf5)
 
 from larch.xrf import MCA, ROI
@@ -75,7 +76,7 @@ def strlist(alist):
 def isGSEXRM_MapFolder(fname):
     "return whether folder a valid Scan Folder (raw data)"
     if (fname is None or not Path(fname).exists() or
-        not Path(fname).isdir()):
+        not Path(fname).is_dir()):
         return False
     flist = os.listdir(fname)
     for f in ('Master.dat', 'Environ.dat', 'Scan.ini'):
@@ -175,8 +176,7 @@ def ensure_subgroup(subgroup, group, dtype='virtual detector'):
 def toppath(pname, n=4):
     words = []
     for i in range(n):
-        pname, f = os.path.split(pname)
-        words.append(f)
+        words.append(Path(pname).name)
     return '/'.join(words)
 
 
@@ -433,7 +433,7 @@ class GSEXRM_MapFile(object):
         if root not in ('', None):
             self.root = root
         # see if file exists:
-        if not (os.path.exists(filename) and os.path.isfile(filename)):
+        if not (Path(filename).exists() and Path(filename).is_file()):
             return
         # see if file is empty/too small(signifies "read from folder")
         if os.stat(filename).st_size < 1024:
@@ -554,19 +554,23 @@ class GSEXRM_MapFile(object):
 
         if xrdcalfile is not None:
             self.xrdcalfile = xrdcalfile
-        if os.path.exists(str(self.xrdcalfile)):
-            print('Calibration file loaded: %s' % self.xrdcalfile)
-            xrd1dgrp.attrs['calfile'] = str(self.xrdcalfile)
+        if self.xrdcalfile is not None:
+            pcal = Path(self.xrdcalfile).absolute()
+            if pcal.exists():
+                self.xrdcalfile = pcal.as_posix()
+                print(f'Calibration file loaded: {self.xrdcalfile}')
+                xrd1dgrp.attrs['calfile'] = self.xrdcalfile
 
 
         self.flip = flip if flip is not None else self.flip
 
         if xrd1dbkgdfile is not None:
             self.xrd1dbkgdfile= xrd1dbkgdfile
-        if os.path.exists(str(self.xrd1dbkgdfile)):
-            print('xrd1d background file loaded: %s' % self.xrd1dbkgdfile)
-            xrd1dgrp.attrs['1Dbkgdfile'] = '%s' % (self.xrd1dbkgdfile)
-            self.bkgd_xrd1d = read_xrd_data(self.xrd1dbkgdfile)*self.bkgdscale
+        if self.xrd1dbkgdfile is not None:
+            if Path(self.xrd1dbkgdfile).exists():
+                print(f'xrd1d background file loaded: {self.xrd1dbkgdfile}')
+                xrd1dgrp.attrs['1Dbkgdfile'] = f'{self.xrd1dbkgdfile}'
+                self.bkgd_xrd1d = read_xrd_data(self.xrd1dbkgdfile)*self.bkgdscale
 
         if xrd2dbkgdfile is not None:
             self.xrd2dbkgdfile= xrd2dbkgdfile
@@ -2698,7 +2702,7 @@ class GSEXRM_MapFile(object):
         _mca.areaname = _mca.title = name
         fname = Path(self.filename).name
         _mca.filename = fix_filename(fname)
-        mca.info = f"Data from File '{self.filename}', detector '{dgroup}', area '{name}'"
+        _mca.info = f"Data from File '{self.filename}', detector '{dgroup}', area '{name}'"
 
         return _mca
 
@@ -3361,7 +3365,7 @@ class GSEXRM_MapFile(object):
 def read_xrmmap(filename, root=None, **kws):
     '''read GSE XRF FastMap data from HDF5 file or raw map folder'''
     key = 'filename'
-    if os.path.isdir(filename):
+    if Path(filename).is_dir():
         key = 'folder'
     kws.update({key: filename, 'root': root})
 
@@ -3375,7 +3379,7 @@ def process_mapfolder(path, take_ownership=False, **kws):
         kws['xrdcal'] = kws.pop('poni')
     except:
         pass
-    if os.path.isdir(path) and isGSEXRM_MapFolder(path):
+    if Path(path).is_dir() and isGSEXRM_MapFolder(path):
         print( '\n build map for: %s' % path)
         try:
             g = GSEXRM_MapFile(folder=path, **kws)

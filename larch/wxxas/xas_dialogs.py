@@ -1,9 +1,9 @@
 import sys
-import os
 import copy
 import time
 from collections import namedtuple
 from functools import partial
+from pathlib import Path
 import numpy as np
 from lmfit import Parameters, minimize, fit_report
 from matplotlib.ticker import FuncFormatter
@@ -14,7 +14,7 @@ from xraydb import guess_edge
 from larch import Group, isgroup
 from larch.math import index_of, index_nearest, interp
 from larch.utils.strutils import file2groupname, unique_name
-from larch.utils import unixpath
+from larch.utils import path_split
 
 from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl, FloatSpin,
                          set_color, FloatSpinWithPin, get_icon, SimpleText,
@@ -217,7 +217,7 @@ class OverAbsorptionDialog(wx.Dialog):
 
         dgroup = self.dgroup
         xlim, ylim = get_view_limits(ppanel)
-        path, fname = os.path.split(dgroup.filename)
+        path, fname = path_split(dgroup.filename)
 
         opts = dict(linewidth=3, ylabel=plotlabels.norm,
                     xlabel=plotlabels.energy, delay_draw=True,
@@ -437,7 +437,7 @@ class EnergyCalibrateDialog(wx.Dialog):
 
         ensure_en_orig(dgroup)
 
-        idx, norm_page = self.parent.get_nbpage('norm')
+        idx, norm_page = self.parent.get_nbpage('xasnorm')
         norm_page.wids['energy_shift'].SetValue(eshift)
 
         dgroup.energy_shift = eshift
@@ -448,7 +448,7 @@ class EnergyCalibrateDialog(wx.Dialog):
 
     def on_apply_sel(self, event=None):
         eshift = self.wids['eshift'].GetValue()
-        idx, norm_page = self.parent.get_nbpage('norm')
+        idx, norm_page = self.parent.get_nbpage('xasnorm')
         for checked in self.controller.filelist.GetCheckedStrings():
             fname  = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(fname)
@@ -485,7 +485,7 @@ class EnergyCalibrateDialog(wx.Dialog):
         dgroup = self.dgroup
 
         xlim, ylim = get_view_limits(ppanel)
-        path, fname = os.path.split(dgroup.filename)
+        path, fname = path_split(dgroup.filename)
 
         wids = self.wids
         eshift = wids['eshift'].GetValue()
@@ -724,7 +724,7 @@ class RebinDataDialog(wx.Dialog):
         xnew, ynew, yerr, e0 = self.data
         dgroup = self.dgroup
         xlim, ylim = get_view_limits(ppanel)
-        path, fname = os.path.split(dgroup.filename)
+        path, fname = path_split(dgroup.filename)
 
         opts = {'delay_draw': True}
         if self.controller.plot_erange is not None:
@@ -924,7 +924,7 @@ class SmoothDataDialog(wx.Dialog):
         ppanel = self.controller.get_display(stacked=False).panel
         xnew, ynew = self.data
         dgroup = self.dgroup
-        path, fname = os.path.split(dgroup.filename)
+        path, fname = path_split(dgroup.filename)
         opts = {'delay_draw': True}
         xlim, ylim = get_view_limits(ppanel)
 
@@ -1067,7 +1067,7 @@ class DeconvolutionDialog(wx.Dialog):
         xnew, ynew = self.data
         dgroup = self.dgroup
         xlim, ylim = get_view_limits(ppanel)
-        path, fname = os.path.split(dgroup.filename)
+        path, fname = path_split(dgroup.filename)
 
         opts = {'delay_draw': True}
         if self.controller.plot_erange is not None:
@@ -1337,7 +1337,7 @@ class DeglitchDialog(wx.Dialog):
 
         dgroup = self.dgroup
 
-        path, fname = os.path.split(dgroup.filename)
+        path, fname = path_split(dgroup.filename)
 
         plotstr = self.wids['plotopts'].GetStringSelection()
         plottype = DEGLITCH_PLOTS[plotstr]
@@ -2047,7 +2047,7 @@ class LoadSessionDialog(wx.Frame):
             if fname not in sel_groups:
                 ignore.append(gname)
 
-        fname = unixpath(self.filename)
+        fname = Path(self.filename).as_posix()
         if fname.endswith('/'):
             fname = fname[:-1]
         lcmd = [f"load_session('{fname}'"]

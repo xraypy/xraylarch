@@ -2,9 +2,9 @@
 """
 Linear Combination panel
 """
-import os
 import sys
 import time
+from pathlib import Path
 import wx
 import wx.grid as wxgrid
 import numpy as np
@@ -479,7 +479,7 @@ class RegressionPanel(TaskPanel):
         if fname is None:
             return
 
-        self.save_csvfile = os.path.split(fname)[1]
+        self.save_csvfile = Path(fname).name
         varname = fix_varname(self.wids['varname'].GetValue())
         csvgroup = read_csv(fname)
         script = []
@@ -504,7 +504,7 @@ class RegressionPanel(TaskPanel):
                          default_file=self.save_csvfile)
         if fname is None:
             return
-        self.save_csvfile = os.path.split(fname)[1]
+        self.save_csvfile = Path(fname).name
         buff = []
         for  row in self.wids['table'].table.data:
             buff.append("%s, %s, %s" % (row[0], gformat(row[1]), gformat(row[2])))

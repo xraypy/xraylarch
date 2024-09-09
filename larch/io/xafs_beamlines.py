@@ -29,7 +29,7 @@ By default, that header will defined all the text before the data table.
 """
 
 import numpy as np
-from .fileutils import fix_varname
+from ..utils import fix_varname
 
 def guess_beamline(header=None):
     """

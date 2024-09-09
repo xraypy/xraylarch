@@ -2,7 +2,6 @@
 """
  uncategorized XY data Panel
 """
-import os
 import time
 import wx
 import numpy as np
@@ -10,7 +9,7 @@ import numpy as np
 from functools import partial
 from xraydb import guess_edge, atomic_number
 
-from larch.utils import gformat
+from larch.utils import gformat, path_split
 from larch.math import index_of
 from larch.xafs.xafsutils import guess_energy_units
 
@@ -515,7 +514,7 @@ class XYDataPanel(TaskPanel):
         popts['grid'] = popts.pop('show_grid')
         popts['fullbox'] = popts.pop('show_fullbox')
 
-        path, fname = os.path.split(dgroup.filename)
+        path, fname = path_split(dgroup.filename)
         if 'label' not in popts:
             popts['label'] = dgroup.plot_ylabel
 

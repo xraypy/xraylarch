@@ -19,7 +19,6 @@ And the answers are that there are simple methods for:
    c) getting atomic clustes as for feff files
    d) saving Feff.inp files
 
-
 """
 
 import sys
@@ -44,7 +43,7 @@ from sqlalchemy.orm import sessionmaker
 
 
 from .amcsd_utils import (make_engine, isAMCSD, put_optarray, get_optarray,
-                          PMG_CIF_OPTS, CifParser, SpacegroupAnalyzer)
+                          PMG_CIF_OPTS, CifParser, SpacegroupAnalyzer, pmg_version)
 
 from xraydb.chemparser import chemparse
 from xraydb import f0, f1_chantler, f2_chantler
@@ -549,16 +548,23 @@ class CifStructure():
     def get_pmg_struct(self):
         if self.pmg_cstruct is not None and self.pmg_pstruct is not None:
             return
-
+        err = f"pymatgen {pmg_version} could not"
         try:
             pmcif = CifParser(StringIO(self.ciftext), **PMG_CIF_OPTS)
-            self.pmg_cstruct = pmcif.get_structures()[0]
+        except:
+            print(f"{err} parse CIF text for CIF {self.ams_id}")
+
+        try:
+            self.pmg_cstruct = pmcif.parse_structures()[0]
+        except:
+            print(f"{err} parse structure for CIF {self.ams_id}")
+
+        try:
             self.pmg_pstruct = SpacegroupAnalyzer(self.pmg_cstruct
                                                   ).get_conventional_standard_structure()
         except:
-            print(f"pymatgen could not parse CIF structure for CIF {self.ams_id}")
-
-
+            print(f"{err} could not analyze spacegroup for CIF {self.ams_id}")
+            
     def get_unitcell(self):
         "unitcell as dict, from PMG structure"
         self.get_pmg_struct()
