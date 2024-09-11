@@ -1221,7 +1221,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.owner.show_XRFDisplay()
         mca_thread.join()
 
-        fname = Path(self.owner.current_file.filename).fname
+        fname = Path(self.owner.current_file.filename).name
 
         npix = area[()].sum()
         self._mca.filename = fname
