@@ -1387,6 +1387,8 @@ class MapViewerFrame(wx.Frame):
         self.h5convert_nrow = 0
 
         read_workdir('gsemap.dat')
+        self.onFolderSelect()
+        self.statusbar.SetStatusText('Set Working Folder', 0)
 
         w0, h0 = self.GetSize()
         w1, h1 = self.GetBestSize()
@@ -1399,8 +1401,14 @@ class MapViewerFrame(wx.Frame):
         self.inst_name = None
         self.move_callback = None
 
+
+        self.init_larch()
+        self.statusbar.SetStatusText('ready', 0)
+        self.Raise()
+
+
         if filename is not None:
-            wx.CallAfter(self.onRead, filename)
+            self.onRead(filename)
 
         if check_version:
             version_thread.join()
@@ -1438,12 +1446,8 @@ class MapViewerFrame(wx.Frame):
         except:
            pass
 
-
-        self.Raise()
-        wx.CallAfter(self.init_larch)
-
     def createNBPanels(self, parent):
-        self.title    = SimpleText(parent, 'initializing...', size=(680, -1))
+        self.title    = SimpleText(parent, ' ', size=(680, -1))
 
         self.SetBackgroundColour('#F0F0E8')
 
@@ -1807,7 +1811,6 @@ class MapViewerFrame(wx.Frame):
         self.subframes['xrd1d'].Show()
 
     def init_larch(self):
-        self.SetStatusText('ready')
         self.datagroups = self.larch.symtable
         if ESCAN_CRED is not None:
             self.move_callback = self.onMoveToPixel
@@ -1821,7 +1824,6 @@ class MapViewerFrame(wx.Frame):
                 etype, emsg, tb = sys.exc_info()
                 print('Could not connect to ScanDB: %s' % (emsg))
                 self.scandb = self.instdb = None
-        wx.CallAfter(self.onFolderSelect)
 
     def ShowFile(self, evt=None, filename=None,  process_file=True, **kws):
         if filename is None and evt is not None:
