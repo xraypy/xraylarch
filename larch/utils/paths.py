@@ -2,6 +2,7 @@ import sys
 import os
 import platform
 from pathlib import Path
+from charset_normalizer import from_bytes
 
 HAS_PWD = True
 try:
@@ -9,29 +10,20 @@ try:
 except ImportError:
     HAS_PWD = False
 
-
 def unixpath(d):
+    if isinstance(d, bytes):
+        d = str(from_bytes(d).best())
     if isinstance(d, str):
-        return d.replace('\\', '/')
-    elif isinstance(d, Path):
+        d = Path(d).absolute()
+    if isinstance(d, Path):
         return d.as_posix()
-
-def winpath(d):
-    "ensure path uses windows delimiters"
-    if isinstance(d, str):
-        if d.startswith('//'): d = d[1:]
-        d = d.replace('/','\\')
-        return d
-    elif isinstance(d, Path):
-        return Path(d.as_posix())
+    raise ValueError(f"cannot get Path name from {d}")
 
 # uname = 'win', 'linux', or 'darwin'
 uname = sys.platform.lower()
-nativepath = unixpath
 
 if os.name == 'nt':
     uname = 'win'
-    nativepath = winpath
 if uname.startswith('linux'):
     uname = 'linux'
 
