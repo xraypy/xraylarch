@@ -353,7 +353,7 @@ def add2path(envvar='PATH', dirname='.'):
         os.environ[envvar] = dirname
     else:
         paths = oldpath.split(sep)
-        paths.insert(0, Path(dirname).absolute())
+        paths.insert(0, Path(dirname).absolute().as_posix())
         os.environ[envvar] = sep.join(paths)
     return oldpath
 
@@ -378,14 +378,14 @@ def get_dll(libname):
     # normally, we expect the dll to be here in the larch dlls tree
     # if we find it there, use that one
     fname = _dylib_formats[uname] % libname
-    dllpath = Path(bindir, fname)
-    if Path(dllpath).exists():
-        return loaddll(dllpath)
+    dllpath = Path(bindir, fname).absolute()
+    if dllpath.exists():
+        return loaddll(dllpath.as_posix())
 
     # if not found in the larch dlls tree, try your best!
-    dllpath = ctypes.util.find_library(libname)
-    if dllpath is not None and Path(dllpath).exists():
-        return loaddll(dllpath)
+    dllpath = Path(ctypes.util.find_library(libname)).absolute()
+    if dllpath is not None and dllpath.exists():
+        return loaddll(dllpath.as_posix())
     return None
 
 
@@ -399,7 +399,7 @@ def read_workdir(conffile):
 
     try:
         w_file = Path(user_larchdir, conffile).absolute()
-        if Path(w_file).exists():
+        if w_file.exists():
             line = open(w_file, 'r').readlines()
             workdir = line[0][:-1]
             os.chdir(workdir)
@@ -431,7 +431,7 @@ def read_config(conffile):
     """
     cfile = Path(user_larchdir, conffile).absolute()
     out = None
-    if Path(cfile).exists():
+    if cfile.exists():
         data = read_textfile(cfile)
         try:
             out = toml.loads(data)

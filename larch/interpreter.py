@@ -7,12 +7,12 @@ The emphasis here is on mathematical expressions, and so
 numpy functions are imported if available and used.
 """
 import os
-from pathlib import Path
 import sys
 import types
 import ast
 import math
 import numpy
+from pathlib import Path
 from copy import deepcopy
 
 from . import site_config
@@ -1071,7 +1071,7 @@ class Interpreter:
                     continue
                 if larchname in sorted(os.listdir(dirname)):
                     islarch = True
-                    modname = Path(dirname, larchname).absolute()
+                    modname = Path(dirname, larchname).absolute().as_posix()
                     try:
                         thismod = self.runfile(modname, new_module=name)
                     except:
