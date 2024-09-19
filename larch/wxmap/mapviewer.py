@@ -49,6 +49,7 @@ from larch.utils.strutils import bytes2str, version_ge
 from larch.utils import get_cwd
 from larch.site_config import icondir
 from larch.version import check_larchversion
+from larch.utils.physical_constants import PLANCK_HC
 
 from ..xrd import lambda_from_E, xrd1d, save1D, calculate_xvalues, read_poni
 from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup, DEFAULT_XRAY_ENERGY
@@ -1267,9 +1268,9 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             stem = Path(self.owner.current_file.filename).name
             stem = f"{stem}_{title}"
 
+        energy = 0.001*xrmfile.get_incident_energy()
         kwargs = dict(filename=self.owner.current_file.filename,
-                      npixels=area[()].sum(),
-                      energy=0.001*xrmfile.get_incident_energy(),
+                      npixels=area[()].sum(), energy=energy,
                       calfile=ponifile, title=title, xrd2d=False)
 
         if xrd1d and xrmfile.has_xrd1d:
@@ -1309,8 +1310,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 return
 
             label = f'{Path(_xrd.filename).name}: {title}'
-            self.owner.display_xrd2d(_xrd.data2D, label=label,
-                                     xrmfile=xrmfile)
+            self.owner.display_xrd2d(_xrd.data2D, label=label, xrmfile=xrmfile)
+            
             wildcards = '2D XRD file (*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
             fname = xrmfile.filename + '_' + aname
             #dlg = wx.FileDialog(self, 'Save file as...',
@@ -1761,19 +1762,23 @@ class MapViewerFrame(wx.Frame):
         '''
         displays 2D XRD pattern in diFFit viewer
         '''
-        xrmfile = self.current_file
-        ponifile = bytes2str(xrmfile.xrmmap['xrd1d'].attrs.get('calfile',''))
-        if len(ponifile) < 2 or not Path(ponifile).exists():
-            t_ponifile = Path(xrmfile.folder, 'XRD.poni')
-            if t_ponifile.exists():
-                ponifile = t_ponifile.as_posix()
-        if Path(ponifile).exists():
-            self.current_file.xrmmap['xrd1d'].attrs['calfile'] = ponifile
+        if xrmfile is None:
+            xrmfile = self.current_file
+        calfile = bytes2str(xrmfile.xrmmap['xrd1d'].attrs.get('calfile',''))
+        energy = xrmfile.get_incident_energy()
+        
+        if len(calfile) < 2 or not Path(calfile).exists():
+            tfile = Path(xrmfile.folder, 'XRD.poni')
+            if tfile.exists():
+                calfile = tfile.as_posix()
+        if Path(calfile).exists():
+            self.current_file.xrmmap['xrd1d'].attrs['calfile'] = calfile
 
         self.show_XRD1D()
         self.subframes['xrd1d'].flip = 'vertical' if flip is True else False
-        self.subframes['xrd1d'].calfile = ponifile
-        self.subframes['xrd1d'].set_poni(ponifile)
+        self.subframes['xrd1d'].set_wavelength(PLANCK_HC/energy)
+        self.subframes['xrd1d'].calfile = calfile
+        self.subframes['xrd1d'].set_ponifile(calfile)
         self.subframes['xrd1d'].display_xrd_image(map, label=label)
         self.subframes['xrd1d'].Show()
 

@@ -399,7 +399,7 @@ class XRD1DFrame(wx.Frame):
 
         if sfile is not None:
             try:
-                self.poni.update(read_poni(sfile))
+                self.set_poni(read_poni(sfile), with_pyfai=True)
             except:
                 title = "Could not read PONI File"
                 message = [f"Could not read PONI file {sfile}"]
@@ -408,10 +408,11 @@ class XRD1DFrame(wx.Frame):
             top, xfile = os.path.split(sfile)
             os.chdir(top)
 
-            try:
-                self.pyfai_integrator = AzimuthalIntegrator(**self.poni)
-            except:
-                self.pyfai_integrator = None
+            if self.pyfai_integrator is None:
+                try:
+                    self.pyfai_integrator = AzimuthalIntegrator(**self.poni)
+                except:
+                    self.pyfai_integrator = None
 
             self.tiff_reader.Enable(self.pyfai_integrator is not None)
 
@@ -769,14 +770,14 @@ class XRD1DFrame(wx.Frame):
         self.Show()
         self.Raise()
 
-    def set_ponifile(self, ponifile):
+    def set_ponifile(self, ponifile, with_pyfai=True):
         "set poni from datafile"
         try:
-            self.set_poni(read_poni(ponifile))
+            self.set_poni(read_poni(ponifile), with_pyfai=with_pyfai)
         except:
             pass
 
-    def set_poni(self, poni):
+    def set_poni(self, poni, with_pyfai=True):
         "set poni from dict"
         try:
             self.poni.update(poni)
@@ -785,10 +786,12 @@ class XRD1DFrame(wx.Frame):
         except:
             pass
 
-        try:
-            self.pyfai_integrator = AzimuthalIntegrator(**self.poni)
-        except:
-            self.pyfai_integrator = None
+        if with_pyfai:
+            try:
+                self.pyfai_integrator = AzimuthalIntegrator(**self.poni)
+            except:
+                self.pyfai_integrator = None
+                
 
     def set_wavelength(self, value):
         self.wavelength = value
