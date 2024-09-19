@@ -61,7 +61,6 @@ from .mapmathpanel import MapMathPanel
 from .maptomopanel import TomographyPanel
 from .mapxrfpanel import XRFAnalysisPanel
 
-from ..wxxrd import XRD2DViewerFrame
 from ..wxxrd.xrd1d_display import XRD1DFrame
 
 def timestring():
@@ -1310,18 +1309,19 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 return
 
             label = f'{Path(_xrd.filename).name}: {title}'
-            self.owner.display_2Dxrd(_xrd.data2D, label=label, xrmfile=xrmfile)
+            self.owner.display_xrd2d(_xrd.data2D, label=label,
+                                     xrmfile=xrmfile)
             wildcards = '2D XRD file (*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
             fname = xrmfile.filename + '_' + aname
-            dlg = wx.FileDialog(self, 'Save file as...',
-                                defaultDir=get_cwd(),
-                                defaultFile='%s.tiff' % fname,
-                                wildcard=wildcards,
-                                style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
-            if dlg.ShowModal() == wx.ID_OK:
-                filename = Path(dlg.GetPath()).absolute().as_posix()
-                _xrd.save_2D(file=filename, verbose=True)
-            dlg.Destroy()
+            #dlg = wx.FileDialog(self, 'Save file as...',
+            #                    defaultDir=get_cwd(),
+            #                    defaultFile='%s.tiff' % fname,
+            #                    wildcard=wildcards,
+            #                    style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+            #if dlg.ShowModal() == wx.ID_OK:
+            #    filename = Path(dlg.GetPath()).absolute().as_posix()
+            #    _xrd.save_2D(file=filename, verbose=True)
+            # dlg.Destroy()
 
 
 class MapViewerFrame(wx.Frame):
@@ -1356,8 +1356,7 @@ class MapViewerFrame(wx.Frame):
         self.larch = self.larch_buffer.larchshell
 
         self.subframes = {'xrfdisplay': None,
-                          'xrd1d': None,
-                          'xrd2d': None}
+                          'xrd1d': None}
         self.watch_files = False
 
         self.files_in_progress = []
@@ -1564,10 +1563,6 @@ class MapViewerFrame(wx.Frame):
     def show_XRD1D(self, event=None):
         self.show_subframe('xrd1d', XRD1DFrame, _larch=self.larch)
 
-    def show_XRD2D(self, event=None):
-        self.show_subframe('xrd2d', XRD1DFrame, _larch=self.larch)
-
-
     def show_XRFDisplay(self, do_raise=True, clear=True, xrmfile=None):
         'make sure XRF plot frame is enabled and visible'
         if xrmfile is None:
@@ -1762,7 +1757,7 @@ class MapViewerFrame(wx.Frame):
         imd.Show()
         imd.Raise()
 
-    def display_2Dxrd(self, map, label='image 0', xrmfile=None, flip=True):
+    def display_xrd2d(self, map, label='image 0', xrmfile=None, flip=True):
         '''
         displays 2D XRD pattern in diFFit viewer
         '''
@@ -1775,12 +1770,12 @@ class MapViewerFrame(wx.Frame):
         if Path(ponifile).exists():
             self.current_file.xrmmap['xrd1d'].attrs['calfile'] = ponifile
 
-        self.show_XRD2D()
         self.show_XRD1D()
-        self.subframes['xrd2d'].flip = 'vertical' if flip is True else False
-        self.subframes['xrd2d'].calfile = ponifile
-        self.subframes['xrd2d'].plot2Dxrd(label, map)
-        self.subframes['xrd2d'].Show()
+        self.subframes['xrd1d'].flip = 'vertical' if flip is True else False
+        self.subframes['xrd1d'].calfile = ponifile
+        self.subframes['xrd1d'].set_poni(ponifile)
+        self.subframes['xrd1d'].display_xrd_image(map, label=label)
+        self.subframes['xrd1d'].Show()
 
     def display_xrd1d(self, counts, q, energy, label='dataset 0', xrmfile=None):
         '''
