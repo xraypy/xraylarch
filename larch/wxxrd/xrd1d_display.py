@@ -469,6 +469,8 @@ class XRD1DFrame(wx.Frame):
                          default_dir=get_cwd(),
                          wildcard=TIFFWcards)
         if sfile is not None:
+            top, fname = os.path.split(sfile)            
+            
             if self.pyfai_integrator is None:
                 try:
                     self.pyfai_integrator = AzimuthalIntegrator(**self.poni)
@@ -480,36 +482,37 @@ class XRD1DFrame(wx.Frame):
                 return
 
             img =  tifffile.imread(sfile)
-            img = img[::-1, :]
-            if self.mask is not None:
-                if (self.mask.shape == img.shape):
-                    img = img*self.mask
-                else:
-                    title = "Could not apply current mask"
-                    message = [f"Could not apply current mask [shape={self.mask.shape}]",
-                               f"to this XRD image [shape={img.shape}]"]
-                    o = ExceptionPopup(self, title, message)
+            self.display_xrd_image(img, label=fname)
 
-            if (img.max() > MAXVAL_INT16) and (img.max() < MAXVAL_INT16 + 64):
-                #probably really 16bit data
-                img[np.where(img>MAXVAL_INT16)] = 0
+    def display_xrd_image(self, img, label='Image'):
+        if self.mask is not None:
+            if (self.mask.shape == img.shape):
+                img = img*self.mask
             else:
-                img[np.where(img>MAXVAL)] = 0
-            img[np.where(img<-1)] = -1
-            # print("read tiff ", img.shape, img.min(), img.max())
+                title = "Could not apply current mask"
+                message = [f"Could not apply current mask [shape={self.mask.shape}]",
+                           f"to this XRD image [shape={img.shape}]"]
+                o = ExceptionPopup(self, title, message)
 
-            imd = self.get_imdisplay()
-            imd.display(img, colomap='gray', auto_contrast=True)
+        if (img.max() > MAXVAL_INT16) and (img.max() < MAXVAL_INT16 + 64):
+            #probably really 16bit data
+            img[np.where(img>MAXVAL_INT16)] = 0
+        else:
+            img[np.where(img>MAXVAL)] = 0
+        img[np.where(img<-1)] = -1
+        img = img[::-1, :]
 
-            integrate = self.pyfai_integrator.integrate1d
-            q, ix = integrate(img, 2048, method='csr', unit='q_A^-1',
-                              correctSolidAngle=True,
-                              polarization_factor=0.999)
+        imd = self.get_imdisplay()
+        imd.display(img, colomap='gray', auto_contrast=True)
+            
+        integrate = self.pyfai_integrator.integrate1d
+        q, ix = integrate(img, 2048, method='csr', unit='q_A^-1',
+                          correctSolidAngle=True,
+                          polarization_factor=0.999)
 
-            top, fname = os.path.split(sfile)
-            dxrd = xrd1d(label=fname, x=q, I=ix, xtype='q', wavelength=self.wavelength)
-            dxrd.file = fname
-            self.add_data(dxrd, label=fname)
+        dxrd = xrd1d(label=label, x=q, I=ix, xtype='q',
+                     wavelength=self.wavelength)
+        self.add_data(dxrd, label=label)
 
 
     def onCIFBrowse(self, event=None):
@@ -786,7 +789,6 @@ class XRD1DFrame(wx.Frame):
             self.pyfai_integrator = AzimuthalIntegrator(**self.poni)
         except:
             self.pyfai_integrator = None
-
 
     def set_wavelength(self, value):
         self.wavelength = value
