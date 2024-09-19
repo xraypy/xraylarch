@@ -135,8 +135,15 @@ def extract_background(x, y, smooth_width=0.1, iterations=40, cheb_order=40):
     return chebval(x_cheb, cheb_params)
 
 def calc_bgr(dset, qwid=0.1, nsmooth=40, cheb_order=40):
-    return extract_background(dset.q, dset.I, smooth_width=qwid,
-                              iterations=nsmooth, cheb_order=cheb_order)
+    try:
+        bgr = extract_background(dset.q, dset.I,
+                                 smooth_width=qwid,
+                                 iterations=nsmooth,
+                                 cheb_order=cheb_order)
+    except:
+        bgr = 0.0*dset.I
+    return bgr
+
 
 class WavelengthDialog(wx.Dialog):
     """dialog for wavelength/energy"""
