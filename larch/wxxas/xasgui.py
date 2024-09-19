@@ -1545,7 +1545,6 @@ before clearing"""
             jrnl = {'source_desc': f'{spath:s}: {gname:s}'}
             self.larch.eval(script.format(group=gid, prjgroup=gname))
 
-            print("## ATHENA -> INSTALL GROUP ", ig, gid, label, path)
             dgroup = self.install_group(gid, label, process=False,
                                         source=path, journal=jrnl)
             groups_added.append(gid)
