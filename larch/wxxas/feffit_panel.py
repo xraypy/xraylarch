@@ -1198,9 +1198,9 @@ class FeffitPanel(TaskPanel):
                                                     **ftargs))
 
         self.larch_eval('\n'.join(cmds))
-        self.plot_feffit_result(dataset_name, topwin=topwin, **opts)
+        self.plot_feffit_result(dataset_name, topwin=topwin, ftargs=ftargs, **opts)
 
-    def plot_feffit_result(self, dataset_name, topwin=None, **opts):
+    def plot_feffit_result(self, dataset_name, topwin=None, ftargs=None, **kws):
 
         if isValidName(dataset_name):
             dataset = getattr(self.larch.symtable, dataset_name, None)
@@ -1217,6 +1217,8 @@ class FeffitPanel(TaskPanel):
 
         #print("plot_feffit_result/ dgroup, dataset: ", dataset_name, dgroup, dataset, has_data)
 
+        opts = self.process(dgroup)
+        opts.update(**kws)
         title = fname = opts['filename']
         if title is None:
             title = 'Feff Sum'
@@ -1228,6 +1230,12 @@ class FeffitPanel(TaskPanel):
         plot2 = opts['plot2_op']
         plot_rmax = opts['plot_rmax']
         kweight = opts['plot_kw']
+        if ftargs is None:
+            ftargs = dict(kmin=opts['fit_kmin'], kmax=opts['fit_kmax'], dk=opts['fit_dk'],
+                         kwindow=opts['fit_kwindow'], kweight=opts['plot_kw'],
+                         rmin=opts['fit_rmin'], rmax=opts['fit_rmax'],
+                         dr=opts.get('fit_dr', 0.1), rwindow='hanning')
+
         cmds = []
         for i, plot in enumerate((plot1, plot2)):
             if plot in Plot2_Choices:
@@ -1689,9 +1697,10 @@ class FeffitPanel(TaskPanel):
 
 
         label = now  = time.strftime("%b-%d %H:%M")
-        dgroup.feffit_history[0].commands = script
-        dgroup.feffit_history[0].timestamp = time.strftime("%Y-%b-%d %H:%M")
-        dgroup.feffit_history[0].label = label
+        if len(dgroup.feffit_history) > 0:
+            dgroup.feffit_history[0].commands = script
+            dgroup.feffit_history[0].timestamp = time.strftime("%Y-%b-%d %H:%M")
+            dgroup.feffit_history[0].label = label
 
         fitlabels = [fhist.label for fhist in dgroup.feffit_history[1:]]
         if label in fitlabels:
@@ -2176,14 +2185,15 @@ class FeffitResultFrame(wx.Frame):
 
         xname = 'k' if form.startswith('chik') else 'r'
         yname = 'chi' if form.startswith('chik') else form
+        yname = 'chiq_re' if form.startswith('chiq') else form
         kw = 0
         if form == 'chikw':
             kw = ds0.transform.kweight
 
         xarr   = getattr(ds0.data, xname)
         nx     = len(xarr)
-        ydata  = getattr(ds0.data, yname) * xarr**kw
-        ymodel = getattr(ds0.model, yname) * xarr**kw
+        ydata  = getattr(ds0.data, yname)[:nx] * xarr**kw
+        ymodel = getattr(ds0.model, yname)[:nx] * xarr**kw
         out    = [xarr, ydata, ymodel]
 
         array_names = [xname, 'expdata', 'model']
