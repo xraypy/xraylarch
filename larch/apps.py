@@ -55,16 +55,16 @@ class LarchApp(object):
         bindir = Path(sys.prefix, bindir).absolute()
         script = self.script
         if not self.script.startswith('_'):
-            script = Path(bindir, self.script).absolute()
+            script = Path(bindir, self.script).absolute().as_posix()
 
-        icon = Path(icondir, self.icon)
+        icon = Path(icondir, self.icon).absolute()
         if isinstance(ico_ext, (list, tuple)):
             for ext in ico_ext:
-                ticon = f"{self.icon:s}.{ext:s}"
-                if Path(ticon).exists():
+                ticon = Path(f"{self.icon:s}.{ext:s}").absolute()
+                if ticon.exists():
                     icon = ticon
-
-        make_shortcut(script, name=self.name, folder=folder, icon=icon,
+        make_shortcut(script, name=self.name, folder=folder,
+                      icon=icon.as_posix(),
                       description=self.description,
                       terminal=(not self.is_wxapp))
 

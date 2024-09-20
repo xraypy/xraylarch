@@ -63,9 +63,11 @@ def gformat(val, length=11):
             prec -= expon
 
     def fmt(val, length, prec, form):
+        if prec < 0: prec = 0
         out = f'{val:{length}.{prec}{form}}'
         if form == 'e' and 'e+0' in out or 'e-0' in out:
             out = f'{val:{length+1}.{prec+1}{form}}'.replace('e-0', 'e-').replace('e+0', 'e+')
+
         return out
 
     prec += 1

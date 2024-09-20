@@ -49,6 +49,7 @@ from larch.utils.strutils import bytes2str, version_ge
 from larch.utils import get_cwd
 from larch.site_config import icondir
 from larch.version import check_larchversion
+from larch.utils.physical_constants import PLANCK_HC
 
 from ..xrd import lambda_from_E, xrd1d, save1D, calculate_xvalues, read_poni
 from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup, DEFAULT_XRAY_ENERGY
@@ -61,7 +62,6 @@ from .mapmathpanel import MapMathPanel
 from .maptomopanel import TomographyPanel
 from .mapxrfpanel import XRFAnalysisPanel
 
-from ..wxxrd import XRD2DViewerFrame
 from ..wxxrd.xrd1d_display import XRD1DFrame
 
 def timestring():
@@ -1221,7 +1221,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.owner.show_XRFDisplay()
         mca_thread.join()
 
-        fname = Path(self.owner.current_file.filename).fname
+        fname = Path(self.owner.current_file.filename).name
 
         npix = area[()].sum()
         self._mca.filename = fname
@@ -1268,9 +1268,9 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             stem = Path(self.owner.current_file.filename).name
             stem = f"{stem}_{title}"
 
+        energy = 0.001*xrmfile.get_incident_energy()
         kwargs = dict(filename=self.owner.current_file.filename,
-                      npixels=area[()].sum(),
-                      energy=0.001*xrmfile.get_incident_energy(),
+                      npixels=area[()].sum(), energy=energy,
                       calfile=ponifile, title=title, xrd2d=False)
 
         if xrd1d and xrmfile.has_xrd1d:
@@ -1310,18 +1310,19 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 return
 
             label = f'{Path(_xrd.filename).name}: {title}'
-            self.owner.display_2Dxrd(_xrd.data2D, label=label, xrmfile=xrmfile)
+            self.owner.display_xrd2d(_xrd.data2D, label=label, xrmfile=xrmfile)
+            
             wildcards = '2D XRD file (*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
             fname = xrmfile.filename + '_' + aname
-            dlg = wx.FileDialog(self, 'Save file as...',
-                                defaultDir=get_cwd(),
-                                defaultFile='%s.tiff' % fname,
-                                wildcard=wildcards,
-                                style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
-            if dlg.ShowModal() == wx.ID_OK:
-                filename = Path(dlg.GetPath()).absolute().as_posix()
-                _xrd.save_2D(file=filename, verbose=True)
-            dlg.Destroy()
+            #dlg = wx.FileDialog(self, 'Save file as...',
+            #                    defaultDir=get_cwd(),
+            #                    defaultFile='%s.tiff' % fname,
+            #                    wildcard=wildcards,
+            #                    style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+            #if dlg.ShowModal() == wx.ID_OK:
+            #    filename = Path(dlg.GetPath()).absolute().as_posix()
+            #    _xrd.save_2D(file=filename, verbose=True)
+            # dlg.Destroy()
 
 
 class MapViewerFrame(wx.Frame):
@@ -1356,8 +1357,7 @@ class MapViewerFrame(wx.Frame):
         self.larch = self.larch_buffer.larchshell
 
         self.subframes = {'xrfdisplay': None,
-                          'xrd1d': None,
-                          'xrd2d': None}
+                          'xrd1d': None}
         self.watch_files = False
 
         self.files_in_progress = []
@@ -1387,6 +1387,8 @@ class MapViewerFrame(wx.Frame):
         self.h5convert_nrow = 0
 
         read_workdir('gsemap.dat')
+        self.onFolderSelect()
+        self.statusbar.SetStatusText('Set Working Folder', 0)
 
         w0, h0 = self.GetSize()
         w1, h1 = self.GetBestSize()
@@ -1399,8 +1401,14 @@ class MapViewerFrame(wx.Frame):
         self.inst_name = None
         self.move_callback = None
 
+
+        self.init_larch()
+        self.statusbar.SetStatusText('ready', 0)
+        self.Raise()
+
+
         if filename is not None:
-            wx.CallAfter(self.onRead, filename)
+            self.onRead(filename)
 
         if check_version:
             version_thread.join()
@@ -1438,12 +1446,8 @@ class MapViewerFrame(wx.Frame):
         except:
            pass
 
-
-        self.Raise()
-        wx.CallAfter(self.init_larch)
-
     def createNBPanels(self, parent):
-        self.title    = SimpleText(parent, 'initializing...', size=(680, -1))
+        self.title    = SimpleText(parent, ' ', size=(680, -1))
 
         self.SetBackgroundColour('#F0F0E8')
 
@@ -1559,10 +1563,6 @@ class MapViewerFrame(wx.Frame):
 
     def show_XRD1D(self, event=None):
         self.show_subframe('xrd1d', XRD1DFrame, _larch=self.larch)
-
-    def show_XRD2D(self, event=None):
-        self.show_subframe('xrd2d', XRD1DFrame, _larch=self.larch)
-
 
     def show_XRFDisplay(self, do_raise=True, clear=True, xrmfile=None):
         'make sure XRF plot frame is enabled and visible'
@@ -1758,25 +1758,29 @@ class MapViewerFrame(wx.Frame):
         imd.Show()
         imd.Raise()
 
-    def display_2Dxrd(self, map, label='image 0', xrmfile=None, flip=True):
+    def display_xrd2d(self, map, label='image 0', xrmfile=None, flip=True):
         '''
         displays 2D XRD pattern in diFFit viewer
         '''
-        xrmfile = self.current_file
-        ponifile = bytes2str(xrmfile.xrmmap['xrd1d'].attrs.get('calfile',''))
-        if len(ponifile) < 2 or not Path(ponifile).exists():
-            t_ponifile = Path(xrmfile.folder, 'XRD.poni')
-            if t_ponifile.exists():
-                ponifile = t_ponifile.as_posix()
-        if Path(ponifile).exists():
-            self.current_file.xrmmap['xrd1d'].attrs['calfile'] = ponifile
+        if xrmfile is None:
+            xrmfile = self.current_file
+        calfile = bytes2str(xrmfile.xrmmap['xrd1d'].attrs.get('calfile',''))
+        energy = xrmfile.get_incident_energy()
+        
+        if len(calfile) < 2 or not Path(calfile).exists():
+            tfile = Path(xrmfile.folder, 'XRD.poni')
+            if tfile.exists():
+                calfile = tfile.as_posix()
+        if Path(calfile).exists():
+            self.current_file.xrmmap['xrd1d'].attrs['calfile'] = calfile
 
-        self.show_XRD2D()
         self.show_XRD1D()
-        self.subframes['xrd2d'].flip = 'vertical' if flip is True else False
-        self.subframes['xrd2d'].calfile = ponifile
-        self.subframes['xrd2d'].plot2Dxrd(label, map)
-        self.subframes['xrd2d'].Show()
+        self.subframes['xrd1d'].flip = 'vertical' if flip is True else False
+        self.subframes['xrd1d'].set_wavelength(PLANCK_HC/energy)
+        self.subframes['xrd1d'].calfile = calfile
+        self.subframes['xrd1d'].set_ponifile(calfile)
+        self.subframes['xrd1d'].display_xrd_image(map, label=label)
+        self.subframes['xrd1d'].Show()
 
     def display_xrd1d(self, counts, q, energy, label='dataset 0', xrmfile=None):
         '''
@@ -1807,7 +1811,6 @@ class MapViewerFrame(wx.Frame):
         self.subframes['xrd1d'].Show()
 
     def init_larch(self):
-        self.SetStatusText('ready')
         self.datagroups = self.larch.symtable
         if ESCAN_CRED is not None:
             self.move_callback = self.onMoveToPixel
@@ -1821,7 +1824,6 @@ class MapViewerFrame(wx.Frame):
                 etype, emsg, tb = sys.exc_info()
                 print('Could not connect to ScanDB: %s' % (emsg))
                 self.scandb = self.instdb = None
-        wx.CallAfter(self.onFolderSelect)
 
     def ShowFile(self, evt=None, filename=None,  process_file=True, **kws):
         if filename is None and evt is not None:

@@ -69,11 +69,17 @@ if HAS_WXPYTHON:
 
     def FileOpen(parent, message, **kws):
         "File Open dialog wrapper."
-        return Path(wxu.FileOpen(parent, message, **kws)).absolute().as_posix()
+        result = wxu.FileOpen(parent, message, **kws)
+        if result is None:
+            return
+        return Path(result).absolute().as_posix()
 
     def FileSave(parent, message, **kws):
         "File Save dialog"
-        return Path(wxu.FileSave(parent, message, **kws)).absolute().as_posix()
+        result = wxu.FileSave(parent, message, **kws)
+        if result is None:
+            return 
+        return Path(result).absolute().as_posix()
 
     def SelectWorkdir(parent,  **kws):
         "prompt for and change into a working directory "

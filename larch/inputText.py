@@ -2,14 +2,13 @@
 #
 # InputText for  Larch
 
-from __future__ import print_function
 import os
-from pathlib import Path
 import sys
+import io
 import time
+from pathlib import Path
 from collections import deque
 from copy import copy
-import io
 
 from .utils import read_textfile
 

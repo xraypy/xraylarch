@@ -140,6 +140,9 @@ class XRFDisplayFrame(wx.Frame):
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
         if filename is not None:
+            if isinstance(filename, Path):
+                filename = Path(filename).absolute().as_posix()
+
             self.add_mca(GSEMCA_File(filename), filename=filename, plot=True)
 
 
@@ -499,6 +502,8 @@ class XRFDisplayFrame(wx.Frame):
         xrfgroup = self.larch.symtable.get_group(XRFGROUP)
         mcaname = next_mcaname(self.larch)
         if filename is not None:
+            if isinstance(filename, Path):
+                filename = Path(filename).absolute().as_posix()
             self.larch.eval(read_mcafile.format(group=XRFGROUP,
                                                 name=mcaname,
                                                 filename=filename))

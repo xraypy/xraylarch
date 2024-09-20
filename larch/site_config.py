@@ -13,8 +13,7 @@ from subprocess import check_call, CalledProcessError, TimeoutExpired
 
 from packaging.version import parse as version_parse
 
-from .utils import (uname, get_homedir, unixpath,
-                    log_warning, log_error)
+from .utils import (uname, get_homedir, log_warning, log_error)
 from .version import __version__, __release_version__
 
 larch_version = __version__
@@ -42,7 +41,7 @@ icondir = Path(Path(__file__).parent, 'icons').absolute()
 user_larchdir = pjoin(home_dir, '.larch')
 
 if 'LARCHDIR' in os.environ:
-    user_larchdir = unixpath(os.environ['LARCHDIR'])
+    user_larchdir = Path(os.environ['LARCHDIR']).absolute().as_posix()
 
 # on Linux, check for HOME/.local/share,
 # make with mode=711 if needed
@@ -55,9 +54,9 @@ if uname in ('linux', 'darwin') and os.getuid() > 0:
 init_files = [pjoin(user_larchdir, 'init.lar')]
 
 if 'LARCHSTARTUP' in os.environ:
-    startup = os.environ['LARCHSTARTUP']
-    if Path(startup).exists():
-        init_files = [unixpath(startup)]
+    startup = Path(os.environ['LARCHSTARTUP'])
+    if startup.exists():
+        init_files = [startup.as_posix()]
 
 # history file:
 history_file = pjoin(user_larchdir, 'history.lar')
@@ -75,11 +74,12 @@ def make_user_larchdirs():
 
     def make_dir(dname):
         "create directory"
-        if not Path(dname).exists():
+        dname = Path(dname).absolute()
+        if not dname.exists():
             try:
-                Path(dname).mkdir(mode=493, parents=True)
+                dname.mkdir(mode=493, parents=True)
             except PermissionError:
-                log_warning(f'no permission to create directory {dname}')
+                log_warning(f'no permission to create directory {dname.as_posix()}')
             except (OSError, TypeError):
                 log_error(sys.exc_info()[1])
 
