@@ -14,7 +14,8 @@ import math
 import numpy
 from pathlib import Path
 from copy import deepcopy
-
+from functools import partial
+from inspect import signature
 from . import site_config
 from asteval import valid_symbol_name
 from .symboltable import SymbolTable, Group, isgroup
@@ -154,9 +155,8 @@ class Interpreter:
                 group = self.symtable.set_symbol(groupname,
                                                  value=Group(__name__=groupname))
             for fname, fcn in list(entries.items()):
-                if callable(fcn):
-                    setattr(group, fname,
-                            Closure(func=fcn, _larch=self, _name=fname))
+                if callable(fcn) and '_larch' in signature(fcn).parameters:
+                    setattr(group, fname, Closure(func=fcn, _larch=self))
                 else:
                     setattr(group, fname, fcn)
 
