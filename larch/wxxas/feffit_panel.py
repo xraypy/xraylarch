@@ -1702,7 +1702,9 @@ class FeffitPanel(TaskPanel):
             dgroup.feffit_history[0].timestamp = time.strftime("%Y-%b-%d %H:%M")
             dgroup.feffit_history[0].label = label
 
-        fitlabels = [fhist.label for fhist in dgroup.feffit_history[1:]]
+        fitlabels = []
+        for ix, fhist in enumerate(dgroup.feffit_history[1:]):
+            fitlabels.append(getattr(fhist, 'label', f'fit {1+ix}'))
         if label in fitlabels:
             count = 1
             while label in fitlabels:
