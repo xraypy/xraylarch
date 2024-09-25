@@ -54,5 +54,4 @@ specs:
     - wxpython>=4.2.0
     - tomopy
     - pymatgen
-    - pycifrw
     - numdifftools
