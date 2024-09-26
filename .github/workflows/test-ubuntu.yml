@@ -1,4 +1,4 @@
-name: Test with Ubuntu, Mamba
+name: Test with Ubuntu, Conda
 
 on: [push]
 
