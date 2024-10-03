@@ -18,6 +18,7 @@ from numpy.random import randint
 from larch import Group, repr_value
 from larch import __version__ as larch_version
 from larch.utils import bytes2str, str2bytes, fix_varname, asfloat, unixpath
+from larch.math import remove_dups
 
 from xraydb import guess_edge
 import asteval
@@ -760,6 +761,8 @@ class AthenaProject(object):
             raise IOError("%s '%s': cannot find file" % (ERR_MSG, self.filename))
 
         from larch.xafs import pre_edge, autobk, xftf
+        from larch.xafs.xafsutils import TINY_ENERGY
+
 
         if not Path(filename).exists():
             raise IOError("file '%s' not found" % filename)
@@ -797,6 +800,13 @@ class AthenaProject(object):
                 if not fnmatch(gname.lower(), match):
                     continue
             this = getattr(data, gname)
+            this.energy = remove_dups(this.energy, tiny=TINY_ENERGY)
+
+            eorder = np.argsort(this.energy)
+            for aname in dir(this):
+                obj = getattr(this, aname)
+                if isinstance(obj, np.ndarray) and len(eorder) == len(obj):
+                    setattr(this, aname, obj[eorder])
 
             this.athena_id = this.athena_params.id
             if use_hashkey:
