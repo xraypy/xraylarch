@@ -122,7 +122,7 @@ def _finde0(energy, mu_input, estep=None, use_smooth=True):
 def flat_resid(pars, en, mu):
     return pars['c0'] + en * (pars['c1'] + en * pars['c2']) - mu
 
-def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
+def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, npre=1, pre1=None,
             pre2=None, norm1=None, norm2=None):
     """pre edge subtraction, normalization for XAFS (straight python)
 
@@ -141,6 +141,7 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
     step:    edge jump.  If None, it will be determined here.
     pre1:    low E range (relative to E0) for pre-edge fit
     pre2:    high E range (relative to E0) for pre-edge fit
+    npre:    degree for pre-edge fit: 1 for linear, 0 for constant
     nvict:   energy exponent to use for pre-edg fit.  See Note
     norm1:   low E range (relative to E0) for post-edge fit
     norm2:   high E range (relative to E0) for post-edge fit
@@ -157,10 +158,12 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
 
     Notes
     -----
-    1  pre_edge: a line is fit to mu(energy)*energy**nvict over the region,
-       energy=[e0+pre1, e0+pre2]. pre1 and pre2 default to None, which will set
+    1  pre_edge: if npre=1 (default), a line is fit to mu(energy)*energy**nvict
+       over the region, energy=[e0+pre1, e0+pre2].
+       pre1 and pre2 default to None, which will set
            pre1 = e0 - 2nd energy point, rounded to 5 eV
            pre2 = roughly pre1/3.0, rounded to 5 eV
+       if npre=0, a constont (mean value of mu[e0+pre1, e0+pre2] will be used.
 
     2  post-edge: a polynomial of order nnorm is fit to mu(energy)*energy**nvict
        between energy=[e0+norm1, e0+norm2]. nnorm, norm1, norm2 default to None,
@@ -192,7 +195,7 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
         pre1, pre2 = pre2, pre1
     ipre1 = index_of(energy-e0, pre1)
     ipre2 = index_of(energy-e0, pre2)
-    if ipre2 < ipre1 + 2 + nvict:
+    if npre==1 and ipre2 < ipre1 + 2 + nvict:
         pre2 = (energy-e0)[int(ipre1 + 2 + nvict)]
 
     if norm2 is None:
@@ -215,15 +218,24 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
     # preedge
     p1 = index_of(energy, pre1+e0)
     p2 = index_nearest(energy, pre2+e0)
-    if p2-p1 < 2:
-        p2 = min(len(energy), p1 + 2)
+    if npre == 0:
+        if p2 == p1:
+            p2 = p2 + 1
+        mu_mean = mu[p1:p2].mean()
+        pre_edge = mu_mean * np.ones(len(energy))
+        precoefs = [mu_mean, 0.0]
+    else:
+        if p2-p1 < 2:
+            p2 = min(len(energy), p1 + 2)
+        omu  = mu*energy**nvict
+        ex = remove_nans(energy[p1:p2], interp=True)
+        mx = remove_nans(omu[p1:p2], interp=True)
 
-    omu  = mu*energy**nvict
-    ex = remove_nans(energy[p1:p2], interp=True)
-    mx = remove_nans(omu[p1:p2], interp=True)
+        precoefs = polyfit(ex, mx, 1)
+        if len(precoefs) == 1:
+            precoefs.append(0.0)
+        pre_edge = (precoefs[0] + energy*precoefs[1]) * energy**(-nvict)
 
-    precoefs = polyfit(ex, mx, 1)
-    pre_edge = (precoefs[0] + energy*precoefs[1]) * energy**(-nvict)
     # normalization
     p1 = index_of(energy, norm1+e0)
     p2 = index_nearest(energy, norm2+e0)
@@ -252,7 +264,7 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
 
 @Make_CallArgs(["energy","mu"])
 def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
-             nvict=0, pre1=None, pre2=None, norm1=None, norm2=None,
+             nvict=0, npre=1, pre1=None, pre2=None, norm1=None, norm2=None,
              make_flat=True, _larch=None):
     """pre edge subtraction, normalization for XAFS
 
@@ -272,6 +284,7 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
     step:    edge jump.  If None, it will be determined here.
     pre1:    low E range (relative to E0) for pre-edge fit
     pre2:    high E range (relative to E0) for pre-edge fit
+    npre:    degree for pre-edge fit: 1 for linear, 0 for constant
     nvict:   energy exponent to use for pre-edg fit.  See Notes.
     norm1:   low E range (relative to E0) for post-edge fit
     norm2:   high E range (relative to E0) for post-edge fit
@@ -298,10 +311,12 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
     -----
       1. Supports `First Argument Group` convention, requiring group members `energy` and `mu`.
       2. Support `Set XAFS Group` convention within Larch or if `_larch` is set.
-      3. pre_edge: a line is fit to mu(energy)*energy**nvict over the region,
-         energy=[e0+pre1, e0+pre2]. pre1 and pre2 default to None, which will set
+      3. pre_edge: if npre=1 (default), a line is fit to mu(energy)*energy**nvict
+         over the region, energy=[e0+pre1, e0+pre2].
+         pre1 and pre2 default to None, which will set
              pre1 = e0 - 2nd energy point, rounded to 5 eV
              pre2 = roughly pre1/3.0, rounded to 5 eV
+         if npre=0, a constont (mean value of mu[e0+pre1, e0+pre2] will be used.
       4. post-edge: a polynomial of order nnorm is fit to mu(energy)*energy**nvict
          between energy=[e0+norm1, e0+norm2]. nnorm, norm1, norm2 default to None,
          which will set:
@@ -330,8 +345,8 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
     if group is not None and e0 is None:
         e0 = getattr(group, 'e0', None)
     pre_dat = preedge(energy, mu, e0=e0, step=step, nnorm=nnorm,
-                      nvict=nvict, pre1=pre1, pre2=pre2, norm1=norm1,
-                      norm2=norm2)
+                      nvict=nvict, npre=npre, pre1=pre1, pre2=pre2,
+                      norm1=norm1, norm2=norm2)
     group = set_xafsGroup(group, _larch=_larch)
 
     e0    = pre_dat['e0']
@@ -398,11 +413,11 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
     group.post_edge  = pre_dat['post_edge']
 
     group.pre_edge_details = Group()
-    for attr in ('pre1', 'pre2', 'norm1', 'norm2', 'nnorm', 'nvict'):
+    for attr in ('pre1', 'pre2', 'norm1', 'norm2', 'nnorm', 'nvict', 'npre'):
         setattr(group.pre_edge_details, attr, pre_dat.get(attr, None))
 
-    group.pre_edge_details.pre_slope  = pre_dat['precoefs'][1]
     group.pre_edge_details.pre_offset = pre_dat['precoefs'][0]
+    group.pre_edge_details.pre_slope  = pre_dat['precoefs'][1]
 
     for i in range(MAX_NNORM):
         if hasattr(group, 'norm_c%i' % i):
@@ -414,7 +429,7 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
     group.atsym = getattr(group, 'atsym', None)
     group.edge = getattr(group, 'edge', None)
 
-    if group.atsym is None or group.edge is None:
+    if (group.atsym is None or group.edge is None) and group.e0 > 10:
         _atsym, _edge = guess_edge(group.e0)
         if group.atsym is None: group.atsym = _atsym
         if group.edge is None:  group.edge = _edge
