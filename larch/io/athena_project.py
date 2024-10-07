@@ -801,12 +801,16 @@ class AthenaProject(object):
                     continue
             this = getattr(data, gname)
             this.energy = remove_dups(this.energy, tiny=TINY_ENERGY)
-
             eorder = np.argsort(this.energy)
+            has_nan = False
             for aname in dir(this):
                 obj = getattr(this, aname)
                 if isinstance(obj, np.ndarray) and len(eorder) == len(obj):
                     setattr(this, aname, obj[eorder])
+                    has_nan = has_nan or any(np.isnan(obj))
+            this.energy = remove_dups(this.energy, tiny=TINY_ENERGY)
+            if has_nan:
+                print("NOTE: nans seen!!")
 
             this.athena_id = this.athena_params.id
             if use_hashkey:
@@ -845,15 +849,18 @@ class AthenaProject(object):
             if is_chi:
                 this.k = this.energy*1.0
                 this.chi = this.mu*1.0
+                this.xdat = this.energy*1.0
+                this.ydat = this.mu*1.0
                 del this.energy
                 del this.mu
+            else:
+                this.xdat = 1.0*this.energy
+                this.ydat = 1.0*this.mu
 
             # add a selection flag and XAS datatypes, as used by Larix
             this.sel = 1
             this.datatype = 'xas'
             this.filename = getattr(this, 'label', 'unknown')
-            this.xdat = 1.0*this.energy
-            this.ydat = 1.0*this.mu
             this.yerr = 1.0
             this.plot_xlabel = 'energy'
             this.plot_ylabel = 'mu'
