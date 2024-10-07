@@ -69,6 +69,7 @@ NNORM_CHOICES = {'constant':0, 'linear':1, 'quadratic':2, 'cubic':3}
 NNORM_STRINGS = {int(v): k for k, v in NNORM_CHOICES.items()}
 
 NORM_METHODS = ('polynomial', 'mback')
+PREEDGE_FORMS = {'Constant': 0, 'Linear': 1}
 
 ATHENA_CLAMPNAMES = {'none': 0, 'slight': 1, 'weak': 5, 'medium': 20,
                      'strong': 100, 'rigid': 500}
@@ -88,7 +89,7 @@ AnalysisTab = namedtuple('AnalysisTab', ('title', 'constructor', 'desc'))
 
 LARIX_PANELS = {
     'xydata':
-    AnalysisTab('XY Data', 'larch.wxxas.xydata_panel.XYDataPanel',  
+    AnalysisTab('XY Data', 'larch.wxxas.xydata_panel.XYDataPanel',
                 'Read and Manipulate XY Data from Column Data files'),
     'xasnorm':
     AnalysisTab('XAS Normalization', 'larch.wxxas.xasnorm_panel.XASNormPanel',
@@ -97,32 +98,32 @@ LARIX_PANELS = {
     AnalysisTab('Pre-edge Peaks', 'larch.wxxas.prepeak_panel.PrePeakPanel',
                 'Curve Fitting for XANES Pre-edge Peaks'),
     'pca':
-    AnalysisTab('XAS PCA', 'larch.wxxas.pca_panel.PCAPanel', 
+    AnalysisTab('XAS PCA', 'larch.wxxas.pca_panel.PCAPanel',
             'Principal Component Analysis for XANES and EXAFS'),
-    'lincombo': 
-    AnalysisTab('XAS Linear Combo', 'larch.wxxas.lincombo_panel.LinearComboPanel', 
+    'lincombo':
+    AnalysisTab('XAS Linear Combo', 'larch.wxxas.lincombo_panel.LinearComboPanel',
                 'Linear Combination Analysis for XANES and EXAFS'),
-    'regression': 
+    'regression':
     AnalysisTab('XAS Regression', 'larch.wxxas.regress_panel.RegressionPanel',
             'Linear Regression and Feature Selection for XANES and EXAFS'),
-    'exafs': 
-    AnalysisTab('EXAFS', 'larch.wxxas.exafs_panel.EXAFSPanel', 
+    'exafs':
+    AnalysisTab('EXAFS', 'larch.wxxas.exafs_panel.EXAFSPanel',
                 'EXAFS Background Subtraction and Fourier Transforms'),
-    'feffit': 
+    'feffit':
     AnalysisTab('FEFF Fitting', 'larch.wxxas.feffit_panel.FeffitPanel',
                 'EXAFS Path Fitting with FEFF calculations'),
 }
 
 LARIX_MODES = {
     'all': ('All', [k for k  in LARIX_PANELS]),
-    'xydata': ('General XY Data Visualization and Fitting', ('xydata', 'lmfit')), 
+    'xydata': ('General XY Data Visualization and Fitting', ('xydata', 'lmfit')),
     'xas': ('XANES and EXAFS', ('xasnorm', 'prepeaks', 'pca', 'lincombo', 'exafs', 'feffit')),
     'exafs': ('EXAFS only', ('xasnorm', 'exafs', 'feffit')),
     'xanes': ('XANES only', ('xasnorm', 'prepeaks', 'pca', 'lincombo')),
     'xrf': ('XRF Mapping and Analysis', ('maproi', 'mapareas', 'maptomo', 'mapxrf')),
     'xrd1d': ('XRD 1D', ('xrd1d', )),
     }
-    
+
 class CVar:
     """configuration variable"""
     def __init__(self, name, value, dtype, choices=None, desc='a variable',
@@ -273,6 +274,7 @@ xasnorm = [CVar('auto_e0',  True, 'bool', desc='whether to automatically set E0'
            CVar('pre1', -200, 'float',  step=5, desc='low-energy fit range for pre-edge line,\nrelative to E0'),
            CVar('pre2',  -30, 'float',  step=5, desc='high-energy fit range for pre-edge line,\nrelative to E0'),
            CVar('nvict',   0, 'int',     min=0, max=3,  desc='Victoreen order for pre-edge fitting\n(Energy^(-nvict))'),
+           CVar('npre',    1, 'int',     min=0, max=1,  desc='Pre-edge form, 0 for Constant, 1 for Linear'),
            CVar('show_pre',  False, 'bool', desc='whether to show pre-edge energy range (pre1, pre2)'),
            CVar('norm_method',  'polynomial', 'choice', choices=NORM_METHODS,  desc='normalization method'),
            CVar('nnorm',     'linear', 'choice', choices=list(NNORM_CHOICES.keys()),
