@@ -274,7 +274,7 @@ class CifStructure():
     def __repr__(self):
         if self.ams_id is None or self.formula is None:
             return '<CifStructure empty>'
-        return f'<CifStructure, ams_id={self.ams_id:d}, formula={self.formula:s}>'
+        return f'<CifStructure, ams_id={self.ams_id}, formula={self.formula:s}>'
 
     def get_mineralname(self):
         minname = self.mineral.name
@@ -310,7 +310,7 @@ class CifStructure():
         out.append(';')
         out.append(f"{self.pub_title:s}")
         out.append(';')
-        out.append(f"_database_code_amcsd {self.ams_id:07d}")
+        out.append(f"_database_code_amcsd {self.ams_id}")
         if self.compound != '<missing>':
             out.append(f"_chemical_compound_source '{self.compound}'")
         out.append(f"_chemical_formula_sum '{self.formula}'")
@@ -564,7 +564,7 @@ class CifStructure():
                                                   ).get_conventional_standard_structure()
         except:
             print(f"{err} could not analyze spacegroup for CIF {self.ams_id}")
-            
+
     def get_unitcell(self):
         "unitcell as dict, from PMG structure"
         self.get_pmg_struct()
