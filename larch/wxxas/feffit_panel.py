@@ -1041,13 +1041,24 @@ class FeffitPanel(TaskPanel):
                 has_data = 1.e-12 <  (tchi**2).sum()
             except:
                 has_data = False
-            cmds = [COMMANDS['feffit_trans'].format(**conf)]
+
+            cmds = []
             _feffit_dataset = getattr(self.larch.symtable, '_feffit_dataset', None)
             if _feffit_dataset is None:
                 cmds.append(COMMANDS['feffit_dataset_init'])
             if has_data:
+                cmds.append("## SET DATA GROUP ")
+                ftargs = dict(kmin=opts['fit_kmin'], kmax=opts['fit_kmax'], dk=opts['fit_dk'],
+                            kwindow=opts['fit_kwindow'], kweight=opts['plot_kw'],
+                            rmin=opts['fit_rmin'], rmax=opts['fit_rmax'],
+                            dr=opts.get('fit_dr', 0.1), rwindow='hanning')
+
+                cmds.append(COMMANDS['xft'].format(groupname=dgroup.groupname, **ftargs))
                 cmds.append(f"_feffit_dataset.set_datagroup({dgroup.groupname})")
                 cmds.append(f"_feffit_dataset.refine_bkg = {opts['refine_bkg']}")
+            cmds.append(COMMANDS['feffit_trans'].format(**conf))
+
+
             self.larch.eval('\n'.join(cmds))
         return opts
 
@@ -1150,12 +1161,10 @@ class FeffitPanel(TaskPanel):
                 dgroup = dataset.data
             else:
                 dgroup = self.controller.get_group()
-                #   print("no data?  dgroup  ", dataset.data, dgroup)
                 if dgroup is not None:
                     self.larch.eval(f"{dataset_name}.set_datagroup({dgroup.groupname})")
                     dataset = getattr(self.larch.symtable, dataset_name, None)
                     dgroup = dataset.data
-        # print("now data now dgroup  ", dataset, getattr(dataset, 'data', None), dgroup)
 
         opts = self.process(dgroup)
         opts.update(**kws)
