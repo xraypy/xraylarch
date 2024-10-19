@@ -161,11 +161,12 @@ if not hasattr({groupname:s}, 'feffit_history'): {groupname}.feffit_history = []
 {groupname:s}.feffit_history.insert(0, _feffit_result)
 """
 
-COMMANDS['path2chi'] = """# generate chi(k) and chi(R) for each path
+COMMANDS['path2chi'] = """# generate chi(k), chi(R), and chi(q) for each path
 for label, path in {paths_name:s}.items():
      path.calc_chi_from_params({pargroup_name:s})
      xftf(path, kmin={kmin:.3f}, kmax={kmax:.3f}, dk={dk:.3f},
          window='{kwindow:s}', kweight={kweight:.3f})
+     xftr(path, rmin={rmin:.3f}, rmax={rmax:.3f}, dr={dr:.3f}, window='{rwindow:s}')
 #endfor
 """
 
