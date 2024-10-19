@@ -2105,12 +2105,11 @@ class FeffitResultFrame(wx.Frame):
             return
         dset   = result.datasets[0]
         dgroup = dset.data
-        if not hasattr(dset.data, 'rwin'):
-            dset._residual(result.params)
-            dset.save_outputs()
+
         trans  = dset.transform
         dset.prepare_fit(result.params)
         dset._residual(result.params)
+        dset.save_outputs()
 
         opts = self.feffit_panel.read_form(dgroup=dgroup)
         opts = {'build_fitmodel': False}
