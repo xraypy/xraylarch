@@ -113,7 +113,7 @@ class TransformGroup(Group):
         self.k_ = self.kstep * arange(self.nfft, dtype='float64')
         self.r_ = self.rstep * arange(self.nfft, dtype='float64')
 
-    def _xafsft(self, chi, group=None, rmax_out=10, **kws):
+    def _xafsft(self, chi, group=None, rmax_out=10, with_chiq=False, **kws):
         "returns "
         for key, val in kws:
             if key == 'kw':
@@ -121,25 +121,36 @@ class TransformGroup(Group):
             setattr(self, key, val)
         self.make_karrays()
 
-        out = self.fftf(chi)
+        outr = self.fftf(chi)
 
         irmax = int(min(self.nfft/2, 1.01 + rmax_out/self.rstep))
 
         group = set_xafsGroup(group, _larch=self._larch)
         r   = self.rstep * arange(irmax)
-        mag = sqrt(out.real**2 + out.imag**2)
+        mag = sqrt(outr.real**2 + outr.imag**2)
         group.kwin  =  self.kwin[:len(chi)]
         group.r    =  r[:irmax]
-        group.chir =  out[:irmax]
+        group.chir =  outr[:irmax]
         group.chir_mag =  mag[:irmax]
-        group.chir_pha =  complex_phase(out[:irmax])
-        group.chir_re  =  out.real[:irmax]
-        group.chir_im  =  out.imag[:irmax]
+        group.chir_pha =  complex_phase(outr[:irmax])
+        group.chir_re  =  outr.real[:irmax]
+        group.chir_im  =  outr.imag[:irmax]
         if self.rwin is None:
             xmin = max(self.rbkg, self.rmin)
             self.rwin = ftwindow(self.r_, xmin=xmin, xmax=self.rmax,
                                  dx=self.dr, dx2=self.dr2, window=self.rwindow)
         group.rwin = self.rwin[:irmax]
+
+        if with_chiq:
+            outq = self.fftr(outr)
+            qmax_out = self.kmax+2.0
+            group.q = np.linspace(0, qmax_out, int(1.05 + qmax_out/self.kstep))
+            nq = len(group.q)
+            group.chiq = outq[:nq]
+            group.chiq_mag = sqrt(outq.real**2 + outq.imag**2)[:nq]
+            group.chiq_re = outq.real[:nq]
+            group.chiq_im = outq.imag[:nq]
+            group.chiq_pha =  complex_phase(outq[:nq])
 
     def get_kweight(self):
         "if kweight is a list/tuple, use only the first one here"
@@ -548,7 +559,7 @@ class FeffitDataSet(Group):
             else:
                 cwt = trans.cwt(diff/eps_k, kweight=trans.kweight)
                 return realimag(cwt).ravel()
-        else: # 'r' space
+        else: # 'r' or 'q' space
             out = []
             if all_kweights:
                 chir = [trans.fftf(diff, kweight=kw) for kw in trans.kweight]
@@ -562,7 +573,7 @@ class FeffitDataSet(Group):
                 for i, chir_ in enumerate(chir):
                     chir_ = chir_ / (eps_r[i])
                     out.append(realimag(chir_[irmin:irmax]))
-            else:
+            else: # 'q' space
                 chiq = [trans.fftr(c)/eps for c, eps in zip(chir, eps_r)]
                 iqmin = int(max(0, 0.01 + trans.kmin/trans.kstep))
                 iqmax = int(min(trans.nfft/2,  0.01 + trans.kmax/trans.kstep))
@@ -570,10 +581,11 @@ class FeffitDataSet(Group):
                     out.append( realimag(chiq_[iqmin:iqmax])[::2])
             return np.concatenate(out)
 
-    def save_outputs(self, rmax_out=10, path_outputs=True):
+    def save_outputs(self, rmax_out=10, path_outputs=True, with_chiq=True):
         "save fft outputs, and may also map a refined _bkg to the data chi(k) arrays"
         def xft(dgroup):
-            self.transform._xafsft(dgroup.chi, group=dgroup, rmax_out=rmax_out)
+            self.transform._xafsft(dgroup.chi, group=dgroup,
+                                   rmax_out=rmax_out, with_chiq=with_chiq)
         xft(self.data)
         xft(self.model)
         if self.refine_bkg:
