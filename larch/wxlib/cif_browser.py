@@ -23,9 +23,10 @@ from xraydb.chemparser import chemparse
 from xraydb import atomic_number
 
 import larch
+
 from larch import Group
 from larch.xafs import feff8l, feff6l
-from larch.xrd.cif2feff import cif_sites
+from larch.xrd.cif2feff import cif2feffinp, cif_cluster, site_label, fcompact
 from larch.utils import read_textfile, mkdir
 from larch.utils.paths import unixpath
 from larch.utils.strutils import fix_filename, unique_name, strict_ascii
@@ -227,8 +228,8 @@ class CIFFrame(wx.Frame):
             wids['feffvers']      = Choice(panel, choices=['6', '8'], default=1,
                                            size=(80, -1),
                                           action=self.onGetFeff)
-            wids['feff_site']         = Choice(panel, choices=['1', '2', '3', '4'],
-                                          size=(80, -1),
+            wids['feff_site']         = Choice(panel, choices=[' ', ' ', ' ', ' '],
+                                          size=(200, -1),
                                           action=self.onGetFeff)
             wids['feff_cluster_size'] = FloatSpin(panel, value=7.0, digits=2,
                                              increment=0.1, max_val=10,
@@ -244,10 +245,10 @@ class CIFFrame(wx.Frame):
 
             sizer.Add(SimpleText(panel, ' Absorbing Atom: '),  (ir, 0), (1, 1), LEFT, 3)
             sizer.Add(wids['feff_central_atom'], (ir, 1), (1, 1), LEFT, 3)
-            sizer.Add(SimpleText(panel, ' Crystal Site: '), (ir, 2), (1, 1), LEFT, 3)
-            sizer.Add(wids['feff_site'],     (ir, 3), (1, 1), LEFT, 3)
-            sizer.Add(SimpleText(panel, ' Edge: '),  (ir, 4), (1, 1), LEFT, 3)
-            sizer.Add(wids['feff_edge'],     (ir, 5), (1, 1), LEFT, 3)
+            sizer.Add(SimpleText(panel, ' Edge: '),  (ir, 2), (1, 1), LEFT, 3)
+            sizer.Add(wids['feff_edge'],     (ir, 3), (1, 1), LEFT, 3)
+            sizer.Add(SimpleText(panel, ' Crystal Site: '), (ir, 4), (1, 1), LEFT, 3)
+            sizer.Add(wids['feff_site'],     (ir, 5), (1, 1), LEFT, 3)
 
             ir += 1
             sizer.Add(SimpleText(panel, ' Cluster Size (\u212B): '),  (ir, 0), (1, 1), LEFT, 3)
@@ -452,9 +453,13 @@ class CIFFrame(wx.Frame):
             edge_val = 'K' if atomic_number(el0) < 60 else 'L3'
             self.wids['feff_edge'].SetStringSelection(edge_val)
 
-            sites = cif_sites(cif.ciftext, absorber=el0)
+            cluster = cif_cluster(ciftext=cif.ciftext, absorber=el0)
+            self.absorber_sites = {}
+            for i_site in cluster.absorber_sites:
+                label = site_label(cluster.unique_sites[i_site][0])
+                self.absorber_sites[label] = i_site
             try:
-                sites = ['%d' % (i+1) for i in range(len(sites))]
+                sites = list(self.absorber_sites.keys())
             except:
                 title = "Could not make sense of atomic sites"
                 message = [f"Elements: {list(elems.keys())}",
@@ -482,11 +487,17 @@ class CIFFrame(wx.Frame):
             return
         catom = event.GetString()
         try:
-            sites = cif_sites(cif.ciftext, absorber=catom)
-            sites = ['%d' % (i+1) for i in range(len(sites))]
+            cluster = cif_cluster(ciftext=cif.ciftext, absorber=catom)
+            self.absorber_sites = {}
+            for i_site in cluster.absorber_sites:
+                label = site_label(cluster.unique_sites[i_site][0])
+                self.absorber_sites[label] = (1+i_site)
+
+            sites = list(self.absorber_sites.keys())
             self.wids['feff_site'].Clear()
             self.wids['feff_site'].AppendItems(sites)
             self.wids['feff_site'].Select(0)
+
         except:
             self.write_message(f"could not get sites for central atom '{catom}'")
             title = f"Could not get sites for central atom '{catom}'"
@@ -505,16 +516,37 @@ class CIFFrame(wx.Frame):
         edge  = self.wids['feff_edge'].GetStringSelection()
         version8 = '8' == self.wids['feffvers'].GetStringSelection()
         catom = self.wids['feff_central_atom'].GetStringSelection()
-        asite = int(self.wids['feff_site'].GetStringSelection())
+        label = self.wids['feff_site'].GetStringSelection()
+        site_index = self.absorber_sites[label]
         csize = self.wids['feff_cluster_size'].GetValue()
         with_h = not self.wids['feff_without_h'].IsChecked()
         mineral = cif.get_mineralname()
-        folder = f'{catom:s}{asite:d}_{edge:s}_{mineral}_cif{cif.ams_id:d}'
+
+        folder = f'{catom:s}{site_index:d}_{edge:s}_{mineral}_cif{cif.ams_id:d}'
         folder = unique_name(fix_filename(folder), self.feffruns_list)
 
-        fefftext = cif.get_feffinp(catom, edge=edge, cluster_size=csize,
-                                   absorber_site=asite, version8=version8,
-                                   with_h=with_h)
+        # extra titles from CIF
+        etitles = [f'CIF Source: Am Min Crystal Structure Database ID {cif.ams_id}',
+                  f'Mineral Name: {cif.mineral.name.lower()}']
+        pub = getattr(cif, 'publication', None)
+        if pub is not None:
+            authors = ', '.join(pub.authors)
+            ptext = f'{pub.journalname} {pub.volume} [{pub.page_first}:{pub.page_last}] ({pub.year})'
+            etitles.append(f'Publication: {ptext}')
+            etitles.append(f'Authors: {authors}')
+
+        cell = [f'a={fcompact(cif.a)}', f'b={fcompact(cif.b)}', f'c={fcompact(cif.c)}',
+                f'alpha={fcompact(cif.alpha)}', f'beta={fcompact(cif.beta)}',
+                f'gamma={fcompact(cif.gamma)}']
+
+        etitles.append(f'Cell Parameters (A, degrees): {", ".join(cell)}')
+        etitles.append(f'Cell Volume (A^3): {cif.cell_volume:.5f}')
+        etitles.append(f'Crystal Density (gr/cm^3): {cif.crystal_density:.5f}')
+        etitles.append(f'Compound: {cif.compound}')
+
+        fefftext = cif2feffinp(cif.ciftext, catom, edge=edge, cluster_size=csize,
+                               absorber_site=(1+site_index), version8=version8,
+                               with_h=with_h, extra_titles=etitles)
 
         self.wids['feff_runfolder'].SetValue(folder)
         self.wids['feff_text'].SetValue(fefftext)
@@ -570,7 +602,6 @@ class CIFFrame(wx.Frame):
         wx.CallAfter(self.run_feff, folder, version8=version8)
 
     def run_feff(self, folder=None, version8=True):
-        # print("RUN FEFF ", folder)
         dname = Path(folder).name
         prog, cmd = feff8l, 'feff8l'
         if not version8:
