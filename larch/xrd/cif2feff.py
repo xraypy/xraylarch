@@ -174,7 +174,7 @@ class CIF_Cluster():
                 site_tags[i] = f'{site.species_string:s}_{s_unique:d}'
 
         # atom0 = self.struct[a_index]
-        atom0 = self.unique_sites[absorber_site-1][0]SVal
+        atom0 = self.unique_sites[absorber_site-1][0]
         sphere = self.struct.get_neighbors(atom0, self.cluster_size)
 
         self.symbols = [self.absorber]
