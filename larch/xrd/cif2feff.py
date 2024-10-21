@@ -1,6 +1,7 @@
 import os
 from random import Random
 from io import StringIO
+import numpy as np
 
 from xraydb import atomic_symbol, atomic_number, xray_edge
 from larch.utils import fix_varname, strict_ascii, gformat
@@ -32,7 +33,7 @@ def read_cif_structure(ciftext):
 
     Arguments
     ---------
-      ciftext (string):         text of CIF file or name of the CIF file.
+      ciftext (string): text of CIF file
 
     Returns
     -------
@@ -40,57 +41,167 @@ def read_cif_structure(ciftext):
     """
     if CifParser is None:
         raise ValueError("CifParser from pymatgen not available. Try 'pip install pymatgen'.")
+
+    if os.path.exists(ciftext):
+        ciftext = open(ciftext, 'r').read()
     try:
         cifstructs = CifParser(StringIO(ciftext), **PMG_CIF_OPTS)
         parse_ok = True
-        file_found = True
     except:
         parse_ok = False
-        file_found = False
-        if os.path.exists(ciftext):
-            file_found = True
-            try:
-                cifstructs = CifParser(ciftext, **PMG_CIF_OPTS)
-                parse_ok = True
-            except:
-                parse_ok = False
 
     try:
         cstruct = cifstructs.parse_structures()[0]
     except:
-        raise ValueError('could not get structure from text of CIF file')
-
-    if not parse_ok:
-        if not file_found:
-            raise FileNotFoundError(f'file {ciftext:s} not found')
-        else:
-            raise ValueError('invalid text of CIF file')
+        raise ValueError('could not get structure from text of CIF')
     return cstruct
 
-def cif_sites(ciftext, absorber=None):
-    "return list of sites for the structure"
-    cstruct = read_cif_structure(ciftext)
-    out = cstruct.sites
-    if absorber is not None:
-        abname = absorber.lower()
-        out = []
-        for site in cstruct.sites:
-            species = site.species_string.lower()
-            if ',' in species and ':' in species: # multi-occupancy site
-                for siteocc in species.split(','):
-                    sname, occ = siteocc.split(':')
-                    if sname.strip() == abname:
-                        out.append(site)
-            elif species == abname:
-                out.append(site)
-        if len(out) == 0:
-            out = cstruct.sites[0]
-    return out
+def fcompact(val):
+    """format a float value, removing extra trailing zeros"""
+    val = f'{val:.6f}'
+    while val.endswith('0'):
+        val = val[:-1]
+    if val.endswith('.'):
+        val = val + '0'
+    return val
 
+
+def site_label(site):
+    coords = ','.join([fcompact(s) for s in site.frac_coords])
+    return f'{site.species_string}[{coords}]'
+
+class CIF_Cluster():
+    """
+    CIF structure for generating clusters around a specific crystal site,
+    as used for XAS calculations
+
+    """
+    def __init__(self, ciftext=None, filename=None, absorber=None,
+                 absorber_site=1, with_h=False, cluster_size=8.0):
+        self.filename = filename
+        self.ciftext = ciftext
+        self.set_absorber(absorber)
+        self.absorber_site = absorber_site
+        self.with_h = with_h
+        self.cluster_size = cluster_size
+        self.struct = None
+
+        if isinstance(self.absorber, int):
+            self.absorber   = atomic_symbol(self.absorber)
+        if isinstance(self.absorber, str):
+            self.absorber_z   = atomic_number(self.absorber)
+
+        if ciftext is None and filename is not None:
+            self.ciftext = open(filename, 'r').read()
+
+        if self.ciftext is not None:
+            self.parse_ciftext(self.ciftext)
+
+    def set_absorber(self, absorber=None):
+        self.absorber_z = None
+        self.absorber = absorber
+        if isinstance(self.absorber, int):
+            self.absorber = atomic_symbol(self.absorber)
+        if isinstance(self.absorber, str):
+            self.absorber_z = atomic_number(self.absorber)
+
+    def parse_ciftext(self, ciftext=None, absorber=None):
+        if absorber is not None:
+            self.set_absorber(absorber)
+        if ciftext is not None:
+            self.ciftext = ciftext
+        self.struct = read_cif_structure(self.ciftext)
+        self.get_cif_sites()
+
+    def get_cif_sites(self):
+        """parse sites of CIF structure to get several components:
+
+           struct.sites:   list of all sites as parsed by pymatgen
+           site_labels:    list of site labels
+           unique_sites:   list of (site[0], wyckoff sym) for unique xtal sites
+           unique_map:     mapping of all site_labels to unique_site index
+           absorber_sites: list of unique sites with absorber
+
+        """
+        # get equivalent sites, mapping of all sites to unique sites,
+        # and list of site indexes with absorber
+
+        self.formula = self.struct.composition.reduced_formula
+        sga = SpacegroupAnalyzer(self.struct)
+        self.space_group = sga.get_symmetry_dataset().international
+
+        sym_struct = sga.get_symmetrized_structure()
+        wyckoff_symbols = sym_struct.wyckoff_symbols
+
+        self.site_labels = []
+        for site in self.struct.sites:
+            self.site_labels.append(site_label(site))
+
+        self.unique_sites = []
+        self.unique_map = {}
+        self.absorber_sites = []
+        absorber = '~'*30 if self.absorber is None else self.absorber
+        for i, sites in enumerate(sym_struct.equivalent_sites):
+            self.unique_sites.append((sites[0], len(sites), wyckoff_symbols[i]))
+            for site in sites:
+                self.unique_map[site_label(site)] = (i+1)
+            if absorber in site.species_string:
+                self.absorber_sites.append(i)
+
+    def build_cluster(self, absorber=None, absorber_site=1, cluster_size=None):
+        if absorber is not None:
+            self.set_absorber(absorber)
+        if cluster_size is None:
+            cluster_size = self.cluster_size
+
+        csize2 = cluster_size**2
+
+        site_atoms = {}  # map xtal site with list of atoms occupying that site
+        site_tags = {}
+
+        for i, site in enumerate(self.struct.sites):
+            label = site_label(site)
+            s_unique = self.unique_map.get(label, 0)
+            site_species = [e.symbol for e in site.species]
+            if len(site_species) > 1:
+                s_els = [s.symbol for s in site.species.keys()]
+
+                s_wts = [s for s in site.species.values()]
+                site_atoms[i] = rng.choices(s_els, weights=s_wts, k=1000)
+                site_tags[i] = f'({site.species_string:s})_{1+i:d}'
+            else:
+                site_atoms[i] = [site_species[0]] * 1000
+                site_tags[i] = f'{site.species_string:s}_{s_unique:d}'
+
+        # atom0 = self.struct[a_index]
+        atom0 = self.unique_sites[absorber_site-1][0]SVal
+        sphere = self.struct.get_neighbors(atom0, self.cluster_size)
+
+        self.symbols = [self.absorber]
+        self.coords = [[0, 0, 0]]
+        self.tags = [f'{self.absorber:s}_{absorber_site:d}']
+
+        for i, site_dist in enumerate(sphere):
+            s_index = site_dist[0].index
+            site_symbol = site_atoms[s_index].pop()
+
+            coords = site_dist[0].coords - atom0.coords
+            if (coords[0]**2 + coords[1]**2  + coords[2]**2) < csize2:
+                self.tags.append(site_tags[s_index])
+                self.symbols.append(site_symbol)
+                self.coords.append(coords)
+
+        self.molecule = Molecule(self.symbols, self.coords)
+
+##
+
+def cif_cluster(ciftext=None, filename=None, absorber=None):
+    "return list of sites for the structure"
+    return CIF_Cluster(ciftext=ciftext, filename=filename, absorber=absorber)
 
 def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
-                site_index=None, extra_titles=None, with_h=False,
-                version8=True, rng_seed=None):
+                extra_titles=None, with_h=False, version8=True, rng_seed=None):
+
     """convert CIF text to Feff8 or Feff6l input file
 
     Arguments
@@ -101,7 +212,6 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
       edge (string or None):    edge for calculation (see Note 2)     [None]
       cluster_size (float):     size of cluster, in Angstroms         [8.0]
       absorber_site (int):      index of site for absorber (see Note 3) [1]
-      site_index (int or None): index of site for absorber (see Note 4) [None]
       extra_titles (list of str or None): extra title lines to include [None]
       with_h (bool):            whether to include H atoms [False]
       version8 (bool):          whether to write Feff8l input (see Note 5)[True]
@@ -122,26 +232,21 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
          can be selected by the order in which they are listed in the sites
          list. This depends on the details of the CIF structure, which can be
          found with `cif_sites(ciftext)`, starting counting by 1.
-      4. to explicitly state the index of the site in the sites list, use
-         site_index (starting at 1!)
       5. if version8 is False, outputs will be written for Feff6l
 
     """
-    try:
-        cstruct = read_cif_structure(ciftext)
-    except ValueError:
-        return '# could not read CIF file'
-
     global rng
     if rng_seed is not None:
         rng.seed(rng_seed)
 
-    sgroup = SpacegroupAnalyzer(cstruct).get_symmetry_dataset()
-    space_group = sgroup["international"]
+    cluster = CIF_Cluster(ciftext=ciftext, absorber=absorber)
+    cluster.build_cluster(absorber_site=absorber_site, cluster_size=cluster_size)
 
-    if isinstance(absorber, int):
-        absorber   = atomic_symbol(absorber_z)
-    absorber_z = atomic_number(absorber)
+    mol = cluster.molecule
+
+    absorber = cluster.absorber
+    absorber_z = cluster.absorber_z
+
 
     if edge is None:
         edge = 'K' if absorber_z < 58 else 'L3'
@@ -150,7 +255,7 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
     edge_comment = f'{absorber:s} {edge:s} edge, around {edge_energy:.0f} eV'
 
     unique_pot_atoms = []
-    for site in cstruct:
+    for site in cluster.struct:
         for elem in site.species.elements:
             if elem.symbol not in unique_pot_atoms:
                 unique_pot_atoms.append(elem.symbol)
@@ -163,68 +268,32 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
         atlist = ', '.join(atoms_map.keys())
         raise ValueError(f'atomic symbol {absorber:s} not listed in CIF data: ({atlist})')
 
-    site_atoms = {}  # map xtal site with list of atoms occupying that site
-    site_tags = {}
-    absorber_count = 0
-    for sindex, site in enumerate(cstruct.sites):
-        site_species = [e.symbol for e in site.species]
-        if len(site_species) > 1:
-            s_els = [s.symbol for s in site.species.keys()]
-            s_wts = [s for s in site.species.values()]
-            site_atoms[sindex] = rng.choices(s_els, weights=s_wts, k=1000)
-            site_tags[sindex] = f'({site.species_string:s})_{1+sindex:d}'
-        else:
-            site_atoms[sindex] = [site_species[0]] * 1000
-            site_tags[sindex] = f'{site.species_string:s}_{1+sindex:d}'
-        if absorber in site_species:
-            absorber_count += 1
-            if absorber_count == absorber_site:
-                absorber_index = sindex
-
-    if site_index is not None:
-        absorber_index = site_index - 1
-
-    # print("Got sites ", len(cstruct.sites), len(site_atoms), len(site_tags))
-
-    center = cstruct[absorber_index].coords
-    sphere = cstruct.get_neighbors(cstruct[absorber_index], cluster_size)
-    symbols = [absorber]
-    coords = [[0, 0, 0]]
-    tags = [f'{absorber:s}_{1+absorber_index:d}']
-
-    for i, site_dist in enumerate(sphere):
-        s_index = site_dist[0].index
-
-        site_symbol = site_atoms[s_index].pop()
-        tags.append(site_tags[s_index])
-        symbols.append(site_symbol)
-        coords.append(site_dist[0].coords - center)
-    cluster = Molecule(symbols, coords)
-
     out_text = ['*** feff input generated by xraylarch cif2feff using pymatgen ***']
+
+
+    out_text.append(f'TITLE Formula: {cluster.formula:s}')
+    out_text.append(f'TITLE SpaceGroup: {cluster.space_group:s}')
 
     if extra_titles is not None:
         for etitle in extra_titles[:]:
-            if not etitle.startswith('TITLE '):
-                etitle = 'TITLE ' + etitle
-            out_text.append(etitle)
+            out_text.append('TITLE ' + etitle)
 
-    out_text.append(f'TITLE Formula:    {cstruct.composition.reduced_formula:s}')
-    out_text.append(f'TITLE SpaceGroup: {space_group:s}')
-    out_text.append(f'TITLE # sites:    {cstruct.num_sites}')
+    out_text.append('* ')
+    out_text.append( '* crystallographic sites:')
+    out_text.append(f'*  to change absorber site, re-run using `absorber_site`')
+    out_text.append(f'*  with the corresponding site index (counting from 1)')
+    out_text.append('* site    X        Y        Z      Wyckoff     species')
 
-    out_text.append('* crystallographics sites: note that these sites may not be unique!')
-    out_text.append(f'*     using absorber at site {1+absorber_index:d} in the list below')
-    out_text.append(f'*     selected as absorber="{absorber:s}", absorber_site={absorber_site:d}')
-    out_text.append('* index   X        Y        Z      species')
-    for i, site in enumerate(cstruct):
+    for i, dat in enumerate(cluster.unique_sites):
+        site, n, wsym = dat
         fc = site.frac_coords
         species_string = fix_varname(site.species_string.strip())
-        marker = '  <- absorber' if  (i == absorber_index) else ''
-        out_text.append(f'* {i+1:3d}   {fc[0]:.6f} {fc[1]:.6f} {fc[2]:.6f}  {species_string:s} {marker:s}')
+        marker = '  <- absorber' if  ((i+1) == absorber_site) else ''
+        s1 = f'{i+1:3d}   {fc[0]:.6f} {fc[1]:.6f} {fc[2]:.6f}'
+        s2 = f'{wsym}     {species_string:s} {marker:s}'
+        out_text.append(f'* {s1}  {s2}')
 
     out_text.extend(['* ', '', ''])
-
     if version8:
         out_text.append(f'EDGE    {edge:s}')
         out_text.append('S02     1.0')
@@ -249,10 +318,10 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
     # loop to find atoms actually in cluster, in case some atom
     # (maybe fractional occupation) is not included
 
-    at_lines = [(0, cluster[0].x, cluster[0].y, cluster[0].z, 0, absorber, tags[0])]
+    at_lines = [(0, mol[0].x, mol[0].y, mol[0].z, 0, absorber, cluster.tags[0])]
     ipot_map = {}
     next_ipot = 0
-    for i, site in enumerate(cluster[1:]):
+    for i, site in enumerate(mol[1:]):
         sym = site.species_string
         if sym == 'H' and not with_h:
             continue
@@ -262,9 +331,8 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
             next_ipot += 1
             ipot_map[sym] = ipot = next_ipot
 
-        dist = cluster.get_distance(0, i+1)
-        at_lines.append((dist, site.x, site.y, site.z, ipot, sym, tags[i+1]))
-
+        dist = mol.get_distance(0, i+1)
+        at_lines.append((dist, site.x, site.y, site.z, ipot, sym, cluster.tags[i+1]))
 
     ipot, z = 0, absorber_z
     out_text.append(f'   {ipot:4d}  {z:4d}   {absorber:s}')
