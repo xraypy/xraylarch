@@ -802,7 +802,7 @@ class LarixFrame(wx.Frame):
                  "Browse CIF Structure, run Feff", self.onCIFBrowse)
         MenuItem(self, feff_menu, "Generate Feff input from general structures, Run Feff",
                  "Generate Feff input from general structures, run Feff", self.onStructureBrowse)
-        MenuItem(self, feff_menu, "Browse Feff Calculations",
+        MenuItem(self, feff_menu, "Browse Feff Calculations, Import Paths",
                  "Browse Feff Calculations, Get Feff Paths", self.onFeffBrowse)
 
         self.menubar.Append(feff_menu, "Feff")
