@@ -148,11 +148,30 @@ class CIF_Cluster():
             if absorber in site.species_string:
                 self.absorber_sites.append(i)
 
+        self.atom_sites = {}
+        self.atom_site_labels = {}
+
+        for i, dat in enumerate(self.unique_sites):
+            site = dat[0]
+            label = site_label(site)
+            for species in site.species:
+                elem = species.name
+                if elem in self.atom_sites:
+                    self.atom_sites[elem].append(i+1)
+                    self.atom_site_labels[elem].append(label)
+                else:
+                    self.atom_sites[elem] = [i+1]
+                    self.atom_site_labels[elem] = [label]
+
+
     def build_cluster(self, absorber=None, absorber_site=1, cluster_size=None):
         if absorber is not None:
             self.set_absorber(absorber)
         if cluster_size is None:
             cluster_size = self.cluster_size
+
+        if absorber_site not in self.atom_sites[self.absorber]:
+            raise ValueError(f"invalid site for absorber {absorber}: must be in {self.atom_sites[self.absorber]}")
 
         csize2 = cluster_size**2
 
@@ -168,7 +187,7 @@ class CIF_Cluster():
 
                 s_wts = [s for s in site.species.values()]
                 site_atoms[i] = rng.choices(s_els, weights=s_wts, k=1000)
-                site_tags[i] = f'({site.species_string:s})_{1+i:d}'
+                site_tags[i] = f'({site.species_string:s})_{s_unique:d}'
             else:
                 site_atoms[i] = [site_species[0]] * 1000
                 site_tags[i] = f'{site.species_string:s}_{s_unique:d}'
@@ -179,7 +198,11 @@ class CIF_Cluster():
 
         self.symbols = [self.absorber]
         self.coords = [[0, 0, 0]]
-        self.tags = [f'{self.absorber:s}_{absorber_site:d}']
+        site0_species = [e.symbol for e in atom0.species]
+        if len(site0_species) > 1:
+            self.tags = [f'({atom0.species_string})_{absorber_site:d}']
+        else:
+            self.tags = [f'{atom0.species_string}_{absorber_site:d}']
 
         for i, site_dist in enumerate(sphere):
             s_index = site_dist[0].index
@@ -247,6 +270,8 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
     absorber = cluster.absorber
     absorber_z = cluster.absorber_z
 
+    # print(cluster.atom_sites, absorber, absorber_site)
+
 
     if edge is None:
         edge = 'K' if absorber_z < 58 else 'L3'
@@ -282,7 +307,7 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
     out_text.append( '* crystallographic sites:')
     out_text.append(f'*  to change absorber site, re-run using `absorber_site`')
     out_text.append(f'*  with the corresponding site index (counting from 1)')
-    out_text.append('* site    X        Y        Z      Wyckoff     species')
+    out_text.append('* site    X        Y        Z      Wyckoff  species')
 
     for i, dat in enumerate(cluster.unique_sites):
         site, n, wsym = dat
@@ -290,7 +315,7 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
         species_string = fix_varname(site.species_string.strip())
         marker = '  <- absorber' if  ((i+1) == absorber_site) else ''
         s1 = f'{i+1:3d}   {fc[0]:.6f} {fc[1]:.6f} {fc[2]:.6f}'
-        s2 = f'{wsym}     {species_string:s} {marker:s}'
+        s2 = f'{wsym:>5s}   {species_string:s} {marker:s}'
         out_text.append(f'* {s1}  {s2}')
 
     out_text.extend(['* ', '', ''])
