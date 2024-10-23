@@ -163,6 +163,14 @@ class CIF_Cluster():
                     self.atom_sites[elem] = [i+1]
                     self.atom_site_labels[elem] = [label]
 
+        all_sites = {}
+        for xat in self.atom_site_labels.keys():
+            all_sites[xat] = {}
+            for i, label in enumerate(self.atom_site_labels[xat]):
+                all_sites[xat][label] = self.atom_sites[xat][i]
+
+        self.all_sites = all_sites
+
 
     def build_cluster(self, absorber=None, absorber_site=1, cluster_size=None):
         if absorber is not None:
@@ -305,14 +313,14 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
 
     out_text.append('* ')
     out_text.append( '* crystallographic sites:')
-    out_text.append(f'*  to change absorber site, re-run using `absorber_site`')
+    out_text.append(f'*  To change the absorber site, re-run using `absorber_site`')
     out_text.append(f'*  with the corresponding site index (counting from 1)')
     out_text.append('* site    X        Y        Z      Wyckoff  species')
 
     for i, dat in enumerate(cluster.unique_sites):
         site, n, wsym = dat
         fc = site.frac_coords
-        species_string = fix_varname(site.species_string.strip())
+        species_string = site.species_string.strip()
         marker = '  <- absorber' if  ((i+1) == absorber_site) else ''
         s1 = f'{i+1:3d}   {fc[0]:.6f} {fc[1]:.6f} {fc[2]:.6f}'
         s2 = f'{wsym:>5s}   {species_string:s} {marker:s}'
@@ -338,7 +346,7 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
 
     out_text.extend(['', 'EXCHANGE 0', '',
                      '*  POLARIZATION  0 0 0', '',
-                     'POTENTIALS',  '*    IPOT  Z   Tag'])
+                     'POTENTIALS',  '*  IPOT    Z    Tag'])
 
     # loop to find atoms actually in cluster, in case some atom
     # (maybe fractional occupation) is not included
@@ -360,14 +368,14 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
         at_lines.append((dist, site.x, site.y, site.z, ipot, sym, cluster.tags[i+1]))
 
     ipot, z = 0, absorber_z
-    out_text.append(f'   {ipot:4d}  {z:4d}   {absorber:s}')
+    out_text.append(f'  {ipot:4d}  {z:>4d}   {absorber:>3s}')
     for sym, ipot in ipot_map.items():
         z = atomic_number(sym)
-        out_text.append(f'   {ipot:4d}  {z:4d}   {sym:s}')
+        out_text.append(f'  {ipot:4d}  {z:>4d}   {sym:>3s}')
 
     out_text.append('')
     out_text.append('ATOMS')
-    out_text.append(f'*    x         y         z       ipot  tag   distance  site_info')
+    out_text.append(f'*    x         y         z     ipot tag distance   site_info')
 
     acount = 0
     for dist, x, y, z, ipot, sym, tag in sorted(at_lines, key=lambda x: x[0]):
@@ -375,7 +383,7 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
         if acount > 500:
             break
         sym = (sym + ' ')[:2]
-        out_text.append(f'   {x: .5f}  {y: .5f}  {z: .5f} {ipot:4d}   {sym:s}    {dist:.5f}  * {tag:s}')
+        out_text.append(f'  {x:+.5f}  {y:+.5f}  {z:+.5f} {ipot:2d}   {sym:>3s} {dist:.5f}  * {tag:s}')
 
     out_text.append('')
     out_text.append('* END')
