@@ -293,15 +293,16 @@ class CIFFrame(wx.Frame):
         self.plotpanel.SetMaxSize((675, 400))
         self.plotpanel.onPanelExposed = self.showXRD1D
 
+        fw_font = wx.Font(FONTSIZE,  wx.MODERN, wx.NORMAL, wx.BOLD)
+
         cif_panel = wx.Panel(rightpanel)
         wids['cif_text'] = wx.TextCtrl(cif_panel, value='<CIF TEXT>',
                                        style=wx.TE_MULTILINE|wx.TE_READONLY,
-                                       size=(700, 450))
-        wids['cif_text'].SetFont(Font(FONTSIZE+1))
+                                       size=(725, 450))
+        wids['cif_text'].SetFont(fw_font)
         cif_sizer = wx.BoxSizer(wx.VERTICAL)
         cif_sizer.Add(wids['cif_text'], 0, LEFT, 1)
         pack(cif_panel, cif_sizer)
-
 
         self.nbpages = []
         for label, page in (('CIF Text',  cif_panel),
@@ -319,11 +320,12 @@ class CIFFrame(wx.Frame):
             wids['feff_text'] = wx.TextCtrl(feffinp_panel,
                                            value='<Feff Input Text>',
                                            style=wx.TE_MULTILINE,
-                                           size=(700, 450))
+                                           size=(725, 450))
+            wids['feff_text'].SetFont(fw_font)
             wids['feff_text'].CanCopy()
 
             feffinp_panel.onPanelExposed = self.onGetFeff
-            wids['feff_text'].SetFont(Font(FONTSIZE+1))
+            # wids['feff_text'].SetFont(Font(FONTSIZE+1))
             feff_sizer = wx.BoxSizer(wx.VERTICAL)
             feff_sizer.Add(wids['feff_text'], 0, LEFT, 1)
             pack(feffinp_panel, feff_sizer)
@@ -332,9 +334,10 @@ class CIFFrame(wx.Frame):
             wids['feffout_text'] = wx.TextCtrl(feffout_panel,
                                                value='<Feff Output>',
                                                style=wx.TE_MULTILINE,
-                                               size=(700, 450))
+                                               size=(725, 450))
             wids['feffout_text'].CanCopy()
-            wids['feffout_text'].SetFont(Font(FONTSIZE+1))
+            wids['feffout_text'].SetFont(fw_font)
+            # wids['feffout_text'].SetFont(Font(FONTSIZE+1))
             feffout_sizer = wx.BoxSizer(wx.VERTICAL)
             feffout_sizer.Add(wids['feffout_text'], 0, LEFT, 1)
             pack(feffout_panel, feffout_sizer)
@@ -449,15 +452,12 @@ class CIFFrame(wx.Frame):
             self.wids['feff_central_atom'].AppendItems(list(elems.keys()))
             self.wids['feff_central_atom'].Select(0)
 
-            el0 = list(elems.keys())[0]
-            edge_val = 'K' if atomic_number(el0) < 60 else 'L3'
+            catom = list(elems.keys())[0]
+            edge_val = 'K' if atomic_number(catom) < 60 else 'L3'
             self.wids['feff_edge'].SetStringSelection(edge_val)
 
-            cluster = cif_cluster(ciftext=cif.ciftext, absorber=el0)
-            self.absorber_sites = {}
-            for i_site in cluster.absorber_sites:
-                label = site_label(cluster.unique_sites[i_site][0])
-                self.absorber_sites[label] = i_site
+            cluster = cif_cluster(ciftext=cif.ciftext, absorber=catom)
+            self.absorber_sites = cluster.all_sites[catom]
             try:
                 sites = list(self.absorber_sites.keys())
             except:
@@ -488,10 +488,7 @@ class CIFFrame(wx.Frame):
         catom = event.GetString()
         try:
             cluster = cif_cluster(ciftext=cif.ciftext, absorber=catom)
-            self.absorber_sites = {}
-            for i_site in cluster.absorber_sites:
-                label = site_label(cluster.unique_sites[i_site][0])
-                self.absorber_sites[label] = (1+i_site)
+            self.absorber_sites = cluster.all_sites[catom]
 
             sites = list(self.absorber_sites.keys())
             self.wids['feff_site'].Clear()
@@ -545,7 +542,7 @@ class CIFFrame(wx.Frame):
         etitles.append(f'Compound: {cif.compound}')
 
         fefftext = cif2feffinp(cif.ciftext, catom, edge=edge, cluster_size=csize,
-                               absorber_site=(1+site_index), version8=version8,
+                               absorber_site=site_index, version8=version8,
                                with_h=with_h, extra_titles=etitles)
 
         self.wids['feff_runfolder'].SetValue(folder)
