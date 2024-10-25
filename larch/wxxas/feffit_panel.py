@@ -161,11 +161,12 @@ if not hasattr({groupname:s}, 'feffit_history'): {groupname}.feffit_history = []
 {groupname:s}.feffit_history.insert(0, _feffit_result)
 """
 
-COMMANDS['path2chi'] = """# generate chi(k) and chi(R) for each path
+COMMANDS['path2chi'] = """# generate chi(k), chi(R), and chi(q) for each path
 for label, path in {paths_name:s}.items():
      path.calc_chi_from_params({pargroup_name:s})
      xftf(path, kmin={kmin:.3f}, kmax={kmax:.3f}, dk={dk:.3f},
          window='{kwindow:s}', kweight={kweight:.3f})
+     xftr(path, rmin={rmin:.3f}, rmax={rmax:.3f}, dr={dr:.3f}, window='{rwindow:s}')
 #endfor
 """
 
@@ -1041,13 +1042,24 @@ class FeffitPanel(TaskPanel):
                 has_data = 1.e-12 <  (tchi**2).sum()
             except:
                 has_data = False
-            cmds = [COMMANDS['feffit_trans'].format(**conf)]
+
+            cmds = []
             _feffit_dataset = getattr(self.larch.symtable, '_feffit_dataset', None)
             if _feffit_dataset is None:
                 cmds.append(COMMANDS['feffit_dataset_init'])
             if has_data:
+                cmds.append("## SET DATA GROUP ")
+                ftargs = dict(kmin=opts['fit_kmin'], kmax=opts['fit_kmax'], dk=opts['fit_dk'],
+                            kwindow=opts['fit_kwindow'], kweight=opts['plot_kw'],
+                            rmin=opts['fit_rmin'], rmax=opts['fit_rmax'],
+                            dr=opts.get('fit_dr', 0.1), rwindow='hanning')
+
+                cmds.append(COMMANDS['xft'].format(groupname=dgroup.groupname, **ftargs))
                 cmds.append(f"_feffit_dataset.set_datagroup({dgroup.groupname})")
                 cmds.append(f"_feffit_dataset.refine_bkg = {opts['refine_bkg']}")
+            cmds.append(COMMANDS['feffit_trans'].format(**conf))
+
+
             self.larch.eval('\n'.join(cmds))
         return opts
 
@@ -1150,12 +1162,10 @@ class FeffitPanel(TaskPanel):
                 dgroup = dataset.data
             else:
                 dgroup = self.controller.get_group()
-                #   print("no data?  dgroup  ", dataset.data, dgroup)
                 if dgroup is not None:
                     self.larch.eval(f"{dataset_name}.set_datagroup({dgroup.groupname})")
                     dataset = getattr(self.larch.symtable, dataset_name, None)
                     dgroup = dataset.data
-        # print("now data now dgroup  ", dataset, getattr(dataset, 'data', None), dgroup)
 
         opts = self.process(dgroup)
         opts.update(**kws)
@@ -1702,7 +1712,9 @@ class FeffitPanel(TaskPanel):
             dgroup.feffit_history[0].timestamp = time.strftime("%Y-%b-%d %H:%M")
             dgroup.feffit_history[0].label = label
 
-        fitlabels = [fhist.label for fhist in dgroup.feffit_history[1:]]
+        fitlabels = []
+        for ix, fhist in enumerate(dgroup.feffit_history[1:]):
+            fitlabels.append(getattr(fhist, 'label', f'fit {1+ix}'))
         if label in fitlabels:
             count = 1
             while label in fitlabels:
@@ -2093,12 +2105,11 @@ class FeffitResultFrame(wx.Frame):
             return
         dset   = result.datasets[0]
         dgroup = dset.data
-        if not hasattr(dset.data, 'rwin'):
-            dset._residual(result.params)
-            dset.save_outputs()
+
         trans  = dset.transform
         dset.prepare_fit(result.params)
         dset._residual(result.params)
+        dset.save_outputs()
 
         opts = self.feffit_panel.read_form(dgroup=dgroup)
         opts = {'build_fitmodel': False}

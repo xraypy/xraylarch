@@ -5,7 +5,7 @@ merge groups, interpolating if necessary
 import os
 import numpy as np
 from larch import Group
-from larch.math import interp, interp1d, index_of, remove_dups
+from larch.math import interp, interp1d, index_of, remove_dups, remove_nans
 from larch.utils.logging import getLogger
 
 _logger = getLogger("larch.io.mergegroups")
@@ -32,14 +32,20 @@ def merge_groups(grouplist, master=None, xarray='energy', yarray='mu',
     if master is None:
         master = grouplist[0]
 
-    xout = remove_dups(getattr(master, xarray))
+    xarr = getattr(master, xarray)
+    dxperc = np.percentile(abs(np.diff(xarr)), [1, 2, 25])
+    dxmin = min(0.01*dxperc[1], 1.e-4*dxperc[2])
+
+
+    xout = remove_dups(xarr, dxmin)
+    xout = remove_nans(xout, interp=True)
     xmins = [min(xout)]
     xmaxs = [max(xout)]
     yvals = []
 
     for g in grouplist:
-        x = getattr(g, xarray)
-        y = getattr(g, yarray)
+        x = remove_nans(remove_dups(getattr(g, xarray), dxmin), interp=True)
+        y = remove_nans(getattr(g, yarray), interp=True)
         yvals.append(interp(x, y, xout, kind=kind))
         xmins.append(min(x))
         xmaxs.append(max(x))

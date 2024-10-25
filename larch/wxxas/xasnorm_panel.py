@@ -26,7 +26,7 @@ from larch.utils.physical_constants import ATOM_NAMES
 from larch.wxlib.plotter import last_cursor_pos
 from .xas_dialogs import EnergyUnitsDialog
 from .taskpanel import TaskPanel, autoset_fs_increment, update_confval
-from .config import (make_array_choice, EDGES, ATSYMS,
+from .config import (make_array_choice, EDGES, ATSYMS, PREEDGE_FORMS,
                      NNORM_CHOICES, NNORM_STRINGS, NORM_METHODS)
 
 np.seterr(all='ignore')
@@ -78,12 +78,12 @@ class XASNormPanel(TaskPanel):
         plot_one = Button(trow, 'Plot Current Group', size=(175, -1),
                           action=self.onPlotOne)
 
-        self.plotsel_op = Choice(trow, choices=list(PlotSel_Choices.keys()),
+        self.plotsel_op = Choice(trow, choices=list(PlotSel_Choices),
                                  action=self.onPlotSel, size=(300, -1))
-        self.plotone_op = Choice(trow, choices=list(PlotOne_Choices.keys()),
+        self.plotone_op = Choice(trow, choices=list(PlotOne_Choices),
                                  action=self.onPlotOne, size=(300, -1))
 
-        self.plot_erange = Choice(trow, choices=list(Plot_EnergyRanges.keys()),
+        self.plot_erange = Choice(trow, choices=list(Plot_EnergyRanges),
                                  action=self.onPlotEither, size=(175, -1))
 
         opts = {'digits': 2, 'increment': 0.05, 'value': 0, 'size': (FSIZE, -1)}
@@ -153,7 +153,7 @@ class XASNormPanel(TaskPanel):
 
         # step rows
         nnorm_panel = wx.Panel(panel)
-        self.wids['nnorm'] = Choice(nnorm_panel, choices=list(NNORM_CHOICES.keys()),
+        self.wids['nnorm'] = Choice(nnorm_panel, choices=list(NNORM_CHOICES),
                                     size=(150, -1), action=self.onNNormChoice,
                                     default=2)
         self.wids['auto_nnorm'] = Check(nnorm_panel, default=True, label='auto?',
@@ -168,8 +168,11 @@ class XASNormPanel(TaskPanel):
                                          action=self.onEnergyRef, size=(300, -1))
 
         self.wids['nvict'] = Choice(panel, choices=('0', '1', '2', '3'),
-                                    size=(100, -1), action=self.onNormMethod,
+                                    size=(150, -1), action=self.onNormMethod,
                                     default=0)
+        self.wids['npre'] = Choice(panel, choices=list(PREEDGE_FORMS),
+                                          size=(150, -1), action=self.onNormMethod)
+        self.wids['npre'].SetSelection(1)
 
 
         opts = {'size': (FSIZE, -1), 'digits': 2, 'increment': 5.0, 'action': self.onSet_Ranges,
@@ -222,6 +225,9 @@ class XASNormPanel(TaskPanel):
         use_auto = Button(panel, 'Use Default Settings', size=(200, -1),
                           action=self.onResetNorm)
 
+        compare_norms = Button(panel, 'Compare Normalization Methods', size=(200, -1),
+                          action=self.onCompareNorm)
+
         def CopyBtn(name):
             return Button(panel, 'Copy', size=(60, -1),
                           action=partial(self.onCopyParam, name))
@@ -267,6 +273,8 @@ class XASNormPanel(TaskPanel):
         panel.Add(pre_panel, dcol=2)
         panel.Add(CopyBtn('xas_pre'), dcol=1, style=RIGHT)
 
+        panel.Add(SimpleText(panel, 'Pre-edge Type:'), newrow=True)
+        panel.Add(self.wids['npre'], dcol=2)
         panel.Add(SimpleText(panel, 'Victoreen order:'), newrow=True)
         panel.Add(self.wids['nvict'], dcol=2)
 
@@ -274,13 +282,14 @@ class XASNormPanel(TaskPanel):
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=4, newrow=True)
 
         add_text('Normalization : ')
-        panel.Add(self.wids['norm_method'], dcol=2)
+        panel.Add(self.wids['norm_method'], dcol=1)
+        panel.Add(compare_norms)
         panel.Add(CopyBtn('xas_norm'), dcol=1, style=RIGHT)
 
         add_text('Norm Energy range: ')
         panel.Add(nor_panel, dcol=2)
         panel.Add(SimpleText(panel, 'Polynomial Type:'), newrow=True)
-        panel.Add(nnorm_panel, dcol=3)
+        panel.Add(nnorm_panel, dcol=2)
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=4, newrow=True)
         panel.Add(self.wids['is_frozen'], newrow=True)
@@ -300,8 +309,6 @@ class XASNormPanel(TaskPanel):
             dgroup = self.controller.get_group()
         if dgroup is None:
             return self.get_defaultconfig()
-        self.read_form()
-
 
         defconf = self.get_defaultconfig()
         conf = getattr(dgroup.config, self.configname, defconf)
@@ -348,14 +355,11 @@ class XASNormPanel(TaskPanel):
         if conf['energy_ref'] in (None, 'None'):
             conf['energy_ref'] = fname
 
-
         conf['energy_shift'] = getattr(dgroup,'energy_shift', conf['energy_shift'])
-
         if hasattr(dgroup, 'e0') and conf['atsym'] == '?':
             atsym, edge = guess_edge(dgroup.e0)
             conf['atsym'] = atsym
             conf['edge'] = edge
-
 
         if hasattr(dgroup, 'mback_params'):
             conf['atsym'] = getattr(dgroup.mback_params, 'atsym', conf['atsym'])
@@ -369,11 +373,11 @@ class XASNormPanel(TaskPanel):
         opts = self.get_config(dgroup)
         self.skip_process = True
         if self.is_xasgroup(dgroup):
-            if self.plotone_op.GetCount() != len(PlotOne_Choices.keys()):
-                self.plotone_op.SetChoices(list(PlotOne_Choices.keys()))
+            if self.plotone_op.GetCount() != len(PlotOne_Choices):
+                self.plotone_op.SetChoices(list(PlotOne_Choices))
                 self.plotone_op.SetSelection(1)
-            if self.plotsel_op.GetCount() != len(PlotSel_Choices.keys()):
-                self.plotsel_op.SetChoices(list(PlotSel_Choices.keys()))
+            if self.plotsel_op.GetCount() != len(PlotSel_Choices):
+                self.plotsel_op.SetChoices(list(PlotSel_Choices))
                 self.plotsel_op.SetSelection(1)
 
             groupnames = list(self.controller.file_groups.keys())
@@ -402,6 +406,7 @@ class XASNormPanel(TaskPanel):
 
             self.wids['energy_shift'].SetValue(opts['energy_shift'])
             self.wids['nvict'].SetStringSelection("%d" % opts['nvict'])
+            self.wids['npre'].SetSelection(opts['npre'])
             self.wids['show_e0'].SetValue(opts['show_e0'])
             self.wids['auto_e0'].SetValue(opts['auto_e0'])
             self.wids['auto_nnorm'].SetValue(opts.get('auto_nnorm', 0))
@@ -416,13 +421,12 @@ class XASNormPanel(TaskPanel):
             self.wids['show_pre'].SetValue(opts['show_pre'])
             self.wids['show_norm'].SetValue(opts['show_norm'])
 
-
         frozen = opts.get('is_frozen', False)
         frozen = getattr(dgroup, 'is_frozen', frozen)
 
         self.wids['is_frozen'].SetValue(frozen)
         self._set_frozen(frozen)
-        wx.CallAfter(self.unset_skip_process)
+        self.skip_process = False
 
     def set_nnorm_widget(self, nnorm=None):
         conf = self.get_config()
@@ -440,7 +444,7 @@ class XASNormPanel(TaskPanel):
     def unset_skip_process(self):
         self.skip_process = False
 
-    def read_form(self):
+    def read_form(self, who='x'):
         "read form, return dict of values"
         form_opts = {}
         form_opts['e0'] = self.wids['e0'].GetValue()
@@ -449,11 +453,11 @@ class XASNormPanel(TaskPanel):
             val = self.wids[attr].GetValue()
             if val == 0: val = None
             form_opts[attr] = val
-
         form_opts['energy_shift'] = self.wids['energy_shift'].GetValue()
 
         form_opts['nnorm'] = NNORM_CHOICES.get(self.wids['nnorm'].GetStringSelection(), 1)
         form_opts['nvict'] = int(self.wids['nvict'].GetStringSelection())
+        form_opts['npre']  = PREEDGE_FORMS.get(self.wids['npre'].GetStringSelection(), 1)
         form_opts['plotone_op'] = self.plotone_op.GetStringSelection()
         form_opts['plotsel_op'] = self.plotsel_op.GetStringSelection()
         form_opts['plot_voff'] = self.wids['plot_voff'].GetValue()
@@ -480,8 +484,10 @@ class XASNormPanel(TaskPanel):
             nnorm = get_auto_nnorm(self.wids['norm1'].GetValue(),
                                    self.wids['norm2'].GetValue())
 
+        npre_sel = self.wids['nvict'].GetStringSelection()
+        npre = 0 if npre_sel.lower().startswith('con') else 1
         nvict = int(self.wids['nvict'].GetStringSelection())
-        self.update_config({'norm_method': method, 'nnorm': nnorm, 'nvict': nvict})
+        self.update_config({'norm_method': method, 'nnorm': nnorm, 'nvict': nvict, 'npre': npre})
         if method.startswith('mback'):
             dgroup = self.controller.get_group()
             cur_elem = self.wids['atsym'].GetStringSelection()
@@ -491,7 +497,7 @@ class XASNormPanel(TaskPanel):
                 self.wids['atsym'].SetStringSelection(atsym)
                 self.update_config({'edge': edge, 'atsym': atsym})
         time.sleep(0.002)
-        wx.CallAfter(self.onReprocess)
+        self.onReprocess()
 
     def _set_frozen(self, frozen):
         try:
@@ -516,20 +522,19 @@ class XASNormPanel(TaskPanel):
         dgroup.energy_ref = eref
         self.update_config({'energy_ref': eref}, dgroup=dgroup)
 
-    def onPlotEither(self, evt=None):
+    def onPlotEither(self, evt=None, process=True):
         if self.last_plot_type == 'multi':
             self.onPlotSel(evt=evt)
         else:
-            self.onPlotOne(evt=evt)
+            self.onPlotOne(evt=evt, process=process)
 
-    def onPlotOne(self, evt=None):
+    def onPlotOne(self, evt=None, process=True):
         self.last_plot_type = 'one'
-        self.plot(self.controller.get_group())
-        wx.CallAfter(self.controller.set_focus)
+        self.plot(self.controller.get_group(), process=process)
+        self.controller.set_focus()
 
     def onVoffset(self, evt=None):
-        time.sleep(0.002)
-        wx.CallAfter(self.onPlotSel)
+        self.onPlotSel()
 
     def onPlotSel(self, evt=None):
         newplot = True
@@ -607,7 +612,7 @@ class XASNormPanel(TaskPanel):
         set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
         ppanel.canvas.draw()
 
-        wx.CallAfter(self.controller.set_focus)
+        self.controller.set_focus()
 
     def onAuto_NNORM(self, evt=None):
         if evt.IsChecked():
@@ -616,7 +621,7 @@ class XASNormPanel(TaskPanel):
             self.set_nnorm_widget(nnorm)
             self.wids['auto_nnorm'].SetValue(0)
             time.sleep(0.001)
-            wx.CallAfter(self.onReprocess)
+            self.onReprocess()
 
     def onResetNorm(self, evt=None):
         auto_nnorm = self.wids['auto_nnorm'].GetValue()
@@ -631,9 +636,17 @@ class XASNormPanel(TaskPanel):
         self.wids['auto_e0'].SetValue(1)
         self.wids['auto_e0'].SetValue(1)
         self.wids['nvict'].SetSelection(0)
+        self.wids['npre'].SetSelection(1)
         for attr in ('pre1', 'pre2', 'norm1', 'norm2'):
             self.wids[attr].SetValue(defaults[attr])
         self.onReprocess()
+
+    def onCompareNorm(self, evt=None):
+        dgroup = self.controller.get_group()
+        self.ensure_xas_processed(dgroup, force_mback=True)
+        plot_yarrays = self.get_plot_arrays(dgroup, plot_choice='mback_poly')
+        self.plot(dgroup, plot_yarrays=plot_yarrays)
+
 
     def onCopyAuto(self, evt=None):
         opts = dict(pre1=0, pre2=0, nvict=0, norm1=0, norm2=0,
@@ -651,12 +664,10 @@ class XASNormPanel(TaskPanel):
     def onSaveConfigBtn(self, evt=None):
         conf = self.get_config()
         conf.update(self.read_form())
-        # self.set_defaultconfig(conf)
 
     def onCopyParam(self, name=None, evt=None):
         conf = self.get_config()
-        form = self.read_form()
-        conf.update(form)
+        conf.update(self.read_form())
         dgroup = self.controller.get_group()
         self.update_config(conf)
         self.fill_form(dgroup)
@@ -700,24 +711,21 @@ class XASNormPanel(TaskPanel):
             dgroup = self.controller.get_group()
             find_e0(dgroup)
             self.update_config({'e0': dgroup.e0})
-            time.sleep(0.002)
-            wx.CallAfter(self.onReprocess)
+            self.onReprocess()
 
     def onSet_XASE0(self, evt=None, value=None):
         "handle setting auto e0 / show e0"
         auto_e0  = self.wids['auto_e0'].GetValue()
         self.update_config({'e0': self.wids['e0'].GetValue(),
                            'auto_e0':self.wids['auto_e0'].GetValue()})
-        time.sleep(0.002)
-        wx.CallAfter(self.onReprocess)
+        self.onReprocess()
 
     def onSet_XASE0Val(self, evt=None, value=None):
         "handle setting e0"
         self.wids['auto_e0'].SetValue(0)
         self.update_config({'e0': self.wids['e0'].GetValue(),
                             'auto_e0':self.wids['auto_e0'].GetValue()})
-        time.sleep(0.002)
-        wx.CallAfter(self.onReprocess)
+        self.onReprocess()
 
     def onSet_EnergyShift(self, evt=None, value=None):
         conf = self.get_config()
@@ -733,7 +741,7 @@ class XASNormPanel(TaskPanel):
                     this.energy_shift = this.config.xasnorm['energy_shift'] = eshift
                     self.stale_groups.append(this)
 
-        wx.CallAfter(self.onReprocess)
+        self.onReprocess()
 
     def onSet_XASStep(self, evt=None, value=None):
         "handle setting edge step"
@@ -744,7 +752,7 @@ class XASNormPanel(TaskPanel):
         self.update_config({'edge_step': abs(edge_step), 'auto_step': False})
         autoset_fs_increment(self.wids['step'], abs(edge_step))
         time.sleep(0.01)
-        wx.CallAfter(self.onReprocess)
+        self.onReprocess()
 
 
     def onSet_Ranges(self, evt=None, **kws):
@@ -752,8 +760,7 @@ class XASNormPanel(TaskPanel):
         for attr in ('pre1', 'pre2', 'norm1', 'norm2'):
             conf[attr] = self.wids[attr].GetValue()
         self.update_config(conf)
-        time.sleep(0.01)
-        wx.CallAfter(self.onReprocess)
+        self.onReprocess()
 
     def pin_callback(self, opt='__', xsel=None, relative_e0=True, **kws):
         """
@@ -772,8 +779,7 @@ class XASNormPanel(TaskPanel):
             self.wids['auto_e0'].SetValue(0)
         elif opt in ('pre1', 'pre2', 'norm1', 'norm2'):
             self.wids[opt].SetValue(xsel-e0)
-        time.sleep(0.01)
-        wx.CallAfter(self.onReprocess)
+        self.onReprocess()
 
     def onReprocess(self, evt=None, value=None, **kws):
         "handle request reprocess"
@@ -785,14 +791,12 @@ class XASNormPanel(TaskPanel):
             return
         if not hasattr(dgroup.config, self.configname):
             return
-        form = self.read_form()
         self.process(dgroup=dgroup)
         if self.stale_groups is not None:
             for g in self.stale_groups:
                 self.process(dgroup=g, force=True)
             self.stale_groups = None
-        self.onPlotEither()
-
+        self.onPlotEither(process=False)
 
     def process(self, dgroup=None, force_mback=False, force=False, use_form=True, **kws):
         """ handle process (pre-edge/normalize) of XAS data from XAS form
@@ -806,7 +810,7 @@ class XASNormPanel(TaskPanel):
 
         self.skip_process = True
         conf = self.get_config(dgroup)
-        form = self.read_form()
+        form = self.read_form('process')
         if not use_form:
             form.update(self.get_defaultconfig())
 
@@ -882,19 +886,19 @@ class XASNormPanel(TaskPanel):
         if not form['auto_step']:
             copts.append("step=%s" % gformat(float(edge_step)))
 
-        for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
+        for attr in ('pre1', 'pre2', 'nvict', 'npre', 'nnorm', 'norm1', 'norm2'):
             val = form[attr]
             if val is None or val == 'auto':
                 val = 'None'
-            elif attr in ('nvict', 'nnorm'):
+            elif attr in ('nvict', 'nnorm', 'npre'):
                 if val in NNORM_CHOICES:
                     val = NNORM_CHOICES[val]
                 val = int(val)
             else:
                 val = f"{float(val):.2f}"
             copts.append(f"{attr}={val}")
-        # print("process PreEdge ", copts)
-        self.larch_eval("pre_edge(%s)" % (', '.join(copts)))
+
+        self.larch_eval("pre_edge(%s) #a" % (', '.join(copts)))
         self.larch_eval("{group:s}.norm_poly = 1.0*{group:s}.norm".format(**form))
         if not hasattr(dgroup, 'e0'):
             self.skip_process = False
@@ -932,6 +936,8 @@ class XASNormPanel(TaskPanel):
             else:
                 norm_expr = """{group:s}.norm = 1.0*{group:s}.norm_{normmeth:s}
 {group:s}.norm *= {group:s}.edge_step_{normmeth:s}/{edge_step:.8f}"""
+
+
                 self.larch_eval(norm_expr.format(**form))
 
         if norm_method.startswith('area'):
@@ -966,11 +972,11 @@ class XASNormPanel(TaskPanel):
             conf['atsym'] = getattr(dgroup.mback_params, 'atsym')
             conf['edge'] = getattr(dgroup.mback_params, 'edge')
         self.update_config(conf, dgroup=dgroup)
-        # print("process updated conf  ", dgroup, conf)
-        wx.CallAfter(self.unset_skip_process)
+
+        self.skip_process = False
 
 
-    def get_plot_arrays(self, dgroup):
+    def get_plot_arrays(self, dgroup, plot_choice=None):
         lab = plotlabels.norm
         if dgroup is None:
             return
@@ -981,7 +987,10 @@ class XASNormPanel(TaskPanel):
 
         req_attrs = ['e0', 'norm', 'dmude', 'd2mude', 'pre_edge']
 
-        pchoice = PlotOne_Choices.get(self.plotone_op.GetStringSelection(), 'norm')
+        if plot_choice in PlotOne_Choices.values():
+            pchoice = plot_choice
+        else:
+            pchoice = PlotOne_Choices.get(self.plotone_op.GetStringSelection(), 'norm')
 
         if pchoice in ('mu', 'norm', 'i0', 'flat', 'dmude', 'd2mude'):
             lab = getattr(plotlabels, pchoice)
@@ -1064,8 +1073,10 @@ class XASNormPanel(TaskPanel):
                 ival = min(len(y4e0)-1, index_of(dgroup.energy, dgroup.e0 + val))
                 dgroup.plot_extras.append(('marker', dgroup.e0+val, y4e0[ival], popts))
 
+        return dgroup.plot_yarrays
+
     def plot(self, dgroup, title=None, plot_yarrays=None, yoff=0,
-             delay_draw=True, multi=False, new=True, with_extras=True, **kws):
+             delay_draw=True, multi=False, new=True, with_extras=True, process=True, **kws):
 
         if self.skip_plotting:
             return
@@ -1082,11 +1093,11 @@ class XASNormPanel(TaskPanel):
         if groupname is None:
             return
 
-        self.ensure_xas_processed(dgroup, force_mback=True)
-        self.get_plot_arrays(dgroup)
+        if process:
+            self.ensure_xas_processed(dgroup, force_mback=True)
 
-        if plot_yarrays is None and hasattr(dgroup, 'plot_yarrays'):
-            plot_yarrays = dgroup.plot_yarrays
+        if plot_yarrays is None:
+            plot_yarrays = self.get_plot_arrays(dgroup)
 
         popts = self.controller.get_plot_conf()
         popts.update(kws)
