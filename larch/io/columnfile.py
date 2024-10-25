@@ -612,6 +612,7 @@ def write_group(filename, group, scalars=None, arrays=None,
 
 def read_fdmnes(filename, **kwargs):
     """read [FDMNES](http://fdmnes.neel.cnrs.fr/) ascii files"""
+    shift_energy = kwargs.pop("shift_energy", True)
     group = read_ascii(filename, **kwargs)
     group.header_dict = dict(filetype='FDMNES', energy_units='eV')
     for headline in group.header:
@@ -622,7 +623,8 @@ def read_fdmnes(filename, **kwargs):
             vals_names = headline.split(" = ")[1].split(", ")
             group.header_dict.update(dict(zip(vals_names, vals)))
     group.name = f'FDMNES file {filename}'
-    group.energy += group.header_dict["E_edge"]
+    if shift_energy:
+        group.energy += group.header_dict["E_edge"]
     #fix _arrlabel -> arrlabel
     for ilab, lab in enumerate(group.array_labels):
         if lab.startswith("_"):
