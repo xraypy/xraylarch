@@ -82,6 +82,16 @@ def gformat(val, length=11):
         out = fmt(val, length, prec, form)
     return out
 
+
+def fcompact(val):
+    """format a float value, removing extra trailing zeros"""
+    val = f'{val:.6f}'
+    while val.endswith('0'):
+        val = val[:-1]
+    if val.endswith('.'):
+        val = val + '0'
+    return val
+
 def test_gformat():
     for x in range(-10, 12):
         for a in [0.2124312134, 0.54364253, 0.812312, .96341312124, 1.028456789]:
