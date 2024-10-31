@@ -14,6 +14,8 @@ from larch import Group, isNamedClass
 from larch.utils import isotime, bytes2str, uname, bindir, get_cwd
 
 def find_exe(exename):
+    if isinstance(exename, Path):
+        exename = str(exename)
     if uname == 'win' and not exename.endswith('.exe'):
         exename = f"{exename}.exe"
     exefile = Path(bindir, exename)
