@@ -213,13 +213,15 @@ def run_larch():
              ("-w", "--wxgui", "wxgui", False, "run Larch GUI"),
              ("-m", "--makeicons", "makeicons", False, "create desktop icons"),
              ("-u", "--update", "update", False, "update larch to the latest version"),
-             ("-r", "--remote", "server_mode", False, "run in remote server mode"),
-             ("-p", "--port", "port", "4966", "port number for remote server"))
+             ("-r", "--remote", "server_mode", False, "run in remote server mode"))
+
 
     for opt, longopt, dest, default, help in sargs:
         parser.add_argument(opt, longopt, dest=dest, action='store_true',
                             default=default, help=help)
 
+    parser.add_argument('-p', '--port', dest='port',
+                        default='4966', help="port number for remote server")
     parser.add_argument('scripts', nargs='*',
                         help='larch or python scripts to run on startup')
 
