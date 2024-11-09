@@ -27,6 +27,8 @@ try:
 except ImportError:
     wx = None
 
+SHOW_LIBS = ['numpy', 'scipy', 'matplotlib', 'h5py',
+             'lmfit', 'xraydb', 'wx','wxmplot']
 
 class Shell(cmd.Cmd):
     """command shell for Larch"""
@@ -57,24 +59,21 @@ class Shell(cmd.Cmd):
         if with_wx and HAS_WXPYTHON:
             symtable = self.larch.symtable
             try:
-                from .wxlib import LarchWxApp
+                from .wxlib import LarchWxApp, inputhook
                 app = LarchWxApp(redirect=False, clearSigInt=False)
-            except SystemExit:
-                with_wx = False
+                symtable.set_symbol('_sys.wx.wxapp', app)
+                symtable.set_symbol('_sys.wx.force_wxupdate', False)
+                symtable.set_symbol('_sys.wx.parent', None)
+                symtable.set_symbol('_sys.wx.inputhook', inputhook)
+                if uname == 'darwin':
+                    symtable.set_symbol('_sys.wx.ping', inputhook.ping_darwin)
+                else:
+                    symtable.set_symbol('_sys.wx.ping', inputhook.ping)
 
-            symtable.set_symbol('_sys.wx.wxapp', app)
-            symtable.set_symbol('_sys.wx.force_wxupdate', False)
-            symtable.set_symbol('_sys.wx.parent', None)
-
-            from .wxlib import inputhook
-            symtable.set_symbol('_sys.wx.inputhook', inputhook)
-            if uname == 'darwin':
-                symtable.set_symbol('_sys.wx.ping',   inputhook.ping_darwin)
-            else:
-                symtable.set_symbol('_sys.wx.ping',   inputhook.ping)
-
-            inputhook.ON_INTERRUPT = self.onCtrlC
-            inputhook.WXLARCH_SYM = symtable
+                inputhook.ON_INTERRUPT = self.onCtrlC
+                inputhook.WXLARCH_SYM = symtable
+            except:
+                pass
 
         signal.signal(signal.SIGINT, self.onCtrlC)
         self.prompt = self.larch.input.prompt
@@ -82,8 +81,7 @@ class Shell(cmd.Cmd):
         self.color_writer = (uname != 'win' and hasattr(writer, 'set_textstyle'))
         if not quiet:
             if banner_msg is None:
-                banner_msg = make_banner(show_libraries=['numpy', 'scipy', 'matplotlib', 'h5py',
-                                                         'lmfit', 'xraydb', 'wx','wxmplot'])
+                banner_msg = make_banner(show_libraries=SHOW_LIBS)
             if self.color_writer:
                 writer.set_textstyle('error')
             writer.write(banner_msg)
