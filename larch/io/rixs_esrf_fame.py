@@ -14,6 +14,8 @@ RIXS data reader for beamline BM16 @ ESRF
 import os
 import time
 import numpy as np
+from pathlib import Path
+from typing import Union
 from larch.io.specfile_reader import DataSourceSpecH5, _mot2array, _str2rng
 from silx.io.dictdump import dicttoh5
 from larch.utils.logging import getLogger
@@ -22,16 +24,16 @@ _logger = getLogger("io_rixs_bm16")
 
 
 def get_rixs_bm16(
-    fname,
-    scans=None,
-    sample_name=None,
-    mode="rixs",
-    mot_axis2="emi",
-    counter_signal="xpad_roi1",
-    counter_mon="p201_1_bkg_sub",
-    out_dir=None,
-    save_rixs=False,
-):
+    fname: Union[str, Path],
+    scans: bool = None,
+    sample_name: Union[str, None] = None,
+    mode: str = "rixs",
+    mot_axis2: str = "emi",
+    counter_signal: str = "xpad_roi1",
+    counter_mon: str = "p201_1_bkg_sub",
+    out_dir: Union[str, Path, None] = None,
+    save: bool = False,
+) -> dict:
     """Build RIXS map as X,Y,Z 1D arrays
 
     Parameters
@@ -54,7 +56,7 @@ def get_rixs_bm16(
         name of the counter to use as incoming beam monitor
     out_dir : str, optional
         path to save the data [None -> data_dir]
-    save_rixs : bool
+    save : bool
         if True -> save outdict to disk (in 'out_dir')
 
     Returns
@@ -77,20 +79,22 @@ def get_rixs_bm16(
         'rixs_header': None,
         'data_dir': str, data_dir,
         'out_dir': str, out_dir,
-        'fname_ine': str, full path raw data
+        'fname_in': str, full path raw data
         'fname_out': str, full path
         }
     """
     _writer = "get_rixs_bm16"
-    _writer_version = "1.5.1"  #: used for reading back in RixsData.load_from_h5()
+    _writer_version = "1.5.2"  #: used for reading back in RixsData.load_from_h5()
     _writer_timestamp = "{0:04d}-{1:02d}-{2:02d}_{3:02d}{4:02d}".format(
         *time.localtime()
     )
-    data_dir = os.path.join(os.sep, *fname.split(os.sep)[1:-1])
+    if isinstance(fname, str):
+        fname = Path(fname)
+    data_dir = fname.parent
     _logger.debug(f"data_dir: {data_dir}")
     if out_dir is None:
         out_dir = data_dir
-    ds = DataSourceSpecH5(fname)
+    ds = DataSourceSpecH5(str(fname))
     if sample_name is None:
         try:
             sample_name = ds.get_sample_name()
@@ -134,6 +138,10 @@ def get_rixs_bm16(
         _counter += 1
         _logger.info(f"Loaded scan {scan}: {estep:.1f} eV")
 
+    fnstr = fname.stem
+    fnout = "{0}_rixs.h5".format(fnstr)
+    fname_out = Path(out_dir, fnout)
+
     outdict = {
         "_x": xcol,
         "_y": ycol,
@@ -149,20 +157,25 @@ def get_rixs_bm16(
         "sample_name": sample_name,
         "ene_unit": "eV",
         "rixs_header": None,
-        "data_dir": data_dir,
-        "out_dir": out_dir,
+        "data_dir": str(data_dir),
+        "out_dir": str(out_dir),
+        "fname_in": str(fname),
+        "fname_out": str(fname_out),
     }
 
-    if save_rixs:
-        fnstr = fname.split("/")[-1].split(".")[0]
-        fnout = "{0}_rixs.h5".format(fnstr)
-        fname_out = os.path.join(out_dir, fnout)
-        dicttoh5(outdict, fname_out)
-        outdict["fname_in"] = fname
-        outdict["fname_out"] = fname_out
-        _logger.info("RIXS saved to {0}".format(fnout))
+    if save:
+        save_rixs(outdict)
 
     return outdict
+
+
+def save_rixs(outdict, fname_out=None):
+    if fname_out is None:
+        fname_out = outdict["fname_out"]
+    else:
+        outdict["fname_out"] = fname_out
+    dicttoh5(outdict, fname_out)
+    _logger.info("RIXS saved to {0}".format(fname_out))
 
 
 def _parse_header(fname):
@@ -195,7 +208,7 @@ def get_rixs_bm16_spec(
     counter_signal="absF1",
     counter_norm=None,
     interp_ene_in=True,
-    save_rixs=False,
+    save=False,
 ):
     """Build RIXS map as X,Y,Z 1D arrays (version for Spec files - *DEPRECATED*)
 
@@ -212,7 +225,7 @@ def get_rixs_bm16_spec(
         name of the data column to use as normaliztion
     interp_ene_in: bool
         perform interpolation ene_in to the energy step of ene_out [True]
-    save_rixs : bool
+    save : bool
         if True -> save outdict to disk (in 'out_dir')
     Returns
     -------
@@ -299,7 +312,7 @@ def get_rixs_bm16_spec(
         "out_dir": out_dir,
     }
 
-    if save_rixs:
+    if save:
         fnstr = sfn.split("/")[-1].split(".")[0]
         fnout = "{0}_rixs.h5".format(fnstr)
         dicttoh5(outdict, os.path.join(out_dir, fnout))

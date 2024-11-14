@@ -44,7 +44,7 @@ def get_rixs_id26(
     counter_mon="arr_I02sum",
     interp_ene_in=True,
     out_dir=None,
-    save_rixs=False,
+    save=False,
 ):
     """Build RIXS map as X,Y,Z 1D arrays
 
@@ -80,7 +80,7 @@ def get_rixs_id26(
     out_dir : str, optional
         path to save the data [None -> data_dir]
 
-    save_rixs : bool
+    save : bool
         if True -> save outdict to disk (in 'out_dir')
 
     Returns
@@ -178,7 +178,7 @@ def get_rixs_id26(
         "out_dir": out_dir,
     }
 
-    if save_rixs:
+    if save:
         fnstr = fname.split("/")[-1].split(".")[0]
         fnout = "{0}_rixs.h5".format(fnstr)
         fname_out = os.path.join(out_dir, fnout)
