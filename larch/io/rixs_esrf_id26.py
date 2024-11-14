@@ -124,6 +124,8 @@ def get_rixs_id26(
 
     if isinstance(scans, str):
         scans = _str2rng(scans)
+    if scans is None:
+        scans = [scn[0] for scn in ds.get_scans()]
     assert isinstance(scans, list), "scans should be a list"
 
     mode = mode.lower()
