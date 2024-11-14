@@ -86,14 +86,16 @@ def get_rixs_bm16(
     _writer_timestamp = "{0:04d}-{1:02d}-{2:02d}_{3:02d}{4:02d}".format(
         *time.localtime()
     )
-    if sample_name is None:
-        sample_name = "SAMPLE_UNKNOWN"
-
     data_dir = os.path.join(os.sep, *fname.split(os.sep)[1:-1])
     _logger.debug(f"data_dir: {data_dir}")
     if out_dir is None:
         out_dir = data_dir
     ds = DataSourceSpecH5(fname)
+    if sample_name is None:
+        try:
+            sample_name = ds.get_sample_name()
+        except Exception:
+            sample_name = "SAMPLE_UNKNOWN"
 
     if isinstance(scans, str):
         scans = _str2rng(scans)
