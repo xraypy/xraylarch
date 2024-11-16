@@ -12,13 +12,14 @@ import ast
 import numpy as np
 from numpy import array, arange, interp, pi, zeros, sqrt, concatenate
 
+from pyshortcuts import fix_varname, gformat
+
 from scipy.interpolate import splrep, splev
 from scipy.interpolate import InterpolatedUnivariateSpline as IUSpline
 from lmfit import Parameters, Parameter, Minimizer, conf_interval2d
 from lmfit.printfuncs import getfloat_attr
 
 from larch import Group, isNamedClass
-from larch.utils import fix_varname, gformat
 from larch.utils.strutils import b32hash, random_varname
 from ..math import index_of, realimag, complex_phase, remove_nans
 from ..fitting import (correlated_values, eval_stderr, ParameterGroup,

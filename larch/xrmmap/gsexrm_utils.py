@@ -3,10 +3,10 @@ import numpy as np
 import time
 
 import larch
+from pyshortcuts import fix_varname
 
 from larch.io import (read_xsp3_hdf5, read_xrf_netcdf,
                       read_xrd_netcdf, read_xrd_hdf5)
-from larch.utils.strutils import fix_varname
 from .asciifiles import (readASCII, readMasterFile, readROIFile,
                          readEnvironFile, read1DXRDFile, parseEnviron)
 

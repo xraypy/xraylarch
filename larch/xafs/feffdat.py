@@ -19,9 +19,10 @@ from scipy.interpolate import UnivariateSpline
 from lmfit import Parameters, Parameter
 
 from xraydb import atomic_mass, atomic_symbol
+from pyshortcuts import fix_varname
 
 from larch import Group, isNamedClass
-from larch.utils.strutils import fix_varname, b32hash
+from larch.utils.strutils import b32hash
 from larch.fitting import group2params, dict2params, isParameter, param_value
 from .xafsutils import ETOK, ktoe, set_xafsGroup, gfmt
 from .sigma2_models import add_sigma2funcs

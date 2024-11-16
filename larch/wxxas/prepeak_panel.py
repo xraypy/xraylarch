@@ -14,10 +14,10 @@ import wx.dataview as dv
 
 from lmfit import Parameter
 import lmfit.models as lm_models
-from pyshortcuts import platform
+from pyshortcuts import platform, gformat, fix_varname
 
 from larch import Group, site_config
-from larch.utils import uname, gformat, mkdir, fix_varname
+from larch.utils import mkdir
 from larch.math import index_of
 from larch.io.export_modelresult import export_modelresult
 from larch.io import save_groups, read_groups
@@ -446,7 +446,7 @@ class PrePeakFitResultFrame(wx.Frame):
                         default_file=deffile, wildcard=wcards)
         if path is None:
             return
-        if Path(path).exists() and uname != 'darwin':  # darwin prompts in FileSave!
+        if Path(path).exists() and platform != 'darwin':  # darwin prompts in FileSave!
             if wx.ID_YES != Popup(self,
                                   "Overwrite existing Statistics File?",
                                   "Overwrite existing file?", style=wx.YES_NO):

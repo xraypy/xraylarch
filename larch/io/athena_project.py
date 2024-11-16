@@ -14,10 +14,11 @@ from gzip import GzipFile
 from copy import deepcopy
 import numpy as np
 from numpy.random import randint
+from pyshortcuts import bytes2str, str2bytes, fix_varname
 
 from larch import Group, repr_value
 from larch import __version__ as larch_version
-from larch.utils import bytes2str, str2bytes, fix_varname, asfloat, unixpath
+from larch.utils import asfloat, unixpath
 from larch.math import remove_dups
 
 from xraydb import guess_edge

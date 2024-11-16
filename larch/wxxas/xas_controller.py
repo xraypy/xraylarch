@@ -8,10 +8,11 @@ from copy import deepcopy
 import numpy as np
 import wx
 
+from pyshortcuts import fix_varname, get_cwd
 import larch
 from larch import Group, Journal, Entry
 from larch.larchlib import read_config, save_config
-from larch.utils import (group2dict, unique_name, fix_varname, get_cwd,
+from larch.utils import (group2dict, unique_name,
                          asfloat, get_sessionid, mkdir, unixpath)
 from larch.wxlib.plotter import last_cursor_pos
 from larch.wxlib import ExceptionPopup

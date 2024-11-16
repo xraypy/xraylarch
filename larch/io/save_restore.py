@@ -7,12 +7,11 @@ from collections import namedtuple
 from gzip import GzipFile
 
 from lmfit import Parameter, Parameters
-# from lmfit.model import Model, ModelResult
-# from lmfit.minimizer import Minimizer, MinimizerResult
+
+from pyshortcuts import bytes2str, fix_varname, gformat, isotime
 
 from larch import Group, isgroup, __date__, __version__, __release_version__
-from ..utils import (isotime, bytes2str, str2bytes, fix_varname,
-                     read_textfile, unique_name, format_exception, unixpath)
+from ..utils import read_textfile, unique_name, format_exception, unixpath
 from ..utils.jsonutils import encode4js, decode4js
 
 SessionStore = namedtuple('SessionStore', ('config', 'command_history', 'symbols'))

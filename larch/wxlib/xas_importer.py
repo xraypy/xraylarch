@@ -11,9 +11,9 @@ from wxutils import (SimpleText, FloatCtrl, GUIColors, Button, Choice,
         FileCheckList, pack, Popup, Check, MenuItem, CEN, RIGHT, LEFT,
         FRAMESTYLE, HLine, Font)
 
-import larch
+from pyshortcuts import fix_varname
+
 from larch import Group
-from larch.utils.strutils import fix_varname
 from larch.xafs.xafsutils import guess_energy_units
 from larch.io.xas_data_source import open_xas_source
 from larch.utils.physical_constants import PLANCK_HC, DEG2RAD, PI

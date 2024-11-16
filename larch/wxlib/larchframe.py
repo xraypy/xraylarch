@@ -12,7 +12,7 @@ import wx.lib.mixins.inspection
 import numpy
 import scipy
 import larch
-from pyshortcuts import platform
+from pyshortcuts import platform, get_cwd, fix_varname
 
 from wxutils import (MenuItem, Font, Button, Choice, panel_pack)
 
@@ -27,7 +27,6 @@ from larch.io import (read_ascii, read_xdi, read_gsexdi,
                       gsescan_group,
                       is_athena_project, AthenaProject)
 from larch.version import make_banner, version_data
-from larch.utils import get_cwd, fix_varname
 
 FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (*.*)|*.*"
 

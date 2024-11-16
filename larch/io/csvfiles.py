@@ -11,10 +11,11 @@ import platform
 import csv
 
 import numpy as np
+from pyshortcuts import bytes2str, fix_varname, gformat
+
 from dateutil.parser import parse as dateparse
 from larch import Group
 from larch.math import interp, remove_dups
-from larch.utils import bytes2str, fix_varname, gformat
 
 maketrans = str.maketrans
 

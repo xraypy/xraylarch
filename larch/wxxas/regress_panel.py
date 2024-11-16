@@ -13,6 +13,8 @@ import base64
 from copy import deepcopy
 from functools import partial
 
+from pyshortcuts import fix_varname, get_cwd, gformat
+
 from larch import Group
 from larch.math import index_of
 from larch.wxlib import (BitmapButton, TextCtrl, FloatCtrl, get_icon,
@@ -20,8 +22,6 @@ from larch.wxlib import (BitmapButton, TextCtrl, FloatCtrl, get_icon,
                          NumericCombo, CEN, LEFT, Font, FileSave, FileOpen,
                          DataTableGrid, Popup, FONTSIZE_FW, ExceptionPopup)
 from larch.io import save_groups, read_groups, read_csv
-from larch.utils.strutils import fix_varname
-from larch.utils import get_cwd, gformat
 
 from .taskpanel import TaskPanel
 from .config import Linear_ArrayChoices, Regress_Choices

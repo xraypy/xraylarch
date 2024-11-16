@@ -11,9 +11,11 @@ from collections import namedtuple
 import numpy as np
 from dateutil.parser import parse as dateparse
 from math import log10
+from pyshortcuts import gformat, fix_varname
+
 from larch import Group
 from larch.symboltable import isgroup
-from ..utils import read_textfile, format_exception, gformat, fix_varname
+from ..utils import read_textfile, format_exception
 from .xafs_beamlines import guess_beamline
 
 nanresult = namedtuple('NanResult', ('file_ok', 'message', 'nan_rows',

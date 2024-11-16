@@ -4,7 +4,8 @@ from io import StringIO
 import numpy as np
 
 from xraydb import atomic_symbol, atomic_number, xray_edge
-from larch.utils import fix_varname, strict_ascii, gformat
+from pyshortcuts import fix_varname, gformat
+from larch.utils import strict_ascii
 
 from .amcsd_utils import PMG_CIF_OPTS, CifParser, Molecule, SpacegroupAnalyzer
 
