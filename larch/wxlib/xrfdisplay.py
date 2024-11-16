@@ -18,17 +18,16 @@ import numpy as np
 import matplotlib
 from matplotlib.ticker import LogFormatter, FuncFormatter
 
-from pyshortcuts import platform
+from pyshortcuts import uname, bytes2str, get_cwd, fix_filename
 
 from wxmplot import PlotPanel
 from . import (SimpleText, EditableListBox, Font, pack, Popup,
                get_icon, SetTip, Button, Check, MenuItem, Choice,
-               FileOpen, FileSave, fix_filename, HLine, GridPanel,
+               FileOpen, FileSave, HLine, GridPanel,
                CEN, LEFT, RIGHT, PeriodicTablePanel,
                FONTSIZE, FONTSIZE_FW)
 
 from ..math import index_of
-from ..utils import bytes2str, get_cwd
 from ..io import GSEMCA_File
 from ..site_config import icondir
 from ..interpreter import Interpreter
@@ -293,7 +292,7 @@ class XRFDisplayFrame(wx.Frame):
 
     def createControlPanel(self):
         ctrlpanel = wx.Panel(self, name='Ctrl Panel')
-        ptable_fontsize = 11 if platform=='darwin' else 9
+        ptable_fontsize = 11 if uname=='darwin' else 9
         ptable = PeriodicTablePanel(ctrlpanel, onselect=self.onShowLines,
                                     tooltip_msg='Select Element for KLM Lines',
                                     fontsize=ptable_fontsize, size=(360, 180))
@@ -416,9 +415,9 @@ class XRFDisplayFrame(wx.Frame):
         self.wids['xray_lines'] = xlines
 
         xw = (55, 105, 90, 95)
-        if platform=='darwin':
+        if uname == 'darwin':
             xw = (55, 80, 65, 120)
-        elif platform=='win':
+        elif uname == 'win':
             xw = (55, 120, 90, 90)
         xlines.AppendTextColumn('Line',         width=xw[0])
         xlines.AppendTextColumn('Energy(keV)',  width=xw[1])

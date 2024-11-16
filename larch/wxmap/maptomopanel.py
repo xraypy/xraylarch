@@ -7,7 +7,6 @@ GUI for displaying maps from HDF5 files
 VERSION = '10 (14-March-2018)'
 
 import os
-import platform
 import sys
 import time
 import json
@@ -33,12 +32,13 @@ except ImportError:
 
 import numpy as np
 import scipy.stats as stats
+from pyshortcuts import bytes2str
 from wxmplot import PlotFrame
 from  ..wxlib import (EditableListBox, SimpleText,
                        FloatCtrl, Font, pack, Popup, Button, MenuItem,
                        Choice, Check, GridPanel, FileSave, HLine)
 from ..wxlib.plotter import _plot
-from ..utils.strutils import bytes2str, version_ge
+from ..utils.strutils import version_ge
 from ..math.tomography import TOMOPY_ALG, TOMOPY_FILT, center_score
 
 from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup

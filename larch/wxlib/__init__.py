@@ -15,7 +15,7 @@ fileprompt       launch file browser to select files.
 import locale
 from pathlib import Path
 
-from pyshortcuts import platform, fix_filename
+from pyshortcuts import uname, fix_filename
 import os
 import sys
 HAS_WXPYTHON = False
@@ -30,11 +30,11 @@ _larch_builtins = {}
 
 FONTSIZE = 10
 FONTSIZE_FW = 10
-if platform == 'win':
+if uname == 'win':
     FONTSIZE = 10
     FONTSIZE_FW = 11
     locale.setlocale(locale.LC_ALL, 'C')
-elif platform == 'darwin':
+elif uname == 'darwin':
     FONTSIZE = 11
     FONTSIZE_FW = 12
 
@@ -117,7 +117,7 @@ if HAS_WXPYTHON:
     from . import xafsplots
     from .xafsplots import plotlabels
 
-    if platform == 'darwin':
+    if uname == 'darwin':
         HLine = DarwinHLine
 
     _larch_builtins['_plotter'] = dict(plot=_plot, oplot=_oplot,
@@ -177,7 +177,7 @@ if HAS_WXPYTHON:
     #############################
     ## Hack System and Startfile on Windows totry to track down
     ## weird error of starting other applications, like Mail
-    if platform == 'win':
+    if uname == 'win':
         from os import system as os_system
         from os import startfile as os_startfile
 

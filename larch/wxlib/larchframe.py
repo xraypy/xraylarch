@@ -12,7 +12,7 @@ import wx.lib.mixins.inspection
 import numpy
 import scipy
 import larch
-from pyshortcuts import platform, get_cwd, fix_varname
+from pyshortcuts import uname, get_cwd, fix_varname
 
 from wxutils import (MenuItem, Font, Button, Choice, panel_pack)
 
@@ -24,8 +24,7 @@ from .athena_importer import AthenaImporter
 from . import inputhook
 
 from larch.io import (read_ascii, read_xdi, read_gsexdi,
-                      gsescan_group,
-                      is_athena_project, AthenaProject)
+                      gsescan_group, is_athena_project, AthenaProject)
 from larch.version import make_banner, version_data
 
 FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (*.*)|*.*"
@@ -35,9 +34,9 @@ BACKGROUND_COLOUR = '#FCFCFA'
 FOREGROUND_COLOUR = '#050520'
 
 FONTSIZE_FW = 14
-if platform == 'win':
+if uname == 'win':
     FONTSIZE_FW = 12
-elif platform == 'darwin':
+elif uname == 'darwin':
     FONTSIZE_FW = 14
 
 def makeColorPanel(parent, color):
@@ -244,7 +243,7 @@ class LarchPanel(wx.Panel):
                                  style=wx.TE_LEFT|wx.TE_PROCESS_ENTER)
 
         self.input.Bind(wx.EVT_TEXT_ENTER, self.onText)
-        if sys.platform == 'darwin':
+        if uname == 'darwin':
             self.input.Bind(wx.EVT_KEY_UP,  self.onChar)
         else:
             self.input.Bind(wx.EVT_CHAR,  self.onChar)

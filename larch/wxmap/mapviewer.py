@@ -5,7 +5,7 @@ GUI for displaying maps from HDF5 files
 """
 
 import os
-import platform
+
 import sys
 import time
 import json
@@ -37,7 +37,7 @@ import scipy.stats as stats
 #from matplotlib.widgets import Slider, Button, RadioButtons
 
 from wxmplot import PlotFrame
-
+from pyshortcuts import uname, get_cwd, bytes2str
 import larch
 from larch.larchlib import read_workdir, save_workdir
 from larch.wxlib import (LarchPanel, LarchFrame, EditableListBox, SimpleText,
@@ -45,10 +45,8 @@ from larch.wxlib import (LarchPanel, LarchFrame, EditableListBox, SimpleText,
                          Choice, Check, GridPanel, FileSave, HLine, flatnotebook,
                          HLine, OkCancel, LEFT, LarchUpdaterDialog, LarchWxApp)
 from larch.wxxas.xas_dialogs import fit_dialog_window
-from larch.utils.strutils import bytes2str, version_ge
-from larch.utils import get_cwd
+from larch.utils import version_ge
 from larch.site_config import icondir
-from larch.version import check_larchversion
 from larch.utils.physical_constants import PLANCK_HC
 
 from ..xrd import lambda_from_E, xrd1d, save1D, calculate_xvalues, read_poni
@@ -68,7 +66,7 @@ def timestring():
     return datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')
 
 FONTSIZE = 8
-if platform.system() in ('Windows', 'Darwin'):
+if uname in ('win', 'darwin'):
     FONTSIZE = 10
 
 CEN = wx.ALIGN_CENTER
@@ -1311,7 +1309,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
             label = f'{Path(_xrd.filename).name}: {title}'
             self.owner.display_xrd2d(_xrd.data2D, label=label, xrmfile=xrmfile)
-            
+
             wildcards = '2D XRD file (*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
             fname = xrmfile.filename + '_' + aname
             #dlg = wx.FileDialog(self, 'Save file as...',
@@ -1766,7 +1764,7 @@ class MapViewerFrame(wx.Frame):
             xrmfile = self.current_file
         calfile = bytes2str(xrmfile.xrmmap['xrd1d'].attrs.get('calfile',''))
         energy = xrmfile.get_incident_energy()
-        
+
         if len(calfile) < 2 or not Path(calfile).exists():
             tfile = Path(xrmfile.folder, 'XRD.poni')
             if tfile.exists():

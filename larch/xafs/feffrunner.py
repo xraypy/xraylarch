@@ -10,8 +10,10 @@ from pathlib import Path
 from optparse import OptionParser
 from subprocess import Popen, PIPE
 
+from pyshortcuts import isotime, bytes2str, uname, get_cwd
+
 from larch import Group, isNamedClass
-from larch.utils import isotime, bytes2str, uname, bindir, get_cwd
+from larch.utils import bindir
 
 def find_exe(exename):
     if isinstance(exename, Path):

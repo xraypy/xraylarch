@@ -6,7 +6,6 @@ import os
 import sys
 import time
 import copy
-import platform
 from pathlib import Path
 from importlib import import_module
 from threading import Thread
@@ -14,6 +13,8 @@ import numpy as np
 np.seterr(all='ignore')
 
 from functools import partial
+
+from pyshortcuts import isotime, uname, fix_varname, get_cwd
 
 import wx
 import wx.lib.scrolledpanel as scrolled
@@ -26,10 +27,9 @@ import larch
 from larch import Group, Journal, Entry
 from larch.io import save_session, read_session
 from larch.math import index_of
-from larch.utils import (isotime, time_ago, get_cwd,
-                         is_gzip, uname, path_split)
+from larch.utils import (time_ago, is_gzip, path_split)
 from larch.utils.strutils import (file2groupname, unique_name,
-                                  common_startstring, asfloat, fix_varname)
+                                  common_startstring, asfloat)
 
 from larch.larchlib import read_workdir, save_workdir, read_config, save_config
 

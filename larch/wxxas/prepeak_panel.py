@@ -14,7 +14,7 @@ import wx.dataview as dv
 
 from lmfit import Parameter
 import lmfit.models as lm_models
-from pyshortcuts import platform, gformat, fix_varname
+from pyshortcuts import uname, gformat, fix_varname
 
 from larch import Group, site_config
 from larch.utils import mkdir
@@ -303,7 +303,7 @@ class PrePeakFitResultFrame(wx.Frame):
         sview.SetFont(self.font_fixedwidth)
 
         xw = (175, 85, 85, 130, 130, 130)
-        if platform=='darwin':
+        if uname=='darwin':
             xw = (160, 75, 75, 110, 110, 120)
 
 
@@ -344,7 +344,7 @@ class PrePeakFitResultFrame(wx.Frame):
         self.wids['paramsdata'] = []
 
         xw = (180, 140, 150, 250)
-        if platform=='darwin':
+        if uname=='darwin':
             xw = (180, 110, 110, 250)
         pview.AppendTextColumn('Parameter',  width=xw[0])
         pview.AppendTextColumn('Best Value', width=xw[1])
@@ -446,7 +446,7 @@ class PrePeakFitResultFrame(wx.Frame):
                         default_file=deffile, wildcard=wcards)
         if path is None:
             return
-        if Path(path).exists() and platform != 'darwin':  # darwin prompts in FileSave!
+        if Path(path).exists() and uname != 'darwin':  # darwin prompts in FileSave!
             if wx.ID_YES != Popup(self,
                                   "Overwrite existing Statistics File?",
                                   "Overwrite existing file?", style=wx.YES_NO):

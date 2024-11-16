@@ -10,7 +10,7 @@
 import os
 import sys
 from glob import glob
-from .paths import get_cwd
+from pyshortcuts import get_cwd, uname
 
 def _parent(name, _larch=None):
     "return parent group name of an object"
@@ -44,7 +44,7 @@ def ls(directory='.'):
         ret = os.listdir(directory)
     else:
         ret = glob(directory)
-    if sys.platform.startswith('win'):
+    if uname == 'win':
         for i in range(len(ret)):
             ret[i] = ret[i].replace('\\','/')
     return ret
@@ -52,7 +52,7 @@ def ls(directory='.'):
 def cwd():
     "return current working directory"
     ret = get_cwd()
-    if sys.platform.startswith('win'):
+    if uname == 'win':
         ret = ret.replace('\\','/')
     return ret
 

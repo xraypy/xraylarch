@@ -12,9 +12,9 @@ import logging
 from charset_normalizer import from_bytes
 
 from pyshortcuts import (gformat, fix_filename, fix_varname,
-                         get_homedir, get_cwd, debugtimer)
+                         get_homedir, get_cwd, debugtimer, uname)
 
-from .paths import uname, bindir, unixpath, path_split
+from .paths import bindir, unixpath, path_split
 
 from .strutils import (fixName, isValidName, isNumber, bytes2str, str2bytes,
                        strip_quotes, isLiteralStr, strip_comments, asfloat,

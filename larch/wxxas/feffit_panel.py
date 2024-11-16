@@ -19,7 +19,7 @@ import wx.lib.scrolledpanel as scrolled
 
 import wx.dataview as dv
 
-from pyshortcuts import platform, fix_varname, fix_filename, gformat
+from pyshortcuts import uname, fix_varname, fix_filename, gformat
 from lmfit import Parameter
 from lmfit.model import (save_modelresult, load_modelresult,
                          save_model, load_model)
@@ -1932,7 +1932,7 @@ class FeffitResultFrame(wx.Frame):
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
 
         xw = (40, 135, 80, 80, 92, 92, 122, 100)
-        if platform=='darwin':
+        if uname=='darwin':
             xw = (30, 125, 60, 60, 75, 75, 90, 90)
 
         sview.AppendTextColumn(' # ', width=xw[0])
@@ -1969,7 +1969,7 @@ class FeffitResultFrame(wx.Frame):
         pview.SetFont(self.font_fixedwidth)
         self.wids['paramsdata'] = []
         xw = (180, 140, 150, 250)
-        if platform=='darwin':
+        if uname=='darwin':
             xw = (180, 110, 110, 250)
 
         pview.AppendTextColumn('Parameter',  width=xw[0])

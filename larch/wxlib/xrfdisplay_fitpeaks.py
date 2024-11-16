@@ -16,14 +16,14 @@ import wx.lib.scrolledpanel as scrolled
 import wx.dataview as dv
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
-from pyshortcuts import platform
+from pyshortcuts import uname, fix_filename
 from lmfit import Parameter, Minimizer
 
 from . import (SimpleText, FloatCtrl, FloatSpin, Choice, Font, pack,
                Button, Check, HLine, GridPanel, RowPanel, CEN, LEFT,
                RIGHT, FileSave, GUIColors, FRAMESTYLE, BitmapButton,
                SetTip, GridPanel, Popup, FloatSpinWithPin, get_icon,
-               fix_filename, flatnotebook, PeriodicTablePanel,
+               flatnotebook, PeriodicTablePanel,
                FONTSIZE, FONTSIZE_FW)
 
 from xraydb import (material_mu, xray_edge, materials, add_material,
@@ -260,7 +260,7 @@ class FitSpectraFrame(wx.Frame):
         wids = self.wids
         p = GridPanel(self)
         self.selected_elems = []
-        ptable_fontsize = 11 if platform=='darwin' else 9
+        ptable_fontsize = 11 if uname=='darwin' else 9
 
         ptpanel = wx.Panel(p)
         self.ptable = PeriodicTablePanel(ptpanel, multi_select=True,

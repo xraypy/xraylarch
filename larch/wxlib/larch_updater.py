@@ -1,7 +1,7 @@
 import wx
 import sys
 from collections import namedtuple
-from pyshortcuts import platform
+from pyshortcuts import uname
 from ..version import check_larchversion
 from . import GridPanel, SimpleText, OkCancel, LEFT, HLine, Button
 
@@ -37,7 +37,7 @@ class LarchUpdaterDialog(wx.Dialog):
         if not vinfo.update_available:
             addline(' Your version is up to date!')
         else:
-            if platform.startswith('win'):
+            if uname.startswith('win'):
                 addline(f' Close {caller} and Run "Larch Updater" from your Larch Desktop Folder')
             else:
                 addline(f' Click OK to update (you will need to restart {caller})')
@@ -56,6 +56,6 @@ class LarchUpdaterDialog(wx.Dialog):
         self.Raise()
         out = namedtuple('UpgradeResponse', ('ok', 'run_updates'))
         result = out((wx.ID_OK==self.ShowModal()), self.update_available)
-        if platform.startswith('win'):
+        if uname.startswith('win'):
             result = out(False, self.update_available)
         return result

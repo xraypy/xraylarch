@@ -14,7 +14,7 @@ import time
 import signal
 from select import select
 from ctypes import c_void_p, c_int, cast, CFUNCTYPE, pythonapi
-
+from pyshortcuts import uname
 import wx
 
 POLLTIME = 10 # milliseconds
@@ -68,7 +68,7 @@ def stdin_ready():
     inp, out, err = select([sys.stdin],[],[],0)
     return bool(inp)
 
-if sys.platform == 'win32':
+if uname == 'win':
     from msvcrt import kbhit as stdin_ready
     clock = time.monotonic
     def ignore_CtrlC():
@@ -226,7 +226,7 @@ def inputhook_darwin():
 def ping_darwin(timeout=0.001):
     inputhook_darwin()
 
-if sys.platform == 'darwin':
+if uname == 'darwin':
     # On OSX, evtloop.Pending() always returns True, regardless of there being
     # any events pending. As such we can't use implementations 1 or 3 of the
     # inputhook as those depend on a pending/dispatch loop.
@@ -241,7 +241,7 @@ py_inphook = c_void_p.in_dll(pythonapi, 'PyOS_InputHook')
 py_inphook.value = cast(cback, c_void_p).value
 
 # import for Darwin!
-if sys.platform == 'darwin':
+if uname == 'darwin':
     from .allow_idle_macosx import allow_idle
-    # allow_idle()
+#   allow_idle()
 #     print("no allow idle")

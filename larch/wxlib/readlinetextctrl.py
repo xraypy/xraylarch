@@ -6,7 +6,7 @@ from pathlib import Path
 
 import wx
 
-from ..site_config import get_homedir
+from pyshortcuts import uname, get_homedir
 DEFAULT_HISTORYFILE = '.wxlarch_hist'
 MAX_HISTORY = 5000
 
@@ -27,7 +27,7 @@ class ReadlineTextCtrl(wx.TextCtrl):
         self.hist_mark = len(self.hist_buff)
         self.hist_sessionstart = self.hist_mark
 
-        if sys.platform == 'darwin':
+        if uname == 'darwin':
             self.Bind(wx.EVT_KEY_UP,     self.onChar)
         else:
             self.Bind(wx.EVT_CHAR,       self.onChar)
