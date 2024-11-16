@@ -9,7 +9,7 @@ from argparse import ArgumentParser
 from  pathlib import Path
 
 import matplotlib
-from pyshortcuts import make_shortcut, ico_ext, get_desktop
+from pyshortcuts import make_shortcut, ico_ext, get_folders
 
 from .site_config import icondir, uname, update_larch
 from .version import __date__, make_banner, check_larchversion
@@ -237,7 +237,7 @@ def run_larch():
 
     # create desktop icons
     if args.makeicons:
-        larchdir = Path(get_desktop(), 'Larch').absolute()
+        larchdir = Path(get_folders().desktop, 'Larch').absolute()
         if Path(larchdir).exists():
             shutil.rmtree(larchdir)
 

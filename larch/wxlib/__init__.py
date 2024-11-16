@@ -15,7 +15,7 @@ fileprompt       launch file browser to select files.
 import locale
 from pathlib import Path
 
-from pyshortcuts import platform
+from pyshortcuts import platform, fix_filename
 import os
 import sys
 HAS_WXPYTHON = False
@@ -59,7 +59,7 @@ if HAS_WXPYTHON:
                          DateTimeCtrl, Button, TextCtrl, ToggleButton,
                          BitmapButton, Choice, YesNo, SimpleText,
                          LabeledTextCtrl, HyperText, get_icon, OkCancel,
-                         fix_filename, SavedParameterDialog, GridPanel,
+                         SavedParameterDialog, GridPanel,
                          RowPanel, make_steps, set_float, FloatCtrl,
                          EditableListBox, COLORS, GUIColors, set_color,
                          FileCheckList, FileDropTarget, NumericCombo,
@@ -78,7 +78,7 @@ if HAS_WXPYTHON:
         "File Save dialog"
         result = wxu.FileSave(parent, message, **kws)
         if result is None:
-            return 
+            return
         return Path(result).absolute().as_posix()
 
     def SelectWorkdir(parent,  **kws):
