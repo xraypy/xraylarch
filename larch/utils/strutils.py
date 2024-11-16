@@ -12,7 +12,7 @@ from base64 import b64encode, b32encode
 from random import Random
 from packaging import version as pkg_version
 
-from .gformat import gformat
+from pyshortcuts import gformat
 
 rng = Random()
 

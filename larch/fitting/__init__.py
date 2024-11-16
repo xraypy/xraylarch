@@ -15,10 +15,10 @@ from lmfit.model import (ModelResult, save_model, load_model,
                          save_modelresult, load_modelresult)
 from lmfit.confidence import f_compare
 
-from lmfit.printfuncs import gformat, getfloat_attr
 from uncertainties import ufloat, correlated_values
 from uncertainties import wrap as un_wrap
 
+from ..utils import gformat, getfloat_attr
 from ..symboltable import Group, isgroup
 
 

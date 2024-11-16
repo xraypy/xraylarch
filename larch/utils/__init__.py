@@ -10,19 +10,33 @@ import json
 import logging
 
 from charset_normalizer import from_bytes
-from .gformat import gformat, getfloat_attr
-from .paths import uname, bindir, unixpath, get_homedir, path_split, get_cwd
-from .debugtimer import debugtimer
+
+from pyshortcuts import (gformat, fix_filename, fix_varname,
+                         get_homedir, get_cwd, debugtimer)
+
+from .paths import uname, bindir, unixpath, path_split
 
 from .strutils import (fixName, isValidName, isNumber, bytes2str, str2bytes,
-                       fix_filename, fix_varname, strip_quotes, isLiteralStr,
-                       strip_comments, asfloat, find_delims, version_ge,
-                       unique_name, get_sessionid, strict_ascii)
+                       strip_quotes, isLiteralStr, strip_comments, asfloat,
+                       find_delims, version_ge, unique_name, get_sessionid,
+                       strict_ascii)
 
 from .shellutils import (_more, _parent, ls, cd, cwd, mkdir)
 
 logging.basicConfig(format='%(levelname)s [%(asctime)s]: %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S', level=logging.WARNING)
+
+
+def getfloat_attr(obj, attr, length=11):
+    """Format an attribute of an object for printing."""
+    val = getattr(obj, attr, None)
+    if val is None:
+        return 'unknown'
+    if isinstance(val, int):
+        return f'{val}'
+    if isinstance(val, float):
+        return gformat(val, length=length).strip()
+    return repr(val)
 
 def format_exception(with_traceback=True):
     """return exception message as list of strings,

@@ -4,7 +4,7 @@ SymbolTable for Larch interpreter
 '''
 import copy
 import numpy
-from lmfit.printfuncs import gformat
+from pyshortcuts import gformat
 from . import site_config
 from .utils import fixName, isValidName
 
