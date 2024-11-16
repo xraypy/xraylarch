@@ -10,12 +10,13 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 
 import numpy as np
+from pyshortcuts import bytes2str, fix_varname, get_cwd
 
 from ..wxlib import (LarchPanel, LarchFrame, EditableListBox, SimpleText,
                      FloatCtrl, Font, pack, Popup, Button, MenuItem,
                      Choice, Check, GridPanel, FileSave, FileOpen, HLine)
-from ..utils.strutils import bytes2str, version_ge, fix_varname
-from ..utils import get_cwd
+
+from ..utils import version_ge
 
 from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
 
