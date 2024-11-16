@@ -16,10 +16,11 @@ import wx.lib.agw.flatnotebook as fnb
 from xraydb.chemparser import chemparse
 from xraydb import atomic_number
 
+from pyshortcuts import fix_filename
 import larch
 from larch.xafs import feff8l, feff6l
 from larch.utils import unixpath, mkdir, read_textfile
-from larch.utils.strutils import fix_filename, unique_name, strict_ascii
+from larch.utils.strutils import unique_name, strict_ascii
 from larch.site_config import user_larchdir
 
 from larch.wxlib import (LarchFrame, FloatSpin, EditableListBox,

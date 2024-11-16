@@ -18,14 +18,13 @@ from wxmplot import PlotPanel
 from wxutils import (SimpleText, FloatCtrl, FloatSpin, GUIColors, Button, Choice,
                      TextCtrl, pack, Popup, Check, MenuItem, CEN, RIGHT, LEFT,
                      FRAMESTYLE, HLine, Font)
+from pyshortcuts import fix_filename, fix_varname, gformat
 
-import larch
-from larch import Group
+from larch import Group, Interpreter
 from larch.xafs.xafsutils import guess_energy_units
-from larch.utils.strutils import fix_varname, fix_filename, file2groupname
-from larch.io import look_for_nans,  guess_filereader, is_specfile, sum_fluor_channels
+from larch.utils.strutils import file2groupname
+from larch.io import look_for_nans, guess_filereader, is_specfile, sum_fluor_channels
 from larch.utils.physical_constants import PLANCK_HC, DEG2RAD
-from larch.utils import gformat
 from larch.math import safe_log
 from . import FONTSIZE
 
@@ -1005,7 +1004,7 @@ class ColumnDataFileFrame(wx.Frame) :
         self.reader = reader
         _larch = self._larch
 
-        if (not isinstance(_larch, larch.Interpreter) and
+        if (not isinstance(_larch, Interpreter) and
             hasattr(_larch, '_larch')):
             _larch = _larch._larch
         try:

@@ -8,8 +8,8 @@ import numpy as np
 
 from functools import partial
 from xraydb import guess_edge, atomic_number
-
-from larch.utils import gformat, path_split
+from pyshortcuts import gformat, fix_varname, fix_filename
+from larch.utils import  path_split, file2groupname
 from larch.math import index_of
 from larch.xafs.xafsutils import guess_energy_units
 
@@ -17,8 +17,6 @@ from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, get_icon,
                          SimpleText, pack, Button, HLine, Choice, Check,
                          GridPanel, CEN, RIGHT, LEFT, plotlabels,
                          get_zoomlimits, set_zoomlimits)
-
-from larch.utils.strutils import fix_varname, fix_filename, file2groupname
 
 from larch.utils.physical_constants import ATOM_NAMES
 from larch.wxlib.plotter import last_cursor_pos

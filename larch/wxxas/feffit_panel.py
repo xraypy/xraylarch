@@ -19,7 +19,7 @@ import wx.lib.scrolledpanel as scrolled
 
 import wx.dataview as dv
 
-from pyshortcuts import platform
+from pyshortcuts import platform, fix_varname, fix_filename, gformat
 from lmfit import Parameter
 from lmfit.model import (save_modelresult, load_modelresult,
                          save_model, load_model)
@@ -31,7 +31,7 @@ from larch.math import index_of
 from larch.fitting import group2params, param
 from larch.utils.jsonutils import encode4js, decode4js
 from larch.inputText import is_complete
-from larch.utils import fix_varname, fix_filename, gformat, mkdir, isValidName
+from larch.utils import mkdir, isValidName
 from larch.io.export_modelresult import export_modelresult
 from larch.xafs import feffit_report, feffpath
 from larch.xafs.feffdat import FEFFDAT_VALUES

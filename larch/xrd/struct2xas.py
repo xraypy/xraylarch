@@ -24,7 +24,6 @@ from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 import larch.utils.logging as logging
 from larch.utils import mkdir, unixpath
 
-# from larch.utils.strutils import fix_filename, unique_name, strict_ascii
 from larch.site_config import user_larchdir
 from larch.io import read_ascii
 from larch.math.convolution1D import lin_gamma, conv

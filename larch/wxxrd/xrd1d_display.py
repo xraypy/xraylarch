@@ -19,12 +19,12 @@ pyFAI.use_opencl = False
 import wx
 import wx.lib.scrolledpanel as scrolled
 from wxmplot import PlotPanel
+from pyshortcuts import get_cwd, gformat, fix_filename
 
 from lmfit.lineshapes import gaussian
 
 import larch
 from larch.larchlib import read_workdir, save_workdir
-from larch.utils import get_cwd, gformat, fix_filename
 from larch.utils.physical_constants import PLANCK_HC
 from larch.xray import XrayBackground
 from larch.wxxas.xas_dialogs import RemoveDialog
@@ -470,8 +470,8 @@ class XRD1DFrame(wx.Frame):
                          default_dir=get_cwd(),
                          wildcard=TIFFWcards)
         if sfile is not None:
-            top, fname = os.path.split(sfile)            
-            
+            top, fname = os.path.split(sfile)
+
             if self.pyfai_integrator is None:
                 try:
                     self.pyfai_integrator = AzimuthalIntegrator(**self.poni)
@@ -505,7 +505,7 @@ class XRD1DFrame(wx.Frame):
 
         imd = self.get_imdisplay()
         imd.display(img, colomap='gray', auto_contrast=True)
-            
+
         integrate = self.pyfai_integrator.integrate1d
         q, ix = integrate(img, 2048, method='csr', unit='q_A^-1',
                           correctSolidAngle=True,
@@ -791,7 +791,7 @@ class XRD1DFrame(wx.Frame):
                 self.pyfai_integrator = AzimuthalIntegrator(**self.poni)
             except:
                 self.pyfai_integrator = None
-                
+
 
     def set_wavelength(self, value):
         self.wavelength = value

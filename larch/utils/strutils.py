@@ -12,23 +12,10 @@ from base64 import b64encode, b32encode
 from random import Random
 from packaging import version as pkg_version
 
-from pyshortcuts import gformat
+from pyshortcuts import gformat, fix_filename, fix_varname, bytes2str, str2bytes
+
 
 rng = Random()
-
-def bytes2str(s):
-    if isinstance(s, str):
-        return s
-    elif isinstance(s, bytes):
-        return s.decode(sys.stdout.encoding)
-    return str(s, sys.stdout.encoding)
-
-def str2bytes(s):
-    'string to byte conversion'
-    if isinstance(s, bytes):
-        return s
-    return bytes(s, sys.stdout.encoding)
-
 
 def strict_ascii(s, replacement='_'):
     """for string to be truly ASCII with all characters below 128"""
@@ -130,30 +117,6 @@ def fixName(name, allow_dot=True):
     if not isValidName(name):
         name = '_%s' % name
     return name
-
-
-def fix_filename(s):
-    """fix string to be a 'good' filename.
-    This may be a more restrictive than the OS, but
-    avoids nasty cases."""
-    t = str(s).translate(TRANS_FILE)
-    if t.count('.') > 1:
-        for i in range(t.count('.') - 1):
-            idot = t.find('.')
-            t = "%s_%s" % (t[:idot], t[idot+1:])
-    return t
-
-def fix_varname(s):
-    """fix string to be a 'good' variable name."""
-    t = str(s).translate(TRANS_VARS)
-
-    if len(t) < 1:
-        t = '_unlabeled_'
-    if t[0] not in VALID_CHARS1:
-        t = '_%s' % t
-    while t.endswith('_'):
-        t = t[:-1]
-    return t
 
 def common_startstring(words):
     """common starting substring for a list of words"""

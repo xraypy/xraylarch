@@ -22,6 +22,8 @@ from wxmplot import PlotPanel
 from xraydb.chemparser import chemparse
 from xraydb import atomic_number
 
+from pyshortcuts import fix_filename
+
 import larch
 
 from larch import Group
@@ -29,7 +31,7 @@ from larch.xafs import feff8l, feff6l
 from larch.xrd.cif2feff import cif2feffinp, cif_cluster, site_label, fcompact
 from larch.utils import read_textfile, mkdir
 from larch.utils.paths import unixpath
-from larch.utils.strutils import fix_filename, unique_name, strict_ascii
+from larch.utils.strutils import  unique_name, strict_ascii
 from larch.site_config import user_larchdir
 
 from larch.wxlib import (LarchFrame, FloatSpin, EditableListBox,

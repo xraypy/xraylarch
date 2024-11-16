@@ -10,9 +10,9 @@ import json
 import multiprocessing as mp
 from functools import partial
 
-import larch
-from larch.utils import (isotime, fix_varname, fix_filename,
-                             bytes2str, version_ge, unixpath)
+from pyshortcuts import isotime, fix_varname, fix_filename, bytes2str
+
+from larch.utils import version_ge, unixpath
 
 from larch.io import (new_filename, read_xrf_netcdf,
                       read_xsp3_hdf5, read_xrd_netcdf, read_xrd_hdf5)
