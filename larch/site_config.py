@@ -13,7 +13,8 @@ from subprocess import check_call, CalledProcessError, TimeoutExpired
 
 from packaging.version import parse as version_parse
 
-from .utils import (uname, get_homedir, log_warning, log_error)
+from pyshortcuts import uname, get_homedir
+from .utils import log_warning, log_error
 from .version import __version__, __release_version__
 
 larch_version = __version__
