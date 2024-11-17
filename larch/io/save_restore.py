@@ -8,10 +8,10 @@ from gzip import GzipFile
 
 from lmfit import Parameter, Parameters
 
-from pyshortcuts import bytes2str, fix_varname, gformat, isotime
+from pyshortcuts import bytes2str, fix_varname, gformat
 
 from larch import Group, isgroup, __date__, __version__, __release_version__
-from ..utils import read_textfile, unique_name, format_exception, unixpath
+from ..utils import read_textfile, unique_name, format_exception, unixpath, isotime
 from ..utils.jsonutils import encode4js, decode4js
 
 SessionStore = namedtuple('SessionStore', ('config', 'command_history', 'symbols'))
