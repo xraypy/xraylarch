@@ -51,6 +51,7 @@ def update_confval(dest, source, attr, pref=''):
     dest[pref+attr] = val
     return val
 
+class GroupJournalFrame(wx.Frame):
     """ edit parameters"""
     def __init__(self, parent, dgroup=None, **kws):
         self.parent = parent

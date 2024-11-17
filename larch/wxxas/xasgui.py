@@ -14,7 +14,7 @@ np.seterr(all='ignore')
 
 from functools import partial
 
-from pyshortcuts import isotime, uname, fix_varname, get_cwd
+from pyshortcuts import uname, fix_varname, get_cwd
 
 import wx
 import wx.lib.scrolledpanel as scrolled
@@ -27,7 +27,7 @@ import larch
 from larch import Group, Journal, Entry
 from larch.io import save_session, read_session
 from larch.math import index_of
-from larch.utils import (time_ago, is_gzip, path_split)
+from larch.utils import (isotime, time_ago, is_gzip, path_split)
 from larch.utils.strutils import (file2groupname, unique_name,
                                   common_startstring, asfloat)
 

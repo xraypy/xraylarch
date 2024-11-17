@@ -161,16 +161,17 @@ def copy_xafs_group(group, _larch=None):
                 pass
     return out
 
+def isotime(dtime=None, timespec='seconds', sep=' '):
+    """return ISO format of current timestamp:
+          2024-04-27 17:31:12
+    """
+    if dtime is None:
+        dtime = datetime.now()
+    else:
+        if isinstance(dtime, (float, int)):
+            dtime = datetime.fromtimestamp(dtime)
 
-def isotime(t=None, with_tzone=False, filename=False):
-    if t is None:
-        t = time.time()
-    sout = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t))
-    if with_tzone:
-        sout = "%s-%2.2i:00" % (sout, time.timezone/3600)
-    if filename:
-        sout = sout.replace(' ', '_').replace(':', '')
-    return sout
+    return datetime.isoformat(dtime, timespec=timespec, sep=sep)
 
 def time_ago(timestamp, precision=2):
     """
