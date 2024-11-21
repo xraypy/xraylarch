@@ -8,7 +8,7 @@ from gzip import GzipFile
 
 from lmfit import Parameter, Parameters
 
-from pyshortcuts import bytes2str, fix_varname, gformat
+from pyshortcuts import bytes2str, str2bytes, fix_varname, gformat
 
 from larch import Group, isgroup, __date__, __version__, __release_version__
 from ..utils import read_textfile, unique_name, format_exception, unixpath, isotime
