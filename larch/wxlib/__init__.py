@@ -67,12 +67,47 @@ if HAS_WXPYTHON:
                          PeriodicTablePanel, gcd, ExceptionPopup, show_wxsizes,
                          panel_pack)
 
-    def FileOpen(parent, message, **kws):
+    def FileOpenX(parent, message, default_file='', default_dir=None, **kws):
         "File Open dialog wrapper."
-        result = wxu.FileOpen(parent, message, **kws)
+        if default_file is None:
+            default_file = ''
+        if default_dir is None:
+            default_dir = Path('.').absolute().as_posix()
+        result = wxu.FileOpen(parent, message, default_dir=default_dir,
+                                  default_file=default_file, **kws)
         if result is None:
             return
         return Path(result).absolute().as_posix()
+
+
+    def FileOpen(parent, message, default_dir=None, default_file='',
+                    multiple=False, wildcard=None):
+        """File Open dialog wrapper.
+        returns full path on OK or None on Cancel
+        """
+        out = None
+        if default_file is None:
+            default_file = ''
+        if default_dir is None:
+            default_dir = Path('.').absolute().as_posix()
+        if wildcard is None:
+            wildcard = 'All files (*.*)|*.*'
+        style = wx.FD_OPEN|wx.FD_CHANGE_DIR
+        if multiple:
+            style = style|wx.FD_MULTIPLE
+        dlg = wx.FileDialog(parent, message=message, wildcard=wildcard,
+                            defaultFile=default_file,
+                            defaultDir=default_dir,
+                            style=style)
+
+        if dlg.ShowModal() == wx.ID_OK:
+            if multiple:
+                out = [Path(p).absolute().as_posix() for p in dlg.GetPaths()]
+            else:
+                out = Path(dlg.GetPath()).absolute().as_posix()
+        dlg.Destroy()
+        return out
+
 
     def FileSave(parent, message, **kws):
         "File Save dialog"
