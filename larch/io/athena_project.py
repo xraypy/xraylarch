@@ -149,6 +149,8 @@ def make_athena_args(group, hashkey=None, **kws):
         args[k] = v
 
     args['datagroup'] = args['tag'] = args['label'] = hashkey
+    if not group.__name__.startswith('0x'):
+        args['label'] = group.__name__    
     en = getattr(group, 'energy', [])
     args['npts'] = len(en)
     if len(en) > 0:
