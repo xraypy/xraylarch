@@ -112,11 +112,10 @@ PROCROWS_CHOICES = ('All', '500', '200', '100', '50', '20', '10')
 PLOT_OPERS = ('/', '*', '-', '+')
 
 ESCAN_CRED = os.environ.get('ESCAN_CREDENTIALS', None)
-if ESCAN_CRED is not None:
-    try:
-        from ..epics.larchscan import connect_scandb
-    except ImportError:
-        ESCAN_CRED = None
+try:
+    from epicsscan import ScanDB, InstrumentDB
+except ImportError:
+    ESCAN_CRED = None
 
 CWID = 150
 WWID = 100 + CWID*4
@@ -1813,8 +1812,8 @@ class MapViewerFrame(wx.Frame):
         if ESCAN_CRED is not None:
             self.move_callback = self.onMoveToPixel
             try:
-                self.scandb = connect_scandb(_larch=self.larch)
-                self.instdb = self.larch.symtable._scan._instdb
+                self.scandb = ScanDB()
+                self.instdb = InstrumentDB(self.scandb)
                 self.inst_name = self.scandb.get_info('samplestage_instrument',
                                                       default='SampleStage')
                 print(" ScanDB: %s, Instrument=%s" % (self.scandb.engine, self.inst_name))
