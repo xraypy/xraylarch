@@ -19,7 +19,8 @@ from .xrd_tools import (d_from_q, d_from_twth, twth_from_d, twth_from_q,
                         unit_cell_volume, generate_hkl)
 
 
-from .amcsd import CifStructure, get_amcsd, get_cif, find_cifs, parse_cif_file
+from larixite.amcsd import (get_amcsd, get_cif, find_cifs, parse_cif_file,
+                           CifStructure)
 
 from .xrd_files import xy_file_reader
 
