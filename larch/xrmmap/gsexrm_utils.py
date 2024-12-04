@@ -284,15 +284,15 @@ class GSEXRM_MapRow:
 
             except (IOError, IndexError):
                 time.sleep(0.025)
-
-        if atime < 0:
+                
+        if atime < 0 or xrf_dat is None:
             print( 'Failed to read data.')
             return
         if dtime is not None:
             dtime.add('maprow: read XRM files')
 
         ## SPECIFIC TO XRF data
-        if has_xrf:
+        if has_xrf and xrf_dat is not None:
             self.counts    = xrf_dat.counts[offslice]
             self.inpcounts = xrf_dat.inputCounts[offslice]
             self.outcounts = xrf_dat.outputCounts[offslice]
