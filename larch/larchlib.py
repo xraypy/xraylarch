@@ -2,10 +2,10 @@
 """
 Helper classes for larch interpreter
 """
-import sys, os, time
+import sys
+import os
 from datetime import datetime
 import ast
-import numpy as np
 import traceback
 import toml
 import inspect
@@ -23,18 +23,12 @@ from .utils import uname, bindir, get_cwd, read_textfile
 HAS_TERMCOLOR = False
 try:
     from termcolor import colored
-    if uname == 'win':
-        # HACK (hopefully temporary):
-        # disable color output for Windows command terminal
-        # because it interferes with wx event loop.
-        import CannotUseTermcolorOnWindowsWithWx
-        # os.environ.pop('TERM')
-        # import colorama
-        # colorama.init()
     HAS_TERMCOLOR = True
 except ImportError:
     HAS_TERMCOLOR = False
 
+if uname == 'win':
+    HAS_TERMCOLOR = False
 
 class Empty:
     def __nonzero__(self): return False
