@@ -95,16 +95,19 @@ def make_athena_args(group, hashkey=None, **kws):
     args = {}
     for k, v in (('annotation', ''),
                  ('beamline', ''),
-                 ('beamline_identified', '0'), ('bft_dr', '0.0'),
+                 ('beamline_identified', '0'),
+                 ('bft_dr', '0.0'),
                  ('bft_rmax', '3'), ('bft_rmin', '1'),
-                 ('bft_rwindow', 'hanning'), ('bkg_algorithm', 'autobk'),
+                 ('bft_win', 'hanning'), ('bft_rwindow', 'hanning'),
+                 ('bkg_algorithm', 'autobk'),
                  ('bkg_cl', '0'), ('bkg_clamp1', '0'), ('bkg_clamp2', '24'),
                  ('bkg_delta_eshift', '0'), ('bkg_dk', '1'),
                  ('bkg_e0_fraction', '0.5'), ('bkg_eshift', '0'),
                  ('bkg_fixstep', '0'), ('bkg_flatten', '1'),
-                 ('bkg_former_e0', '0'), ('bkg_funnorm', '0'),
+                 ('bkg_former_e0', '0'), ('bkg_fnorm', '0'),
                  ('bkg_int', '7.'), ('bkg_kw', '1'),
-                 ('bkg_kwindow', 'hanning'), ('bkg_nclamp', '5'),
+                 ('bkg_kwindow', 'hanning'),
+                 ('bkg_nclamp', '5'),
                  ('bkg_rbkg', '1.0'), ('bkg_slope', '-0.0'),
                  ('bkg_stan', 'None'), ('bkg_tie_e0', '0'),
                  ('bkg_nc0', '0'), ('bkg_nc1', '0'),
@@ -119,7 +122,8 @@ def make_athena_args(group, hashkey=None, **kws):
                  ('energy', ''), ('energy_string', ''), ('epsk', ''),
                  ('epsr', ''), ('fft_dk', '4'), ('fft_edge', 'k'),
                  ('fft_kmax', '15.'), ('fft_kmin', '2.00'),
-                 ('fft_kwindow', 'kaiser-bessel'), ('fft_pc', '0'),
+                 ('fft_kwindow', 'kaiser-bessel'),
+                 ('fft_pc', '0'),
                  ('fft_pcpathgroup', ''), ('fft_pctype', 'central'),
                  ('forcekey', '0'), ('from_athena', '1'),
                  ('from_yaml', '0'), ('frozen', '0'), ('generated', '0'),
@@ -137,7 +141,7 @@ def make_athena_args(group, hashkey=None, **kws):
                  ('read_as_raw', '0'), ('rebinned', '0'),
                  ('recommended_kmax', '1'), ('recordtype', 'mu(E)'),
                  ('referencegroup', ''), ('rmax_out', '10'),
-                 ('signal_scale', '1'), ('signal_string', '-1'),
+                 ('signal_scale', '1'), ('signal_string', ''),
                  ('trouble', ''), ('tying', '0'),
                  ('unreadable', '0'), ('update_bft', '1'),
                  ('update_bkg', '1'), ('update_columns', '0'),
@@ -149,6 +153,7 @@ def make_athena_args(group, hashkey=None, **kws):
         args[k] = v
 
     args['datagroup'] = args['tag'] = args['label'] = hashkey
+    args['titles'] = ['titles', 'data from Larch']
     if not group.__name__.startswith('0x'):
         args['label'] = group.__name__    
     en = getattr(group, 'energy', [])
@@ -192,7 +197,7 @@ def make_athena_args(group, hashkey=None, **kws):
         args['bkg_spl2'] = autobk_args['kmax']
         args['bkg_kw'] = autobk_args['kweight']
         args['bkg_dk'] = autobk_args['dk']
-        args['bkg_kwindow'] = autobk_args['win']
+        args['bkg_win'] = autobk_args['win']
         args['bkg_nclamp'] = autobk_args['nclamp']
         args['bkg_clamp1'] = autobk_args['clamp_lo']
         args['bkg_clamp2'] = autobk_args['clamp_hi']
@@ -204,7 +209,7 @@ def make_athena_args(group, hashkey=None, **kws):
         args['fft_kmax'] = xftf_args['kmax']
         args['fft_kw'] = xftf_args['kweight']
         args['fft_dk'] = xftf_args['dk']
-        args['fft_kwindow'] = xftf_args['window']
+        args['fft_win'] = xftf_args['window']
     args.update(kws)
     return args
 
@@ -225,7 +230,10 @@ def format_dict(d):
         o.append("'%s'" % key)
         val = d[key]
         if val is None: val = ''
-        o.append("'%s'" % val)
+        if isinstance(val, np.float64):
+            val = float(val)
+            
+        o.append(repr(val))
     return ','.join(o)
 
 def format_array(arr):
@@ -692,7 +700,7 @@ class AthenaProject(object):
         pyosversion = "Python %s on %s"  % (platform.python_version(),
                                             platform.platform())
 
-        buff = ["# Athena project file -- Demeter version 0.9.24",
+        buff = ["# Athena project file -- Demeter version 0.9.26",
                 "# This file created at %s" % iso_now,
                 "# Using Larch version %s, %s" % (larch_version, pyosversion)]
 
@@ -714,7 +722,7 @@ class AthenaProject(object):
                 buff.append("@stddev = (%s);" % format_array(dat.stddev))
             buff.append("[record] # ")
 
-        buff.extend(["", "@journal = {};", "", "1;", "", "",
+        buff.extend(["", "", "1;", "", "",
                      "# Local Variables:", "# truncate-lines: t",
                      "# End:", ""])
         fopen = GzipFile if use_gzip else open
