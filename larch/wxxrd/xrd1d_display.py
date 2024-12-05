@@ -12,9 +12,10 @@ from functools import partial
 import numpy as np
 from numpy.polynomial.chebyshev import chebfit, chebval
 
-from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
-import pyFAI.units
+import pyFAI
 pyFAI.use_opencl = False
+import pyFAI.units
+from pyFAI import AzimuthalIntegrator
 
 import wx
 import wx.lib.scrolledpanel as scrolled
