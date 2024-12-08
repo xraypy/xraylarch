@@ -243,10 +243,8 @@ def format_dict(d):
                 val = ''
         if isinstance(val, np.float64):
             val = float(val)
-cp
         if isinstance(val, (str, int, float)):
             val = f"'{val}'"
-
         o.append(f"'{key}', {val}")
     return ', '.join(o)
 
