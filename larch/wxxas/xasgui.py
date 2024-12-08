@@ -14,7 +14,7 @@ np.seterr(all='ignore')
 
 from functools import partial
 
-from pyshortcuts import uname, fix_varname, get_cwd
+from pyshortcuts import uname, fix_varname, fix_filename, get_cwd
 
 import wx
 import wx.lib.scrolledpanel as scrolled
@@ -898,7 +898,7 @@ class LarixFrame(wx.Frame):
         prjfile = self.last_athena_file
         prompt = False
         if prjfile is None:
-            tstamp = isotime(filename=True)[:15]
+            tstamp = fix_filename(isotime()[:15])
             prjfile = f"{tstamp:s}.prj"
             prompt = True
         return prompt, prjfile
