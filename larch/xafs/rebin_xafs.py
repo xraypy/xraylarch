@@ -1,5 +1,5 @@
 import numpy as np
-
+from scipy.interpolate import CubicSpline
 from larch import Group, Make_CallArgs, parse_group_args
 from larch.math import (index_of, interp1d,
                         remove_dups, remove_nans, remove_nans2)
@@ -54,7 +54,7 @@ def sort_xafs(energy, mu=None, group=None, fix_repeats=True, remove_nans=True, o
 @Make_CallArgs(["energy", "mu"])
 def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
                pre_step=2, xanes_step=None, exafs1=15, exafs2=None,
-               exafs_kstep=0.05, method='centroid'):
+               exafs_kstep=0.05, method='spline'):
     """rebin XAFS energy and mu to a 'standard 3 region XAFS scan'
 
     Arguments
@@ -70,7 +70,7 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
     exafs1       end of XANES region, start of EXAFS region [15]
     exafs2       end of EXAFS region [last energy point]
     exafs_kstep  k-step for EXAFS region [0.05]
-    method       one of 'boxcar', 'centroid' ['centroid']
+    method       one of 'boxcar', 'centroid', 'spline' ['spline']
 
     Returns
     -------
@@ -120,7 +120,7 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
 
     if exafs2 is None:
         exafs2 = max(energy) - e0
-
+    
     # determine xanes step size:
     #  find mean of energy difference within 10 eV of E0
     nx1 = index_of(energy, e0-10)
@@ -158,6 +158,7 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
         if i == 0 and j0 == 0:
             j0 = index_of(energy, en[0]-5)
         # if not enough points in segment, do interpolation
+        # print(i, en[i], j0, j1,  len(energy[j0:j1]))
         if (j1 - j0) < 3:
             jx = j1 + 1
             if (jx - j0) < 3:
@@ -173,6 +174,8 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
         else:
             if method.startswith('box'):
                 val =  mu[j0:j1].mean()
+            elif method.startswith('spl'):
+                val = CubicSpline(energy[j0:j1], mu[j0:j1])(en[i])
             else:
                 val = (mu[j0:j1]*energy[j0:j1]).mean()/energy[j0:j1].mean()
         mu_out.append(val)
