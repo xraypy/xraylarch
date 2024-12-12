@@ -683,9 +683,9 @@ class LarixFrame(wx.Frame):
 
 
         file_menu.AppendSeparator()
-#         MenuItem(self, file_menu, "Save Selected Groups to Athena Project File",
-#                  "Save Selected Groups to an Athena Project File",
-#                  self.onExportAthenaProject)
+        MenuItem(self, file_menu, "Save Selected Groups to Athena Project File",
+                 "Save Selected Groups to an Athena Project File",
+                 self.onExportAthenaProject)
 
         MenuItem(self, file_menu, "Save Selected Groups to CSV File",
                  "Save Selected Groups to a CSV File",
