@@ -224,7 +224,7 @@ class XASNormPanel(TaskPanel):
         use_auto = Button(panel, 'Use Default Settings', size=(200, -1),
                           action=self.onResetNorm)
 
-        compare_norms = Button(panel, 'Compare Normalization Methods', size=(200, -1),
+        compare_norms = Button(panel, 'Compare Normalization Methods', size=(250, -1),
                           action=self.onCompareNorm)
 
         def CopyBtn(name):
