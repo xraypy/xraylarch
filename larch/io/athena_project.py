@@ -116,7 +116,7 @@ def make_athena_args(group, hashkey=None, **kws):
                  ('bkg_rbkg', '1.0'), ('bkg_slope', '0'),
                  ('bkg_pre1', '-150'), ('bkg_pre2', '-30'),
                  ('bkg_nor1', '150'), ('bkg_nor2', '800'),
-                 ('bkg_nnorm', '1'), ('bkg_nvict', '0'),
+                 ('bkg_nnorm', '1'), 
                  ('prjrecord', 'athena.prj, 1'),  ('chi_column', ''),
                  ('chi_string', ''), ('collided', '0'), ('columns', ''),
                  ('daq', ''), ('denominator', '1'), ('display', '0'),
@@ -124,7 +124,6 @@ def make_athena_args(group, hashkey=None, **kws):
                  ('epsr', ''), ('fft_dk', '4'), ('fft_edge', 'k'),
                  ('fft_kmax', '15.'), ('fft_kmin', '2.00'),
                  ('fft_kwindow', 'kaiser-bessel'),
-                 ('fft_kwin', 'kaiser-bessel'),
                  ('fft_win', 'kaiser-bessel'),  ('fft_kw', '2'),
                  ('fft_pc', 'no'), ('fft_arbkw', '0.5'),
                  ('fft_pcpathgroup', ''), ('fft_pctype', 'central'),
@@ -724,8 +723,12 @@ class AthenaProject(object):
             buff.append("")
             groupname = getattr(dat, 'groupname', key)
 
+            out_args = {k: v for k, v in dat.args.items()}
+            for name in ('bkg_nvict', 'fft_kwin'):
+                if name in out_args:
+                    out_args.pop(name)
             buff.append("$old_group = '%s';" % groupname)
-            buff.append("@args = (%s);" % format_dict(dat.args))
+            buff.append("@args = (%s);" % format_dict(out_args))
             buff.append("@x = (%s);" % format_array(dat.x))
             buff.append("@y = (%s);" % format_array(dat.y))
             if getattr(dat, 'i0', None) is not None:
