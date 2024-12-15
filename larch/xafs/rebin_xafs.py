@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.interpolate import CubicSpline
 
 from larch import Group, Make_CallArgs, parse_group_args
 from larch.math import (index_of, interp1d,
@@ -54,7 +55,7 @@ def sort_xafs(energy, mu=None, group=None, fix_repeats=True, remove_nans=True, o
 @Make_CallArgs(["energy", "mu"])
 def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
                pre_step=2, xanes_step=None, exafs1=15, exafs2=None,
-               exafs_kstep=0.05, method='centroid'):
+               exafs_kstep=0.05, method='spline'):
     """rebin XAFS energy and mu to a 'standard 3 region XAFS scan'
 
     Arguments
@@ -70,7 +71,7 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
     exafs1       end of XANES region, start of EXAFS region [15]
     exafs2       end of EXAFS region [last energy point]
     exafs_kstep  k-step for EXAFS region [0.05]
-    method       one of 'boxcar', 'centroid' ['centroid']
+    method       one of 'spline, 'boxcar', 'centroid' ['spline']
 
     Returns
     -------
@@ -101,7 +102,8 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
        array.  For each new energy bin, the new value is selected from the
        data in the segment as either
          a) linear interpolation if there are fewer than 3 points in the segment.
-         b) mean value ('boxcar')
+         b) spline interpolation ('spline')
+         c) mean value ('boxcar')
          c) centroid ('centroid')
 
     """
@@ -173,6 +175,8 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
         else:
             if method.startswith('box'):
                 val =  mu[j0:j1].mean()
+            elif method.startswith('spl'):
+                val =  CubicSpline(energy[j0:j1], mu[j0:j1])(en[i])
             else:
                 val = (mu[j0:j1]*energy[j0:j1]).mean()/energy[j0:j1].mean()
         mu_out.append(val)
