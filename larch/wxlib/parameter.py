@@ -103,6 +103,7 @@ class ParameterWidgets(object):
                                    maxval=param.max,
                                    action=self.onValue,
                                    act_on_losefocus=True,
+                                   bell_on_invalid=False,
                                    gformat=True,
                                    size=(float_size, -1))
             self.widgets.append(self.value)
@@ -325,6 +326,7 @@ class ParameterDialog(wx.Dialog):
 
         self.wids.val  = FloatCtrl(panel, value=param.value, size=(100, -1),
                                    precision=precision,
+                                   bell_on_invalid=False,
                                    minval=minval, maxval=maxval)
         self.wids.min  = FloatCtrl(panel, value=minval, size=(100, -1))
         self.wids.max  = FloatCtrl(panel, value=maxval, size=(100, -1))
@@ -392,6 +394,7 @@ class ParameterPanel(wx.Panel):
 
         self.wids.val = FloatCtrl(self, value=param.value,
                                   minval=param.min, maxval=param.max,
+                                  bell_on_invalid=False,
                                   precision=precision, size=size)
 
         self.wids.name = None
