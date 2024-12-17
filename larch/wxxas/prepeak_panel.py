@@ -302,18 +302,19 @@ class PrePeakFitResultFrame(wx.Frame):
 
         sview.SetFont(self.font_fixedwidth)
 
-        xw = (175, 85, 85, 130, 130, 130)
+        xw = (170, 75, 75, 110, 115, 115, 100)
         if uname=='darwin':
-            xw = (160, 75, 75, 110, 110, 120)
+            xw = (150, 70, 70, 90, 95, 95, 95)
 
 
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
         sview.AppendTextColumn('Label',  width=xw[0])
-        sview.AppendTextColumn('N_data', width=xw[1])
-        sview.AppendTextColumn('N_vary', width=xw[2])
+        sview.AppendTextColumn('Ndata', width=xw[1])
+        sview.AppendTextColumn('Nvary', width=xw[2])
         sview.AppendTextColumn('\u03c7\u00B2', width=xw[3])
         sview.AppendTextColumn('reduced \u03c7\u00B2', width=xw[4])
         sview.AppendTextColumn('Akaike Info', width=xw[5])
+        sview.AppendTextColumn('R^2', width=xw[6])
 
         for col in range(sview.ColumnCount):
             this = sview.Columns[col]
@@ -321,7 +322,7 @@ class PrePeakFitResultFrame(wx.Frame):
             this.Alignment = wx.ALIGN_RIGHT if col > 0 else wx.ALIGN_LEFT
             this.Renderer.Alignment = this.Alignment
 
-        sview.SetMinSize((750, 150))
+        sview.SetMinSize((775, 150))
 
         irow += 1
         sizer.Add(sview, (irow, 0), (1, 5), LEFT)
@@ -357,7 +358,7 @@ class PrePeakFitResultFrame(wx.Frame):
             this.Alignment = wx.ALIGN_RIGHT if col in (1, 2) else wx.ALIGN_LEFT
             this.Renderer.Alignment = this.Alignment
 
-        pview.SetMinSize((750, 200))
+        pview.SetMinSize((775, 200))
         pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
 
         irow += 1
@@ -466,7 +467,7 @@ class PrePeakFitResultFrame(wx.Frame):
 
         labels = [('Data Set' + ' '*25)[:25], 'Group name', 'n_data',
                  'n_varys', 'chi-square', 'reduced_chi-square',
-                 'akaike_info', 'bayesian_info']
+                 'akaike_info', 'bayesian_info', 'R^2']
 
         for pname in param_names:
             labels.append(pname)
@@ -485,7 +486,7 @@ class PrePeakFitResultFrame(wx.Frame):
                 label = (label + ' '*25)[:25]
             dat = [label, dgroup.groupname,
                    '%d' % result.ndata, '%d' % result.nvarys]
-            for attr in ('chisqr', 'redchi', 'aic', 'bic'):
+            for attr in ('chisqr', 'redchi', 'aic', 'bic', 'rsquared'):
                 dat.append(gformat(getattr(result, attr), 11))
             for pname in param_names:
                 val = stderr = 0
@@ -636,16 +637,18 @@ class PrePeakFitResultFrame(wx.Frame):
 
         datagroup = self.datagroup
         self.peakfit_history = getattr(self.datagroup.prepeaks, 'fit_history', [])
-
         # cur = self.get_fitresult()
         wids = self.wids
         wids['stats'].DeleteAllItems()
         for i, res in enumerate(self.peakfit_history):
             args = [res.label]
-            for attr in ('ndata', 'nvarys', 'chisqr', 'redchi', 'aic'):
+            for attr in ('ndata', 'nvarys', 'chisqr', 'redchi',
+                        'aic', 'rsquared'):
                 val = getattr(res.result, attr)
                 if isinstance(val, int):
                     val = '%d' % val
+                elif attr == 'rsquared':
+                    val = f"{val:.5f}"
                 else:
                     val = gformat(val, 10)
                 args.append(val)
@@ -1044,6 +1047,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             pname = prefix + pname
             if pname in parwids:
                 wids = parwids[pname]
+                wids.value.SetValue(par.value)
                 if wids.minval is not None:
                     wids.minval.SetValue(par.min)
                 if wids.maxval is not None:
@@ -1053,7 +1057,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                     varstr = 'constrain'
                 if wids.vary is not None:
                     wids.vary.SetStringSelection(varstr)
-                wids.value.SetValue(par.value)
+
 
     def onPlotModel(self, evt=None):
         dgroup = self.controller.get_group()
