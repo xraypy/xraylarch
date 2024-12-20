@@ -27,7 +27,7 @@ The :func:`autobk` function
     :param mu:        1-d array of :math:`\mu(E)`
     :param group:     output group (and input group for ``e0`` and ``edge_step``).
     :param rbkg:      distance (in :math:`\rm\AA`) for :math:`\chi(R)` above
-		      which the signal is ignored. Default = 1.
+                      which the signal is ignored. Default = 1.
     :param e0:        edge energy, in eV.  If `None`, it will be determined.
     :param edge_step: edge step.  If `None`, it will be determined.
     :param pre_edge_kws:  dictionary containing keyword arguments to pass to :func:`pre_edge`.
@@ -52,15 +52,15 @@ The :func:`autobk` function
     The following data is put into the output group:
 
        ================= ===============================================================
-	attribute         meaning
+        attribute         meaning
        ================= ===============================================================
-	bkg               array of :math:`\mu_0(E)` (not normalized)
-	chie              array of :math:`\chi(E)` values.
-	k                 array of :math:`k` values, on uniform grid.
-	chi               array of :math:`\chi(k)` values, the EXAFS.
-	*delta_chi*       array of uncertainty in :math:`\chi(k)`.
-	*delta_bkg*       array of uncertainty in :math:`\mu_0(E)`.
-	autobk_details    Group of arrays with autobk details.
+        bkg               array of :math:`\mu_0(E)` (not normalized)
+        chie              array of :math:`\chi(E)` values.
+        k                 array of :math:`k` values, on uniform grid.
+        chi               array of :math:`\chi(k)` values, the EXAFS.
+        *delta_chi*       array of uncertainty in :math:`\chi(k)`.
+        *delta_bkg*       array of uncertainty in :math:`\mu_0(E)`.
+        autobk_details    Group of arrays with autobk details.
        ================= ===============================================================
 
     Here, the arrays ``group.k``, ``group.chi`` will be the same length,
@@ -88,14 +88,14 @@ The :func:`autobk` function
     The ``group.autobk_details`` group will contain the following attributes:
 
        ================= ===========================================================
-	attribute         meaning
+        attribute         meaning
        ================= ===========================================================
-	spline_pars       Parameters used for determining :math:`\mu_0(E)` spline.
-	init_bkg          Initial value for :math:`\mu_0(E)`
-	init_chi          Initial value for :math:`\chi(k)`
-	knots_e           Spline knot energies
-	knots_y           Spline knot values
-	init_knots_y      Initial Spline knot values
+        spline_pars       Parameters used for determining :math:`\mu_0(E)` spline.
+        init_bkg          Initial value for :math:`\mu_0(E)`
+        init_chi          Initial value for :math:`\chi(k)`
+        knots_e           Spline knot energies
+        knots_y           Spline knot values
+        init_knots_y      Initial Spline knot values
        ================= ===========================================================
 
 

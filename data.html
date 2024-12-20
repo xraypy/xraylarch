@@ -6,11 +6,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>11. Reading and Writing Data &#8212; xraylarch 0.9.81 documentation</title>
+    <title>11. Reading and Writing Data &#8212; xraylarch 2024.12.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
     
-    <script src="_static/documentation_options.js?v=7ce0e41f"></script>
+    <script src="_static/documentation_options.js?v=c7e9923c"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -232,11 +232,11 @@ containing the data extracted from the file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of file to read</p></li>
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – name of file to read</p></li>
 <li><p><strong>labels</strong> (<em>ist</em><em> or </em><em>None</em>) – list of labels to use for array labels [None]</p></li>
-<li><p><strong>simple_labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – whether to force simple column labels (note 1) [False]</p></li>
-<li><p><strong>sort</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – whether to sort row data (note 2) [False]</p></li>
-<li><p><strong>sort_column</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – column to use for sorting (note 2) [0]</p></li>
+<li><p><strong>simple_labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – whether to force simple column labels (note 1) [False]</p></li>
+<li><p><strong>sort</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – whether to sort row data (note 2) [False]</p></li>
+<li><p><strong>sort_column</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – column to use for sorting (note 2) [0]</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -279,7 +279,7 @@ by giving the column index (starting from 0).</p></li>
 </ol>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">feo_data</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;feo_rt1.dat&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">show</span><span class="p">(</span><span class="n">g</span><span class="p">)</span><span class="n">a</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">show</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
 <span class="go">== Group ascii_file feo_rt1.dat: 0 methods, 8 attributes ==</span>
 <span class="go">array_labels: [&#39;energy&#39;, &#39;xmu&#39;, &#39;i0&#39;]</span>
 <span class="go">attrs: &lt;Group header attributes from feo_rt1.dat&gt;</span>
@@ -304,10 +304,10 @@ by giving the column index (starting from 0).</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>args</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em> of </em><em>groups</em>) – list of groups to write.</p></li>
-<li><p><strong>commentchar</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – character for comment (‘#’)</p></li>
+<li><p><strong>args</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><em>groups</em>) – list of groups to write.</p></li>
+<li><p><strong>commentchar</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – character for comment (‘#’)</p></li>
 <li><p><strong>label</strong> (<em>str on None</em>) – array label line (autogenerated)</p></li>
-<li><p><strong>header</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em> of </em><em>strings</em>) – array of strings for header</p></li>
+<li><p><strong>header</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><em>strings</em>) – array of strings for header</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -351,8 +351,8 @@ dictionary</a>.  The most important components read from an XDI file are give in
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of file to read</p></li>
-<li><p><strong>labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em> or </em><em>None</em>) – string to use for setting array names [None]</p></li>
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – name of file to read</p></li>
+<li><p><strong>labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> or </em><em>None</em>) – string to use for setting array names [None]</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -868,8 +868,8 @@ A portable compressed json file, that can be loaded with <cite>read_session()</c
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of output save file.</p></li>
-<li><p><strong>None</strong><strong>]</strong> (<em>histbuff</em><em> [</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em> of </em><em>str or</em>) – names of symbols to save. [None]
+<li><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – name of output save file.</p></li>
+<li><p><strong>None</strong><strong>]</strong> (<em>histbuff</em><em> [</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><em>str or</em>) – names of symbols to save. [None]
 saving all non-core (user-generated) objects.</p></li>
 <li><p><strong>None</strong><strong>]</strong> – command history, [None]
 saving the full history of the current session.</p></li>
@@ -906,7 +906,7 @@ supplied or available symbols: every Group with a “groupname” and
 current session</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of save file</p>
+<dd class="field-odd"><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – name of save file</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><p>Tuple
@@ -935,11 +935,11 @@ merging into existing groups as appropriate (see Notes below)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of session file</p></li>
-<li><p><strong>ignore_groups</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em> of </em><em>strings</em>) – list of symbols to not import</p></li>
-<li><p><strong>include_xasgroups</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em> of </em><em>strings</em>) – list of symbols to import as XAS spectra,
+<li><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – name of session file</p></li>
+<li><p><strong>ignore_groups</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><em>strings</em>) – list of symbols to not import</p></li>
+<li><p><strong>include_xasgroups</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><em>strings</em>) – list of symbols to import as XAS spectra,
 even if not expicitly set in <cite>_xasgroups</cite></p></li>
-<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – whether to print warnings for overwrites [False]</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – whether to print warnings for overwrites [False]</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
