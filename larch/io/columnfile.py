@@ -105,7 +105,11 @@ def getfloats(txt, allow_times=True):
       Unix timestamp, using
           time.mktime(dateutil.parser.parse(word).timetuple())
     """
-    words = [w.strip() for w in txt.replace(',', ' ').split()]
+    t = txt[:]
+    for delim in ('\t', ',', ';'):
+        if t.count(delim) > 0:
+            t = t.replace(delim, ' ')
+    words = [w.strip() for w in t.split()]
     mktime = time.mktime
     for i, w in enumerate(words):
         val = None
@@ -278,7 +282,7 @@ def read_ascii(filename, labels=None, simple_labels=False,
     Examples:
 
         >>> feo_data = read_ascii('feo_rt1.dat')
-        >>> show(g)a
+        >>> show(g)
         == Group ascii_file feo_rt1.dat: 0 methods, 8 attributes ==
         array_labels: ['energy', 'xmu', 'i0']
         attrs: <Group header attributes from feo_rt1.dat>
