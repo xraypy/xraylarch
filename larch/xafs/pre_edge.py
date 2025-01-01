@@ -37,6 +37,7 @@ def find_e0(energy, mu=None, group=None, _larch=None):
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
                                          fcn_name='find_e0')
+    energy, mu = remove_nans2(energy, mu)
     # first find e0 without smoothing, then refine with smoothing
     e1, ie0, estep1 = _finde0(energy, mu, estep=None, use_smooth=False)
     istart = max(3, ie0-75)
