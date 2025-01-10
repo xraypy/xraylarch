@@ -12,4 +12,5 @@ REM # make desktop icons
 %PREFIX%\Scripts\larch.exe -m
 
 echo '# Larch post install done!'
-timeout /t 15
+timeout /t 10
+

@@ -4,19 +4,21 @@ version: 2025-01
 channels:
     - https://conda.anaconda.org/conda-forge/
     - https://repo.continuum.io/pkgs/main
-    - https://repo.continuum.io/pkgs/msys2 [win]
+    - https://repo.continuum.io/pkgs/msys2 # [win]
 
-installer_type: pkg [osx]
-installer_type: exe [win]
-welcome_image: LarchInstallerWin.png # [win]
-welcome_image: LarchInstallerMac.png # [osx]
 license_file: ../../LICENSE
 ignore_duplicate_files: True
 
-readme_file: readme.rtf # [osx]
+installer_type: exe # [win]
+installer_type: pkg # [osx]
 
-post_install: post_install_posix.sh [linux or osx]
-post_install: post_install_windows.bat [win]
+welcome_image: LarchInstallerWin.png # [win]
+welcome_image: LarchInstallerMac.png # [osx]
+
+post_install: post_install_windows.bat # [win]
+post_install: post_install_posix.sh    # [linux or osx]
+
+readme_file: readme.rtf # [osx]
 
 specs:
     - python==3.12.8
@@ -29,19 +31,15 @@ specs:
     - scipy>=1.13
     - matplotlib>=3.6
     - h5py>=3.7
+    - wxpython>=4.2.0
     - sqlalchemy>=2.0
+    - psycopg2    
     - charset-normalizer
     - pillow>=8.3.2
-    - pytest
     - pyyaml
     - toml
     - dill
-    - psycopg2
-    - wxpython>=4.2.0
-    - pymatgen
-    - numdifftools
+    - pywin32          # [win]
     - patchelf         # [linux]
     - pango            # [linux]
     - fontconfig       # [linux or osx]
-    - readline         # [linux or osx]
-    - pywin32          # [win]

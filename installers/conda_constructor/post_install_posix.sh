@@ -16,4 +16,5 @@ $PREFIX/bin/python $PREFIX/bin/larch -m
 chown -R $USER  $HOME/.larch
 printenv > $HOME/.larch/xraylarch_pkginstall.log
 echo '# Larch post install done!'
-sleep 1
+sleep 10
+
