@@ -580,8 +580,10 @@ class RebinDataDialog(wx.Dialog):
         wids['xanes_step'] = FloatCtrl(panel, value=xanes_step,  **opts)
         wids['exafs_step'] = FloatCtrl(panel, value=0.05,  **opts)
 
+        wids['method'] = Choice(panel, choices=('spline', 'boxcar', 'centroid'),
+                                 size=(80, -1), action=self.on_rebin)
         for wname, wid in wids.items():
-            if wname != 'grouplist':
+            if wname not in ('grouplist', 'method'):
                 wid.SetAction(partial(self.on_rebin, name=wname))
 
         #wids['apply'] = Button(panel, 'Save / Overwrite', size=(150, -1),
@@ -592,7 +594,7 @@ class RebinDataDialog(wx.Dialog):
                                  action=self.on_saveas)
         SetTip(wids['save_as'], 'Save corrected data as new group')
 
-        wids['save_as_name'] = wx.TextCtrl(panel, -1, self.dgroup.filename + '_rebin',
+        wids['save_as_name'] = wx.TextCtrl(panel, -1, self.dgroup.filename + '_rebin_s',
                                            size=(250, -1))
 
         def add_text(text, dcol=1, newrow=True):
@@ -629,6 +631,9 @@ class RebinDataDialog(wx.Dialog):
         panel.Add(wids['exafs_step'])
         add_text('1/\u212B', newrow=False)
 
+        add_text('Smoothing Method: ', dcol=2)
+        panel.Add(wids['method'])
+
         # panel.Add(wids['apply'], dcol=2, newrow=True)
         panel.Add(wids['save_as'],  dcol=2, newrow=True)
         panel.Add(wids['save_as_name'], dcol=3)
@@ -664,8 +669,10 @@ class RebinDataDialog(wx.Dialog):
             val = wids['exafs1'].GetValue()
             wids['xanes2'].SetValue(ktoe(val), act=False)
 
+        method = wids['method'].GetStringSelection().lower()
         e0 = wids['e0'].GetValue()
         args = dict(group=self.dgroup.groupname, e0=e0,
+                    method=method,
                     pre1=wids['pre1'].GetValue(),
                     pre2=wids['pre2'].GetValue(),
                     pre_step=wids['pre_step'].GetValue(),
@@ -677,9 +684,10 @@ class RebinDataDialog(wx.Dialog):
         # do rebin:
         cmd = """rebin_xafs({group}, e0={e0:f}, pre1={pre1:f}, pre2={pre2:f},
         pre_step={pre_step:f}, xanes_step={xanes_step:f}, exafs1={exafs1:f},
-        exafs2={exafs2:f}, exafs_kstep={exafs_kstep:f})""".format(**args)
+        exafs2={exafs2:f}, exafs_kstep={exafs_kstep:f}, method='{method}')""".format(**args)
         self.cmd = cmd
         self.controller.larch.eval(cmd)
+        wids['save_as_name'].SetValue(f'{self.dgroup.filename}_rebin_{method[:3]}')
 
         if hasattr(self.dgroup, 'rebinned'):
             xnew = self.dgroup.rebinned.energy

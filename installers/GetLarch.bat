@@ -19,7 +19,7 @@ echo ## basic mamba installed, running updates
 set PATH=%prefix%;%prefix%\bin;%prefix%\condabin;%prefix%\Scripts;%PATH%
 
 echo ## Installing basic python scipy packages
-call %prefix%\Scripts\mamba install -yc conda-forge python==3.11.5 numpy scipy matplotlib h5py scikit-image scikit-learn pandas jupyter plotly wxpython fabio pyfai pymatgen mkl_fft tomopy
+call %prefix%\Scripts\mamba install -yc conda-forge python==3.12.7 numpy scipy matplotlib h5py scikit-image scikit-learn pandas jupyter plotly wxpython fabio pyfai pymatgen mkl_fft tomopy
 
 echo ## Installing xraylarch and dependencies from PyPI
 call %prefix%\Scripts\pip install xraylarch[larix]

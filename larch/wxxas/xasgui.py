@@ -1449,7 +1449,7 @@ before clearing"""
                 mscript = '\n'.join(["{ngroup} = deepcopy({group})",
                                      yplotline,
                                     "{ngroup}.mu = {ngroup}.yplot",
-                                     "{ngroup}.plot_ylabel = '{ylabel}'"])
+                                    "{ngroup}.plot_ylabel = '{ylabel}'"])
                 i0 = '1.0'
                 if multi_i0  < len(config['array_labels']):
                     i0 = config['array_labels'][multi_i0]
@@ -1700,7 +1700,7 @@ before clearing"""
                     yplotline = line.replace("{group}", "{ngroup}")
             mscript = ["{ngroup} = deepcopy({group})",
                        yplotline,
-                      "{ngroup}.{yarray} = {ngroup}.yplot[:]",
+                      "{ngroup}.mu = {ngroup}.{yarray} = {ngroup}.yplot[:]",
                       "{ngroup}.plot_ylabel = '{ylabel}'" ]
             if dtype == 'xydata':
                 mscript.append("{ngroup}.scale = ptp({ngroup}.y+1.e-15)")

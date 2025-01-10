@@ -557,6 +557,17 @@ class CIFFrame(wx.Frame):
         fefftext = cif2feffinp(cif.ciftext, catom, edge=edge, cluster_size=csize,
                                absorber_site=site_index, version8=version8,
                                with_h=with_h, extra_titles=etitles)
+        # hack for larixite 2024.10.0,
+        # but also, here we really want to force the print and control flags
+        flines = fefftext.split('\n')
+        for i, l in enumerate(flines):
+            x = l.strip()
+            if x.startswith('PRINT'):
+                flines[i] = 'PRINT     1      0     0     0     0      3'
+            elif x.startswith('CONTROL'):
+                flines[i] = 'CONTROL   1      1     1     1     1      1'
+
+        fefftext = '\n'.join(flines)
 
         self.wids['feff_runfolder'].SetValue(folder)
         self.wids['feff_text'].SetValue(fefftext)
