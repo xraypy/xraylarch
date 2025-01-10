@@ -62,7 +62,6 @@ class LarchApp(object):
             ticon = Path(icondir, f"{self.icon:s}.{ext:s}").absolute()
             if ticon.exists():
                 icon = ticon
-        print(icon, icon.exists())
         make_shortcut(script, name=self.name, folder=folder,
                       icon=icon.as_posix(),
                       description=self.description,
@@ -243,7 +242,7 @@ def run_larch():
                 shutil.rmtree(larchdir)
             except PermissionError:
                 print("Cannot remove folder ", larchdir)
-                pass 
+                pass
 
         for n, app in LarchApps.items():
             app.make_desktop_shortcut()
