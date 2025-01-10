@@ -7,19 +7,19 @@ set condafile=Miniforge3-Windows-x86_64.exe
 
 if not exist %~dp0%condafile% (
     echo ## Downloading Miniconda from https://repo.anaconda.com/miniconda/, please wait...
-    bitsadmin /transfer getmamba /download /priority normal %condaurl%/%condafile% %~dp0%condafile%
+    bitsadmin /transfer /download /priority normal %condaurl%/%condafile% %~dp0%condafile%
 )
 
 echo ## Installing miniconda environment to %prefix%, please wait...
 
 %~dp0%condafile% /InstallationType=JustMe /RegisterPython=0 /S /D=%prefix%
 
-echo ## basic mamba installed, running updates
+echo ## basic conda installed, running updates
 
 set PATH=%prefix%;%prefix%\bin;%prefix%\condabin;%prefix%\Scripts;%PATH%
 
 echo ## Installing basic python scipy packages
-call %prefix%\Scripts\mamba install -yc conda-forge python==3.12.7 numpy scipy matplotlib h5py scikit-image scikit-learn pandas jupyter plotly wxpython fabio pyfai pymatgen mkl_fft tomopy
+call %prefix%\Scripts\conda install -yc conda-forge python==3.12.8 numpy scipy matplotlib h5py scikit-image scikit-learn pandas jupyter plotly wxpython fabio pyfai pymatgen mkl_fft tomopy
 
 echo ## Installing xraylarch and dependencies from PyPI
 call %prefix%\Scripts\pip install xraylarch[larix]
