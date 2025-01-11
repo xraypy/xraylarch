@@ -116,7 +116,7 @@ def make_athena_args(group, hashkey=None, **kws):
                  ('bkg_rbkg', '1.0'), ('bkg_slope', '0'),
                  ('bkg_pre1', '-150'), ('bkg_pre2', '-30'),
                  ('bkg_nor1', '150'), ('bkg_nor2', '800'),
-                 ('bkg_nnorm', '1'), 
+                 ('bkg_nnorm', '1'),
                  ('prjrecord', 'athena.prj, 1'),  ('chi_column', ''),
                  ('chi_string', ''), ('collided', '0'), ('columns', ''),
                  ('daq', ''), ('denominator', '1'), ('display', '0'),
@@ -222,15 +222,6 @@ def make_athena_args(group, hashkey=None, **kws):
         args['fft_win'] = xftf_args['window']
     args.update(kws)
     return args
-
-
-def athena_array(group, arrname):
-    """convert ndarray to athena representation"""
-    arr = getattr(group, arrname, None)
-    if arr is None:
-        return None
-    return arr # json.dumps([repr(i) for i in arr])
-    # return "(%s)" % ','.join(["'%s'" % i for i in arr])
 
 
 def format_dict(d):
@@ -656,55 +647,48 @@ class AthenaProject(object):
         """add Larch group (presumably XAFS data) to Athena project"""
         from larch.xafs import pre_edge
 
-        x = athena_array(group, 'energy')
-        if hasattr(group, 'energy_orig'):
-            x = athena_array(group, 'energy_orig')
-        yname = None
-        for _name in ('mu', 'mutrans', 'mufluor'):
-            if hasattr(group, _name):
-                yname = _name
-                break
-        if x is None or yname is None:
-            raise ValueError("can only add XAFS data to Athena project")
+        # 1. copy group
+        agroup = deepcopy(group)
 
-        y  = athena_array(group, yname)
-        i0 = athena_array(group, 'i0')
-        if signal is not None:
-            signal = athena_array(group, signal)
-        elif yname in ('mu', 'mutrans'):
-            sname = None
-            for _name in ('i1', 'itrans'):
-                if hasattr(group, _name):
-                    sname = _name
-                    break
-            if sname is not None:
-                signal = athena_array(group, sname)
+        # 2: x/energy
+        x = getattr(agroup, 'energy_orig', getattr(agroup, 'energy', None))
+        if x is None:
+            raise ValueError('No energy array: can only add XAFS data to Athena project')
+        agroup.x = agroup.energy = x[:]
 
-        apars = getattr(group, 'athena_params', None)
-        hashkey = getattr(group, 'id', None)
+        # 3. y/mu array
+        if signal is None:
+            signal = 'mu'
+        y = getattr(agroup, signal, getattr(agroup, 'mu', None))
+        if y is None:
+            y = getattr(agroup, 'mutrans', getattr(agroup, 'mufluor', None))
+        if y is None:
+            raise ValueError('No mu array: can only add XAFS data to Athena project')
+        agroup.y = agroup.mu = agroup.signal = y[:]
+
+        # 4. i0 array
+        agroup.i0 = getattr(agroup, 'i0', None)
+
+        hashkey = getattr(agroup, 'id', None)
         if hashkey is None or hashkey in self.groups:
             hashkey = make_hashkey()
             while hashkey in self.groups:
                 hashkey = make_hashkey()
 
         # fill in data from pre-edge subtraction
-        if not (hasattr(group, 'e0') and hasattr(group, 'edge_step')):
-            pre_edge(group)
-        group.args = make_athena_args(group, hashkey)
+        if not (hasattr(agroup, 'e0') and hasattr(agroup, 'edge_step')):
+            pre_edge(agroup)
+        agroup.args = make_athena_args(agroup, hashkey)
 
         # fix parameters that are incompatible with athena
-        group.args['bkg_nnorm'] = max(0, min(3, int(group.args['bkg_nnorm'])))
+        agroup.args['bkg_nnorm'] = max(0, min(3, int(agroup.args['bkg_nnorm'])))
 
-        _elem, _edge = guess_edge(group.e0)
-        group.args['bkg_z'] = _elem
-        group.x = x
-        group.y = y
-        group.i0 = i0
-        group.signal = signal
+        _elem, _edge = guess_edge(agroup.e0)
+        agroup.args['bkg_z'] = _elem
 
         # add a selection flag
-        group.sel = 1
-        self.groups[hashkey] = group
+        agroup.sel = 1
+        self.groups[hashkey] = agroup
 
     def save(self, filename=None, use_gzip=True):
         if filename is not None:
