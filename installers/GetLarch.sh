@@ -15,8 +15,7 @@ condafile="Miniforge3-$uname-x86_64.sh"
 logfile=GetLarch.log
 
 ## set list of conda packages to install from conda-forge
-cforge_pkgs="python==3.12.8 numpy scipy matplotlib h5py scikit-image scikit-learn pandas jupyter plotly wxpython fabio pyfai pymatgen mkl_fft tomopy"
-
+cforge_pkgs="python>=3.12.8 numpy==1.26 scipy>=1.14 matplotlib>=3.8 h5py>=3.10 wxpython>=4.2.1 mkl_fft tomopy"
 
 unset CONDA_EXE CONDA_PYTHON_EXE CONDA_PREFIX PROJ_LIB
 
@@ -84,7 +83,7 @@ export PATH=$prefix/bin:$PATH
 
 echo "##  Installing packages from conda-forge"  | tee -a $logfile
 echo "#> $prefix/bin/conda install -yc conda-forge $cforge_pkgs " | tee -a $logfile
-$prefix/bin/conda install -y -c conda-forge $cforge_pkgs
+$prefix/bin/mamba install -y -c conda-forge $cforge_pkgs
 $prefix/bin/conda list
 
 echo "##Installing xraylarch as 'pip install \"$larchurl\"'"  | tee -a $logfile
