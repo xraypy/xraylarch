@@ -9,7 +9,7 @@ Downloading and Installation
 .. _PyPI:                          https://pypi.org
 .. _Conda:                         https://conda.io
 .. _Python.org:                    https://python.org/
-.. _Mambaforge Python:             https://github.com/conda-forge/miniforge/releases
+.. _Miniconda Python:              https://github.com/conda-forge/miniforge/releases
 .. _lmfit:                         https://lmfit.github.io/lmfit-py/
 .. _xraydb:                        https://xraypy.github.io/XrayDB/
 .. _Larch Releases (github.com):   https://github.com/xraypy/xraylarch/releases
@@ -49,7 +49,7 @@ programming language and environment:
 There will not be any difference in the resulting code or packages when using
 these different methods.  Each of these will result in a Python environment
 from which you can either use Larch and its GUI applications, or develop code
-with Larch.  We recommend using the Binary installer on Windws, and the
+with Larch.  We recommend using the Binary installer on Windows, and the
 installation scripts on macOS or Linux, unless you know that  you want to
 install into an existing Python environment.
 
@@ -81,11 +81,12 @@ called `xraylarch` in your home folder -- see platform-specific notes below.
 
 .. note::
 
-   There can be no spaces in your username or the path in which Larch is
-   installed.
+   There can be no spaces in the path in which Larch is installed.
+   (to be clear, this is common to other Python environments).
 
-   If you have a space in your Windows username, you can probably install
-   to ``C:\Users\Public`` - that has worked for some people!
+   If you have a space in your user name, you must install to a
+   different location.  Using ``C:\Users\Public`` has worked for many
+   people.
 
 
 Installing with these installer programs should write to files only to
@@ -115,7 +116,10 @@ name has a space in it, you will probably need to install to
 
 .. note: If you get prompted for an administrative password during the
    installation process, you should make sure you are installing to a
-   folder that is writable by the user.
+   folder that is writable by the user.  The Larch install will
+   install binary executables, but will write files only to the user
+   folder.
+
 
 
 Alternatively you can download the `GetLarch.bat`_ script, and run that by
@@ -143,6 +147,13 @@ it to install Larch.  There are two important notes:
    You need to explicitly click on "Install only for me" during the
    installation process.  If you get prompted for an Administrative password
    by the installer, go back and explicitly choose "Install only for me".
+
+.. note::
+
+   After clicking through the options, the package installer will
+   start installing and quickly get a point where it says the
+   installation has about one minute remaining.  This appears to be
+   optimistic for about ten minutes. ;)
 
 Alternatively you can download the `GetLarch.sh`_ script, and run that in a
 Terminal session (Applications->Utilities->Terminal). This will download,
@@ -202,7 +213,7 @@ macOS), and then type::
 If this script fails, report it to the `Larch Github Issues`_ (including
 the error trace and the `GetLarch.log` file).
 
-The scripts will download and install `Mambaforge Python`_ which uses Anaconda
+The scripts will download and install `Miniconda Python`_ which uses Anaconda
 Python and the `conda-forge` channel as the basis of an installation that will
 be essentially identical to the environment installed by the binary installers,
 that is, the whole environment is stored in a folder called `xraylarch` in your
@@ -215,19 +226,23 @@ installation.
 Installing into an existing Anaconda Python environment
 =========================================================
 
-If are already using an existing `Anaconda Python`_, you may want to install
-Larch into that environment or create a new environment for it.  This is
-definitely possible.  Larch uses many of the common "scipy ecosystem"
-packages. The main packages that you may need to install that may not be
-installed are:
+If are already using an existing `Anaconda Python`_, you may want to
+install Larch into that environment or create a new environment for
+it.  This is definitely possible.  Larch uses many of the common
+"scipy ecosystem" packages.  The main must-have packages are `numpy`,
+`scipy`, `matplotlib`, and `h5py`.
+
+In addition, the following extra packages that you may need include:
 
    * `wxpython`: needed for all plotting, graphics and GUI applications.
    * `pymatgen`: needed for handling CIF files to generate Feff input files.
    * `openbabel`: needed for converting some structure files to Feff input files.
    * `tomopy`: needed only for reconstructing X-ray fluorescence tomography.
+   * `scikit-learn`: needed for advanced regression methods.
 
-To be clear, much of the core Larch functionality can be used as a library
-without these packages installed, but especially `wxpython` and `pymatgen` are
+
+To be clear, much of the core Larch functionality can be used without
+these packages as a library.  But `wxpython` and `pymatgen` are
 heavily used and should be installed.
 
 There is a `conda-forge` package for X-ray Larch, so from a shell it may be
@@ -245,10 +260,9 @@ infrastructure and then install xraylarch with pip:
 
 .. code:: bash
 
-   mamba create -y --name xraylarch python=>3.11.5 scipy mkl_fft h5py matplotlib pandas
+   mamba create -y --name xraylarch python>=3.12.8
    mamba activate xraylarch
-   mamba install -y -c conda-forge wxpython pymatgen jupyter "notebook<7.0"
-   mamba install -y -c conda-forge scikit-image scikit-learn pycifrw plotly fabio pyfai
+   mamba install -y -c conda-forge numpy==1.26 scipy>=1.14 matplotlib>=3.8 h5py>=3.10 wxpython>=4.2.1 mkl_fft
    mamba install -y -c conda-forge openbabel tomopy  # <- optional packages
    pip install "xraylarch[larix]"
 
@@ -259,12 +273,17 @@ infrastructure and then install xraylarch with pip:
 
 .. note::
 
-   Jupyter notebook version 7 and later does not work with plotly, and
-   specifically with the example Jupyter notebooks use X-ray Larch.
+   Jupyter notebook version 7 and later does not work with Plotly
+   version 5.  At this writing, Plotly 6 is reported to work, but is
+   not released yet. This may impact working with X-ray Larch in
+   Jupyter notebooks.
 
 
-Since the `PyPI_` packages are the main release package, this method may better
-ensure that you get the latest version compared to installing the `conda-forge` package.
+Many of the packages needed can be installed either as Anaconda
+packages, or as plain Python packages from PyPI, and with the `pip`
+command.  Since the `PyPI`_ packages are the main release package,
+this method may better ensure that you get the latest version compared
+to installing the `conda-forge` package.
 
 
 Finally, no matter how you install Larch, you can run
@@ -287,28 +306,26 @@ from `PyPI`_, so that a simple
 
     pip install xraylarch
 
-shoould work. Starting with version 0.9.73 9November, 2023), this command will
-work to install a fairly bare-bones set of tools -- the basic xraylarch
-library, without requiring the packages needed to make any of the GUIs work.
-
-In order to get the GUI-needed package, you could install with
+should work, but will install a fairly bare-bones set of tools -- the
+basic xraylarch library, without requiring the packages needed to make
+any of the GUIs work. In order to get the GUI-needed package, you
+could install with
 
 .. code:: bash
 
-    pip install xraylarch[larix]
+    pip install "xraylarch[larix]"
 
-(Note, you may need to type ``pip install "xraylarch[larix]"`` in some shells
-and terminals).  This will also install all of the `wxPython` packages needed
+This will also install all of the `wxPython` packages needed
 for the GUIs, as well as the libraries related to Jupyter.
 
-The most notable missing binary package is the `wxPython` package on Linux.
-That means that if `wxPython` is not already installed, `pip` will try to
-compile it, which will almost certainly fail.  This problem (which, in fairness
-to all involved, is very difficult to solve) is one of the main reasons we
-recommend using `Anaconda Python` - it provides this package in a consistent
-way. Anaconda Python also provides very good versions of almost all of hte
-"core scipy ecosystem" libraries.  It also has good support for optional Intel
-Math Kernel libraries that will be used if available.
+The most notable missing binary package needed for xraylarch on PyPI
+is the `wxPython` package on Linux.  That means that if `wxPython` is
+not already installed, `pip` will try to compile it, which will almost
+certainly fail.  This is one of the main reasons we recommend using
+`Anaconda Python` - it provides this package in a consistent
+way. Anaconda Python also provides very good versions of almost all of
+the "core scipy ecosystem" libraries and has good support for optional
+Intel Math Kernel libraries that will be used if available.
 
 But, if you are not using Linux, or are using a system-provided Python that
 includes wxPython (and has it installed), it should be possible to install a
@@ -316,9 +333,9 @@ runnable Larch library with
 
 .. code:: bash
 
-    pip install xraylarch
+    pip install "xraylarch[larix]"
 
-There are other optional addons that can be installed with Larch, such as
+There are other optional add ons that can be installed with Larch, such as
 
 .. code:: bash
 
@@ -357,20 +374,10 @@ to `PyPI`_.  This will allow updating can be done with
     pip install --upgrade xraylarch
 
 
-For versions up to 0.9.68, XAS Viewer (now Larix) and other Larch Applications
-would notify users as updates became available and prompt them to install the
-latest version.
-
-.. note::
-
-   Automatic updates using Larix (was XAS Viewer) have been unreliable for a
-   long time, and can cause a non-working system, especially on Windows.
-
-
-With version 0.9.70 and later, these notifications about updates are now
-informational and do not prompt for an immediate update. In addition, there is
-now a desktop shortcut called "Larch Updater" which will run the update `pip`
-command above.
+Larix and some other Larch Applications will notify you about
+available updates.  To update, you an click on the "Larch Updater"
+desktop shortcut called, which will open a Shell and run the update
+`pip` command above.
 
 
 Installing the development version
@@ -429,7 +436,7 @@ the source repository with::
 
 and then install with::
 
-    pip install -e .[all]
+    pip install -e ".[all]"
 
 This use of `pip` will install any requirements and Larch itself, but those
 should have been installed already when you installed.  Depending on your
@@ -488,12 +495,14 @@ Conference Series, 430:012007 (2013).  :cite:`larch2013`
 Funding and Support
 =======================
 
-Larch development at the GeoScoilEnviroCARS sector of Center for Advanced
-Radiation Sources at the University of Chicago has been supported by the US
-National Science Foundation - Earth Sciences (EAR-1128799), and Department
-of Energy GeoSciences (DE-FG02-94ER14466).  In addition, funding
-specifically for Larch was granted by the National Science Foundation -
-Advanced CyberInfrastructure (ACI-1450468).
+Larch development at the Center for Advanced Radiation Sources at the
+University of Chicago is currently supported by the National Science
+Foundation - Earth Sciences division and its SEES: Synchrotron Earth
+and Environmental Science (EAR-2223273).  Earlier funding has come
+from GeoScoilEnviroCARS grant from NSF-EAR (EAR-1128799), and
+Department of Energy GeoSciences (DE-FG02-94ER14466).  In addition,
+funding specifically for Larch was granted by the National Science
+Foundation - Advanced CyberInfrastructure (ACI-1450468).
 
 
 Acknowledgements
@@ -507,7 +516,7 @@ importantly, Larch would simply not exist without the long and fruitful
 collaboration we've enjoyed.  Margaret Koker wrote most of the X-ray
 diffraction analysis code, and much of the advanced functionality of the
 GSECARS XRF Map Viewer.  Mauro Rovezzi has provided the spec-data reading
-interface and the RIXS viewer.  Tom Trainor had a very strong influence on
+interface and the RIXS viewer.   Tom Trainor had a very strong influence on
 the original design of Larch, and helped with the initial version of the
 python implementation.  Yong Choi wrote the code for X-ray standing wave
 and reflectivity analysis and graciously allowed it to be included and
@@ -530,7 +539,7 @@ conversations, and suggestions for making Ifeffit better, including on the
 ifeffit mailing list.  Many of these contributions have found their way
 into Larch.
 
-Larch uses X-ray scattering factors and cross-sections fro the `xraydb`_
+Larch uses X-ray scattering factors and cross-sections from the `xraydb`_
 library.  This uses code to store and read the X-ray Scattering data from
 the Elam Tables was modified from code originally written by
 Darren S. Dale.  Refined values for anomalous scattering factors there have
