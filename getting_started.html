@@ -6,12 +6,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>2. Getting Started with Larch &#8212; xraylarch 2024.12.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <title>2. Getting Started with Larch &#8212; xraylarch 2025.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
     
-    <script src="_static/documentation_options.js?v=c7e9923c"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/documentation_options.js?v=65f7d7c4"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -119,41 +119,38 @@
   <section id="getting-started-with-larch">
 <h1><span class="section-number">2. </span>Getting Started with Larch<a class="headerlink" href="#getting-started-with-larch" title="Link to this heading">¶</a></h1>
 <p>Larch provides several tools for working with X-ray spectroscopy data.
-First, Larch provides a Python programming library that includes (or, at
-least aims to include) all the functionality needed for visualizing,
-processing, and analyzing X-ray Absorption and Flourescence spectroscopy
-data.  Most users will start Larch has a few GUI applications, especially
-<code class="docutils literal notranslate"><span class="pre">Larix</span></code>, <code class="docutils literal notranslate"><span class="pre">GSE</span> <span class="pre">XRM</span> <span class="pre">MapViewer</span></code>, and <code class="docutils literal notranslate"><span class="pre">LarchXRF</span></code> for these.  In
-addition, Larch includes an embedded Python-like macro language for
-interacting with data that can be used either from a basic command-line
-interface or as a callable service from a different programming language
-(so that Athena and Artemis can use Larch instead of the older Ifeffit
-library).  In fact, most of the Larch GUIs generate and run code in this
-“larch macro language” so that it can be recorded for reproducible results
-and to assist creating batch scripts and more complicated analysis scripts.</p>
-<p>Because of these different levels of access available, it can be somewhat
-confusing to answer the question “What is Larch?” and slightly overwhelming
-for new people to know where to get started using it.</p>
+First, Larch has a few GUI applications, especially <code class="docutils literal notranslate"><span class="pre">Larix</span></code>, <code class="docutils literal notranslate"><span class="pre">GSE</span>
+<span class="pre">XRM</span> <span class="pre">MapViewer</span></code>, and <code class="docutils literal notranslate"><span class="pre">LarchXRF</span></code> for working with X-ray spectroscopy
+data.  Second, Larch provides a Python programming library that
+includes (or, at least aims to include) all the functionality needed
+for visualizing, processing, and analyzing X-ray Absorption and
+Fluorescence spectroscopy data.  The GUIs are all built on top of this
+Python library.</p>
 <section id="first-install-larch">
 <h2><span class="section-number">2.1. </span>First, install Larch<a class="headerlink" href="#first-install-larch" title="Link to this heading">¶</a></h2>
-<p>If you are new to Larch, we recommend installing using the binary installer
-for your operating system listed in the <a class="reference internal" href="installation.html#installers-table"><span class="std std-ref">Table of Larch Installers</span></a>.  On the other hand, if you are familiar with Python
-and want to use Larch as a library see <a class="reference internal" href="installation.html#install-chapter"><span class="std std-ref">Downloading and Installation</span></a> for other ways to install Larch into your existing
+<p>If you are new to Larch, we recommend installing using the binary
+installer for your operating system listed in the <a class="reference internal" href="installation.html#installers-table"><span class="std std-ref">Table of Larch
+Installers</span></a>.  If you are familiar with Python and
+want to use Larch as a library see <a class="reference internal" href="installation.html#install-chapter"><span class="std std-ref">Downloading and Installation</span></a> for other ways to install Larch into your existing
 Python environment.</p>
 </section>
 <section id="second-use-larix-was-xas-viewer-and-or-gse-mapviewer">
 <h2><span class="section-number">2.2. </span>Second, use Larix (was XAS Viewer) and/or GSE MapViewer<a class="headerlink" href="#second-use-larix-was-xas-viewer-and-or-gse-mapviewer" title="Link to this heading">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Instructional videos for using Larix are at <a class="reference external" href="https://youtube.com/playlist?list=PLgNIl_xwV_vK4V6CmrsEsahNCAsjt8_Be">Larch For XAFS Analysis (youtube.com)</a>.</p>
+</div>
 <p>The <a class="reference internal" href="larix.html#larix-app"><span class="std std-ref">Larix</span></a> (was XAS Viewer) Graphical User Interface program
 provides a complete set of tools for the visualization, processing, and
 analysis of XAS data, Both XANES and and EXAFS data processing and fitting are
-supported.  Some instructional videos for using Larix are at <a class="reference external" href="https://youtube.com/playlist?list=PLgNIl_xwV_vK4V6CmrsEsahNCAsjt8_Be">Larch For XAFS
-Analysis (youtube.com)</a>.</p>
-<p>Larix is a complete (or nearly so) replacement for Athena and Artemis
-programs. There are several improvements in graphics and handling of large
-data sets, and some improvements in XAFS data processing too.  In particular,
-For XANES analysis, Larix includes more robust tools for peak-fitting, and
-machine-learning methods such as Principal Component Analysis, Partial Least
-Squares and LASSO regression.</p>
+supported.</p>
+<p>Larix aims to be a complete (or nearly so) replacement for Athena and
+Artemis programs. There are several improvements in graphics and
+handling of large data sets, and some improvements in XAFS data
+processing too.  In particular, For XANES analysis, Larix includes
+more robust tools for peak-fitting, and machine-learning methods such
+as Principal Component Analysis, Partial Least Squares and LASSO
+regression.</p>
 <p>Larix provides graphical user interface tools for running Feff to to simulate
 EXAFS <span class="math notranslate nohighlight">\(\chi(k)\)</span> spectra.  A graphical form for browsing 20,000 CIF
 Structures from the American Mineralogist Crystal Structure Database is
@@ -232,7 +229,7 @@ appropriate <cite>import</cite> statements) as a Python program.</p>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.6.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
     </div>
   </body>
 </html>

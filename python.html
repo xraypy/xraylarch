@@ -6,12 +6,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>9. Programming with Larch from Python &#8212; xraylarch 2024.12.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <title>9. Programming with Larch from Python &#8212; xraylarch 2025.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
     
-    <script src="_static/documentation_options.js?v=c7e9923c"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/documentation_options.js?v=65f7d7c4"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
@@ -149,22 +149,22 @@ complicated.</p>
 available from the <cite>larch</cite> Python module - the focus here is on how to work
 with the larch functions from Python.</p>
 <p>To start, you can import larch from Python with</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">larch</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">larch</span>
 </pre></div>
 </div>
 <p>The toplevel <cite>larch</cite> module does not do much, so you will probably want to
 import some of the submodules like <cite>xafs</cite> or <cite>io</cite>. A simple Python session
 might look like this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">larch.xafs</span> <span class="kn">import</span> <span class="n">autobk</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">larch.io</span> <span class="kn">import</span> <span class="n">read_xdi</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">wxmplot.interactive</span> <span class="kn">import</span> <span class="n">plot</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">larch.xafs</span><span class="w"> </span><span class="kn">import</span> <span class="n">autobk</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">larch.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_xdi</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">wxmplot.interactive</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="n">dat</span> <span class="o">=</span> <span class="n">read_xdi</span><span class="p">(</span><span class="s1">&#39;examples/xafsdata/fe3c_rt.xdi&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">dat</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">mutrans</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">autobk</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">k</span><span class="o">*</span><span class="n">dat</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;k 1/A&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;chi*k&#39;</span><span class="p">)</span>
 
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">larch.xray</span> <span class="kn">import</span> <span class="n">xray_line</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">larch.xray</span><span class="w"> </span><span class="kn">import</span> <span class="n">xray_line</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">xray_line</span><span class="p">(</span><span class="s1">&#39;Cu&#39;</span><span class="p">,</span> <span class="s1">&#39;Ka1&#39;</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="mf">8046.3</span><span class="p">,</span> <span class="mf">0.577108</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;L3&#39;</span><span class="p">)</span>
 </pre></div>
@@ -177,7 +177,7 @@ are given throughout this documentation.</p>
 from Python.  In addition, from Python you can create an instance of an
 interpreter of the <cite>larch</cite> mini-language and communicate with it the Larch
 macro language with:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">larch</span> <span class="kn">import</span> <span class="n">Interpreter</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">larch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Interpreter</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">session</span> <span class="o">=</span> <span class="n">Interpreter</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">session</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="s2">  dat = read_xdi(&#39;examples/xafsdata/fe3c_rt.xdi&#39;)</span>
@@ -210,7 +210,7 @@ in the example above will be a <cite>Group</cite>.  Many of the container object
 and used in Larch will be larch Groups.</p>
 <p>For the Python user, these Groups are very similar to instances of an empty
 class or <cite>argparse.Namespace</cite> objects:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">GroupLite</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">GroupLite</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">pass</span>
 </pre></div>
 </div>
@@ -219,7 +219,7 @@ class or <cite>argparse.Namespace</cite> objects:</p>
 does have a few private ones.  The most important of these is <cite>__name__</cite>, which
 you can assign at initialization with the <cite>name</cite> argument and will be shown in
 the “representation” string:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">larch</span> <span class="kn">import</span> <span class="n">Group</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">larch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Group</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">Group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;my group&#39;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">g</span>
 <span class="go">&lt;Group my group&gt;</span>
@@ -238,8 +238,8 @@ the “representation” string:</p>
 </div>
 <p>As you can see, you can create and use Groups from Python and set them into the
 namespace of a larch session and then access that data from the session:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">larch</span> <span class="kn">import</span> <span class="n">Group</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">larch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Group</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mygroup</span> <span class="o">=</span> <span class="n">Group</span><span class="p">(</span><span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">201</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">session</span><span class="o">.</span><span class="n">symtable</span><span class="o">.</span><span class="n">frompy</span>  <span class="o">=</span> <span class="n">mygroup</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">session</span><span class="p">(</span><span class="s2">&quot;print(frompy.message, len(frompy.x))&quot;</span><span class="p">)</span>
@@ -254,8 +254,8 @@ Python program and use it as a calculation engine.</p>
 <p>In earlier versions of larch, many functions in the Python interface required or
 strongly recommended making a larch interpreter and passing this around as a
 “session instance” to many of the larch functions.  That is, you might see:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">larch</span> <span class="kn">import</span> <span class="n">Interreter</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">larch.io</span> <span class="kn">import</span> <span class="n">read_xdi</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">larch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Interreter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">larch.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_xdi</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="n">_larch</span> <span class="o">=</span> <span class="n">Interpreter</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">dat</span> <span class="o">=</span> <span class="n">read_xdi</span><span class="p">(</span><span class="s1">&#39;examples/xafsdata/fe3c_rt.xdi&#39;</span><span class="p">,</span> <span class="n">_larch</span><span class="o">=</span><span class="n">_larch</span><span class="p">)</span>  <span class="c1"># not needed!</span>
@@ -480,7 +480,7 @@ recommend using <a class="reference external" href="https://lmfit.github.io/lmfi
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.6.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
     </div>
   </body>
 </html>

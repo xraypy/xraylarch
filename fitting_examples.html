@@ -6,12 +6,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>13.6. Fit Examples &#8212; xraylarch 2024.12.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <title>13.6. Fit Examples &#8212; xraylarch 2025.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
     
-    <script src="_static/documentation_options.js?v=c7e9923c"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/documentation_options.js?v=65f7d7c4"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -151,7 +151,7 @@ kinds of data.  The script to do the fit looks like this:</p>
 <span class="n">init</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">amp</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid</span><span class="p">)</span>
 
 <span class="c1"># define objective function for fit residual</span>
-<span class="k">def</span> <span class="nf">resid</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">resid</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">amp</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">cen</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">wid</span><span class="p">))</span>
 <span class="c1">#enddef</span>
 
@@ -222,7 +222,8 @@ correlations between variables.</p>
 </div>
 <p>And the plot of data and fit will look like this:</p>
 <figure class="align-center" id="id4">
-<span id="fig-fit1"></span><a class="reference external image-reference" href="_images/fit_example1.png"><img alt="_images/fit_example1.png" src="_images/fit_example1.png" style="width: 65%;" /></a>
+<span id="fig-fit1"></span><a class="reference external image-reference" href="_images/fit_example1.png"><img alt="_images/fit_example1.png" src="_images/fit_example1.png" style="width: 65%;" />
+</a>
 <figcaption>
 <p><span class="caption-number">Figure 13.6.1.1 </span><span class="caption-text">Simple fit to mock data</span><a class="headerlink" href="#id4" title="Link to this image">¶</a></p>
 </figcaption>
@@ -256,7 +257,7 @@ error-function.</p></li>
 <span class="n">dat</span><span class="o">.</span><span class="n">e</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">[</span><span class="n">i1</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">i2</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
 <span class="n">dat</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="n">i1</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">i2</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
 
-<span class="k">def</span> <span class="nf">make_model</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_model</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;make model of spectra: 2 peak functions, 1 erf function, offset&quot;&quot;&quot;</span>
     <span class="n">p1</span> <span class="o">=</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp1</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen1</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid1</span><span class="p">)</span>
     <span class="n">p2</span> <span class="o">=</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp2</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen2</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid2</span><span class="p">)</span>
@@ -287,7 +288,7 @@ error-function.</p></li>
     <span class="n">erf_cen</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">7123.5</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">7121</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">7124</span><span class="p">)</span>
     <span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">resid</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">resid</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
     <span class="s2">&quot;fit residual&quot;</span>
     <span class="k">return</span> <span class="n">make_model</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="n">data</span><span class="o">.</span><span class="n">y</span>
 <span class="n">enddef</span>
@@ -356,13 +357,15 @@ so they can’t go too far astray.</p>
 <p>and the plots of the resulting best-fit and components look like these:</p>
 <div class="figure compound align-center" id="fig-fit2combined">
 <figure class="align-left" id="id5">
-<span id="fig-fit2"></span><a class="reference external image-reference" href="_images/fit_example2a1.png"><img alt="_images/fit_example2a1.png" src="_images/fit_example2a1.png" style="width: 100%;" /></a>
+<span id="fig-fit2"></span><a class="reference external image-reference" href="_images/fit_example2a1.png"><img alt="_images/fit_example2a1.png" src="_images/fit_example2a1.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-number">Figure 13.6.2.1 </span><span class="caption-text">Data, fit, and residual.</span><a class="headerlink" href="#id5" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <figure class="align-right" id="id6">
-<a class="reference external image-reference" href="_images/fit_example2a2.png"><img alt="_images/fit_example2a2.png" src="_images/fit_example2a2.png" style="width: 100%;" /></a>
+<a class="reference external image-reference" href="_images/fit_example2a2.png"><img alt="_images/fit_example2a2.png" src="_images/fit_example2a2.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-number">Figure 13.6.2.2 </span><span class="caption-text">Fit and individual components.</span><a class="headerlink" href="#id6" title="Link to this image">¶</a></p>
 </figcaption>
@@ -373,7 +376,7 @@ so they can’t go too far astray.</p>
 that we may have missed a third peak at around E = 7122 eV.  We can add
 this by simply adding another peak function to the <code class="docutils literal notranslate"><span class="pre">make_models()</span></code>
 function:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">make_model</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">make_model</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;make model of spectra: 3 peak functions, 1 erf function, offset&quot;&quot;&quot;</span>
     <span class="n">p1</span> <span class="o">=</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp1</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen1</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid1</span><span class="p">)</span>
     <span class="n">p2</span> <span class="o">=</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp2</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen2</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid2</span><span class="p">)</span>
@@ -430,13 +433,15 @@ values for the energy center and amplitude for the error function have both
 moved significantly, as can be seen in the plots for this fit:</p>
 <div class="figure compound align-center" id="fig-fit3comp">
 <figure class="align-center" id="id7">
-<span id="fig-fit3"></span><a class="reference external image-reference" href="_images/fit_example2b1.png"><img alt="_images/fit_example2b1.png" src="_images/fit_example2b1.png" style="width: 100%;" /></a>
+<span id="fig-fit3"></span><a class="reference external image-reference" href="_images/fit_example2b1.png"><img alt="_images/fit_example2b1.png" src="_images/fit_example2b1.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-number">Figure 13.6.2.3 </span><span class="caption-text">Data, fit, and residual.</span><a class="headerlink" href="#id7" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <figure class="align-center" id="id8">
-<span id="fig-fit3b"></span><a class="reference external image-reference" href="_images/fit_example2b2.png"><img alt="_images/fit_example2b2.png" src="_images/fit_example2b2.png" style="width: 100%;" /></a>
+<span id="fig-fit3b"></span><a class="reference external image-reference" href="_images/fit_example2b2.png"><img alt="_images/fit_example2b2.png" src="_images/fit_example2b2.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-number">Figure 13.6.2.4 </span><span class="caption-text">Fit with individual components.</span><a class="headerlink" href="#id8" title="Link to this image">¶</a></p>
 </figcaption>
@@ -479,13 +484,15 @@ and improvements of the two information criteria.  which suggests a real
 improvement.  For completeness, the plots from this fit look like this:</p>
 <div class="figure compound align-center" id="fig-fit4comp">
 <figure class="align-center" id="id9">
-<span id="fig-fit4"></span><a class="reference external image-reference" href="_images/fit_example2c1.png"><img alt="_images/fit_example2c1.png" src="_images/fit_example2c1.png" style="width: 100%;" /></a>
+<span id="fig-fit4"></span><a class="reference external image-reference" href="_images/fit_example2c1.png"><img alt="_images/fit_example2c1.png" src="_images/fit_example2c1.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-number">Figure 13.6.2.5 </span><span class="caption-text">Data, fit, and residual.</span><a class="headerlink" href="#id9" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <figure class="align-center" id="id10">
-<span id="fig-fit4b"></span><a class="reference external image-reference" href="_images/fit_example2c2.png"><img alt="_images/fit_example2c2.png" src="_images/fit_example2c2.png" style="width: 100%;" /></a>
+<span id="fig-fit4b"></span><a class="reference external image-reference" href="_images/fit_example2c2.png"><img alt="_images/fit_example2c2.png" src="_images/fit_example2c2.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-number">Figure 13.6.2.6 </span><span class="caption-text">Fit with individual components.</span><a class="headerlink" href="#id10" title="Link to this image">¶</a></p>
 </figcaption>
@@ -527,13 +534,15 @@ peak around 11950 eV is a feature that only <em>s1</em> has, so it too may be an
 important component.</p>
 <div class="figure compound align-center" id="fig-fit5comp">
 <figure class="align-center" id="id11">
-<span id="fig-fit5"></span><a class="reference external image-reference" href="_images/fit_example3a.png"><img alt="_images/fit_example3a.png" src="_images/fit_example3a.png" style="width: 100%;" /></a>
+<span id="fig-fit5"></span><a class="reference external image-reference" href="_images/fit_example3a.png"><img alt="_images/fit_example3a.png" src="_images/fit_example3a.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-number">Figure 13.6.3.1 </span><span class="caption-text">Components used for linear combinations.</span><a class="headerlink" href="#id11" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <figure class="align-center" id="id12">
-<span id="fig-fit5b"></span><a class="reference external image-reference" href="_images/fit_example3b.png"><img alt="_images/fit_example3b.png" src="_images/fit_example3b.png" style="width: 100%;" /></a>
+<span id="fig-fit5b"></span><a class="reference external image-reference" href="_images/fit_example3b.png"><img alt="_images/fit_example3b.png" src="_images/fit_example3b.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-number">Figure 13.6.3.2 </span><span class="caption-text">Fit and residual with components <em>s1</em> and <em>s2</em>.</span><a class="headerlink" href="#id12" title="Link to this image">¶</a></p>
 </figcaption>
@@ -583,12 +592,12 @@ like this:</p>
                <span class="n">amp6</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
 
 <span class="c1"># define objective function for fit residual</span>
-<span class="k">def</span> <span class="nf">sum_standards</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">sum_standards</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">pars</span><span class="o">.</span><span class="n">amp1</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s1</span> <span class="o">+</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp2</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s2</span> <span class="o">+</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp3</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s3</span> <span class="o">+</span>
             <span class="n">pars</span><span class="o">.</span><span class="n">amp4</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s4</span> <span class="o">+</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp5</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s5</span> <span class="o">+</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp6</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s6</span> <span class="p">)</span>
 <span class="c1">#enddef</span>
 
-<span class="k">def</span> <span class="nf">resid</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">resid</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">mu</span> <span class="o">-</span> <span class="n">sum_standards</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span><span class="o">/</span><span class="n">data</span><span class="o">.</span><span class="n">eps</span>
 <span class="c1">#enddef</span>
 
@@ -666,12 +675,12 @@ scripting features of larch:</p>
 <span class="n">run</span><span class="p">(</span><span class="s1">&#39;ReadData.lar&#39;</span><span class="p">)</span>
 
 <span class="c1"># define objective function for fit residual</span>
-<span class="k">def</span> <span class="nf">sum_standards</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">sum_standards</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">amp1</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s1</span> <span class="o">+</span> <span class="n">p</span><span class="o">.</span><span class="n">amp2</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s2</span> <span class="o">+</span> <span class="n">p</span><span class="o">.</span><span class="n">amp3</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s3</span> <span class="o">+</span>
             <span class="n">p</span><span class="o">.</span><span class="n">amp4</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s4</span> <span class="o">+</span> <span class="n">p</span><span class="o">.</span><span class="n">amp5</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s5</span> <span class="o">+</span> <span class="n">p</span><span class="o">.</span><span class="n">amp6</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s6</span> <span class="p">)</span>
 <span class="n">enddef</span>
 
-<span class="k">def</span> <span class="nf">resid</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">resid</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;residual function for minimization&quot;&quot;&quot;</span>
     <span class="n">out</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mu</span> <span class="o">-</span> <span class="n">sum_standards</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;eps&#39;</span><span class="p">):</span>
@@ -737,7 +746,7 @@ scripting features of larch:</p>
 <span class="nb">print</span> <span class="s1">&#39;------------+---------+--------+----------------------------&#39;</span>
 
 
-<span class="k">def</span> <span class="nf">make_plots</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_plots</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
     <span class="s2">&quot;generates best-fit plots for a parameter group&quot;</span>
    <span class="n">fit</span> <span class="o">=</span> <span class="n">sum_standards</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
    <span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span>   <span class="n">label</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
@@ -817,13 +826,15 @@ Parameters, and checks for the lowest value of <code class="docutils literal not
 <p>and the output plots for the best model look like this:</p>
 <div class="figure compound align-center" id="fig-fit6comp">
 <figure class="align-center" id="id13">
-<span id="fig-fit6"></span><a class="reference external image-reference" href="_images/fit_example3c1.png"><img alt="_images/fit_example3c1.png" src="_images/fit_example3c1.png" style="width: 100%;" /></a>
+<span id="fig-fit6"></span><a class="reference external image-reference" href="_images/fit_example3c1.png"><img alt="_images/fit_example3c1.png" src="_images/fit_example3c1.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-number">Figure 13.6.3.3 </span><span class="caption-text">Linear combination fit and residual.</span><a class="headerlink" href="#id13" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <figure class="align-center" id="id14">
-<span id="fig-fit6b"></span><a class="reference external image-reference" href="_images/fit_example3c2.png"><img alt="_images/fit_example3c2.png" src="_images/fit_example3c2.png" style="width: 100%;" /></a>
+<span id="fig-fit6b"></span><a class="reference external image-reference" href="_images/fit_example3c2.png"><img alt="_images/fit_example3c2.png" src="_images/fit_example3c2.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-number">Figure 13.6.3.4 </span><span class="caption-text">Weighted contribution from individual components.</span><a class="headerlink" href="#id14" title="Link to this image">¶</a></p>
 </figcaption>
@@ -903,13 +914,15 @@ that are:</p>
 <p>The plots resulting from both sets of Parameters are shown:</p>
 <div class="figure compound align-center" id="fig-fit7comp">
 <figure class="align-center" id="id15">
-<span id="fig-fit7"></span><a class="reference external image-reference" href="_images/fit_example3d1.png"><img alt="_images/fit_example3d1.png" src="_images/fit_example3d1.png" style="width: 100%;" /></a>
+<span id="fig-fit7"></span><a class="reference external image-reference" href="_images/fit_example3d1.png"><img alt="_images/fit_example3d1.png" src="_images/fit_example3d1.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-number">Figure 13.6.3.5 </span><span class="caption-text">Data, fit, and residual.</span><a class="headerlink" href="#id15" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <figure class="align-center" id="id16">
-<a class="reference external image-reference" href="_images/fit_example3d2.png"><img alt="_images/fit_example3d2.png" src="_images/fit_example3d2.png" style="width: 100%;" /></a>
+<a class="reference external image-reference" href="_images/fit_example3d2.png"><img alt="_images/fit_example3d2.png" src="_images/fit_example3d2.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-number">Figure 13.6.3.6 </span><span class="caption-text">Weighted contribution from individual components.</span><a class="headerlink" href="#id16" title="Link to this image">¶</a></p>
 </figcaption>
@@ -918,14 +931,16 @@ that are:</p>
 with species <em>s1</em>, <em>s2</em>, <em>s3</em>, and <em>s6</em>.</span></p>
 </div><div class="figure compound align-center" id="fig-fit8comp">
 <figure class="align-center" id="id17">
-<span id="fig-fit8"></span><a class="reference external image-reference" href="_images/fit_example3e1.png"><img alt="_images/fit_example3e1.png" src="_images/fit_example3e1.png" style="width: 100%;" /></a>
+<span id="fig-fit8"></span><a class="reference external image-reference" href="_images/fit_example3e1.png"><img alt="_images/fit_example3e1.png" src="_images/fit_example3e1.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-number">Figure 13.6.3.7 </span><span class="caption-text">Linear Combination XANES Fit of gold components in cyanobacteria
 with species <em>s1</em>, <em>s2</em>, <em>s3</em>, and <em>s5</em>. Data, fit, and residual.</span><a class="headerlink" href="#id17" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <figure class="align-center" id="id18">
-<span id="fig-fit8b"></span><a class="reference external image-reference" href="_images/fit_example3e2.png"><img alt="_images/fit_example3e2.png" src="_images/fit_example3e2.png" style="width: 100%;" /></a>
+<span id="fig-fit8b"></span><a class="reference external image-reference" href="_images/fit_example3e2.png"><img alt="_images/fit_example3e2.png" src="_images/fit_example3e2.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-number">Figure 13.6.3.8 </span><span class="caption-text">Weighted contribution from individual components.</span><a class="headerlink" href="#id18" title="Link to this image">¶</a></p>
 </figcaption>
@@ -977,7 +992,7 @@ found here.</p>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.6.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
     </div>
   </body>
 </html>
