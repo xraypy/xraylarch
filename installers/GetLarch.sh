@@ -4,7 +4,7 @@
 ## using a Miniforge environment and installing
 ## all required packages with conda or pip
 
-prefix=$HOME/xraylarch
+prefix=$HOME/xraylarch_tt
 larchurl='xraylarch[larix]'
 
 uname=`uname`
@@ -82,7 +82,7 @@ sh ./$condafile -b -p $prefix | tee -a $logfile
 export PATH=$prefix/bin:$PATH
 
 echo "##  Installing packages from conda-forge"  | tee -a $logfile
-echo "#> $prefix/bin/conda install -yc conda-forge $cforge_pkgs " | tee -a $logfile
+echo "#> $prefix/bin/mamba install -yc conda-forge $cforge_pkgs " | tee -a $logfile
 $prefix/bin/mamba install -y -c conda-forge $cforge_pkgs
 $prefix/bin/conda list
 
