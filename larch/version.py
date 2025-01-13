@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Version information"""
 
-__release_version__ = '2025.1.0'
+__release_version__ = '2025.1.1'
 __date__    = '2025-Janunary-12'
 __authors__ = "M. Newville, M. Rovezzi, M. Koker, B. Ravel, and others"
 
