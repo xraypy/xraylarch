@@ -8,7 +8,8 @@ import unittest
 import numpy as np
 from numpy.testing import assert_allclose
 
-from larch import isParameter, Parameter, isgroup, Group
+from larch import isgroup, Group
+from larch.fitting import isParameter, Parameter
 from larch.utils.jsonutils import encode4js, decode4js
 
 def encode(obj):

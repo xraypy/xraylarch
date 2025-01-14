@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+ #!/usr/bin/env python
 """
 Code to read and write Athena Project files
 
@@ -93,39 +93,49 @@ def make_athena_args(group, hashkey=None, **kws):
     if hashkey is None:
         hashkey = make_hashkey()
     args = {}
-    for k, v in (('annotation', ''),
-                 ('beamline', ''),
+
+    for k, v in (('annotation', ''), ('beamline', ''),
                  ('beamline_identified', '0'), ('bft_dr', '0.0'),
                  ('bft_rmax', '3'), ('bft_rmin', '1'),
-                 ('bft_rwindow', 'hanning'), ('bkg_algorithm', 'autobk'),
-                 ('bkg_cl', '0'), ('bkg_clamp1', '0'), ('bkg_clamp2', '24'),
+                 ('bft_win', 'hanning'), ('bft_rwindow', 'hanning'),
+                 ('bkg_algorithm', 'autobk'),
+                 ('bkg_cl', '0'), ('bkg_clamp1', 'None'), ('bkg_clamp2', 'Strong'),
                  ('bkg_delta_eshift', '0'), ('bkg_dk', '1'),
                  ('bkg_e0_fraction', '0.5'), ('bkg_eshift', '0'),
                  ('bkg_fixstep', '0'), ('bkg_flatten', '1'),
-                 ('bkg_former_e0', '0'), ('bkg_funnorm', '0'),
+                 ('bkg_former_e0', '0'), ('bkg_fnorm', '0'),
                  ('bkg_int', '7.'), ('bkg_kw', '1'),
-                 ('bkg_kwindow', 'hanning'), ('bkg_nclamp', '5'),
+                 ('bkg_win', 'hanning'),
+                 ('bkg_kwindow', 'hanning'),
+                 ('bkg_nclamp', '5'),
                  ('bkg_rbkg', '1.0'), ('bkg_slope', '-0.0'),
-                 ('bkg_stan', 'None'), ('bkg_tie_e0', '0'),
+                 ('bkg_stan', 'None'),  ('bkg_stan_lab','0: None'),
+                 ('bkg_tie_e0', '0'),
                  ('bkg_nc0', '0'), ('bkg_nc1', '0'),
                  ('bkg_nc2', '0'),  ('bkg_nc3', '0'),
                  ('bkg_rbkg', '1.0'), ('bkg_slope', '0'),
                  ('bkg_pre1', '-150'), ('bkg_pre2', '-30'),
                  ('bkg_nor1', '150'), ('bkg_nor2', '800'),
-                 ('bkg_nnorm', '1'), ('bkg_nvict', '0'),
+                 ('bkg_nnorm', '1'),
                  ('prjrecord', 'athena.prj, 1'),  ('chi_column', ''),
                  ('chi_string', ''), ('collided', '0'), ('columns', ''),
                  ('daq', ''), ('denominator', '1'), ('display', '0'),
                  ('energy', ''), ('energy_string', ''), ('epsk', ''),
                  ('epsr', ''), ('fft_dk', '4'), ('fft_edge', 'k'),
                  ('fft_kmax', '15.'), ('fft_kmin', '2.00'),
-                 ('fft_kwindow', 'kaiser-bessel'), ('fft_pc', '0'),
+                 ('fft_kwindow', 'kaiser-bessel'),
+                 ('fft_win', 'kaiser-bessel'),  ('fft_kw', '2'),
+                 ('fft_pc', 'no'), ('fft_arbkw', '0.5'),
                  ('fft_pcpathgroup', ''), ('fft_pctype', 'central'),
                  ('forcekey', '0'), ('from_athena', '1'),
                  ('from_yaml', '0'), ('frozen', '0'), ('generated', '0'),
-                 ('i0_scale', '1'), ('i0_string', '1'),
+                 ('i0_scale', '1'), ('i0_string', '1'), ('i0', 'i0'),
                  ('importance', '1'), ('inv', '0'), ('is_col', '1'),
-                 ('is_fit', '0'), ('is_kev', '0'), ('is_merge', ''),
+                 ('is_chi', '0'),  ('is_bkg', '0'),
+                 ('is_diff', '0'),  ('is_proj', '1'),
+                 ('is_rec', '1'), ('is_raw', '0'), ('is_ref', '0'),
+                 ('is_rsp', '0'), ('is_qsp', '0'), ('is_xanes', '0'), ('is_xmudat', '0'),
+                 ('is_fit', '0'), ('is_kev', '0'), ('is_merge', '0'),
                  ('is_nor', '0'), ('is_pixel', '0'), ('is_special', '0'),
                  ('is_xmu', '1'), ('ln', '0'), ('mark', '0'),
                  ('marked', '0'), ('maxk', '15'), ('merge_weight', '1'),
@@ -136,19 +146,26 @@ def make_athena_args(group, hashkey=None, **kws):
                  ('quenched', '0'), ('quickmerge', '0'),
                  ('read_as_raw', '0'), ('rebinned', '0'),
                  ('recommended_kmax', '1'), ('recordtype', 'mu(E)'),
-                 ('referencegroup', ''), ('rmax_out', '10'),
-                 ('signal_scale', '1'), ('signal_string', '-1'),
+                 ('reference', ''), ('referencegroup', ''), ('rmax_out', '10'),
+                 ('signal_scale', '1'), ('signal_string', ''),
                  ('trouble', ''), ('tying', '0'),
                  ('unreadable', '0'), ('update_bft', '1'),
                  ('update_bkg', '1'), ('update_columns', '0'),
                  ('update_data', '0'), ('update_fft', '1'),
                  ('update_norm', '1'), ('xdi_will_be_cloned', '0'),
                  ('xdifile', ''), ('xmu_string', ''),
-                 ('valence', ''), ('lasso_yvalue', ''),
-                 ('atsym', ''), ('edge', '') ):
+                 ('valence', ''), ('lasso_yvalue', ''), ('project_marked', '1'),
+                 ('atsym', ''), ('edge', ''), ('not_data', '0'),
+                 ('bindtag', ''), ('line', '-1'), ('original_label', ''),
+                 ('refsame', '1')):
         args[k] = v
 
-    args['datagroup'] = args['tag'] = args['label'] = hashkey
+    args['datagroup'] = args['tag'] = args['label'] = args['old_group'] = hashkey
+    args['titles'] = ['titles', 'data from Larch']
+
+    args['detectors'] = []
+    if not group.__name__.startswith('0x'):
+        args['label'] = group.__name__
     en = getattr(group, 'energy', [])
     args['npts'] = len(en)
     if len(en) > 0:
@@ -190,7 +207,7 @@ def make_athena_args(group, hashkey=None, **kws):
         args['bkg_spl2'] = autobk_args['kmax']
         args['bkg_kw'] = autobk_args['kweight']
         args['bkg_dk'] = autobk_args['dk']
-        args['bkg_kwindow'] = autobk_args['win']
+        args['bkg_win'] = autobk_args['win']
         args['bkg_nclamp'] = autobk_args['nclamp']
         args['bkg_clamp1'] = autobk_args['clamp_lo']
         args['bkg_clamp2'] = autobk_args['clamp_hi']
@@ -202,29 +219,24 @@ def make_athena_args(group, hashkey=None, **kws):
         args['fft_kmax'] = xftf_args['kmax']
         args['fft_kw'] = xftf_args['kweight']
         args['fft_dk'] = xftf_args['dk']
-        args['fft_kwindow'] = xftf_args['window']
+        args['fft_win'] = xftf_args['window']
     args.update(kws)
     return args
-
-
-def athena_array(group, arrname):
-    """convert ndarray to athena representation"""
-    arr = getattr(group, arrname, None)
-    if arr is None:
-        return None
-    return arr # json.dumps([repr(i) for i in arr])
-    # return "(%s)" % ','.join(["'%s'" % i for i in arr])
 
 
 def format_dict(d):
     """ format dictionary for Athena Project file"""
     o = []
     for key in sorted(d.keys()):
-        o.append("'%s'" % key)
         val = d[key]
-        if val is None: val = ''
-        o.append("'%s'" % val)
-    return ','.join(o)
+        if val is None:
+                val = ''
+        if isinstance(val, np.float64):
+            val = float(val)
+        if isinstance(val, (str, int, float)):
+            val = f"'{val}'"
+        o.append(f"'{key}', {val}")
+    return ', '.join(o)
 
 def format_array(arr):
     """ format dictionary for Athena Project file"""
@@ -364,6 +376,7 @@ def parse_perlathena(text, filename):
     out.header = '\n'.join(header)
     for dat in athenagroups:
         label = dat.get('name', 'unknown')
+
         this = Group(energy=dat['x'], mu=dat['y'],
                      athena_params=Group(id=label, bkg=Group(), fft=Group()))
 
@@ -390,6 +403,8 @@ def parse_perlathena(text, filename):
                 else:
                     setattr(this.athena_params, key, asfloat(val))
         this.__doc__ = """Athena Group Name %s (key='%s')""" % (label, dat['name'])
+        if not isinstance(label, str):
+            label = str(label)
         if label.startswith(' '):
             label = 'd_' + label.strip()
         name = fix_varname(label)
@@ -493,7 +508,6 @@ def parse_perlathena_old(text, filename):
         out.group_names.append(name)
 
     return out
-
 
 def parse_jsonathena(text, filename):
     """parse a JSON-style athena file"""
@@ -633,55 +647,48 @@ class AthenaProject(object):
         """add Larch group (presumably XAFS data) to Athena project"""
         from larch.xafs import pre_edge
 
-        x = athena_array(group, 'energy')
-        if hasattr(group, 'energy_orig'):
-            x = athena_array(group, 'energy_orig')
-        yname = None
-        for _name in ('mu', 'mutrans', 'mufluor'):
-            if hasattr(group, _name):
-                yname = _name
-                break
-        if x is None or yname is None:
-            raise ValueError("can only add XAFS data to Athena project")
+        # 1. copy group
+        agroup = deepcopy(group)
 
-        y  = athena_array(group, yname)
-        i0 = athena_array(group, 'i0')
-        if signal is not None:
-            signal = athena_array(group, signal)
-        elif yname in ('mu', 'mutrans'):
-            sname = None
-            for _name in ('i1', 'itrans'):
-                if hasattr(group, _name):
-                    sname = _name
-                    break
-            if sname is not None:
-                signal = athena_array(group, sname)
+        # 2: x/energy
+        x = getattr(agroup, 'energy_orig', getattr(agroup, 'energy', None))
+        if x is None:
+            raise ValueError('No energy array: can only add XAFS data to Athena project')
+        agroup.x = agroup.energy = x[:]
 
-        apars = getattr(group, 'athena_params', None)
-        hashkey = getattr(group, 'id', None)
+        # 3. y/mu array
+        if signal is None:
+            signal = 'mu'
+        y = getattr(agroup, signal, getattr(agroup, 'mu', None))
+        if y is None:
+            y = getattr(agroup, 'mutrans', getattr(agroup, 'mufluor', None))
+        if y is None:
+            raise ValueError('No mu array: can only add XAFS data to Athena project')
+        agroup.y = agroup.mu = agroup.signal = y[:]
+
+        # 4. i0 array
+        agroup.i0 = getattr(agroup, 'i0', None)
+
+        hashkey = getattr(agroup, 'id', None)
         if hashkey is None or hashkey in self.groups:
             hashkey = make_hashkey()
             while hashkey in self.groups:
                 hashkey = make_hashkey()
 
         # fill in data from pre-edge subtraction
-        if not (hasattr(group, 'e0') and hasattr(group, 'edge_step')):
-            pre_edge(group)
-        group.args = make_athena_args(group, hashkey)
+        if not (hasattr(agroup, 'e0') and hasattr(agroup, 'edge_step')):
+            pre_edge(agroup)
+        agroup.args = make_athena_args(agroup, hashkey)
 
         # fix parameters that are incompatible with athena
-        group.args['bkg_nnorm'] = max(0, min(3, int(group.args['bkg_nnorm'])))
+        agroup.args['bkg_nnorm'] = max(0, min(3, int(agroup.args['bkg_nnorm'])))
 
-        _elem, _edge = guess_edge(group.e0)
-        group.args['bkg_z'] = _elem
-        group.x = x
-        group.y = y
-        group.i0 = i0
-        group.signal = signal
+        _elem, _edge = guess_edge(agroup.e0)
+        agroup.args['bkg_z'] = _elem
 
         # add a selection flag
-        group.sel = 1
-        self.groups[hashkey] = group
+        agroup.sel = 1
+        self.groups[hashkey] = agroup
 
     def save(self, filename=None, use_gzip=True):
         if filename is not None:
@@ -690,7 +697,7 @@ class AthenaProject(object):
         pyosversion = "Python %s on %s"  % (platform.python_version(),
                                             platform.platform())
 
-        buff = ["# Athena project file -- Demeter version 0.9.24",
+        buff = ["# Athena project file -- Demeter version 0.9.21",
                 "# This file created at %s" % iso_now,
                 "# Using Larch version %s, %s" % (larch_version, pyosversion)]
 
@@ -700,8 +707,12 @@ class AthenaProject(object):
             buff.append("")
             groupname = getattr(dat, 'groupname', key)
 
+            out_args = {k: v for k, v in dat.args.items()}
+            for name in ('bkg_nvict', 'fft_kwin'):
+                if name in out_args:
+                    out_args.pop(name)
             buff.append("$old_group = '%s';" % groupname)
-            buff.append("@args = (%s);" % format_dict(dat.args))
+            buff.append("@args = (%s);" % format_dict(out_args))
             buff.append("@x = (%s);" % format_array(dat.x))
             buff.append("@y = (%s);" % format_array(dat.y))
             if getattr(dat, 'i0', None) is not None:
@@ -712,7 +723,7 @@ class AthenaProject(object):
                 buff.append("@stddev = (%s);" % format_array(dat.stddev))
             buff.append("[record] # ")
 
-        buff.extend(["", "@journal = {};", "", "1;", "", "",
+        buff.extend(["", "@journal = ();", "", "1;", "", "",
                      "# Local Variables:", "# truncate-lines: t",
                      "# End:", ""])
         fopen = GzipFile if use_gzip else open
@@ -781,7 +792,7 @@ class AthenaProject(object):
             try:
                 data = parse_jsonathena(text, self.filename)
             except Exception:
-                pass
+                print("Could not parse jsonathena")
 
         if data is None:
             data = parse_perlathena(text, self.filename)

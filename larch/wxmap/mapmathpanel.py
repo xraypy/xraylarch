@@ -25,7 +25,7 @@ import numpy as np
 
 from pyshortcuts import bytes2str
 
-from ..wxlib import (LarcxhPanel, LarchFrame, EditableListBox, SimpleText,
+from ..wxlib import (LarchPanel, LarchFrame, EditableListBox, SimpleText,
                      FloatCtrl, Font, pack, Popup, Button, MenuItem,
                      Choice, Check, GridPanel, FileSave, HLine)
 from ..utils.strutils import version_ge

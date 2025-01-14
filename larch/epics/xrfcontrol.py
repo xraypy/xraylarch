@@ -18,10 +18,11 @@ import wx.dataview as dv
 import numpy as np
 import matplotlib
 
+from pyshortcuts import fix_filename
 from wxmplot import PlotPanel
 from wxutils import (SimpleText, EditableListBox, Font, FloatCtrl,
                      pack, Popup, Button, get_icon, Check, MenuItem,
-                     Choice, FileOpen, FileSave, fix_filename, HLine,
+                     Choice, FileOpen, FileSave, HLine,
                      GridPanel, CEN, LEFT, RIGHT)
 
 import larch

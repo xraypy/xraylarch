@@ -606,10 +606,12 @@ class ColumnDataFileFrame(wx.Frame) :
                 en_units = 'eV'
                 has_energy = True
 
-        # print("C : ", has_energy, self.workgroup.datatype, config)
-
         if self.workgroup.datatype in (None, 'unknown'):
             self.workgroup.datatype = 'xas' if has_energy else 'xydata'
+
+        datatype = config.pop('datatype', None)
+        if datatype is not None:
+            self.workgroup.datatype = datatype
 
         en_units = 'eV' if self.workgroup.datatype == 'xas' else 'unknown'
 
@@ -618,10 +620,9 @@ class ColumnDataFileFrame(wx.Frame) :
                            ypop='', monod=3.1355316, en_units=en_units,
                            yerr_op='constant', yerr_val=1, yerr_arr=None,
                            yrpop='', yrop='/', yref1='', yref2='',
-                           has_yref=False, dtc_config={}, multicol_config={})
+                           has_yref=False, dtc_config={}, multicol_config={},
+                           datattype=self.workgroup.datatype)
         if config is not None:
-            if 'datatype' in config:
-                config.pop('datatype')
             self.config.update(config)
 
         if self.config['yarr2'] is None and 'i0' in self.array_labels:

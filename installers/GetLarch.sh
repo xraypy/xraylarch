@@ -1,26 +1,21 @@
 #!/bin/sh
 ##
 ## script to install Larch on Linux or MacOS
-## using a Mambaforge environment and installing
-## all required packages with mamba or pip
+## using a Miniforge environment and installing
+## all required packages with conda or pip
 
-prefix=$HOME/xraylarch
+prefix=$HOME/xraylarch_tt
 larchurl='xraylarch[larix]'
 
 uname=`uname`
-if [ $uname == Darwin ]; then
-    uname=MacOSX
-fi
-
 condaurl="https://github.com/conda-forge/miniforge/releases/latest/download"
 
 condafile="Miniforge3-$uname-x86_64.sh"
-condafile="Mambaforge-$uname-x86_64.sh"
 
 logfile=GetLarch.log
 
 ## set list of conda packages to install from conda-forge
-cforge_pkgs="python=>3.12.3 numpy scipy matplotlib h5py scikit-image scikit-learn pandas jupyter plotly wxpython fabio pyfai pymatgen mkl_fft tomopy"
+cforge_pkgs="python>=3.12.8 numpy==1.26 scipy>=1.14 matplotlib>=3.8 h5py>=3.10 wxpython>=4.2.1 mkl_fft tomopy"
 
 unset CONDA_EXE CONDA_PYTHON_EXE CONDA_PREFIX PROJ_LIB
 
@@ -89,7 +84,7 @@ export PATH=$prefix/bin:$PATH
 echo "##  Installing packages from conda-forge"  | tee -a $logfile
 echo "#> $prefix/bin/mamba install -yc conda-forge $cforge_pkgs " | tee -a $logfile
 $prefix/bin/mamba install -y -c conda-forge $cforge_pkgs
-$prefix/bin/mamba list
+$prefix/bin/conda list
 
 echo "##Installing xraylarch as 'pip install \"$larchurl\"'"  | tee -a $logfile
 echo "#> $prefix/bin/pip install \"$larchurl\""| tee -a $logfile

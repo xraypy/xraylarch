@@ -24,11 +24,12 @@ from xraydb import atomic_number
 
 from pyshortcuts import fix_filename
 
+from larixite import cif2feffinp, cif_cluster
+
 import larch
 
 from larch import Group
 from larch.xafs import feff8l, feff6l
-from larch.xrd.cif2feff import cif2feffinp, cif_cluster, site_label, fcompact
 from larch.utils import read_textfile, mkdir
 from larch.utils.paths import unixpath
 from larch.utils.strutils import  unique_name, strict_ascii
@@ -50,6 +51,16 @@ FNB_STYLE = fnb.FNB_NO_X_BUTTON|fnb.FNB_SMART_TABS
 FNB_STYLE |= fnb.FNB_NO_NAV_BUTTONS|fnb.FNB_NODRAG
 
 MAINSIZE = (1150, 650)
+
+def fcompact(val):
+    """format a float value, removing extra trailing zeros"""
+    val = f'{val:.6f}'
+    while val.endswith('0'):
+        val = val[:-1]
+    if val.endswith('.'):
+        val = val + '0'
+    return val
+
 
 class CIFFrame(wx.Frame):
     _about = """Larch Crystallographic Information File Browser
@@ -546,6 +557,17 @@ class CIFFrame(wx.Frame):
         fefftext = cif2feffinp(cif.ciftext, catom, edge=edge, cluster_size=csize,
                                absorber_site=site_index, version8=version8,
                                with_h=with_h, extra_titles=etitles)
+        # hack for larixite 2024.10.0,
+        # but also, here we really want to force the print and control flags
+        flines = fefftext.split('\n')
+        for i, l in enumerate(flines):
+            x = l.strip()
+            if x.startswith('PRINT'):
+                flines[i] = 'PRINT     1      0     0     0     0      3'
+            elif x.startswith('CONTROL'):
+                flines[i] = 'CONTROL   1      1     1     1     1      1'
+
+        fefftext = '\n'.join(flines)
 
         self.wids['feff_runfolder'].SetValue(folder)
         self.wids['feff_text'].SetValue(fefftext)

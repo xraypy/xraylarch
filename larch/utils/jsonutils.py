@@ -50,7 +50,7 @@ def setup_larchtypes():
         HAS_STATE['FeffDatFile'] = FeffDatFile
         HAS_STATE['FeffPathGroup'] = FeffPathGroup
 
-        from larch import ParameterGroup
+        from larch.fitting import ParameterGroup
         from larch.io.athena_project import AthenaGroup
         from larch.xafs import FeffitDataSet, TransformGroup
 

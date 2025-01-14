@@ -17,13 +17,14 @@ spectroscopy (EXAFS).  Larch also provides visualization and analysis tools for
 X-ray fluorescence (XRF) spectra and XRF and X-ray diffraction (XRD) images as
 collected at scanning X-ray microprobe beamlines.
 
-Larch is written in Python and relies on the excellent scientific python
-libraries including `numpy`_, `scipy`_, `h5py`_, `matplotlib`_. In turn, Larch
-provides a comprehensive Python library for processing and analyzing X-ray
-spectroscopy and imaging data.  Several Python libraries - `xraydb`_, `lmfit`_,
-`asteval`_, `wxmplot`_, and `pyshortcuts`_ - were orginally built for Larch and
-then spun-off as separate libraries that can be used by the broader X-ray and
-scientific programming communities.
+Larch is written in Python and relies on the excellent scientific
+python libraries including `numpy`_, `scipy`_, `h5py`_,
+`matplotlib`_. In turn, Larch provides a comprehensive Python library
+for processing and analyzing X-ray spectroscopy and imaging data.
+Several Python libraries - `xraydb`_, `larixite`_, `lmfit`_,
+`asteval`_, `wxmplot`_, and `pyshortcuts`_ - were originally built for
+or as a part of Larch and then spun-off as separate libraries that can
+be used by the broader X-ray and scientific programming communities.
 
 Larch includes a few GUI applications that provide user-friendly and
 interactive data visualization for many common X-ray analysis tasks. The most
@@ -56,13 +57,16 @@ this way, though the :ref:`Larix <larix_app>` now contains almost all of the
 features of `Demeter`_ and is much more actively being developed and
 maintained.
 
-Larch is distribute under an open-source license that is nearly identical to
-the BSD license.  It is under active and open development centered at the
-GeoScoilEnviroCARS sector of Center for Advanced Radiation Sources at the
-University of Chicago has been supported by the US National Science
-Foundation - Earth Sciences (EAR-1128799), and Department of Energy GeoSciences
-(DE-FG02-94ER14466).  In addition, funding specifically for Larch was granted
-by the National Science Foundation - Advanced CyberInfrastructure
+Larch is distribute under an open-source license that is nearly
+identical to the MIT or 2-clause BSD license.  It is under active and
+open development centered at the GeoScoilEnviroCARS sector of Center
+for Advanced Radiation Sources at the University of Chicago.  Support
+has come from the US National Science Foundation Earth Sciences
+Division, currently through *SEES: Synchrotron Earth and Environmental
+Science* (EAR-222327), and previously from NSF Earth Sciences Division
+(EAR-1128799), and Department of Energy GeoSciences
+(DE-FG02-94ER14466).  Funding specifically for Larch was granted by
+the National Science Foundation - Advanced CyberInfrastructure
 (ACI-1450468).
 
 .. _larch_app_table:
@@ -74,7 +78,7 @@ by the National Science Foundation - Advanced CyberInfrastructure
     Interface, and `beta` indicates a work in progress. The Feff6L and
     Feff8L codes are the open-source versions of Feff6 and Feff8, written
     by the `Feff Project`_, and included with Larch by permission and with
-    license to redistrubute.
+    license to redistribute.
 
 .. csv-table::
     :delim: |

@@ -11,7 +11,7 @@ import logging
 
 from charset_normalizer import from_bytes
 
-from pyshortcuts import (gformat, fix_filename, fix_varname,
+from pyshortcuts import (gformat, fix_filename, fix_varname, isotime,
                          get_homedir, get_cwd, debugtimer, uname)
 
 from .paths import bindir, unixpath, path_split
@@ -161,7 +161,7 @@ def copy_xafs_group(group, _larch=None):
                 pass
     return out
 
-def isotime(dtime=None, timespec='seconds', sep=' '):
+def xisotime(dtime=None, timespec='seconds', sep=' '):
     """return ISO format of current timestamp:
           2024-04-27 17:31:12
     """

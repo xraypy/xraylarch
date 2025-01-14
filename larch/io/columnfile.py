@@ -103,19 +103,26 @@ def getfloats(txt, allow_times=True):
       The `allow_times` will try to support common date-time strings
       using the dateutil module, returning a numerical value as the
       Unix timestamp, using
-          time.mktime(dateutil.parser.parse(word).timetuple())
+          dateutil.parser.parse(word).timestamp()
     """
-    words = [w.strip() for w in txt.replace(',', ' ').split()]
-    mktime = time.mktime
+    t = txt[:].strip()
+    if t[0] in ('#', ';', '!', '<', '*', '%'):
+        return [None]
+
+    for delim in ('\t', ',', ';'):
+        if t.count(delim) > 0:
+            t = t.replace(delim, ' ')
+    words = [w.strip() for w in t.split()]
     for i, w in enumerate(words):
         val = None
         try:
             val = float(w)
         except ValueError:
-            try:
-                val = mktime(dateparse(w).timetuple())
-            except ValueError:
-                pass
+            if allow_times:
+                try:
+                    val = dateparse(w).timestamp()
+                except ValueError:
+                    pass
         words[i] = val
     return words
 
@@ -278,7 +285,7 @@ def read_ascii(filename, labels=None, simple_labels=False,
     Examples:
 
         >>> feo_data = read_ascii('feo_rt1.dat')
-        >>> show(g)a
+        >>> show(g)
         == Group ascii_file feo_rt1.dat: 0 methods, 8 attributes ==
         array_labels: ['energy', 'xmu', 'i0']
         attrs: <Group header attributes from feo_rt1.dat>

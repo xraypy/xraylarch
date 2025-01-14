@@ -1,57 +1,44 @@
 name:  xraylarch
-version: 2023-10
+version: 2025-01
 
 channels:
     - https://conda.anaconda.org/conda-forge/
     - https://repo.continuum.io/pkgs/main
-    - https://repo.continuum.io/pkgs/msys2 [win]
+    - https://repo.continuum.io/pkgs/msys2 # [win]
 
-installer_type: pkg [osx]
-welcome_image: LarchInstallerWin.png # [win]
-welcome_image: LarchInstallerMac.png # [osx]
 license_file: ../../LICENSE
 ignore_duplicate_files: True
 
+installer_type: exe # [win]
+installer_type: pkg # [osx]
+
+welcome_image: LarchInstallerWin.png # [win]
+welcome_image: LarchInstallerMac.png # [osx]
+
+post_install: post_install_windows.bat # [win]
+post_install: post_install_posix.sh    # [linux or osx]
+
 readme_file: readme.rtf # [osx]
 
-post_install: post_install_posix.sh [linux or osx]
-post_install: post_install_windows.bat [win]
-
 specs:
-    - python==3.11.5
+    - python==3.12.8
     - conda
     - mamba
     - openssl
     - setuptools>=61.0
     - pip
     - requests
-    - numpy>=1.24
-    - scipy>=1.9
-    - matplotlib>=3.6
-    - h5py>=3.7
-    - sqlalchemy>=2.0
-    - scikit-image
-    - scikit-learn
-    - cython
+    - numpy>=1.25,<2
+    - scipy>=1.15
+    - matplotlib>=3.9
+    - h5py>=3.9
+    - wxpython>=4.2.1
     - charset-normalizer
-    - pillow>=8.3.2
-    - psutil
-    - pandas
-    - pytest
+    - pillow>=10
     - pyyaml
     - toml
-    - sphinx
-    - notebook<7
     - dill
-    - psycopg2
+    - pywin32          # [win]
     - patchelf         # [linux]
     - pango            # [linux]
     - fontconfig       # [linux or osx]
-    - readline         # [linux or osx]
-    - pywin32          # [win64]
-    - console_shortcut # [win64]
-    - powershell_shortcut # [win64]
-    - wxpython>=4.2.0
-    - tomopy
-    - pymatgen
-    - numdifftools

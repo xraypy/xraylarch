@@ -12,9 +12,10 @@ from functools import partial
 import numpy as np
 from numpy.polynomial.chebyshev import chebfit, chebval
 
-from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
-import pyFAI.units
+import pyFAI
 pyFAI.use_opencl = False
+import pyFAI.units
+from pyFAI import AzimuthalIntegrator
 
 import wx
 import wx.lib.scrolledpanel as scrolled
@@ -364,7 +365,7 @@ class XRD1DFrame(wx.Frame):
         menubar.Append(cmenu, "&Calibration and Mask")
         menubar.Append(smenu, "&Search CIF Structures")
         self.SetMenuBar(menubar)
-
+        self.Bind(wx.EVT_CLOSE,  self.onClose)
 
     def onClose(self, event=None):
         try:
@@ -534,14 +535,14 @@ class XRD1DFrame(wx.Frame):
         if cif is None:
             return
         t0 = time.time()
-
         energy = E_from_lambda(self.wavelength)
-
         sfact = cif.get_structure_factors(wavelength=self.wavelength)
-        try:
-            self.cif_browser.cifdb.set_hkls(self.current_cif.ams_id, sfact.hkls)
-        except:
-            pass
+        if hasattr(self, 'current_cif'):
+            try:
+                self.cif_browser.cifdb.set_hkls(self.current_cif.ams_id,
+                                                    sfact.hkls)
+            except:
+                pass
 
         mineral = getattr(cif, 'mineral', None)
         label = getattr(mineral, 'name', '')

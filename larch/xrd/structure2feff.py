@@ -4,7 +4,8 @@ from random import Random
 from xraydb import atomic_symbol, atomic_number, xray_edge
 from larch.utils.strutils import fix_varname, strict_ascii
 
-from .amcsd_utils import (SpacegroupAnalyzer, Molecule, IMolecule, IStructure)
+from larixite.amcsd_utils import (SpacegroupAnalyzer, Molecule,
+                                      IMolecule, IStructure)
 
 rng = Random()
 

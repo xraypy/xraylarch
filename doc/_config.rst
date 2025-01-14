@@ -17,8 +17,9 @@
 
 .. _pyepics:  https://pyepics.github.com/pyepics/
 .. _xraydb:   https://xraypy.github.io/XrayDB/
+.. _larixite:   https://xraypy.github.io/larixite/
 .. _lmfit:    https://lmfit.github.io/lmfit-py/
-.. _asteval:  https://newville.github.io/asteval/
+.. _asteval:  https://lmfit.github.io/asteval/
 .. _wxmplot:  https://newville.github.io/wxmplot/
 .. _pyshortcuts:  https://newville.github.io/pyshortcuts/
 

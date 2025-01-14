@@ -37,6 +37,7 @@ def find_e0(energy, mu=None, group=None, _larch=None):
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
                                          fcn_name='find_e0')
+    energy, mu = remove_nans2(energy, mu)
     # first find e0 without smoothing, then refine with smoothing
     e1, ie0, estep1 = _finde0(energy, mu, estep=None, use_smooth=False)
     istart = max(3, ie0-75)
@@ -165,8 +166,8 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, npre=1, pre1=No
            pre2 = roughly pre1/3.0, rounded to 5 eV
        if npre=0, a constont (mean value of mu[e0+pre1, e0+pre2] will be used.
 
-    2  post-edge: a polynomial of order nnorm is fit to mu(energy)*energy**nvict
-       between energy=[e0+norm1, e0+norm2]. nnorm, norm1, norm2 default to None,
+    2  post-edge: a polynomial of order nnorm is fit to mu-pre_edge betweeen
+       energy=[e0+norm1, e0+norm2]. nnorm, norm1, norm2 all default to None,
        which will set:
          nnorm = 2 in norm2-norm1>300, 1 if norm2-norm1>30, or 0 if less.
          norm2 = max energy - e0, rounded to 5 eV

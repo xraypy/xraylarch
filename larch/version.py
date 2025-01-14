@@ -1,22 +1,17 @@
 #!/usr/bin/env python
 """Version information"""
 
-__release_version__ = '0.9.81'
-__date__    = '2024-September-20'
+__release_version__ = '2025.1.1'
+__date__    = '2025-Janunary-12'
 __authors__ = "M. Newville, M. Rovezzi, M. Koker, B. Ravel, and others"
 
 from ._version import __version__, __version_tuple__
-
 import sys
 from collections import namedtuple
 from packaging.version import parse as ver_parse
+
 import importlib
 import urllib3
-import requests
-import numpy
-import scipy
-import matplotlib
-import lmfit
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -128,7 +123,7 @@ LATEST_MESSAGE = """Larch version {local_version:s} is up to date."""
 def check_larchversion():
     "check version, return VersionStatus tuple"
     local_version = __release_version__
-
+    import requests
     try:
         req = requests.get(VERSION_URL, verify=False, timeout=3.10)
     except:

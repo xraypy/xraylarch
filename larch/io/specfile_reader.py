@@ -13,7 +13,7 @@ Requirements
 """
 
 __author__ = ["Mauro Rovezzi", "Matt Newville"]
-__version__ = "2024.1"
+__version__ = "2024.2"
 
 import os
 import copy
@@ -62,7 +62,7 @@ def _str2rng(rngstr, keeporder=True, rebin=None):
     > _str2rng('100, 7:9, 130:140:5, 14, 16:18:1')
     > [7, 8, 9, 14, 16, 17, 18, 100, 130, 135, 140]
 
-    the string can also have file index prefix 
+    the string can also have file index prefix
 
     > _str2rng('00019/100, 7:9, 130:140:5, 14, 16:18:1')
     > ('0019', [7, 8, 9, 14, 16, 17, 18, 100, 130, 135, 140])
@@ -348,7 +348,7 @@ class DataSourceSpecH5(object):
                     self.set_scan(self._scans[_iscn][0])
             except Exception as e:
                 self._logger.error(e)
-            #self.close()
+            # self.close()
         except OSError:
             _errmsg = f"cannot open {self._fname}"
             self._logger.error(_errmsg)
@@ -504,7 +504,7 @@ class DataSourceSpecH5(object):
         except Exception:
             _errmsg = f"[{self._fn}//{self._scan_n}] '{url_str}' not found"
             self._logger.error(_errmsg)
-            #raise ValueError(_errmsg)
+            # raise ValueError(_errmsg)
 
     # ================== #
     #: READ DATA METHODS
@@ -609,6 +609,16 @@ class DataSourceSpecH5(object):
         sg = self.get_scangroup()
         return bytes2str(sg[self._title_url][()])
 
+    def get_sample_name(self):
+        """Get sample name str for the current scan
+
+        Returns
+        -------
+        sample_name (str): sample name self._scangroup[self._sample_name_url][()]
+        """
+        sg = self.get_scangroup()
+        return bytes2str(sg[self._sample_url][()])
+
     def get_time(self):
         """Get start time str for the current scan
 
@@ -690,7 +700,7 @@ class DataSourceSpecH5(object):
                 pass
 
         # === CUSTOM SCANS -> TODO(move to NeXus)
-        if _scntype == "Escan": 
+        if _scntype == "Escan":
             iscn.update(dict(scan_axis="Energy"))
             iscn.update(dict(scan_info="ESRF/BM30-BM16 Energy scans with Spec"))
         if _scntype == "Emiscan":
@@ -747,7 +757,9 @@ class DataSourceSpecH5(object):
             sel_cnt = f"{self._cnts_url}/{cnt}"
             return copy.deepcopy(sg[sel_cnt][()])
         else:
-            errmsg = f"[{self._fn}//{self._scan_n}] '{cnt}' not found in available counters"
+            errmsg = (
+                f"[{self._fn}//{self._scan_n}] '{cnt}' not found in available counters"
+            )
             self._logger.error(errmsg)
             raise ValueError(errmsg)
 
@@ -772,7 +784,9 @@ class DataSourceSpecH5(object):
             sel_mot = f"{self._mots_url}/{mot}"
             return copy.deepcopy(sg[sel_mot][()])
         else:
-            self._logger.error(f"[{self._fn}//{self._scan_n}] '{mot}' not found in available motors")
+            self._logger.error(
+                f"[{self._fn}//{self._scan_n}] '{mot}' not found in available motors"
+            )
             return None
 
     def get_scan(self, scan=None, datatype=None):
@@ -834,11 +848,13 @@ class DataSourceSpecH5(object):
         ptsdiffs = [0]
         pop_labels = []
         self._logger.debug(f"X array (=scan axis): `{axis}` (size: {axis_size})")
-        self._logger.debug("Y arrays >>> loading all arrays in array_labels (check size match with scan axis) <<<")
-        for label in array_labels[1:]: #: avoid loading twice arr_axis
+        self._logger.debug(
+            "Y arrays >>> loading all arrays in array_labels (check size match with scan axis) <<<"
+        )
+        for label in array_labels[1:]:  #: avoid loading twice arr_axis
             arr = self.get_array(label).astype(np.float64)
             ptsdiff = axis_size - arr.size
-            self._logger.debug(f"`{label}` ({arr.size}) -> {abs(ptsdiff)}")           
+            self._logger.debug(f"`{label}` ({arr.size}) -> {abs(ptsdiff)}")
             if abs(ptsdiff) > 10 or ptsdiff < 0:
                 ipop = array_labels.index(label)
                 pop_labels.append(array_labels.pop(ipop))
@@ -846,9 +862,13 @@ class DataSourceSpecH5(object):
                 ptsdiffs.append(ptsdiff)
                 data.append(arr)
                 setattr(out, label, arr)
-        assert len(array_labels) == len(data) == len(ptsdiffs), "length of array_labels and data do not match"
+        assert (
+            len(array_labels) == len(data) == len(ptsdiffs)
+        ), "length of array_labels and data do not match"
         if len(pop_labels):
-            self._logger.info(f"Y arrays >>> not loaded: `{pop_labels}` [excessive size mismatch with `{axis}`]")
+            self._logger.info(
+                f"Y arrays >>> not loaded: `{pop_labels}` [excessive size mismatch with `{axis}`]"
+            )
         #: in case of array shape mismatch strip last points
         ptsdiff_max = max(ptsdiffs)
         if ptsdiff_max > 0:

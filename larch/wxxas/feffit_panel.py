@@ -2195,8 +2195,13 @@ class FeffitResultFrame(wx.Frame):
         ds0 = result.datasets[0]
 
         xname = 'k' if form.startswith('chik') else 'r'
-        yname = 'chi' if form.startswith('chik') else form
-        yname = 'chiq_re' if form.startswith('chiq') else form
+        yname = form
+        if form.startswith('chiq'):
+            yname = 'chiq_re'
+        elif form.startswith('chik'):
+            yname = 'chi'
+
+
         kw = 0
         if form == 'chikw':
             kw = ds0.transform.kweight
