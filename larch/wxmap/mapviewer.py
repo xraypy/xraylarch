@@ -1164,7 +1164,10 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             highlight = np.zeros((h, w))
 
             highlight[np.where(area[()])] = 1
-            imd.panel.add_highlight_area(highlight, label=label)
+            try:
+                imd.panel.add_highlight_area(highlight, label=label)
+            except:
+                print("cannot show area")
 
     def onDone(self, event=None):
         self.Destroy()
@@ -1621,9 +1624,14 @@ class MapViewerFrame(wx.Frame):
             update_xrmmap(xrmfile=xrmfile)
 
         # show position on map
-        self.im_displays[-1].panel.add_highlight_area(tmask, label=name)
-
+        try:
+            self.im_displays[-1].panel.add_highlight_area(tmask, label=name)
+        except:
+            print("cannot show area")
+            
         # make sure we can save position into database
+        print("push position ", self.scandb)
+
         if self.scandb is None or self.instdb is None:
             return
         samplestage = self.instdb.get_instrument(self.inst_name)
@@ -1811,16 +1819,17 @@ class MapViewerFrame(wx.Frame):
         self.datagroups = self.larch.symtable
         if ESCAN_CRED is not None:
             self.move_callback = self.onMoveToPixel
-            try:
+            print("ESCAN ", ESCAN_CRED)
+            if True: # try:
                 self.scandb = ScanDB()
                 self.instdb = InstrumentDB(self.scandb)
                 self.inst_name = self.scandb.get_info('samplestage_instrument',
                                                       default='SampleStage')
                 print(" ScanDB: %s, Instrument=%s" % (self.scandb.engine, self.inst_name))
-            except:
-                etype, emsg, tb = sys.exc_info()
-                print('Could not connect to ScanDB: %s' % (emsg))
-                self.scandb = self.instdb = None
+            # except:
+            #     etype, emsg, tb = sys.exc_info()
+            #     print('Could not connect to ScanDB: %s' % (emsg))
+            #    self.scandb = self.instdb = None
 
     def ShowFile(self, evt=None, filename=None,  process_file=True, **kws):
         if filename is None and evt is not None:
