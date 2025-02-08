@@ -29,14 +29,6 @@ from larch.io import read_ascii
 from larch.math.convolution1D import lin_gamma, conv
 
 try:
-    import pandas as pd
-    from pandas.io.formats.style import Styler
-
-    HAS_PANDAS = True
-except ImportError:
-    HAS_PANDAS = False
-
-try:
     import py3Dmol
 
     HAS_PY3DMOL = True
@@ -474,17 +466,9 @@ class Struct2XAS:
             "idx_in_struct",
         ]
         abs_sites = self.get_abs_sites()
-        if HAS_PANDAS:
-            df = pd.DataFrame(
-                abs_sites,
-                columns=header,
-            )
-            df = Styler(df).hide(axis="index")
-            return df
-        else:
-            matrix = [header]
-            matrix.extend(abs_sites)
-            _pprint(matrix)
+        matrix = [header]
+        matrix.extend(abs_sites)
+        _pprint(matrix)
 
     def get_atoms_from_abs(self, radius):
         """Get atoms in sphere from absorbing atom with certain radius"""
@@ -744,13 +728,9 @@ class Struct2XAS:
         )
         print(coord_sym)
         header = ["Element", "Distance"]
-        if HAS_PANDAS:
-            df = pd.DataFrame(data=elems_dist, columns=header)
-            return df
-        else:
-            matrix = [header]
-            matrix.extend(elems_dist)
-            _pprint(matrix)
+        matrix = [header]
+        matrix.extend(elems_dist)
+        _pprint(matrix)
 
     def make_cluster(self, radius):
         """Create a cluster with absorber atom site at the center.
@@ -942,7 +922,7 @@ class Struct2XAS:
                     np.allclose(unique_sites[i][0].coords, selected_site[4], atol=0.01)
                     is True
                 ):
-                    replacements["absorber"] = f"absorber\n{i+1}"
+                    replacements["absorber"] = f"absorber\n{i + 1}"
 
             # absorber = f"{absorber}"
             # replacements["absorber"] = f"Z_absorber\n{round(Element(elem).Z)}"
@@ -963,7 +943,7 @@ class Struct2XAS:
             absorber = f"{absorber}"
             for i in range(len(atoms)):
                 if np.allclose(atoms[i][1], [0, 0, 0], atol=0.01) is True:
-                    replacements["absorber"] = f"absorber\n{i+1}"
+                    replacements["absorber"] = f"absorber\n{i + 1}"
 
             replacements["group"] = ""
 
@@ -1210,7 +1190,7 @@ class Struct2XAS:
         for i in range(len(at)):
             if self.full_occupancy:
                 atoms += "\n" + (
-                    f"{at[i][0][0]:10.6f} {at[i][0][1]:10.6f} {at[i][0][2]:10.6f} {  int(at[i][1])}  {at[i][2]:>5} {at[i][3]:10.5f}         *1 "
+                    f"{at[i][0][0]:10.6f} {at[i][0][1]:10.6f} {at[i][0][2]:10.6f} {int(at[i][1])}  {at[i][2]:>5} {at[i][3]:10.5f}         *1 "
                 )
             else:
                 choice = np.random.choice(
