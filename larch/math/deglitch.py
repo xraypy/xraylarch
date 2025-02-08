@@ -218,5 +218,5 @@ def remove_spikes_pandas(y, window=3, threshold=3):
     ------
     ynew : array like x/y
     """
-    _logger.warning("pandas backend is not supported, using numpy instead")
-    return remove_spikes_numpy(y, window=window, threshold=threshold)
+    _logger.warning("pandas backend is not supported, using scipy instead")
+    return remove_spikes_scipy(y, window=window, threshold=threshold)
