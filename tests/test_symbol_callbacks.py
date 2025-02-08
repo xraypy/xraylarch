@@ -1,7 +1,10 @@
 from larch import Interpreter
 linp = Interpreter()
+
+
 def onVarChange(group=None, symbolname=None, value=None, **kws):
-    print( 'var changed ', group, symbolname, value, kws)
+    print('var changed ', group, symbolname, value, kws)
+
 
 linp('x = 100.0')
 linp.symtable.set_symbol('x', 30)
