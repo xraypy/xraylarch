@@ -1,3 +1,4 @@
+import numpy.testing
 from pathlib import Path
 from larch.io import read_ascii, AthenaProject
 
