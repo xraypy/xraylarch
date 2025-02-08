@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 from larch.io import read_ascii, AthenaProject
 
 
@@ -15,4 +15,4 @@ def test_add_athena_group():
     p.save()
 
     # remove file after test
-    os.remove('x1.prj')
+    Path('x1.prj').unlink(missing_ok=True)
