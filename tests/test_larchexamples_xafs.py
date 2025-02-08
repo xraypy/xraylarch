@@ -200,6 +200,10 @@ class TestScripts(TestCase):
         self.isNear('_dlo', 0.000315, places=4)
 
 
+def test_remove_files():
+    created_test_files = ['doc_feffit1.out', 'doc_feffit2.out', 'doc_feffit3.out']
+    for file in created_test_files:
+        (base_dir / 'examples' / 'feffit' / file).unlink(missing_ok=True)
 
 
 if __name__ == '__main__':  # pragma: no cover
