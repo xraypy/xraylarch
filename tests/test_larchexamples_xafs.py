@@ -6,6 +6,7 @@ import time
 import ast
 import numpy as np
 from sys import version_info
+import os
 
 from utils import TestCase
 from larch import Interpreter
@@ -200,6 +201,10 @@ class TestScripts(TestCase):
         self.isNear('_dlo', 0.000315, places=4)
 
 
+def test_remove_files():
+    os.remove('../examples/feffit/doc_feffit1.out')
+    os.remove('../examples/feffit/doc_feffit2.out')
+    os.remove('../examples/feffit/doc_feffit3.out')
 
 
 if __name__ == '__main__':  # pragma: no cover
