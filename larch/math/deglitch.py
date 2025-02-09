@@ -24,7 +24,8 @@ def remove_spikes_medfilt1d(y_spiky, backend="silx", kernel_size=3, threshold=0.
         library to use as backend
         - 'silx' -> from silx.math.medianfilter import medfilt1d
         - 'pymca' -> from PyMca5.PyMcaMath.PyMcaSciPy.signal import medfilt1d
-        - 'pandas' : TODO
+        - 'scipy' -> from scipy.ndimage import median_filter
+        - 'pandas' : DEPRECATED -> uses 'scipy'
 
     kernel_size : int, optional
         kernel size where to calculate median, must be odd [3]
@@ -45,6 +46,8 @@ def remove_spikes_medfilt1d(y_spiky, backend="silx", kernel_size=3, threshold=0.
         return remove_spikes_silx(y_spiky, kernel_size=kernel_size, threshold=threshold)
     elif backend == "pymca":
         return remove_spikes_silx(y_spiky, kernel_size=kernel_size, threshold=threshold)
+    elif backend == "scipy":
+        return remove_spikes_scipy(y_spiky, window=kernel_size, threshold=threshold)
     elif backend == "pandas":
         return remove_spikes_pandas(y_spiky, window=kernel_size, threshold=threshold)
     else:
@@ -146,7 +149,7 @@ def remove_spikes_scipy(y, window=3, threshold=3):
         sigma = np.sqrt(np.sum((y - mean) ** 2) / len(y))
         ynew = np.where(abs(diff) > threshold * sigma, yf, y)
     except Exception as e:
-        _logger.error("Error in remove_spikes_pandas: %s", e)
+        _logger.error("Error in remove_spikes_scipy: %s", e)
         return ynew
     return ynew
 
@@ -218,5 +221,5 @@ def remove_spikes_pandas(y, window=3, threshold=3):
     ------
     ynew : array like x/y
     """
-    _logger.warning("pandas backend is not supported, using scipy instead")
+    _logger.warning("pandas backend is dropped since version 2025.2.0, using scipy instead")
     return remove_spikes_scipy(y, window=window, threshold=threshold)
