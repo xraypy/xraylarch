@@ -1153,18 +1153,43 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         if len(self.owner.tomo_displays) > 0:
             imd = self.owner.tomo_displays[-1]
-            try:
-                imd.add_highlight_area(area[()], label=label)
-            except:
-                pass
+            imd.add_highlight_area(area[()], label=label)
 
         if len(self.owner.im_displays) > 0:
-            imd = self.owner.im_displays[-1]
+            imd = self.owner.im_displays[-1].panel
             h, w = self.owner.current_file.get_shape()
             highlight = np.zeros((h, w))
-
             highlight[np.where(area[()])] = 1
-            imd.panel.add_highlight_area(highlight, label=label)
+            self.add_highlight_area(imd, highlight, label=label)
+
+    def add_highlight_area(self, panel, mask, label=None, col=0):
+        """will be fixed in wxmplot, but set here Feb 2025"""
+        patch = mask * np.ones(mask.shape) * 0.9
+        cmap = panel.conf.cmap[col]
+        area = panel.axes.contour(patch, cmap=cmap, levels=[0, 1])
+        panel.conf.highlight_areas.append(area)
+        if not hasattr(cmap, '_lut'):
+            try:
+                cmap._init()
+            except:
+                pass
+        if hasattr(cmap, '_lut'):
+            rgb  = [int(i*240)^255 for i in cmap._lut[0][:3]]
+            col  = '#%02x%02x%02x' % (rgb[0], rgb[1], rgb[2])
+        if label is not None:
+            def fmt(*args, **kws): return label
+            panel.axes.clabel(area, fontsize=9, fmt=fmt,
+                             colors=col, rightside_up=True)
+
+        if col is not None:
+            if hasattr(area, 'collections'):
+                for l in area.collections:
+                    l.set_edgecolor(col)
+            area.set_edgecolor(col)
+        panel.canvas.draw()
+
+
+
 
     def onDone(self, event=None):
         self.Destroy()
@@ -1185,14 +1210,19 @@ class MapAreaPanel(scrolled.ScrolledPanel):
     def onClear(self, event=None):
         if len(self.owner.im_displays) > 0:
             imd = self.owner.im_displays[-1]
-            try:
-                for area in imd.panel.conf.highlight_areas:
-                    for w in area.collections + area.labelTexts:
+            for area in imd.panel.conf.highlight_areas:
+                if hasattr(area, 'collections'):
+                    for w in area.collections:
                         w.remove()
-                imd.panel.conf.highlight_areas = []
-                imd.panel.redraw()
-            except:
-                pass
+                if hasattr(area, 'labelTexts'):
+                    for w in area.labelTexts:
+                        w.remove()
+
+                area.remove()
+
+            imd.panel.conf.highlight_areas = []
+            imd.panel.redraw()
+
 
         if len(self.owner.tomo_displays) > 0:
             imd = self.owner.tomo_displays[-1]
@@ -1621,9 +1651,12 @@ class MapViewerFrame(wx.Frame):
             update_xrmmap(xrmfile=xrmfile)
 
         # show position on map
-        self.im_displays[-1].panel.add_highlight_area(tmask, label=name)
+        imd = self.im_displays[-1].panel
+        self.add_highlight_area(imd, tmask, label=name)
+        # imd.add_highlight_area(tmask, label=name)
 
         # make sure we can save position into database
+
         if self.scandb is None or self.instdb is None:
             return
         samplestage = self.instdb.get_instrument(self.inst_name)
@@ -1811,16 +1844,17 @@ class MapViewerFrame(wx.Frame):
         self.datagroups = self.larch.symtable
         if ESCAN_CRED is not None:
             self.move_callback = self.onMoveToPixel
-            try:
+            print("ESCAN ", ESCAN_CRED)
+            if True: # try:
                 self.scandb = ScanDB()
                 self.instdb = InstrumentDB(self.scandb)
                 self.inst_name = self.scandb.get_info('samplestage_instrument',
                                                       default='SampleStage')
                 print(" ScanDB: %s, Instrument=%s" % (self.scandb.engine, self.inst_name))
-            except:
-                etype, emsg, tb = sys.exc_info()
-                print('Could not connect to ScanDB: %s' % (emsg))
-                self.scandb = self.instdb = None
+            # except:
+            #     etype, emsg, tb = sys.exc_info()
+            #     print('Could not connect to ScanDB: %s' % (emsg))
+            #    self.scandb = self.instdb = None
 
     def ShowFile(self, evt=None, filename=None,  process_file=True, **kws):
         if filename is None and evt is not None:

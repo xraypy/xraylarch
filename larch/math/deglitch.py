@@ -7,6 +7,7 @@
 """
 import logging
 import numpy as np
+from scipy.ndimage import median_filter
 
 _logger = logging.getLogger(__name__)
 
@@ -119,8 +120,85 @@ def remove_spikes_pymca(y_spiky, kernel_size=9, threshold=0.66):
     return ynew
 
 
+def remove_spikes_scipy(y, window=3, threshold=3):
+    """remove spikes using scipy ndimage median_filter
+
+    Parameters
+    ----------
+    y : array 1D
+    window : int (optional)
+        window in rolling median [3]
+    threshold : int (optional)
+        number of sigma difference with original data
+
+    Return
+    ------
+    ynew : array like x/y
+    """
+    ynew = np.zeros_like(y)
+    if window % 2 == 0:
+        window += 1
+        _logger.warning("'window' must be odd -> adjusted to %d", window)
+    try:
+        yf = median_filter(y, size=window, mode='nearest')
+        diff = yf - y
+        mean = diff.mean()
+        sigma = np.sqrt(np.sum((y - mean) ** 2) / len(y))
+        ynew = np.where(abs(diff) > threshold * sigma, yf, y)
+    except Exception as e:
+        _logger.error("Error in remove_spikes_pandas: %s", e)
+        return ynew
+    return ynew
+
+
+def remove_spikes_numpy(y, window=3, threshold=3):
+    """remove spikes using numpy
+
+    Parameters
+    ----------
+    y : array 1D
+    window : int (optional)
+        window in rolling median [3]
+    threshold : int (optional)
+        number of sigma difference with original data
+
+    Return
+    ------
+    ynew : array like x/y
+    """
+    ynew = np.zeros_like(y)
+    if window % 2 == 0:
+        window += 1
+        _logger.warning("'window' must be odd -> adjusted to %d", window)
+    try:
+        # Compute the rolling median
+        pad_width = window // 2
+        y_padded = np.pad(y, pad_width, mode='edge')
+        yf = np.zeros_like(y)
+
+        for i in range(len(y)):
+            yf[i] = np.median(y_padded[i:i + window])
+
+        # Compute the difference and statistics
+        diff = yf - y
+        mean = np.mean(diff)
+        sigma = np.sqrt(np.sum((y - mean) ** 2) / len(y))
+
+        # Replace values where the difference exceeds the threshold
+        ynew = np.where(np.abs(diff) > threshold * sigma, yf, y)
+
+    except Exception as e:
+        print(f"Error in remove_spikes_numpy: {e}")
+        return ynew
+
+    return ynew
+
+
 def remove_spikes_pandas(y, window=3, threshold=3):
-    """remove spikes using pandas
+    """
+    DEPRECATED:
+
+    remove spikes using pandas
 
     Taken from `https://ocefpaf.github.io/python4oceanographers/blog/2015/03/16/outlier_detection/`_
 
@@ -140,37 +218,5 @@ def remove_spikes_pandas(y, window=3, threshold=3):
     ------
     ynew : array like x/y
     """
-    ynew = np.zeros_like(y)
-    try:
-        import pandas as pd
-    except ImportError:
-        _logger.error("pandas not found! -> returning zeros")
-        return ynew
-    df = pd.DataFrame(y)
-    try:
-        yf = (
-            pd.rolling_median(df, window=window, center=True)
-            .fillna(method="bfill")
-            .fillna(method="ffill")
-        )
-        diff = yf.as_matrix() - y
-        mean = diff.mean()
-        sigma = (y - mean) ** 2
-        sigma = np.sqrt(sigma.sum() / float(len(sigma)))
-        ynew = np.where(abs(diff) > threshold * sigma, yf.as_matrix(), y)
-    except Exception:
-        yf = (
-            df.rolling(window, center=True)
-            .median()
-            .fillna(method="bfill")
-            .fillna(method="ffill")
-        )
-
-        diff = yf.values - y
-        mean = diff.mean()
-        sigma = (y - mean) ** 2
-        sigma = np.sqrt(sigma.sum() / float(len(sigma)))
-        ynew = np.where(abs(diff) > threshold * sigma, yf.values, y)
-
-        # ynew = np.array(yf.values).reshape(len(x))
-    return ynew
+    _logger.warning("pandas backend is not supported, using scipy instead")
+    return remove_spikes_scipy(y, window=window, threshold=threshold)
