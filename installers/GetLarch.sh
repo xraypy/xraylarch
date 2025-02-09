@@ -4,7 +4,7 @@
 ## using a Miniforge environment and installing
 ## all required packages with conda or pip
 
-prefix=$HOME/xraylarch_tt
+prefix=$HOME/xraylarch
 larchurl='xraylarch[larix]'
 
 uname=`uname`
