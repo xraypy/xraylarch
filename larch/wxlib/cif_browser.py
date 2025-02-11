@@ -850,13 +850,15 @@ class CIFFrame(wx.Frame):
 
 
 class CIFViewer(LarchWxApp):
-    def __init__(self, filename=None, version_info=None,  **kws):
+    def __init__(self, filename=None, version_info=None, with_feff=False, **kws):
         self.filename = filename
+        self.with_feff = with_feff
         LarchWxApp.__init__(self, version_info=version_info, **kws)
 
     def createApp(self):
         frame = CIFFrame(filename=self.filename,
-                         version_info=self.version_info)
+                         version_info=self.version_info,
+                         with_feff=self.with_feff)
         self.SetTopWindow(frame)
         return True
 
