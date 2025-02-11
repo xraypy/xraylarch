@@ -551,7 +551,7 @@ class CIFFrame(wx.Frame):
 
         etitles.append(f'Cell Parameters (A, degrees): {", ".join(cell)}')
         etitles.append(f'Cell Volume (A^3): {cif.cell_volume:.5f}')
-        etitles.append(f'Crystal Density (gr/cm^3): {cif.crystal_density:.5f}')
+        etitles.append(f'Crystal Density (gr/cm^3): {cif.crystal_density}')
         etitles.append(f'Compound: {cif.compound}')
 
         fefftext = cif2feffinp(cif.ciftext, catom, edge=edge, cluster_size=csize,
