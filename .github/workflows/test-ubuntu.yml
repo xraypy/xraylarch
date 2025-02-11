@@ -23,13 +23,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y xvfb
-      - name: Start Xvfb
-        run: |
-          Xvfb :99 -ac &
-          export DISPLAY=:99
-      - name: Set DISPLAY env variable
-        run: |
-          echo "DISPLAY=:99" >> $GITHUB_ENV
       - name: Set up Python from Miniconda/conda
         uses: conda-incubator/setup-miniconda@v2.2.0
         with:
@@ -46,8 +39,4 @@ jobs:
         run: |
           pip install ".[all]"
       - name: Run test suite
-        env:
-          DISPLAY: $DISPLAY
-        run: |
-          cd tests
-          python -m pytest
+        run: pytest --xvfb tests/
