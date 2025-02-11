@@ -292,7 +292,7 @@ class Structure2FeffFrame(wx.Frame):
         out = self.wids['feffout_text']
         out.Clear()
         out.SetInsertionPoint(0)
-        out.WriteText(f'########\n###\n# Run Feff in folder: {folder:s}\n')
+        out.WriteText(f'########\n###\n# Run Feff in folder: {self.folder:s}\n')
         out.SetInsertionPoint(out.GetLastPosition())
         out.WriteText('###\n########\n')
         out.SetInsertionPoint(out.GetLastPosition())
