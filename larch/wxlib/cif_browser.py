@@ -693,11 +693,12 @@ class CIFFrame(wx.Frame):
                 fh.write(cc.ciftext)
             self.write_message("Wrote CIF file %s" % path, 0)
 
-    def onImportCIF(self, event=None):
-        wildcard = 'CIF files (*.cif)|*.cif|All files (*.*)|*.*'
-        path = FileOpen(self, message='Open CIF File',
-                        wildcard=wildcard, default_file='My.cif')
-        path = unixpath(path)
+    def onImportCIF(self, event=None, path=None):
+        if path is None:
+            wildcard = 'CIF files (*.cif)|*.cif|All files (*.*)|*.*'
+            path = FileOpen(self, message='Open CIF File',
+                            wildcard=wildcard, default_file='My.cif')
+            path = unixpath(path)
         if path is not None:
             try:
                 cif_data = parse_cif_file(path)
@@ -722,13 +723,14 @@ class CIFFrame(wx.Frame):
                 message = [f"Error displaying CIF File: {path}"]
                 ExceptionPopup(self, title, message)
 
-    def onImportFeff(self, event=None):
+    def onImportFeff(self, event=None, path=None):
         if not self.with_feff:
             return
-        wildcard = 'Feff input files (*.inp)|*.inp|All files (*.*)|*.*'
-        path = FileOpen(self, message='Open Feff Input File',
-                        wildcard=wildcard, default_file='feff.inp')
-        path = unixpath(path)
+        if path is None:
+            wildcard = 'Feff input files (*.inp)|*.inp|All files (*.*)|*.*'
+            path = FileOpen(self, message='Open Feff Input File',
+                            wildcard=wildcard, default_file='feff.inp')
+            path = unixpath(path)
         if path is not None:
             fefftext = None
             fname = Path(path).name
