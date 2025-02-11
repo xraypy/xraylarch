@@ -39,4 +39,4 @@ jobs:
         run: |
           pip install ".[all]"
       - name: Run test suite
-        run: pytest --xvfb tests/
+        run: pytest --xvfb-backend xvfb tests/
