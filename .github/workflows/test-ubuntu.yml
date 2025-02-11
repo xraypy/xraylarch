@@ -18,23 +18,31 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python from Miniconda/conda
-      uses: conda-incubator/setup-miniconda@v2.2.0
-      with:
-        miniconda-version: latest
-        channels: conda-forge,defaults
-        channel-priority: true
-        activate-environment: anaconda-client-env
-        python-version: ${{ matrix.python-version }}
-    - name: Install conda dependencies
-      run: |
-        printenv
-        conda install -y -c conda-forge python=${{ matrix.python-version }} "numpy>=1.23" "scipy>=1.12" "matplotlib>=3.8" "h5py>=3.5" "wxpython>=4.2" scikit-learn jupyter plotly pytest pytest-cov coverage
-    - name: Install xraylarch and other dependencies with pip
-      run: |
-        pip install ".[all]"
-    - name: Run test suite
-      run: |
-        cd tests
-        python -m pytest
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+      - name: Start Xvfb
+        run: |
+          Xvfb :99 -ac &
+          export DISPLAY=:99
+      - name: Set up Python from Miniconda/conda
+        uses: conda-incubator/setup-miniconda@v2.2.0
+        with:
+          miniconda-version: latest
+          channels: conda-forge,defaults
+          channel-priority: true
+          activate-environment: anaconda-client-env
+          python-version: ${{ matrix.python-version }}
+      - name: Install conda dependencies
+        run: |
+          printenv
+          conda install -y -c conda-forge python=${{ matrix.python-version }} "numpy>=1.23" "scipy>=1.12" "matplotlib>=3.8" "h5py>=3.5" "wxpython>=4.2" scikit-learn jupyter plotly pytest pytest-cov coverage
+      - name: Install xraylarch and other dependencies with pip
+        run: |
+          pip install ".[all]"
+      - name: Run test suite
+        run: |
+          cd tests
+          python -m pytest
