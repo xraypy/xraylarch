@@ -551,7 +551,7 @@ class CIFFrame(wx.Frame):
 
         etitles.append(f'Cell Parameters (A, degrees): {", ".join(cell)}')
         etitles.append(f'Cell Volume (A^3): {cif.cell_volume:.5f}')
-        etitles.append(f'Crystal Density (gr/cm^3): {cif.crystal_density:.5f}')
+        etitles.append(f'Crystal Density (gr/cm^3): {cif.crystal_density}')
         etitles.append(f'Compound: {cif.compound}')
 
         fefftext = cif2feffinp(cif.ciftext, catom, edge=edge, cluster_size=csize,
@@ -693,11 +693,12 @@ class CIFFrame(wx.Frame):
                 fh.write(cc.ciftext)
             self.write_message("Wrote CIF file %s" % path, 0)
 
-    def onImportCIF(self, event=None):
-        wildcard = 'CIF files (*.cif)|*.cif|All files (*.*)|*.*'
-        path = FileOpen(self, message='Open CIF File',
-                        wildcard=wildcard, default_file='My.cif')
-        path = unixpath(path)
+    def onImportCIF(self, event=None, path=None):
+        if path is None:
+            wildcard = 'CIF files (*.cif)|*.cif|All files (*.*)|*.*'
+            path = FileOpen(self, message='Open CIF File',
+                            wildcard=wildcard, default_file='My.cif')
+            path = unixpath(path)
         if path is not None:
             try:
                 cif_data = parse_cif_file(path)
@@ -722,13 +723,14 @@ class CIFFrame(wx.Frame):
                 message = [f"Error displaying CIF File: {path}"]
                 ExceptionPopup(self, title, message)
 
-    def onImportFeff(self, event=None):
+    def onImportFeff(self, event=None, path=None):
         if not self.with_feff:
             return
-        wildcard = 'Feff input files (*.inp)|*.inp|All files (*.*)|*.*'
-        path = FileOpen(self, message='Open Feff Input File',
-                        wildcard=wildcard, default_file='feff.inp')
-        path = unixpath(path)
+        if path is None:
+            wildcard = 'Feff input files (*.inp)|*.inp|All files (*.*)|*.*'
+            path = FileOpen(self, message='Open Feff Input File',
+                            wildcard=wildcard, default_file='feff.inp')
+            path = unixpath(path)
         if path is not None:
             fefftext = None
             fname = Path(path).name
@@ -848,13 +850,15 @@ class CIFFrame(wx.Frame):
 
 
 class CIFViewer(LarchWxApp):
-    def __init__(self, filename=None, version_info=None,  **kws):
+    def __init__(self, filename=None, version_info=None, with_feff=False, **kws):
         self.filename = filename
+        self.with_feff = with_feff
         LarchWxApp.__init__(self, version_info=version_info, **kws)
 
     def createApp(self):
         frame = CIFFrame(filename=self.filename,
-                         version_info=self.version_info)
+                         version_info=self.version_info,
+                         with_feff=self.with_feff)
         self.SetTopWindow(frame)
         return True
 

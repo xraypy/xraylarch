@@ -292,7 +292,7 @@ class Structure2FeffFrame(wx.Frame):
         out = self.wids['feffout_text']
         out.Clear()
         out.SetInsertionPoint(0)
-        out.WriteText(f'########\n###\n# Run Feff in folder: {folder:s}\n')
+        out.WriteText(f'########\n###\n# Run Feff in folder: {self.folder:s}\n')
         out.SetInsertionPoint(out.GetLastPosition())
         out.WriteText('###\n########\n')
         out.SetInsertionPoint(out.GetLastPosition())
@@ -377,10 +377,11 @@ class Structure2FeffFrame(wx.Frame):
                 fh.write(cc['structure_text'])
             self.write_message("Wrote structure file %s" % path, 0)
 
-    def onImportStructure(self, event=None):
-        wildcard = 'Strucuture files (*.cif/*.postcar/*.contcar/*.chgcar/*locpot/*.cssr)|*.cif;*.postcar;*.contcar;*.chgcar;*locpot;*.cssr|Molecule files (*.xyz/*.gjf/*.g03/*.g09/*.com/*.inp)|*.xyz;*.gjf;*.g03;*.g09;*.com;*.inp|All other files readable with Openbabel (*.*)|*.*'
-        path = FileOpen(self, message='Open Structure File',
-                        wildcard=wildcard, default_file='My.cif')
+    def onImportStructure(self, event=None, path=None):
+        if path is None:
+            wildcard = 'Strucuture files (*.cif/*.postcar/*.contcar/*.chgcar/*locpot/*.cssr)|*.cif;*.postcar;*.contcar;*.chgcar;*locpot;*.cssr|Molecule files (*.xyz/*.gjf/*.g03/*.g09/*.com/*.inp)|*.xyz;*.gjf;*.g03;*.g09;*.com;*.inp|All other files readable with Openbabel (*.*)|*.*'
+            path = FileOpen(self, message='Open Structure File',
+                            wildcard=wildcard, default_file='My.cif')
 
         if path is not None:
             fmt = path.split('.')[-1]
@@ -426,10 +427,11 @@ class Structure2FeffFrame(wx.Frame):
         i, p = self.get_nbpage('Structure Text')
         self.nb.SetSelection(i)
 
-    def onImportFeff(self, event=None):
-        wildcard = 'Feff input files (*.inp)|*.inp|All files (*.*)|*.*'
-        path = FileOpen(self, message='Open Feff Input File',
-                        wildcard=wildcard, default_file='feff.inp')
+    def onImportFeff(self, event=None, path=None):
+        if path is None:
+            wildcard = 'Feff input files (*.inp)|*.inp|All files (*.*)|*.*'
+            path = FileOpen(self, message='Open Feff Input File',
+                            wildcard=wildcard, default_file='feff.inp')
         if path is not None:
             fefftext = None
             fname = Path(path).name.replace('.inp', '_run')
@@ -511,7 +513,7 @@ class Structure2FeffViewer(LarchWxApp):
 
     def createApp(self):
         frame = Structure2FeffFrame(filename=self.filename,
-                         version_info=self.version_info)
+                                    version_info=self.version_info)
         self.SetTopWindow(frame)
         return True
 
