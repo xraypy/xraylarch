@@ -126,9 +126,6 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
     
     # determine xanes step size:
     #  find mean of energy difference within 10 eV of E0
-    nx1 = index_of(energy, e0-10)
-    nx2 = index_of(energy, e0+10)
-    de_mean = np.diff(energy[nx1:nx1]).mean()
     if xanes_step is None:
         xanes_step = 0.05 * max(1, int(e0 / 1250.0))  # E0/25000, round down to 0.05
 
@@ -182,7 +179,10 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
             else:
                 val = (mu[j0:j1]*energy[j0:j1]).mean()/energy[j0:j1].mean()
         mu_out.append(val)
-        err_out.append(mu[j0:j1].std())
+        if j0 == j1:
+            err_out.append(np.nan)
+        else:
+            err_out.append(mu[j0:j1].std())
         j0 = j1
 
     newname = group.__name__ + '_rebinned'
