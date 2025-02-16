@@ -179,7 +179,10 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
             else:
                 val = (mu[j0:j1]*energy[j0:j1]).mean()/energy[j0:j1].mean()
         mu_out.append(val)
-        err_out.append(mu[j0:j1].std())
+        if j0 == j1:
+            err_out.append(np.nan)
+        else:
+            err_out.append(mu[j0:j1].std())
         j0 = j1
 
     newname = group.__name__ + '_rebinned'
