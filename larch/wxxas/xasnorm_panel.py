@@ -10,6 +10,7 @@ import numpy as np
 from functools import partial
 from xraydb import guess_edge, atomic_number
 from pyshortcuts import gformat, fix_varname, fix_filename
+from larch import Group
 from larch.utils import path_split, file2groupname
 from larch.math import index_of
 from larch.xafs.xafsutils import guess_energy_units
@@ -959,9 +960,13 @@ class XASNormPanel(TaskPanel):
         self.wids['atsym'].SetStringSelection(dgroup.atsym)
         self.wids['edge'].SetStringSelection(dgroup.edge)
 
-        self.set_nnorm_widget(dgroup.pre_edge_details.nnorm)
         for attr in ('e0', 'edge_step'):
             conf[attr] = getattr(dgroup, attr)
+            
+        if not hasattr(dgroup, 'pre_edge_details'):
+            dgroup.pre_edge_details = Group(nnorm=None)
+        self.set_nnorm_widget(getattr(dgroup.pre_edge_details,
+                                      'nnorm', None))
         for attr in ('pre1', 'pre2', 'norm1', 'norm2'):
             conf[attr] = val = getattr(dgroup.pre_edge_details, attr, None)
             if val is not None:
