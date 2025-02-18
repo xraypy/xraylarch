@@ -473,4 +473,4 @@ def polyfit(x, y, deg=1, reverse=False):
     coefs = pfit.convert().coef
     if reverse:
         coefs = list(reversed(coefs))
-    return coefs
+    return list(coefs)
