@@ -23,6 +23,44 @@ from larch.utils.logging import getLogger
 _logger = getLogger("io_rixs_bm16")
 
 
+def search_samples(
+    datadir: Union[str, Path],
+    ignore_names: list[str] = ["rack", "mount", "align", "bl_"],
+) -> list[Path]:
+    samples = []
+    if isinstance(datadir, str):
+        datadir = Path(datadir)
+    search_dir = Path(datadir) / "RAW_DATA"
+    if not search_dir.exists():
+        errmsg = f"Cannot access: {search_dir}"
+        _logger.error(errmsg)
+        return samples
+    fnames = sorted(search_dir.glob("*"), key=lambda x: x.stat().st_ctime)
+    isamp = 0
+    _logger.info("Samples:")
+    for fname in fnames:
+        samp = fname.name
+        if ".h5" in samp.lower():
+            continue
+        if any(ignore_name in samp.lower() for ignore_name in ignore_names):
+            continue
+        _logger.info(f"- {isamp}: {samp}")
+        samples.append(fname)
+        isamp += 1
+    return samples
+
+
+def get_rixs_filenames(samplepath: Path) -> list[Path]:
+    fnames = sorted(
+        samplepath.glob("**/*RIXS*.h5", case_sensitive=False),
+        key=lambda x: x.stat().st_ctime,
+    )
+    _logger.info(f"{len(fnames)} RIXS planes:")
+    for ifn, fname in enumerate(fnames):
+        _logger.info(f"- {ifn}: {fname.name}")
+    return fnames
+
+
 def get_rixs_bm16(
     fname: Union[str, Path],
     scans: Union[list[int], str, bool, None] = None,
@@ -136,7 +174,8 @@ def get_rixs_bm16(
             ycol = np.append(ycol, y)
             zcol = np.append(zcol, sig)
         _counter += 1
-        _logger.info(f"Loaded scan {scan}: {estep:.1f} eV")
+        _logger.debug(f"Loaded scan {scan}: {estep:.1f} eV")
+    _logger.info(f"Loaded {_counter} scans")
 
     fnstr = fname.stem
     fnout = "{0}_rixs.h5".format(fnstr)
