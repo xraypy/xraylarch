@@ -51,10 +51,7 @@ def search_samples(
 
 
 def get_rixs_filenames(samplepath: Path) -> list[Path]:
-    fnames = sorted(
-        samplepath.glob("**/*RIXS*.h5", case_sensitive=False),
-        key=lambda x: x.stat().st_ctime,
-    )
+    fnames = sorted(samplepath.glob("**/*RIXS*.h5"), key=lambda x: x.stat().st_ctime)
     _logger.info(f"{len(fnames)} RIXS planes:")
     for ifn, fname in enumerate(fnames):
         _logger.info(f"- {ifn}: {fname.name}")
