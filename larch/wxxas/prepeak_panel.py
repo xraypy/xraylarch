@@ -101,6 +101,8 @@ BaselineFuncs = ['No Baseline',
                  'Linear+Gaussian',
                  'Constant+Voigt',
                  'Linear+Voigt',
+                 'Constant+ArcTan Step',
+                 'Constant+ErrorFunction Step',
                  'Quadratic', 'Linear']
 
 
@@ -761,7 +763,7 @@ class PrePeakPanel(TaskPanel):
 
         self.wids = {}
 
-        fsopts = dict(digits=2, increment=0.1, min_val=-999999,
+        fsopts = dict(digits=2, increment=0.25, min_val=-999999,
                       max_val=999999, size=(125, -1), with_pin=True)
 
         ppeak_elo  = self.add_floatspin('ppeak_elo',  value=-13, **fsopts)
@@ -815,6 +817,9 @@ class PrePeakPanel(TaskPanel):
         opts = dict(default=True, size=(75, -1), action=self.onPlot)
         self.show_peakrange = Check(pan, label='show?', **opts)
         self.show_fitrange  = Check(pan, label='show?', **opts)
+        self.use_baseline = Check(pan, label='Fit Baseline before main peaks?',
+                                  default=True,  size=(300, -1),
+                                  action=self.onEnableBaseline)
 
         opts = dict(default=False, size=(200, -1), action=self.onPlot)
 
@@ -829,18 +834,19 @@ class PrePeakPanel(TaskPanel):
         pan.Add(self.array_choice, dcol=3)
         pan.Add((5,5))
         pan.Add(self.showresults_btn)
-        # add_text('E0: ', newrow=False)
-        # pan.Add(ppeak_e0)
-        # pan.Add(self.show_e0)
 
-        add_text('Fit Energy Range: ')
+
+        add_text('Fit X/Energy Range: ')
         pan.Add(ppeak_emin)
         add_text(' : ', newrow=False)
         pan.Add(ppeak_emax)
         pan.Add(self.show_fitrange)
 
         pan.Add(HLine(pan, size=(600, 2)), dcol=6, newrow=True)
-        add_text( 'Baseline Form: ')
+
+        pan.Add(SimpleText(pan, 'Fit Baseline: '), newrow=True)
+        pan.Add(self.use_baseline, dcol=4)
+        pan.Add(SimpleText(pan, 'Baseline Form: '), newrow=True)
         t = SimpleText(pan, 'Baseline Skip Range: ')
         SetTip(t, 'Range skipped over for baseline fit')
         pan.Add(self.bline_choice, dcol=3)
@@ -887,6 +893,19 @@ class PrePeakPanel(TaskPanel):
         sizer.Add(self.mod_nb,  1, LEFT|wx.GROW, 5)
 
         pack(self, sizer)
+
+
+    def onEnableBaseline(self, event=None, **kws):
+        use_baseline = self.use_baseline.IsChecked()
+        self.bline_choice.Enable(use_baseline)
+        self.fitbline_btn.Enable(use_baseline)
+        self.show_peakrange.Enable(use_baseline)
+        self.wids['ppeak_elo'].Enable(use_baseline)
+        self.wids['ppeak_ehi'].Enable(use_baseline)
+        message = 'First Fit Baseline, then add model to fit spectra'
+        if not use_baseline:
+            message = 'Ignoring "Baseline" -- build model to fit spectra'
+        self.message.SetLabel(message)
 
     def get_config(self, dgroup=None):
         """get processing configuration for a group"""
@@ -954,9 +973,13 @@ class PrePeakPanel(TaskPanel):
         bline_form  = opts.get('baseline_form', 'no baseline')
         if bline_form.startswith('no base'):
             return
+        bline_form = bline_form.replace('arctan step', 'atan_step').replace('errorfunction step', 'erf_step')
+        opts['bline_form'] = bline_form
+
         cmd = """{gname:s}.yplot = 1.0*{gname:s}.{array_name:s}
-pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.yplot, group={gname:s}, form='{baseline_form:s}',
-elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})"""
+pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.yplot,
+                  group={gname:s}, form='{bline_form:s}',
+                  elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})"""
         self.larch_eval(cmd.format(**opts))
 
         dgroup = self.controller.get_group()
@@ -973,12 +996,22 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})"""
 
         poly_model = peak_model = None
         for bform in bforms:
-            if bform.startswith('line'):  poly_model = 'Linear'
-            if bform.startswith('const'): poly_model = 'Constant'
-            if bform.startswith('quad'):  poly_model = 'Quadratic'
-            if bform.startswith('loren'): peak_model = 'Lorentzian'
-            if bform.startswith('guass'): peak_model = 'Gaussian'
-            if bform.startswith('voigt'): peak_model = 'Voigt'
+            if bform.startswith('line'):
+                poly_model = 'Linear'
+            elif bform.startswith('const'):
+                poly_model = 'Constant'
+            if bform.startswith('quad'):
+                poly_model = 'Quadratic'
+            elif bform.startswith('loren'):
+                peak_model = 'Lorentzian'
+            elif bform.startswith('guass'):
+                peak_model = 'Gaussian'
+            elif bform.startswith('voigt'):
+                peak_model = 'Voigt'
+            elif bform.startswith('atan_step'):
+                peak_model = 'atan_step'
+            elif bform.startswith('erf_step'):
+                peak_model = 'erf_step'
 
         if peak_model is not None:
             if 'bpeak_' in self.fit_components:
@@ -1262,6 +1295,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         panel = self.pick2erase_panel
         ntrace = panel.conf.ntrace - 1
         trace = panel.conf.get_mpl_line(ntrace)
+
         panel.conf.get_mpl_line(ntrace).set_data(np.array([]), np.array([]))
         panel.conf.ntrace = ntrace
         panel.draw()
@@ -1315,6 +1349,8 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
 
         dgroup._tmp = mod.eval(guesses, x=dgroup.xplot)
         plotframe = self.controller.get_display(win=1)
+        plotframe.panel.conf.set_theme()
+
         plotframe.cursor_hist = []
         plotframe.oplot(dgroup.xplot, dgroup._tmp)
         self.pick2erase_panel = plotframe.panel
