@@ -377,6 +377,8 @@ class TaskPanel(wx.Panel):
         if dgroup is not None and with_erange:
             _emin = min(dgroup.energy)
             _emax = max(dgroup.energy)
+            if not hasattr(dgroup, 'e0'):
+                dgroup.e0 = dgroup.energy.mean()
             e0 = 5*int(dgroup.e0/5.0)
             if 'elo' not in conf:
                 conf['elo'] = min(_emax, max(_emin, conf['elo_rel'] + e0))
