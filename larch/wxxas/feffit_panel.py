@@ -2194,7 +2194,7 @@ class FeffitResultFrame(wx.Frame):
 
         ds0 = result.datasets[0]
 
-        xname = 'k' if form.startswith('chik') else 'r'
+        xname = 'r' if form.startswith('chir') else 'k'
         yname = form
         if form.startswith('chiq'):
             yname = 'chiq_re'
