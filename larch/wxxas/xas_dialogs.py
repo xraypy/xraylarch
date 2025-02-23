@@ -2073,7 +2073,9 @@ class LoadSessionDialog(wx.Frame):
         self.controller.larch.eval('\n'.join(cmds))
         last_fname = None
         xasgroups = getattr(self.controller.symtable, self.xasgroups_name, {})
+
         for key, val in xasgroups.items():
+            dgroup = self.controller.get_group(val)
             if key not in self.controller.filelist.GetItems():
                 self.controller.filelist.Append(key)
                 last_fname = key
