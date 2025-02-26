@@ -4,6 +4,7 @@
 RIXS data object
 ================
 """
+
 import numpy as np
 import copy
 import time
@@ -111,9 +112,9 @@ class RixsData(object):
             self.ene_grid = 0.1
             self.reset()
             self.ene_unit = "eV"
-        assert (
-            self.ene_unit == "eV"
-        ), f"energy unit is {self.set_energy_unit} -> must be eV"
+        assert self.ene_unit == "eV", (
+            f"energy unit is {self.set_energy_unit} -> must be eV"
+        )
 
     def load_from_dict(self, rxdict):
         """Load RIXS data from a dictionary
@@ -142,10 +143,10 @@ class RixsData(object):
         """Load RIXS from HDF5 file"""
         rxdict = h5todict(filename)
         _restore_from_array(rxdict)
-        if not ("writer_version" in rxdict.keys()):
+        if "writer_version" not in rxdict.keys():
             self._logger.error("Key 'writer_version' not found")
             return
-        if not ("1.5" in _tostr(rxdict["writer_version"])):
+        if "1.5" not in _tostr(rxdict["writer_version"]):
             self._logger.warning("Data format not understood")
             return
         self.load_from_dict(rxdict)
@@ -237,7 +238,6 @@ class RixsData(object):
         _nypts = int((_ymax - _ymin) / _xystep)
         _etcrop = np.linspace(_etmin, _etmax, num=_netpts)
         _ycrop = np.linspace(_ymin, _ymax, num=_nypts)
-
 
         _xx, _yy = np.meshgrid(_xcrop, _ycrop)
         _exx, _et = np.meshgrid(_xcrop, _etcrop)
@@ -349,7 +349,7 @@ class RixsData(object):
             ),
         )
 
-        cut_key = f"{mode}_{enecut*10:.0f}"
+        cut_key = f"{mode}_{enecut * 10:.0f}"
         self.line_cuts[cut_key] = dict(x=xc, y=yc, info=info)
         self._logger.info(f"added RIXS {mode} cut: '{label}'")
 

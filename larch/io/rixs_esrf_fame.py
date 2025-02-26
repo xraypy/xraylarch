@@ -23,9 +23,44 @@ from larch.utils.logging import getLogger
 _logger = getLogger("io_rixs_bm16")
 
 
+def search_samples(
+    datadir: Union[str, Path],
+    ignore_names: list[str] = ["rack", "mount", "align", "bl_"],
+) -> list[Path]:
+    samples = []
+    if isinstance(datadir, str):
+        datadir = Path(datadir)
+    search_dir = Path(datadir) / "RAW_DATA"
+    if not search_dir.exists():
+        errmsg = f"Cannot access: {search_dir}"
+        _logger.error(errmsg)
+        return samples
+    fnames = sorted(search_dir.glob("*"), key=lambda x: x.stat().st_ctime)
+    isamp = 0
+    _logger.info("Samples:")
+    for fname in fnames:
+        samp = fname.name
+        if ".h5" in samp.lower():
+            continue
+        if any(ignore_name in samp.lower() for ignore_name in ignore_names):
+            continue
+        _logger.info(f"- {isamp}: {samp}")
+        samples.append(fname)
+        isamp += 1
+    return samples
+
+
+def get_rixs_filenames(samplepath: Path) -> list[Path]:
+    fnames = sorted(samplepath.glob("**/*RIXS*.h5"), key=lambda x: x.stat().st_ctime)
+    _logger.info(f"{len(fnames)} RIXS planes:")
+    for ifn, fname in enumerate(fnames):
+        _logger.info(f"- {ifn}: {fname.name}")
+    return fnames
+
+
 def get_rixs_bm16(
     fname: Union[str, Path],
-    scans: bool = None,
+    scans: Union[list[int], str, bool, None] = None,
     sample_name: Union[str, None] = None,
     mode: str = "rixs",
     mot_axis2: str = "emi",
@@ -40,7 +75,7 @@ def get_rixs_bm16(
     ----------
     fname : str
         path string to the BLISS/HDF5 file
-    scans : str or list of strings or list of ints, optional [None -> all scans in the file]
+    scans : str or list of ints, optional [None -> all scans in the file]
         list of scans to load (the string is parsed by larch.io.specfile_reader._str2rng)
     sample_name : str, optional ['UNKNOWN_SAMPLE']
         name of the sample measured
@@ -104,7 +139,7 @@ def get_rixs_bm16(
     if isinstance(scans, str):
         scans = _str2rng(scans)
     if scans is None:
-        scans = [scn[0] for scn in ds.get_scans()]
+        scans = [scn[0] for scn in ds.get_scans() if ".1" in scn[0]]
     assert isinstance(scans, list), "scans should be a list"
 
     mode = mode.lower()
@@ -136,7 +171,8 @@ def get_rixs_bm16(
             ycol = np.append(ycol, y)
             zcol = np.append(zcol, sig)
         _counter += 1
-        _logger.info(f"Loaded scan {scan}: {estep:.1f} eV")
+        _logger.debug(f"Loaded scan {scan}: {estep:.1f} eV")
+    _logger.info(f"Loaded {_counter} scans")
 
     fnstr = fname.stem
     fnout = "{0}_rixs.h5".format(fnstr)
