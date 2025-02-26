@@ -8,7 +8,8 @@ from copy import deepcopy
 import numpy as np
 from lmfit import Parameters, Minimizer, Model
 from lmfit.models import (LorentzianModel, GaussianModel, VoigtModel,
-                          ConstantModel, LinearModel, QuadraticModel)
+                          ConstantModel, LinearModel, QuadraticModel,
+                          StepModel)
 
 from xraydb import guess_edge, xray_edge, core_width
 
@@ -197,6 +198,7 @@ def pre_edge_baseline(energy, norm=None, group=None, form='linear+lorentzian',
     emax = group.prepeaks.emax
     elo = group.prepeaks.elo
     ehi = group.prepeaks.ehi
+    estep_cen = ehi + (emax-ehi)*0.10
 
     dele = 1.e-11 + min(np.diff(energy))/5.0
 
@@ -221,12 +223,19 @@ def pre_edge_baseline(energy, norm=None, group=None, form='linear+lorentzian',
     modelcomps = []
     parvals = {}
 
-    MODELDAT = {'gauss': (GaussianModel, dict(amplitude=1, center=emax, sigma=2)),
-                'loren': (LorentzianModel, dict(amplitude=1, center=emax, sigma=2)),
-                'voigt': (VoigtModel, dict(amplitude=1, center=emax, sigma=2)),
-                'line': (LinearModel, dict(slope=0, intercept=0)),
-                'quad': (QuadraticModel, dict(a=0, b=0, c=0)),
-                'const': (ConstantModel, dict(c=0))}
+    peak_pars = {'amplitude': 1, 'center': emax, 'sigma':2}
+    step_pars = {'amplitude': 1, 'center': estep_cen, 'sigma':2}
+
+    MODELDAT = {'gauss': (GaussianModel, peak_pars, {}),
+                'loren': (LorentzianModel, peak_pars, {}),
+                'voigt': (VoigtModel, peak_pars, {}),
+                'line': (LinearModel, {'slope':0, 'intercept':0}, {}),
+                'quad': (QuadraticModel, {'a':0, 'b':0, 'c':0}, {}),
+                'const': (ConstantModel, {'c':0}, {}),
+                'atan_step': (StepModel, step_pars, {'form': 'arctan'}),
+                'erf_step': (StepModel,  step_pars, {'form': 'erf'}),
+                'lin_step': (StepModel,  step_pars, {'form': 'linear'}),
+                }
 
     if '+' in form:
         forms = [f.lower() for f in form.split('+')]
@@ -235,9 +244,10 @@ def pre_edge_baseline(energy, norm=None, group=None, form='linear+lorentzian',
 
     for form in forms[:2]:
         for key, dat in MODELDAT.items():
+            mod, pardict, mod_opts = dat
             if form.startswith(key):
-                modelcomps.append(dat[0]())
-                parvals.update(dat[1])
+                modelcomps.append(mod(**mod_opts))
+                parvals.update(pardict)
 
     if len(modelcomps) == 0:
         group.prepeaks = Group(energy=edat, norm=norm, baseline=0.0*edat,

@@ -1007,13 +1007,14 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
 
     if show_fitrange:
         for x in (ppeak.emin, ppeak.emax):
-            _plot_axvline(x, color='#DDDDCC', **popts)
+            _plot_axvline(x, color='#888888', **popts)
             _plot_axvline(ppeak.centroid, color='#EECCCC', **popts)
 
     if show_peakrange:
         for x in (ppeak.elo, ppeak.ehi):
+            _plot_axvline(x, color='#DDDDDD', **popts)
             y = yplot[index_of(xplot, x)]
-            _plot_marker(x, y, color='#222255', marker='o', size=8, **popts)
+            _plot_marker(x, y, color='#DDDDDD', marker='o', size=5, **popts)
 
     redraw(win=win, xmin=px0, xmax=px1, ymin=py0, ymax=py1,
            show_legend=True, _larch=_larch)
@@ -1119,7 +1120,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     if opts.get('show_fitrange', False):
         for attr in ('emin', 'emax'):
             _plot_axvline(opts[attr], ymin=0, ymax=1,
-                          delay_draw=False, color='#DDDDCC',
+                          delay_draw=False, color='#888888',
                           label='_nolegend_', **popts)
 
     if opts.get('show_centroid', False):

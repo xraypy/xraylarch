@@ -564,7 +564,6 @@ class LarixFrame(wx.Frame):
         if name not in LARIX_PANELS:
             print("unknown panel : ", name, LARIX_PANELS)
             return 0, self.nb.GetPage(0)
-        # print("GET NB PAGE ", name, LARIX_PANELS.get(name, 'gg'))
 
         atab = LARIX_PANELS[name]
         current_panels = self.get_panels()
@@ -621,11 +620,16 @@ class LarixFrame(wx.Frame):
         if dgroup is None:
             return
 
-        # print("This ShowFile ", groupname, getattr(dgroup, 'datatype', 'xydata'))
+        datatype = getattr(dgroup, 'datatype', 'xydata')
+        if datatype.startswith('xas'):
+            ipage, pagepanel = self.get_nbpage('xasnorm')
+            self.nb.SetSelection(ipage)
+            if not (hasattr(dgroup, 'norm') and hasattr(dgroup, 'e0')):
+                self.process_normalization(dgroup, force=True, use_form=False)
+        else:
+            ipage, pagepanel = self.get_nbpage('xydata')
+            self.nb.SetSelection(ipage)
 
-        if (getattr(dgroup, 'datatype', 'xydata').startswith('xa') and not
-            (hasattr(dgroup, 'norm') and hasattr(dgroup, 'e0'))):
-            self.process_normalization(dgroup, force=True, use_form=False)
         if filename is None:
             filename = dgroup.filename
         self.current_filename = filename
@@ -643,15 +647,14 @@ class LarixFrame(wx.Frame):
 
         self.controller.group = dgroup
         self.controller.groupname = groupname
-        cur_panel = self.nb.GetCurrentPage()
-        # print("Got CUR PANEL  ", cur_panel)
+
         if process:
-            cur_panel.fill_form(dgroup)
-            cur_panel.skip_process = False
-            cur_panel.process(dgroup=dgroup)
-            if plot and hasattr(cur_panel, 'plot'):
-                cur_panel.plot(dgroup=dgroup)
-            cur_panel.skip_process = False
+            pagepanel.fill_form(dgroup)
+            pagepanel.skip_process = False
+            pagepanel.process(dgroup=dgroup)
+            if plot and hasattr(pagepanel, 'plot'):
+                pagepanel.plot(dgroup=dgroup)
+            pagepanel.skip_process = False
 
         self.controller.filelist.SetStringSelection(filename)
 
@@ -1832,6 +1835,7 @@ before clearing"""
         dtype = getattr(dgroup, 'datatype', 'xydata')
         startpage = 'xasnorm' if dtype == 'xas' else 'xydata'
         ipage, pagepanel = self.get_nbpage(startpage)
+        print("INSTALL GROUP ", dtype, startpage, ipage, pagepanel)
         self.nb.SetSelection(ipage)
         self.ShowFile(groupname=groupname, filename=filename,
                       process=process, plot=plot)

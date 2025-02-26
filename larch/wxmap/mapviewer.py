@@ -1652,8 +1652,8 @@ class MapViewerFrame(wx.Frame):
 
         # show position on map
         imd = self.im_displays[-1].panel
-        self.add_highlight_area(imd, tmask, label=name)
-        # imd.add_highlight_area(tmask, label=name)
+        # self.add_highlight_area(imd, tmask, label=name)
+        imd.add_highlight_area(tmask, label=name)
 
         # make sure we can save position into database
 
