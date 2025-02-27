@@ -17,6 +17,9 @@ wxmplot.config.Themes['fivethirtyeight'].update({'legend.fontsize': 10,
                                                  'axes.labelsize': 9,
                                                  'axes.titlesize': 13})
 
+PLOT_THEMES =  ['<Auto>']
+PLOT_THEMES.extend(wxmplot.config.Themes)
+
 ARRAYS = {'mu':      'Raw \u03BC(E)',
           'norm':    'Normalized \u03BC(E)',
           'flat':    'Flattened \u03BC(E)',
@@ -173,7 +176,9 @@ pin = [CVar('style', 'pin first', 'choice', choices=['pin first', 'plot first'],
        CVar('max_time', 15.0, 'float', min=1, max=300,
            desc='maximum time (seconds) after clicking on the pin to click on plot.\nWill report last saved value')]
 
-plot = [CVar('theme', 'light', 'choice', choices=list(wxmplot.config.Themes.keys()),
+
+
+plot = [CVar('theme', '<Auto>', 'choice', choices=PLOT_THEMES,
             desc='plotting theme for colors and "look and feel"'),
         CVar('height', 550, 'int', min=100, desc='height of main plot window (in pixels)'),
         CVar('width', 600, 'int', min=100, desc='width of main plot window (in pixels)'),
@@ -299,7 +304,6 @@ _locals = locals()
 for section in ('main', 'autosave', 'pin', 'plot', 'xasnorm', 'exafs',
                 'feffit', 'prepeaks', 'lincombo', 'pca', 'regression',
                 'xydata', 'xrd1d'):
-
     sname = section
     XASCONF[sname] = {}
     FULLCONF[sname] = {}

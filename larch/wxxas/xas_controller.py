@@ -7,6 +7,7 @@ from copy import deepcopy
 
 import numpy as np
 import wx
+import darkdetect
 
 from pyshortcuts import fix_varname, get_cwd
 import larch
@@ -140,8 +141,6 @@ class XASController():
         self.larch.eval('\n'.join(cmds))
 
         if needs_config:
-            # print("INSTALL GROUP, needs config", thisgroup)
-            # print('\n'.join(cmds))
             self.init_group_config(thisgroup)
 
         self.file_groups[filename] = groupname
@@ -173,11 +172,13 @@ class XASController():
     def get_plot_conf(self):
         """get basic plot options to pass to plot() ** not window sizes **"""
         dx = {'linewidth': 3, 'markersize': 4,
-              'show_grid': True, 'show_fullbox': True, 'theme': 'light'}
+              'show_grid': True, 'show_fullbox': True, 'theme': '<Auto>'}
         pconf = self.config['plot']
         out = {}
         for attr, val in dx.items():
             out[attr] = pconf.get(attr, val)
+        if out['theme'].startswith('<Au'):
+            out['theme'] = 'dark' if darkdetect.isDark() else 'light'
         return out
 
     def save_config(self):
@@ -334,7 +335,7 @@ class XASController():
                     size=None, position=None):
         wintitle='Larch XAS Plot Window %i' % win
 
-        conf = self.get_config('plot')
+        conf = self.get_plot_conf()
         opts = dict(wintitle=wintitle, stacked=stacked,
                     size=size, position=position, win=win)
         opts.update(conf)
