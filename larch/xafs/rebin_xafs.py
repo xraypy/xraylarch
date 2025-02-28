@@ -55,7 +55,7 @@ def sort_xafs(energy, mu=None, group=None, fix_repeats=True, remove_nans=True, o
 @Make_CallArgs(["energy", "mu"])
 def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
                pre_step=2, xanes_step=None, exafs1=15, exafs2=None,
-               exafs_kstep=0.05, method='spline'):
+               exafs_kstep=0.05, method='boxcar'):
     """rebin XAFS energy and mu to a 'standard 3 region XAFS scan'
 
     Arguments
@@ -71,7 +71,7 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
     exafs1       end of XANES region, start of EXAFS region [15]
     exafs2       end of EXAFS region [last energy point]
     exafs_kstep  k-step for EXAFS region [0.05]
-    method       one of 'spline, 'boxcar', 'centroid' ['spline']
+    method       one of 'spline, 'boxcar', 'centroid' ['boxcar']
 
 
     Returns
