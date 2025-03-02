@@ -263,10 +263,10 @@ class SpecfileImporter(wx.Frame) :
         pack(panel, sizer)
 
         self.nb = fnb.FlatNotebook(rightpanel, -1, agwStyle=FNB_STYLE)
-        self.nb.SetTabAreaColour(wx.Colour(248,248,240))
-        self.nb.SetActiveTabColour(wx.Colour(254,254,195))
-        self.nb.SetNonActiveTabTextColour(wx.Colour(40,40,180))
-        self.nb.SetActiveTabTextColour(wx.Colour(80,0,0))
+        # self.nb.SetTabAreaColour(wx.Colour(248,248,240))
+        # self.nb.SetActiveTabColour(wx.Colour(254,254,195))
+        # self.nb.SetNonActiveTabTextColour(wx.Colour(40,40,180))
+        # self.nb.SetActiveTabTextColour(wx.Colour(80,0,0))
 
         self.plotpanel = PlotPanel(rightpanel, messenger=self.plot_messages)
         try:
