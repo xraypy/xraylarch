@@ -15,9 +15,10 @@ import wx.lib.scrolledpanel as scrolled
 import wx.lib.agw.flatnotebook as fnb
 from wxmplot import PlotPanel
 
-from wxutils import (SimpleText, FloatCtrl, FloatSpin, GUIColors, Button, Choice,
-                     TextCtrl, pack, Popup, Check, MenuItem, CEN, RIGHT, LEFT,
-                     FRAMESTYLE, HLine, Font)
+from wxutils import (SimpleText, FloatCtrl, FloatSpin, Button,
+                     Choice, TextCtrl, pack, Popup, Check, MenuItem, CEN,
+                     RIGHT, LEFT, FRAMESTYLE, flatnotebook, HLine, Font)
+from wxutils.colors import GUI_COLORS
 from pyshortcuts import fix_filename, fix_varname, gformat
 
 from larch import Group, Interpreter
@@ -280,10 +281,10 @@ class DeadtimeCorrectionFrame(wx.Frame):
         if len(badchans) > 0:
             try:
                 bad_channels = [int(s) for s in badchans.split()]
-                wids['bad_chans'].SetBackgroundColour('#FFFFFF')
+                wids['bad_chans'].SetBackgroundColour(GUI_COLORS.text_invalidbg)
             except:
                 bad_channels = []
-                wids['bad_chans'].SetBackgroundColour('#F0B03080')
+                wids['bad_chans'].SetBackgroundColour(GUI_COLORS.text_bg)
 
         pchan = int(wids['plot_chan'].GetValue())
 
@@ -658,14 +659,13 @@ class ColumnDataFileFrame(wx.Frame) :
         self.SetFont(Font(FONTSIZE))
         panel = wx.Panel(self)
         self.SetMinSize((725, 700))
-        self.colors = GUIColors()
 
-        def subtitle(s, fontsize=12, colour=wx.Colour(10, 10, 180)):
+        def subtitle(s, fontsize=12, colour=GUI_COLORS.title_blue):
             return SimpleText(panel, s, font=Font(fontsize),
                            colour=colour, style=LEFT)
 
         # title row
-        title = subtitle(message, colour=self.colors.title)
+        title = subtitle(message, colour=GUI_COLORS.title)
 
         yarr_labels = self.yarr_labels = self.array_labels + ['1.0', '']
         xarr_labels = self.xarr_labels = self.array_labels + ['_index']
@@ -700,7 +700,7 @@ class ColumnDataFileFrame(wx.Frame) :
         dtype_lab = SimpleText(panel, ' Data Type: ')
         monod_lab = SimpleText(panel, ' Mono D spacing (Ang): ')
         yerrval_lab = SimpleText(panel, ' Value:')
-        self.info_message = subtitle('    ', colour=wx.Colour(100, 10, 10))
+        self.info_message = subtitle('    ', colour=GUI_COLORS.title_red)
 
         # yref
         self.has_yref = Check(panel, label='data file includes energy reference data',
@@ -858,11 +858,7 @@ class ColumnDataFileFrame(wx.Frame) :
 
         pack(panel, sizer)
 
-        self.nb = fnb.FlatNotebook(self, -1, agwStyle=FNB_STYLE)
-        self.nb.SetTabAreaColour(wx.Colour(248,248,240))
-        self.nb.SetActiveTabColour(wx.Colour(254,254,195))
-        self.nb.SetNonActiveTabTextColour(wx.Colour(40,40,180))
-        self.nb.SetActiveTabTextColour(wx.Colour(80,0,0))
+        self.nb = flatnotebook(self, {}, style=FNB_STYLE)
 
         self.plotpanel = PlotPanel(self, messenger=self.plot_messages)
         try:

@@ -13,6 +13,7 @@ from wx.lib.embeddedimage import PyEmbeddedImage
 
 from wxutils import (GridPanel, Choice, FloatCtrl,
                      LEFT, pack, HLine, SetTip, Font)
+from wxutils.colors import GUI_COLORS
 from . import FONTSIZE
 from lmfit import Parameter
 from larch import Group
@@ -157,10 +158,11 @@ class ParameterWidgets(object):
             if param.expr not in (None, 'None', ''):
                 try:
                     ast.parse(param.expr)
-                    bgcol, fgcol = 'white', 'black'
+                    fgcol = GUI_COLORS.text
+                    bgcol = GUI_COLORS.text_bg
                 except SyntaxError:
-                    bgcol, fgcol = 'white', '#AA0000'
-
+                    fgcol = GUI_COLORS.text_invalid
+                    bgcol = GUI_COLORS.text_invalid_bg
                 self.expr.SetForegroundColour(fgcol)
                 self.expr.SetBackgroundColour(bgcol)
 
@@ -223,9 +225,12 @@ class ParameterWidgets(object):
         try:
             ast.parse(value)
             self.param.expr = value
-            bgcol, fgcol = 'white', 'black'
+            fgcol = GUI_COLORS.text
+            bgcol = GUI_COLORS.text_bg
         except SyntaxError:
-            bgcol, fgcol = 'white', '#AA0000'
+            fgcol = GUI_COLORS.text_invalid
+            bgcol = GUI_COLORS.text_invalid_bg
+
         self.expr.SetForegroundColour(fgcol)
         self.expr.SetBackgroundColour(bgcol)
 

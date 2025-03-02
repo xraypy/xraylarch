@@ -39,7 +39,7 @@ from larch.xafs.xafsutils import FT_WINDOWS
 
 from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          SetTip, GridPanel, get_icon, SimpleText, pack,
-                         Button, HLine, Choice, Check, MenuItem, GUIColors,
+                         Button, HLine, Choice, Check, MenuItem,
                          CEN, RIGHT, LEFT, FRAMESTYLE, Font, FONTSIZE,
                          COLORS, set_color, FONTSIZE_FW, FileSave,
                          FileOpen, flatnotebook, EditableListBox, Popup,
@@ -871,9 +871,9 @@ class FeffitPanel(TaskPanel):
             pan.Add(SimpleText(pan, text), dcol=dcol, newrow=newrow)
 
         pan.Add(SimpleText(pan, 'Feff Fitting',
-                           size=(150, -1), **self.titleopts), style=LEFT, dcol=1)
+                           size=(200, -1), **self.titleopts), style=LEFT, dcol=1)
         pan.Add(SimpleText(pan, 'Use Feff->Browse Feff Calculations to Add Paths',
-                           size=(425, -1)), style=LEFT, dcol=4)
+                           size=(200, -1)), style=LEFT, dcol=4)
 
         add_text('Fitting Space: ')
         pan.Add(wids['fit_space'])
@@ -931,10 +931,11 @@ class FeffitPanel(TaskPanel):
         pan.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add((5, 5), 0, LEFT, 3)
         sizer.Add(pan, 0, LEFT, 3)
-        sizer.Add((3, 3), 0, LEFT, 3)
+        sizer.Add((5, 5), 0, LEFT, 3)
         sizer.Add(SimpleText(self, ' Parameters and Paths'), 0, LEFT, 2)
-        sizer.Add((3, 3), 0, LEFT, 3)
+        sizer.Add((5, 5), 0, LEFT, 3)
         sizer.Add(self.paths_nb,  1, LEFT|wx.GROW, 5)
         pack(self, sizer)
 
