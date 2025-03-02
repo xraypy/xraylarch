@@ -25,6 +25,7 @@ from larch.io import save_groups, read_groups
 from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          SetTip, GridPanel, get_icon, SimpleText, pack,
                          Button, HLine, Choice, Check, MenuItem, COLORS,
+                         GUI_COLORS,
                          set_color, CEN, RIGHT, LEFT, FRAMESTYLE, Font,
                          FONTSIZE, FONTSIZE_FW, FileSave, FileOpen,
                          flatnotebook, Popup, EditableListBox, ExceptionPopup)
@@ -887,9 +888,9 @@ class PrePeakPanel(TaskPanel):
 
         self.mod_nb.AddPage(dummy_panel, 'Empty Model', True)
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add((10, 10), 0, LEFT, 3)
+        sizer.Add((5, 5), 0, LEFT, 3)
         sizer.Add(pan, 0, LEFT, 3)
-        sizer.Add((10, 10), 0, LEFT, 3)
+        sizer.Add((5, 5), 0, LEFT, 3)
         sizer.Add(self.mod_nb,  1, LEFT|wx.GROW, 5)
 
         pack(self, sizer)
@@ -1189,7 +1190,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         SetTip(delbtn,   'Delete this model component')
         SetTip(pick2btn, 'Select X range on Plot to Guess Initial Values')
 
-        panel.Add(SLabel(label, size=(275, -1), colour='#0000AA'),
+        panel.Add(SLabel(label, size=(275, -1), colour=GUI_COLORS.title_blue),
                   dcol=4,  style=wx.ALIGN_LEFT, newrow=True)
         panel.Add(usebox, dcol=2)
         panel.Add(bkgbox, dcol=1, style=RIGHT)

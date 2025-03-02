@@ -1835,7 +1835,7 @@ before clearing"""
         dtype = getattr(dgroup, 'datatype', 'xydata')
         startpage = 'xasnorm' if dtype == 'xas' else 'xydata'
         ipage, pagepanel = self.get_nbpage(startpage)
-        print("INSTALL GROUP ", dtype, startpage, ipage, pagepanel)
+        # print("INSTALL GROUP ", dtype, startpage, ipage, pagepanel)
         self.nb.SetSelection(ipage)
         self.ShowFile(groupname=groupname, filename=filename,
                       process=process, plot=plot)

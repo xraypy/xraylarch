@@ -15,7 +15,7 @@ from larch import Group
 from larch.wxlib import (BitmapButton, SetTip, GridPanel, FloatCtrl,
                          FloatSpin, FloatSpinWithPin, get_icon, SimpleText,
                          pack, Button, HLine, Choice, Check, MenuItem,
-                         GUIColors, CEN, LEFT, FRAMESTYLE, Font, FileSave,
+                         CEN, LEFT, FRAMESTYLE, Font, FileSave, GUI_COLORS,
                          FileOpen, FONTSIZE, FONTSIZE_FW, DataTableGrid)
 
 from larch.xafs import etok, ktoe
@@ -216,7 +216,7 @@ class TaskPanel(wx.Panel):
         self.command_hist = []
         self.SetFont(Font(FONTSIZE))
         self.titleopts = dict(font=Font(FONTSIZE+2),
-                              colour='#AA0000', style=LEFT)
+                              colour=GUI_COLORS.title_red, style=LEFT)
 
         self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.NORMAL)
 

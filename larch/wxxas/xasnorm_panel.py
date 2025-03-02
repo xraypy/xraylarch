@@ -19,7 +19,7 @@ from larch.xafs.pre_edge import find_e0
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, get_icon,
                          SimpleText, pack, Button, HLine, Choice, Check,
                          GridPanel, CEN, RIGHT, LEFT, plotlabels,
-                         get_zoomlimits, set_zoomlimits)
+                         GUI_COLORS, get_zoomlimits, set_zoomlimits)
 
 
 from larch.utils.physical_constants import ATOM_NAMES
@@ -962,7 +962,7 @@ class XASNormPanel(TaskPanel):
 
         for attr in ('e0', 'edge_step'):
             conf[attr] = getattr(dgroup, attr)
-            
+
         if not hasattr(dgroup, 'pre_edge_details'):
             dgroup.pre_edge_details = Group(nnorm=None)
         self.set_nnorm_widget(getattr(dgroup.pre_edge_details,
