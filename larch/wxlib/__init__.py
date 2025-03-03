@@ -99,12 +99,11 @@ if HAS_WXPYTHON:
                          EditableListBox, FileCheckList,
                          FileDropTarget, NumericCombo, FloatSpin,
                          FileOpen, FileSave, SelectWorkdir,
-                         COLORS, GUIColors, GUI_COLORS, set_color,
                          FloatSpinWithPin, flatnotebook,
                          PeriodicTablePanel, gcd, ExceptionPopup,
                          show_wxsizes, panel_pack)
 
-
+    from .wxcolors import COLORS, GUIColors, GUI_COLORS, set_color
     from . import larchframe
     from . import larchfilling
     from . import readlinetextctrl
