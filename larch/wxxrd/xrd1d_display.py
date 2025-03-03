@@ -39,7 +39,7 @@ from larch.xrd import (d_from_q,twth_from_q,q_from_twth,
 
 from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          SetTip, GridPanel, get_icon, SimpleText, pack,
-                         Button, HLine, Choice, Check, MenuItem, COLORS,
+                         Button, HLine, Choice, Check, MenuItem, GUI_COLORS,
                          set_color, CEN, RIGHT, LEFT, FRAMESTYLE, Font,
                          FONTSIZE, FONTSIZE_FW, FileSave, FileOpen,
                          flatnotebook, Popup, FileCheckList, OkCancel,
@@ -655,7 +655,7 @@ class XRD1DFrame(wx.Frame):
         # title row
         self.wids = wids = {}
         title = SimpleText(panel, '1D XRD Data Display', font=Font(FONTSIZE+2),
-                           colour=COLORS['title'], style=LEFT)
+                           colour=GUI_COLORS.title, style=LEFT)
 
         self.last_plot_type = 'one'
         self.plotone = Button(panel, 'Plot Current ', size=(125, -1),
