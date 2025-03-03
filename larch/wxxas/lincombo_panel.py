@@ -23,7 +23,7 @@ from larch.xafs import etok, ktoe
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
                          GridPanel, get_icon, SimpleText, pack, Button,
                          HLine, Choice, Check, CEN, LEFT, Font, FONTSIZE,
-                         FONTSIZE_FW, MenuItem, FRAMESTYLE, COLORS,
+                         FONTSIZE_FW, MenuItem, FRAMESTYLE, GUI_COLORS,
                          set_color, FileSave, EditableListBox,
                          DataTableGrid)
 
@@ -184,7 +184,7 @@ class LinComboResultFrame(wx.Frame):
         wids['data_title'] = SimpleText(panel, 'Linear Combination Result: <> ',
                                         font=Font(FONTSIZE+2),
                                         size=(400, -1),
-                                        colour=COLORS['title'], style=LEFT)
+                                        colour=GUI_COLORS.title, style=LEFT)
         wids['nfits_title'] = SimpleText(panel, 'showing 5 best fits')
         wids['fitspace_title'] = SimpleText(panel, 'Array Fit: ')
 
@@ -203,7 +203,7 @@ class LinComboResultFrame(wx.Frame):
         irow += 1
         self.wids['paramstitle'] = SimpleText(panel, '[[Parameters]]',
                                               font=Font(FONTSIZE+2),
-                                              colour=COLORS['title'], style=LEFT)
+                                              colour=GUI_COLORS.title, style=LEFT)
         sizer.Add(self.wids['paramstitle'], (irow, 0), (1, 3), LEFT)
 
 
@@ -263,7 +263,7 @@ class LinComboResultFrame(wx.Frame):
 
         irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]', font=Font(FONTSIZE+2),
-                           colour=COLORS['title'], style=LEFT)
+                           colour=GUI_COLORS.title, style=LEFT)
         sizer.Add(title, (irow, 0), (1, 4), LEFT)
 
         irow += 1
@@ -274,7 +274,7 @@ class LinComboResultFrame(wx.Frame):
 
         irow += 1
         title = SimpleText(panel, '[[Weights]]', font=Font(FONTSIZE+2),
-                           colour=COLORS['title'], style=LEFT)
+                           colour=GUI_COLORS.title, style=LEFT)
         sizer.Add(title, (irow, 0), (1, 4), LEFT)
         self.wids['weightspanel'] = ppan = wx.Panel(panel)
 

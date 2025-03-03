@@ -33,15 +33,18 @@ from larch.utils.strutils import (file2groupname, unique_name,
 
 from larch.larchlib import read_workdir, save_workdir, read_config, save_config
 
-from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
-                         SpecfileImporter, XasImporter, FileCheckList, FloatCtrl,
-                         FloatSpin, SetTip, get_icon, SimpleText, TextCtrl,
-                         pack, Button, Popup, HLine, FileSave, FileOpen,
-                         Choice, Check, MenuItem, HyperText, set_color, COLORS,
-                         CEN, LEFT, FRAMESTYLE, Font, FONTSIZE,
-                         flatnotebook, LarchUpdaterDialog, GridPanel,
-                         CIFFrame, Structure2FeffFrame, FeffResultsFrame, LarchWxApp, OkCancel,
-                         ExceptionPopup, set_color)
+from larch.wxlib import (LarchFrame, ColumnDataFileFrame,
+                         AthenaImporter, SpecfileImporter,
+                         XasImporter, FileCheckList, FloatCtrl,
+                         FloatSpin, SetTip, get_icon, SimpleText,
+                         TextCtrl, pack, Button, Popup, HLine,
+                         FileSave, FileOpen, Choice, Check, MenuItem,
+                         HyperText, set_color, GUI_COLORS, CEN, LEFT,
+                         FRAMESTYLE, Font, FONTSIZE, flatnotebook,
+                         LarchUpdaterDialog, GridPanel, CIFFrame,
+                         Structure2FeffFrame, FeffResultsFrame,
+                         LarchWxApp, OkCancel, ExceptionPopup,
+                         set_color)
 
 
 from larch.wxlib.plotter import get_display
@@ -122,7 +125,7 @@ class PreferencesFrame(wx.Frame):
         self.title = SimpleText(tpanel, 'Edit Preference and Defaults',
                                 size=(500, 25),
                                 font=Font(FONTSIZE+1), style=LEFT,
-                                colour=COLORS['nb_text'])
+                                colour=GUI_COLORS.nb_text)
 
         self.save_btn = Button(tpanel, 'Save for Future sessions',
                                size=(200, -1), action=self.onSave)
@@ -142,7 +145,7 @@ class PreferencesFrame(wx.Frame):
             title = CONF_SECTIONS.get(name, name)
             title = SimpleText(panel, f"  {title}",
                                size=(550, -1), font=Font(FONTSIZE+2),
-                               colour=COLORS['title'], style=LEFT)
+                               colour=GUI_COLORS.title, style=LEFT)
 
             self.wids[name]['_key_'] = SimpleText(panel, " <name> ",
                                                   size=(150, -1), style=LEFT)
@@ -258,7 +261,7 @@ class PanelSelectionFrame(wx.Frame):
         title = SimpleText(panel, 'Select Larix Modes and Analysis Panels',
                            size=(500, 25),
                            font=Font(FONTSIZE+1), style=LEFT,
-                           colour=COLORS['nb_text'])
+                           colour=GUI_COLORS.nb_text)
         modetitle = SimpleText(panel, 'Analysis Mode: ')
         panetitle = SimpleText(panel, 'Select Individual Analysis Panels: ')
 
@@ -492,7 +495,7 @@ class LarixFrame(wx.Frame):
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.title = SimpleText(panel, ' ', size=(500, 25),
                                 font=Font(FONTSIZE+3), style=LEFT,
-                                colour=COLORS['nb_text'])
+                                colour=GUI_COLORS.nb_text)
 
         ir = 0
         sizer.Add(self.title, 0, CEN, 3)

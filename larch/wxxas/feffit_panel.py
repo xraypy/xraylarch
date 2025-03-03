@@ -41,7 +41,7 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          SetTip, GridPanel, get_icon, SimpleText, pack,
                          Button, HLine, Choice, Check, MenuItem,
                          CEN, RIGHT, LEFT, FRAMESTYLE, Font, FONTSIZE,
-                         COLORS, set_color, FONTSIZE_FW, FileSave,
+                         GUI_COLORS, set_color, FONTSIZE_FW, FileSave,
                          FileOpen, flatnotebook, EditableListBox, Popup,
                          ExceptionPopup)
 
@@ -264,13 +264,13 @@ class ParametersModel(dv.DataViewIndexListModel):
         """set row/col attributes (color, etc)"""
         ptype = self.data[row][2]
         if ptype == 'vary':
-            attr.SetColour('#000000')
+            attr.SetColour(GUI_COLORS.text)
         elif ptype == 'fixed':
-            attr.SetColour('#AA2020')
+            attr.SetColour(GUI_COLORS.title_red)
         elif ptype == 'skip':
-            attr.SetColour('#50AA50')
+            attr.SetColour(GUI_COLORS.text_unused)
         else:
-            attr.SetColour('#2010BB')
+            attr.SetColour(GUI_COLORS.title_blue)
         return True
 
 class EditParamsFrame(wx.Frame):
@@ -286,7 +286,7 @@ class EditParamsFrame(wx.Frame):
         self.paramgroup = paramgroup
 
         spanel = scrolled.ScrolledPanel(self, size=(500, 275))
-        spanel.SetBackgroundColour('#EEEEEE')
+        spanel.SetBackgroundColour(GUI_COLORS.text_bg)
 
         self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.NORMAL)
 
@@ -452,7 +452,7 @@ class FeffitParamsPanel(wx.Panel):
         def SLabel(label, size=(80, -1), **kws):
             return  SimpleText(panel, label, size=size, style=wx.ALIGN_LEFT, **kws)
 
-        panel.Add(SLabel("Feffit Parameters ", colour='#0000AA', size=(200, -1)), dcol=2)
+        panel.Add(SLabel("Feffit Parameters ", colour=GUI_COLORS.title_blue, size=(200, -1)), dcol=2)
         panel.Add(Button(panel, 'Edit Parameters', action=self.onEditParams),  dcol=2)
         panel.Add(Button(panel, 'Force Refresh', action=self.Rebuild),         dcol=3)
 
@@ -636,7 +636,7 @@ class FeffPathPanel(wx.Panel):
         title1 = f'{dirname:s}: {feffdat_file:s}  {absorber:s} {shell:s} edge'
         title2 = f'Reff={reff:.4f},  Degen={degen:.1f}, {scatt:s}: {geomstr:s}'
 
-        panel.Add(SLabel(title1, size=(375, -1), colour='#0000AA'),
+        panel.Add(SLabel(title1, size=(375, -1), colour=GUI_COLORS.title_blue),
                   dcol=2,  style=wx.ALIGN_LEFT, newrow=True)
         panel.Add(wids['use'])
         panel.Add(wids['del'])
@@ -709,9 +709,11 @@ class FeffPathPanel(wx.Panel):
                 result = False
 
         if result:
-            bgcol, fgcol = 'white', 'black'
+            fgcol = GUI_COLORS.text
+            bgcol = GUI_COLORS.text_bg
         else:
-            bgcol, fgcol = '#AAAA4488', '#AA0000'
+            fgcol = GUI_COLORS.text_invalid
+            bgcol = GUI_COLORS.text_invalid_bg
         self.wids[name].SetForegroundColour(fgcol)
         self.wids[name].SetBackgroundColour(bgcol)
         self.wids[name].SetOwnBackgroundColour(bgcol)
@@ -1828,11 +1830,11 @@ class FeffitResultFrame(wx.Frame):
         # title row
         self.wids = wids = {}
         title = SimpleText(panel, 'Feffit Results', font=Font(FONTSIZE+2),
-                           colour=COLORS['title'], style=LEFT)
+                           colour=GUI_COLORS.title, style=LEFT)
 
         wids['data_title'] = SimpleText(panel, '< > ', font=Font(FONTSIZE+2),
                                         minsize=(350, -1),
-                                        colour=COLORS['title'], style=LEFT)
+                                        colour=GUI_COLORS.title, style=LEFT)
 
         wids['plot1_op'] = Choice(panel, choices=list(Plot1_Choices.keys()),
                                     action=self.onPlot, size=(125, -1))
@@ -1921,7 +1923,7 @@ class FeffitResultFrame(wx.Frame):
 
         irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(FONTSIZE+2),
-                           colour=COLORS['title'], style=LEFT)
+                           colour=GUI_COLORS.title, style=LEFT)
         subtitle = SimpleText(panel, ' (most recent fit is at the top)',
                               font=Font(FONTSIZE+1),  style=LEFT)
 
@@ -1958,7 +1960,7 @@ class FeffitResultFrame(wx.Frame):
 
         irow += 1
         title = SimpleText(panel, '[[Variables]]',  font=Font(FONTSIZE+2),
-                           colour=COLORS['title'], style=LEFT)
+                           colour=GUI_COLORS.title, style=LEFT)
         sizer.Add(title, (irow, 0), (1, 1), LEFT)
 
         self.wids['copy_params'] = Button(panel, 'Update Model with these values',
@@ -1992,7 +1994,7 @@ class FeffitResultFrame(wx.Frame):
 
         irow += 1
         title = SimpleText(panel, '[[Correlations]]',  font=Font(FONTSIZE+2),
-                           colour=COLORS['title'], style=LEFT)
+                           colour=GUI_COLORS.title, style=LEFT)
 
         ppanel = wx.Panel(panel)
         ppanel.SetMinSize((450, 20))

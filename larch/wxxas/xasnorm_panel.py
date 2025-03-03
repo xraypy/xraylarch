@@ -19,7 +19,7 @@ from larch.xafs.pre_edge import find_e0
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, get_icon,
                          SimpleText, pack, Button, HLine, Choice, Check,
                          GridPanel, CEN, RIGHT, LEFT, plotlabels,
-                         GUI_COLORS, get_zoomlimits, set_zoomlimits)
+                         get_zoomlimits, set_zoomlimits)
 
 
 from larch.utils.physical_constants import ATOM_NAMES

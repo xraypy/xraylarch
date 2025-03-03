@@ -22,13 +22,14 @@ from larch.math import index_of
 from larch.io.export_modelresult import export_modelresult
 from larch.io import save_groups, read_groups
 
-from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
-                         SetTip, GridPanel, get_icon, SimpleText, pack,
-                         Button, HLine, Choice, Check, MenuItem, COLORS,
-                         GUI_COLORS,
-                         set_color, CEN, RIGHT, LEFT, FRAMESTYLE, Font,
-                         FONTSIZE, FONTSIZE_FW, FileSave, FileOpen,
-                         flatnotebook, Popup, EditableListBox, ExceptionPopup)
+from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl,
+                         FloatSpin, SetTip, GridPanel, get_icon,
+                         SimpleText, pack, Button, HLine, Choice,
+                         Check, MenuItem, GUI_COLORS, set_color, CEN,
+                         RIGHT, LEFT, FRAMESTYLE, Font, FONTSIZE,
+                         FONTSIZE_FW, FileSave, FileOpen,
+                         flatnotebook, Popup, EditableListBox,
+                         ExceptionPopup)
 
 from larch.wxlib.parameter import ParameterWidgets
 from larch.wxlib.plotter import last_cursor_pos
@@ -230,11 +231,11 @@ class PrePeakFitResultFrame(wx.Frame):
         # title row
         self.wids = wids = {}
         title = SimpleText(panel, 'Fit Results', font=Font(FONTSIZE+2),
-                           colour=COLORS['title'], style=LEFT)
+                           colour=GUI_COLORS.title, style=LEFT)
 
         wids['data_title'] = SimpleText(panel, '< > ', font=Font(FONTSIZE+2),
                                         minsize=(350, -1),
-                                        colour=COLORS['title'], style=LEFT)
+                                        colour=GUI_COLORS.title, style=LEFT)
 
         opts = dict(default=False, size=(200, -1), action=self.onPlot)
         ppanel = wx.Panel(panel)
@@ -294,7 +295,7 @@ class PrePeakFitResultFrame(wx.Frame):
 
         irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(FONTSIZE+2),
-                           colour=COLORS['title'], style=LEFT)
+                           colour=GUI_COLORS.title, style=LEFT)
         subtitle = SimpleText(panel, ' (most recent fit is at the top)',
                               font=Font(FONTSIZE+1),  style=LEFT)
 
@@ -335,7 +336,7 @@ class PrePeakFitResultFrame(wx.Frame):
 
         irow += 1
         title = SimpleText(panel, '[[Variables]]',  font=Font(FONTSIZE+2),
-                           colour=COLORS['title'], style=LEFT)
+                           colour=GUI_COLORS.title, style=LEFT)
         sizer.Add(title, (irow, 0), (1, 1), LEFT)
 
         self.wids['copy_params'] = Button(panel, 'Update Model with these values',
@@ -372,7 +373,7 @@ class PrePeakFitResultFrame(wx.Frame):
 
         irow += 1
         title = SimpleText(panel, '[[Correlations]]',  font=Font(FONTSIZE+2),
-                           colour=COLORS['title'], style=LEFT)
+                           colour=GUI_COLORS.title, style=LEFT)
 
         self.wids['all_correl'] = Button(panel, 'Show All',
                                           size=(100, -1), action=self.onAllCorrel)
