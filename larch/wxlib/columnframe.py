@@ -18,7 +18,6 @@ from wxmplot import PlotPanel
 from wxutils import (SimpleText, FloatCtrl, FloatSpin, Button,
                      Choice, TextCtrl, pack, Popup, Check, MenuItem, CEN,
                      RIGHT, LEFT, FRAMESTYLE, flatnotebook, HLine, Font)
-from wxutils.colors import GUI_COLORS
 from pyshortcuts import fix_filename, fix_varname, gformat
 
 from larch import Group, Interpreter
@@ -27,6 +26,7 @@ from larch.utils.strutils import file2groupname
 from larch.io import look_for_nans, guess_filereader, is_specfile, sum_fluor_channels
 from larch.utils.physical_constants import PLANCK_HC, DEG2RAD
 from larch.math import safe_log
+from .wxcolors import GUI_COLORS
 from . import FONTSIZE
 
 CEN |=  wx.ALL

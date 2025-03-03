@@ -13,7 +13,7 @@ from wx.lib.embeddedimage import PyEmbeddedImage
 
 from wxutils import (GridPanel, Choice, FloatCtrl,
                      LEFT, pack, HLine, SetTip, Font)
-from wxutils.colors import GUI_COLORS
+from .wxcolors import GUI_COLORS
 from . import FONTSIZE
 from lmfit import Parameter
 from larch import Group

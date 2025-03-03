@@ -11,11 +11,11 @@ import wx
 import larch
 from larch import Group
 from larch.io import read_athena
-# from .colors import COLORS, set_color
 
 from wxutils import (SimpleText, Button, Choice, FileCheckList,
                      FileDropTarget, pack, Check, MenuItem, SetTip, Popup,
-                     CEN, LEFT, FRAMESTYLE, Font, COLORS, set_color)
+                     CEN, LEFT, FRAMESTYLE, Font)
+from .wxcolors import GUI_COLORS
 
 from wxmplot import PlotPanel
 
@@ -43,7 +43,8 @@ class AthenaImporter(wx.Frame) :
 
         self.select_imported = sel_imp
         self.grouplist = FileCheckList(leftpanel, select_action=self.onShowGroup)
-        set_color(self.grouplist, 'list_fg', bg='list_bg')
+        self.grouplist.SetForegroundColour(GUI_COLORS.list_fg)
+        self.grouplist.SetBackgroundColour(GUI_COLORS.list_bg)
 
         tsizer = wx.GridBagSizer(2, 2)
         tsizer.Add(sel_all, (0, 0), (1, 1), LEFT, 0)
@@ -62,7 +63,7 @@ class AthenaImporter(wx.Frame) :
 
         self.SetTitle("Reading Athena Project '%s'" % self.filename)
         self.title = SimpleText(rightpanel, self.filename, font=Font(13),
-                                colour=COLORS['title'], style=LEFT)
+                                colour=GUI_COLORS.title, style=LEFT)
 
         self.plotpanel = PlotPanel(rightpanel, messenger=self.plot_messages)
         plotconf = self.controller.get_config('plot')
