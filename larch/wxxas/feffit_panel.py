@@ -219,7 +219,7 @@ class ParametersModel(dv.DataViewIndexListModel):
                     continue
                 ptype = 'vary'
                 if not par.vary:
-                    pytype = 'fixed'
+                    ptype = 'fixed'
                 if getattr(par, 'skip', None) not in (False, None):
                     ptype = 'skip'
                 par.skip = ptype == 'skip'
@@ -229,7 +229,7 @@ class ParametersModel(dv.DataViewIndexListModel):
                     value = 'INVALID  '
                 if par.expr is not None:
                     ptype = 'constraint'
-                    value = "%s := %s" % (value, par.expr)
+                    value = f"{value} := {par.expr}"
                 sel = pname in self.selected
                 self.data.append([pname, sel, ptype, value])
         self.Reset(len(self.data))
@@ -266,11 +266,11 @@ class ParametersModel(dv.DataViewIndexListModel):
         if ptype == 'vary':
             attr.SetColour(GUI_COLORS.text)
         elif ptype == 'fixed':
-            attr.SetColour(GUI_COLORS.title_red)
+            attr.SetColour(GUI_COLORS.title_blue)
         elif ptype == 'skip':
             attr.SetColour(GUI_COLORS.text_unused)
         else:
-            attr.SetColour(GUI_COLORS.title_blue)
+            attr.SetColour(GUI_COLORS.title_red)
         return True
 
 class EditParamsFrame(wx.Frame):
@@ -288,7 +288,7 @@ class EditParamsFrame(wx.Frame):
         spanel = scrolled.ScrolledPanel(self, size=(500, 275))
         spanel.SetBackgroundColour(GUI_COLORS.text_bg)
 
-        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.NORMAL)
+        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
 
         self.dvc = dv.DataViewCtrl(spanel, style=DVSTYLE)
         self.dvc.SetFont(self.font_fixedwidth)
