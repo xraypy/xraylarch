@@ -18,6 +18,7 @@ from larch.wxlib import (GridPanel, GUIColors, Button, pack, SimpleText,
                          FONTSIZE, MenuItem, EditableListBox, OkCancel,
                          FileCheckList, Choice, HLine, ReportFrame, Popup,
                          LarchWxApp)
+from .wxcolors import GUI_COLORS
 
 from larch.xafs import get_feff_pathinfo
 from larch.utils.physical_constants import ATOM_SYMS
@@ -104,19 +105,19 @@ class FeffPathsModel(dv.DataViewIndexListModel):
         nleg = self.data[row][2]
         cname = self.data[row][0]
         if nleg == '2':
-            attr.SetColour('#000')
+            attr.SetColour(GUI_COLORS.text)
             attr.SetBold(False)
             return True
         elif nleg == '3':
-            attr.SetColour('#A11')
+            attr.SetColour(GUI_COLORS.title_red)
             attr.SetBold(False)
             return True
         elif nleg == '4':
-            attr.SetColour('#11A')
+            attr.SetColour(GUI_COLORS.title_blue)
             attr.SetBold(False)
             return True
         else:
-            attr.SetColour('#393')
+            attr.SetColour(GUI_COLORS.title_green)
             attr.SetBold(False)
             return True
         return False
