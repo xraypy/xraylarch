@@ -48,8 +48,9 @@ Plot_EnergyRanges = {'full E range': None,
                      'E0 -30:+120eV': (-30, 120),
                      'E0 -50:+250eV': (-50, 250),
                      'E0 -100:+500eV': (-100, 500)}
-
-
+Plot_EnergyOffsets = ['use absolute energy',
+                      'subtract E0 for group',
+                      'subtract nominal E0 for element/edge']
 
 FSIZE = 120
 FSIZEBIG = 175
@@ -84,7 +85,7 @@ class XASNormPanel(TaskPanel):
                                  action=self.onPlotOne, size=(300, -1))
 
         self.plot_erange = Choice(trow, choices=list(Plot_EnergyRanges),
-                                 action=self.onPlotEither, size=(175, -1))
+                                 action=self.onPlotEither, size=(120, -1))
 
         opts = {'digits': 2, 'increment': 0.05, 'value': 0, 'size': (FSIZE, -1)}
         plot_voff = self.add_floatspin('plot_voff', with_pin=False,
@@ -94,22 +95,31 @@ class XASNormPanel(TaskPanel):
                                        **opts)
 
         vysize, vxsize = plot_sel.GetBestSize()
-        voff_lab = wx.StaticText(parent=trow, label='  Y Offset:', size=(80, vxsize),
-                                 style=wx.RIGHT|wx.ALIGN_CENTRE_HORIZONTAL|wx.ST_NO_AUTORESIZE)
+        erange_lab = wx.StaticText(parent=trow, label='  E Range:', size=(75, -1))
+        voff_lab = wx.StaticText(parent=trow, label='  Y Offset:', size=(75, -1),
+                                style=wx.RIGHT|wx.ALIGN_CENTRE_HORIZONTAL|wx.ST_NO_AUTORESIZE)
+        enoff_lab = wx.StaticText(parent=trow, label='  Energy Offset:', size=(165, -1),
+                                style=wx.RIGHT|wx.ALIGN_CENTRE_HORIZONTAL|wx.ST_NO_AUTORESIZE)
+
+        self.plot_enoff = Choice(trow, choices=Plot_EnergyOffsets,
+                                 action=self.onPlotEither, size=(300, -1))
 
         self.plot_erange.SetSelection(0)
+        self.plot_enoff.SetSelection(0)
         self.plotone_op.SetSelection(1)
         self.plotsel_op.SetSelection(1)
 
         tsizer = wx.GridBagSizer(3, 3)
         tsizer.Add(plot_sel,        (0, 0), (1, 1), LEFT, 2)
         tsizer.Add(self.plotsel_op, (0, 1), (1, 1), LEFT, 2)
-        tsizer.Add(voff_lab,        (0, 2), (1, 1), RIGHT, 2)
-        tsizer.Add(plot_voff,       (0, 3), (1, 1), RIGHT, 2)
-        tsizer.Add(plot_one,       (1, 0), (1, 1), LEFT, 2)
+        tsizer.Add(plot_one,        (1, 0), (1, 1), LEFT, 2)
         tsizer.Add(self.plotone_op, (1, 1), (1, 1), LEFT, 2)
-        tsizer.Add(self.plot_erange, (1, 2), (1, 2), RIGHT, 2)
-
+        tsizer.Add(erange_lab,      (1, 2), (1, 1), RIGHT, 2)
+        tsizer.Add(self.plot_erange, (1, 3), (1, 1), RIGHT, 2)
+        tsizer.Add(enoff_lab,       (2, 0), (1, 1), LEFT, 2)
+        tsizer.Add(self.plot_enoff, (2, 1), (1, 1), LEFT, 2)
+        tsizer.Add(voff_lab,        (2, 2), (1, 1), RIGHT, 2)
+        tsizer.Add(plot_voff,       (2, 3), (1, 1), RIGHT, 2)
         pack(trow, tsizer)
 
         # atom row
@@ -1090,6 +1100,7 @@ class XASNormPanel(TaskPanel):
         if new:
             plotcmd = ppanel.plot
 
+
         erange = Plot_EnergyRanges[self.plot_erange.GetStringSelection()]
         self.controller.set_plot_erange(erange)
 
@@ -1099,6 +1110,14 @@ class XASNormPanel(TaskPanel):
 
         if process:
             self.ensure_xas_processed(dgroup, force_mback=True)
+
+        en_offset = self.plot_enoff.GetSelection()
+        if en_offset == 1:
+            en_offset = dgroup.e0
+        elif en_offset == 2:
+            form = self.read_form()
+            print("En offset ", form['edge'], form['atsym'])
+
 
         if plot_yarrays is None:
             plot_yarrays = self.get_plot_arrays(dgroup)
