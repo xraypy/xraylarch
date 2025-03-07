@@ -49,7 +49,7 @@ Plot_EnergyRanges = {'full E range': None,
                      'E0 -50:+250eV': (-50, 250),
                      'E0 -100:+500eV': (-100, 500)}
 Plot_EnergyOffsets = ['use absolute energy',
-                      'subtract E0 for (first) group',
+                      'subtract E0 for group (last for multiple groups)',
                       'subtract nominal E0 for element/edge']
 
 FSIZE = 120
@@ -588,8 +588,12 @@ class XASNormPanel(TaskPanel):
         self.controller.set_plot_erange(erange)
 
         en_offset = self.get_plot_energy_offset(dgroup)
+        en_offset_init = en_offset*1.0
+        en_offset_sel = self.plot_enoff.GetSelection()
 
-        en_offset = self.get_plot_energy_offset(dgroup)
+
+        popts = {'style': 'solid', 'marker': None}
+
         if erange is not None:
             if en_offset > 5:
                 popts['xmin'] = erange[0]
@@ -604,7 +608,7 @@ class XASNormPanel(TaskPanel):
         yarray_name = plot_choices.get(ytitle, 'norm')
         ylabel = getattr(plotlabels, yarray_name, ytitle)
         xlabel = getattr(dgroup, 'plot_xlabel', getattr(plotlabels, 'energy'))
-        if en_offset > 5.
+        if en_offset > 5.0:
             xlabel = plotlabels.en_e0val.format(en_offset)
 
         if yarray_name == 'norm':
@@ -620,7 +624,6 @@ class XASNormPanel(TaskPanel):
         plot_traces = []
         newplot = True
         plotopts = self.controller.get_plot_conf()
-        popts = {'style': 'solid', 'marker': None}
         popts['linewidth'] = plotopts.pop('linewidth')
         popts['marksize'] = plotopts.pop('markersize')
         popts['grid'] = plotopts.pop('show_grid')
@@ -632,6 +635,11 @@ class XASNormPanel(TaskPanel):
             if dgroup is None:
                 continue
             self.ensure_xas_processed(dgroup, force_mback =('mback' in yarray_name))
+
+            if en_offset_sel == 2:  # nominal edge for element
+                en_offset = self.get_plot_energy_offset(dgroup)
+                if abs(en_offset - en_offset_init) > 1:
+                    xlabel = plotlabels.en_e0
 
             if erange is not None and hasattr(dgroup, 'e0') and 'xmin' not in popts:
                 popts['xmin'] = dgroup.e0 + erange[0]
@@ -656,8 +664,7 @@ class XASNormPanel(TaskPanel):
                 ppanel.conf.init_trace(i,  linecolors[i%ncols], 'dashed')
 
         #
-
-        ppanel.plot_many(plot_traces, xlabel=plotlabels.energy, ylabel=ylabel,
+        ppanel.plot_many(plot_traces, xlabel=xlabel, ylabel=ylabel,
                          zoom_limits=zoom_limits, show_legend=True)
         set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
         ppanel.canvas.draw()
@@ -1137,8 +1144,10 @@ class XASNormPanel(TaskPanel):
             en_off = dgroup.e0
         elif selection == 2:
             form = self.read_form()
+            atsym = getattr(dgroup, 'atsym', form['atsym'])
+            edge = getattr(dgroup, 'edge', form['edge'])
             try:
-                en_off = xray_edge(form['atsym'] , form['edge']).energy
+                en_off = xray_edge(atsym, edge).energy
             except:
                 pass
         return en_off
