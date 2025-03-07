@@ -8,7 +8,7 @@ from copy import deepcopy
 import numpy as np
 
 from functools import partial
-from xraydb import guess_edge, atomic_number
+from xraydb import guess_edge, atomic_number, xray_edge
 from pyshortcuts import gformat, fix_varname, fix_filename
 from larch import Group
 from larch.utils import path_split, file2groupname
@@ -126,9 +126,13 @@ class XASNormPanel(TaskPanel):
         atpanel = wx.Panel(panel)
         self.wids['atsym']  = Choice(atpanel, choices=ATSYMS, size=(100, -1))
         self.wids['edge']   = Choice(atpanel, choices=EDGES, size=(100, -1))
+        self.wids['e0_nominal']  = wx.StaticText(atpanel, label='nominal E0= ', size=(225, -1))
+        #
+        # Choice(atpanel, choices=EDGES, size=(100, -1))
         sat = wx.BoxSizer(wx.HORIZONTAL)
         sat.Add(self.wids['atsym'], 0, LEFT, 4)
         sat.Add(self.wids['edge'], 0, LEFT, 4)
+        sat.Add(self.wids['e0_nominal'], 0, LEFT, 4)
         pack(atpanel, sat)
 
         # e0 row
@@ -351,6 +355,10 @@ class XASNormPanel(TaskPanel):
         if atsym == '?':
             conf['atsym'] = getattr(dgroup, 'atsym', atsym)
         conf['edge'] = getattr(dgroup,'edge', conf['edge'])
+        try:
+            conf['e0_nominal'] = xray_edge(conf['atsym'] , conf['edge']).energy
+        except:
+            conf['e0_nominal'] = -1
 
         xeref = getattr(dgroup, 'energy_ref', '')
         fname = getattr(dgroup, 'filename', None)
@@ -370,10 +378,18 @@ class XASNormPanel(TaskPanel):
             atsym, edge = guess_edge(dgroup.e0)
             conf['atsym'] = atsym
             conf['edge'] = edge
+            try:
+                conf['e0_nominal'] = xray_edge(atsym, edge).energy
+            except:
+                conf['e0_nominal'] = -1
 
         if hasattr(dgroup, 'mback_params'):
             conf['atsym'] = getattr(dgroup.mback_params, 'atsym', conf['atsym'])
             conf['edge'] = getattr(dgroup.mback_params, 'edge', conf['edge'])
+            try:
+                conf['e0_nominal'] = xray_edge(conf['atsym'], conf['edge']).energy
+            except:
+                conf['e0_nominal'] = -1
 
         setattr(dgroup.config, self.configname, conf)
         return conf
@@ -405,6 +421,12 @@ class XASNormPanel(TaskPanel):
                 atsym, edge = guess_edge(dgroup.e0)
                 opts['atsym'] = atsym
                 opts['edge'] = edge
+                try:
+                    opts['e0_nominal'] = xray_edge(atsym, edge).energy
+                except:
+                    opts['e0_nominal'] = -1
+
+
 
             self.wids['step'].SetValue(edge_step)
             autoset_fs_increment(self.wids['step'], edge_step)
@@ -424,6 +446,9 @@ class XASNormPanel(TaskPanel):
 
             self.wids['edge'].SetStringSelection(opts['edge'].title())
             self.wids['atsym'].SetStringSelection(opts['atsym'].title())
+
+            self.wids['e0_nominal'].SetLabel(f"nominal E0={opts['e0_nominal']:.2f}")
+
             self.wids['norm_method'].SetStringSelection(opts['norm_method'].lower())
             for attr in ('pre1', 'pre2', 'norm1', 'norm2', 'nnorm', 'edge',
                          'atsym', 'step', 'norm_method'):
@@ -847,7 +872,8 @@ class XASNormPanel(TaskPanel):
             if res.ok:
                 en_units = res.units
                 dgroup.mono_dspace = res.dspace
-                dgroup.xplot = dgroup.energy = res.energy
+                dgroup.energy = res.energy*1.0
+                dgroup.xplot = dgroup.energy*1.0
         dgroup.energy_units = en_units
 
         if not hasattr(dgroup, 'e0'):
@@ -864,7 +890,7 @@ class XASNormPanel(TaskPanel):
 
         cmds = []
         # test whether the energy shift is 0 or is different from the current energy shift:
-        ediff = 8.42e14  # just a huge energy step/shift
+        ediff = 1e15  # just a huge energy step/shift
         eshift_current = getattr(dgroup, 'energy_shift', ediff)
         eshift = form.get('energy_shift', ediff)
         e1 = getattr(dgroup, 'energy', [ediff])
@@ -1089,6 +1115,20 @@ class XASNormPanel(TaskPanel):
 
         return dgroup.plot_yarrays
 
+    def get_plot_energy_offset(self, dgroup):
+        selection = self.plot_enoff.GetSelection()
+        en_off = 0.0
+        if selection == 1 and hasattr(dgroup, 'e0'):
+            en_off = dgroup.e0
+        elif selection == 2:
+            form = self.read_form()
+            try:
+                en_off = xray_edge(form['atsym'] , form['edge']).energy
+            except:
+                pass
+        return en_off
+
+
     def plot(self, dgroup, title=None, plot_yarrays=None, yoff=0,
              delay_draw=True, multi=False, new=True, with_extras=True, process=True, **kws):
 
@@ -1100,7 +1140,6 @@ class XASNormPanel(TaskPanel):
         if new:
             plotcmd = ppanel.plot
 
-
         erange = Plot_EnergyRanges[self.plot_erange.GetStringSelection()]
         self.controller.set_plot_erange(erange)
 
@@ -1111,13 +1150,7 @@ class XASNormPanel(TaskPanel):
         if process:
             self.ensure_xas_processed(dgroup, force_mback=True)
 
-        en_offset = self.plot_enoff.GetSelection()
-        if en_offset == 1:
-            en_offset = dgroup.e0
-        elif en_offset == 2:
-            form = self.read_form()
-            print("En offset ", form['edge'], form['atsym'])
-
+        en_offset = self.get_plot_energy_offset(dgroup)
 
         if plot_yarrays is None:
             plot_yarrays = self.get_plot_arrays(dgroup)
@@ -1133,11 +1166,20 @@ class XASNormPanel(TaskPanel):
 
         zoom_limits = get_zoomlimits(ppanel, dgroup)
 
-        if erange is not None and hasattr(dgroup, 'e0'):
-            popts['xmin'] = dgroup.e0 + erange[0]
-            popts['xmax'] = dgroup.e0 + erange[1]
+        if erange is not None:
+            if en_offset > 5:
+                popts['xmin'] = erange[0]
+                popts['xmax'] = erange[1]
+            elif hasattr(dgroup, 'e0'):
+                popts['xmin'] = dgroup.e0 + erange[0]
+                popts['xmax'] = dgroup.e0 + erange[1]
 
+        dgroup.xplot = dgroup.energy*1.0
+        xplot = dgroup.xplot*1.0
         popts['xlabel'] = dgroup.plot_xlabel
+        if en_offset > 5:
+            xplot = dgroup.energy - en_offset
+            popts['xlabel'] = plotlabels.en_e0val.format(en_offset)
         popts['ylabel'] = dgroup.plot_ylabel
         if getattr(dgroup, 'plot_y2label', None) is not None:
             popts['y2label'] = dgroup.plot_y2label
@@ -1175,7 +1217,7 @@ class XASNormPanel(TaskPanel):
                 self.process(dgroup=dgroup, force=True, force_mback=True)
             if yaname == 'i0' and not hasattr(dgroup, yaname):
                 dgroup.i0 = np.ones(len(dgroup.xplot))
-            plotcmd(dgroup.xplot, getattr(dgroup, yaname)+yoff, linewidth=linewidth, **popts)
+            plotcmd(xplot, getattr(dgroup, yaname)+yoff, linewidth=linewidth, **popts)
             plotcmd = ppanel.oplot
 
         if with_extras and plot_extras is not None:
