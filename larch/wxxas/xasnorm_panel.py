@@ -49,7 +49,7 @@ Plot_EnergyRanges = {'full E range': None,
                      'E0 -50:+250eV': (-50, 250),
                      'E0 -100:+500eV': (-100, 500)}
 Plot_EnergyOffsets = ['use absolute energy',
-                      'subtract E0 for group',
+                      'subtract E0 for (first) group',
                       'subtract nominal E0 for element/edge']
 
 FSIZE = 120
@@ -587,10 +587,25 @@ class XASNormPanel(TaskPanel):
         erange = Plot_EnergyRanges[self.plot_erange.GetStringSelection()]
         self.controller.set_plot_erange(erange)
 
+        en_offset = self.get_plot_energy_offset(dgroup)
+
+        en_offset = self.get_plot_energy_offset(dgroup)
+        if erange is not None:
+            if en_offset > 5:
+                popts['xmin'] = erange[0]
+                popts['xmax'] = erange[1]
+            elif hasattr(dgroup, 'e0'):
+                popts['xmin'] = dgroup.e0 + erange[0]
+                popts['xmax'] = dgroup.e0 + erange[1]
+
+        dgroup.xplot = dgroup.energy*1.0
+        xplot = dgroup.xplot*1.0
         ytitle = self.plotsel_op.GetStringSelection()
         yarray_name = plot_choices.get(ytitle, 'norm')
         ylabel = getattr(plotlabels, yarray_name, ytitle)
         xlabel = getattr(dgroup, 'plot_xlabel', getattr(plotlabels, 'energy'))
+        if en_offset > 5.
+            xlabel = plotlabels.en_e0val.format(en_offset)
 
         if yarray_name == 'norm':
             norm_method = self.wids['norm_method'].GetStringSelection().lower()
@@ -622,7 +637,7 @@ class XASNormPanel(TaskPanel):
                 popts['xmin'] = dgroup.e0 + erange[0]
                 popts['xmax'] = dgroup.e0 + erange[1]
 
-            trace = {'xdata': dgroup.xplot,
+            trace = {'xdata': dgroup.xplot - en_offset,
                      'ydata': getattr(dgroup, yarray_name) + ix*voff,
                      'label': dgroup.filename, 'new': newplot}
             trace.update(popts)
@@ -1150,7 +1165,6 @@ class XASNormPanel(TaskPanel):
         if process:
             self.ensure_xas_processed(dgroup, force_mback=True)
 
-        en_offset = self.get_plot_energy_offset(dgroup)
 
         if plot_yarrays is None:
             plot_yarrays = self.get_plot_arrays(dgroup)
@@ -1166,6 +1180,7 @@ class XASNormPanel(TaskPanel):
 
         zoom_limits = get_zoomlimits(ppanel, dgroup)
 
+        en_offset = self.get_plot_energy_offset(dgroup)
         if erange is not None:
             if en_offset > 5:
                 popts['xmin'] = erange[0]
