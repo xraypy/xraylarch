@@ -19,12 +19,12 @@ Plotting macros for XAFS data sets and fits
 """
 
 from pathlib import Path
-from numpy import gradient, ndarray, diff, where, arange, argmin
+from numpy import ndarray, diff, where, arange, argmin
 from matplotlib.ticker import FuncFormatter
 
 from larch import Group
-from larch.math import (index_of, index_nearest, interp)
-from larch.xafs import cauchy_wavelet, etok, ktoe
+from larch.math import index_of
+from larch.xafs import cauchy_wavelet, etok
 
 try:
     import wx
@@ -33,17 +33,11 @@ except ImportError:
     HAS_WXPYTHON = False
 
 if HAS_WXPYTHON:
-    from .plotter import (get_display, _plot, _oplot, _newplot, _fitplot,
-                          _plot_text, _plot_marker, _plot_arrow,
-                          _plot_axvline, _plot_axhline, _imshow)
+    from .plotter import (get_display, _plot, _oplot,  _fitplot,
+                         _plot_marker, _plot_axvline, _imshow)
 else:
-    def nullfunc(*args, **kws): pass
-
-    get_display = _plot = _oplot = _newplot = nullfunc
-    _fitplot = _plot_text = _plot_marker = nullfunc
-    _plot_arrow = _plot_axvline = _plot_axhline = nullfunc
-
-
+    get_display = _plot = _oplot = None
+    _fitplot = _plot_marker = _plot_axvline = None
 
 LineColors = ('#1f77b4', '#d62728', '#2ca02c', '#ff7f0e', '#9467bd',
               '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf')
@@ -60,10 +54,14 @@ def chirlab(kweight, show_mag=True, show_real=False, show_imag=False):
      show_imag    bool whether to plot Im[chi(R)] [False]
     """
     ylab = []
-    if show_mag:  ylab.append(plotlabels.chirmag)
-    if show_real: ylab.append(plotlabels.chirre)
-    if show_imag: ylab.append(plotlabels.chirim)
-    if len(ylab) > 1:  ylab = [plotlabels.chir]
+    if show_mag:
+        ylab.append(plotlabels.chirmag)
+    if show_real:
+        ylab.append(plotlabels.chirre)
+    if show_imag:
+        ylab.append(plotlabels.chirim)
+    if len(ylab) > 1:
+        ylab = [plotlabels.chir]
     return ylab[0].format(kweight+1)
 #enddef
 
@@ -190,7 +188,7 @@ def redraw(win=1, xmin=None, xmax=None, ymin=None, ymax=None,
 def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
             show_pre=False, show_post=False, show_e0=False, with_deriv=False,
             emin=None, emax=None, label='mu', new=True, delay_draw=False,
-            offset=0, title=None, win=1, _larch=None):
+            offset=0, en_offset=0, title=None, win=1, _larch=None):
     """
     plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
              show_e0=False, show_deriv=False, emin=None, emax=None, label=None,
@@ -214,7 +212,8 @@ def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
      title      string for plot title [None, may use filename if available]
      new        bool whether to start a new plot [True]
      delay_draw bool whether to delay draw until more traces are added [False]
-     offset      vertical offset to use for y-array [0]
+     offset     vertical offset to *add* to the y-array [0]
+     en_offset  energy offset to *subtract* from for x-array [0]
      win        integer plot window to use [1]
 
     Notes
@@ -230,24 +229,20 @@ def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
         mu = dgroup.mufluor
     else:
         raise ValueError("XAFS data group has no array for mu")
-    #endif
+
     ylabel = plotlabels.mu
     if label is None:
         label = getattr(dgroup, 'filename', 'mu')
-    #endif
+
     if show_deriv:
         mu = dgroup.dmude
         ylabel = "%s (deriv)" % ylabel
-        dlabel = plotlabels.dmude
     elif show_norm:
         mu = dgroup.norm
         ylabel = "%s (norm)" % ylabel
-        dlabel = plotlabels.norm
-    #endif
     elif show_flat:
         mu = dgroup.flat
         ylabel = "%s (flat)" % ylabel
-        dlabel = plotlabels.flat
     #endif
     emin, emax = _get_erange(dgroup, emin, emax)
     title = _get_title(dgroup, title=title)
@@ -256,34 +251,27 @@ def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
                 title=title, xmin=emin, xmax=emax,
                 delay_draw=True, _larch=_larch)
 
-    _plot(dgroup.energy, mu+offset, xlabel=plotlabels.energy, ylabel=ylabel,
+    _plot(dgroup.energy-en_offset, mu+offset, xlabel=plotlabels.energy, ylabel=ylabel,
           label=label, zorder=20, new=new, **opts)
 
     if with_deriv:
         dmu = dgroup.dmude
-        _plot(dgroup.energy, dmu+offset, ylabel=plotlabels.dmude,
+        _plot(dgroup.energy-en_offset, dmu+offset, ylabel=plotlabels.dmude,
               label='%s (deriv)' % label, zorder=18, side='right', **opts)
     #endif
     if (not show_norm and not show_deriv):
         if show_pre:
-            _plot(dgroup.energy, dgroup.pre_edge+offset, label='pre_edge',
+            _plot(dgroup.energy-en_offset, dgroup.pre_edge+offset, label='pre_edge',
                   zorder=18, **opts)
-        #endif
         if show_post:
-            _plot(dgroup.energy, dgroup.post_edge+offset, label='post_edge',
+            _plot(dgroup.energy-en_offset, dgroup.post_edge+offset, label='post_edge',
                   zorder=18, **opts)
             if show_pre:
-                i = index_of(dgroup.energy, dgroup.e0)
-                ypre = dgroup.pre_edge[i]
-                ypost = dgroup.post_edge[i]
-                _plot_arrow(dgroup.e0, ypre, dgroup.e0+offset, ypost,
-                            color=plotlabels.e0color, width=0.25,
-                            head_width=0, zorder=3, win=win, _larch=_larch)
-            #endif
-        #endif
-    #endif
+                _plot(dgroup.energy-en_offset, dgroup.pre_edge+offset, label='pre_edge',
+                    zorder=18, **opts)
+
     if show_e0:
-        _plot_axvline(dgroup.e0, zorder=2, size=3,
+        _plot_axvline(dgroup.e0-en_offset, zorder=2, size=3,
                       label='E0', color=plotlabels.e0color, win=win,
                       _larch=_larch)
         disp = get_display(win=win, _larch=_larch)
@@ -293,7 +281,7 @@ def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
 #enddef
 
 def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, show_ek0=False,
-             label=None, title=None, new=True, delay_draw=False, offset=0,
+             label=None, title=None, new=True, delay_draw=False, offset=0, en_offset=0,
              win=1, _larch=None):
     """
     plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, label=None, new=True, win=1):
@@ -312,7 +300,8 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, show_ek0=Fa
      title       string for plot titlte [None, may use filename if available]
      new         bool whether to start a new plot [True]
      delay_draw  bool whether to delay draw until more traces are added [False]
-     offset      vertical offset to use for y-array [0]
+     offset      vertical offset to *add* to the y-array [0]
+     en_offset   energy offset to *subtract* from for x-array [0]
      win         integer plot window to use [1]
 
     Notes
@@ -343,7 +332,7 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, show_ek0=Fa
     title = _get_title(dgroup, title=title)
     opts = dict(win=win, show_legend=True, linewidth=3,
                 delay_draw=True, _larch=_larch)
-    _plot(dgroup.energy, mu+offset, xlabel=plotlabels.energy, ylabel=ylabel,
+    _plot(dgroup.energy-en_offset, mu+offset, xlabel=plotlabels.energy, ylabel=ylabel,
          title=title, label=label, zorder=20, new=new, xmin=emin, xmax=emax,
          **opts)
     ymin, ymax = None, None
@@ -351,17 +340,17 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, show_ek0=Fa
     if disp is not  None:
         xylims = disp.panel.get_viewlimits()
         ymin, ymax = xylims[2], xylims[3]
-    _plot(dgroup.energy, bkg+offset, zorder=18, label='bkg', **opts)
+    _plot(dgroup.energy-en_offset, bkg+offset, zorder=18, label='bkg', **opts)
 
-    e0val, e0label = None, 'E0'
+    e0val = None
     if show_e0 and hasattr(dgroup, 'e0'):
         e0val = dgroup.e0
     elif show_ek0 and hasattr(dgroup, 'ek0'):
-        e0val, e0label = dgroup.ek0,  'EK0'
+        e0val = dgroup.ek0
 
     if e0val is not None:
         ie0 = index_of(dgroup.energy, e0val)
-        ee0 = dgroup.energy[ie0]
+        ee0 = dgroup.energy[ie0] - en_offset
         me0 = mu[ie0] + offset
         disp.panel.axes.plot([ee0], [me0], marker='o',
                              markersize=5, label='_nolegend_',
@@ -409,7 +398,7 @@ def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
         raise ValueError("XAFS data group has no array for mu")
     #endif
     e0   = dgroup.e0
-    chie = (mu - dgroup.bkg)
+    chie = mu - dgroup.bkg
     ylabel = plotlabels.chie
     if abs(eweight) > 1.e-2:
         chie *= (dgroup.energy-e0)**(eweight)
@@ -422,7 +411,6 @@ def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
         emin = emin - e0
     if emax is not None:
         emax = emax - e0
-
 
     title = _get_title(dgroup, title=title)
 
@@ -784,7 +772,8 @@ def plot_path_k(dataset, ipath=0, kmin=0, kmax=None, offset=0, label=None,
     """
     kweight = dataset.transform.kweight
     path = dataset.pathlist[ipath]
-    if label is None: label = 'path %i' % (1+ipath)
+    if label is None:
+        label = 'path %i' % (1+ipath)
 
     chi_kw = offset + path.chi * path.k**kweight
 
@@ -1020,7 +1009,6 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
 
     redraw(win=win, xmin=px0, xmax=px1, ymin=py0, ymax=py1,
            show_legend=True, _larch=_larch)
-#enddef
 
 def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
                       show_residual=False, win=1, _larch=None):
@@ -1046,7 +1034,6 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     #endif
 
     opts = pkfit.user_options
-    xeps = min(diff(dgroup.xplot)) / 5.
     xplot = 1.0*pkfit.energy
     yplot = 1.0*pkfit.norm
 
@@ -1082,7 +1069,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
 
     dx0, dx1, dy0, dy1 = extend_plotrange(xplot_full, yplot_full,
                                           xmin=opts['emin'], xmax=opts['emax'])
-    fx0, fx1, fy0, fy1 = extend_plotrange(xplot, yfit,
+    _1, _2, fy0, fy1 = extend_plotrange(xplot, yfit,
                                           xmin=opts['emin'], xmax=opts['emax'])
 
     ncolor = 0
@@ -1147,7 +1134,7 @@ def _pca_ncomps(result, min_weight=0, ncomps=None):
     return ncomps
 
 
-def plot_pca_components(result, min_weight=0, ncomps=None, min_variance=1.e-5, win=1, _larch=None, **kws):
+def plot_pca_components(result, min_variance=1.e-5, win=1, _larch=None, **kws):
     """Plot components from PCA result
 
     result must be output of `pca_train`
@@ -1160,7 +1147,7 @@ def plot_pca_components(result, min_weight=0, ncomps=None, min_variance=1.e-5, w
                  win=win, _larch=_larch)
 
     popts.update(kws)
-    ncomps = int(result.nsig)
+
 
     _plot(result.x, result.mean, label='Mean', **popts)
     for i, comp in enumerate(result.components):
@@ -1170,7 +1157,7 @@ def plot_pca_components(result, min_weight=0, ncomps=None, min_variance=1.e-5, w
 
     redraw(win=win, show_legend=True, _larch=_larch)
 
-def plot_pca_weights(result, min_weight=0, ncomps=None, win=1, _larch=None, **kws):
+def plot_pca_weights(result, win=1, _larch=None, **kws):
     """Plot component weights from PCA result (aka SCREE plot)
 
     result must be output of `pca_train`
@@ -1240,7 +1227,8 @@ def plot_pca_fit(dgroup, win=1, with_components=False, _larch=None, **kws):
 def plot_diffkk(dgroup, emin=None, emax=None, new=True, label=None,
                 title=None, delay_draw=False, offset=0, win=1, _larch=None):
     """
-    plot_diffkk(dgroup, norm=True, emin=None, emax=None, show_e0=False, label=None, new=True, win=1):
+    plot_diffkk(dgroup, norm=True, emin=None, emax=None, show_e0=False,
+               label=None, new=True, win=1):
 
     Plot mu(E) and background mu0(E) for XAFS data group
 
@@ -1330,5 +1318,5 @@ def plot_feffdat(feffpath, with_phase=True, title=None,
     #endif
 
     if delay_draw:
-        redraw(win=win, xmin=emin, xmax=emax, _larch=_larch)
+        redraw(win=win, _larch=_larch)
 #enddef
