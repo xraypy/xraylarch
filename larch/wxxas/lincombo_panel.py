@@ -559,12 +559,10 @@ class LinComboResultFrame(wx.Frame):
 
         label = ['fit #', 'n_varys', 'n_eval', 'chi2',
                   'chi2_reduced', 'akaike_info', 'bayesian_info']
-        label.extend(form['comp_names'])
-        label.append('Total')
-        for i in range(len(label)):
-            if len(label[i]) < 13:
-                label[i] = (" %s                " % label[i])[:13]
-        label = ' '.join(label)
+        for name in form['comp_names']:
+            label.extend([name, f'{name}_stderr'])
+        label.extend(['Total', 'Total_stderr'])
+        label = ' '.join([f'{l:17s}' for l in label])
 
         out = []
         for i, res in enumerate(results):
@@ -572,10 +570,12 @@ class LinComboResultFrame(wx.Frame):
             for attr in ('nvarys', 'nfev', 'chisqr', 'redchi', 'aic', 'bic'):
                 dat.append(getattr(res.result, attr))
             for cname in form['comp_names'] + ['total']:
-                val = 0.0
+                val, std = 0.0, 0.0
                 if cname in res.params:
                     val = res.params[cname].value
+                    std = res.params[cname].stderr
                 dat.append(val)
+                dat.append(std)
             out.append(dat)
 
         out = np.array(out).transpose()
@@ -629,8 +629,9 @@ class LinComboResultFrame(wx.Frame):
         label = [('Data Set' + ' '*25)[:25],
                  'n_varys', 'chi-square',
                  'chi-square_red', 'akaike_info', 'bayesian_info']
-        label.extend(form['comp_names'])
-        label.append('Total')
+        for name in form['comp_names']:
+            label.extend([name, f'{name}_stderr'])
+        label.extend(['Total', 'Total_stderr'])
         for i in range(len(label)):
             if len(label[i]) < 12:
                 label[i] = (" %s                " % label[i])[:12]
@@ -646,10 +647,12 @@ class LinComboResultFrame(wx.Frame):
             for attr in ('nvarys', 'chisqr', 'redchi', 'aic', 'bic'):
                 dat.append(gformat(getattr(res.result, attr), 10))
             for cname in form['comp_names'] + ['total']:
-                val = 0
+                val, std = 0.0, 0.0
                 if cname in res.params:
                     val = res.params[cname].value
+                    std = res.params[cname].stderr
                 dat.append(gformat(val, 10))
+                dat.append(gformat(std, 10))
             out.append(', '.join(dat))
         out.append('')
 
