@@ -5,7 +5,6 @@ Linear Combination panel
 import os
 import time
 import wx
-import wx.lib.scrolledpanel as scrolled
 import wx.dataview as dv
 
 import numpy as np
@@ -27,7 +26,6 @@ from .config import Linear_ArrayChoices
 
 np.seterr(all='ignore')
 
-DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
 # max number of *reported* PCA weights after fit
 MAX_COMPS = 30
