@@ -664,7 +664,7 @@ def guess_filereader(path, return_text=False):
     if 'xdi' in line1:
         reader = 'read_xdi'
     if 'epics stepscan file' in line1 :
-        reader = 'read_gsexdi'
+        reader = 'read_ascii'
     if ("#s" in line1) or ("#f" in line1):
         reader = 'read_specfile'
     if 'fdmnes' in line1:
