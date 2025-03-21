@@ -85,6 +85,7 @@ class AthenaImporter(wx.Frame) :
 
         self.a_project = read_athena(self.filename, do_bkg=False, do_fft=False)
         self.allgroups = {}
+        group0 = None
         for sname, grp in self.a_project.groups.items():
             if hasattr(grp, 'energy') and hasattr(grp, 'mu'):
                 label = getattr(grp, 'label', sname)
@@ -93,9 +94,18 @@ class AthenaImporter(wx.Frame) :
                     self.grouplist.Append(label)
                 except:
                     print(' ? ', sname, label)
+                if group0 is None:
+                    group0 = sname
         self.grouplist.SetCheckedStrings(list(self.allgroups.keys()))
         self.Show()
         self.Raise()
+
+        if group0 is not None:
+            grp = getattr(self.a_project, group0)
+            if hasattr(grp, 'energy') and hasattr(grp, 'mu'):
+                label = getattr(grp, 'label', group0)
+                self.plotpanel.plot(grp.energy, grp.mu,
+                                    xlabel='Energy', ylabel='mu',title=label)
 
     def plot_messages(self, msg, panel=1):
         self.SetStatusText(msg, panel)
