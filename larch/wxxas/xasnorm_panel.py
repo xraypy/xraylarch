@@ -124,11 +124,11 @@ class XASNormPanel(TaskPanel):
 
         # atom row
         atpanel = wx.Panel(panel)
-        self.wids['atsym']  = Choice(atpanel, choices=ATSYMS, size=(100, -1))
-        self.wids['edge']   = Choice(atpanel, choices=EDGES, size=(100, -1))
+        opts = {'size': (100, -1), 'action': self.onAtSymEdge}
+        self.wids['atsym']  = Choice(atpanel, choices=ATSYMS, **opts)
+        self.wids['edge']   = Choice(atpanel, choices=EDGES, **opts)
         self.wids['e0_nominal']  = wx.StaticText(atpanel, label='nominal E0= ', size=(225, -1))
-        #
-        # Choice(atpanel, choices=EDGES, size=(100, -1))
+
         sat = wx.BoxSizer(wx.HORIZONTAL)
         sat.Add(self.wids['atsym'], 0, LEFT, 4)
         sat.Add(self.wids['edge'], 0, LEFT, 4)
@@ -505,6 +505,23 @@ class XASNormPanel(TaskPanel):
         form_opts['atsym'] = self.wids['atsym'].GetStringSelection().title()
         form_opts['energy_ref'] = self.wids['energy_ref'].GetStringSelection()
         return form_opts
+
+    def onAtSymEdge(self, event=None):
+        atsym =  self.wids['atsym'].GetStringSelection().title()
+        edge =  self.wids['edge'].GetStringSelection().title()
+
+        dgroup = self.controller.get_group()
+        if dgroup is not None:
+            conf = getattr(dgroup.config, self.configname)
+            dgroup.atsym = conf['atsym'] = atsym
+            dgroup.edge = conf['edge'] = edge
+            try:
+                e0_nom = xray_edge(atsym , edge).energy
+                conf['e0_nominal'] = e0_nom
+                self.wids['e0_nominal'].SetLabel(f'nominal E0={e0_nom:.2f}')
+            except:
+                pass
+
 
     def onNNormChoice(self, evt=None):
         auto_nnorm  = self.wids['auto_nnorm'].SetValue(0)
