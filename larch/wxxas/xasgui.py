@@ -623,6 +623,7 @@ class LarixFrame(wx.Frame):
         if dgroup is None:
             return
 
+
         datatype = getattr(dgroup, 'datatype', 'xydata')
         if datatype.startswith('xas'):
             ipage, pagepanel = self.get_nbpage('xasnorm')
@@ -633,6 +634,7 @@ class LarixFrame(wx.Frame):
             ipage, pagepanel = self.get_nbpage('xydata')
             self.nb.SetSelection(ipage)
 
+        # print("ShowFile ", groupname, dgroup, process, plot)
         if filename is None:
             filename = dgroup.filename
         self.current_filename = filename
@@ -655,6 +657,7 @@ class LarixFrame(wx.Frame):
             pagepanel.fill_form(dgroup)
             pagepanel.skip_process = False
             pagepanel.process(dgroup=dgroup)
+            # print("XAS Show -> Norm Plot")
             if plot and hasattr(pagepanel, 'plot'):
                 pagepanel.plot(dgroup=dgroup)
             pagepanel.skip_process = False
@@ -1610,6 +1613,9 @@ before clearing"""
 
             # reference
             refgroup = getattr(apars, 'reference', '')
+            if refgroup in ('None', ''):
+                refgroup = getattr(apars, 'referencegroup', '')
+
             if refgroup in groups_added:
                 newname = None
                 for key, val in self.controller.file_groups.items():
