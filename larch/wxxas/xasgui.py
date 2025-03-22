@@ -634,7 +634,7 @@ class LarixFrame(wx.Frame):
             ipage, pagepanel = self.get_nbpage('xydata')
             self.nb.SetSelection(ipage)
 
-        # print("ShowFile ", groupname, dgroup, process, plot)
+        # print(f"ShowFile {groupname}, {dgroup=}, {process=}, {plot=}")
         if filename is None:
             filename = dgroup.filename
         self.current_filename = filename
@@ -654,13 +654,19 @@ class LarixFrame(wx.Frame):
         self.controller.groupname = groupname
 
         if process:
-            pagepanel.fill_form(dgroup)
-            pagepanel.skip_process = False
-            pagepanel.process(dgroup=dgroup)
-            # print("XAS Show -> Norm Plot")
-            if plot and hasattr(pagepanel, 'plot'):
-                pagepanel.plot(dgroup=dgroup)
-            pagepanel.skip_process = False
+            try:
+                plot_on_choose = pagepanel.wids['plot_on_choose'].IsChecked()
+            except:
+                plot_on_choose = True
+
+            if plot_on_choose:
+                pagepanel.fill_form(dgroup)
+                pagepanel.skip_process = False
+                pagepanel.process(dgroup=dgroup)
+                print("XAS Show -> Norm Plot", pagepanel)
+                if plot and hasattr(pagepanel, 'plot'):
+                    pagepanel.plot(dgroup=dgroup)
+                pagepanel.skip_process = False
 
         self.controller.filelist.SetStringSelection(filename)
 
