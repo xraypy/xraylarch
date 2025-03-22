@@ -181,7 +181,7 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, npre=1, pre1=No
     if e0 is None or e0 < energy[1] or e0 > energy[-2]:
         e0 = find_e0(energy, mu)
     ie0 = index_nearest(energy, e0)
-    e0 = energy[ie0]
+    e0 = float(energy[ie0])
 
     if pre1 is None:
         # skip first energy point, often bad
@@ -257,11 +257,11 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, npre=1, pre1=No
         edge_step = post_edge[ie0] - pre_edge[ie0]
     edge_step = max(1.e-12, abs(float(edge_step)))
     norm = (mu - pre_edge)/edge_step
-    return {'e0': e0, 'edge_step': edge_step, 'norm': norm,
+    return {'e0': float(e0), 'edge_step': float(edge_step), 'norm': norm,
             'pre_edge': pre_edge, 'post_edge': post_edge,
             'norm_coefs': norm_coefs, 'nvict': nvict,
-            'nnorm': nnorm, 'norm1': norm1, 'norm2': norm2,
-            'pre1': pre1, 'pre2': pre2, 'precoefs': precoefs}
+            'nnorm': nnorm, 'norm1': float(norm1), 'norm2': float(norm2_,
+            'pre1': float(pre1), 'pre2': float(pre2), 'precoefs': precoefs}
 
 @Make_CallArgs(["energy","mu"])
 def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
