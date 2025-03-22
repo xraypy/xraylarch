@@ -24,8 +24,8 @@ ARRAYS = {'mu':      'Raw \u03BC(E)',
           'norm':    'Normalized \u03BC(E)',
           'flat':    'Flattened \u03BC(E)',
           'norm+flat':  'Normalized + Flattened \u03BC(E)',
-          'prelines':   '\u03BC(E) + Pre-/Post-edge',
-          'mback_norm': '\u03BC(E) + MBACK  \u03BC(E)',
+          'prelines':   'Pre-/Post-edge Curves',
+          'mback_norm': 'MBACK  \u03BC(E)',
           'mback_poly': 'MBACK + Poly Normalized',
           'i0': 'I0(E)',
           'norm+i0': 'Normalized \u03BC(E) + I0(E)',
@@ -270,6 +270,7 @@ regression = [CVar('elo_rel', -40, 'float',  desc='low-energy fit range, relativ
        ]
 
 xasnorm = [CVar('auto_e0',  True, 'bool', desc='whether to automatically set E0'),
+           CVar('auto_plot',  True, 'bool', desc='whether to automatically plot the Current Group'),
            CVar('auto_nnorm',  True, 'bool', desc='whether to automatically set normalization polynomial'),
            CVar('auto_step',  True, 'bool', desc='whether to automatically set edge step'),
            CVar('show_e0',  True, 'bool', desc='whether to show E0'),
