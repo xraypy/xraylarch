@@ -405,8 +405,8 @@ def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
 _getDisplay = get_display # back compatibility
 
 def _xrf_plot(x=None, y=None, mca=None, win=1, new=True, as_mca2=False, _larch=None,
-              wxparent=None, size=None, side='left', force_draw=True, wintitle=None,
-              **kws):
+              wxparent=None, size=None, side=None, yaxes=1, force_draw=True,
+              wintitle=None,  **kws):
     """xrf_plot(energy, data[, win=1], options])
 
     Show XRF trace of energy, data
@@ -479,7 +479,7 @@ def _xrf_oplot(x=None, y=None, mca=None, win=1, _larch=None, **kws):
     _xrf_plot(x=x, y=y, mca=mca, win=win, _larch=_larch, new=False, **kws)
 
 def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
-          xrf=False, stacked=False, force_draw=True, side='left',
+          xrf=False, stacked=False, force_draw=True, side=None, yaxes=1,
           wintitle=None, **kws):
     """plot(x, y[, win=1], options])
 
@@ -523,10 +523,12 @@ def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
     if plotter is None:
         return
     plotter.Raise()
+    kws['side'] = side
+    kws['yaxes'] = yaxes
     if new:
-        plotter.plot(x, y, side=side, **kws)
+        plotter.plot(x, y, **kws)
     else:
-        plotter.oplot(x, y, side=side, **kws)
+        plotter.oplot(x, y, **kws)
     if force_draw:
         wx_update(_larch=_larch)
 
@@ -545,7 +547,7 @@ def _redraw_plot(win=1, xrf=False, stacked=False, size=None, wintitle=None,
 
 
 def _update_trace(x, y, trace=1, win=1, _larch=None, wxparent=None,
-                 side='left', redraw=False, **kws):
+                 side=None, yaxes=1, redraw=False, **kws):
     """update a plot trace with new data, avoiding complete redraw"""
     plotter = get_display(wxparent=wxparent, win=win, _larch=_larch)
     if plotter is None:
@@ -553,7 +555,7 @@ def _update_trace(x, y, trace=1, win=1, _larch=None, wxparent=None,
     plotter.Raise()
     trace -= 1 # wxmplot counts traces from 0
 
-    plotter.panel.update_line(trace, x, y, draw=True, side=side)
+    plotter.panel.update_line(trace, x, y, draw=True, side=side, yaxes=yaxes)
     wx_update(_larch=_larch)
 
 def wx_update(_larch=None, **kws):
@@ -601,7 +603,7 @@ def _newplot(x, y, win=1, _larch=None, wxparent=None,  size=None, wintitle=None,
     _plot(x, y, win=win, size=size, new=True, _larch=_larch,
           wxparent=wxparent, wintitle=wintitle, **kws)
 
-def _plot_text(text, x, y, win=1, side='left', size=None,
+def _plot_text(text, x, y, win=1, side=None, yaxes=1, size=None,
                stacked=False, xrf=False, rotation=None, ha='left', va='center',
                _larch=None, wxparent=None,  **kws):
     """plot_text(text, x, y, win=1, options)
@@ -627,10 +629,10 @@ def _plot_text(text, x, y, win=1, side='left', size=None,
         return
     plotter.Raise()
 
-    plotter.add_text(text, x, y, side=side,
+    plotter.add_text(text, x, y, side=side, yaxes=yaxes,
                      rotation=rotation, ha=ha, va=va, **kws)
 
-def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
+def _plot_arrow(x1, y1, x2, y2, win=1, side=None, yaxes=1,
                 shape='full', color='black',
                 width=0.00, head_width=0.05, head_length=0.25,
                _larch=None, wxparent=None, stacked=False, xrf=False,
@@ -662,7 +664,7 @@ def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
     if plotter is None:
         return
     plotter.Raise()
-    plotter.add_arrow(x1, y1, x2, y2, side=side, shape=shape,
+    plotter.add_arrow(x1, y1, x2, y2, side=side, yaxes=1, shape=shape,
                       color=color, width=width, head_length=head_length,
                       head_width=head_width, **kws)
 
