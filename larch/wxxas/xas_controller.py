@@ -348,11 +348,8 @@ class XASController():
         """
         if topwin is None:
             topwin = wx.GetApp().GetTopWindow()
-            flist = self.filelist
-        else:
-            flist = getattr(topwin, 'filelist', topwin)
-        time.sleep(0.025)
         topwin.Raise()
+        self.filelist.SetFocus()
 
     def get_group(self, groupname=None):
         if groupname is None:
