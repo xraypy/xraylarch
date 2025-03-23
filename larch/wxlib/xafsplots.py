@@ -138,20 +138,18 @@ def _get_kweight(dgroup, kweight=None):
     return ftargs['kweight']
 
 
-def _get_erange(dgroup, emin=None, emax=None):
+def _get_erange(dgroup, emin=None, emax=None, e0=None):
     """get absolute emin/emax for data range, allowing using
     values relative to e0.
     """
-    dat_emin, dat_emax = min(dgroup.energy)-100, max(dgroup.energy)+100
-    e0 = getattr(dgroup, 'e0', 0.0)
+    dat_emin = float(min(dgroup.energy)) - 25
+    dat_emax = float(max(dgroup.energy)) + 25
+    if e0 is None or e0 < dat_emin or e0 > dat_emax:
+        e0 = getattr(dgroup, 'e0', 0.0)
     if emin is not None:
-        if not (emin > dat_emin and emin < dat_emax):
-            if emin+e0 > dat_emin and emin+e0 < dat_emax:
-                emin += e0
+        emin = max(emin+e0, dat_emin)
     if emax is not None:
-        if not (emax > dat_emin and emax < dat_emax):
-            if emax+e0 > dat_emin and emax+e0 < dat_emax:
-                emax += e0
+        emax = min(emax+e0, dat_emax)
     return emin, emax
 #enddef
 
@@ -168,7 +166,6 @@ def redraw(win=1, xmin=None, xmax=None, ymin=None, ymax=None,
         panel.set_xylims((xmin, xmax, ymin, ymax))
         if stacked:
             disp.panel_bot.set_xylims((xmin, xmax, dymin, dymax))
-
     panel.unzoom_all()
     panel.reset_formats()
     if stacked:
@@ -184,11 +181,14 @@ def redraw(win=1, xmin=None, xmax=None, ymin=None, ymax=None,
     #endif
 #enddef
 
-
-def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
-            show_pre=False, show_post=False, show_e0=False, with_deriv=False,
-            emin=None, emax=None, label='mu', new=True, delay_draw=False,
-            offset=0, en_offset=0, title=None, win=1, _larch=None):
+def plot_mu(dgroup, show_norm=False, show_flat=False,
+            show_deriv=False, show_e0=False, show_pre=False,
+            show_post=False, with_deriv=False, with_deriv2=False,
+            with_i0=False, with_norm=False, with_mback=False,
+            emin=None, emax=None, marker_energies=None,
+            markerstyle='marker', label=None, new=True,
+            delay_draw=False, offset=0, en_offset=0, title=None,
+            win=1, _larch=None):
     """
     plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
              show_e0=False, show_deriv=False, emin=None, emax=None, label=None,
@@ -198,23 +198,29 @@ def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
 
     Arguments
     ----------
-     dgroup     group of XAFS data after pre_edge() results (see Note 1)
-     show_norm  bool whether to show normalized data [False]
-     show_flat  bool whether to show flattened, normalized data [False]
-     show_deriv bool whether to show derivative of normalized data [False]
-     show_pre   bool whether to show pre-edge curve [False]
-     show_post  bool whether to show post-edge curve [False]
-     show_e0    bool whether to show E0 [False]
-     with_deriv bool whether to show deriv (dmu/de) together with mu [False]
-     emin       min energy to show, absolute or relative to E0 [None, start of data]
-     emax       max energy to show, absolute or relative to E0 [None, end of data]
-     label      string for label [None:  'mu', `dmu/dE', or 'mu norm']
-     title      string for plot title [None, may use filename if available]
-     new        bool whether to start a new plot [True]
-     delay_draw bool whether to delay draw until more traces are added [False]
-     offset     vertical offset to *add* to the y-array [0]
-     en_offset  energy offset to *subtract* from for x-array [0]
-     win        integer plot window to use [1]
+     dgroup        group of XAFS data after pre_edge() results (see Note 1)
+     show_norm     bool whether to show normalized data [False]
+     show_flat     bool whether to show flattened, normalized data [False]
+     show_deriv    bool whether to show derivative of normalized data [False]
+     show_pre      bool whether to show pre-edge curve [False]
+     show_post     bool whether to show post-edge curve [False]
+     show_e0       bool whether to show E0 [False]
+     with_i0       bool whether to show I0 together with mu [False]
+     with_deriv    bool whether to show deriv (dmu/de) together with mu [False]
+     with_deriv2   bool whether to show 2nd deriv together with mu [False]
+     with_norm     bool whether to show normalized data with mu [False]
+     with_mback    bool whether to show MBACK tabulated background with mu [False]
+     emin          min energy to show, absolute or relative to E0 [None, start of data]
+     emax          max energy to show, absolute or relative to E0 [None, end of data]
+     marker_energies list of energies (relative to e0!) to show markers [None]
+     markerstyle   how to show e0, pre/post ranges  ['vline', 'marker']
+     label         string for label [None:  'mu', `dmu/dE', or 'mu norm']
+     title         string for plot title [None, may use filename if available]
+     new           bool whether to start a new plot [True]
+     delay_draw    bool whether to delay draw until more traces are added [False]
+     offset        vertical offset to *add* to the y-array [0]
+     en_offset     energy offset to *subtract* from for x-array [0]
+     win           integer plot window to use [1]
 
     Notes
     -----
@@ -230,55 +236,112 @@ def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
     else:
         raise ValueError("XAFS data group has no array for mu")
 
+    mode = 'raw'
     ylabel = plotlabels.mu
     if label is None:
         label = getattr(dgroup, 'filename', 'mu')
 
     if show_deriv:
+        mode = 'deriv'
         mu = dgroup.dmude
-        ylabel = "%s (deriv)" % ylabel
     elif show_norm:
+        mode  = 'norm'
         mu = dgroup.norm
-        ylabel = "%s (norm)" % ylabel
     elif show_flat:
+        mode = 'flat'
         mu = dgroup.flat
-        ylabel = "%s (flat)" % ylabel
-    #endif
-    emin, emax = _get_erange(dgroup, emin, emax)
+    if mode != 'raw':
+        ylabel = f"{ylabel} ({mode})"
+
+    if en_offset in (None, 0):
+        emin, emax = _get_erange(dgroup, emin, emax, e0=en_offset)
+
     title = _get_title(dgroup, title=title)
 
     opts = dict(win=win, show_legend=True, linewidth=3,
-                title=title, xmin=emin, xmax=emax,
+                title=title, xmin=emin, xmax=emax, zorder=20,
                 delay_draw=True, _larch=_larch)
 
     _plot(dgroup.energy-en_offset, mu+offset, xlabel=plotlabels.energy, ylabel=ylabel,
-          label=label, zorder=20, new=new, **opts)
+          label=label, new=new, **opts)
+
+    if show_pre and mode=='raw':
+        _plot(dgroup.energy-en_offset, dgroup.pre_edge+offset, label='pre_edge',
+                 **opts)
+
+    if show_post and mode in ('raw', 'norm'):
+        post = dgroup.post_edge*1.0
+        if mode=='norm':
+            post = (post - dgroup.pre_edge) / dgroup.edge_step
+        _plot(dgroup.energy-en_offset, post+offset, label='post_edge', **opts)
+
+    yaxes = 1
+    if with_i0:
+        i0 = getattr(dgroup, 'i0', None)
+        if i0 is not None:
+            yaxes += 1
+            opts['yaxes'] = yaxes
+            opts['label'] = f'{label} (I_0)'
+            opts[f'y{yaxes}label'] = plotlabels.i0
+            _plot(dgroup.energy-en_offset, i0+offset, **opts)
 
     if with_deriv:
         dmu = dgroup.dmude
-        _plot(dgroup.energy-en_offset, dmu+offset, ylabel=plotlabels.dmude,
-              label='%s (deriv)' % label, zorder=18, side='right', **opts)
-    #endif
-    if (not show_norm and not show_deriv):
-        if show_pre:
-            _plot(dgroup.energy-en_offset, dgroup.pre_edge+offset, label='pre_edge',
-                  zorder=18, **opts)
-        if show_post:
-            _plot(dgroup.energy-en_offset, dgroup.post_edge+offset, label='post_edge',
-                  zorder=18, **opts)
-            if show_pre:
-                _plot(dgroup.energy-en_offset, dgroup.pre_edge+offset, label='pre_edge',
-                    zorder=18, **opts)
+        yaxes += 1
+        opts['yaxes'] = yaxes
+        opts['label'] = f'{label} (deriv)'
+        opts[f'y{yaxes}label'] = plotlabels.dmude
+        _plot(dgroup.energy-en_offset, dmu+offset, **opts)
 
+    if with_deriv2:
+        dmu2 = dgroup.d2mude
+        yaxes += 1
+        opts['yaxes'] = yaxes
+        opts['label'] = f'{label} (2nd deriv)'
+        opts[f'y{yaxes}label'] = plotlabels.d2mude
+        _plot(dgroup.energy-en_offset, dmu2+offset, **opts)
+
+    if with_norm and mode!='norm':
+        yaxes += 1
+        opts['yaxes'] = yaxes
+        opts['label'] = f'{label} (norm)'
+        opts[f'y{yaxes}label'] = plotlabels.norm
+        _plot(dgroup.energy-en_offset, dgroup.norm+offset, **opts)
+
+    if with_mback:
+        mback = getattr(dgroup, 'mback_mu', None)
+        if mback is not None:
+            opts['label'] = f'{label} (MBACK mu)'
+            if mode in ('norm', 'flat'):
+                mback = (mback - dgroup.pre_edge)/dgroup.edge_step
+                opts['label'] = f'{label} (MBACK mu, norm)'
+            _plot(dgroup.energy-en_offset, mback+offset, **opts)
+
+    marker_popts = {'marker': 'o', 'markersize': 5, 'label': '_nolegend_',
+                    'markerfacecolor': '#888', 'markeredgecolor': '#A00'}
+    disp = get_display(win=win, _larch=_larch)
+    axes = disp.panel.axes
     if show_e0:
-        _plot_axvline(dgroup.e0-en_offset, zorder=2, size=3,
-                      label='E0', color=plotlabels.e0color, win=win,
-                      _larch=_larch)
-        disp = get_display(win=win, _larch=_larch)
-        if disp is not None:
-            disp.panel.conf.draw_legend()
+        if 'vli'in markerstyle.lower():
+            _plot_axvline(dgroup.e0-en_offset, zorder=2, size=3, win=win,
+                          label='__nolegend__',color=plotlabels.e0color,
+                          _larch=_larch)
+        else:
+            ie0 = index_of(dgroup.energy, dgroup.e0)
+            axes.plot([dgroup.e0-en_offset], [mu[ie0]+offset], **marker_popts)
+
+    if marker_energies is None:
+        marker_energies = []
+    for _mark_en in marker_energies:
+        ex = dgroup.e0 + _mark_en
+        if 'vli'in markerstyle.lower():
+            _plot_axvline(ex-en_offset, zorder=2, size=3, win=win,
+                          label='__nolegend__',color=plotlabels.e0color,
+                          _larch=_larch)
+        else:
+            ix = index_of(dgroup.energy, ex)
+            axes.plot([ex-en_offset], [mu[ix]+offset], **marker_popts)
     redraw(win=win, xmin=emin, xmax=emax, _larch=_larch)
-#enddef
 
 def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, show_ek0=False,
              label=None, title=None, new=True, delay_draw=False, offset=0, en_offset=0,
