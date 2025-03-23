@@ -260,7 +260,7 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, npre=1, pre1=No
     return {'e0': float(e0), 'edge_step': float(edge_step), 'norm': norm,
             'pre_edge': pre_edge, 'post_edge': post_edge,
             'norm_coefs': norm_coefs, 'nvict': nvict,
-            'nnorm': nnorm, 'norm1': float(norm1), 'norm2': float(norm2_,
+            'nnorm': nnorm, 'norm1': float(norm1), 'norm2': float(norm2),
             'pre1': float(pre1), 'pre2': float(pre2), 'precoefs': precoefs}
 
 @Make_CallArgs(["energy","mu"])
