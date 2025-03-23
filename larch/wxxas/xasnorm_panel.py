@@ -35,22 +35,21 @@ PLOTOPTS_1 = dict(style='solid', marker='None')
 PLOTOPTS_2 = dict(style='short dashed', zorder=3, marker='None')
 PLOTOPTS_D = dict(style='solid', zorder=2, side='right', marker='None')
 
-PlotOne_Choices = make_array_choice(['mu','norm', 'flat', 'prelines',
-                                     'norm+flat', 'mback_norm', 'mback_poly',
-                                     'i0', 'norm+i0', 'dmude', 'norm+dmude',
-                                     'd2mude', 'norm+d2mude'])
-
-
-PlotSel_Choices = make_array_choice(['mu', 'norm', 'flat', 'dmude', 'd2mude'])
+Plot_Choices1 = make_array_choice(['mu','norm', 'flat', 'dmude'])
+Plot_Choices2 = make_array_choice(['noplot', 'prelines',
+                                   'dmude', 'd2mude', 'i0',
+                                   'mback_norm', 'norm'])
 
 Plot_EnergyRanges = {'full E range': None,
+                     'E0 -10:+50eV':  (-10, 50),
                      'E0 -20:+80eV':  (-20, 80),
                      'E0 -30:+120eV': (-30, 120),
                      'E0 -50:+250eV': (-50, 250),
+                     'E0 -75:+400eV': (-75, 400),
                      'E0 -100:+500eV': (-100, 500)}
-Plot_EnergyOffsets = ['use absolute energy',
-                      'subtract E0 for group (last for multiple groups)',
-                      'subtract nominal E0 for element/edge']
+Plot_EnergyOffsets = ['0.0 (absolute energy)',
+                      'E0 for group',
+                      'Nominal E0 (element/edge)']
 
 FSIZE = 120
 FSIZEBIG = 175
@@ -69,57 +68,62 @@ class XASNormPanel(TaskPanel):
         TaskPanel.__init__(self, parent, controller, panel='xasnorm', **kws)
 
     def build_display(self):
+        defaults = self.get_defaultconfig()
         panel = self.panel
-        self.wids = {}
+        self.wids = wids = {}
         self.last_plot_type = 'one'
 
         trow = wx.Panel(panel)
-        plot_sel = Button(trow, 'Plot Selected Groups', size=(175, -1),
-                          action=self.onPlotSel)
-        plot_one = Button(trow, 'Plot Current Group', size=(175, -1),
-                          action=self.onPlotOne)
 
-        self.plotsel_op = Choice(trow, choices=list(PlotSel_Choices),
-                                 action=self.onPlotSel, size=(300, -1))
-        self.plotone_op = Choice(trow, choices=list(PlotOne_Choices),
-                                 action=self.onPlotOne, size=(300, -1))
+        opts = {'size': (200, -1)}
+        wids['plot_sel'] = Button(trow, 'Plot Selected Groups',
+                                  action=self.onPlotSel, **opts)
+        wids['plot_one'] = Button(trow, 'Plot Current Group',
+                                  action=self.onPlotOne, **opts)
 
-        self.plot_erange = Choice(trow, choices=list(Plot_EnergyRanges),
-                                 action=self.onPlotEither, size=(120, -1))
+        opts['action'] = self.onPlotEither
+        opts['default'] = 1
+        wids['plot_choice1'] = Choice(trow, choices=list(Plot_Choices1), **opts)
+
+        opts['default'] = 0
+        wids['plot_choice2'] = Choice(trow, choices=list(Plot_Choices2), **opts)
+        wids['plot_enoff'] = Choice(trow, choices=Plot_EnergyOffsets, **opts)
+        opts['size'] = (150, -1)
+        wids['plot_erange'] = Choice(trow, choices=list(Plot_EnergyRanges), **opts)
 
         opts = {'digits': 2, 'increment': 0.05, 'value': 0, 'size': (FSIZE, -1)}
         plot_voff = self.add_floatspin('plot_voff', with_pin=False,
-                                       parent=trow,
-                                       action=self.onVoffset,
-                                       max_val=10000, min_val=-10000,
-                                       **opts)
+                                               parent=trow,
+                                               action=self.onPlotSel,
+                                               max_val=10000, min_val=-10000,
+                                               **opts)
 
-        vysize, vxsize = plot_sel.GetBestSize()
-        erange_lab = wx.StaticText(parent=trow, label='  E Range:', size=(75, -1))
-        voff_lab = wx.StaticText(parent=trow, label='  Y Offset:', size=(75, -1),
-                                style=wx.RIGHT|wx.ALIGN_CENTRE_HORIZONTAL|wx.ST_NO_AUTORESIZE)
-        enoff_lab = wx.StaticText(parent=trow, label='  Energy Offset:', size=(165, -1),
-                                style=wx.RIGHT|wx.ALIGN_CENTRE_HORIZONTAL|wx.ST_NO_AUTORESIZE)
+        erange_lab = wx.StaticText(parent=trow, label=' Energy Range:', size=(150, -1))
+        voff_lab = wx.StaticText(parent=trow, label=' Y Offset:', size=(150, -1))
+        enoff_lab = wx.StaticText(parent=trow, label=' Energy Offset:', size=(150, -1))
 
-        self.plot_enoff = Choice(trow, choices=Plot_EnergyOffsets,
-                                 action=self.onPlotEither, size=(300, -1))
+        plot1_lab = wx.StaticText(parent=trow, label=' Main Plot Array:', size=(150, -1))
+        plot2_lab = wx.StaticText(parent=trow, label=' With Plot Array:', size=(150, -1))
 
-        self.plot_erange.SetSelection(0)
-        self.plot_enoff.SetSelection(0)
-        self.plotone_op.SetSelection(1)
-        self.plotsel_op.SetSelection(1)
+        self.wids['plot_on_choose'] = Check(trow, default=defaults.get('auto_plot', True),
+                                label='Auto-Plot when choosing Current Group?')
 
         tsizer = wx.GridBagSizer(3, 3)
-        tsizer.Add(plot_sel,        (0, 0), (1, 1), LEFT, 2)
-        tsizer.Add(self.plotsel_op, (0, 1), (1, 1), LEFT, 2)
-        tsizer.Add(plot_one,        (1, 0), (1, 1), LEFT, 2)
-        tsizer.Add(self.plotone_op, (1, 1), (1, 1), LEFT, 2)
-        tsizer.Add(erange_lab,      (1, 2), (1, 1), RIGHT, 2)
-        tsizer.Add(self.plot_erange, (1, 3), (1, 1), RIGHT, 2)
-        tsizer.Add(enoff_lab,       (2, 0), (1, 1), LEFT, 2)
-        tsizer.Add(self.plot_enoff, (2, 1), (1, 1), LEFT, 2)
-        tsizer.Add(voff_lab,        (2, 2), (1, 1), RIGHT, 2)
-        tsizer.Add(plot_voff,       (2, 3), (1, 1), RIGHT, 2)
+        tsizer.Add(wids['plot_one'],     (0, 0), (1, 1), LEFT, 2)
+        tsizer.Add(wids['plot_sel'],     (0, 1), (1, 1), LEFT, 2)
+        tsizer.Add(wids['plot_on_choose'], (0, 2), (1, 2), LEFT, 2)
+
+        tsizer.Add(plot1_lab,            (1, 0), (1, 1), LEFT, 2)
+        tsizer.Add(wids['plot_choice1'], (1, 1), (1, 1), LEFT, 2)
+        tsizer.Add(erange_lab,           (1, 2), (1, 1), RIGHT, 2)
+        tsizer.Add(wids['plot_erange'],  (1, 3), (1, 1), RIGHT, 2)
+        tsizer.Add(plot2_lab,            (2, 0), (1, 1), LEFT, 2)
+        tsizer.Add(wids['plot_choice2'], (2, 1), (1, 1), LEFT, 2)
+        tsizer.Add(enoff_lab,            (3, 0), (1, 1), LEFT, 2)
+        tsizer.Add(wids['plot_enoff'],   (3, 1), (1, 1), LEFT, 2)
+        tsizer.Add(voff_lab,             (3, 2), (1, 1), RIGHT, 2)
+        tsizer.Add(plot_voff,            (3, 3), (1, 1), RIGHT, 2)
+
         pack(trow, tsizer)
 
         # atom row
@@ -127,7 +131,8 @@ class XASNormPanel(TaskPanel):
         opts = {'size': (100, -1), 'action': self.onAtSymEdge}
         self.wids['atsym']  = Choice(atpanel, choices=ATSYMS, **opts)
         self.wids['edge']   = Choice(atpanel, choices=EDGES, **opts)
-        self.wids['e0_nominal']  = wx.StaticText(atpanel, label='nominal E0= ', size=(225, -1))
+        self.wids['e0_nominal']  = SimpleText(atpanel, label='nominal E0=       ',
+                                                     size=(175, -1))
 
         sat = wx.BoxSizer(wx.HORIZONTAL)
         sat.Add(self.wids['atsym'], 0, LEFT, 4)
@@ -179,7 +184,7 @@ class XASNormPanel(TaskPanel):
         pack(nnorm_panel, sx)
 
         self.wids['energy_ref'] = Choice(panel, choices=['None'],
-                                         action=self.onEnergyRef, size=(300, -1))
+                                         action=self.onEnergyRef, size=(325, -1))
 
         self.wids['nvict'] = Choice(panel, choices=('0', '1', '2', '3'),
                                     size=(150, -1), action=self.onNormMethod,
@@ -189,9 +194,9 @@ class XASNormPanel(TaskPanel):
         self.wids['npre'].SetSelection(1)
 
 
-        opts = {'size': (FSIZE, -1), 'digits': 2, 'increment': 5.0, 'action': self.onSet_Ranges,
+        opts = {'size': (FSIZE, -1), 'digits': 2, 'increment': 5.0,
+                'action': self.onSet_Ranges,
                 'min_val':-99000, 'max_val':99000}
-        defaults = self.get_defaultconfig()
 
         pre_panel = wx.Panel(panel)
         xas_pre1 = self.add_floatspin('pre1', value=defaults['pre1'], parent=pre_panel, **opts)
@@ -236,29 +241,26 @@ class XASNormPanel(TaskPanel):
         self.wids['is_frozen'] = Check(panel, default=False, label='Freeze Group',
                                        action=self.onFreezeGroup)
 
-        use_auto = Button(panel, 'Use Default Settings', size=(200, -1),
-                          action=self.onResetNorm)
-
-        compare_norms = Button(panel, 'Compare Normalization Methods', size=(250, -1),
+        compare_norms = Button(panel, 'Compare Normalization Methods', size=(225, -1),
                           action=self.onCompareNorm)
 
         def CopyBtn(name):
             return Button(panel, 'Copy', size=(60, -1),
                           action=partial(self.onCopyParam, name))
 
-        copy_all = Button(panel, 'Copy All Parameters', size=(200, -1),
+        copy_all = Button(panel, 'Copy All Parameters', size=(175, -1),
                           action=partial(self.onCopyParam, 'all'))
 
         add_text = self.add_text
         HLINEWID = 700
         panel.Add(SimpleText(panel, 'XAS Pre-edge subtraction and Normalization',
                              size=(650, -1), **self.titleopts), style=LEFT, dcol=4)
-        panel.Add(trow, dcol=4, newrow=True)
+        panel.Add(trow, dcol=5, newrow=True)
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=4, newrow=True)
         add_text('XAS Data:')
-        panel.Add(use_auto, dcol=1)
-        panel.Add(SimpleText(panel, 'Copy to Selected Groups:'), style=RIGHT, dcol=2)
+        # panel.Add(use_auto, dcol=1)
+        panel.Add(SimpleText(panel, 'Copy to Selected Groups:'), style=RIGHT, dcol=3)
 
         add_text('Element and Edge: ', newrow=True)
         panel.Add(atpanel, dcol=2)
@@ -287,9 +289,9 @@ class XASNormPanel(TaskPanel):
         panel.Add(pre_panel, dcol=2)
         panel.Add(CopyBtn('xas_pre'), dcol=1, style=RIGHT)
 
-        panel.Add(SimpleText(panel, 'Pre-edge Type:'), newrow=True)
+        add_text('Pre-edge Type:')
         panel.Add(self.wids['npre'], dcol=2)
-        panel.Add(SimpleText(panel, 'Victoreen order:'), newrow=True)
+        add_text('Victoreen order:')
         panel.Add(self.wids['nvict'], dcol=2)
 
         panel.Add((5, 5), newrow=True)
@@ -302,7 +304,7 @@ class XASNormPanel(TaskPanel):
 
         add_text('Norm Energy range: ')
         panel.Add(nor_panel, dcol=2)
-        panel.Add(SimpleText(panel, 'Polynomial Type:'), newrow=True)
+        add_text('Polynomial Type:')
         panel.Add(nnorm_panel, dcol=2)
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=4, newrow=True)
@@ -356,7 +358,8 @@ class XASNormPanel(TaskPanel):
             conf['atsym'] = getattr(dgroup, 'atsym', atsym)
         conf['edge'] = getattr(dgroup,'edge', conf['edge'])
         try:
-            conf['e0_nominal'] = xray_edge(conf['atsym'] , conf['edge']).energy
+            conf['e0_nominal'] = e0_nom = xray_edge(conf['atsym'] , conf['edge']).energy
+            self.wids['e0_nominal'].SetLabel(f'nominal E0={e0_nom:.2f} eV')
         except:
             conf['e0_nominal'] = -1
 
@@ -379,7 +382,8 @@ class XASNormPanel(TaskPanel):
             conf['atsym'] = atsym
             conf['edge'] = edge
             try:
-                conf['e0_nominal'] = xray_edge(atsym, edge).energy
+                conf['e0_nominal'] = e0_nom = xray_edge(atsym, edge).energy
+                self.wids['e0_nominal'].SetLabel(f'nominal E0={e0_nom:.2f} eV')
             except:
                 conf['e0_nominal'] = -1
 
@@ -387,7 +391,8 @@ class XASNormPanel(TaskPanel):
             conf['atsym'] = getattr(dgroup.mback_params, 'atsym', conf['atsym'])
             conf['edge'] = getattr(dgroup.mback_params, 'edge', conf['edge'])
             try:
-                conf['e0_nominal'] = xray_edge(conf['atsym'], conf['edge']).energy
+                conf['e0_nominal'] = e0_nom = xray_edge(conf['atsym'], conf['edge']).energy
+                self.wids['e0_nominal'].SetLabel(f'nominal E0={e0_nom:.2f} eV')
             except:
                 conf['e0_nominal'] = -1
 
@@ -399,13 +404,6 @@ class XASNormPanel(TaskPanel):
         opts = self.get_config(dgroup)
         self.skip_process = True
         if self.is_xasgroup(dgroup):
-            if self.plotone_op.GetCount() != len(PlotOne_Choices):
-                self.plotone_op.SetChoices(list(PlotOne_Choices))
-                self.plotone_op.SetSelection(1)
-            if self.plotsel_op.GetCount() != len(PlotSel_Choices):
-                self.plotsel_op.SetChoices(list(PlotSel_Choices))
-                self.plotsel_op.SetSelection(1)
-
             groupnames = list(self.controller.file_groups.keys())
             self.wids['energy_ref'].SetChoices(groupnames)
             eref = opts.get('energy_ref', 'no_energy_ref')
@@ -426,8 +424,6 @@ class XASNormPanel(TaskPanel):
                 except:
                     opts['e0_nominal'] = -1
 
-
-
             self.wids['step'].SetValue(edge_step)
             autoset_fs_increment(self.wids['step'], edge_step)
             for attr in ('pre1', 'pre2', 'norm1', 'norm2'):
@@ -447,7 +443,7 @@ class XASNormPanel(TaskPanel):
             self.wids['edge'].SetStringSelection(opts['edge'].title())
             self.wids['atsym'].SetStringSelection(opts['atsym'].title())
 
-            self.wids['e0_nominal'].SetLabel(f"nominal E0={opts['e0_nominal']:.2f}")
+            self.wids['e0_nominal'].SetLabel(f"nominal E0={opts['e0_nominal']:.2f} eV")
 
             self.wids['norm_method'].SetStringSelection(opts['norm_method'].lower())
             for attr in ('pre1', 'pre2', 'norm1', 'norm2', 'nnorm', 'edge',
@@ -493,8 +489,8 @@ class XASNormPanel(TaskPanel):
         form_opts['nnorm'] = NNORM_CHOICES.get(self.wids['nnorm'].GetStringSelection(), 1)
         form_opts['nvict'] = int(self.wids['nvict'].GetStringSelection())
         form_opts['npre']  = PREEDGE_FORMS.get(self.wids['npre'].GetStringSelection(), 1)
-        form_opts['plotone_op'] = self.plotone_op.GetStringSelection()
-        form_opts['plotsel_op'] = self.plotsel_op.GetStringSelection()
+        form_opts['plot_choice1'] = self.wids['plot_choice1'].GetStringSelection()
+        form_opts['plot_choice2'] = self.wids['plot_choice2'].GetStringSelection()
         form_opts['plot_voff'] = self.wids['plot_voff'].GetValue()
         for ch in ('show_e0', 'show_pre', 'show_norm', 'auto_e0',
                    'auto_step', 'auto_nnorm'):
@@ -518,7 +514,7 @@ class XASNormPanel(TaskPanel):
             try:
                 e0_nom = xray_edge(atsym , edge).energy
                 conf['e0_nominal'] = e0_nom
-                self.wids['e0_nominal'].SetLabel(f'nominal E0={e0_nom:.2f}')
+                self.wids['e0_nominal'].SetLabel(f'nominal E0={e0_nom:.2f} eV')
             except:
                 pass
 
@@ -574,119 +570,6 @@ class XASNormPanel(TaskPanel):
         dgroup.energy_ref = eref
         self.update_config({'energy_ref': eref}, dgroup=dgroup)
 
-    def onPlotEither(self, evt=None, process=True):
-        if self.last_plot_type == 'multi':
-            self.onPlotSel(evt=evt)
-        else:
-            self.onPlotOne(evt=evt, process=process)
-
-    def onPlotOne(self, evt=None, process=True):
-        self.last_plot_type = 'one'
-        self.plot(self.controller.get_group(), process=process)
-        self.controller.set_focus()
-
-    def onVoffset(self, evt=None):
-        self.onPlotSel()
-
-    def onPlotSel(self, evt=None):
-        newplot = True
-        self.last_plot_type = 'multi'
-        group_ids = self.controller.filelist.GetCheckedStrings()
-        if len(group_ids) < 1:
-            return
-        last_id = group_ids[-1]
-
-        groupname = self.controller.file_groups[str(last_id)]
-        dgroup = self.controller.get_group(groupname)
-
-        plot_choices = PlotSel_Choices
-
-        erange = Plot_EnergyRanges[self.plot_erange.GetStringSelection()]
-        self.controller.set_plot_erange(erange)
-
-        en_offset = self.get_plot_energy_offset(dgroup)
-        en_offset_init = en_offset*1.0
-        en_offset_sel = self.plot_enoff.GetSelection()
-
-
-        popts = {'style': 'solid', 'marker': None}
-
-        if erange is not None:
-            if en_offset > 5:
-                popts['xmin'] = erange[0]
-                popts['xmax'] = erange[1]
-            elif hasattr(dgroup, 'e0'):
-                popts['xmin'] = dgroup.e0 + erange[0]
-                popts['xmax'] = dgroup.e0 + erange[1]
-
-        dgroup.xplot = dgroup.energy*1.0
-        xplot = dgroup.xplot*1.0
-        ytitle = self.plotsel_op.GetStringSelection()
-        yarray_name = plot_choices.get(ytitle, 'norm')
-        ylabel = getattr(plotlabels, yarray_name, ytitle)
-        xlabel = getattr(dgroup, 'plot_xlabel', getattr(plotlabels, 'energy'))
-        if en_offset > 5.0:
-            xlabel = plotlabels.en_e0val.format(en_offset)
-
-        if yarray_name == 'norm':
-            norm_method = self.wids['norm_method'].GetStringSelection().lower()
-            if norm_method.startswith('mback'):
-                yarray_name = 'norm_mback'
-                ylabel = "%s (MBACK)" % ylabel
-            elif  norm_method.startswith('area'):
-                yarray_name = 'norm_area'
-                ylabel = "%s (Area)" % ylabel
-
-        voff = self.wids['plot_voff'].GetValue()
-        plot_traces = []
-        newplot = True
-        plotopts = self.controller.get_plot_conf()
-        popts['linewidth'] = plotopts.pop('linewidth')
-        popts['marksize'] = plotopts.pop('markersize')
-        popts['grid'] = plotopts.pop('show_grid')
-        popts['fullbox'] = plotopts.pop('show_fullbox')
-
-        for ix, checked in enumerate(group_ids):
-            groupname = self.controller.file_groups[str(checked)]
-            dgroup = self.controller.get_group(groupname)
-            if dgroup is None:
-                continue
-            self.ensure_xas_processed(dgroup, force_mback =('mback' in yarray_name))
-
-            if en_offset_sel == 2:  # nominal edge for element
-                en_offset = self.get_plot_energy_offset(dgroup)
-                if abs(en_offset - en_offset_init) > 1:
-                    xlabel = plotlabels.en_e0
-
-            if erange is not None and hasattr(dgroup, 'e0') and 'xmin' not in popts:
-                popts['xmin'] = dgroup.e0 + erange[0]
-                popts['xmax'] = dgroup.e0 + erange[1]
-
-            trace = {'xdata': dgroup.xplot - en_offset,
-                     'ydata': getattr(dgroup, yarray_name) + ix*voff,
-                     'label': dgroup.filename, 'new': newplot}
-            trace.update(popts)
-            plot_traces.append(trace)
-            newplot = False
-
-        ppanel = self.controller.get_display(stacked=False).panel
-        zoom_limits = get_zoomlimits(ppanel, dgroup)
-
-        nplot_traces = len(ppanel.conf.traces)
-        nplot_request = len(plot_traces)
-        if nplot_request > nplot_traces:
-            linecolors = ppanel.conf.linecolors
-            ncols = len(linecolors)
-            for i in range(nplot_traces, nplot_request+5):
-                ppanel.conf.init_trace(i,  linecolors[i%ncols], 'dashed')
-
-        #
-        ppanel.plot_many(plot_traces, xlabel=xlabel, ylabel=ylabel,
-                         zoom_limits=zoom_limits, show_legend=True)
-        set_zoomlimits(ppanel, zoom_limits) or ppanel.unzoom_all()
-        ppanel.canvas.draw()
-
-        self.controller.set_focus()
 
     def onAuto_NNORM(self, evt=None):
         if evt.IsChecked():
@@ -717,9 +600,18 @@ class XASNormPanel(TaskPanel):
 
     def onCompareNorm(self, evt=None):
         dgroup = self.controller.get_group()
+        groupname = dgroup.groupname
         self.ensure_xas_processed(dgroup, force_mback=True)
-        plot_yarrays = self.get_plot_arrays(dgroup, plot_choice='mback_poly')
-        self.plot(dgroup, plot_yarrays=plot_yarrays)
+        title = f'{dgroup.filename}: normalization methods'
+
+        self.larch_eval(f"""plot({groupname}.energy, {groupname}.norm_poly,
+   new=True, delay_draw=True, label='norm (poly)', linewidth=3, show_legend=True,
+   {title=},  xlabel=r'{plotlabels.energy}', ylabel=r'{plotlabels.norm}')
+plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
+      linewidth=3, new=False, delay_draw=False)""")
+
+        self.controller.set_focus()
+
 
 
     def onCopyAuto(self, evt=None):
@@ -1021,7 +913,6 @@ class XASNormPanel(TaskPanel):
 {group:s}.edge_step = 1.0*{group:s}.edge_step_{normmeth:s}"""
             self.larch_eval(expr.format(**form))
 
-
         if form['auto_e0'] and hasattr(dgroup, 'e0'):
             self.wids['e0'].SetValue(dgroup.e0)
         if form['auto_step'] and hasattr(dgroup, 'edge_step'):
@@ -1054,108 +945,8 @@ class XASNormPanel(TaskPanel):
 
         self.skip_process = False
 
-
-    def get_plot_arrays(self, dgroup, plot_choice=None):
-        lab = plotlabels.norm
-        if dgroup is None:
-            return
-
-        dgroup.plot_y2label = None
-        dgroup.plot_xlabel = plotlabels.energy
-        dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab)]
-
-        req_attrs = ['e0', 'norm', 'dmude', 'd2mude', 'pre_edge']
-
-        if plot_choice in PlotOne_Choices.values():
-            pchoice = plot_choice
-        else:
-            pchoice = PlotOne_Choices.get(self.plotone_op.GetStringSelection(), 'norm')
-
-        if pchoice in ('mu', 'norm', 'i0', 'flat', 'dmude', 'd2mude'):
-            lab = getattr(plotlabels, pchoice)
-            dgroup.plot_yarrays = [(pchoice, PLOTOPTS_1, lab)]
-
-        elif pchoice == 'prelines':
-            lab = plotlabels.mu
-            dgroup.plot_yarrays = [('mu', PLOTOPTS_1, plotlabels.mu),
-                                   ('pre_edge', PLOTOPTS_2, 'pre edge'),
-                                   ('post_edge', PLOTOPTS_2, 'post edge')]
-
-        elif pchoice == 'norm+d2mude':
-            lab = plotlabels.norm
-            dgroup.plot_y2label = lab2 = plotlabels.d2mude
-            dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab),
-                                   ('d2mude', PLOTOPTS_D, lab2)]
-
-        elif pchoice == 'norm+dmude':
-            lab = plotlabels.norm
-            dgroup.plot_y2label = lab2 = plotlabels.dmude
-            dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab),
-                                   ('dmude', PLOTOPTS_D, lab2)]
-        elif pchoice == 'norm+i0':
-            lab = plotlabels.norm
-            dgroup.plot_y2label = lab2 = plotlabels.i0
-            dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab),
-                                   ('i0', PLOTOPTS_D, lab2)]
-        elif pchoice == 'norm+flat':
-            lab = plotlabels.norm
-            dgroup.plot_y2label = lab2 = plotlabels.flat
-            dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab),
-                                   ('flat', PLOTOPTS_D, lab2)]
-        elif pchoice == 'mback_norm':
-            req_attrs.append('mback_norm')
-            lab = plotlabels.mu
-            if not hasattr(dgroup, 'mback_mu'):
-                self.process(dgroup=dgroup, force_mback=True)
-            dgroup.plot_yarrays = [('mu', PLOTOPTS_1, lab),
-                                   ('mback_mu', PLOTOPTS_2, r'tabulated $\mu(E)$')]
-
-        elif pchoice == 'mback_poly':
-            req_attrs.append('mback_norm')
-            lab = plotlabels.norm
-            if not hasattr(dgroup, 'mback_mu'):
-                self.process(dgroup=dgroup, force_mback=True)
-            dgroup.plot_yarrays = [('norm_mback', PLOTOPTS_1, 'mback'),
-                                   ('norm_poly', PLOTOPTS_2, 'polynomial')]
-
-        elif pchoice == 'area_norm':
-            dgroup.plot_yarrays = [('norm_area', PLOTOPTS_1, 'area'),
-                                   ('norm_poly', PLOTOPTS_2, 'polynomial')]
-
-        dgroup.plot_ylabel = lab
-        needs_proc = False
-        for attr in req_attrs:
-            needs_proc = needs_proc or (not hasattr(dgroup, attr))
-
-        if needs_proc:
-            self.process(dgroup=dgroup, force=True)
-
-        y4e0 = dgroup.yplot = getattr(dgroup, dgroup.plot_yarrays[0][0], dgroup.mu)
-        dgroup.plot_extras = []
-
-        popts = {'marker': 'o', 'markersize': 5,
-                 'label': '_nolegend_',
-                 'markerfacecolor': '#888',
-                 'markeredgecolor': '#A00'}
-
-        if self.wids['show_e0'].IsChecked():
-            ie0 = index_of(dgroup.energy, dgroup.e0)
-            dgroup.plot_extras.append(('marker', dgroup.e0, y4e0[ie0], popts))
-
-        if self.wids['show_pre'].IsChecked() or self.wids['show_norm'].IsChecked():
-            popts['markersize'] = 4
-            wids = []
-            if self.wids['show_pre'].IsChecked():  wids.extend(['pre1', 'pre2'])
-            if self.wids['show_norm'].IsChecked():  wids.extend(['norm1', 'norm2'])
-            for wid in wids:
-                val = self.wids[wid].GetValue()
-                ival = min(len(y4e0)-1, index_of(dgroup.energy, dgroup.e0 + val))
-                dgroup.plot_extras.append(('marker', dgroup.e0+val, y4e0[ival], popts))
-
-        return dgroup.plot_yarrays
-
     def get_plot_energy_offset(self, dgroup):
-        selection = self.plot_enoff.GetSelection()
+        selection = self.wids['plot_enoff'].GetSelection()
         en_off = 0.0
         if selection == 1 and hasattr(dgroup, 'e0'):
             en_off = dgroup.e0
@@ -1169,116 +960,110 @@ class XASNormPanel(TaskPanel):
                 pass
         return en_off
 
+    def ensure_xas_processed(self, dgroup, force_mback=False):
+        req_attrs = ['e0', 'mu', 'dmude', 'norm', 'pre_edge']
+        if force_mback:
+            req_attrs.extend(['norm_mback', 'mback_mu'])
+        if not all([hasattr(dgroup, attr) for attr in req_attrs]):
+            self.process(dgroup, force=True, force_mback=force_mback)
 
-    def plot(self, dgroup, title=None, plot_yarrays=None, yoff=0,
-             delay_draw=True, multi=False, new=True, with_extras=True, process=True, **kws):
+    def plot(self, **kws):
+        self.onPlotEither(**kws)
 
+    def onPlotEither(self, evt=None, process=True, **kws):
+        plt = self.onPlotSel if self.last_plot_type=='multi' else self.onPlotOne
+        plt(process=process, **kws)
+
+    def onPlotOne(self, evt=None, dgroup=None, process=True, **kws):
         if self.skip_plotting:
             return
-        ppanel = self.controller.get_display(stacked=False).panel
+        self.last_plot_type = 'one'
 
-        plotcmd = ppanel.oplot
-        if new:
-            plotcmd = ppanel.plot
-
-        erange = Plot_EnergyRanges[self.plot_erange.GetStringSelection()]
-        self.controller.set_plot_erange(erange)
+        if dgroup is None:
+            dgroup = self.controller.get_group()
 
         groupname = getattr(dgroup, 'groupname', None)
         if groupname is None:
             return
 
-        if process:
+        plot1 = Plot_Choices1[self.wids['plot_choice1'].GetStringSelection()]
+        show_norm = (plot1 == 'norm')
+        show_flat = (plot1 == 'flat')
+        show_deriv = (plot1 == 'dmude')
+
+        plot2 = Plot_Choices2[self.wids['plot_choice2'].GetStringSelection()]
+        show_pre  = (plot2 == 'prelines')
+        show_post = (plot2 == 'prelines')
+        with_i0   = (plot2 == 'i0')
+        with_deriv = (plot2 == 'dmude')
+        with_deriv2 = (plot2 == 'd2mude')
+        with_norm = (plot2 == 'norm')
+        with_mback =  (plot2 == 'mback_norm')
+        if process or (with_mback and not hasattr(dgroup, 'mback_mu')):
             self.ensure_xas_processed(dgroup, force_mback=True)
 
+        show_e0 = self.wids['show_e0'].IsChecked()
 
-        if plot_yarrays is None:
-            plot_yarrays = self.get_plot_arrays(dgroup)
+        marker_energies = []
+        if self.wids['show_pre'].IsChecked():
+            marker_energies.append(self.wids['pre1'].GetValue())
+            marker_energies.append(self.wids['pre2'].GetValue())
+        if self.wids['show_norm'].IsChecked():
+            marker_energies.append(self.wids['norm1'].GetValue())
+            marker_energies.append(self.wids['norm2'].GetValue())
 
-        popts = self.controller.get_plot_conf()
-        popts.update(kws)
-        popts['grid'] = popts.pop('show_grid')
-        popts['fullbox'] = popts.pop('show_fullbox')
+        title = f'{dgroup.filename}'
 
-        path, fname = path_split(dgroup.filename)
-        if 'label' not in popts:
-            popts['label'] = dgroup.plot_ylabel
-
-        zoom_limits = get_zoomlimits(ppanel, dgroup)
+        erange = Plot_EnergyRanges[self.wids['plot_erange'].GetStringSelection()]
+        self.controller.set_plot_erange(erange)
+        emin = emax = None
+        if erange is not None:
+            emin, emax = erange
 
         en_offset = self.get_plot_energy_offset(dgroup)
+
+        self.larch_eval(f"""plot_mu({groupname}, {show_norm=}, {show_flat=}, {show_deriv=},
+    {show_e0=}, {show_pre=}, {show_post=}, {with_deriv=}, {with_deriv2=},
+    {with_i0=}, {with_norm=}, {with_mback=}, {title=},
+    {emin=}, {emax=}, {marker_energies=}, {en_offset=})""")
+
+        self.controller.set_focus()
+
+    def onPlotSel(self, evt=None, process=None):
+        newplot = True
+        self.last_plot_type = 'multi'
+        group_ids = self.controller.filelist.GetCheckedStrings()
+        if len(group_ids) < 1:
+            return
+        last_id = group_ids[-1]
+
+        groupname = self.controller.file_groups[str(last_id)]
+        dgroup = self.controller.get_group(groupname)
+
+        title = self.wids['plot_choice1'].GetStringSelection()
+        plot1 = Plot_Choices1[title]
+        show_norm = (plot1 == 'norm')
+        show_flat = (plot1 == 'flat')
+        show_deriv = (plot1 == 'dmude')
+
+        erange = Plot_EnergyRanges[self.wids['plot_erange'].GetStringSelection()]
+        self.controller.set_plot_erange(erange)
+        emin = emax = None
         if erange is not None:
-            if en_offset > 5:
-                popts['xmin'] = erange[0]
-                popts['xmax'] = erange[1]
-            elif hasattr(dgroup, 'e0'):
-                popts['xmin'] = dgroup.e0 + erange[0]
-                popts['xmax'] = dgroup.e0 + erange[1]
+            emin, emax = erange
 
-        dgroup.xplot = dgroup.energy*1.0
-        xplot = dgroup.xplot*1.0
-        popts['xlabel'] = dgroup.plot_xlabel
-        if en_offset > 5:
-            xplot = dgroup.energy - en_offset
-            popts['xlabel'] = plotlabels.en_e0val.format(en_offset)
-        popts['ylabel'] = dgroup.plot_ylabel
-        if getattr(dgroup, 'plot_y2label', None) is not None:
-            popts['y2label'] = dgroup.plot_y2label
+        en_offset = self.get_plot_energy_offset(dgroup)
 
-        plot_choices = PlotSel_Choices
-        if multi:
-            ylabel = self.plotsel_op.GetStringSelection()
-            yarray_name = plot_choices.get(ylabel, 'norm')
+        cmds = []
+        new = True
+        for gid in group_ids:
+            delay_draw = gid !=  last_id
+            groupname = self.controller.file_groups[str(gid)]
+            dgroup = self.controller.get_group(groupname)
+            # print(f"{gid=}, {groupname=}, {delay_draw=}")
+            cmds.append(f"""plot_mu({groupname}, {show_norm=}, {show_flat=}, {show_deriv=},
+            {title=}, {emin=}, {emax=}, {en_offset=}, {new=}, {delay_draw=}, label='{gid}')""")
+            new = False
 
-            if self.is_xasgroup(dgroup):
-                ylabel = getattr(plotlabels, yarray_name, ylabel)
-            popts['ylabel'] = ylabel
-
-        plot_extras = None
-        if new:
-            if title is None:
-                title = fname
-            plot_extras = getattr(dgroup, 'plot_extras', None)
-
-        popts['title'] = title
-        popts['show_legend'] = len(plot_yarrays) > 1
-        narr = len(plot_yarrays) - 1
-
-        _linewidth = popts['linewidth']
-        for i, pydat in enumerate(plot_yarrays):
-            yaname, yopts, yalabel = pydat
-            popts.update(yopts)
-            if yalabel is not None:
-                popts['label'] = yalabel
-            linewidht = _linewidth
-            if 'linewidth' in popts:
-                linewidth = popts.pop('linewidth')
-            popts['delay_draw'] = delay_draw
-            if yaname == 'norm_mback' and not hasattr(dgroup, yaname):
-                self.process(dgroup=dgroup, force=True, force_mback=True)
-            if yaname == 'i0' and not hasattr(dgroup, yaname):
-                dgroup.i0 = np.ones(len(dgroup.xplot))
-            plotcmd(xplot, getattr(dgroup, yaname)+yoff, linewidth=linewidth, **popts)
-            plotcmd = ppanel.oplot
-
-        if with_extras and plot_extras is not None:
-            axes = ppanel.axes
-            for etype, x, y, opts in plot_extras:
-                if etype == 'marker':
-                    xpopts = {'marker': 'o', 'markersize': 5,
-                              'label': '_nolegend_',
-                              'markerfacecolor': 'red',
-                              'markeredgecolor': '#884444'}
-                    xpopts.update(opts)
-                    axes.plot([x], [y], **xpopts)
-                elif etype == 'vline':
-                    xpopts = {'ymin': 0, 'ymax': 1.0,
-                              'label': '_nolegend_',
-                              'color': '#888888'}
-                    xpopts.update(opts)
-                    axes.axvline(x, **xpopts)
-
-        # set_zoomlimits(ppanel, zoom_limits)
-        ppanel.reset_formats()
-        set_zoomlimits(ppanel, zoom_limits)
-        ppanel.conf.unzoom(full=True, delay_draw=False)
+        self.larch.eval( '\n'.join(cmds) )
+        self.controller.set_focus()
