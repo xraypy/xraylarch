@@ -38,7 +38,7 @@ PLOTOPTS_D = dict(style='solid', zorder=2, side='right', marker='None')
 Plot_Choices1 = make_array_choice(['mu','norm', 'flat', 'dmude'])
 Plot_Choices2 = make_array_choice(['noplot', 'prelines',
                                    'dmude', 'd2mude', 'i0',
-                                   'mback_norm', 'norm'])
+                                   'mback_mu', 'norm'])
 
 Plot_EnergyRanges = {'full E range': None,
                      'E0 -10:+50eV':  (-10, 50),
@@ -47,8 +47,8 @@ Plot_EnergyRanges = {'full E range': None,
                      'E0 -50:+250eV': (-50, 250),
                      'E0 -75:+400eV': (-75, 400),
                      'E0 -100:+500eV': (-100, 500)}
-Plot_EnergyOffsets = ['0.0 (absolute energy)',
-                      'E0 for group',
+Plot_EnergyOffsets = ['0 (absolute energy)',
+                      'E0 for Group',
                       'Nominal E0 (element/edge)']
 
 FSIZE = 120
@@ -75,7 +75,7 @@ class XASNormPanel(TaskPanel):
 
         trow = wx.Panel(panel)
 
-        opts = {'size': (200, -1)}
+        opts = {'size': (190, -1)}
         wids['plot_sel'] = Button(trow, 'Plot Selected Groups',
                                   action=self.onPlotSel, **opts)
         wids['plot_one'] = Button(trow, 'Plot Current Group',
@@ -100,10 +100,10 @@ class XASNormPanel(TaskPanel):
 
         erange_lab = wx.StaticText(parent=trow, label=' Energy Range:', size=(150, -1))
         voff_lab = wx.StaticText(parent=trow, label=' Y Offset:', size=(150, -1))
-        enoff_lab = wx.StaticText(parent=trow, label=' Energy Offset:', size=(150, -1))
 
-        plot1_lab = wx.StaticText(parent=trow, label=' Main Plot Array:', size=(150, -1))
-        plot2_lab = wx.StaticText(parent=trow, label=' With Plot Array:', size=(150, -1))
+        enoff_lab = wx.StaticText(parent=trow, label=' Energy Offset:', size=(175, -1))
+        plot1_lab = wx.StaticText(parent=trow, label=' Main Plot Array:', size=(175, -1))
+        plot2_lab = wx.StaticText(parent=trow, label=' With Plot Array (Current Group):', size=(175, -1))
 
         self.wids['plot_on_choose'] = Check(trow, default=defaults.get('auto_plot', True),
                                 label='Auto-Plot when choosing Current Group?')
@@ -967,8 +967,11 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         if not all([hasattr(dgroup, attr) for attr in req_attrs]):
             self.process(dgroup, force=True, force_mback=force_mback)
 
-    def plot(self, **kws):
-        self.onPlotEither(**kws)
+    def plot(self, dgroup=None, **kws):
+        if dgroup is None:
+            self.onPlotEither(**kws)
+        else:
+            self.onPlotOne(dgroup=dgroup, **kws)
 
     def onPlotEither(self, evt=None, process=True, **kws):
         plt = self.onPlotSel if self.last_plot_type=='multi' else self.onPlotOne
@@ -1029,7 +1032,7 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
 
         self.controller.set_focus()
 
-    def onPlotSel(self, evt=None, process=None):
+    def onPlotSel(self, evt=None, process=None, **kws):
         newplot = True
         self.last_plot_type = 'multi'
         group_ids = self.controller.filelist.GetCheckedStrings()
