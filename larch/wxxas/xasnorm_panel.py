@@ -326,12 +326,9 @@ class XASNormPanel(TaskPanel):
         if dgroup is None:
             return self.get_defaultconfig()
 
-        defconf = self.get_defaultconfig()
-        conf = getattr(dgroup.config, self.configname, defconf)
+        conf = deepcopy(self.controller.config[self.configname])
+        conf.update(getattr(dgroup.config, self.configname, {}))
 
-        for k, v in defconf.items():
-            if k not in conf:
-                conf[k] = v
         if conf.get('edge_step', None) is None:
             conf['edge_step'] = getattr(dgroup, 'edge_step', 1)
 
@@ -1063,7 +1060,8 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
             delay_draw = gid !=  last_id
             groupname = self.controller.file_groups[str(gid)]
             dgroup = self.controller.get_group(groupname)
-            # print(f"{gid=}, {groupname=}, {delay_draw=}")
+            en_offset = self.get_plot_energy_offset(dgroup)
+            # print(f"{gid=}, {groupname=}, {delay_draw=}, {en_offset=}")
             cmds.append(f"""plot_mu({groupname}, {show_norm=}, {show_flat=}, {show_deriv=},
             {title=}, {emin=}, {emax=}, {en_offset=}, {new=}, {delay_draw=}, label='{gid}')""")
             new = False
