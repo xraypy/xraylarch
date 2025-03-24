@@ -4,6 +4,7 @@ XANES Data Viewer and Analysis Tool
 """
 import os
 import sys
+
 import time
 import copy
 from pathlib import Path
@@ -834,9 +835,9 @@ class LarixFrame(wx.Frame):
     def onSystemDarkMode(self, event=None):
         """notify on light/dark mode change"""
         appear = wx.SystemSettings.GetAppearance()
-        isdark = appear.isDark()
+        isdark = appear.IsDark()
         # would set light/dark mode
-        
+
     def onwxInspect(self, evt=None):
         "wx inspection tool"
         wx.GetApp().ShowInspectionTool()
