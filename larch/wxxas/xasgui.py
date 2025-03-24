@@ -655,12 +655,11 @@ class LarixFrame(wx.Frame):
         self.controller.groupname = groupname
 
         if process:
+            pagepanel.fill_form(dgroup)
             plot_on_choose = plot
             if 'plot_on_choose' in pagepanel.wids:
                 plot_on_choose = pagepanel.wids['plot_on_choose'].IsChecked()
-
             if plot_on_choose:
-                pagepanel.fill_form(dgroup)
                 pagepanel.skip_process = False
                 pagepanel.process(dgroup=dgroup)
                 if plot and hasattr(pagepanel, 'plot'):
