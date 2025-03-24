@@ -12,7 +12,7 @@ except ImportError:
     pass
 
 
-COLORS = {'text': wx.Colour(0, 0, 0),
+COLORS_LIGHT = {'text': wx.Colour(0, 0, 0),
           'text_bg': wx.Colour(255, 255, 255),
           'text_invalid': wx.Colour(240, 0, 10),
           'text_invalid_bg': wx.Colour(253, 253, 90),
@@ -39,8 +39,7 @@ COLORS = {'text': wx.Colour(0, 0, 0),
           'pt_bgsel': wx.Colour(250, 250, 200),
         }
 
-if DARK_THEME:
-    COLORS = {'text': wx.Colour(255, 255, 255),
+COLORS_DARK = {'text': wx.Colour(255, 255, 255),
              'text_bg': wx.Colour(25, 25, 25),
              'text_invalid': wx.Colour(240, 0, 10),
              'text_unused': wx.Colour(230, 230, 30),
@@ -67,6 +66,7 @@ if DARK_THEME:
              'pt_bgsel': wx.Colour(30, 20, 80),
     }
 
+COLORS = COLORS_DARK if DARK_THEME else COLORS_LIGHT
 
 X11_COLORS = {'aliceblue': (240,248,255), 'antiquewhite': (250,235,215),
               'antiquewhite1': (255,239,219), 'antiquewhite2': (238,223,204),

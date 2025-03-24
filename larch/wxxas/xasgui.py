@@ -829,8 +829,16 @@ class LarixFrame(wx.Frame):
         self.menubar.Append(hmenu, '&Help')
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE,  self.onClose)
+        self.Bind(wx.EVT_SYS_COLOUR_CHANGED, self.onSystemDarkMode)
 
+    def onSystemDarkMode(self, event=None):
+        """notify on light/dark mode change"""
+        appear = wx.SystemSettings.GetAppearance()
+        isdark = appear.isDark()
+        # would set light/dark mode
+        
     def onwxInspect(self, evt=None):
+        "wx inspection tool"
         wx.GetApp().ShowInspectionTool()
 
     def onShowLarchBuffer(self, evt=None):
