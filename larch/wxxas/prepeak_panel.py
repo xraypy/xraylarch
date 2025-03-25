@@ -916,7 +916,7 @@ class PrePeakPanel(TaskPanel):
 
         conf = getattr(dgroup, 'prepeak_config', {})
         if 'e0' not in conf:
-            conf = self.controller.get_defaultcfonfig()
+            conf = self.get_defaultconfig()
             conf['e0'] = getattr(dgroup, 'e0', -1)
 
         dgroup.prepeak_config = conf
