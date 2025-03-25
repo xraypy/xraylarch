@@ -306,14 +306,28 @@ class TaskPanel(wx.Panel):
             self.subframes[name] = frameclass(self, **opts)
 
     def onPanelExposed(self, **kws):
-        # called when notebook is selected
+        # called when notebook is selected: process group
         fname = self.controller.filelist.GetStringSelection()
         if fname in self.controller.file_groups:
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
-            self.ensure_xas_processed(dgroup)
+            if dgroup.datatype == 'xas':
+                self.ensure_xas_processed(dgroup)
             self.fill_form(dgroup)
             self.process(dgroup=dgroup)
+
+    def onPanelHidden(self, **kws):
+        # called when notebook is de-selected: save config
+        fname = self.controller.filelist.GetStringSelection()
+        if fname in self.controller.file_groups:
+            gname = self.controller.file_groups[fname]
+            dgroup = self.controller.get_group(gname)
+            if dgroup is None:
+                return
+            conf = self.get_config()
+            conf.update(self.read_form())
+            setattr(dgroup.config, self.configname, conf)
+
 
     def write_message(self, msg, panel=0):
         self.controller.write_message(msg, panel=panel)

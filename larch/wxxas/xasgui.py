@@ -579,9 +579,15 @@ class LarixFrame(wx.Frame):
         return ipage, self.nb.GetPage(ipage)
 
     def onNBChanged(self, event=None):
-        callback = getattr(self.nb.GetCurrentPage(), 'onPanelExposed', None)
-        if callable(callback):
-            callback()
+        oldpage = self.nb.GetPage(event.GetOldSelection())
+        newpage = self.nb.GetPage(event.GetSelection())
+        on_hide = getattr(oldpage, 'onPanelHidden', None)
+        if callable(on_hide):
+            on_hide()
+
+        on_expose = getattr(newpage, 'onPanelExposed', None)
+        if callable(on_expose):
+            on_expose()
 
     def onSelAll(self, event=None):
         self.controller.filelist.select_all()
