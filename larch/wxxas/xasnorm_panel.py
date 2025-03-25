@@ -103,7 +103,7 @@ class XASNormPanel(TaskPanel):
 
         enoff_lab = wx.StaticText(parent=trow, label=' Energy Offset:', size=(175, -1))
         plot1_lab = wx.StaticText(parent=trow, label=' Main Plot Array:', size=(175, -1))
-        plot2_lab = wx.StaticText(parent=trow, label=' With Plot Array (Current Group):', size=(175, -1))
+        plot2_lab = wx.StaticText(parent=trow, label=' With [Current Group]:', size=(175, -1))
 
         self.wids['plot_on_choose'] = Check(trow, default=defaults.get('auto_plot', True),
                                 label='Auto-Plot when choosing Current Group?')
