@@ -222,6 +222,7 @@ class FitSpectraFrame(wx.Frame):
 
         pan = GridPanel(self)
         self.mca_label = self.mca.label
+
         self.wids['mca_name'] = SimpleText(pan, self.mca_label, size=(550, -1), style=LEFT)
         self.wids['btn_calc'] = Button(pan, 'Calculate Model', size=(150, -1),
                                        action=self.onShowModel)
@@ -921,8 +922,11 @@ class FitSpectraFrame(wx.Frame):
     def onCompSave(self, event=None):
         result = self.get_fitresult(nfit=self.owids['comp_fitlabel'].GetSelection())
         scale = result.concentration_scale
+
         deffile = self.mca.label + '_' + result.label
         deffile = fix_filename(deffile.replace('.', '_')) + '_xrf.csv'
+        deffile = Path(deffile).as_posix()
+
         wcards = "CSV (*.csv)|*.csv|All files (*.*)|*.*"
         sfile = FileSave(self, 'Save Concentration Results',
                          default_file=deffile,
@@ -1377,6 +1381,7 @@ class FitSpectraFrame(wx.Frame):
         result = self.get_fitresult()
         deffile = self.mca.label + '_' + result.label
         deffile = fix_filename(deffile.replace('.', '_')) + '.xrfmodel'
+        deffile = Path(deffile).as_posix()
         ModelWcards = "XRF Models(*.xrfmodel)|*.xrfmodel|All files (*.*)|*.*"
         sfile = FileSave(self, 'Save XRF Model', default_file=deffile,
                          wildcard=ModelWcards)
@@ -1389,6 +1394,7 @@ class FitSpectraFrame(wx.Frame):
         result = self.get_fitresult()
         deffile = self.mca.label + '_' + result.label
         deffile = fix_filename(deffile.replace('.', '_')) + '_xrf.txt'
+        deffile = Path(deffile).as_posix()
         wcards = 'All files (*.*)|*.*'
         outfile = FileSave(self, 'Export Fit Result', default_file=deffile)
         if outfile is not None:

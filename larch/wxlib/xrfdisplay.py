@@ -507,9 +507,9 @@ class XRFDisplayFrame(wx.Frame):
                                                 name=mcaname,
                                                 filename=filename))
             if label is None:
-                label = filename
+                label = Path(filename).absolute().name
         if label is None and hasattr(mca, 'filename'):
-            label = mca.filename
+            label = Path(mca.filename).absolute().name
         if label is None:
             label = mcaname
         self.mca.label = label
