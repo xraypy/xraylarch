@@ -64,30 +64,20 @@ def _pprint(matrix):
 
 
 def xyz2struct(molecule):
-    """Convert pymatgen molecule to dummy pymatgen structure"""
-
-    alat, blat, clat = 1, 1, 1
-
-    # Set the lattice dimensions in each direction
-    for i in range(len(molecule) - 1):
-        if molecule.cart_coords[i][0] > molecule.cart_coords[i + 1][0]:
-            alat = molecule.cart_coords[i][0]
-        if molecule.cart_coords[i][1] > molecule.cart_coords[i + 1][1]:
-            blat = molecule.cart_coords[i][1]
-        if molecule.cart_coords[i][2] > molecule.cart_coords[i + 1][2]:
-            clat = molecule.cart_coords[i][2]
-
-    # Set the lattice dimensions in each direction
+    """Convert pymatgen molecule to dummy pymatgen structure using vectorized calculation."""
+    # Ensure the coordinates are in a NumPy array
+    coords = np.array(molecule.cart_coords)
+    
+    # Compute maximum coordinate along each axis
+    alat, blat, clat = np.max(coords, axis=0)
+    
     lattice = Lattice.from_parameters(
         a=alat, b=blat, c=clat, alpha=90, beta=90, gamma=90
     )
-
+    
     # Create a list of species
     species = [Element(sym) for sym in molecule.species]
-
-    # Create a list of coordinates
-    coords = molecule.cart_coords
-
+    
     # Create the Structure object
     struct = Structure(lattice, species, coords, coords_are_cartesian=True)
     return struct
