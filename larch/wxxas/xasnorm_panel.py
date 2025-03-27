@@ -332,28 +332,12 @@ class XASNormPanel(TaskPanel):
         if conf.get('edge_step', None) is None:
             conf['edge_step'] = getattr(dgroup, 'edge_step', 1)
 
-        atsym = '?'
-        if hasattr(dgroup, 'element'):
-            elem = getattr(dgroup, 'element', '?')
-            try:
-                z = int(elem)
-                atsym = ATSYMS[z]
-            except:
-                pass
-            if elem in ATSYMS[1:]:
-                atsym = elem
-            else:
-                try:
-                    if elem.lower() in ATOM_NAMES:
-                        z = 1 + ATOM_NAMES.index(eleme.lower())
-                        atsym = ATSYMS[z]
-                except:
-                    pass
+        conf['atsym'] = getattr(dgroup, 'atsym', '?')
+        conf['edge'] = getattr(dgroup,'edge', 'K')
+        # print("Conf 1 ", dgroup.groupname, conf['atsym'], getattr(dgroup, 'e0', 'no e0'))
+        if hasattr(dgroup, 'e0') and conf['atsym'] == '?':
+            self.set_atom_edge('?', '?')
 
-        conf['atsym'] = atsym
-        if atsym == '?':
-            conf['atsym'] = getattr(dgroup, 'atsym', atsym)
-        conf['edge'] = getattr(dgroup,'edge', conf['edge'])
         try:
             conf['e0_nominal'] = e0_nom = xray_edge(conf['atsym'] , conf['edge']).energy
             self.wids['e0_nominal'].SetLabel(f'nominal E0={e0_nom:.2f} eV')
@@ -374,25 +358,17 @@ class XASNormPanel(TaskPanel):
             conf['energy_ref'] = fname
 
         conf['energy_shift'] = getattr(dgroup,'energy_shift', conf['energy_shift'])
-        if hasattr(dgroup, 'e0') and conf['atsym'] == '?':
-            atsym, edge = guess_edge(dgroup.e0)
-            conf['atsym'] = atsym
-            conf['edge'] = edge
-            try:
-                conf['e0_nominal'] = e0_nom = xray_edge(atsym, edge).energy
-                self.wids['e0_nominal'].SetLabel(f'nominal E0={e0_nom:.2f} eV')
-            except:
-                conf['e0_nominal'] = -1
 
-        if hasattr(dgroup, 'mback_params'):
-            conf['atsym'] = getattr(dgroup.mback_params, 'atsym', conf['atsym'])
-            conf['edge'] = getattr(dgroup.mback_params, 'edge', conf['edge'])
-            try:
-                conf['e0_nominal'] = e0_nom = xray_edge(conf['atsym'], conf['edge']).energy
-                self.wids['e0_nominal'].SetLabel(f'nominal E0={e0_nom:.2f} eV')
-            except:
-                conf['e0_nominal'] = -1
-
+#         if hasattr(dgroup, 'mback_params'):
+#             dgroup.atsym = conf['atsym'] = getattr(dgroup.mback_params, 'atsym', conf['atsym'])
+#             dgroup.edge = conf['edge'] = getattr(dgroup.mback_params, 'edge', conf['edge'])
+#             print("Got config from MBACK ", conf['atsym'], conf['edge'])
+#             try:
+#                 conf['e0_nominal'] = e0_nom = xray_edge(conf['atsym'], conf['edge']).energy
+#                 self.wids['e0_nominal'].SetLabel(f'nominal E0={e0_nom:.2f} eV')
+#             except:
+#                conf['e0_nominal'] = -1
+        # print("Get config ", conf['atsym'], conf['edge'], conf['e0_nominal'])
         setattr(dgroup.config, self.configname, conf)
         return conf
 
@@ -411,15 +387,8 @@ class XASNormPanel(TaskPanel):
 
             self.wids['e0'].SetValue(opts.get('e0', -1))
             edge_step = opts.get('edge_step', 1.0)
-
-            if hasattr(dgroup, 'e0') and opts['atsym'] == '?':
-                atsym, edge = guess_edge(dgroup.e0)
-                opts['atsym'] = atsym
-                opts['edge'] = edge
-                try:
-                    opts['e0_nominal'] = xray_edge(atsym, edge).energy
-                except:
-                    opts['e0_nominal'] = -1
+            if opts['atsym'] == '?' and hasattr(dgroup, 'atsym'):
+                self.set_atom_edge(dgroup.atsym, getattr(dgroup, 'edge', 'K'))
 
             self.wids['step'].SetValue(edge_step)
             autoset_fs_increment(self.wids['step'], edge_step)
@@ -500,20 +469,31 @@ class XASNormPanel(TaskPanel):
         return form_opts
 
     def onAtSymEdge(self, event=None):
-        atsym =  self.wids['atsym'].GetStringSelection().title()
-        edge =  self.wids['edge'].GetStringSelection().title()
+        self.set_atom_edge(self.wids['atsym'].GetStringSelection().title(),
+                           self.wids['edge'].GetStringSelection().title())
 
+    def set_atom_edge(self, atsym, edge):
+        "set atom symbol and edge, aiming for consistency"
         dgroup = self.controller.get_group()
-        if dgroup is not None:
-            conf = getattr(dgroup.config, self.configname)
-            dgroup.atsym = conf['atsym'] = atsym
-            dgroup.edge = conf['edge'] = edge
-            try:
-                e0_nom = xray_edge(atsym , edge).energy
-                conf['e0_nominal'] = e0_nom
-                self.wids['e0_nominal'].SetLabel(f'nominal E0={e0_nom:.2f} eV')
-            except:
-                pass
+        if dgroup is None:
+            return
+        conf = self.get_config()
+        if atsym == '?' and getattr(dgroup, 'e0', None) is not Noe:
+            atsym, edge = guess_edge(dgroup.e0)
+
+        dgroup.atsym = conf['atsym'] = atsym
+        dgroup.edge = conf['edge'] = edge
+
+        try:
+            e0_nom = xray_edge(atsym , edge).energy
+            conf['e0_nominal'] = e0_nom
+            self.wids['e0_nominal'].SetLabel(f'nominal E0={e0_nom:.2f} eV')
+        except:
+            pass
+        if hasattr(dgroup, 'mback_params'):
+            dgroup.mback_params.atsym = atsym
+            dgroup.mback_params.edge = edge
+        # print("End of Set Atom ", atsym, edge)
 
 
     def onNNormChoice(self, evt=None):
@@ -536,11 +516,10 @@ class XASNormPanel(TaskPanel):
         if method.startswith('mback'):
             dgroup = self.controller.get_group()
             cur_elem = self.wids['atsym'].GetStringSelection()
-            if hasattr(dgroup, 'e0') and cur_elem == 'H':
-                atsym, edge = guess_edge(dgroup.e0)
+            if hasattr(dgroup, 'e0') and cur_elem in ('H', '?'):
                 self.wids['edge'].SetStringSelection(edge)
                 self.wids['atsym'].SetStringSelection(atsym)
-                self.update_config({'edge': edge, 'atsym': atsym})
+                # self.set_atom_edge('?', '?')
         time.sleep(0.002)
         self.onReprocess()
 
@@ -752,6 +731,8 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
             dgroup = self.controller.get_group()
         except TypeError:
             return
+        if dgroup is None:
+            return
         if not hasattr(dgroup.config, self.configname):
             return
         self.process(dgroup=dgroup)
@@ -770,9 +751,10 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
             dgroup = self.controller.get_group()
         if dgroup is None:
             return
-
+        # print("Process ", dgroup, getattr(dgroup, 'atsym', '?'))
         self.skip_process = True
         conf = self.get_config(dgroup)
+        # print("Process got conf ", conf['atsym'], getattr(dgroup, 'atsym', '?'))
         form = self.read_form('process')
         if not use_form:
             form.update(self.get_defaultconfig())
@@ -784,7 +766,6 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         for key, val in self.controller.file_groups.items():
             if eref_sel in (val, key):
                 self.wids['energy_ref'].SetStringSelection(key)
-
 
         en_units = getattr(dgroup, 'energy_units', None)
         if en_units is None:
@@ -806,15 +787,8 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
 
         if not hasattr(dgroup, 'e0'):
             e0 = find_e0(dgroup)
-            if form['atsym'] == '?' and conf.get('atsym', '?') != '?':
-                form['atsym'] = conf['atsym']
-                form['edge'] = conf.get('edge', 'K')
-
         if form['atsym'] == '?':
-            form['atsym'], form['edge'] = guess_edge(dgroup.e0)
-        dgroup.atsym = form['atsym']
-        dgroup.edge = form['edge']
-
+            self.set_atom_edge('?', '?')
 
         cmds = []
         # test whether the energy shift is 0 or is different from the current energy shift:
@@ -920,6 +894,8 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
             atsym, edge = guess_edge(dgroup.e0)
             conf['atsym'] = dgroup.atsym = atsym
             conf['edge'] = dgroup.edge = edge
+            # conf['atsym'] = atsym
+            # conf['edge'] = edge
         self.wids['atsym'].SetStringSelection(dgroup.atsym)
         self.wids['edge'].SetStringSelection(dgroup.edge)
 
@@ -935,9 +911,6 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
             if val is not None:
                 self.wids[attr].SetValue(val)
 
-        if hasattr(dgroup, 'mback_params'): # from mback
-            conf['atsym'] = getattr(dgroup.mback_params, 'atsym')
-            conf['edge'] = getattr(dgroup.mback_params, 'edge')
         self.update_config(conf, dgroup=dgroup)
 
         self.skip_process = False
