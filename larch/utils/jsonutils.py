@@ -99,10 +99,14 @@ def encode4js(obj):
     if obj is None:
         return None
     if isinstance(obj, np.ndarray):
-        out = {'__class__': 'Array', '__shape__': obj.shape,
-               '__dtype__': obj.dtype.name}
+        try:
+            name = repr(obj.dtype.name)
+            out = {'__class__': 'Array', '__shape__': obj.shape,
+                '__dtype__': name}
+        except:
+            print('error encoding ndarray: ', obj, obj.shape, obj.dtype)
+            out = {'__class__': 'Array', '__shape__': obj.shape}
         out['value'] = obj.flatten().tolist()
-
         if 'complex' in obj.dtype.name:
             out['value'] = [(obj.real).tolist(), (obj.imag).tolist()]
         elif obj.dtype.name == 'object':
