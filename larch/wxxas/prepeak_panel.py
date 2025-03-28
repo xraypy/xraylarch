@@ -1130,6 +1130,12 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         self.models_other.SetSelection(0)
 
         mod_abbrev = get_model_abbrev(model)
+
+        opts = self.read_form()
+        dgroup = self.controller.get_group()
+        has_data = getattr(dgroup, 'yplot', None) is not None
+        is_peakmodel = model in ModelChoices['peaks']
+
         if prefix is None:
             curmodels = ["%s%i_" % (mod_abbrev, i+1) for i in range(1+len(self.fit_components))]
             for comp in self.fit_components:
@@ -1205,9 +1211,12 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                        SLabel("  Min", size=(60, -1)),
                        SLabel("  Max", size=(60, -1)),  SLabel(" Expression")))
 
+        if has_data:
+            xdata = getattr(dgroup, 'xplot', np.arange(2))
+            ydata = getattr(dgroup, 'yplot', np.arange(2))
+
         parwids = {}
         parnames = sorted(minst.param_names)
-
         for a in minst._func_allargs:
             pname = "%s%s" % (prefix, a)
             if (pname not in parnames and
@@ -1218,14 +1227,27 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         for pname in parnames:
             sname = pname[len(prefix):]
             hints = minst.param_hints.get(sname, {})
+            value = 0.0
+            if is_peakmodel and 'sigma' in pname:
+                value = 1.0
+                if has_data:
+                    value = max(0.5, 0.1*(opts['ehi'] - opts['elo']))
+            elif is_peakmodel and 'center' in pname:
+                value = 1.0
+                if has_data:
+                    value = int((opts['ehi'] + opts['elo'])/2.0)
+            elif is_peakmodel and 'ampl' in pname:
+                value = 1.0
+                if has_data:
+                    value = ydata.ptp()
+            if 'value' in hints:
+                value = hints['value']
 
-            par = Parameter(name=pname, value=0, vary=True)
+            par = Parameter(name=pname, value=value, vary=True)
             if 'min' in hints:
                 par.min = hints['min']
             if 'max' in hints:
                 par.max = hints['max']
-            if 'value' in hints:
-                par.value = hints['value']
             if 'expr' in hints:
                 par.expr = hints['expr']
 
