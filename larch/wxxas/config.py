@@ -45,6 +45,9 @@ ARRAYS = {'mu':      'Raw \u03BC(E)',
           'chir_mag+chir_re': '|\u03c7(R)| + Re[\u03c7(R)]',
           'chir_re_chir_im':  'Re[\u03c7(R)] + Im[\u03c7(R)]',
           'chiq':  'Filtered \u03c7(k)',
+          'yraw': 'Raw Y Data',
+          'yscaled': 'Scaled Y Data',
+          'dydx': 'Derivate: dy/dx',
           'noplot': 'no plot',
           }
 
@@ -65,6 +68,8 @@ def make_array_choice(opts):
 
 Linear_ArrayChoices = make_array_choice(['norm', 'flat', 'dmude', 'chi0', 'chi1', 'chi2'])
 PrePeak_ArrayChoices = make_array_choice(['norm', 'flat', 'deconv', 'mu'])
+CurveFit_ArrayChoices = make_array_choice(['yraw', 'yscaled', 'norm', 'flat'])
+
 Regress_Choices = ['Partial Least Squares', 'LassoLars']
 
 PlotWindowChoices = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
@@ -87,7 +92,6 @@ Feffit_SpaceChoices = {'R space':'r', 'k space':'k', 'wavelet': 'w'}
 Feffit_PlotChoices = {'K and R space': 'k+r', 'R space only': 'r'}
 
 Valid_DataTypes = ('string', 'float', 'int', 'bool', 'choice', 'path')
-
 
 AnalysisTab = namedtuple('AnalysisTab', ('title', 'constructor', 'desc'))
 
@@ -116,11 +120,15 @@ LARIX_PANELS = {
     'feffit':
     AnalysisTab('FEFF Fitting', 'larch.wxxas.feffit_panel.FeffitPanel',
                 'EXAFS Path Fitting with FEFF calculations'),
+    'curvefit':
+    AnalysisTab('Curve Fitting', 'larch.wxxas.curvefit_panel.CurveFitPanel',
+                'General Curve Fitting of XY Data'),
+
 }
 
 LARIX_MODES = {
     'all': ('All', [k for k  in LARIX_PANELS]),
-    'xydata': ('General XY Data Visualization and Fitting', ('xydata', 'lmfit')),
+    'xydata': ('General XY Data Visualization and Fitting', ('xydata', 'curvefit')),
     'xas': ('XANES and EXAFS', ('xasnorm', 'prepeaks', 'pca', 'lincombo', 'exafs', 'feffit')),
     'exafs': ('EXAFS only', ('xasnorm', 'exafs', 'feffit')),
     'xanes': ('XANES only', ('xasnorm', 'prepeaks', 'pca', 'lincombo')),
@@ -253,6 +261,12 @@ prepeaks = [CVar('elo_rel', -20, 'float',  step=0.5, desc='low-energy fit range,
            CVar('fitspace', 'Normalized μ(E)', 'choice', choices=list(PrePeak_ArrayChoices.keys()),
                 desc='Array to use for Pre-edge peak fitting')]
 
+
+curvefit = [CVar('xlo', -1000, 'float',  step=0.5, desc='low-X fit range'),
+           CVar('xhi',   1000, 'float',  step=0.5, desc='high-X fit range'),
+           CVar('fitspace', 'Raw Y Data', 'choice', choices=list(CurveFit_ArrayChoices.keys()),
+                desc='Array to use for Curve Fitting')]
+
 regression = [CVar('elo_rel', -40, 'float',  desc='low-energy fit range, relative to E0'),
               CVar('ehi_rel', 100, 'float',  desc='high-energy fit range, relative to E0'),
               CVar('fitspace', 'Normalized μ(E)', 'choice', choices=list(Linear_ArrayChoices.keys()),
@@ -305,7 +319,7 @@ _locals = locals()
 
 for section in ('main', 'autosave', 'pin', 'plot', 'xasnorm', 'exafs',
                 'feffit', 'prepeaks', 'lincombo', 'pca', 'regression',
-                'xydata', 'xrd1d'):
+                'xydata', 'xrd1d', 'curvefit'):
     sname = section
     XASCONF[sname] = {}
     FULLCONF[sname] = {}
