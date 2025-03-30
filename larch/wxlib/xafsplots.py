@@ -1383,3 +1383,117 @@ def plot_feffdat(feffpath, with_phase=True, title=None,
     if delay_draw:
         redraw(win=win, _larch=_larch)
 #enddef
+
+def plot_curvefit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
+                      show_residual=False, win=1, _larch=None):
+    """plot curvefit fit
+    dgroup must have a 'curvefit_history' attribute
+    """
+    if not hasattr(dgroup, 'curvefit'):
+        raise ValueError('Group needs curvefit group')
+    #endif
+    if show_init:
+        result = fit = dgroup.curvefit
+    else:
+        hist = getattr(dgroup.curvefit, 'fit_history', None)
+        if nfit > len(hist):
+            nfit = 0
+        fit = hist[nfit]
+        result = fit.result
+    #endif
+
+    if fit is None:
+        raise ValueError('Group needs curvefit.fit_history or init_fit')
+    #endif
+
+    opts = fit.user_options
+    xplot = 1.0*fit.x
+    yplot = 1.0*fit.y
+
+    xplot_full = 1.0*dgroup.xplot
+    yplot_full = 1.0*dgroup.yplot
+
+    if show_init:
+        yfit   = fit.init_fit
+        ycomps = None #  pkfit.init_ycomps
+        ylabel = 'model'
+    else:
+        yfit   = 1.0*result.best_fit
+        ycomps = fit.ycomps
+        ylabel = 'best fit'
+
+    baseline = 0.*yplot
+    if ycomps is not None:
+        for label, ycomp in ycomps.items():
+            if label in opts['bkg_components']:
+                baseline += ycomp
+
+    plotopts = dict(title='%s:\ncurvefit' % dgroup.filename,
+                    xlabel='x', ylabel=opts['array_desc'],
+                    delay_draw=True, show_legend=True, style='solid',
+                    linewidth=3, marker='None', markersize=4)
+
+    if subtract_baseline:
+        yplot -= baseline
+        yfit -= baseline
+        yplot_full = 1.0*yplot
+        xplot_full = 1.0*xplot
+        plotopts['ylabel'] = '%s-baseline' % plotopts['ylabel']
+
+    dx0, dx1, dy0, dy1 = extend_plotrange(xplot_full, yplot_full,
+                                          xmin=opts['xmin'], xmax=opts['xmax'])
+    _1, _2, fy0, fy1 = extend_plotrange(xplot, yfit,
+                                          xmin=opts['xmin'], xmax=opts['xmax'])
+
+    ncolor = 0
+    popts = {'win': win, '_larch': _larch}
+    plotopts.update(popts)
+    dymin = dymax = None
+    if show_residual:
+        popts['stacked'] = True
+        _fitplot(xplot, yplot, yfit, label='data', label2=ylabel, **plotopts)
+        dy = yfit - yplot
+        dymax, dymin = dy.max(), dy.min()
+        dymax += 0.05 * (dymax - dymin)
+        dymin -= 0.05 * (dymax - dymin)
+    else:
+        _plot(xplot_full, yplot_full, new=True, label='data',
+              color=LineColors[0], **plotopts)
+        _oplot(xplot, yfit, label=ylabel, color=LineColors[1], **plotopts)
+        ncolor = 1
+
+    if ycomps is not None:
+        ncomps = len(ycomps)
+        if not subtract_baseline:
+            ncolor += 1
+            _oplot(xplot, baseline, label='baseline', delay_draw=True,
+                   style='short dashed', marker='None', markersize=5,
+                   color=LineColors[ncolor], **popts)
+
+        for icomp, label in enumerate(ycomps):
+            ycomp = ycomps[label]
+            if label in opts['bkg_components']:
+                continue
+            ncolor =  (ncolor+1) % 10
+            _oplot(xplot, ycomp, label=label, delay_draw=(icomp != ncomps-1),
+                   style='short dashed', marker='None', markersize=5,
+                   color=LineColors[ncolor], **popts)
+
+    if opts.get('show_fitrange', False):
+        for attr in ('xmin', 'xmax'):
+            _plot_axvline(opts[attr], ymin=0, ymax=1,
+                          delay_draw=False, color='#888888',
+                          label='_nolegend_', **popts)
+
+    if opts.get('show_centroid', False):
+        pcen = getattr(dgroup.prepeaks, 'centroid', None)
+        if hasattr(result, 'params'):
+            pcen = result.params.get('fit_centroid', None)
+            if pcen is not None:
+                pcen = pcen.value
+        if pcen is not None:
+            _plot_axvline(pcen, delay_draw=False, ymin=0, ymax=1,
+                          color='#EECCCC', label='_nolegend_', **popts)
+
+    redraw(xmin=dx0, xmax=dx1, ymin=min(dy0, fy0),
+           ymax=max(dy1, fy1), dymin=dymin, dymax=dymax, show_legend=True, **popts)

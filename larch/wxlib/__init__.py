@@ -184,7 +184,9 @@ if HAS_WXPYTHON:
                                     plot_prepeaks_baseline=xafsplots.plot_prepeaks_baseline,
                                     plot_pca_components=xafsplots.plot_pca_components,
                                     plot_pca_weights=xafsplots.plot_pca_weights,
-                                    plot_pca_fit=xafsplots.plot_pca_fit)
+                                    plot_pca_fit=xafsplots.plot_pca_fit,
+                                    plot_curvefit=xafsplots.plot_curvefit,
+                                    )
 
 
     def _larch_init(_larch):
