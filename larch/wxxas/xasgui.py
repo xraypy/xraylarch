@@ -548,7 +548,6 @@ class LarixFrame(wx.Frame):
             cls = None
             print(f"cannot find analysis panel {atab}")
         if cls is not None:
-            # print("Add panel , current = ", name, atab)
             nbpanel = cls(parent=self, controller=self.controller)
             self.nb.AddPage(nbpanel, atab.title, True)
         current_panels = self.get_panels()
@@ -575,7 +574,6 @@ class LarixFrame(wx.Frame):
             ipage = current_panels[atab.title]
         else:
             ipage = self.add_analysis_panel(name)
-        # print("GET NB PAGE ", ipage, self.nb.GetPage(ipage))
         return ipage, self.nb.GetPage(ipage)
 
     def onNBChanged(self, event=None):
@@ -630,18 +628,15 @@ class LarixFrame(wx.Frame):
         if dgroup is None:
             return
 
-
+        ipage, pagepanel = self.get_nbpage('xydata')
         datatype = getattr(dgroup, 'datatype', 'xydata')
         if datatype.startswith('xas'):
             ipage, pagepanel = self.get_nbpage('xasnorm')
-            self.nb.SetSelection(ipage)
-            if not (hasattr(dgroup, 'norm') and hasattr(dgroup, 'e0')):
-                self.process_normalization(dgroup, force=True, use_form=False)
-        else:
-            ipage, pagepanel = self.get_nbpage('xydata')
-            self.nb.SetSelection(ipage)
+            if ipage == self.nb.GetSelection():
+                if not (hasattr(dgroup, 'norm') and hasattr(dgroup, 'e0')):
+                    self.process_normalization(dgroup, force=True,
+                                                  use_form=False)
 
-        # print(f"ShowFile {groupname}, {dgroup=}, {process=}, {plot=}")
         if filename is None:
             filename = dgroup.filename
         self.current_filename = filename
