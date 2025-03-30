@@ -100,9 +100,8 @@ def encode4js(obj):
         return None
     if isinstance(obj, np.ndarray):
         try:
-            name = repr(obj.dtype.name)
             out = {'__class__': 'Array', '__shape__': obj.shape,
-                '__dtype__': name}
+                '__dtype__': obj.dtype.name}
         except:
             print('error encoding ndarray: ', obj, obj.shape, obj.dtype)
             out = {'__class__': 'Array', '__shape__': obj.shape}
