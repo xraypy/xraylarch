@@ -311,10 +311,14 @@ class TaskPanel(wx.Panel):
         if fname in self.controller.file_groups:
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
-            if dgroup.datatype == 'xas':
-                self.ensure_xas_processed(dgroup)
-            self.fill_form(dgroup)
-            self.process(dgroup=dgroup)
+            if dgroup is not None:
+                try:
+                    if dgroup.datatype == 'xas':
+                        self.ensure_xas_processed(dgroup)
+                    self.fill_form(dgroup)
+                    self.process(dgroup=dgroup)
+                except:
+                    pass
 
     def onPanelHidden(self, **kws):
         # called when notebook is de-selected: save config
@@ -322,12 +326,13 @@ class TaskPanel(wx.Panel):
         if fname in self.controller.file_groups:
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
-            if dgroup is None:
-                return
-            conf = self.get_config()
-            conf.update(self.read_form())
-            setattr(dgroup.config, self.configname, conf)
-
+            if dgroup is not None:
+                try:
+                    conf = self.get_config()
+                    conf.update(self.read_form())
+                    setattr(dgroup.config, self.configname, conf)
+                except:
+                    pass
 
     def write_message(self, msg, panel=0):
         self.controller.write_message(msg, panel=panel)
@@ -388,7 +393,7 @@ class TaskPanel(wx.Panel):
             if k not in conf:
                 conf[k] = v
 
-        if dgroup is not None and with_erange:
+        if dgroup is not None and with_erange and hasattr(dgroup, 'energy'):
             _emin = min(dgroup.energy)
             _emax = max(dgroup.energy)
             if not hasattr(dgroup, 'e0'):
