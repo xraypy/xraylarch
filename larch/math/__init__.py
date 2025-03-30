@@ -15,6 +15,7 @@ from .lineshapes import (gaussian, lorentzian, voigt, pvoigt, hypermet,
 
 from .peaks import peak_indices
 from .fitpeak import fit_peak
+from .curvefit import curvefit_setup, curvefit_run
 from .convolution1D import glinbroad
 from .lincombo_fitting import lincombo_fit, lincombo_fitall, groups2matrix
 from .pca import pca_train, pca_fit, nmf_train, save_pca_model, read_pca_model
@@ -22,6 +23,7 @@ from .learn_regress import pls_train, pls_predict, lasso_train, lasso_predict
 from .gridxyz import gridxyz
 from .spline import spline_rep, spline_eval
 from . import transformations as trans
+
 
 _larch_builtins = {'_math': dict(linregress=linregress, polyfit=polyfit,
                                  realimag=realimag, as_ndarray=as_ndarray,
@@ -45,6 +47,8 @@ _larch_builtins = {'_math': dict(linregress=linregress, polyfit=polyfit,
                                  lasso_train=lasso_train,
                                  lasso_predict=lasso_predict,
                                  groups2matrix=groups2matrix,
+                                 curvefit_setup=curvefit_setup,
+                                 curvefit_run=curvefit_run,
                                  fit_peak=fit_peak,
                                  lincombo_fit=lincombo_fit,
                                  lincombo_fitall=lincombo_fitall,
