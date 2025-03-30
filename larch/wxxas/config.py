@@ -45,7 +45,7 @@ ARRAYS = {'mu':      'Raw \u03BC(E)',
           'chir_mag+chir_re': '|\u03c7(R)| + Re[\u03c7(R)]',
           'chir_re_chir_im':  'Re[\u03c7(R)] + Im[\u03c7(R)]',
           'chiq':  'Filtered \u03c7(k)',
-          'yraw': 'Raw Y Data',
+          'y': 'Raw Y Data',
           'yscaled': 'Scaled Y Data',
           'dydx': 'Derivate: dy/dx',
           'noplot': 'no plot',
@@ -68,7 +68,7 @@ def make_array_choice(opts):
 
 Linear_ArrayChoices = make_array_choice(['norm', 'flat', 'dmude', 'chi0', 'chi1', 'chi2'])
 PrePeak_ArrayChoices = make_array_choice(['norm', 'flat', 'deconv', 'mu'])
-CurveFit_ArrayChoices = make_array_choice(['yraw', 'yscaled', 'norm', 'flat'])
+CurveFit_ArrayChoices = make_array_choice(['y', 'yscaled', 'norm', 'flat'])
 
 Regress_Choices = ['Partial Least Squares', 'LassoLars']
 
