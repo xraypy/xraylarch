@@ -458,7 +458,7 @@ class CurveFitResultFrame(wx.Frame):
                '# Fitted Array name: %s' %  user_opts['array_name'],
                '# Model form: %s' % model_desc,
                '# Baseline form: %s' % user_opts['baseline_form'],
-               '# Energy fit range: [%f, %f]' % (user_opts['emin'], user_opts['emax']),
+               '# Energy fit range: [%f, %f]' % (user_opts['xmin'], user_opts['xmax']),
                '#--------------------']
 
         labels = [('Data Set' + ' '*25)[:25], 'Group name', 'n_data',
@@ -473,10 +473,10 @@ class CurveFitResultFrame(wx.Frame):
             if not hasattr(dgroup, 'curvefit'):
                 continue
             try:
-                pkfit = dgroup.curvefit.fit_history[0]
+                cvfit = dgroup.curvefit.fit_history[0]
             except:
                 continue
-            result = pkfit.result
+            result = cvfit.result
             label = dgroup.filename
             if len(label) < 25:
                 label = (label + ' '*25)[:25]
@@ -511,12 +511,12 @@ class CurveFitResultFrame(wx.Frame):
 
         outfile = FileSave(self, 'Export Fit Result', default_file=deffile)
 
-        pkfit = self.get_fitresult()
-        result = pkfit.result
+        cvfit = self.get_fitresult()
+        result = cvfit.result
         if outfile is not None:
             i1, i2 = get_xlims(dgroup.xplot,
-                               pkfit.user_options['emin'],
-                               pkfit.user_options['emax'])
+                               cvfit.user_options['xmin'],
+                               cvfit.user_options['xmax'])
             x = dgroup.xplot[i1:i2]
             y = dgroup.yplot[i1:i2]
             yerr = None
@@ -743,10 +743,10 @@ class CurveFitPanel(TaskPanel):
         except:
             pass # print(" Cannot Fill curvefit panel from group ")
 
-        pkfit = getattr(self.larch.symtable, 'curvefit_result', None)
-        if pkfit is not None:
+        cvfit = getattr(self.larch.symtable, 'curvefit_result', None)
+        if cvfit is not None:
             self.showresults_btn.Enable()
-            self.use_modelresult(pkfit)
+            self.use_modelresult(cvfit)
 
     def onModelPanelExposed(self, event=None, **kws):
         pass
@@ -756,14 +756,30 @@ class CurveFitPanel(TaskPanel):
 
         self.wids = {}
 
-        fsopts = dict(digits=2, increment=1,  size=(125, -1), with_pin=True)
+        # xrange row
+        xrpanel = wx.Panel(pan)
+        xrsizer = wx.BoxSizer(wx.HORIZONTAL)
+        fsopts = dict(parent=xrpanel, digits=2, increment=1,
+                      size=(125, -1), with_pin=True)
 
         curvefit_xmin  = self.add_floatspin('curvefit_xmin',  value=-1, **fsopts)
         curvefit_xmax  = self.add_floatspin('curvefit_xmax',  value=+1, **fsopts)
 
-        self.xrange_choice = Choice(pan, size=(175, -1),
+        self.xrange_choice = Choice(xrpanel, size=(175, -1),
                                    choices=['Full Range', 'Set Xmin / Xmax'],
                                    action=self.onXrangeChoice)
+
+        self.wids['show_fitrange']  = Check(xrpanel, label='show?', default=True,
+                                           size=(75, -1),  action=self.onPlot)
+
+        xrsizer.Add(self.xrange_choice, 0)
+        xrsizer.Add(SimpleText(xrpanel, ' X min:'), 0)
+        xrsizer.Add(curvefit_xmin, 0)
+        xrsizer.Add(SimpleText(xrpanel, ' X max: '), 0)
+        xrsizer.Add(curvefit_xmax, 0)
+        xrsizer.Add(self.wids['show_fitrange'], 0)
+        pack(xrpanel, xrsizer)
+
         self.wids['curvefit_xmin'].Disable()
         self.wids['curvefit_xmax'].Disable()
         self.xrange_choice.SetSelection(0)
@@ -802,8 +818,6 @@ class CurveFitPanel(TaskPanel):
 
         self.message = SimpleText(pan, '')
 
-        opts = dict(default=True, size=(75, -1), action=self.onPlot)
-        self.show_fitrange  = Check(pan, label='show?', **opts)
 
         opts = dict(default=False, size=(200, -1), action=self.onPlot)
 
@@ -816,18 +830,14 @@ class CurveFitPanel(TaskPanel):
         add_text(' Array to fit: ')
         pan.Add(self.array_choice, dcol=3)
 
-        add_text(' X Range: ')
-        pan.Add(self.xrange_choice, dcol=4)
-        pan.Add(self.loadresults_btn)
+        add_text( ' X range: ')
+        pan.Add(xrpanel, dcol=5)
 
-        add_text(' X min/max: ')
-        pan.Add(curvefit_xmin)
-        add_text(' : ', newrow=False)
-        pan.Add(curvefit_xmax)
-        pan.Add(self.show_fitrange)
+
+        pan.Add((10, 10), newrow=True)
+        pan.Add(self.loadresults_btn)
         pan.Add(self.showresults_btn)
 
-        pan.Add((10, 10))
 
         pan.Add(HLine(pan, size=(600, 2)), dcol=6, newrow=True)
 
@@ -908,7 +918,7 @@ class CurveFitPanel(TaskPanel):
 
 
         self.array_choice.SetStringSelection(dat['array_desc'])
-        self.show_fitrange.Enable(dat['show_fitrange'])
+        self.wids['show_fitrange'].Enable(dat['show_fitrange'])
 
     def read_form(self):
         "read for, returning dict of values"
@@ -927,7 +937,7 @@ class CurveFitPanel(TaskPanel):
         else:
             form_opts['xmin'] = self.wids['curvefit_xmin'].GetValue()
             form_opts['xmax'] = self.wids['curvefit_xmax'].GetValue()
-        form_opts['show_fitrange'] = self.show_fitrange.IsChecked()
+        form_opts['show_fitrange'] = self.wids['show_fitrange'].IsChecked()
         return form_opts
 
 
@@ -1245,12 +1255,12 @@ class CurveFitPanel(TaskPanel):
 
         self.use_modelresult(dat[1])
 
-    def use_modelresult(self, pkfit):
+    def use_modelresult(self, cvfit):
         for prefix in list(self.fit_components.keys()):
             self.onDeleteComponent(prefix=prefix)
 
-        result = pkfit.result
-        bkg_comps = pkfit.user_options['bkg_components']
+        result = cvfit.result
+        bkg_comps = cvfit.user_options['bkg_components']
         for comp in result.model.components:
             isbkg = comp.prefix in bkg_comps
             self.addModel(model=comp.func.__name__,
@@ -1269,7 +1279,7 @@ class CurveFitPanel(TaskPanel):
                     if wids.minval is not None: wids.minval.SetValue(par.min)
                     if wids.maxval is not None: wids.maxval.SetValue(par.max)
 
-        self.fill_form(pkfit.user_options)
+        self.fill_form(cvfit.user_options)
 
 
     def get_xranges(self, x):
@@ -1387,13 +1397,13 @@ class CurveFitPanel(TaskPanel):
                                        imin=imin, imax=imax,
                                        user_opts=repr(opts)))
 
-            pkfit = self.larch_get("curvefit_result")
-            jnl = {'label': pkfit.label, 'var_names': pkfit.result.var_names,
-                   'model': repr(pkfit.result.model)}
-            jnl.update(pkfit.user_options)
+            cvfit = self.larch_get("curvefit_result")
+            jnl = {'label': cvfit.label, 'var_names': cvfit.result.var_names,
+                   'model': repr(cvfit.result.model)}
+            jnl.update(cvfit.user_options)
             dgroup.journal.add('curvefit', jnl)
             if igroup == 0:
-                self.autosave_modelresult(pkfit)
+                self.autosave_modelresult(cvfit)
 
             self.subframes['curvefit_result'].add_results(dgroup, form=opts,
                                                          larch_eval=self.larch_eval,
@@ -1445,13 +1455,13 @@ class CurveFitPanel(TaskPanel):
                                   user_opts=repr(opts)))
 
         # journal about curvefit_result
-        pkfit = self.larch_get("curvefit_result")
-        jnl = {'label': pkfit.label, 'var_names': pkfit.result.var_names,
-               'model': repr(pkfit.result.model)}
-        jnl.update(pkfit.user_options)
+        cvfit = self.larch_get("curvefit_result")
+        jnl = {'label': cvfit.label, 'var_names': cvfit.result.var_names,
+               'model': repr(cvfit.result.model)}
+        jnl.update(cvfit.user_options)
         dgroup.journal.add('curvefit', jnl)
 
-        self.autosave_modelresult(pkfit)
+        self.autosave_modelresult(cvfit)
         self.onPlot()
         self.showresults_btn.Enable()
 
