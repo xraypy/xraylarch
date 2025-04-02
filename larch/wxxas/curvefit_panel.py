@@ -34,7 +34,8 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl,
 from larch.wxlib.parameter import ParameterWidgets
 from larch.wxlib.plotter import last_cursor_pos
 from .taskpanel import TaskPanel
-from .config import CurveFit_ArrayChoices, PlotWindowChoices
+from .config import (CurveFit_ArrayChoices, PlotWindowChoices,
+                         XRANGE_CHOICES, YERR_CHOICES)
 
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
@@ -766,7 +767,7 @@ class CurveFitPanel(TaskPanel):
         curvefit_xmax  = self.add_floatspin('curvefit_xmax',  value=+1, **fsopts)
 
         self.xrange_choice = Choice(xrpanel, size=(175, -1),
-                                   choices=['Full Range', 'Set Xmin / Xmax'],
+                                   choices=XRANGE_CHOICES,
                                    action=self.onXrangeChoice)
 
         self.wids['show_fitrange']  = Check(xrpanel, label='show?', default=True,
@@ -783,6 +784,25 @@ class CurveFitPanel(TaskPanel):
         self.wids['curvefit_xmin'].Disable()
         self.wids['curvefit_xmax'].Disable()
         self.xrange_choice.SetSelection(0)
+
+        # yerror row
+        yerrpanel = wx.Panel(pan)
+        yerrsizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.wids['yerr_choice'] = Choice(yerrpanel, choices=YERR_CHOICES, default=0,
+                                          action=self.onYerrChoice, size=(125, -1))
+        self.wids['yerr_array'] = Choice(yerrpanel, choices=['-'],
+                                           action=self.onYerrChoice, size=(225, -1))
+        self.wids['yerr_array'].Disable()
+        self.wids['yerr_value'] = FloatCtrl(yerrpanel, value=1.0, precision=5, size=(75, -1))
+
+        yerrsizer.Add(self.wids['yerr_choice'], 0)
+        yerrsizer.Add(SimpleText(yerrpanel, ' Value: '), 0)
+        yerrsizer.Add(self.wids['yerr_value'], 0)
+        yerrsizer.Add(SimpleText(yerrpanel, 'Array Name: '), 0)
+        yerrsizer.Add(self.wids['yerr_array'], 0)
+
+        pack(yerrpanel, yerrsizer)
 
         self.loadresults_btn = Button(pan, 'Load Fit Result',
                                       action=self.onLoadFitResult, size=(175, -1))
@@ -827,8 +847,11 @@ class CurveFitPanel(TaskPanel):
         pan.Add(SimpleText(pan, 'Curve-Fitting',
                            size=(350, -1), **self.titleopts), style=LEFT, dcol=5)
 
-        add_text(' Array to fit: ')
+        add_text(' Y Array to fit: ')
         pan.Add(self.array_choice, dcol=3)
+
+        add_text(' Y uncertainty: ')
+        pan.Add(yerrpanel, dcol=5)
 
         add_text( ' X range: ')
         pan.Add(xrpanel, dcol=5)
@@ -890,6 +913,28 @@ class CurveFitPanel(TaskPanel):
 
         return conf
 
+    def onYerrChoice(self, event=None):
+        print("Yerr Event")
+        yerr_type = self.wids['yerr_choice'].GetSelection() # Constant, Sqrt, Array
+        self.wids['yerr_array'].Enable(yerr_type==2)
+        self.wids['yerr_value'].Enable(yerr_type==0)
+        if yerr_type == 2:
+            dgroup = self.controller.get_group()
+            xarr = getattr(dgroup, 'x', None)
+            if xarr is None:
+                return
+            npts = len(xarr)
+            arrlist  = []
+            for attr in dir(dgroup):
+                obj = getattr(dgroup, attr, None)
+                if isinstance(obj, np.ndarray) and len(obj) == npts:
+                    if attr is not in ('x', 'y'):
+                        arrlist.append(attr)
+            print("array list ", arrlist)
+        self.wids['yerr_array'].Clear()
+        self.wids['yerr_array'].SetChoices(arrlist)
+
+
     def onXrangeChoice(self, evt=None):
         sel = self.xrange_choice.GetSelection()
         self.wids['curvefit_xmin'].Enable(sel==1)
@@ -940,8 +985,6 @@ class CurveFitPanel(TaskPanel):
         form_opts['show_fitrange'] = self.wids['show_fitrange'].IsChecked()
         return form_opts
 
-
-
     def fill_model_params(self, prefix, params):
         comp = self.fit_components[prefix]
         parwids = comp.parwids
@@ -959,7 +1002,6 @@ class CurveFitPanel(TaskPanel):
                     varstr = 'constrain'
                 if wids.vary is not None:
                     wids.vary.SetStringSelection(varstr)
-
 
     def onPlotModel(self, evt=None):
         dgroup = self.controller.get_group()
@@ -1291,6 +1333,35 @@ class CurveFitPanel(TaskPanel):
         i2 = index_of(x, opts['xmax'] + dx) + 1
         return i1, i2
 
+    def set_yerror(self):
+        """set yerr array based on Panel selections"""
+        dgroup = self.controller.get_group()
+        if dgroup is None:
+            return 1.0
+        gname  = dgroup.groupname
+        yerr_type = self.wids['yerr_choice'].GetSelection() # Constant, Sqrt, Array
+        cmd = None
+
+        # Need IMIN / IMAX
+        if yerr_type == 0: # constant
+            val = self.wids['yerr_array'].GetValue()
+            cmd = f"{gname}.y_std = {val}*ones(len(gname}.curvefit.y)"
+        elif yerr_type == 1: # sqrt
+            cmd = f"{gname}.y_std = sqrt(abs({gname}.y))"
+        elif yerr_type == 2: # array name
+            yarrname = self.wids['yerr_array'].GetStringSelection()
+            if yename != 'yerr':
+                cmd = f"{gname}.yerr = {gname}.{yarrname}*1.0"
+        if cmd is not None:
+            self.larch_eval(cmd)
+
+# COMMANDS['set_yerr_const'] = "{group}.curvefit.y_std = {group}.yerr*ones(len({group}.curvefit.y))"
+# COMMANDS['set_yerr_array'] = """
+# {group}.curvefit.y_std = 1.0*{group}.yerr[{imin:d}:{imax:d}]
+# yerr_min = 1.e-9*{group}.curvefit.y.mean()
+# {group}.curvefit.y_std[where({group}.yerr < yerr_min)] = yerr_min
+# """
+
     def build_fitmodel(self, groupname=None):
         """ use fit components to build model"""
         comps = []
@@ -1304,6 +1375,7 @@ class CurveFitPanel(TaskPanel):
         opts['group'] = groupname
         dgroup = self.controller.get_group(groupname)
         self.larch_eval(COMMANDS['curvefit_setup'].format(**opts))
+        self.set_yerror()
 
         curvefit_opts = dict(array=opts['array_name'],
                          xmin=opts['xmin'], xmax=opts['xmax'])
@@ -1377,19 +1449,19 @@ class CurveFitPanel(TaskPanel):
             imin, imax = self.get_xranges(dgroup.xplot)
             cmds = ["## do curvefit for group %s / %s " % (gname, dgroup.filename) ]
 
-            yerr_type = 'set_yerr_const'
-            yerr = getattr(dgroup, 'yerr', None)
-            if yerr is None:
-                if hasattr(dgroup, 'norm_std'):
-                    cmds.append("{group}.yerr = {group}.norm_std")
-                    yerr_type = 'set_yerr_array'
-                elif hasattr(dgroup, 'mu_std'):
-                    cmds.append("{group}.yerr = {group}.mu_std/(1.e-15+{group}.edge_step)")
-                    yerr_type = 'set_yerr_array'
-                else:
-                    cmds.append("{group}.yerr = 1")
-            elif isinstance(dgroup.yerr, np.ndarray):
-                    yerr_type = 'set_yerr_array'
+#             yerr_type = 'set_yerr_const'
+#             yerr = getattr(dgroup, 'yerr', None)
+#             if yerr is None:
+#                 if hasattr(dgroup, 'norm_std'):
+#                     cmds.append("{group}.yerr = {group}.norm_std")
+#                     yerr_type = 'set_yerr_array'
+#                 elif hasattr(dgroup, 'mu_std'):
+#                     cmds.append("{group}.yerr = {group}.mu_std/(1.e-15+{group}.edge_step)")
+#                     yerr_type = 'set_yerr_array'
+#                 else:
+#                     cmds.append("{group}.yerr = 1")
+#             elif isinstance(dgroup.yerr, np.ndarray):
+#                     yerr_type = 'set_yerr_array'
 
             cmds.extend([COMMANDS[yerr_type], COMMANDS['do_curvefit']])
             cmd = '\n'.join(cmds)
@@ -1435,19 +1507,19 @@ class CurveFitPanel(TaskPanel):
         imin, imax = self.get_xranges(dgroup.xplot)
 
         cmds = ["## do curve fit: "]
-        yerr_type = 'set_yerr_const'
-        yerr = getattr(dgroup, 'yerr', None)
-        if yerr is None:
-            if hasattr(dgroup, 'norm_std'):
-                cmds.append("{group}.yerr = {group}.norm_std")
-                yerr_type = 'set_yerr_array'
-            elif hasattr(dgroup, 'mu_std'):
-                cmds.append("{group}.yerr = {group}.mu_std/(1.e-15+{group}.edge_step)")
-                yerr_type = 'set_yerr_array'
-            else:
-                cmds.append("{group}.yerr = 1")
-        elif isinstance(dgroup.yerr, np.ndarray):
-                yerr_type = 'set_yerr_array'
+#         yerr_type = 'set_yerr_const'
+#         yerr = getattr(dgroup, 'yerr', None)
+#         if yerr is None:
+#             if hasattr(dgroup, 'norm_std'):
+#                 cmds.append("{group}.yerr = {group}.norm_std")
+#                 yerr_type = 'set_yerr_array'
+#             elif hasattr(dgroup, 'mu_std'):
+#                 cmds.append("{group}.yerr = {group}.mu_std/(1.e-15+{group}.edge_step)")
+#                 yerr_type = 'set_yerr_array'
+#             else:
+#                 cmds.append("{group}.yerr = 1")
+#         elif isinstance(dgroup.yerr, np.ndarray):
+#                 yerr_type = 'set_yerr_array'
 
         cmds.extend([COMMANDS[yerr_type], COMMANDS['do_curvefit']])
         cmd = '\n'.join(cmds)
