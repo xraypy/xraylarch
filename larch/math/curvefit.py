@@ -105,7 +105,7 @@ def curvefit_run(group, model, params, user_options=None):
     fit.init_ycomps  = model.eval_components(params=params, x=curvefit.x)
 
     y_mean = abs(curvefit.y).mean()
-    y_std = getattr(curvefit, 'y_std', 1.0)
+    y_std = getattr(group, 'y_std', 1.0)
     if isinstance(y_std, np.ndarray):
         ysmin = 1.e-13*y_mean
         y_std[np.where(y_std<ysmin)] = ysmin
