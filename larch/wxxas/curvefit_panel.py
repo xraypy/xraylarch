@@ -118,8 +118,8 @@ COMMANDS['curvefit_prep'] = """# prepare curve-fit
 if not hasattr({group}, 'curvefit'): {group}.curvefit = group(__name__='curvefit result')
 if not hasattr({group}.curvefit, 'fit_history'): {group}.curvefit.fit_history = []
 {group}.curvefit.user_options = {user_opts:s}
-{group}.curvefit.init_fit = curvefit_model.eval(curvefit_pars, x={group}.curvefit.x)
-{group}.curvefit.init_ycomps = curvefit_model.eval_components(params=curvefit_pars, x={group}.curvefit.x)
+{group}.curvefit.init_fit = curvefit_model.eval(curvefit_params, x={group}.curvefit.x)
+{group}.curvefit.init_ycomps = curvefit_model.eval_components(params=curvefit_params, x={group}.curvefit.x)
 """
 
 COMMANDS['curvefit_setup'] = """# setup curve-fit
@@ -137,7 +137,7 @@ yerr_min = 1.e-9*{group}.curvefit.y.mean()
 """
 
 COMMANDS['do_curvefit'] = """# do curvefit
-curvefit_result = curvefit_run({group}, curvefit_model, curvefit_pars)
+curvefit_result = curvefit_run({group}, curvefit_model, curvefit_params)
 curvefit_result.user_options = {user_opts:s}
 """
 
@@ -716,6 +716,361 @@ class CurveFitResultFrame(wx.Frame):
                 wids['params'].AppendItem((pname, val, serr, extra))
                 wids['paramsdata'].append(pname)
         self.Refresh()
+
+
+class ParametersModel(dv.DataViewIndexListModel):
+    def __init__(self, params, selected=None):
+        dv.DataViewIndexListModel.__init__(self, 0)
+        self.data = []
+        if selected is None:
+            selected = []
+        self.selected = selected
+
+        self.params = params
+        self.read_data()
+
+    def set_data(self, params, selected=None):
+        self.params = params
+        if selected is not None:
+            self.selected = selected
+        self.read_data()
+
+    def read_data(self):
+        self.data = []
+        if self.params is None:
+            self.data.append(['Parameter Name', False, 'vary', '0.0'])
+        else:
+            for pname, par in self.params.items():
+                ptype = 'vary'
+                if not par.vary:
+                    ptype = 'fixed'
+                try:
+                    value = str(par.value)
+                except:
+                    value = 'INVALID  '
+                if par.expr is not None:
+                    ptype = 'constraint'
+                    value = f"{value} := {par.expr}"
+                sel = pname in self.selected
+                self.data.append([pname, sel, ptype, value])
+        self.Reset(len(self.data))
+
+    def select_all(self, value=True):
+        self.selected = []
+        for irow, row in enumerate(self.data):
+            self.SetValueByRow(value, irow, 1)
+            if value:
+                self.selected.append(row[0])
+
+    def select_none(self):
+        self.select_all(value=False)
+
+    def GetColumnType(self, col):
+        return "bool" if col == 2 else "string"
+
+    def GetValueByRow(self, row, col):
+        return self.data[row][col]
+
+    def SetValueByRow(self, value, row, col):
+        self.data[row][col] = value
+        return True
+
+    def GetColumnCount(self):
+        return len(self.data[0])
+
+    def GetCount(self):
+        return len(self.data)
+
+    def GetAttrByRow(self, row, col, attr):
+        """set row/col attributes (color, etc)"""
+        ptype = self.data[row][2]
+        if ptype == 'vary':
+            attr.SetColour(GUI_COLORS.text)
+        elif ptype == 'fixed':
+            attr.SetColour(GUI_COLORS.title_blue)
+        else:
+            attr.SetColour(GUI_COLORS.title_red)
+        return True
+
+class EditParamsFrame(wx.Frame):
+    """ edit parameters"""
+    def __init__(self, parent=None, curvefit_panel=None, params=None):
+        wx.Frame.__init__(self, None, -1, 'Edit CurveFit Parameters',
+                          style=FRAMESTYLE, size=(550, 325))
+
+        self.parent = parent
+        self.curvefit_panel = curvefit_panel
+        self.params = params
+
+        spanel = scrolled.ScrolledPanel(self, size=(500, 275))
+        spanel.SetBackgroundColour(GUI_COLORS.text_bg)
+
+        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
+
+        self.dvc = dv.DataViewCtrl(spanel, style=DVSTYLE)
+        self.dvc.SetFont(self.font_fixedwidth)
+        self.SetMinSize((500, 250))
+
+        self.model = ParametersModel(params)
+        self.dvc.AssociateModel(self.model)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.dvc, 1, LEFT|wx.ALL|wx.GROW)
+        pack(spanel, sizer)
+
+        spanel.SetupScrolling()
+
+        toppan = GridPanel(self, ncols=4, pad=1, itemstyle=LEFT)
+
+        bkws = dict(size=(200, -1))
+        toppan.Add(Button(toppan, "Select All",    action=self.onSelAll, size=(175, -1)))
+        toppan.Add(Button(toppan, "Select None",             action=self.onSelNone, size=(175, -1)))
+        toppan.Add(Button(toppan, "Select Unused Variables", action=self.onSelUnused, size=(200, -1)))
+        toppan.Add(Button(toppan, "Remove Selected",   action=self.onRemove, size=(175,-1)), newrow=True)
+        toppan.Add(Button(toppan, "Force Refresh",     action=self.onRefresh, size=(200, -1)))
+        npan = wx.Panel(toppan)
+        nsiz = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.par_name = wx.TextCtrl(npan, -1, value='par_name', size=(125, -1),
+                                    style=wx.TE_PROCESS_ENTER)
+        self.par_expr = wx.TextCtrl(npan, -1, value='<expression or value>', size=(250, -1),
+                                    style=wx.TE_PROCESS_ENTER)
+        nsiz.Add(SimpleText(npan, "Add Parameter:"), 0)
+        nsiz.Add(self.par_name, 0)
+        nsiz.Add(self.par_expr, 1, wx.GROW|wx.ALL)
+        nsiz.Add(Button(npan, label='Add', action=self.onAddParam), 0)
+        pack(npan, nsiz)
+
+        toppan.Add(npan, dcol=4, newrow=True)
+        toppan.Add(HLine(toppan, size=(500, 2)), dcol=5, newrow=True)
+        toppan.pack()
+
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        mainsizer.Add(toppan, 0, wx.GROW|wx.ALL, 1)
+        mainsizer.Add(spanel, 1, wx.GROW|wx.ALL, 1)
+        pack(self, mainsizer)
+
+        columns = [('Parameter',   150, 'text'),
+                   ('Select',       75, 'bool'),
+                   ('Type',         75, 'text'),
+                   ('Value',       200, 'text')]
+
+        for icol, dat in enumerate(columns):
+             label, width, dtype = dat
+             method = self.dvc.AppendTextColumn
+             mode = dv.DATAVIEW_CELL_EDITABLE
+             if dtype == 'bool':
+                 method = self.dvc.AppendToggleColumn
+                 mode = dv.DATAVIEW_CELL_ACTIVATABLE
+             method(label, icol, width=width, mode=mode)
+             c = self.dvc.Columns[icol]
+             c.Alignment = c.Renderer.Alignment = wx.ALIGN_LEFT
+             c.SetSortable(False)
+
+        self.dvc.EnsureVisible(self.model.GetItem(0))
+        self.Bind(wx.EVT_CLOSE, self.onClose)
+
+        self.Show()
+        self.Raise()
+        wx.CallAfter(self.onSelUnused)
+
+    def onSelAll(self, event=None):
+        self.model.select_all()
+        self.model.read_data()
+
+    def onSelNone(self, event=None):
+        self.model.select_none()
+        self.model.read_data()
+
+    def onSelUnused(self, event=None):
+        curr_syms = self.curvefit_panel.get_used_params()
+        unused = []
+        for pname, par in self.params.items():
+            if pname not in curr_syms: #  and par.vary:
+                unused.append(pname)
+        self.model.set_data(self.params, selected=unused)
+
+    def onRemove(self, event=None):
+        out = []
+        for pname, sel, ptype, val in self.model.data:
+            if sel:
+                out.append(pname)
+        nout = len(out)
+
+        msg = f"Remove {nout:d} Parameters? \n This is not easy to undo!"
+        dlg = wx.MessageDialog(self, msg, 'Warning', wx.YES | wx.NO )
+        if (wx.ID_YES == dlg.ShowModal()):
+            for pname, sel, ptype, val in self.model.data:
+                if sel:
+                    out.append(pname)
+                    if name in params:
+                        params.pop(name)
+
+            self.model.set_data(self.params)
+            self.model.read_data()
+            self.curvefit_panel.get_pathpage('parameters').Rebuild()
+        dlg.Destroy()
+
+    def onAddParam(self, event=None):
+        par_name = self.par_name.GetValue()
+        par_expr = self.par_expr.GetValue()
+
+        try:
+            val = float(par_expr)
+            ptype = 'vary'
+        except:
+            val = par_expr
+            ptype = 'expr'
+
+        if ptype == 'vary':
+            cmd = f"curvefit_params.Add({par_name}, value={val}, vary=True)"
+        else:
+            cmd = f"curvefit_params.Add({par_name}, expr='{val}')"
+
+        self.curvefit_panel.larch_eval(cmd)
+        self.onRefresh()
+
+    def onRefresh(self, event=None):
+        self.params = self.curvefit_panel.larch_get('curvefit_params')
+        self.model.set_data(self.params)
+        self.model.read_data()
+        self.curvefit_panel.get_pathpage('parameters').Rebuild()
+
+    def onClose(self, event=None):
+        self.Destroy()
+
+
+class CurveFitParamsPanel(wx.Panel):
+    def __init__(self, parent=None, curvefit_panel=None, **kws):
+        wx.Panel.__init__(self, parent, -1, size=(550, 250))
+        self.curvefit_panel = curvefit_panel
+        self.parwids = {}
+        self.SetFont(Font(FONTSIZE))
+        spanel = scrolled.ScrolledPanel(self)
+        spanel.SetSize((250, 250))
+        spanel.SetMinSize((50, 50))
+        panel = self.panel = GridPanel(spanel, ncols=8, nrows=30, pad=1, itemstyle=LEFT)
+        panel.SetFont(Font(FONTSIZE))
+
+        def SLabel(label, size=(80, -1), **kws):
+            return  SimpleText(panel, label, size=size, style=wx.ALIGN_LEFT, **kws)
+
+        panel.Add(SLabel("CurveFit Parameters ", colour=GUI_COLORS.title_blue, size=(200, -1)), dcol=2)
+        panel.Add(Button(panel, 'Edit Parameters', action=self.onEditParams),  dcol=2)
+        panel.Add(Button(panel, 'Force Refresh', action=self.Rebuild),         dcol=3)
+
+        panel.Add(SLabel("Parameter "), style=wx.ALIGN_LEFT,  newrow=True)
+        panel.AddMany((SLabel(" Value"), SLabel(" Type"), SLabel(' Bounds'),
+                       SLabel("  Min", size=(60, -1)),
+                       SLabel("  Max", size=(60, -1)),
+                       SLabel(" Expression")))
+
+        self.update()
+        panel.pack()
+        ssizer = wx.BoxSizer(wx.VERTICAL)
+        ssizer.Add(panel, 1,  wx.GROW|wx.ALL, 2)
+        pack(spanel, ssizer)
+
+        spanel.SetupScrolling()
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        mainsizer.Add(spanel, 1, wx.GROW|wx.ALL, 2)
+        pack(self, mainsizer)
+
+    def Rebuild(self, event=None):
+        for pname, parwid in self.parwids.items():
+            for x in parwid.widgets:
+                x.Destroy()
+        self.panel.irow = 1
+        self.parwids = {}
+        self.update()
+
+    def set_init_values(self, params):
+        for pname, par in params.items():
+            if pname in self.parwids and par.vary:
+                stderr = getattr(par, 'stderr', 0.001)
+                try:
+                    prec = max(1, min(8, round(2-math.log10(stderr))))
+                except:
+                    prec = 5
+                self.parwids[pname].value.SetValue(("%%.%.df" % prec) % par.value)
+
+    def update(self):
+        params = self.curvefit_panel.larch_get('curvefit_params')
+        for pname, par in params.items():
+            if pname not in self.parwids:
+                pwids = ParameterWidgets(self.panel, par, name_size=120,
+                                         expr_size=200,   float_size=85,
+                                         with_skip=False,
+                                         widgets=('name', 'value','minval', 'maxval',
+                                                  'vary', 'expr'))
+
+                self.parwids[pname] = pwids
+                self.panel.Add(pwids.name, newrow=True)
+                self.panel.AddMany((pwids.value, pwids.vary, pwids.bounds,
+                                    pwids.minval, pwids.maxval, pwids.expr))
+                self.panel.pack()
+
+            pwids = self.parwids[pname]
+            varstr = 'vary' if par.vary else 'fix'
+            if par.expr is not None:
+                varstr = 'constrain'
+                pwids.expr.SetValue(par.expr)
+            pwids.vary.SetStringSelection(varstr)
+            pwids.value.SetValue(par.value)
+            pwids.minval.SetValue(par.min)
+            pwids.maxval.SetValue(par.max)
+            pwids.onVaryChoice()
+        self.panel.Update()
+
+    def onEditParams(self, event=None):
+        params = self.curvefit_panel.larch_get('curvefit_params')
+        self.curvefit_panel.show_subframe('edit_params',
+                                          EditParamsFrame,
+                                          params=params,
+                                          curvefit_panel=self.curvefit_panel)
+
+    def RemoveParams(self, event=None, name=None):
+        if name is None:
+            return
+        params = self.curvefit_panel.larch_get('curvefit_params')
+        if name in params:
+            params.pop(name)
+        if name in self.parwids:
+            pwids = self.parwids.pop(name)
+            pwids.name.Destroy()
+            pwids.value.Destroy()
+            pwids.vary.Destroy()
+            pwids.bounds.Destroy()
+            pwids.minval.Destroy()
+            pwids.maxval.Destroy()
+            pwids.expr.Destroy()
+            pwids.remover.Destroy()
+
+    def generate_params(self, event=None):
+        s = []
+        s.append("curvefit_params = Parameters()")
+        for name, pwids in self.parwids.items():
+            param = pwids.param
+            args = [f'{param.value}']
+            minval = pwids.minval.GetValue()
+            if np.isfinite(minval):
+                args.append(f'min={minval}')
+            maxval = pwids.maxval.GetValue()
+            if np.isfinite(maxval):
+                args.append(f'max={maxval}')
+
+            varstr = pwids.vary.GetStringSelection()
+            if param.expr is not None and varstr == 'constrain':
+                args.append(f"expr='{param.expr}'")
+            elif varstr == 'vary':
+                args.append(f'vary=True')
+            else:
+                args.append(f'vary=False')
+            args = ', '.join(args)
+            cmd = f'curvefit_params.add(d{name}, {args})'
+            s.append(cmd)
+        return s
+
 
 class CurveFitPanel(TaskPanel):
     def __init__(self, parent=None, controller=None, **kws):
@@ -1369,7 +1724,7 @@ class CurveFitPanel(TaskPanel):
     def build_fitmodel(self, groupname=None):
         """ use fit components to build model"""
         comps = []
-        cmds = ["## set up curve-fit parameters", "curvefit_pars = Parameters()"]
+        cmds = ["# setup curve-fit parameters", "curvefit_params = Parameters()"]
         modcmds = ["## define curve-fit model"]
         modop = " ="
         opts = self.read_form()
@@ -1399,7 +1754,7 @@ class CurveFitPanel(TaskPanel):
                         pargs.pop()
                         pargs.append("vary=False")
 
-                    cmds.append("curvefit_pars.add(%s)" % (', '.join(pargs)))
+                    cmds.append("curvefit_params.add(%s)" % (', '.join(pargs)))
                     if this.name.endswith('_center'):
                         _cen = this.name
                     elif parwids.param.name.endswith('_amplitude'):
