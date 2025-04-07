@@ -114,7 +114,12 @@ DataWcards = "Data Files(*.dat)|*.dat|All files (*.*)|*.*"
 MIN_CORREL = 0.10
 
 COMMANDS = {}
+COMMANDS['curvefit_params'] = """
+if not hasattr(_main, 'curvefit_params'): curvefit_params = Parameters()
+"""
+
 COMMANDS['curvefit_prep'] = """# prepare curve-fit
+if not hasattr(_main, 'curvefit_params'): curvefit_params = Parameters()
 if not hasattr({group}, 'curvefit'): {group}.curvefit = group(__name__='curvefit result')
 if not hasattr({group}.curvefit, 'fit_history'): {group}.curvefit.fit_history = []
 {group}.curvefit.user_options = {user_opts:s}
@@ -801,7 +806,6 @@ class EditParamsFrame(wx.Frame):
         self.parent = parent
         self.curvefit_panel = curvefit_panel
         self.params = params
-
         spanel = scrolled.ScrolledPanel(self, size=(500, 275))
         spanel.SetBackgroundColour(GUI_COLORS.text_bg)
 
@@ -927,10 +931,12 @@ class EditParamsFrame(wx.Frame):
         else:
             cmd = f"curvefit_params.Add({par_name}, expr='{val}')"
 
+        self.curvefit_panel.larch_eval(COMMANDS['curvefit_params'])
         self.curvefit_panel.larch_eval(cmd)
         self.onRefresh()
 
     def onRefresh(self, event=None):
+        self.curvefit_panel.larch_eval(COMMANDS['curvefit_params'])
         self.params = self.curvefit_panel.larch_get('curvefit_params')
         self.model.set_data(self.params)
         self.model.read_data()
@@ -944,6 +950,10 @@ class CurveFitParamsPanel(wx.Panel):
     def __init__(self, parent=None, curvefit_panel=None, **kws):
         wx.Panel.__init__(self, parent, -1, size=(550, 250))
         self.curvefit_panel = curvefit_panel
+        #
+        curvefit_panel.larch_eval(COMMANDS['curvefit_params'])
+        params = self.curvefit_panel.larch_get('curvefit_params')
+
         self.parwids = {}
         self.SetFont(Font(FONTSIZE))
         spanel = scrolled.ScrolledPanel(self)
@@ -995,6 +1005,7 @@ class CurveFitParamsPanel(wx.Panel):
                 self.parwids[pname].value.SetValue(("%%.%.df" % prec) % par.value)
 
     def update(self):
+        self.curvefit_panel.larch_eval(COMMANDS['curvefit_params'])
         params = self.curvefit_panel.larch_get('curvefit_params')
         for pname, par in params.items():
             if pname not in self.parwids:
@@ -1239,10 +1250,13 @@ class CurveFitPanel(TaskPanel):
         pan.pack()
 
         self.mod_nb = flatnotebook(self, {}, on_change=self.onModelPanelExposed)
-        self.mod_nb_init = True
-        dummy_panel = wx.Panel(self.mod_nb)
 
-        self.mod_nb.AddPage(dummy_panel, 'Empty Model', True)
+        self.params_panel = CurveFitParamsPanel(parent=self.mod_nb,
+                                              curvefit_panel=self)
+
+        self.mod_nb.AddPage(self.params_panel, 'Parameters', True)
+
+
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add((5, 5), 0, LEFT, 3)
         sizer.Add(pan, 0, LEFT, 3)
@@ -1394,6 +1408,10 @@ class CurveFitPanel(TaskPanel):
         if model is None or model.startswith('<'):
             return
 
+        self.curvefit_panel.larch_eval(COMMANDS['curvefit_params'])
+        params = self.curvefit_panel.larch_get('curvefit_params')
+        print("Curvefit addModel" , model, params)
+
         self.models_peaks.SetSelection(0)
         self.models_other.SetSelection(0)
 
@@ -1530,10 +1548,7 @@ class CurveFitPanel(TaskPanel):
 
         self.fit_components[prefix] = fgroup
         panel.pack()
-        if self.mod_nb_init:
-            self.mod_nb.DeletePage(0)
-            self.mod_nb_init = False
-
+        print("Added Model ", parnames)
         self.mod_nb.AddPage(panel, title, True)
         sx,sy = self.GetSize()
         self.SetSize((sx, sy+1))
