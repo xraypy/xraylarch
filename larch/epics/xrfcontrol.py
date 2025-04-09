@@ -404,15 +404,22 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         roipanel = wx.Panel(pane)
         roisizer = wx.GridBagSizer(3, 3)
-        rlabel = SimpleText(roipanel, 'Count Rates (kHz):', size=(200, -1))
-        self.wids['roiname'] = SimpleText(roipanel, '_ _', size=(200, -1))
+        rlabel = SimpleText(roipanel, 'Count Rates (Hz)',  style=LEFT, size=(150, -1))        
+        tlabel = SimpleText(roipanel, 'Output Count Rate',  style=LEFT, size=(150, -1))        
+        self.wids['roi_name'] = SimpleText(roipanel, '[ROI]', style=LEFT, size=(150, -1))
 
-        roisizer.Add(rlabel,  (0, 0), (1, 2), LEFT, 0)
-        roisizer.Add(self.wids['roiname'],  (0, 2), (1, 2), LEFT, 0)
+        roisizer.Add(rlabel,                 (0, 0), (1, 1), LEFT, 1)
+        roisizer.Add(tlabel,                 (1, 0), (1, 1), LEFT, 1)
+        roisizer.Add(self.wids['roi_name'],  (2, 0), (1, 1), LEFT, 1)
 
+        opts = {'style': LEFT, 'size': (100, -1)}
         for i in range(1, self.nmca+1):
-            self.wids[f'roi{i}'] = r = SimpleText(roipanel, ' ', size=(100, -1))
-            roisizer.Add(r,  (1, i-1), (1, 1), style, 1)
+            l = SimpleText(roipanel, f'MCA {i}', **opts)
+            self.wids[f'ocr{i}'] = o = SimpleText(roipanel, ' ', **opts)
+            self.wids[f'roi{i}'] = r = SimpleText(roipanel, ' ', **opts)
+            roisizer.Add(l,  (0, i), (1, 1), style, 1)            
+            roisizer.Add(o,  (1, i), (1, 1), style, 1)
+            roisizer.Add(r,  (2, i), (1, 1), style, 1)
         pack(roipanel, roisizer)
 
         b1 =  Button(pane, 'Start',      size=(90, -1), action=self.onStart)
@@ -449,7 +456,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         psizer.Add(self.wids['det_status'],  (0, 9), (1, 1), style, 1)
         psizer.Add(dea_lab,                  (1, 8), (1, 1), style, 1)
         psizer.Add(self.wids['deadtime'],    (1, 9), (1, 1), style, 1)
-        psizer.Add(roipanel,                 (2, 2), (1, 7), style, 1)
+        psizer.Add(roipanel,                 (2, 2), (1, 8), style, 1)
 
         pack(pane, psizer)
         # pane.SetMinSize((500, 53))
@@ -501,7 +508,6 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
     def ShowROIStatus(self, left, right, name='', panel=0):
         if left > right:
             return
-        sum = self.ydata[left:right].sum()
 
         try:
             ftime, nframes = self.det.get_frametime()
@@ -510,7 +516,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             nframes = self.det.nframes
         self.det.elapsed_real = nframes * ftime
 
-        rfmt = " {}:{:8,.1f}"
+        rfmt = "mca{}: {:8,.0f}"
 
         mca_counts = self.det.mcas[self.det_fore-1].get('VAL')
         sum =  mca_counts[left:right].sum()
@@ -521,24 +527,17 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             thissum = 0
             lname = name.lower()
             for nmca in range(1, self.nmca+1):
-                for roi in self.det.mcas[nmca-1].rois:
-                    if lname == roi.name.lower():
-                        try:
-                            sum = roi.sum
-                        except:
-                            sum = 0.0
-                    crate = 0.001*sum/ftime
-                    self.wids[f'roi{nmca}'].SetLabel(rfmt.format(nmca, crate))
-                    if self.det_fore == nmca:
-                        thissum = sum
-        thiscps = thissum/ftime
-        if thiscps < 0:
-            thiscps = 0
+                counts = self.det.mcas[nmca-1].get('VAL')
+                total = counts.sum()/ftime
+                sum = counts[left:right].sum()
+                rate = sum/ftime
+                self.wids[f'ocr{nmca}'].SetLabel(f'{total:,.0f}')
+                self.wids[f'roi{nmca}'].SetLabel(f'{rate:,.0f}')
+                if self.det_fore == nmca:
+                    thissum, thisrate = sum, rate
         mfmt = " {:s}: Cts={:10,.0f} :{:10,.1f} Hz"
-        self.write_message(mfmt.format(name, thissum, thiscps), panel=panel)
-        cname = self.wids['roiname'].GetLabel()
-        if cname != name:
-            self.wids['roiname'].SetLabel(name)
+        self.write_message(mfmt.format(name, thissum, thisrate), panel=panel)
+        self.wids['roi_name'].SetLabel(name)
 
     def onSelectDet(self, event=None, index=0, init=False, **kws):
         if index > 0:
