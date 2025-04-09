@@ -402,6 +402,19 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                                       action=self.onMcaSumChoice,
                                       default=1 )
 
+        roipanel = wx.Panel(pane)
+        roisizer = wx.GridBagSizer(3, 3)
+        rlabel = SimpleText(roipanel, 'Count Rates (kHz):', size=(200, -1))
+        self.wids['roiname'] = SimpleText(roipanel, '_ _', size=(200, -1))
+
+        roisizer.Add(rlabel,  (0, 0), (1, 2), LEFT, 0)
+        roisizer.Add(self.wids['roiname'],  (0, 2), (1, 2), LEFT, 0)
+
+        for i in range(1, self.nmca+1):
+            self.wids[f'roi{i}'] = r = SimpleText(roipanel, ' ', size=(100, -1))
+            roisizer.Add(r,  (1, i-1), (1, 1), style, 1)
+        pack(roipanel, roisizer)
+
         b1 =  Button(pane, 'Start',      size=(90, -1), action=self.onStart)
         b2 =  Button(pane, 'Stop',       size=(90, -1), action=self.onStop)
         b3 =  Button(pane, 'Erase',      size=(90, -1), action=self.onErase)
@@ -415,9 +428,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         sta_lab = SimpleText(pane, 'Status :',          size=(100, -1))
         dea_lab = SimpleText(pane, '% Deadtime:',       size=(100, -1))
 
-        psizer = wx.GridBagSizer(5, 5)
+        psizer = wx.GridBagSizer(3, 3)
         psizer.Add(SimpleText(pane, ' MCAs: '),  (0, 0), (1, 1), style, 1)
-        psizer.Add(det_btnpanel,           (0, 1), (2, 1), style, 1)
+        psizer.Add(det_btnpanel,           (0, 1), (3, 1), style, 1)
         psizer.Add(bkg_lab,                (0, 2), (1, 1), style, 1)
         psizer.Add(self.wids['bkg_det'],   (0, 3), (1, 1), style, 1)
         psizer.Add(sum_lab,                (1, 2), (1, 1), style, 1)
@@ -436,6 +449,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         psizer.Add(self.wids['det_status'],  (0, 9), (1, 1), style, 1)
         psizer.Add(dea_lab,                  (1, 8), (1, 1), style, 1)
         psizer.Add(self.wids['deadtime'],    (1, 9), (1, 1), style, 1)
+        psizer.Add(roipanel,                 (2, 2), (1, 7), style, 1)
+
         pack(pane, psizer)
         # pane.SetMinSize((500, 53))
         self.det.connect_displays(status=self.wids['det_status'],
@@ -495,23 +510,35 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             nframes = self.det.nframes
         self.det.elapsed_real = nframes * ftime
 
+        rfmt = " {}:{:8,.1f}"
+
         mca_counts = self.det.mcas[self.det_fore-1].get('VAL')
         sum =  mca_counts[left:right].sum()
-        # print("ROI STATUS ", name, ftime, nframes, sum, cps, mca_counts.sum(),  mca_counts)
+
         if name in (None, ''):
             name = 'Selected'
         else:
-            for roi in self.det.mcas[self.det_fore-1].rois:
-                if name.lower() == roi.name.lower():
-                    try:
-                        sum = roi.sum
-                    except:
-                        pass
-        cps = sum/ftime
-        if cps < 0: cps = 0
-        # print("ROI STATUS ", name, _counts, cps)
-        fmt = " {:s}: Cts={:10,.0f} :{:10,.1f} Hz"
-        self.write_message(fmt.format(name, sum, cps), panel=panel)
+            thissum = 0
+            lname = name.lower()
+            for nmca in range(1, self.nmca+1):
+                for roi in self.det.mcas[nmca-1].rois:
+                    if lname == roi.name.lower():
+                        try:
+                            sum = roi.sum
+                        except:
+                            sum = 0.0
+                    crate = 0.001*sum/ftime
+                    self.wids[f'roi{nmca}'].SetLabel(rfmt.format(nmca, crate))
+                    if self.det_fore == nmca:
+                        thissum = sum
+        thiscps = thissum/ftime
+        if thiscps < 0:
+            thiscps = 0
+        mfmt = " {:s}: Cts={:10,.0f} :{:10,.1f} Hz"
+        self.write_message(mfmt.format(name, thissum, thiscps), panel=panel)
+        cname = self.wids['roiname'].GetLabel()
+        if cname != name:
+            self.wids['roiname'].SetLabel(name)
 
     def onSelectDet(self, event=None, index=0, init=False, **kws):
         if index > 0:
