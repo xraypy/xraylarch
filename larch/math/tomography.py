@@ -222,4 +222,4 @@ def tomo_reconstruction(sino, omega, algorithm='gridrec',
 
     tomo = tomopy.recon(sino, romega, algorithm=algorithm,
                         center=center, sinogram_order=sinogram_order, **recon_kws)
-    return center, tomo*(sino.mean()/tomo.mean())
+    return center, tomo # *(sino.mean()/(abs(tomo.mean()))
