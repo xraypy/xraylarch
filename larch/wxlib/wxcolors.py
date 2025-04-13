@@ -350,8 +350,10 @@ class GUIColors(object):
     def __init__(self):
         for key, val in COLORS.items():
             self.add_color(key, val)
+        for cname in X11_COLORS:
+            self.add_color(cname)
 
-    def add_color(self, name,  value):
+    def add_color(self, name,  value=None):
         """add_color by name with a value that can be
          - a wx.Colour
          - a string of the form '#rrggbb', '#rrggbbaa'
@@ -359,13 +361,15 @@ class GUIColors(object):
          - a tuple or list of (r, g, b), or (r,g,b,a) values
         """
         cval = None
+        if value is None and name in X11_COLORS:
+            value = name
         if isinstance(value, str):
             if value[0] == '#' and len(value) in (7, 9):
                 r, g, b = value[1:3], value[3:5], value[5:7]
                 r, g, b = [int(n, 16) for n in (r, g, b)]
                 a = int(value[7:9], 16) if len(value) == 9 else 255
                 cval = wx.Colour(r, g, b, a)
-            elif value in x11_colors:
+            elif value in X11_COLORS:
                 cval = wx.Colour(*X11_COLORS[value])
         if isinstance(value, (tuple, list)) and len(value) in (3, 4):
             cval = wx.Colour(*value)
