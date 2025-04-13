@@ -27,7 +27,7 @@ from wxutils import (SimpleText, EditableListBox, Font, FloatCtrl,
 
 import larch
 from larch.site_config import icondir
-from larch.wxlib import PeriodicTablePanel, LarchWxApp
+from larch.wxlib import PeriodicTablePanel, LarchWxApp, GUI_COLORS
 from larch.wxlib.xrfdisplay import (XRFDisplayFrame, XRFCalibrationFrame,
                                     FILE_WILDCARDS)
 from larch.utils import get_cwd
@@ -38,6 +38,16 @@ try:
     from .xrf_detectors import Epics_MultiXMAP, Epics_Xspress3
 except:
     pass
+
+def warning_color(val, warn, error):
+    tcolor = GUI_COLORS.text
+    if val > error:
+        tcolor = GUI_COLORS.title_red
+    elif val > warn:
+        tcolor = GUI_COLORS.darkorange
+    return tcolor
+
+
 
 class DetectorSelectDialog(wx.Dialog):
     """Connect to an Epics MCA detector
@@ -253,10 +263,11 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             i = self.wids['roilist'].GetStrings().index(roiname)
             self.wids['roilist'].EnsureVisible(i)
             self.onROI(label=roiname)
-        deadtime = self.det.get_deadtime(mca=self.det_fore)
-        if deadtime is not None:
-            self.wids['deadtime'].SetLabel("%.1f" % deadtime)
-        self.SetTitle("%s: %s" % (self.main_title, title))
+        dtime = self.det.get_deadtime(mca=self.det_fore)
+        if dtime is not None:
+            self.wids['deadtime'].SetLabel(f"{dtime:.1f}")
+        self.wids['deadtime'].SetForegroundColour(warning_color(dtime, 25, 50))
+        self.SetTitle(f"{self.main_title}: {title}")
         self.needs_newplot = False
 
     def onSaveROIs(self, event=None, **kws):
@@ -404,8 +415,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         roipanel = wx.Panel(pane)
         roisizer = wx.GridBagSizer(3, 3)
-        rlabel = SimpleText(roipanel, 'Count Rates (Hz)',  style=LEFT, size=(150, -1))        
-        tlabel = SimpleText(roipanel, 'Output Count Rate',  style=LEFT, size=(150, -1))        
+        rlabel = SimpleText(roipanel, 'Count Rates (Hz)',  style=LEFT, size=(150, -1))
+        tlabel = SimpleText(roipanel, 'Output Count Rate',  style=LEFT, size=(150, -1))
         self.wids['roi_name'] = SimpleText(roipanel, '[ROI]', style=LEFT, size=(150, -1))
 
         roisizer.Add(rlabel,                 (0, 0), (1, 1), LEFT, 1)
@@ -417,7 +428,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             l = SimpleText(roipanel, f'MCA {i}', **opts)
             self.wids[f'ocr{i}'] = o = SimpleText(roipanel, ' ', **opts)
             self.wids[f'roi{i}'] = r = SimpleText(roipanel, ' ', **opts)
-            roisizer.Add(l,  (0, i), (1, 1), style, 1)            
+            roisizer.Add(l,  (0, i), (1, 1), style, 1)
             roisizer.Add(o,  (1, i), (1, 1), style, 1)
             roisizer.Add(r,  (2, i), (1, 1), style, 1)
         pack(roipanel, roisizer)
@@ -476,7 +487,6 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.show_mca()
         # self.elapsed_real = self.det.elapsed_real
         self.mca.real_time = self.det.elapsed_real
-        # print("Update Data  ", force, self.det.needs_refresh)
 
         if force or self.det.needs_refresh:
             self.det.needs_refresh = False
@@ -496,8 +506,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
             dtime = self.det.get_deadtime(mca=self.det_fore)
             if dtime is not None:
-                self.wids['deadtime'].SetLabel("%.1f" % dtime)
-
+                self.wids['deadtime'].SetLabel(f"{dtime:.1f}")
+            self.wids['deadtime'].SetForegroundColour(warning_color(dtime, 25, 50))
             counts = self.det.get_array(mca=self.det_fore)*1.0
             energy = self.det.get_energy(mca=self.det_fore)
             if max(counts) < 1.0:
@@ -532,7 +542,10 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                 sum = counts[left:right].sum()
                 rate = sum/ftime
                 self.wids[f'ocr{nmca}'].SetLabel(f'{total:,.0f}')
+                self.wids[f'ocr{nmca}'].SetForegroundColour(warning_color(total, 1.25e6, 2.5e6))
+
                 self.wids[f'roi{nmca}'].SetLabel(f'{rate:,.0f}')
+                self.wids[f'roi{nmca}'].SetForegroundColour(warning_color(total, 4.0e5, 8.0e5))
                 if self.det_fore == nmca:
                     thissum, thisrate = sum, rate
         mfmt = " {:s}: Cts={:10,.0f} :{:10,.1f} Hz"
