@@ -41,13 +41,11 @@ except:
 
 def warning_color(val, warn, error):
     tcolor = GUI_COLORS.text
+    if val > warn:
+        tcolor = GUI_COLORS.orangered4
     if val > error:
-        tcolor = GUI_COLORS.title_red
-    elif val > warn:
-        tcolor = GUI_COLORS.darkorange
+        tcolor = GUI_COLORS.text_invalid
     return tcolor
-
-
 
 class DetectorSelectDialog(wx.Dialog):
     """Connect to an Epics MCA detector
@@ -423,11 +421,14 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         roisizer.Add(tlabel,                 (1, 0), (1, 1), LEFT, 1)
         roisizer.Add(self.wids['roi_name'],  (2, 0), (1, 1), LEFT, 1)
 
-        opts = {'style': LEFT, 'size': (100, -1)}
+        opts = {'style': RIGHT, 'size': (100, -1)}
         for i in range(1, self.nmca+1):
             l = SimpleText(roipanel, f'MCA {i}', **opts)
             self.wids[f'ocr{i}'] = o = SimpleText(roipanel, ' ', **opts)
             self.wids[f'roi{i}'] = r = SimpleText(roipanel, ' ', **opts)
+            o.SetBackgroundColour((220,220,220))
+            r.SetBackgroundColour((220,220,220))
+            
             roisizer.Add(l,  (0, i), (1, 1), style, 1)
             roisizer.Add(o,  (1, i), (1, 1), style, 1)
             roisizer.Add(r,  (2, i), (1, 1), style, 1)
@@ -545,7 +546,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                 self.wids[f'ocr{nmca}'].SetForegroundColour(warning_color(total, 1.25e6, 2.5e6))
 
                 self.wids[f'roi{nmca}'].SetLabel(f'{rate:,.0f}')
-                self.wids[f'roi{nmca}'].SetForegroundColour(warning_color(total, 4.0e5, 8.0e5))
+                self.wids[f'roi{nmca}'].SetForegroundColour(warning_color(rate, 4.0e5, 8.0e5))
                 if self.det_fore == nmca:
                     thissum, thisrate = sum, rate
         mfmt = " {:s}: Cts={:10,.0f} :{:10,.1f} Hz"
@@ -702,6 +703,7 @@ class EpicsXRFApp(LarchWxApp):
                                      output_title=self.output_title,
                                      _larch=self._larch)
         frame.Show()
+        frame.Raise()
         self.SetTopWindow(frame)
         return True
 
