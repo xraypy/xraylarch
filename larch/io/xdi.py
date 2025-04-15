@@ -13,6 +13,7 @@ from .. import Group
 from ..larchlib import get_dll
 from ..utils import read_textfile, bytes2str, str2bytes
 from ..utils.physical_constants import RAD2DEG, PLANCK_HC
+from .columnfile import read_ascii
 
 class XDIFileStruct(Structure):
     "emulate XDI File"
@@ -190,6 +191,193 @@ class XDIFile(object):
                      'meta_keywords', 'meta_values', 'array'):
             delattr(self, attr)
         xdilib.XDI_cleanup(pxdi, 0)
+
+    def _assign_arrays(self):
+        """assign data arrays for principle data attributes:
+           energy, angle, i0, itrans, ifluor, irefer,
+           mutrans, mufluor, murefer, etc.  """
+
+        xunits = 'eV'
+        xname = None
+        ix = -1
+        self.data = array(self.data)
+
+        for idx, name in enumerate(self.array_labels):
+            dat = self.data[idx,:]
+            setattr(self, name, dat)
+            if name in ('energy', 'angle'):
+                ix = idx
+                xname = name
+                units = self.array_units[idx]
+                if units is not None:
+                    xunits = units
+
+        # convert energy to angle, or vice versa
+        monodat = {}
+        if 'mono' in  self.attrs:
+            monodat = self.attrs['mono']
+        elif 'monochromator' in  self.attrs:
+            monodat = self.attrs['monochromator']
+
+        if ix >= 0 and 'd_spacing' in monodat:
+            dspacing = monodat['d_spacing'].strip()
+            dunits = 'Angstroms'
+            if ' ' in dspacing:
+                dspacing, dunits = dspacing.split(None, 1)
+            self.dspacing = float(dspacing)
+            self.dspacing_units = dunits
+
+            omega = PLANCK_HC/(2*self.dspacing)
+            if xname == 'energy' and not hasattr(self, 'angle'):
+                energy_ev = self.energy
+                if xunits.lower() == 'kev':
+                    energy_ev = 1000. * energy_ev
+                self.angle = RAD2DEG * arcsin(omega/energy_ev)
+            elif xname == 'angle' and not hasattr(self, 'energy'):
+                angle_rad = self.angle
+                if xunits.lower() in ('deg', 'degrees'):
+                    angle_rad = angle_rad / RAD2DEG
+                self.energy = omega/sin(angle_rad)
+
+        if hasattr(self, 'i0'):
+            if hasattr(self, 'itrans') and not hasattr(self, 'mutrans'):
+                self.mutrans = -log(self.itrans / (self.i0+1.e-12))
+            elif hasattr(self, 'mutrans') and not hasattr(self, 'itrans'):
+                self.itrans  =  self.i0 * exp(-self.mutrans)
+            if hasattr(self, 'ifluor') and not hasattr(self, 'mufluor'):
+                self.mufluor = self.ifluor/(self.i0+1.e-12)
+
+            elif hasattr(self, 'mufluor') and not hasattr(self, 'ifluor'):
+                self.ifluor =  self.i0 * self.mufluor
+
+        if hasattr(self, 'itrans'):
+            if hasattr(self, 'irefer') and not hasattr(self, 'murefer'):
+                self.murefer = -log(self.irefer / (self.itrans+1.e-12))
+
+            elif hasattr(self, 'murefer') and not hasattr(self, 'irefer'):
+                self.irefer = self.itrans * exp(-self.murefer)
+
+
+class PyXDIFile(object):
+    """ XAS Data Interchange Format:
+
+    read XDI file with Python, emulate XDFile
+
+    >>> xdi_file = PyXDFIile(filename)
+
+    Principle methods:
+      read():     read XDI data file, set column data and attributes
+    """
+    _invalid_msg = "invalid data for '%s':  was expecting %s, got '%s'"
+
+    def __init__(self, filename=None, labels=None):
+        self.filename = filename
+        self.xdi_pyversion =  __version__
+        self.comments = []
+        self.data = []
+        self.attrs = {}
+        self.status = None
+        self.user_labels = labels
+        if self.filename:
+            self.read(self.filename)
+
+    def read(self, filename=None):
+        """read validate and parse an XDI datafile into python structures
+        """
+        if filename is None and self.filename is not None:
+            filename = self.filename
+
+        text = read_textfile(filename)
+        lines = text.split('\n')
+        if len(text) < 256 or len(lines) < 6:
+            msg = [f'Error reading XDIFile {filename}',
+                   'data file too small to be valid XDI']
+            raise ValueError('\n'.join(msg))
+
+        line0 = lines[0].strip()
+        xdi_version = None
+        if line0.startswith('#') and 'XDI/' in line0:
+            try:
+                words = line0.split('XDI/')
+                xdi_version = words[1]
+            except:
+                pass
+
+        if xdi_version is None:
+            msg = [f'Error reading XDIFile {filename}',
+                   'invalid XDI version in fist line']
+            raise ValueError('\n'.join(msg))
+
+        self.xdi_version = xdi_version
+        afile = read_ascii(filename)
+
+        self.data = afile.data
+        self.array_labels = afile.array_labels
+        for attr in self.array_labels:
+            setattr(self, attr, getattr(afile, attr))
+        self.array_addrs = [' ']*len(self.array_labels)
+        self.array_units = [' ']*len(self.array_labels)
+        attrs = {'column': {}}
+        commentline = None
+        for iline, hline in enumerate(afile.header):
+            if hline.startswith('#'):
+                hline = hline[1:].strip()
+            # column units
+            if hline.startswith('XDI/'):
+                continue
+            elif hline.startswith('Column.'):
+                colnum, value = hline.split(':', 1)
+                attrs['column'][colnum] = value
+                colnum = int(colnum.replace('Column.', '')) - 1
+                if '#' in value:
+                    value = value[:value.find('#')]
+                words = value.strip().split()
+                if len(words) > 1:
+                    units = words[1].strip()
+                    if '||' in units:
+                        unit, addr = [x.strip() for x in units.split('||', 1)]
+                        self.array_addrs[colnum] = addr
+                    self.array_units[colnum] = units
+            elif hline.startswith('///'):
+                commentline = iline
+            elif commentline is None:
+                metaname, value = hline.split(':', 1)
+                metaname = metaname.lower()
+                if '.' in metaname:
+                    family, field = metaname.split('.', 1)
+                else:
+                    continue
+                if family not in attrs:
+                    attrs[family] = {}
+                attrs[family][field] = value
+                if '||' in value:
+                    value, addr = [x.strip() for x in value.split('||', 1)]
+                if 'element.symbol' in metaname:
+                    self.element = value
+                elif 'element.edge' in metaname:
+                    self.edge = value
+                elif 'element' in field:
+                    self.element = value
+                elif 'edge' in field:
+                    self.edge = value
+                elif 'mono' in family and 'dspacing' in field:
+                    self.d_spacing = float(value)
+                elif 'mono' in family and 'd_spacing' in field:
+                    self.d_spacing = float(value)
+                elif 'scan' in family and 'start_time' in field:
+                    self.start_time = value
+                elif 'scan' in family and 'end_time' in field:
+                    self.end_time = value
+
+        comments = []
+        if commentline is not None:
+            for hline in afile.header[commentline+1:]:
+                if hline.startswith('----'):
+                    break
+                comments.append(hline[1:].strip())
+        self.comments = '\n'.join(comments)
+        self.attrs = attrs
+        self._assign_arrays()
 
     def _assign_arrays(self):
         """assign data arrays for principle data attributes:
