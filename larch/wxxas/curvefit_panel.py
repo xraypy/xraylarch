@@ -35,7 +35,7 @@ from larch.wxlib.parameter import ParameterWidgets
 from larch.wxlib.plotter import last_cursor_pos
 from .taskpanel import TaskPanel
 from .config import (CurveFit_ArrayChoices, PlotWindowChoices,
-                         XRANGE_CHOICES, YERR_CHOICES)
+                     XRANGE_CHOICES, YERR_CHOICES)
 
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
@@ -1007,6 +1007,7 @@ class CurveFitParamsPanel(wx.Panel):
     def update(self):
         self.curvefit_panel.larch_eval(COMMANDS['curvefit_params'])
         params = self.curvefit_panel.larch_get('curvefit_params')
+        print("CurveFit Params ", params)
         for pname, par in params.items():
             if pname not in self.parwids:
                 pwids = ParameterWidgets(self.panel, par, name_size=120,
@@ -1082,11 +1083,16 @@ class CurveFitParamsPanel(wx.Panel):
             s.append(cmd)
         return s
 
+    def onPanelExposed(self, event=None):
+        print("CurveFit Parameters Panel exposed ")
+        print(" comps: ", self.curvefit_panel.fit_components)
+        self.update()
+
 
 class CurveFitPanel(TaskPanel):
     def __init__(self, parent=None, controller=None, **kws):
-        TaskPanel.__init__(self, parent, controller, panel='curvefit', **kws)
         self.fit_components = {}
+        TaskPanel.__init__(self, parent, controller, panel='curvefit', **kws)
         self.user_added_params = None
 
         self.pick2_timer = wx.Timer(self)
@@ -1116,7 +1122,20 @@ class CurveFitPanel(TaskPanel):
             self.use_modelresult(cvfit)
 
     def onModelPanelExposed(self, event=None, **kws):
-        pass
+        if self.mod_nb is None:
+            return
+        oldpage = self.mod_nb.GetPage(event.GetOldSelection())
+        newpage = self.mod_nb.GetPage(event.GetSelection())
+        on_hide = getattr(oldpage, 'onPanelHidden', None)
+        on_expose = getattr(newpage, 'onPanelExposed', None)
+
+        print("ModelPanel Exposed ", oldpage, newpage, on_hide, on_expose)
+
+        if callable(on_hide):
+            on_hide()
+
+        if callable(on_expose):
+            on_expose()
 
     def build_display(self):
         pan = self.panel # = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LEFT)
@@ -1132,7 +1151,7 @@ class CurveFitPanel(TaskPanel):
         curvefit_xmin  = self.add_floatspin('curvefit_xmin',  value=-1, **fsopts)
         curvefit_xmax  = self.add_floatspin('curvefit_xmax',  value=+1, **fsopts)
 
-        self.xrange_choice = Choice(xrpanel, size=(175, -1),
+        self.xrange_choice = Choice(xrpanel, size=(150, -1),
                                    choices=XRANGE_CHOICES,
                                    action=self.onXrangeChoice)
 
@@ -1156,7 +1175,7 @@ class CurveFitPanel(TaskPanel):
         yerrsizer = wx.BoxSizer(wx.HORIZONTAL)
 
         self.wids['yerr_choice'] = Choice(yerrpanel, choices=YERR_CHOICES, default=0,
-                                          action=self.onYerrChoice, size=(125, -1))
+                                          action=self.onYerrChoice, size=(150, -1))
         self.wids['yerr_array'] = Choice(yerrpanel, choices=['-'],
                                            action=self.onYerrChoice, size=(225, -1))
         self.wids['yerr_array'].Disable()
@@ -1187,7 +1206,7 @@ class CurveFitPanel(TaskPanel):
         self.fitselected_btn.Disable()
         self.fitmodel_btn.Disable()
 
-        self.array_choice = Choice(pan, size=(175, -1),
+        self.array_choice = Choice(pan, size=(150, -1),
                                    choices=list(CurveFit_ArrayChoices.keys()))
         self.array_choice.SetSelection(0)
 
@@ -1255,7 +1274,7 @@ class CurveFitPanel(TaskPanel):
                                               curvefit_panel=self)
 
         self.mod_nb.AddPage(self.params_panel, 'Parameters', True)
-
+        self.mod_nb
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add((5, 5), 0, LEFT, 3)
@@ -1408,8 +1427,8 @@ class CurveFitPanel(TaskPanel):
         if model is None or model.startswith('<'):
             return
 
-        self.curvefit_panel.larch_eval(COMMANDS['curvefit_params'])
-        params = self.curvefit_panel.larch_get('curvefit_params')
+        self.larch_eval(COMMANDS['curvefit_params'])
+        params = self.larch_get('curvefit_params')
         print("Curvefit addModel" , model, params)
 
         self.models_peaks.SetSelection(0)
@@ -1493,7 +1512,6 @@ class CurveFitPanel(TaskPanel):
 
         parwids = {}
         parnames = sorted(minst.param_names)
-
         for a in minst._func_allargs:
             pname = "%s%s" % (prefix, a)
             if (pname not in parnames and
@@ -1501,6 +1519,7 @@ class CurveFitPanel(TaskPanel):
                 a not in minst.independent_vars):
                 parnames.append(pname)
 
+        c_params = self.larch_get('curvefit_params')
         for pname in parnames:
             sname = pname[len(prefix):]
             hints = minst.param_hints.get(sname, {})
@@ -1525,6 +1544,8 @@ class CurveFitPanel(TaskPanel):
 
             panel.AddMany((pwids.value, pwids.vary, pwids.bounds,
                            pwids.minval, pwids.maxval, pwids.expr))
+            c_params[pname] = par
+
 
         for sname, hint in minst.param_hints.items():
             pname = "%s%s" % (prefix, sname)
@@ -1539,11 +1560,13 @@ class CurveFitPanel(TaskPanel):
                 panel.Add(pwids.value)
                 panel.Add(pwids.expr, dcol=5, style=wx.ALIGN_RIGHT)
                 pwids.value.Disable()
+                # c_params[pname] = par
 
         fgroup = Group(prefix=prefix, title=title, mclass=mclass,
                        mclass_kws=mclass_kws, usebox=usebox, panel=panel,
                        parwids=parwids, float_size=65, expr_size=150,
                        pick2_msg=pick2msg, bkgbox=bkgbox)
+        print("add Model ", fgroup)
 
 
         self.fit_components[prefix] = fgroup
@@ -1624,13 +1647,16 @@ class CurveFitPanel(TaskPanel):
             guesses = mod.guess(y, x=x)
         except:
             return
+        print("Pick2 guesses ", guesses, mod, mod.param_names)
+        c_params = self.larch_get('curvefit_params')
         for name, param in guesses.items():
-            if 'amplitude' in name:
-                param.value *= 1.5
-            elif 'sigma' in name:
-                param.value *= 0.75
+#             if 'amplitude' in name:
+#                 param.value *= 1.5
+#             elif 'sigma' in name:
+#                 param.value *= 0.75
             if name in parwids:
                 parwids[name].value.SetValue(param.value)
+            c_params[name] = param
 
         dgroup._tmp = mod.eval(guesses, x=dgroup.xplot)
         plotframe = self.controller.get_display(win=1)
