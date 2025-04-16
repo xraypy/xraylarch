@@ -56,7 +56,6 @@ ARRAYS = {'mu':      'Raw \u03BC(E)',
 FT_WINDOWS_AUTO = ['<Auto>']
 FT_WINDOWS_AUTO.extend(FT_WINDOWS)
 
-
 def make_array_choice(opts):
     """make (ordered) dict of {Array Description: varname}"""
     out = {}
@@ -70,6 +69,8 @@ Linear_ArrayChoices = make_array_choice(['norm', 'flat', 'dmude', 'chi0', 'chi1'
 PrePeak_ArrayChoices = make_array_choice(['norm', 'flat', 'deconv', 'mu'])
 CurveFit_ArrayChoices = make_array_choice(['y', 'yscaled', 'norm', 'flat'])
 
+YERR_CHOICES = ('Constant', 'Sqrt(Y)', 'Array')
+XRANGE_CHOICES = ('Full X Range', 'Set X Limits')
 Regress_Choices = ['Partial Least Squares', 'LassoLars']
 
 PlotWindowChoices = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
