@@ -274,6 +274,7 @@ class GSEXRM_MapFile(object):
         self.all_mcas      = all_mcas
         self.detector_list = None
         self.mca_energies = None
+        self.calib = None
         self.compress_args = {'compression': compression}
         if compression != 'lzf':
             self.compress_args['compression_opts'] = compression_opts
@@ -982,6 +983,11 @@ class GSEXRM_MapFile(object):
                 tpos = rowpos.transpose()
                 pos[thisrow, :npts, :] = tpos[:npts, :]
                 nmca, xnpts, nchan = row.counts.shape
+
+                if self.calib is None:
+                    self.calib = {'offset': self.xrmmap['config/mca_calib/offset'][()],
+                                  'slope': self.xrmmap['config/mca_calib/slope'][()],
+                                  'quad': self.xrmmap['config/mca_calib/quad'][()]}
 
                 if self.mca_energies is None:
                     off = self.calib['offset']
