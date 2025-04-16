@@ -428,7 +428,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.wids[f'roi{i}'] = r = SimpleText(roipanel, ' ', **opts)
             o.SetBackgroundColour((220,220,220))
             r.SetBackgroundColour((220,220,220))
-            
+
             roisizer.Add(l,  (0, i), (1, 1), style, 1)
             roisizer.Add(o,  (1, i), (1, 1), style, 1)
             roisizer.Add(r,  (2, i), (1, 1), style, 1)
@@ -531,11 +531,11 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         mca_counts = self.det.mcas[self.det_fore-1].get('VAL')
         sum =  mca_counts[left:right].sum()
+        thissum = 0
 
         if name in (None, ''):
             name = 'Selected'
         else:
-            thissum = 0
             lname = name.lower()
             for nmca in range(1, self.nmca+1):
                 counts = self.det.mcas[nmca-1].get('VAL')
