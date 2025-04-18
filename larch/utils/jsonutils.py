@@ -105,9 +105,9 @@ def encode4js(obj):
         except:
             out['__dtype__'] = 'object'
         out['value'] = obj.flatten().tolist()
-        if 'complex' in obj.dtype.name:
+        if 'complex' in out['__dtype__']:
             out['value'] = [(obj.real).tolist(), (obj.imag).tolist()]
-        elif obj.dtype.name == 'object':
+        elif out['__dtype__'] == 'object':
             out['value'] = [encode4js(i) for i in out['value']]
         return out
     elif isinstance(obj, (bool, np.bool_)):
@@ -275,7 +275,6 @@ def decode4js(obj):
         elif obj['__dtype__'].startswith('object'):
             val = [decode4js(v) for v in obj['value']]
             out = np.array(val,  dtype=obj['__dtype__'])
-
         else:
             out = np.asarray(obj['value'], dtype=obj['__dtype__'])
         out.shape = obj['__shape__']
