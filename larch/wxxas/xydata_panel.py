@@ -32,14 +32,14 @@ PLOTOPTS_D = dict(style='solid', zorder=2, side='right', marker='None')
 
 # Plot_EnergyRanges = {'full X range': None }
 
-PlotOne_Choices = {'XY Data': 'y',
+PlotOne_Choices = {'XY Data': 'ydat',
                    'Scaled Data': 'ynorm',
                    'Derivative ': 'dydx',
-                   'XY Data + Derivative': 'y+dydx',
+                   'XY Data + Derivative': 'ydat+dydx',
                    'Scaled Data + Derivative': 'ynorm+dydx',
                    }
 
-PlotSel_Choices = {'XY Data': 'y',
+PlotSel_Choices = {'XY Data': 'ydat',
                    'Scaled Data': 'ynorm',
                    'Derivative': 'dydx'}
 
@@ -417,8 +417,8 @@ class XYDataPanel(TaskPanel):
         gname = dgroup.groupname
         cmds = [f"{gname:s}.scale = {scale}",
                 f"{gname:s}.xshift = {xshift}",
-                f"{gname:s}.xplot = {gname:s}.x+{xshift}",
-                f"{gname:s}.ynorm = {gname:s}.y/{scale}",
+                f"{gname:s}.xplot = {gname:s}.xdat+{xshift}",
+                f"{gname:s}.ynorm = {gname:s}.ydat/{scale}",
                 f"{gname:s}.dydx  = gradient({gname:s}.ynorm)/gradient({gname:s}.xplot)",
                 f"{gname:s}.d2ydx = gradient({gname:s}.dydx)/gradient({gname:s}.xplot)"]
 
@@ -436,19 +436,19 @@ class XYDataPanel(TaskPanel):
 
         dgroup.plot_y2label = None
         dgroup.plot_xlabel = plotlabels.xplot
-        dgroup.plot_yarrays = [('y', PLOTOPTS_1, lab)]
+        dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, lab)]
 
-        req_attrs = ['y', 'i0', 'ynorm', 'dydx', 'd2ydx']
+        req_attrs = ['ydat', 'i0', 'ynorm', 'dydx', 'd2ydx']
         pchoice = PlotOne_Choices.get(self.plotone_op.GetStringSelection(), 'ynorm')
 
-        if pchoice in ('y', 'i0', 'ynorm', 'dydx', 'd2ydx'):
+        if pchoice in ('ydat', 'i0', 'ynorm', 'dydx', 'd2ydx'):
             lab = getattr(plotlabels, pchoice)
             dgroup.plot_yarrays = [(pchoice, PLOTOPTS_1, lab)]
 
         elif pchoice == 'y+dydx':
             lab = plotlabels.y
             dgroup.plot_y2label = lab2 = plotlabels.dydx
-            dgroup.plot_yarrays = [('y', PLOTOPTS_1, lab),
+            dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, lab),
                                    ('dydx', PLOTOPTS_D, lab2)]
         elif pchoice == 'ynorm+dydx':
             lab = plotlabels.ynorm
@@ -470,7 +470,7 @@ class XYDataPanel(TaskPanel):
         if needs_proc:
             self.process(dgroup=dgroup, force=True)
 
-        y4e0 = dgroup.yplot = getattr(dgroup, dgroup.plot_yarrays[0][0], dgroup.y)
+        y4e0 = dgroup.yplot = getattr(dgroup, dgroup.plot_yarrays[0][0], dgroup.ydat)
         dgroup.plot_extras = []
 
         popts = {'marker': 'o', 'markersize': 5,

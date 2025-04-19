@@ -1130,8 +1130,8 @@ class ColumnDataFileFrame(wx.Frame) :
             buff.append("{group}.mu = {group}.yplot[:]")
             buff.append("sort_xafs({group}, overwrite=True, fix_repeats=True)")
         elif dtype == 'xydata':
-            buff.append("{group}.x = {group}.xplot[:]")
-            buff.append("{group}.y = {group}.yplot[:]")
+            buff.append("{group}.xdat = {group}.xplot[:]")
+            buff.append("{group}.ydat = {group}.yplot[:]")
             buff.append("{group}.scale = (ptp({group}.yplot)+1.e-15)")
             buff.append("{group}.xshift = 0.0")
 
@@ -1514,7 +1514,7 @@ def create_arrays(dgroup, datatype='xas', ix=0, xarr='energy', en_units='eV',
     dgroup.plot_ylabel = ylabel
     dgroup.xplot       = np.array(dgroup.xplot[:npts])
     dgroup.yplot       = np.array(dgroup.yplot[:npts])
-    dgroup.y           = dgroup.yplot
+    dgroup.ydat        = dgroup.yplot
     dgroup.yerr        = yderr
     if isinstance(yderr, np.ndarray):
         dgroup.yerr    = np.array(yderr[:npts])

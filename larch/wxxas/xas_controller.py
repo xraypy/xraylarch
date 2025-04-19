@@ -123,6 +123,19 @@ class XASController():
 
         cmds.append(f"{groupname:s}.journal = journal({jopts:s})")
 
+        if not hasattr(thisgroup, 'xdat'):
+            for xattr in ('x', 'xplot', 'energy', 'xdata'):
+                if hasattr(thisgroup, xattr):
+                    thisgroup.xdat = deepcopy(getattr(thisgroup, xattr))
+                    break
+
+        if not hasattr(thisgroup, 'ydat'):
+            for yattr in ('y', 'yplot', 'mu', 'norm', 'ydata',
+                          'munorm', 'mutrans', 'signal'):
+                if hasattr(thisgroup, yattr):
+                    thisgroup.ydat = deepcopy(getattr(thisgroup, yattr))
+                    break
+
         if hasattr(thisgroup, 'xdat') and not hasattr(thisgroup, 'xplot'):
             thisgroup.xplot = deepcopy(thisgroup.xdat)
         if hasattr(thisgroup, 'ydat') and not hasattr(thisgroup, 'yplot'):
