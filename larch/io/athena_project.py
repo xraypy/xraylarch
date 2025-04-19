@@ -367,7 +367,7 @@ def parse_perlathena(text, filename):
         elif key in ('1;', 'indicator', 'lcf_data', 'plot_features'):
             pass
         else:
-            print(" do not know what to do with key '%s' at '%s'" % (key, raw['name']))
+            print(f" ignoring Athena Entry for '{key}'")
 
     out = Group()
     out.__doc__ = """XAFS Data from Athena Project File %s""" % (filename)
