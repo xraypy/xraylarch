@@ -628,7 +628,6 @@ class LarixFrame(wx.Frame):
         if dgroup is None:
             return
 
-        ipage, pagepanel = self.get_nbpage('xydata')
         datatype = getattr(dgroup, 'datatype', 'xydata')
         if datatype.startswith('xas'):
             ipage, pagepanel = self.get_nbpage('xasnorm')
@@ -636,6 +635,9 @@ class LarixFrame(wx.Frame):
                 if not (hasattr(dgroup, 'norm') and hasattr(dgroup, 'e0')):
                     self.process_normalization(dgroup, force=True,
                                                   use_form=False)
+
+        else:
+            ipage, pagepanel = self.get_nbpage('xydata')
 
         if filename is None:
             filename = dgroup.filename
@@ -1565,8 +1567,8 @@ before clearing"""
             labels.append(label)
 
             jrnl = {'source_desc': f'{spath:s}: {gname:s}'}
-            self.larch.eval(script.format(group=gid, prjgroup=gname))
-
+            cmd = script.format(group=gid, prjgroup=gname)
+            self.larch.eval(cmd)
             dgroup = self.install_group(gid, label, process=False,
                                         source=path, journal=jrnl)
             groups_added.append(gid)
@@ -1655,10 +1657,6 @@ before clearing"""
         self.controller.recentfiles.append((time.time(), path))
 
     def onRead_OK(self, script, path, config):
-        #groupname=None, filename=None,
-        #          ref_groupname=None, ref_filename=None, config=None,
-        #          array_desc=None):
-
         """ called when column data has been selected and is ready to be used
         overwrite: whether to overwrite the current datagroup, as when
         editing a datagroup
@@ -1697,7 +1695,6 @@ before clearing"""
         config['path'] = path
         has_yref = config.get('has_yref', False)
 
-
         self.larch.eval(script.format(**config))
 
         if config is not None:
@@ -1719,16 +1716,16 @@ before clearing"""
         dtype = getattr(config, 'datatype', 'xydata')
         def install_multichans(config):
             yplotline = None
-            yarray = 'mu' if dtype == 'xas' else 'y'
+            yarray = 'mu' if dtype == 'xas' else 'ydat'
             for line in script.split('\n'):
                 if line.startswith("{group}.yplot ="):
                     yplotline = line.replace("{group}", "{ngroup}")
             mscript = ["{ngroup} = deepcopy({group})",
                        yplotline,
-                      "{ngroup}.mu = {ngroup}.{yarray} = {ngroup}.yplot[:]",
+                       # "{ngroup}.mu = {ngroup}.{yarray} = {ngroup}.yplot[:]",
                       "{ngroup}.plot_ylabel = '{ylabel}'" ]
             if dtype == 'xydata':
-                mscript.append("{ngroup}.scale = ptp({ngroup}.y+1.e-15)")
+                mscript.append("{ngroup}.scale = ptp({ngroup}.ydat+1.e-15)")
 
             i0 = '1.0'
             if multi_i0  < len(config['array_labels']):
@@ -1857,7 +1854,6 @@ before clearing"""
         dtype = getattr(dgroup, 'datatype', 'xydata')
         startpage = 'xasnorm' if dtype == 'xas' else 'xydata'
         ipage, pagepanel = self.get_nbpage(startpage)
-        # print("INSTALL GROUP ", dtype, startpage, ipage, pagepanel)
         self.nb.SetSelection(ipage)
         self.ShowFile(groupname=groupname, filename=filename,
                       process=process, plot=plot)
