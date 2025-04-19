@@ -95,7 +95,9 @@ def encode4js(obj):
       Larch Groups
       Larch Parameters
     """
-    setup_larchtypes()
+    global HAS_STATE,  LarchGroupTypes
+    if len(HAS_STATE) == 0 or len(LarchGroupTypes)==0:
+        setup_larchtypes()
     if obj is None:
         return None
     if isinstance(obj, np.ndarray):
