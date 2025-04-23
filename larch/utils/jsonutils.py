@@ -4,6 +4,7 @@
 """
 import json
 import io
+import sys
 import numpy as np
 import h5py
 from datetime import datetime
@@ -12,6 +13,7 @@ from pathlib import Path, PosixPath
 from types import ModuleType
 import importlib
 import logging
+from warnings import warn
 
 
 from lmfit import Parameter, Parameters
@@ -22,6 +24,8 @@ from lmfit.parameter import SCIPY_FUNCTIONS
 from larch import Group, isgroup
 from larch.utils.logging  import getLogger
 from larch.utils.logging  import _levels as LoggingLevels
+
+sys.setrecursionlimit(300)
 
 HAS_STATE = {}
 LarchGroupTypes = {}
@@ -191,6 +195,7 @@ def encode4js(obj):
                      'success', 'var_names'):
             out[attr] = encode4js(getattr(obj, attr, None))
         return out
+
     elif isinstance(obj, Parameters):
         out = {'__class__': 'Parameters'}
         o_ast = obj._asteval
@@ -214,9 +219,11 @@ def encode4js(obj):
                     out[par] = encode4js(getattr(obj, par))
         else:
             for item in dir(obj):
-                out[item] = encode4js(getattr(obj, item))
+                try:
+                    out[item] = encode4js(getattr(obj, item))
+                except RecursionError:
+                    warn(f"recursion error trying to save {item} for Group {obj.__name__}")
         return out
-
     elif isinstance(obj, ModuleType):
         return {'__class__': 'Module',  'value': obj.__name__}
     elif hasattr(obj, '__getstate__') and not callable(obj):
