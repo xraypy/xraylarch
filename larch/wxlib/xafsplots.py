@@ -428,7 +428,7 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, show_ek0=Fa
 
 def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
               eweight=0, show_k=True, new=True, delay_draw=False,
-              offset=0, win=1, _larch=None):
+              offset=0, show_ek0=False, win=1, _larch=None):
     """
     plot_chie(dgroup, emin=None, emax=None, label=None, new=True, win=1):
 
