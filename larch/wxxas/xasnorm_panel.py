@@ -27,7 +27,8 @@ from larch.wxlib.plotter import last_cursor_pos
 from .xas_dialogs import EnergyUnitsDialog
 from .taskpanel import TaskPanel, autoset_fs_increment, update_confval
 from .config import (make_array_choice, EDGES, ATSYMS, PREEDGE_FORMS,
-                     NNORM_CHOICES, NNORM_STRINGS, NORM_METHODS)
+                     NNORM_CHOICES, NNORM_STRINGS, NORM_METHODS,
+                     Plot_EnergyRanges)
 
 np.seterr(all='ignore')
 
@@ -40,13 +41,6 @@ Plot_Choices2 = make_array_choice(['noplot', 'prelines',
                                    'dmude', 'd2mude', 'i0',
                                    'mback_mu', 'norm'])
 
-Plot_EnergyRanges = {'full E range': None,
-                     'E0 -10:+50eV':  (-10, 50),
-                     'E0 -20:+80eV':  (-20, 80),
-                     'E0 -30:+120eV': (-30, 120),
-                     'E0 -50:+250eV': (-50, 250),
-                     'E0 -75:+400eV': (-75, 400),
-                     'E0 -100:+500eV': (-100, 500)}
 Plot_EnergyOffsets = ['0 (absolute energy)',
                       'E0 for Group',
                       'Nominal E0 (element/edge)']
