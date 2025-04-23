@@ -335,6 +335,17 @@ class XASController():
         self.filelist.Clear()
         self.init_larch_session()
 
+    def save_exafsplot_config(self, options):
+        self.larix_folder = Path(user_larchdir, 'larix').as_posix()
+        plot_conf = Path(user_larchdir, 'larix', 'larix_exafsplots.conf')
+        save_config(plot_conf, options)
+
+    def load_exafsplot_config(self):
+        plot_conf = Path(user_larchdir, 'larix', 'larix_exafsplots.conf')
+        conf = {}
+        if plot_conf.exists():
+            conf = read_config(plot_conf)
+        return conf
 
     def write_message(self, msg, panel=0):
         """write a message to the Status Bar"""
