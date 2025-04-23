@@ -11,51 +11,54 @@ import numpy as np
 from functools import partial
 
 from larch.math import index_of
-from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
-                         get_icon, SimpleText, pack, Button, HLine, Choice,
+from larch.wxlib import (FloatCtrl, FloatSpin, GridPanel,
+                         SimpleText, pack, Button, HLine, Choice,
                          TextCtrl, plotlabels, Check, CEN, RIGHT, LEFT)
+
 
 from larch.xafs.xafsutils import etok, ktoe, FT_WINDOWS
 from larch.xafs.pre_edge import find_e0
 
 from .xas_dialogs import EnergyUnitsDialog
 from .taskpanel import TaskPanel, update_confval
-from .config import ATHENA_CLAMPNAMES, PlotWindowChoices
+from .config import ATHENA_CLAMPNAMES, Plot_EnergyRanges
 
 np.seterr(all='ignore')
 
 # plot options:
-mu_bkg  = '\u03bC(E) + \u03bc0(E)'
+norm_bkg  = '\u03bC(E) + \u03bc0(E) (norm)'
+mu_bkg  = '\u03bC(E) + \u03bc0(E) (raw)'
 chie    = '\u03c7(E)'
+
 chik    = '\u03c7(k)'
-chikwin = '\u03c7(k) + Window(k)'
+chiq    = 'Filtered \u03c7(k)'
+chikq   = '\u03c7(k) + Filtered \u03c7(k)'
+
 chirmag = '|\u03c7(R)|'
 chirre  = 'Re[\u03c7(R)]'
 chirmr  = '|\u03c7(R)| + Re[\u03c7(R)]'
 wavelet = 'EXAFS wavelet'
-chir_w  = '\u03c7(R) + Window(R)'
-chiq    = 'Filtered \u03c7(k)'
-chikq   = '\u03c7(k) + Filtered \u03c7(k)'
-noplot  = '<no plot>'
 
-PlotOne_Choices = [mu_bkg, chie, chik, chikwin, chirmag, chirre, chirmr, wavelet,
-                   chir_w, chiq, chikq]
-PlotAlt_Choices = [noplot] + PlotOne_Choices
-PlotSel_Choices = [chie, chik, chirmag, chirre, chiq]
+PlotE_Choices = [norm_bkg, mu_bkg, chie]
+PlotK_Choices = [chik, chikq, chiq]
+PlotR_Choices = [chirmag, chirre, chirmr, wavelet]
+PlotWindowChoices = ['None', '2', '3', '4', '5']
+
+PLOT_SPACES = ['E', 'k', 'R']
 
 
-PlotCmds = {mu_bkg:  "plot_bkg({group:s}, show_ek0={show_ek0}",
-            chie:    "plot_chie({group:s}",
-            chik:    "plot_chik({group:s}, show_window=False, kweight={plot_kweight:.0f}",
-            chikwin: "plot_chik({group:s}, show_window=True, kweight={plot_kweight:.0f}",
-            chirmag: "plot_chir({group:s}, show_mag=True, show_real=False, rmax={plot_rmax:.1f}",
-            chirre:  "plot_chir({group:s}, show_mag=False, show_real=True, rmax={plot_rmax:.1f}",
-            chirmr:  "plot_chir({group:s}, show_mag=True, show_real=True, rmax={plot_rmax:.1f}",
-            chir_w:  "plot_chir({group:s}, show_mag=True, show_real=True, show_window=True, rmax={plot_rmax:.1f}",
-            chiq:    "plot_chiq({group:s}, show_chik=False",
-            chikq:   "plot_chiq({group:s}, show_chik=True",
-            wavelet: "plot_wavelet({group:s}, rmax={plot_rmax:.1f}",
-            noplot: None}
+PlotCmds = {mu_bkg:  "plot_bkg({group:s}, norm=False, ",
+            norm_bkg:  "plot_bkg({group:s}, norm=True, ",
+            chie:    "plot_chie({group:s}, ",
+            chik:    "plot_chik({group:s}, ",
+            chirmag: "plot_chir({group:s}, show_mag=True, show_real=False, ",
+            chirre:  "plot_chir({group:s}, show_mag=False, show_real=True, ",
+            chirmr:  "plot_chir({group:s}, show_mag=True, show_real=True, ",
+            chiq:    "plot_chiq({group:s}, show_chik=False, ",
+            chikq:   "plot_chiq({group:s}, show_chik=True, ",
+            wavelet: "plot_wavelet({group:s}, "
+}
+
 
 
 CLAMPLIST = ('0', '1', '2', '5', '10', '20', '50', '100', '200', '500', '1000',
@@ -72,9 +75,44 @@ xftr_cmd = """xftr({group:s}, rmin={fft_rmin: .3f}, rmax={fft_rmax: .3f},
       dr={fft_dr: .3f}, window='{fft_rwindow:s}')"""
 
 
+NAMED_PLOTOPTS = {'default': {'plot1_space': 'k',
+                              'plot2_space': 'R',
+                              'plot_voffset': 0.0,
+                              'plot_kweight': 2,
+                              'plot_rmax': 8.0,
+                              'plot2_win': 'None',
+                              'plot_echoice': 'norm+bkg',
+                              'plot_erange': 'full E Range',
+                              'plot_kchoice': 'chik',
+                              'plot_rchoice': 'mag_chir',
+                              'plot_show_kwin': True,
+                              'plot_show_rwin': False}
+                              }
+
+_cnf = copy.deepcopy(NAMED_PLOTOPTS['default'])
+_cnf['plot2_win'] = '2'
+_cnf['plot1_space'] = 'k'
+_cnf['plot2_space'] = 'R'
+NAMED_PLOTOPTS['k and R space'] = _cnf
+
+_cnf = copy.deepcopy(NAMED_PLOTOPTS['default'])
+_cnf['plot2_win'] = '2'
+_cnf['plot1_space'] = 'E'
+_cnf['plot2_space'] = 'R'
+_cnf['plot_erange'] = 'E0 -50:+250eV'
+
+NAMED_PLOTOPTS['E and R space'] = _cnf
+
+
 class EXAFSPanel(TaskPanel):
     """EXAFS Panel"""
     def __init__(self, parent, controller, **kws):
+
+        self.plot_opts = {}
+        for key, value in NAMED_PLOTOPTS.items():
+            self.plot_opts[key] = value
+        self.plot_opts.update(controller.load_exafsplot_config())
+
         TaskPanel.__init__(self, parent, controller, panel='exafs', **kws)
 
         self.skip_process = False
@@ -83,77 +121,133 @@ class EXAFSPanel(TaskPanel):
         self.last_process_fft = {}
         self.last_process_time = time.time() - 5000
 
+
     def build_display(self):
-        panel = self.panel
         wids = self.wids
         self.skip_process = True
 
-        wids['plotone_op'] = Choice(panel, choices=PlotOne_Choices,
-                                    action=self.onPlotOne, size=(175, -1))
-        wids['plotalt_op'] = Choice(panel, choices=PlotAlt_Choices,
-                                    action=self.onPlotOne, size=(175, -1))
-        wids['plotsel_op'] = Choice(panel, choices=PlotSel_Choices,
-                                    action=self.onPlotSel, size=(175, -1))
+        ppanel = GridPanel(self, ncols=7, nrows=10, pad=2, itemstyle=LEFT)
+        wids['plot_one'] = Button(ppanel, 'Plot Current Group', size=(175, -1),
+                              action=self.onPlotOne)
 
-        wids['plotone_op'].SetStringSelection(chik)
-        wids['plotsel_op'].SetStringSelection(chik)
-        wids['plotalt_op'].SetStringSelection(noplot)
+        wids['plot_sel'] = Button(ppanel, 'Plot Selected Groups', size=(175, -1),
+                              action=self.onPlot)
 
-        plot_one = Button(panel, 'Plot Current Group', size=(175, -1),
-                          action=self.onPlotOne)
+        wids['plot_voffset'] = FloatSpin(ppanel, value=0, digits=2, increment=0.25,
+                                         action=self.onProcess, size=(125, -1))
 
-        plot_sel = Button(panel, 'Plot Selected Groups', size=(175, -1),
-                          action=self.onPlotSel)
-
-        ## saveconf = Button(panel, 'Save as Default Settings', size=(200, -1),
-        #                  action=self.onSaveConfigBtn)
-
-        wids['plot_voffset'] = FloatSpin(panel, value=0, digits=2, increment=0.25,
-                                         action=self.onProcess)
-        wids['plot_kweight'] = FloatSpin(panel, value=2, digits=1, increment=1,
-                                         action=self.onProcess,
+        wids['plot_kweight'] = FloatSpin(ppanel, value=2, digits=1, increment=1,
+                                         action=self.onProcess, size=(90, -1),
                                          min_val=0, max_val=5)
-        wids['plot_kweight_alt'] = FloatSpin(panel, value=2, digits=1, increment=1,
-                                             action=self.onProcess,
-                                             min_val=0, max_val=5)
 
-        wids['plot_rmax'] = FloatSpin(panel, value=8, digits=1, increment=0.5,
-                                             action=self.onProcess,
-                                             min_val=2, max_val=20)
-        wids['plot_win']  = Choice(panel, size=(60, -1), choices=PlotWindowChoices,
+        wids['plot_rmax'] = FloatSpin(ppanel, value=8, digits=1, increment=0.5,
+                                      action=self.onProcess, size=(90, -1),
+                                      min_val=2, max_val=25)
+
+        wids['plot2_win']  = Choice(ppanel, size=(125, -1), choices=PlotWindowChoices,
                                    action=self.onProcess)
-        wids['plot_win'].SetStringSelection('2')
+        wids['plot2_win'].SetStringSelection('None')
+
+        wids['plot_opt']  = Choice(ppanel,  choices=list(self.plot_opts),
+                                    size=(175, -1), action=self.onPlotOptSel)
+
+        wids['plot_opt'].SetToolTip('Reuse Saved Plot Choices')
+
+        wids['plot_opt_save'] = TextCtrl(ppanel, value='', size=(175, -1),
+                                             action=self.onPlotOptSave)
+
+        wids['plot_echoice'] = Choice(ppanel, choices=PlotE_Choices,
+                                      action=self.onPlot, size=(175, -1))
+        wids['plot_erange'] = Choice(ppanel, choices=list(Plot_EnergyRanges),
+                                         action=self.onPlot,
+                                         size=(125, -1))
+
+        wids['plot_kchoice'] = Choice(ppanel, choices=PlotK_Choices,
+                                      action=self.onPlot, size=(175, -1))
+
+        wids['plot_rchoice'] = Choice(ppanel, choices=PlotR_Choices,
+                                      action=self.onPlot, size=(175, -1))
+
+        self.wids['plot1_space'] = wx.RadioBox(ppanel, size=(175, -1), name='plot1_space',
+                                             choices=PLOT_SPACES,
+                                             style=wx.RA_SPECIFY_COLS)
+        self.wids['plot1_space'].SetSelection(1)
+        self.wids['plot1_space'].Bind(wx.EVT_RADIOBOX, self.onPlot)
+        self.wids['plot2_space'] = wx.RadioBox(ppanel, size=(175, -1), name='plot2_space',
+                                             choices=PLOT_SPACES,
+                                             style=wx.RA_SPECIFY_COLS)
+        self.wids['plot2_space'].SetSelection(2)
+        self.wids['plot2_space'].Bind(wx.EVT_RADIOBOX, self.onPlot)
+
+        self.wids['plot_show_kwin'] = Check(ppanel, default=False, label='show FT Window',
+                                            action=self.onPlot)
+        self.wids['plot_show_rwin'] = Check(ppanel, default=False, label='show FT Window',
+                                            action=self.onPlot)
+
+        def padd_text(text, dcol=1, newrow=True):
+            ppanel.Add(SimpleText(ppanel, text), dcol=dcol, newrow=newrow)
+
+        ppanel.Add(SimpleText(ppanel, 'EXAFS Data Reduction and Fourier Transforms',
+                             size=(450, -1),  **self.titleopts), style=LEFT, dcol=6)
+
+        ppanel.Add(wids['plot_one'], newrow=True)
+        ppanel.Add(wids['plot_sel'])
+
+        padd_text('Main Plot: ', newrow=True)
+        ppanel.Add(self.wids['plot1_space'])
+        padd_text('Vertical offset: ', newrow=False)
+        ppanel.Add(wids['plot_voffset'], dcol=2)
+
+        padd_text('Second Plot: ', newrow=True)
+        ppanel.Add(self.wids['plot2_space'])
+        padd_text('Window: ', newrow=False)
+        ppanel.Add(self.wids['plot2_win'], dcol=2)
+
+        padd_text('Energy : ', newrow=True)
+        ppanel.Add(wids['plot_echoice'])
+        padd_text('Energy Range: ', newrow=False)
+        ppanel.Add(wids['plot_erange'], dcol=2)
+
+
+        padd_text('k: ', newrow=True)
+        ppanel.Add(wids['plot_kchoice'])
+        padd_text('K weight: ', newrow=False)
+        ppanel.Add(wids['plot_kweight'])
+        ppanel.Add(wids['plot_show_kwin'])
+
+        padd_text('R: ', newrow=True)
+        ppanel.Add(wids['plot_rchoice'])
+        padd_text('R Max: ', newrow=False)
+        ppanel.Add(wids['plot_rmax'])
+        ppanel.Add(wids['plot_show_rwin'])
+
+        padd_text('Use Saved Plot Options: ', newrow=True)
+        ppanel.Add(wids['plot_opt'])
+        padd_text('Save Options: ', newrow=False)
+        ppanel.Add(wids['plot_opt_save'], dcol=2)
+        ppanel.pack()
+
+
+        ####
+        panel = self.panel
+
+        def add_text(text, dcol=1, newrow=True):
+            panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
 
         ek0_panel = wx.Panel(panel)
         opts = dict(digits=2, increment=0.1, min_val=0, action=self.onProcess)
         wids['ek0'] = FloatSpin(ek0_panel, **opts)
         wids['show_ek0'] = Check(ek0_panel, default=True, label='show?',
                                  action=self.onShowEk0)
-        sx = wx.BoxSizer(wx.HORIZONTAL)
-        sx.Add(self.wids['ek0'], 0, LEFT, 4)
-        sx.Add(self.wids['show_ek0'], 0, LEFT, 4)
-        pack(ek0_panel, sx)
-
-        wids['push_e0'] = Button(panel, 'Use as Normalization E0', size=(190, -1),
+        wids['push_e0'] = Button(ek0_panel, 'Use as Normalization E0', size=(190, -1),
                                  action=self.onPushE0)
         wids['push_e0'].SetToolTip('Use this value for E0 in the Normalization Tab')
 
-
-        #
-        wids['plotopt_name'] = TextCtrl(panel, 'kspace, kw=2', size=(150, -1),
-                                        action=self.onPlotOptSave,
-                                        act_on_losefocus=False)
-        wids['plotopt_name'].SetToolTip('Name this set of Plot Choices')
-
-        self.plotopt_saves = {'kspace, kw=2': {'plotone_op': chik, 'plotsel_op': chik,
-                                          'plotalt_op': noplot, 'plot_voffset': 0.0,
-                                          'plot_kweight': 2, 'plot_kweight_alt': 2,
-                                          'plot_rmax': 8}}
-
-        wids['plotopt_sel']  = Choice(panel, size=(150, -1),
-                                      choices=list(self.plotopt_saves.keys()),
-                                      action=self.onPlotOptSel)
-
+        sx = wx.BoxSizer(wx.HORIZONTAL)
+        sx.Add(self.wids['ek0'], 0, LEFT, 4)
+        sx.Add(self.wids['show_ek0'], 0, LEFT, 4)
+        sx.Add(self.wids['push_e0'], 0, LEFT, 4)
+        pack(ek0_panel, sx)
 
         opts['max_val'] = 6
         opts['action'] = self.onRbkg
@@ -187,7 +281,6 @@ class EXAFSPanel(TaskPanel):
         wids['fft_kwindow'] = Choice(panel, choices=list(FT_WINDOWS),
                                      action=self.onProcess, size=(125, -1))
 
-
         wids['fft_rwindow'] = Choice(panel, choices=list(FT_WINDOWS),
                                      action=self.onProcess, size=(125, -1))
         wids['fft_rwindow'].SetStringSelection('Hanning')
@@ -196,48 +289,14 @@ class EXAFSPanel(TaskPanel):
         self.wids['is_frozen'] = Check(panel, default=False, label='Freeze Group',
                                        action=self.onFreezeGroup)
 
-        def add_text(text, dcol=1, newrow=True):
-            panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
-
         def CopyBtn(name):
             return Button(panel, 'Copy', size=(60, -1),
                           action=partial(self.onCopyParam, name))
         copy_all = Button(panel, 'Copy All Parameters', size=(175, -1),
                           action=partial(self.onCopyParam, 'all'))
 
-
-        panel.Add(SimpleText(panel, 'EXAFS Data Reduction and Fourier Transforms',
-                             size=(350, -1),  **self.titleopts), style=LEFT, dcol=6)
-
-        panel.Add(plot_sel, newrow=True)
-        panel.Add(self.wids['plotsel_op'], dcol=2)
-
-        add_text('Vertical offset: ', newrow=False)
-        panel.Add(wids['plot_voffset'],  style=RIGHT)
-
-        panel.Add(plot_one, newrow=True)
-        panel.Add(self.wids['plotone_op'], dcol=2)
-
-        add_text('Plot k weight: ', newrow=False)
-        panel.Add(wids['plot_kweight'], style=RIGHT)
-
-        add_text('Add Second Plot: ', newrow=True)
-        panel.Add(self.wids['plotalt_op'], dcol=2)
-        add_text('Plot2 k weight: ', newrow=False)
-        panel.Add(wids['plot_kweight_alt'], style=RIGHT)
-        add_text('Window for Second Plot: ', newrow=True)
-        panel.Add(self.wids['plot_win'], dcol=2)
-        add_text('Plot R max: ', newrow=False)
-        panel.Add(wids['plot_rmax'], style=RIGHT)
-
-        add_text('Save Plot Options as: ', newrow=True)
-        panel.Add(self.wids['plotopt_name'], dcol=2)
-
-        add_text('Use Saved Plot Options: ', dcol=1, newrow=False)
-        panel.Add(self.wids['plotopt_sel'], dcol=1)
-
-
-        panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
+        panel.Add((10, 10))
+        panel.Add(HLine(panel, size=(600, 3)), dcol=8, newrow=True)
 
         panel.Add(SimpleText(panel, ' Background subtraction', size=(200, -1),
                              **self.titleopts), dcol=2, style=LEFT, newrow=True)
@@ -246,8 +305,7 @@ class EXAFSPanel(TaskPanel):
 
 
         add_text('E k=0: ')
-        panel.Add(ek0_panel, dcol=2)
-        panel.Add(wids['push_e0'], dcol=1)
+        panel.Add(ek0_panel, dcol=3)
         panel.Add(CopyBtn('ek0'), style=RIGHT)
 
         add_text('R bkg: ')
@@ -272,7 +330,7 @@ class EXAFSPanel(TaskPanel):
         panel.Add( wids['bkg_clamphi'])
         panel.Add(CopyBtn('bkg_clamp'), style=RIGHT)
 
-        panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
+        panel.Add(HLine(panel, size=(600,3)), dcol=8, newrow=True)
 
         panel.Add(SimpleText(panel, ' Fourier transform (k->R) ', size=(275, -1),
                              **self.titleopts), dcol=2, style=LEFT, newrow=True)
@@ -301,7 +359,7 @@ class EXAFSPanel(TaskPanel):
         panel.Add((10, 10), dcol=2)
         panel.Add(CopyBtn('fft_rmaxout'), style=RIGHT)
 
-        panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
+        panel.Add(HLine(panel, size=(600, 3)), dcol=8, newrow=True)
 
         panel.Add(SimpleText(panel, ' Back Fourier transform (R->q) ', size=(275, -1),
                              **self.titleopts), dcol=2, style=LEFT, newrow=True)
@@ -328,10 +386,20 @@ class EXAFSPanel(TaskPanel):
         panel.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add((10, 10), 0, LEFT, 3)
-        sizer.Add(panel, 1, LEFT, 3)
+        sizer.Add((5, 5), 0, LEFT, 1)
+        sizer.Add(ppanel, 0, LEFT, 1)
+        sizer.Add(panel, 0, LEFT, 1)
         pack(self, sizer)
         self.skip_process = False
+
+    def onPlotSpace(self, event=None):
+        value = event.GetString()
+        evid = event.GetId()
+        if evid == self.wids['plot1_space'].GetId():
+            print("plot1: ", value)
+        elif evid == self.wids['plot1_space'].GetId():
+            print("plot2: ", value)
+        self.onPlot()
 
     def get_config(self, dgroup=None):
         """get and set processing configuration for a group"""
@@ -470,17 +538,22 @@ class EXAFSPanel(TaskPanel):
                      'bkg_kweight', 'fft_kmin', 'fft_kmax',
                      'fft_kweight', 'fft_dk',  'fft_rmaxout',
                      'fft_rmin', 'fft_rmax', 'fft_dr',
-                     'plot_kweight', 'plot_rmax',
-                     'plot_kweight_alt', 'plot_voffset'):
+                     'plot_voffset', 'plot_kweight', 'plot_rmax'):
             conf[attr] = wids[attr].GetValue()
 
-        for attr in ('bkg_clamplo', 'bkg_clamphi', 'plot_win'):
-            conf[attr] = int(wids[attr].GetStringSelection())
+        for attr in ('bkg_clamplo', 'bkg_clamphi', 'fft_kwindow',
+                     'fft_rwindow', 'plot2_win', 'plot_echoice',
+                     'plot_erange', 'plot_kchoice', 'plot_rchoice'):
+            val = wids[attr].GetStringSelection()
+            if 'clamp' in attr:
+                val = int(val)
+            conf[attr] = val
 
-        for attr in ('fft_kwindow', 'fft_rwindow', 'plotone_op',
-                     'plotsel_op', 'plotalt_op'):
-            conf[attr] = wids[attr].GetStringSelection()
-        conf['show_ek0'] = wids['show_ek0'].IsChecked()
+        for attr in ('show_ek0', 'plot_show_kwin', 'plot_show_rwin'):
+            conf[attr] = wids[attr].IsChecked()
+
+        for attr in ('plot1_space', 'plot2_space'):
+            conf[attr] = wids[attr].GetString(wids[attr].GetSelection())
 
         time.sleep(0.001)
         self.skip_process = skip_save
@@ -638,44 +711,61 @@ class EXAFSPanel(TaskPanel):
 
         setattr(dgroup.config, self.configname, conf)
 
-    def plot(self, dgroup=None):
-        if self.skip_plotting:
+    def onPlotOptSave(self, value, event=None):
+        name = value.strip()
+        if len(name) < 1:
             return
-        self.onPlotOne(dgroup=dgroup)
-
-
-    def onPlotOptSave(self, name=None, event=None):
+        wids = self.wids
         data = {}
-        if name is None or len(name) < 1:
-            name = f"view {len(self.plotopt_saves)+1}"
+        for attr in ('plot1_space', 'plot2_space'):
+            data[attr] = wids[attr].GetString(wids[attr].GetSelection())
 
-        name = name.strip()
-        for attr in ('plot_voffset', 'plot_kweight',
-                     'plot_kweight_alt', 'plot_rmax'):
-            data[attr] = self.wids[attr].GetValue()
+        for attr in ('plot_voffset', 'plot_kweight', 'plot_rmax'):
+            data[attr] = wids[attr].GetValue()
 
-        for attr in ('plotone_op', 'plotsel_op', 'plotalt_op'):
-            data[attr] = self.wids[attr].GetStringSelection()
-        self.plotopt_saves[name] = data
+        for attr in ('plot2_win', 'plot_echoice', 'plot_erange',
+                     'plot_kchoice', 'plot_rchoice'):
+            data[attr] = wids[attr].GetStringSelection()
 
-        choices = list(reversed(self.plotopt_saves.keys()))
-        self.wids['plotopt_sel'].SetChoices(choices)
-        self.wids['plotopt_sel'].SetSelection(0)
+        for attr in ('plot_show_kwin', 'plot_show_rwin'):
+            data[attr] = wids[attr].IsChecked()
 
+        self.plot_opts[name] = data
+        wids['plot_opt'].Clear()
+        wids['plot_opt'].SetChoices(list(self.plot_opts))
+        wids['plot_opt'].SetStringSelection(name)
+        wids['plot_opt_save'].SetValue('')
+        self.controller.save_exafsplot_config(self.plot_opts)
 
     def onPlotOptSel(self, event=None):
         name =  event.GetString()
-        data = self.plotopt_saves.get(name, None)
-        if data is not None:
-            for attr in ('plot_voffset', 'plot_kweight',
-                         'plot_kweight_alt', 'plot_rmax'):
-                self.wids[attr].SetValue(data[attr])
+        data = NAMED_PLOTOPTS['default']
+        data.update(self.plot_opts.get(name, {}))
+        wids = self.wids
+        for attr in ('plot1_space', 'plot2_space'):
+            wids[attr].SetSelection(PLOT_SPACES.index(data[attr]))
 
-            for attr in ('plotone_op', 'plotsel_op', 'plotalt_op'):
-                self.wids[attr].SetStringSelection(data[attr])
+        for attr in ('plot_voffset', 'plot_kweight', 'plot_rmax'):
+            wids[attr].SetValue(float(data[attr]))
 
-            self.plot()
+        for attr in ('plot2_win', 'plot_echoice', 'plot_erange',
+                     'plot_kchoice', 'plot_rchoice'):
+            wids[attr].SetStringSelection(data[attr])
 
+        for attr in ('plot_show_kwin', 'plot_show_rwin'):
+            wids[attr].SetValue(data[attr])
+
+        self.skip_plotting = False
+        self.onPlot()
+
+
+    def onPlot(self, event=None, dgroup=None):
+        if self.skip_plotting:
+            return
+        if dgroup is None:
+            dgroup = self.controller.get_group()
+        plotter = self.onPlotSel if self.last_plot=='selected' else self.onPlotOne
+        plotter(dgroup=dgroup)
 
     def onPlotOne(self, evt=None, dgroup=None):
         if self.skip_plotting:
@@ -685,22 +775,37 @@ class EXAFSPanel(TaskPanel):
             self.dgroup = dgroup
             conf['group'] = dgroup.groupname
         self.process(dgroup=self.dgroup)
-        conf['title'] = '"%s"' % self.dgroup.filename
 
-        # print(" onPlotOne ", conf['plotone_op'])
-        cmd = PlotCmds[conf['plotone_op']] + ", win=1, title={title:s})"
-        # 2nd plot
-        cmd2 =  PlotCmds[conf['plotalt_op']]
-        if cmd2 is not None:
-            cmd2 = cmd2.replace('plot_kweight', 'plot_kweight_alt')
-            cmd2 = cmd2 + ", win={plot_win:d}, title={title:s})"
-            cmd = "%s\n%s" % (cmd, cmd2)
-            self.controller.get_display(win=2)
+        wids = self.wids
+        def get_plotcmd(space, win='1'):
+            opts = {'win': win, 'title': f"'{self.dgroup.filename}'"}
+            if space == 'E':
+                cmd = PlotCmds[conf['plot_echoice']]
+                opts['show_ek0'] = conf['show_ek0']
+                erange = Plot_EnergyRanges[conf['plot_erange']]
+                if erange is not None:
+                    opts['emin'] = erange[0]
+                    opts['emax'] = erange[1]
+            elif space == 'k':
+                cmd = PlotCmds[conf['plot_kchoice']]
+                opts['show_window'] = conf['plot_show_kwin']
+                opts['kweight'] = conf['plot_kweight']
+            elif space == 'R':
+                cmd = PlotCmds[conf['plot_rchoice']]
+                opts['show_window'] = conf['plot_show_rwin']
+                opts['rmax'] = conf['plot_rmax']
 
-        # print(" onPlotOne ",   cmd.format(**conf))
+            opts = [f"{key}={val}" for key, val in opts.items()]
+            return cmd + ', '.join(opts) + ')'
+
+        cmd = get_plotcmd(conf['plot1_space'], win='1')
         self.larch_eval(cmd.format(**conf))
-        self.last_plot = 'one'
 
+        if conf['plot2_win'] not in ('None', None):
+            cmd = get_plotcmd(conf['plot2_space'], win=conf['plot2_win'])
+            self.larch_eval(cmd.format(**conf))
+
+        self.last_plot = 'one'
         self.controller.set_focus()
 
 
