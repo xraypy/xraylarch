@@ -81,6 +81,15 @@ NNORM_STRINGS = {int(v): k for k, v in NNORM_CHOICES.items()}
 NORM_METHODS = ('polynomial', 'mback')
 PREEDGE_FORMS = {'Constant': 0, 'Linear': 1}
 
+Plot_EnergyRanges = {'full E range': None,
+                     'E0 -10:+50eV':  (-10, 50),
+                     'E0 -20:+80eV':  (-20, 80),
+                     'E0 -30:+120eV': (-30, 120),
+                     'E0 -50:+250eV': (-50, 250),
+                     'E0 -75:+400eV': (-75, 400),
+                     'E0 -100:+500eV': (-100, 500)}
+
+
 ATHENA_CLAMPNAMES = {'none': 0, 'slight': 1, 'weak': 5, 'medium': 20,
                      'strong': 100, 'rigid': 500}
 
