@@ -680,7 +680,8 @@ def plot_chiq(dgroup, kweight=None, kmax=None, show_chik=False, label=None,
 
 
 def plot_wavelet(dgroup, show_mag=True, show_real=False, show_imag=False,
-                 rmax=None, kmax=None, kweight=None, title=None, win=1, _larch=None):
+                 rmax=None, kmax=None, kweight=None, title=None, win=1,
+                 _larch=None, **kws):
     """
     plot_wavelet(dgroup, show_mag=True, show_real=False, show_imag=False,
               rmax=None, kmax=None, kweight=None, title=None, win=1)
