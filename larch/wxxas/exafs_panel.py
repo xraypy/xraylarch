@@ -839,14 +839,23 @@ class EXAFSPanel(TaskPanel):
             conf['label'] = f"'{dgroup.filename}'"
             self.process(dgroup=dgroup)
 
-            cmd = self._get_plotcmd(conf, space=1,
+            cmds.append(self._get_plotcmd(conf, space=1,
                                        delay_draw=True, new=(i==0),
                                        offset=i*offset,
                                        label=f"'{dgroup.filename}'",
-                                       title=title)
-            cmds.append(cmd)
+                                       title=title))
+
+            if conf['plot2_win'] not in ('None', None):
+                cmds.append(self._get_plotcmd(conf, space=2,
+                                       delay_draw=True, new=(i==0),
+                                       offset=i*offset,
+                                       label=f"'{dgroup.filename}'",
+                                       title=title))
+
 
         cmds.append("redraw(win=1, show_legend=True)")
+        if conf['plot2_win'] not in ('None', None):
+            cmds.append("redraw(win=2, show_legend=True)")
         self.larch_eval('\n'.join(cmds))
         self.last_plot = 'selected'
 
