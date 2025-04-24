@@ -614,7 +614,7 @@ class LarixFrame(wx.Frame):
         pass
 
     def ShowFile(self, evt=None, groupname=None, process=True,
-                 filename=None, plot=True, **kws):
+                 filename=None, force_plot=False, **kws):
         if filename is None and evt is not None:
             filename = str(evt.GetString())
 
@@ -656,16 +656,15 @@ class LarixFrame(wx.Frame):
 
         self.controller.group = dgroup
         self.controller.groupname = groupname
-
         if process:
             pagepanel.fill_form(dgroup)
-            plot_on_choose = plot
-            if 'plot_on_choose' in pagepanel.wids:
+            plot_on_choose = force_plot
+            if not force_plot and 'plot_on_choose' in pagepanel.wids:
                 plot_on_choose = pagepanel.wids['plot_on_choose'].IsChecked()
             if plot_on_choose:
                 pagepanel.skip_process = False
                 pagepanel.process(dgroup=dgroup)
-                if plot and hasattr(pagepanel, 'plot'):
+                if force_plot and hasattr(pagepanel, 'plot'):
                     pagepanel.plot(dgroup=dgroup)
                 pagepanel.skip_process = False
 
@@ -1491,13 +1490,14 @@ before clearing"""
                     cmd = mscript.format(group=gname, ngroup=ngroup,
                                          iy1=mchan, iy2=multi_i0, ylabel=ylabel)
                     self.larch.eval(cmd)
-                    self.install_group(ngroup, dname, source=path, journal=njournal)
+                    self.install_group(ngroup, dname, source=path, journal=njournal,
+                                       force_plot=False)
 
 
         cur_panel.skip_plotting = False
 
         if first_group is not None:
-            self.ShowFile(groupname=first_group, process=True, plot=True)
+            self.ShowFile(groupname=first_group, process=True, force_plot=True)
         self.write_message("read %d datasets from %s" % (len(scanlist), path))
         self.larch.eval('del _specfile')
 
@@ -1532,13 +1532,15 @@ before clearing"""
             displayname = f"{fname:s} scan{scan:s} {yname:s}"
             jrnl = {'source_desc': f"{fname:s}: scan{scan:s} {yname:s}"}
             dgroup = self.install_group(gname, displayname,
-                                        process=True, plot=False, extra_sums=extra_sums,
+                                        process=True,
+                                        force_plot=False,
+                                        extra_sums=extra_sums,
                                         source=displayname,
                                         journal=jrnl)
         cur_panel.skip_plotting = False
 
         if first_group is not None:
-            self.ShowFile(groupname=first_group, process=True, plot=True)
+            self.ShowFile(groupname=first_group, process=True, force_plot=True)
         self.write_message("read %d datasets from %s" % (len(scanlist), path))
         self.larch.eval('del _data_source')
 
@@ -1649,7 +1651,7 @@ before clearing"""
         plot_first = True
         if len(labels) > 0:
             gname = self.controller.file_groups[labels[0]]
-            self.ShowFile(groupname=gname, process=True, plot=plot_first)
+            self.ShowFile(groupname=gname, process=True, force_plot=plot_first)
             plot_first = False
         self.write_message("read %d datasets from %s" % (len(namelist), path))
         self.last_athena_file = path
@@ -1746,7 +1748,8 @@ before clearing"""
                                                 iy1=mchan, iy2=multi_i0,
                                                 yarray=yarray)
                 self.larch.eval(cmd)
-                self.install_group(ngroup, fname, source=path, journal=njournal)
+                self.install_group(ngroup, fname, source=path, journal=njournal,
+                                   force_plot=False)
 
         if len(multi_chans) > 0:
             install_multichans(config)
@@ -1838,7 +1841,7 @@ before clearing"""
             RebinDataDialog(self, self.controller).Show()
 
     def install_group(self, groupname, filename=None, source=None, journal=None,
-                      process=True, plot=True):
+                      process=True, force_plot=True):
         """add groupname / filename to list of available data groups"""
         if isinstance(groupname, Group):
             dgroup = groupname
@@ -1856,7 +1859,7 @@ before clearing"""
         ipage, pagepanel = self.get_nbpage(startpage)
         self.nb.SetSelection(ipage)
         self.ShowFile(groupname=groupname, filename=filename,
-                      process=process, plot=plot)
+                      process=process, force_plot=force_plot)
 
     ##
     def get_recent_session_menu(self):
