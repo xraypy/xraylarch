@@ -26,10 +26,9 @@ from .config import ATHENA_CLAMPNAMES, Plot_EnergyRanges
 np.seterr(all='ignore')
 
 # plot options:
-norm_bkg  = '\u03bC(E) + \u03bc0(E) (norm)'
-mu_bkg  = '\u03bC(E) + \u03bc0(E) (raw)'
+norm_bkg = '\u03bC(E) + \u03bc0(E) (norm)'
+mu_bkg   = '\u03bC(E) + \u03bc0(E) (raw)'
 chie    = '\u03c7(E)'
-
 chik    = '\u03c7(k)'
 chiq    = 'Filtered \u03c7(k)'
 chikq   = '\u03c7(k) + Filtered \u03c7(k)'
@@ -125,13 +124,13 @@ class EXAFSPanel(TaskPanel):
     def build_display(self):
         wids = self.wids
         self.skip_process = True
-
+        defaults = self.get_defaultconfig()
         ppanel = GridPanel(self, ncols=7, nrows=10, pad=2, itemstyle=LEFT)
         wids['plot_one'] = Button(ppanel, 'Plot Current Group', size=(175, -1),
                               action=self.onPlotOne)
 
         wids['plot_sel'] = Button(ppanel, 'Plot Selected Groups', size=(175, -1),
-                              action=self.onPlot)
+                              action=self.onPlotSel)
 
         wids['plot_voffset'] = FloatSpin(ppanel, value=0, digits=2, increment=0.25,
                                          action=self.onProcess, size=(125, -1))
@@ -168,21 +167,24 @@ class EXAFSPanel(TaskPanel):
         wids['plot_rchoice'] = Choice(ppanel, choices=PlotR_Choices,
                                       action=self.onPlot, size=(175, -1))
 
-        self.wids['plot1_space'] = wx.RadioBox(ppanel, size=(175, -1), name='plot1_space',
+        wids['plot1_space'] = wx.RadioBox(ppanel, size=(175, -1), name='plot1_space',
+                                          choices=PLOT_SPACES,
+                                          style=wx.RA_SPECIFY_COLS)
+        wids['plot1_space'].SetSelection(1)
+        wids['plot1_space'].Bind(wx.EVT_RADIOBOX, self.onPlot)
+        wids['plot2_space'] = wx.RadioBox(ppanel, size=(175, -1), name='plot2_space',
                                              choices=PLOT_SPACES,
                                              style=wx.RA_SPECIFY_COLS)
-        self.wids['plot1_space'].SetSelection(1)
-        self.wids['plot1_space'].Bind(wx.EVT_RADIOBOX, self.onPlot)
-        self.wids['plot2_space'] = wx.RadioBox(ppanel, size=(175, -1), name='plot2_space',
-                                             choices=PLOT_SPACES,
-                                             style=wx.RA_SPECIFY_COLS)
-        self.wids['plot2_space'].SetSelection(2)
-        self.wids['plot2_space'].Bind(wx.EVT_RADIOBOX, self.onPlot)
+        wids['plot2_space'].SetSelection(2)
+        wids['plot2_space'].Bind(wx.EVT_RADIOBOX, self.onPlot)
+        wids['plot_show_kwin'] = Check(ppanel, default=False, label='show k->R FT Window',
+                                            action=self.onPlot)
+        wids['plot_show_rwin'] = Check(ppanel, default=False, label='show R->q FT Window',
+                                            action=self.onPlot)
 
-        self.wids['plot_show_kwin'] = Check(ppanel, default=False, label='show FT Window',
-                                            action=self.onPlot)
-        self.wids['plot_show_rwin'] = Check(ppanel, default=False, label='show FT Window',
-                                            action=self.onPlot)
+        wids['plot_on_choose'] = Check(ppanel, default=defaults.get('auto_plot', True),
+                                label='Auto-Plot when choosing Current Group?')
+
 
         def padd_text(text, dcol=1, newrow=True):
             ppanel.Add(SimpleText(ppanel, text), dcol=dcol, newrow=newrow)
@@ -192,6 +194,7 @@ class EXAFSPanel(TaskPanel):
 
         ppanel.Add(wids['plot_one'], newrow=True)
         ppanel.Add(wids['plot_sel'])
+        ppanel.Add(wids['plot_on_choose'], dcol=3)
 
         padd_text('Main Plot: ', newrow=True)
         ppanel.Add(self.wids['plot1_space'])
@@ -200,7 +203,7 @@ class EXAFSPanel(TaskPanel):
 
         padd_text('Second Plot: ', newrow=True)
         ppanel.Add(self.wids['plot2_space'])
-        padd_text('Window: ', newrow=False)
+        padd_text('Plot Window: ', newrow=False)
         ppanel.Add(self.wids['plot2_win'], dcol=2)
 
         padd_text('Energy : ', newrow=True)
@@ -393,12 +396,6 @@ class EXAFSPanel(TaskPanel):
         self.skip_process = False
 
     def onPlotSpace(self, event=None):
-        value = event.GetString()
-        evid = event.GetId()
-        if evid == self.wids['plot1_space'].GetId():
-            print("plot1: ", value)
-        elif evid == self.wids['plot1_space'].GetId():
-            print("plot2: ", value)
         self.onPlot()
 
     def get_config(self, dgroup=None):
@@ -521,7 +518,7 @@ class EXAFSPanel(TaskPanel):
 
         self.skip_process = False
 
-    def read_form(self, dgroup=None, as_copy=False):
+    def read_form(self, dgroup=None, as_copy=False, save=True):
         "read form, return dict of values"
         skip_save = self.skip_process
         self.skip_process = True
@@ -529,7 +526,8 @@ class EXAFSPanel(TaskPanel):
             dgroup = self.controller.get_group()
         self.dgroup = dgroup
 
-        conf = self.get_config()
+        conf = {}
+        conf.update(self.get_config())
         if dgroup is not None:
             conf['group'] = dgroup.groupname
 
@@ -559,7 +557,7 @@ class EXAFSPanel(TaskPanel):
         self.skip_process = skip_save
         if as_copy:
             conf = copy.deepcopy(conf)
-        if dgroup is not None:
+        if save and dgroup is not None:
             setattr(dgroup.config, self.configname, conf)
         return conf
 
@@ -567,7 +565,7 @@ class EXAFSPanel(TaskPanel):
         self.set_defaultconfig(self.read_form())
 
     def onShowEk0(self, evt=None):
-        print("show ek0 ", evt)
+        pass
 
 
     def onPushE0(self, evt=None):
@@ -619,14 +617,14 @@ class EXAFSPanel(TaskPanel):
         for checked in self.controller.filelist.GetCheckedStrings():
             groupname = self.controller.file_groups[str(checked)]
             grp = self.controller.get_group(groupname)
-            if grp != self.controller.group and not grp.is_frozen:
+            frozen = getattr(grp, 'is_frozen', False)
+            if grp != self.controller.group and not frozen:
                 self.update_config(opts, dgroup=grp)
                 if set_ek0:
                     grp.ek0 = opts['ek0']
                 if set_rbkg:
                     grp.rbkg = opts['rbkg']
                 self.process(dgroup=grp, read_form=False)
-
 
     def _set_frozen(self, frozen):
         try:
@@ -660,16 +658,13 @@ class EXAFSPanel(TaskPanel):
         plotter = self.onPlotSel if self.last_plot=='selected' else self.onPlotOne
         wx.CallAfter(plotter)
 
-    def process(self, dgroup=None, read_form=True, force=False, **kws):
+    def process(self, dgroup, read_form=True, force=False, **kws):
         conf = {}
-        if dgroup is not None:
-            self.dgroup = dgroup
-            conf = getattr(dgroup.config, self.configname, None)
-            if conf is None:
-                conf = self.get_config(dgroup=dgroup)
-            if 'ek0' not in conf:
-                conf['ek0']  = conf.get('e0', getattr(dgroup, 'e0', -1))
-
+        conf = getattr(dgroup.config, self.configname, None)
+        if conf is None:
+            conf = self.get_config(dgroup=dgroup)
+        if 'ek0' not in conf:
+            conf['ek0']  = conf.get('e0', getattr(dgroup, 'e0', -1))
         if read_form:
             conf.update(self.read_form())
 
@@ -677,8 +672,7 @@ class EXAFSPanel(TaskPanel):
         if dgroup is None or 'fft_kwindow' not in conf:
             return
 
-        conf['group'] = dgroup.groupname
-
+        conf['group'] = gname = dgroup.groupname
         try:
             txt = autobk_cmd.format(**conf)
         except:
@@ -693,21 +687,21 @@ class EXAFSPanel(TaskPanel):
                 val = -1.0
             bkgpars.append("%.3f" % val)
         bkgpars = ':'.join(bkgpars)
-        lastpars = self.last_process_bkg.get(self.dgroup.groupname, '')
+        lastpars = self.last_process_bkg.get(gname, '')
         if force or (bkgpars != lastpars):
             self.larch_eval(autobk_cmd.format(**conf))
-            self.last_process_bkg[self.dgroup.groupname] = bkgpars
-            self.last_process_fft[self.dgroup.groupname] = ''
+            self.last_process_bkg[gname] = bkgpars
+            self.last_process_fft[gname] = None
 
         fftpars = [conf['fft_kwindow'], conf['fft_rwindow']]
         for attr in ('fft_kmin', 'fft_kmax', 'fft_kweight', 'fft_dk',
                      'fft_rmin', 'fft_rmax', 'fft_dr', 'fft_rmaxout'):
             fftpars.append("%.3f" % conf.get(attr, 0.0))
         fftpars = ':'.join(fftpars)
-        if fftpars != self.last_process_fft.get(self.dgroup.groupname, ''):
+        if fftpars != self.last_process_fft.get(gname, ''):
             self.larch_eval(xftf_cmd.format(**conf))
             self.larch_eval(xftr_cmd.format(**conf))
-            self.last_process_fft[self.dgroup.groupname] = fftpars
+            self.last_process_fft[gname] = fftpars
 
         setattr(dgroup.config, self.configname, conf)
 
@@ -770,74 +764,90 @@ class EXAFSPanel(TaskPanel):
     def onPlotOne(self, evt=None, dgroup=None):
         if self.skip_plotting:
             return
-        conf = self.read_form(as_copy=True)
+        conf = {k: v for k, v in self.read_form().items() }
         if dgroup is not None:
             self.dgroup = dgroup
             conf['group'] = dgroup.groupname
         self.process(dgroup=self.dgroup)
 
-        wids = self.wids
-        def get_plotcmd(space, win='1'):
-            opts = {'win': win, 'title': f"'{self.dgroup.filename}'"}
-            if space == 'E':
-                cmd = PlotCmds[conf['plot_echoice']]
-                opts['show_ek0'] = conf['show_ek0']
-                erange = Plot_EnergyRanges[conf['plot_erange']]
-                if erange is not None:
-                    opts['emin'] = erange[0]
-                    opts['emax'] = erange[1]
-            elif space == 'k':
-                cmd = PlotCmds[conf['plot_kchoice']]
-                opts['show_window'] = conf['plot_show_kwin']
-                opts['kweight'] = conf['plot_kweight']
-            elif space == 'R':
-                cmd = PlotCmds[conf['plot_rchoice']]
-                opts['show_window'] = conf['plot_show_rwin']
-                opts['rmax'] = conf['plot_rmax']
-
-            opts = [f"{key}={val}" for key, val in opts.items()]
-            return cmd + ', '.join(opts) + ')'
-
-        cmd = get_plotcmd(conf['plot1_space'], win='1')
-        self.larch_eval(cmd.format(**conf))
+        self.larch_eval(self._get_plotcmd(conf, space=1))
 
         if conf['plot2_win'] not in ('None', None):
-            cmd = get_plotcmd(conf['plot2_space'], win=conf['plot2_win'])
-            self.larch_eval(cmd.format(**conf))
+            self.larch_eval(self._get_plotcmd(conf, space=2))
 
         self.last_plot = 'one'
         self.controller.set_focus()
 
+    def _get_plotcmd(self, conf, space=1, delay_draw=False, new=True,
+                    offset=None, label=None, title=None):
+        if space == 1:
+            space_label = conf['plot1_space']
+            win = '1'
+        elif space == 2:
+            space_label = conf['plot2_space']
+            win = conf['plot2_win']
 
-    def onPlotSel(self, evt=None):
+        if title is None:
+            title = f"'{self.dgroup.filename}'"
+
+        opts = {'win': win, 'title': title, 'new': new,
+                'delay_draw': delay_draw}
+
+        if label is not None:
+            opts['label'] = label
+        if offset is not None:
+            opts['offset'] = offset
+
+        if space_label == 'E':
+            cmd = PlotCmds[conf['plot_echoice']]
+            opts['show_ek0'] = conf['show_ek0']
+            erange = Plot_EnergyRanges[conf['plot_erange']]
+            if erange is not None:
+                opts['emin'] = erange[0]
+                opts['emax'] = erange[1]
+        elif space_label == 'k':
+            cmd = PlotCmds[conf['plot_kchoice']]
+            opts['show_window'] = conf['plot_show_kwin']
+            opts['kweight'] = conf['plot_kweight']
+        elif space_label == 'R':
+            cmd = PlotCmds[conf['plot_rchoice']]
+            opts['show_window'] = conf['plot_show_rwin']
+            opts['rmax'] = conf['plot_rmax']
+
+        opts = [f"{key}={val}" for key, val in opts.items()]
+        cmd = cmd + ', '.join(opts) + ')'
+        return cmd.format(**conf)
+
+    def onPlotSel(self, evt=None, dgroup=None):
         if self.skip_plotting:
             return
         group_ids = self.controller.filelist.GetCheckedStrings()
         if len(group_ids) < 1:
             return
 
-        conf = self.read_form(as_copy=True)
-        bcmd = PlotCmds[conf['plotsel_op']]
-        conf['new'] = 'True'
-        conf.pop('ek0') # don't copy ek0 to all groups
-        offset = conf['plot_voffset']
+        conf = {k: v for k, v in self.read_form().items()}
+        offset = float(conf['plot_voffset'])
+        cmds = []
+        title = f"'{len(group_ids)} Groups'"
         for i, checked in enumerate(group_ids):
             groupname = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(groupname)
-            if dgroup is not None:
-                conf['group'] = dgroup.groupname
-                conf['label'] = dgroup.filename
-                conf['offset'] = offset * i
-                if not hasattr(dgroup, 'chir_mag'):
-                    self.process(dgroup=dgroup, force=True, read_form=False, **conf)
+            if dgroup is None:
+                continue
 
-                extra = """, offset={offset:.3f}, win=1, delay_draw=True,
-    label='{label:s}', new={new:s})"""
-                cmd = "%s%s" % (bcmd, extra)
-                self.larch_eval(cmd.format(**conf))
-                conf['new'] = 'False'
+            conf['group'] = groupname
+            conf['label'] = f"'{dgroup.filename}'"
+            self.process(dgroup=dgroup)
 
-        self.larch_eval("redraw(win=1, show_legend=True)")
+            cmd = self._get_plotcmd(conf, space=1,
+                                       delay_draw=True, new=(i==0),
+                                       offset=i*offset,
+                                       label=f"'{dgroup.filename}'",
+                                       title=title)
+            cmds.append(cmd)
+
+        cmds.append("redraw(win=1, show_legend=True)")
+        self.larch_eval('\n'.join(cmds))
         self.last_plot = 'selected'
 
         self.controller.set_focus()
