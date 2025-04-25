@@ -423,8 +423,6 @@ class XYDataPanel(TaskPanel):
                 f"{gname:s}.d2ydx = gradient({gname:s}.dydx)/gradient({gname:s}.xplot)"]
 
         self.larch_eval('\n'.join(cmds))
-
-
         self.unset_skip_process()
         return
 
@@ -445,7 +443,7 @@ class XYDataPanel(TaskPanel):
             lab = getattr(plotlabels, pchoice)
             dgroup.plot_yarrays = [(pchoice, PLOTOPTS_1, lab)]
 
-        elif pchoice == 'y+dydx':
+        elif pchoice == 'ydat+dydx':
             lab = plotlabels.y
             dgroup.plot_y2label = lab2 = plotlabels.dydx
             dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, lab),
@@ -461,7 +459,6 @@ class XYDataPanel(TaskPanel):
             dgroup.plot_y2label = lab2 = plotlabels.i0
             dgroup.plot_yarrays = [('ynorm', PLOTOPTS_1, lab),
                                    ('i0', PLOTOPTS_D, lab2)]
-
         dgroup.plot_ylabel = lab
         needs_proc = False
         for attr in req_attrs:
@@ -472,11 +469,6 @@ class XYDataPanel(TaskPanel):
 
         y4e0 = dgroup.yplot = getattr(dgroup, dgroup.plot_yarrays[0][0], dgroup.ydat)
         dgroup.plot_extras = []
-
-        popts = {'marker': 'o', 'markersize': 5,
-                 'label': '_nolegend_',
-                 'markerfacecolor': '#888',
-                 'markeredgecolor': '#A00'}
 
 
     def plot(self, dgroup, title=None, plot_yarrays=None, yoff=0,
