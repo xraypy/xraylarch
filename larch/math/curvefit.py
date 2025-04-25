@@ -25,45 +25,45 @@ def curvefit_setup(x, y=None, group=None, xmin=None, xmax=None):
     """set up larch Group for curve fitting
 
     Arguments:
-       x (ndarray or group): array of x-values, or group (see note 1)
-       y (ndarray or None):  array of y-vales, or None
+       xdat (ndarray or group): array of x-values, or group (see note 1)
+       ydat (ndarray or None):  array of y-vales, or None
        group (group or None): output group
        xmin: (float or None)  low x-value for fit
        xmax: (float or None)  high x-value for fit
 
     A group named `curvefit` will be created in the output group, containing:
 
-       .x, .y
+       .xdat, .ydat
 
     Notes:
         1. Supports :ref:`First Argument Group` convention, requiring group members `x` and `y`
     """
-    x, y, group = parse_group_args(x, members=('x', 'y'), defaults=(y,), group=group,
+    xdat, ydat, group = parse_group_args(x, members=('xdat', 'ydat'), defaults=(y,), group=group,
                                    fcn_name='curvefit_setup')
 
-    if len(x.shape) > 1:
-        energy = energy.squeeze()
-    if len(y.shape) > 1:
-        yd = y.squeeze()
+    if len(xdat.shape) > 1:
+        xdat = xdat.squeeze()
+    if len(ydat.shape) > 1:
+        ydat = ydat.squeeze()
 
-    dat_xmin, dat_xmax = min(x), max(x)
+    dat_xmin, dat_xmax = min(xdat), max(xdat)
 
     if xmin > xmax:
         xmin, xmax = xmax, xmin
 
-    delx = 1.e-13 + min(np.diff(x))/5.0
+    delx = 1.e-13 + min(np.diff(xdat))/5.0
 
-    imin = index_of(x, xmin+delx)
-    imax = index_of(x, xmax+delx)
+    imin = index_of(xdat, xmin+delx)
+    imax = index_of(xdat, xmax+delx)
 
-    xdat = x[imin:imax+1]
-    ydat = y[imin:imax+1]
+    xdat = xdat[imin:imax+1]
+    ydat = ydat[imin:imax+1]
 
     if not hasattr(group, 'curvefit'):
-        group.curvefit = Group(x=xdat, y=ydat, xmin=xmin, xmax=xmax)
+        group.curvefit = Group(xdat=xdat, ydat=ydat, xmin=xmin, xmax=xmax)
     else:
-        group.curvefit.x = xdat
-        group.curvefit.y = ydat
+        group.curvefit.xdat = xdat*1.0
+        group.curvefit.ydat = ydat*1.0
         group.curvefit.xmin = xmin
         group.curvefit.xmax = xmax
 
@@ -94,17 +94,17 @@ def curvefit_run(group, model, params, user_options=None):
 
     fit = Group()
 
-    for k in ('x', 'y', 'y_std', 'user_options'):
+    for k in ('xdat', 'ydat', 'y_std', 'user_options'):
         if hasattr(curvefit, k):
             setattr(fit, k, deepcopy(getattr(curvefit, k)))
 
     if user_options is not None:
         fit.user_options = user_options
 
-    fit.init_fit     = model.eval(params, x=curvefit.x)
-    fit.init_ycomps  = model.eval_components(params=params, x=curvefit.x)
+    fit.init_fit     = model.eval(params, x=curvefit.xdat)
+    fit.init_ycomps  = model.eval_components(params=params, x=curvefit.xdat)
 
-    y_mean = abs(curvefit.y).mean()
+    y_mean = abs(curvefit.ydat).mean()
     y_std = getattr(group, 'y_std', 1.0)
     if isinstance(y_std, np.ndarray):
         ysmin = 1.e-13*y_mean
@@ -112,8 +112,8 @@ def curvefit_run(group, model, params, user_options=None):
     elif y_std < 0:
         y_std = 1.0
 
-    fit.result = model.fit(curvefit.y, params=params, x=curvefit.x,  weights=1.0/y_std)
-    fit.ycomps = model.eval_components(params=fit.result.params, x=curvefit.x)
+    fit.result = model.fit(curvefit.ydat, params=params, x=curvefit.xdat,  weights=1.0/y_std)
+    fit.ycomps = model.eval_components(params=fit.result.params, x=curvefit.xdat)
     fit.label = 'Fit %i' % (1+len(curvefit.fit_history))
 
     label = now  = time.strftime("%b-%d %H:%M")
