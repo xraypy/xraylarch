@@ -123,21 +123,21 @@ if not hasattr(_main, 'curvefit_params'): curvefit_params = Parameters()
 if not hasattr({group}, 'curvefit'): {group}.curvefit = group(__name__='curvefit result')
 if not hasattr({group}.curvefit, 'fit_history'): {group}.curvefit.fit_history = []
 {group}.curvefit.user_options = {user_opts:s}
-{group}.curvefit.init_fit = curvefit_model.eval(curvefit_params, x={group}.curvefit.x)
-{group}.curvefit.init_ycomps = curvefit_model.eval_components(params=curvefit_params, x={group}.curvefit.x)
+{group}.curvefit.init_fit = curvefit_model.eval(curvefit_params, x={group}.curvefit.xdat)
+{group}.curvefit.init_ycomps = curvefit_model.eval_components(params=curvefit_params, x={group}.curvefit.xdat)
 """
 
 COMMANDS['curvefit_setup'] = """# setup curve-fit
-if not hasattr({group}, 'x'): {group:s}.x = 1.0*{group}.xplot
-{group:s}.xplot = 1.0*{group:s}.x
+if not hasattr({group}, 'xdat'): {group:s}.xdat = 1.0*{group}.xplot
+{group:s}.xplot = 1.0*{group:s}.xdat
 {group:s}.yplot = 1.0*{group:s}.{array_name:s}
 curvefit_setup({group:s},y={group}.{array_name}, xmin={xmin}, xmax={xmax})
 """
 
-COMMANDS['set_yerr_const'] = "{group}.curvefit.y_std = {group}.yerr*ones(len({group}.curvefit.y))"
+COMMANDS['set_yerr_const'] = "{group}.curvefit.y_std = {group}.yerr*ones(len({group}.curvefit.ydat))"
 COMMANDS['set_yerr_array'] = """
 {group}.curvefit.y_std = 1.0*{group}.yerr[{imin:d}:{imax:d}]
-yerr_min = 1.e-9*{group}.curvefit.y.mean()
+yerr_min = 1.e-9*{group}.curvefit.ydat.mean()
 {group}.curvefit.y_std[where({group}.yerr < yerr_min)] = yerr_min
 """
 
@@ -931,12 +931,15 @@ class EditParamsFrame(wx.Frame):
         else:
             cmd = f"curvefit_params.Add({par_name}, expr='{val}')"
 
-        self.curvefit_panel.larch_eval(COMMANDS['curvefit_params'])
+        if not self.curvefit_panel.larch_has_symbol('curvefit_params'):
+            self.curvefit_panel.larch_eval(COMMANDS['curvefit_params'])
         self.curvefit_panel.larch_eval(cmd)
         self.onRefresh()
 
     def onRefresh(self, event=None):
-        self.curvefit_panel.larch_eval(COMMANDS['curvefit_params'])
+        if not self.curvefit_panel.larch_has_symbol('curvefit_params'):
+            self.curvefit_panel.larch_eval(COMMANDS['curvefit_params'])
+
         self.params = self.curvefit_panel.larch_get('curvefit_params')
         self.model.set_data(self.params)
         self.model.read_data()
@@ -951,7 +954,8 @@ class CurveFitParamsPanel(wx.Panel):
         wx.Panel.__init__(self, parent, -1, size=(550, 250))
         self.curvefit_panel = curvefit_panel
         #
-        curvefit_panel.larch_eval(COMMANDS['curvefit_params'])
+        if not self.curvefit_panel.larch_has_symbol('curvefit_params'):
+            self.curvefit_panel.larch_eval(COMMANDS['curvefit_params'])
         params = self.curvefit_panel.larch_get('curvefit_params')
 
         self.parwids = {}
@@ -1005,9 +1009,10 @@ class CurveFitParamsPanel(wx.Panel):
                 self.parwids[pname].value.SetValue(("%%.%.df" % prec) % par.value)
 
     def update(self):
-        self.curvefit_panel.larch_eval(COMMANDS['curvefit_params'])
+        if not self.curvefit_panel.larch_has_symbol('curvefit_params'):
+            self.curvefit_panel.larch_eval(COMMANDS['curvefit_params'])
         params = self.curvefit_panel.larch_get('curvefit_params')
-        print("CurveFit Params ", params)
+        print("update from curvefit params ", params)
         for pname, par in params.items():
             if pname not in self.parwids:
                 pwids = ParameterWidgets(self.panel, par, name_size=120,
@@ -1284,7 +1289,6 @@ class CurveFitPanel(TaskPanel):
 
         pack(self, sizer)
 
-
     def get_config(self, dgroup=None):
         """get processing configuration for a group"""
         if dgroup is None:
@@ -1338,15 +1342,15 @@ class CurveFitPanel(TaskPanel):
         self.wids['curvefit_xmax'].Enable(sel==1)
         if sel == 1:
             dgroup = self.controller.get_group()
-            xmin = dgroup.x.min()
-            xmax = dgroup.x.max()
+            xmin = dgroup.xdat.min()
+            xmax = dgroup.xdat.max()
             self.wids['curvefit_xmin'].SetValue(xmin)
             self.wids['curvefit_xmax'].SetValue(xmax)
 
     def fill_form(self, dat):
         if isinstance(dat, Group):
-            xmin  = dat.x.xmin()
-            xmax  = dat.x.xmax()
+            xmin  = dat.xdat.xmin()
+            xmax  = dat.xdat.xmax()
 
             if hasattr(dat, 'curvefit'):
                 xmin = dat.curvefit.xmin
@@ -1374,8 +1378,8 @@ class CurveFitPanel(TaskPanel):
                      'bkg_components': []}
         xrange_sel = self.xrange_choice.GetSelection()
         if xrange_sel == 0:
-            form_opts['xmin'] = dgroup.x.min()
-            form_opts['xmax'] = dgroup.x.max()
+            form_opts['xmin'] = dgroup.xdat.min()
+            form_opts['xmax'] = dgroup.xdat.max()
         else:
             form_opts['xmin'] = self.wids['curvefit_xmin'].GetValue()
             form_opts['xmax'] = self.wids['curvefit_xmax'].GetValue()
@@ -1427,7 +1431,8 @@ class CurveFitPanel(TaskPanel):
         if model is None or model.startswith('<'):
             return
 
-        self.larch_eval(COMMANDS['curvefit_params'])
+        if not self.larch_has_symbol('curvefit_params'):
+            self.larch_eval(COMMANDS['curvefit_params'])
         params = self.larch_get('curvefit_params')
         print("Curvefit addModel" , model, params)
 
@@ -1571,7 +1576,7 @@ class CurveFitPanel(TaskPanel):
 
         self.fit_components[prefix] = fgroup
         panel.pack()
-        print("Added Model ", parnames)
+        print("Added Model ", panel, prefix, title, parnames)
         self.mod_nb.AddPage(panel, title, True)
         sx,sy = self.GetSize()
         self.SetSize((sx, sy+1))
@@ -1732,7 +1737,7 @@ class CurveFitPanel(TaskPanel):
     def get_xranges(self, x):
         opts = self.read_form()
         dgroup = self.controller.get_group()
-        dx = min(np.diff(dgroup.x)) / 5.
+        dx = min(np.diff(dgroup.xdat)) / 5.
 
         i1 = index_of(x, opts['xmin'] + dx)
         i2 = index_of(x, opts['xmax'] + dx) + 1
@@ -1750,9 +1755,9 @@ class CurveFitPanel(TaskPanel):
         # Need IMIN / IMAX
         if yerr_type == 0: # constant
             val = self.wids['yerr_value'].GetValue()
-            cmd = f"{gname}.y_std = {val}*ones(len({gname}.curvefit.y))"
+            cmd = f"{gname}.y_std = {val}*ones(len({gname}.curvefit.ydat))"
         elif yerr_type == 1: # sqrt
-            cmd = f"{gname}.y_std = sqrt(abs({gname}.y))"
+            cmd = f"{gname}.y_std = sqrt(abs({gname}.ydat))"
         elif yerr_type == 2: # array name
             yarrname = self.wids['yerr_array'].GetStringSelection()
             if yename != 'yerr':
