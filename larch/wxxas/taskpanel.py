@@ -351,6 +351,10 @@ class TaskPanel(wx.Panel):
         return getattr(larch.input, 'hist_buff',
                        getattr(larch.parent, 'hist_buff', []))
 
+    def larch_has_symbol(self, sym):
+        """does larch have a named symbol"""
+        return self.controller.larch.symtable.has_symbol(sym)
+
     def larch_get(self, sym):
         """get value from larch symbol table"""
         return self.controller.larch.symtable.get_symbol(sym)
