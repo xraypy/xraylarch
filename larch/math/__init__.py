@@ -2,10 +2,13 @@ __DOC__ = """Mathematical functions for Larch"""
 
 import numpy as np
 
+from lmfit import Parameter
+
 from .utils import (linregress, realimag, as_ndarray,
                     complex_phase, deriv, interp, interp1d, safe_log,
                     remove_dups, remove_nans, remove_nans2, index_of,
                     index_nearest, savitzky_golay, smooth, boxcar, polyfit)
+
 
 from .lineshapes import (gaussian, lorentzian, voigt, pvoigt, hypermet,
                          pearson7, lognormal, gammaln,
