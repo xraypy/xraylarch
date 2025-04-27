@@ -12,13 +12,29 @@ import wx.lib.scrolledpanel as scrolled
 
 import wx.dataview as dv
 
-from lmfit import Parameter
-import lmfit.models as lm_models
 from pyshortcuts import uname, gformat, fix_varname
 
 from larch import Group, site_config
 from larch.utils import mkdir
-from larch.math import index_of
+from larch.math import index_of, Parameter
+
+from larch.math.fitmodels import (ConstantModel, LinearModel,
+            QuadraticModel, PolynomialModel, SplineModel, SineModel,
+            GaussianModel, Gaussian2dModel, LorentzianModel,
+            SplitLorentzianModel, VoigtModel, PseudoVoigtModel,
+            MoffatModel, Pearson4Model, Pearson7Model, StudentsTModel,
+            BreitWignerModel, LognormalModel, DampedOscillatorModel,
+            DampedHarmonicOscillatorModel,
+            DampedHarmonicOscillatorModel, ExponentialGaussianModel,
+            SkewedGaussianModel, SkewedVoigtModel,
+            ThermalDistributionModel, DoniachModel, PowerLawModel,
+            ExponentialModel, LinearStepModel, AtanStepModel,
+            ErfStepModel, LogiStepModel, LinearRectangleModel,
+            AtanRectangleModel, ErfRectangleModel, LogiRectangleModel,
+            ExpressionModel)
+
+
+# import lmfit.models as lm_models
 from larch.io.export_modelresult import export_modelresult
 from larch.io import save_groups, read_groups
 
@@ -39,40 +55,58 @@ from .config import (CurveFit_ArrayChoices, PlotWindowChoices,
 
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
-ModelChoices = {'other': ('<General Models>', 'Constant', 'Linear',
-                          'Quadratic', 'Exponential', 'PowerLaw',
-                          'Linear Step', 'Arctan Step',
-                          'ErrorFunction Step', 'Logisic Step', 'Rectangle'),
-                'peaks': ('<Peak Models>', 'Gaussian', 'Lorentzian',
-                          'Voigt', 'PseudoVoigt', 'DampedHarmonicOscillator',
-                          'Pearson7', 'StudentsT', 'SkewedGaussian',
-                          'Moffat', 'BreitWigner', 'Doniach', 'Lognormal'),
-                }
 
+MODELS = {'Constant': Group(model=ConstantModel, abbrev='const', type='other'),
+          'Linear': Group(model=LinearModel, abbrev='line', type='other'),
+          'Quadratic': Group(model=QuadraticModel, abbrev='quad', type='other'),
+          'Polynomial': Group(model=PolynomialModel, abbrev='poly', type='other'),
+          'Power Law': Group(model=PowerLawModel, abbrev='powerlaw', type='other'),
+          'Exponential': Group(model=ExponentialModel, abbrev='expon', type='other'),
+          'Sine':Group(model=SineModel, abbrev='sine', type='other'),
+          'Gaussian': Group(model=GaussianModel, abbrev='gauss', type='peak'),
+          'Lorentzian': Group(model=LorentzianModel, abbrev='loren', type='peak'),
+          'Voigt': Group(model=VoigtModel, abbrev='voigt', type='peak'),
+          'PseudoVoigt': Group(model=PseudoVoigtModel, abbrev='pvoigt', type='peak'),
+          'Moffat': Group(model=MoffatModel, abbrev='moffat', type='peak'),
+          'Pearson4': Group(model=Pearson4Model, abbrev='pearson4', type='peak'),
+          'Pearson7': Group(model=Pearson7Model, abbrev='pearson7', type='peak'),
+          'StudentsT': Group(model=StudentsTModel, abbrev='studentsT', type='peak'),
+          'Breit-Wigner': Group(model=BreitWignerModel, abbrev='breitwigner', type='peak'),
+          'Lognormal': Group(model=LognormalModel, abbrev='lognorm', type='peak'),
+          'Damped Harmonic Oscillator': Group(model=DampedHarmonicOscillatorModel,
+                                          abbrev='dho', type='peak'),
+          'Split Lorentzian': Group(model=SplitLorentzianModel,
+                                        abbrev='splitloren', type='peak'),
+          'Exponential Gaussian': Group(model=ExponentialGaussianModel,
+                                        abbrev='expgauss', type='peak'),
+          'Skewed Gaussian': Group(model=SkewedGaussianModel, abbrev='skewgauss', type='peak'),
+          'Skewed Voigt': Group(model=SkewedVoigtModel, abbrev='skewvoigt',
+                                    type='peak'),
+          'Doniach': Group(model=DoniachModel, abbrev='doniach', type='peak'),
 
-# map of lmfit function name to Model Class
-ModelFuncs = {'constant': 'ConstantModel',
-              'linear': 'LinearModel',
-              'quadratic': 'QuadraticModel',
-              'polynomial': 'PolynomialModel',
-              'gaussian': 'GaussianModel',
-              'lorentzian': 'LorentzianModel',
-              'voigt': 'VoigtModel',
-              'pvoigt': 'PseudoVoigtModel',
-              'moffat': 'MoffatModel',
-              'pearson7': 'Pearson7Model',
-              'students_t': 'StudentsTModel',
-              'breit_wigner': 'BreitWignerModel',
-              'lognormal': 'LognormalModel',
-              'damped_oscillator': 'DampedOscillatorModel',
-              'dho': 'DampedHarmonicOscillatorModel',
-              'expgaussian': 'ExponentialGaussianModel',
-              'skewed_gaussian': 'SkewedGaussianModel',
-              'doniach': 'DoniachModel',
-              'powerlaw': 'PowerLawModel',
-              'exponential': 'ExponentialModel',
-              'step': 'StepModel',
-              'rectangle': 'RectangleModel'}
+          'Linear Step': Group(model=LinearStepModel, abbrev='steplin', type='step'),
+          'Arctan Step': Group(model=AtanStepModel, abbrev='stepatan', type='step'),
+          'Erf Step': Group(model=ErfStepModel, abbrev='steperf', type='step'),
+          'Logistic Step': Group(model=LogiStepModel, abbrev='steplog', type='step'),
+          'Linear Rectangle': Group(model=LinearRectangleModel,
+                                   abbrev='rectlin', type='step'),
+          'Arctan Rectangle': Group(model=AtanRectangleModel,
+                                          abbrev='rectatan', type='step'),
+          'Erf Rectangle': Group(model=ErfRectangleModel, abbrev='recterf', type='step'),
+          'Logistic Rectangle': Group(model=LogiRectangleModel, abbrev='rectlog', type='step'),
+          'User Expression': Group(model=ExpressionModel, abbrev='Expression', type='special'),
+          'Spline': Group(model=SplineModel, abbrev='spline', type='special'),
+          'Gaussian2d': Group(model=Gaussian2dModel, abbrev='gauss2d', type='special'),
+}
+
+ModelChoices = {'other': ['<General Models>'],  'peaks': ['<Peak Models>']}
+
+for name, dat in MODELS.items():
+    if dat.type == 'peak':
+        ModelChoices['peaks'].append(name)
+    elif dat.type in ('other', 'step'):
+        ModelChoices['other'].append(name)
+
 
 ModelAbbrevs = {'Constant': 'const',
                'Linear': 'line',
@@ -147,10 +181,10 @@ curvefit_result.user_options = {user_opts:s}
 """
 
 
-def get_model_abbrev(modelname):
-    if modelname in ModelAbbrevs:
-        return ModelAbbrevs[modelname]
-    return fix_varname(modelname).lower()
+# def get_model_abbrev(modelname):
+#     if modelname in ModelAbbrevs:
+#         return ModelAbbrevs[modelname]
+#     return fix_varname(modelname).lower()
 
 def get_xlims(x, xmin=None, xmax=None):
     xeps = min(np.diff(x))/ 5.
@@ -1439,163 +1473,22 @@ class CurveFitPanel(TaskPanel):
         self.models_peaks.SetSelection(0)
         self.models_other.SetSelection(0)
 
-        mod_abbrev = get_model_abbrev(model)
-        if prefix is None:
-            curmodels = ["%s%i_" % (mod_abbrev, i+1) for i in range(1+len(self.fit_components))]
-            for comp in self.fit_components:
-                if comp in curmodels:
-                    curmodels.remove(comp)
-
-            prefix = curmodels[0]
-
-        label = "%s(prefix='%s')" % (model, prefix)
-        title = "%s: %s " % (prefix[:-1], model)
-        title = prefix[:-1]
-        mclass_kws = {'prefix': prefix}
-        if 'step' in mod_abbrev:
-            form = mod_abbrev.replace('_step', '').strip()
-            for sname, fullname in (('lin', 'linear'), ('atan', 'arctan'),
-                                    ('err', 'erf'), ('logi', 'logistic')):
-                if form.startswith(sname):
-                    form = fullname
-            if form not in ('linear', 'erf', 'arctan', 'logistic'):
-                if opts is None:
-                    opts = {'form': 'linear'}
-                form = opts.get('form', 'linear')
-
-            label = "Step(form='%s', prefix='%s')" % (form, prefix)
-            title = "%s: Step %s" % (prefix[:-1], form[:3])
-            mclass = lm_models.StepModel
-            mclass_kws['form'] = form
-            minst = mclass(form=form, prefix=prefix,
-                           independent_vars=['x', 'form'])
-        else:
-            if model in ModelFuncs:
-                mclass = getattr(lm_models, ModelFuncs[model])
-            else:
-                mclass = getattr(lm_models, model+'Model')
-
-            minst = mclass(prefix=prefix)
-
-        panel = GridPanel(self.mod_nb, ncols=2, nrows=5, pad=1, itemstyle=CEN)
-        panel.SetFont(Font(FONTSIZE))
-
-        def SLabel(label, size=(80, -1), **kws):
-            return  SimpleText(panel, label,
-                               size=size, style=wx.ALIGN_LEFT, **kws)
-        usebox = Check(panel, default=True, label='Use in Fit?', size=(100, -1))
-        bkgbox = Check(panel, default=False, label='Is Baseline?', size=(125, -1))
-        if isbkg:
-            bkgbox.SetValue(1)
-
-        delbtn = Button(panel, 'Delete This Component', size=(200, -1),
-                        action=partial(self.onDeleteComponent, prefix=prefix))
-
-        pick2msg = SimpleText(panel, "    ", size=(125, -1))
-        pick2btn = Button(panel, 'Pick Values from Plot', size=(200, -1),
-                          action=partial(self.onPick2Points, prefix=prefix))
-
-        # SetTip(mname,  'Label for the model component')
-        SetTip(usebox,   'Use this component in fit?')
-        SetTip(bkgbox,   'Label this component as "background" when plotting?')
-        SetTip(delbtn,   'Delete this model component')
-        SetTip(pick2btn, 'Select X range on Plot to Guess Initial Values')
-
-        panel.Add(SLabel(label, size=(275, -1), colour=GUI_COLORS.title_blue),
-                  dcol=4,  style=wx.ALIGN_LEFT, newrow=True)
-        panel.Add(usebox, dcol=2)
-        panel.Add(bkgbox, dcol=1, style=RIGHT)
-
-        panel.Add(pick2btn, dcol=2, style=wx.ALIGN_LEFT, newrow=True)
-        panel.Add(pick2msg, dcol=3, style=wx.ALIGN_RIGHT)
-        panel.Add(delbtn, dcol=2, style=wx.ALIGN_RIGHT)
-
-        panel.Add(SLabel("Parameter "), style=wx.ALIGN_LEFT,  newrow=True)
-        panel.AddMany((SLabel(" Value"), SLabel(" Type"), SLabel(' Bounds'),
-                       SLabel("  Min", size=(60, -1)),
-                       SLabel("  Max", size=(60, -1)),  SLabel(" Expression")))
-
-        parwids = {}
-        parnames = sorted(minst.param_names)
-        for a in minst._func_allargs:
-            pname = "%s%s" % (prefix, a)
-            if (pname not in parnames and
-                a in minst.param_hints and
-                a not in minst.independent_vars):
-                parnames.append(pname)
-
-        c_params = self.larch_get('curvefit_params')
-        for pname in parnames:
-            sname = pname[len(prefix):]
-            hints = minst.param_hints.get(sname, {})
-
-            par = Parameter(name=pname, value=0, vary=True)
-            if 'min' in hints:
-                par.min = hints['min']
-            if 'max' in hints:
-                par.max = hints['max']
-            if 'value' in hints:
-                par.value = hints['value']
-            if 'expr' in hints:
-                par.expr = hints['expr']
-
-            pwids = ParameterWidgets(panel, par, name_size=110,
-                                     expr_size=200,
-                                     float_size=80, prefix=prefix,
-                                     widgets=('name', 'value',  'minval',
-                                              'maxval', 'vary', 'expr'))
-            parwids[par.name] = pwids
-            panel.Add(pwids.name, newrow=True)
-
-            panel.AddMany((pwids.value, pwids.vary, pwids.bounds,
-                           pwids.minval, pwids.maxval, pwids.expr))
-            c_params[pname] = par
-
-
-        for sname, hint in minst.param_hints.items():
-            pname = "%s%s" % (prefix, sname)
-            if 'expr' in hint and pname not in parnames:
-                par = Parameter(name=pname, value=0, expr=hint['expr'])
-                pwids = ParameterWidgets(panel, par, name_size=110,
-                                         expr_size=400,
-                                         float_size=80, prefix=prefix,
-                                         widgets=('name', 'value', 'expr'))
-                parwids[par.name] = pwids
-                panel.Add(pwids.name, newrow=True)
-                panel.Add(pwids.value)
-                panel.Add(pwids.expr, dcol=5, style=wx.ALIGN_RIGHT)
-                pwids.value.Disable()
-                # c_params[pname] = par
-
-        fgroup = Group(prefix=prefix, title=title, mclass=mclass,
-                       mclass_kws=mclass_kws, usebox=usebox, panel=panel,
-                       parwids=parwids, float_size=65, expr_size=150,
-                       pick2_msg=pick2msg, bkgbox=bkgbox)
-        print("add Model ", fgroup)
-
-
-        self.fit_components[prefix] = fgroup
-        panel.pack()
-        print("Added Model ", panel, prefix, title, parnames)
-        self.mod_nb.AddPage(panel, title, True)
-        sx,sy = self.GetSize()
-        self.SetSize((sx, sy+1))
-        self.SetSize((sx, sy))
-        self.fitmodel_btn.Enable()
-        self.fitselected_btn.Enable()
+        mpanel = ModelComponentPanel(self, model)
+        self.fit_components[mpanel.prefix] = mpanel
+        self.mod_nb.AddPage(panel, mpanel.title, True)
 
 
     def onDeleteComponent(self, evt=None, prefix=None):
-        fgroup = self.fit_components.get(prefix, None)
-        if fgroup is None:
+        fcomp = self.fit_components.get(prefix, None)
+        if fcomp is None:
             return
 
         for i in range(self.mod_nb.GetPageCount()):
-            if fgroup.title == self.mod_nb.GetPageText(i):
+            if fcomp.title == self.mod_nb.GetPageText(i):
                 self.mod_nb.DeletePage(i)
 
-        for attr in dir(fgroup):
-            setattr(fgroup, attr, None)
+        for attr in dir(fcomp):
+            setattr(fcomp, attr, None)
 
         self.fit_components.pop(prefix)
         if len(self.fit_components) < 1:
@@ -1675,7 +1568,7 @@ class CurveFitPanel(TaskPanel):
 
 
     def onPick2Points(self, evt=None, prefix=None):
-        fgroup = self.fit_components.get(prefix, None)
+        fgroup = self.fit_compsonents.get(prefix, None)
         if fgroup is None:
             return
 
@@ -1941,3 +1834,137 @@ class CurveFitPanel(TaskPanel):
         if fname is None:
             fname = 'autosave_fit.modl'
         save_groups(Path(confdir, fname).as_posix(), ['#curvefit 1.0', result])
+
+
+class ModelComponentPanel(GridPanel):
+    def __init__(self, parent, modelname, prefix=None, isbkg=False,
+                ncols=7, nrows=6, pad=1):
+        GridPanel.__init__(self, parent, ncols=ncols, nrows=nrows, pad=pad, itemstyle=CEN)
+
+        fit_comps = parent.fit_components
+        mod_abbrev = MODELS[modelname].abbrev
+
+        if prefix is None:
+            curmodels = [f"{mod_abbrev}{i+1}_" for i in range(1+len(fit_comps))]
+            print("Current Models ", curmodels, fit_comps.keys())
+            for comp in fit_comps:
+                if comp in curmodels:
+                    curmodels.remove(comp)
+            prefix = curmodels[0]
+
+        self.parent = parent
+        self.prefix = prefix
+        self.title = prefix[:-1]
+        self.isbkg = isbkg
+        self.label = f"{modelname}(prefix='{prefix}')"
+        self.mclass = MODELS[modelname]
+
+        self.build()
+
+    def build(self):
+        self.SetFont(Font(FONTSIZE))
+        parent = self.parent
+        prefix = self.prefix
+
+
+        def SLabel(label, size=(80, -1), **kws):
+            return  SimpleText(self, label, size=size, style=LEFT, **kws)
+        usebox = Check(self, default=True, label='Use in Fit?', size=(125, -1))
+        bkgbox = Check(self, default=self.isbkg, label='Is Baseline?', size=(125, -1))
+
+        delbtn = Button(self, 'Delete This Component', size=(200, -1),
+                        action=partial(parent.onDeleteComponent,prefix=prefix))
+
+        pick2msg = SimpleText(self, "    ", size=(125, -1))
+        pick2btn = Button(self, 'Pick Values from Plot', size=(200, -1),
+                          action=partial(parent.onPick2Points, prefix=prefix))
+
+        # SetTip(mname,  'Label for the model component')
+        SetTip(usebox,   'Use this component in fit?')
+        SetTip(bkgbox,   'Label this component as "background" when plotting?')
+        SetTip(delbtn,   'Delete this model component')
+        SetTip(pick2btn, 'Select X range on Plot to Guess Initial Values')
+
+        self.Add(SLabel(label, size=(275, -1), colour=GUI_COLORS.title_blue),
+                  dcol=4,  style=wx.ALIGN_LEFT, newrow=True)
+        self.Add(usebox, dcol=2)
+        self.Add(bkgbox, dcol=1, style=RIGHT)
+
+        self.Add(pick2btn, dcol=2, style=wx.ALIGN_LEFT, newrow=True)
+        self.Add(pick2msg, dcol=3, style=wx.ALIGN_RIGHT)
+        self.Add(delbtn, dcol=2, style=wx.ALIGN_RIGHT)
+
+        self.Add(SLabel("Parameter "), style=wx.ALIGN_LEFT,  newrow=True)
+        self.AddMany((SLabel(" Value"), SLabel(" Type"), SLabel(' Bounds'),
+                       SLabel("  Min", size=(60, -1)),
+                       SLabel("  Max", size=(60, -1)),  SLabel(" Expression")))
+
+        parwids = {}
+        model = self.mclass.model(prefix=prefix)
+        parnames = sorted(self.model.param_names)
+        for a in self.model._func_allargs:
+            pname = "%s%s" % (prefix, a)
+            if (pname not in parnames and
+                a in self.model.param_hints and
+                a not in self.model.independent_vars):
+                parnames.append(pname)
+
+        c_params = self.larch_get('curvefit_params')
+        for pname in parnames:
+            sname = pname[len(prefix):]
+            hints = self.model.param_hints.get(sname, {})
+
+            par = Parameter(name=pname, value=0, vary=True)
+            if 'min' in hints:
+                par.min = hints['min']
+            if 'max' in hints:
+                par.max = hints['max']
+            if 'value' in hints:
+                par.value = hints['value']
+            if 'expr' in hints:
+                par.expr = hints['expr']
+
+            pwids = ParameterWidgets(self, par, name_size=110,
+                                     expr_size=200,
+                                     float_size=80, prefix=prefix,
+                                     widgets=('name', 'value',  'minval',
+                                              'maxval', 'vary', 'expr'))
+            parwids[par.name] = pwids
+            self.Add(pwids.name, newrow=True)
+
+
+
+
+            self.AddMany((pwids.value, pwids.vary, pwids.bounds,
+                           pwids.minval, pwids.maxval, pwids.expr))
+            c_params[pname] = par
+
+
+        for sname, hint in self.modelt.param_hints.items():
+            pname = "%s%s" % (prefix, sname)
+            if 'expr' in hint and pname not in parnames:
+                par = Parameter(name=pname, value=0, expr=hint['expr'])
+                pwids = ParameterWidgets(self, par, name_size=110,
+                                         expr_size=400,
+                                         float_size=80, prefix=prefix,
+                                         widgets=('name', 'value', 'expr'))
+                parwids[par.name] = pwids
+                self.Add(pwids.name, newrow=True)
+                self.Add(pwids.value)
+                self.Add(pwids.expr, dcol=5, style=wx.ALIGN_RIGHT)
+                pwids.value.Disable()
+                # c_params[pname] = par
+        self.parwids = parwids
+        self.pick2_msg = pick2msg
+        self.bkgbox = bkgbox
+        self.usebox = usebox
+
+        self.pack()
+
+        print("Added Model ", self, prefix, title, parnames)
+
+        sx,sy = self.GetSize()
+        self.SetSize((sx, sy+1))
+        self.SetSize((sx, sy))
+        self.fitmodel_btn.Enable()
+        self.fitselected_btn.Enable()
