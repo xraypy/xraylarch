@@ -1393,26 +1393,30 @@ def plot_curvefit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     if not hasattr(dgroup, 'curvefit'):
         raise ValueError('Group needs curvefit group')
     #endif
-    if show_init:
-        result = fit = dgroup.curvefit
-    else:
-        hist = getattr(dgroup.curvefit, 'fit_history', None)
-        if nfit > len(hist):
-            nfit = 0
-        fit = hist[nfit]
-        result = fit.result
-    #endif
+
+    result = fit = dgroup.curvefit
+    if not show_init:
+        hist = getattr(dgroup.curvefit, 'fit_history', [])
+        if len(hist) > 0:
+            if nfit > len(hist):
+                nfit = 0
+            fit = hist[nfit]
+            result = fit.result
 
     if fit is None:
         raise ValueError('Group needs curvefit.fit_history or init_fit')
-    #endif
 
+    print(f"Plot Curvefit {show_init=}")
+    print( dir(fit) )
     opts = fit.user_options
-    xplot = 1.0*fit.x
-    yplot = 1.0*fit.y
-
-    xplot_full = 1.0*dgroup.xplot
-    yplot_full = 1.0*dgroup.yplot
+    xplot = getattr(fit, 'xdat', getattr(fit, 'x', None))
+    yplot = getattr(fit, 'ydat', getattr(fit, 'y', None))
+    if xplot is None or yplot is None:
+        raise ValueError('Cannot get x or y data for fit')
+    xplot = xplot*1.0
+    yplot = yplot*1.0
+    xplot_full = 1.0*xplot
+    yplot_full = 1.0*yplot
 
     if show_init:
         yfit   = fit.init_fit
@@ -1435,10 +1439,8 @@ def plot_curvefit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
                     linewidth=3, marker='None', markersize=4)
 
     if subtract_baseline:
-        yplot -= baseline
+        yplot-= baseline
         yfit -= baseline
-        yplot_full = 1.0*yplot
-        xplot_full = 1.0*xplot
         plotopts['ylabel'] = '%s-baseline' % plotopts['ylabel']
 
     dx0, dx1, dy0, dy1 = extend_plotrange(xplot_full, yplot_full,
