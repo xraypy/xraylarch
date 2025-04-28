@@ -167,12 +167,12 @@ class EXAFSPanel(TaskPanel):
         wids['plot_rchoice'] = Choice(ppanel, choices=PlotR_Choices,
                                       action=self.onPlot, size=(175, -1))
 
-        wids['plot1_space'] = wx.RadioBox(ppanel, size=(175, -1), name='plot1_space',
+        wids['plot1_space'] = wx.RadioBox(ppanel, size=(175, 20), name='plot1_space',
                                           choices=PLOT_SPACES,
                                           style=wx.RA_SPECIFY_COLS)
         wids['plot1_space'].SetSelection(1)
         wids['plot1_space'].Bind(wx.EVT_RADIOBOX, self.onPlot)
-        wids['plot2_space'] = wx.RadioBox(ppanel, size=(175, -1), name='plot2_space',
+        wids['plot2_space'] = wx.RadioBox(ppanel, size=(175, 20), name='plot2_space',
                                              choices=PLOT_SPACES,
                                              style=wx.RA_SPECIFY_COLS)
         wids['plot2_space'].SetSelection(2)
