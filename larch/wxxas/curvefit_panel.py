@@ -1124,7 +1124,7 @@ class CurveFitParamsPanel(wx.Panel):
 
     def onPanelExposed(self, event=None):
         print("CurveFit Parameters Panel exposed ")
-        print(" comps: ", self.curvefit_panel.fit_components)
+        print("comps: ", self.curvefit_panel.fit_components)
         self.update()
 
 
@@ -1350,8 +1350,8 @@ class CurveFitPanel(TaskPanel):
                 return
             npts = len(xarr)
 
-            cur_list  = self.wids['yerr_array'].GetStrings()
-            cur_sel  = self.wids['yerr_array'].GetStringSelection()
+            cur_list = self.wids['yerr_array'].GetStrings()
+            cur_sel = self.wids['yerr_array'].GetStringSelection()
 
             arrlist  = []
             needs_update = False
@@ -1475,7 +1475,9 @@ class CurveFitPanel(TaskPanel):
 
         mpanel = ModelComponentPanel(self, model)
         self.fit_components[mpanel.prefix] = mpanel
-        self.mod_nb.AddPage(panel, mpanel.title, True)
+        self.mod_nb.AddPage(mpanel, mpanel.title, True)
+        self.fitmodel_btn.Enable()
+        self.fitselected_btn.Enable()
 
 
     def onDeleteComponent(self, evt=None, prefix=None):
@@ -1518,16 +1520,16 @@ class CurveFitPanel(TaskPanel):
             return
 
         if (time.time() - self.pick2_t0) > self.pick2_timeout:
-            msg = self.pick2_group.pick2_msg.SetLabel(" ")
+            msg = self.pick2msg.SetLabel(" ")
             plotframe.cursor_hist = []
             self.pick2_timer.Stop()
             return
 
         if len(curhist) < 2:
-            self.pick2_group.pick2_msg.SetLabel("%i/2" % (len(curhist)))
+            self.pick2msg.SetLabel("%i/2" % (len(curhist)))
             return
 
-        self.pick2_group.pick2_msg.SetLabel("done.")
+        self.pick2msg.SetLabel("done.")
         self.pick2_timer.Stop()
 
         # guess param values
@@ -1535,12 +1537,18 @@ class CurveFitPanel(TaskPanel):
         xmin, xmax = min(xcur), max(xcur)
 
         dgroup = getattr(self.larch.symtable, self.controller.groupname)
-        i0 = index_of(dgroup.xplot, xmin)
-        i1 = index_of(dgroup.xplot, xmax)
+        i0 = max(0, index_of(dgroup.xplot, xmin) - 2)
+        i1 = min(len(dgroup.xplot), index_of(dgroup.xplot, xmax) + 2)
         x, y = dgroup.xplot[i0:i1+1], dgroup.yplot[i0:i1+1]
 
-        mod = self.pick2_group.mclass(prefix=self.pick2_group.prefix)
-        parwids = self.pick2_group.parwids
+        print("Pick 2 ", i0, i1)
+        print(self.comp_panel)
+        print(self.comp_panel.prefix)
+        print(self.comp_panel.mclass)
+        print(self.comp_panel.parwids)
+
+        mod = self.comp_panel.mclass(prefix=self.comp_panel.prefix)
+        parwids = self.comp_panel.parwids
         try:
             guesses = mod.guess(y, x=x)
         except:
@@ -1568,19 +1576,21 @@ class CurveFitPanel(TaskPanel):
 
 
     def onPick2Points(self, evt=None, prefix=None):
-        fgroup = self.fit_compsonents.get(prefix, None)
-        if fgroup is None:
+        cpanel = self.fit_components.get(prefix, None)
+        if cpanel is None:
             return
 
         plotframe = self.controller.get_display(win=1)
         plotframe.Raise()
 
         plotframe.cursor_hist = []
-        fgroup.npts = 0
-        self.pick2_group = fgroup
+        self.pick2msg = cpanel.pick2msg
+        self.comp_panel = cpanel
+        self.pick2_npts = 0
 
-        if fgroup.pick2_msg is not None:
-            fgroup.pick2_msg.SetLabel("0/2")
+        print("onPick2 Points ", cpanel)
+        if self.pick2msg is not None:
+            self.pick2msg.SetLabel("0/2")
 
         self.pick2_t0 = time.time()
         self.pick2_timer.Start(1000)
@@ -1698,9 +1708,8 @@ class CurveFitPanel(TaskPanel):
                         _cen = this.name
                     elif parwids.param.name.endswith('_amplitude'):
                         _amp = this.name
-                compargs = ["%s='%s'" % (k,v) for k,v in comp.mclass_kws.items()]
-                modcmds.append("curvefit_model %s %s(%s)" % (modop, comp.mclass.__name__,
-                                                        ', '.join(compargs)))
+                mname = comp.mclass.__name__
+                modcmds.append(f"curvefit_model {modop} {mname}(prefix='{comp.prefix}'")
                 modop = "+="
                 if not comp.bkgbox.IsChecked() and _cen is not None and _amp is not None:
                     comps.append((_amp, _cen))
@@ -1854,10 +1863,11 @@ class ModelComponentPanel(GridPanel):
 
         self.parent = parent
         self.prefix = prefix
+
         self.title = prefix[:-1]
         self.isbkg = isbkg
         self.label = f"{modelname}(prefix='{prefix}')"
-        self.mclass = MODELS[modelname]
+        self.mclass = MODELS[modelname].model
 
         self.build()
 
@@ -1885,7 +1895,7 @@ class ModelComponentPanel(GridPanel):
         SetTip(delbtn,   'Delete this model component')
         SetTip(pick2btn, 'Select X range on Plot to Guess Initial Values')
 
-        self.Add(SLabel(label, size=(275, -1), colour=GUI_COLORS.title_blue),
+        self.Add(SLabel(self.label, size=(275, -1), colour=GUI_COLORS.title_blue),
                   dcol=4,  style=wx.ALIGN_LEFT, newrow=True)
         self.Add(usebox, dcol=2)
         self.Add(bkgbox, dcol=1, style=RIGHT)
@@ -1900,19 +1910,17 @@ class ModelComponentPanel(GridPanel):
                        SLabel("  Max", size=(60, -1)),  SLabel(" Expression")))
 
         parwids = {}
-        model = self.mclass.model(prefix=prefix)
-        parnames = sorted(self.model.param_names)
-        for a in self.model._func_allargs:
-            pname = "%s%s" % (prefix, a)
-            if (pname not in parnames and
-                a in self.model.param_hints and
-                a not in self.model.independent_vars):
+        model = self.mclass(prefix=prefix)
+        parnames = sorted(model.param_names)
+        for hint in model.param_hints:
+            pname = "%s%s" % (prefix, hint)
+            if pname not in parnames:
                 parnames.append(pname)
 
-        c_params = self.larch_get('curvefit_params')
+        c_params = self.parent.larch_get('curvefit_params')
         for pname in parnames:
             sname = pname[len(prefix):]
-            hints = self.model.param_hints.get(sname, {})
+            hints = model.param_hints.get(sname, {})
 
             par = Parameter(name=pname, value=0, vary=True)
             if 'min' in hints:
@@ -1932,15 +1940,11 @@ class ModelComponentPanel(GridPanel):
             parwids[par.name] = pwids
             self.Add(pwids.name, newrow=True)
 
-
-
-
             self.AddMany((pwids.value, pwids.vary, pwids.bounds,
                            pwids.minval, pwids.maxval, pwids.expr))
             c_params[pname] = par
 
-
-        for sname, hint in self.modelt.param_hints.items():
+        for sname, hint in model.param_hints.items():
             pname = "%s%s" % (prefix, sname)
             if 'expr' in hint and pname not in parnames:
                 par = Parameter(name=pname, value=0, expr=hint['expr'])
@@ -1955,16 +1959,14 @@ class ModelComponentPanel(GridPanel):
                 pwids.value.Disable()
                 # c_params[pname] = par
         self.parwids = parwids
-        self.pick2_msg = pick2msg
+        self.pick2msg = pick2msg
         self.bkgbox = bkgbox
         self.usebox = usebox
 
         self.pack()
 
-        print("Added Model ", self, prefix, title, parnames)
+        print("Added Model ", self, prefix, self.title, parnames)
 
         sx,sy = self.GetSize()
         self.SetSize((sx, sy+1))
         self.SetSize((sx, sy))
-        self.fitmodel_btn.Enable()
-        self.fitselected_btn.Enable()
