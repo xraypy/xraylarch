@@ -167,16 +167,23 @@ class EXAFSPanel(TaskPanel):
         wids['plot_rchoice'] = Choice(ppanel, choices=PlotR_Choices,
                                       action=self.onPlot, size=(175, -1))
 
-        wids['plot1_space'] = wx.RadioBox(ppanel, size=(175, 20), name='plot1_space',
-                                          choices=PLOT_SPACES,
-                                          style=wx.RA_SPECIFY_COLS)
-        wids['plot1_space'].SetSelection(1)
-        wids['plot1_space'].Bind(wx.EVT_RADIOBOX, self.onPlot)
-        wids['plot2_space'] = wx.RadioBox(ppanel, size=(175, 20), name='plot2_space',
-                                             choices=PLOT_SPACES,
-                                             style=wx.RA_SPECIFY_COLS)
-        wids['plot2_space'].SetSelection(2)
-        wids['plot2_space'].Bind(wx.EVT_RADIOBOX, self.onPlot)
+        for t in (1, 2):
+            wids[f'plot{t}_space'] = pan = wx.Panel(ppanel)
+            sizer = wx.BoxSizer(wx.HORIZONTAL)
+            style = wx.RB_GROUP
+            for s in ('E', 'k', 'R'):
+                rb = wx.RadioButton(pan, -1, f' {s} ', style=style)
+                style = 0
+                rb.Bind(wx.EVT_RADIOBUTTON, partial(self.onRadButton, space=t))
+                wids[f'plot{t}_rb_{s.lower()}'] = rb
+                sizer.Add(rb)
+            pack(pan, sizer)
+
+        wids['plot1_rb_k'].SetValue(1)
+        wids['plot2_rb_r'].SetValue(1)
+        self.plot1_space = 'k'
+        self.plot2_space = 'R'
+
         wids['plot_show_kwin'] = Check(ppanel, default=False, label='show k->R FT Window',
                                             action=self.onPlot)
         wids['plot_show_rwin'] = Check(ppanel, default=False, label='show R->q FT Window',
@@ -395,6 +402,14 @@ class EXAFSPanel(TaskPanel):
         pack(self, sizer)
         self.skip_process = False
 
+    def onRadButton(self, event=None, space='unknown'):
+        label = event.GetEventObject().GetLabel()
+        if space == 1:
+            self.plot1_space = label.strip().lower()
+        elif space == 2:
+            self.plot2_space = label.strip().lower()
+        self.onPlot()
+
     def onPlotSpace(self, event=None):
         self.onPlot()
 
@@ -486,8 +501,7 @@ class EXAFSPanel(TaskPanel):
             wids[attr].SetValue(getattr(dgroup, attr))
 
         for attr in ('bkg_kmin', 'bkg_kmax', 'bkg_kweight', 'fft_kmin',
-                     'fft_kmax', 'fft_kweight', 'fft_dk', 'fft_rmaxout',
-                     ):
+                     'fft_kmax', 'fft_kweight', 'fft_dk', 'fft_rmaxout'):
             try:
                 wids[attr].SetValue(float(opts.get(attr)))
             except:
@@ -550,9 +564,8 @@ class EXAFSPanel(TaskPanel):
         for attr in ('show_ek0', 'plot_show_kwin', 'plot_show_rwin'):
             conf[attr] = wids[attr].IsChecked()
 
-        for attr in ('plot1_space', 'plot2_space'):
-            conf[attr] = wids[attr].GetString(wids[attr].GetSelection())
-
+        conf['plot1_space'] = self.plot1_space
+        conf['plot2_space'] = self.plot2_space
         time.sleep(0.001)
         self.skip_process = skip_save
         if as_copy:
@@ -711,9 +724,8 @@ class EXAFSPanel(TaskPanel):
             return
         wids = self.wids
         data = {}
-        for attr in ('plot1_space', 'plot2_space'):
-            data[attr] = wids[attr].GetString(wids[attr].GetSelection())
-
+        data['plot1_space'] = self.plot1_space
+        data['plot2_space'] = self.plot2_space
         for attr in ('plot_voffset', 'plot_kweight', 'plot_rmax'):
             data[attr] = wids[attr].GetValue()
 
@@ -736,8 +748,14 @@ class EXAFSPanel(TaskPanel):
         data = NAMED_PLOTOPTS['default']
         data.update(self.plot_opts.get(name, {}))
         wids = self.wids
-        for attr in ('plot1_space', 'plot2_space'):
-            wids[attr].SetSelection(PLOT_SPACES.index(data[attr]))
+        for t in (1, 2):
+            sval = data[f'plot{t}_space'].lower()
+            if t == 1:
+                self.plot1_space = sval
+            else:
+                self.plot2_space = sval
+            for s in ('e', 'k', 'r'):
+                wids[f'plot{t}_rb_{s}'].SetValue(s==sval)
 
         for attr in ('plot_voffset', 'plot_kweight', 'plot_rmax'):
             wids[attr].SetValue(float(data[attr]))
@@ -781,10 +799,10 @@ class EXAFSPanel(TaskPanel):
     def _get_plotcmd(self, conf, space=1, delay_draw=False, new=True,
                     offset=None, label=None, title=None):
         if space == 1:
-            space_label = conf['plot1_space']
+            space_label = conf['plot1_space'].lower()
             win = '1'
         elif space == 2:
-            space_label = conf['plot2_space']
+            space_label = conf['plot2_space'].lower()
             win = conf['plot2_win']
 
         if title is None:
@@ -797,8 +815,7 @@ class EXAFSPanel(TaskPanel):
             opts['label'] = label
         if offset is not None:
             opts['offset'] = offset
-
-        if space_label == 'E':
+        if space_label == 'e':
             cmd = PlotCmds[conf['plot_echoice']]
             opts['show_ek0'] = conf['show_ek0']
             erange = Plot_EnergyRanges[conf['plot_erange']]
@@ -809,7 +826,7 @@ class EXAFSPanel(TaskPanel):
             cmd = PlotCmds[conf['plot_kchoice']]
             opts['show_window'] = conf['plot_show_kwin']
             opts['kweight'] = conf['plot_kweight']
-        elif space_label == 'R':
+        elif space_label == 'r':
             cmd = PlotCmds[conf['plot_rchoice']]
             opts['show_window'] = conf['plot_show_rwin']
             opts['rmax'] = conf['plot_rmax']
