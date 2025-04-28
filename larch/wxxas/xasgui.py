@@ -4,7 +4,7 @@ XANES Data Viewer and Analysis Tool
 """
 import os
 import sys
-
+import traceback
 import time
 import copy
 from pathlib import Path
@@ -344,7 +344,10 @@ class PanelSelectionFrame(wx.Frame):
 
         for name, cb in self.selections.items():
             if cb.IsChecked():
-                self.parent.add_analysis_panel(name)
+                try:
+                    self.parent.add_analysis_panel(name)
+                except:
+                    pass
         self.parent.nb.SetSelection(0)
         self.parent.mode = self.current_mode
         self.parent.Thaw()
@@ -509,7 +512,10 @@ class LarixFrame(wx.Frame):
         panels = LARIX_MODES[self.mode][1]
         for key, atab in LARIX_PANELS.items():
             if key in panels:
-                self.add_analysis_panel(key)
+                try:
+                    self.add_analysis_panel(key)
+                except:
+                    pass
         self.nb.SetSelection(0)
 
         sizer.Add(self.nb, 1, LEFT|wx.EXPAND, 2)
@@ -544,12 +550,12 @@ class LarixFrame(wx.Frame):
         module = '.'.join(cons)
         try:
             cls = getattr(import_module(module), clsname)
-        except (ImportError, KeyError):
-            cls = None
-            print(f"cannot find analysis panel {atab}")
-        if cls is not None:
             nbpanel = cls(parent=self, controller=self.controller)
             self.nb.AddPage(nbpanel, atab.title, True)
+        except:
+            print(f"cannot use analysis panel {atab}:")
+            traceback.print_exception(sys.exception())
+
         current_panels = self.get_panels()
         return current_panels.get(atab.title, None)
 
