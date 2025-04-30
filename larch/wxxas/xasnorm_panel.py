@@ -472,7 +472,7 @@ class XASNormPanel(TaskPanel):
         if dgroup is None:
             return
         conf = self.get_config()
-        if atsym == '?' and getattr(dgroup, 'e0', None) is not Noe:
+        if atsym == '?' and getattr(dgroup, 'e0', None) is not None:
             atsym, edge = guess_edge(dgroup.e0)
 
         dgroup.atsym = conf['atsym'] = atsym
@@ -503,7 +503,7 @@ class XASNormPanel(TaskPanel):
             nnorm = get_auto_nnorm(self.wids['norm1'].GetValue(),
                                    self.wids['norm2'].GetValue())
 
-        npre_sel = self.wids['nvict'].GetStringSelection()
+        npre_sel = self.wids['npre'].GetStringSelection()
         npre = 0 if npre_sel.lower().startswith('con') else 1
         nvict = int(self.wids['nvict'].GetStringSelection())
         self.update_config({'norm_method': method, 'nnorm': nnorm, 'nvict': nvict, 'npre': npre})
