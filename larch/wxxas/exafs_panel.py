@@ -184,9 +184,9 @@ class EXAFSPanel(TaskPanel):
         self.plot1_space = 'k'
         self.plot2_space = 'R'
 
-        wids['plot_show_kwin'] = Check(ppanel, default=False, label='show k->R FT Window',
+        wids['plot_show_kwin'] = Check(ppanel, default=False, label='show k->R Window',
                                             action=self.onPlot)
-        wids['plot_show_rwin'] = Check(ppanel, default=False, label='show R->q FT Window',
+        wids['plot_show_rwin'] = Check(ppanel, default=False, label='show R->q Window',
                                             action=self.onPlot)
 
         wids['plot_on_choose'] = Check(ppanel, default=defaults.get('auto_plot', True),
@@ -249,7 +249,7 @@ class EXAFSPanel(TaskPanel):
         wids['ek0'] = FloatSpin(ek0_panel, **opts)
         wids['show_ek0'] = Check(ek0_panel, default=True, label='show?',
                                  action=self.onShowEk0)
-        wids['push_e0'] = Button(ek0_panel, 'Use as Normalization E0', size=(190, -1),
+        wids['push_e0'] = Button(ek0_panel, 'Use as Normalization E0', size=(225, -1),
                                  action=self.onPushE0)
         wids['push_e0'].SetToolTip('Use this value for E0 in the Normalization Tab')
 
