@@ -1046,7 +1046,6 @@ class CurveFitParamsPanel(wx.Panel):
         if not self.curvefit_panel.larch_has_symbol('curvefit_params'):
             self.curvefit_panel.larch_eval(COMMANDS['curvefit_params'])
         params = self.curvefit_panel.larch_get('curvefit_params')
-        print("update from curvefit params ", params)
         for pname, par in params.items():
             if pname not in self.parwids:
                 pwids = ParameterWidgets(self.panel, par, name_size=120,
@@ -1123,14 +1122,36 @@ class CurveFitParamsPanel(wx.Panel):
         return s
 
     def onPanelExposed(self, event=None):
-        print("CurveFit Parameters Panel exposed ")
-        print("comps: ", self.curvefit_panel.fit_components)
         self.update()
+
+    def onPanelHidden(self, event=None):
+        self.update_components()
+
+    def update_components(self):
+        """ updates the component parameter widgets"""
+        params = self.curvefit_panel.larch_get('curvefit_params')
+        fitcomps = self.curvefit_panel.fit_components
+        for pname, pwids in self.parwids.items():
+            pexpr = pwids.expr.GetValue()
+            if pexpr is None:
+                pexpr = ''
+            varstr = pwids.vary.GetStringSelection()
+            for comp in fitcomps.values():
+                for cname, cwids in comp.parwids.items():
+                    if cname == pname:
+                        cwids.expr.SetValue(pexpr)
+                        cwids.value.SetValue(pwids.value.GetValue())
+                        cwids.minval.SetValue(pwids.minval.GetValue())
+                        cwids.maxval.SetValue(pwids.maxval.GetValue())
+                        cwids.vary.SetStringSelection(varstr)
+
+
 
 
 class CurveFitPanel(TaskPanel):
     def __init__(self, parent=None, controller=None, **kws):
         self.fit_components = {}
+        self.params_panel = None
         TaskPanel.__init__(self, parent, controller, panel='curvefit', **kws)
         self.user_added_params = None
 
@@ -1165,16 +1186,19 @@ class CurveFitPanel(TaskPanel):
             return
         oldpage = self.mod_nb.GetPage(event.GetOldSelection())
         newpage = self.mod_nb.GetPage(event.GetSelection())
-        on_hide = getattr(oldpage, 'onPanelHidden', None)
-        on_expose = getattr(newpage, 'onPanelExposed', None)
+        def noop():
+            pass
 
-        print("ModelPanel Exposed ", oldpage, newpage, on_hide, on_expose)
+        getattr(oldpage, 'onPanelHidden', noop)()
+        getattr(newpage, 'onPanelExposed', noop)()
 
-        if callable(on_hide):
-            on_hide()
-
-        if callable(on_expose):
-            on_expose()
+#         if callable(on_hide):
+#             on_hide()
+#
+#         # self.build_fitmodel()
+#
+#         if callable(on_expose):
+#             on_expose()
 
     def build_display(self):
         pan = self.panel # = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LEFT)
@@ -1259,7 +1283,6 @@ class CurveFitPanel(TaskPanel):
 
         self.models_peaks = models_peaks
         self.models_other = models_other
-
         self.message = SimpleText(pan, '')
 
 
@@ -1280,11 +1303,9 @@ class CurveFitPanel(TaskPanel):
         add_text( ' X range: ')
         pan.Add(xrpanel, dcol=5)
 
-
         pan.Add((10, 10), newrow=True)
         pan.Add(self.loadresults_btn)
         pan.Add(self.showresults_btn)
-
 
         pan.Add(HLine(pan, size=(600, 2)), dcol=6, newrow=True)
 
@@ -1468,7 +1489,6 @@ class CurveFitPanel(TaskPanel):
         if not self.larch_has_symbol('curvefit_params'):
             self.larch_eval(COMMANDS['curvefit_params'])
         params = self.larch_get('curvefit_params')
-        print("Curvefit addModel" , model, params)
 
         self.models_peaks.SetSelection(0)
         self.models_other.SetSelection(0)
@@ -1541,19 +1561,13 @@ class CurveFitPanel(TaskPanel):
         i1 = min(len(dgroup.xplot), index_of(dgroup.xplot, xmax) + 2)
         x, y = dgroup.xplot[i0:i1+1], dgroup.yplot[i0:i1+1]
 
-        print("Pick 2 ", i0, i1)
-        print(self.comp_panel)
-        print(self.comp_panel.prefix)
-        print(self.comp_panel.mclass)
-        print(self.comp_panel.parwids)
-
         mod = self.comp_panel.mclass(prefix=self.comp_panel.prefix)
         parwids = self.comp_panel.parwids
         try:
             guesses = mod.guess(y, x=x)
         except:
             return
-        print("Pick2 guesses ", guesses, mod, mod.param_names)
+
         c_params = self.larch_get('curvefit_params')
         for name, param in guesses.items():
 #             if 'amplitude' in name:
@@ -1571,7 +1585,6 @@ class CurveFitPanel(TaskPanel):
         plotframe.cursor_hist = []
         plotframe.oplot(dgroup.xplot, dgroup._tmp)
         self.pick2erase_panel = plotframe.panel
-
         self.pick2erase_timer.Start(60000)
 
 
@@ -1588,7 +1601,6 @@ class CurveFitPanel(TaskPanel):
         self.comp_panel = cpanel
         self.pick2_npts = 0
 
-        print("onPick2 Points ", cpanel)
         if self.pick2msg is not None:
             self.pick2msg.SetLabel("0/2")
 
@@ -1636,7 +1648,6 @@ class CurveFitPanel(TaskPanel):
 
         self.fill_form(cvfit.user_options)
 
-
     def get_xranges(self, x):
         opts = self.read_form()
         dgroup = self.controller.get_group()
@@ -1665,8 +1676,6 @@ class CurveFitPanel(TaskPanel):
             yarrname = self.wids['yerr_array'].GetStringSelection()
             if yename != 'yerr':
                 cmd = f"{gname}.yerr = {gname}.{yarrname}*1.0"
-        print("BUILD FIT MODEL set yerror ", yerr_type, cmd)
-
         if cmd is not None:
             self.larch_eval(cmd)
 
@@ -1684,6 +1693,10 @@ class CurveFitPanel(TaskPanel):
         dgroup = self.controller.get_group(groupname)
         self.larch_eval(COMMANDS['curvefit_setup'].format(**opts))
         self.set_yerror()
+
+        cur_mod_panel = self.mod_nb.GetCurrentPage()
+        if cur_mod_panel == self.params_panel:
+            self.params_panel.update_components()
 
         curvefit_opts = dict(array=opts['array_name'],
                          xmin=opts['xmin'], xmax=opts['xmax'])
@@ -1709,7 +1722,7 @@ class CurveFitPanel(TaskPanel):
                     elif parwids.param.name.endswith('_amplitude'):
                         _amp = this.name
                 mname = comp.mclass.__name__
-                modcmds.append(f"curvefit_model {modop} {mname}(prefix='{comp.prefix}'")
+                modcmds.append(f"curvefit_model {modop} {mname}(prefix='{comp.prefix}')")
                 modop = "+="
                 if not comp.bkgbox.IsChecked() and _cen is not None and _amp is not None:
                     comps.append((_amp, _cen))
@@ -1855,7 +1868,7 @@ class ModelComponentPanel(GridPanel):
 
         if prefix is None:
             curmodels = [f"{mod_abbrev}{i+1}_" for i in range(1+len(fit_comps))]
-            print("Current Models ", curmodels, fit_comps.keys())
+            # print("Current Models ", curmodels, fit_comps.keys())
             for comp in fit_comps:
                 if comp in curmodels:
                     curmodels.remove(comp)
@@ -1965,8 +1978,38 @@ class ModelComponentPanel(GridPanel):
 
         self.pack()
 
-        print("Added Model ", self, prefix, self.title, parnames)
-
         sx,sy = self.GetSize()
         self.SetSize((sx, sy+1))
         self.SetSize((sx, sy))
+
+    def onPanelExposed(self, event=None):
+        "set widget values from params"
+        params = self.parent.larch_get('curvefit_params')
+        for pname, par in params.items():
+            if pname in self.parwids:
+                pwids = self.parwids[pname]
+                varstr = 'vary' if par.vary else 'fix'
+                if par.expr is not None:
+                    varstr = 'constrain'
+                    pwids.expr.SetValue(par.expr)
+                pwids.vary.SetStringSelection(varstr)
+                pwids.value.SetValue(par.value)
+                pwids.minval.SetValue(par.min)
+                pwids.maxval.SetValue(par.max)
+                pwids.onVaryChoice()
+
+    def onPanelHidden(self, event=None):
+        "set params from widget values"
+        params = self.parent.larch_get('curvefit_params')
+        for pname, pwids in self.parwids.items():
+            par = params.get(pname, None)
+            if par is None:
+                continue
+            varstr = pwids.vary.GetStringSelection()
+            par.vary = (varstr == 'vary')
+            par.min = pwids.minval.GetValue()
+            par.max = pwids.maxval.GetValue()
+            if varstr.startswith('cons'):
+                par.expr = pwids.expr.GetValue()
+            else:
+                par.value = pwids.value.GetValue()
