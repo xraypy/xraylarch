@@ -55,7 +55,6 @@ from .config import (CurveFit_ArrayChoices, PlotWindowChoices,
 
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
-
 MODELS = {'Constant': Group(model=ConstantModel, abbrev='const', type='other'),
           'Linear': Group(model=LinearModel, abbrev='line', type='other'),
           'Quadratic': Group(model=QuadraticModel, abbrev='quad', type='other'),
@@ -70,8 +69,8 @@ MODELS = {'Constant': Group(model=ConstantModel, abbrev='const', type='other'),
           'Moffat': Group(model=MoffatModel, abbrev='moffat', type='peak'),
           'Pearson4': Group(model=Pearson4Model, abbrev='pearson4', type='peak'),
           'Pearson7': Group(model=Pearson7Model, abbrev='pearson7', type='peak'),
-          'StudentsT': Group(model=StudentsTModel, abbrev='studentsT', type='peak'),
-          'Breit-Wigner': Group(model=BreitWignerModel, abbrev='breitwigner', type='peak'),
+          'Students T': Group(model=StudentsTModel, abbrev='studentst', type='peak'),
+          'Breit Wigner': Group(model=BreitWignerModel, abbrev='breit', type='peak'),
           'Lognormal': Group(model=LognormalModel, abbrev='lognorm', type='peak'),
           'Damped Harmonic Oscillator': Group(model=DampedHarmonicOscillatorModel,
                                           abbrev='dho', type='peak'),
@@ -94,10 +93,20 @@ MODELS = {'Constant': Group(model=ConstantModel, abbrev='const', type='other'),
                                           abbrev='rectatan', type='step'),
           'Erf Rectangle': Group(model=ErfRectangleModel, abbrev='recterf', type='step'),
           'Logistic Rectangle': Group(model=LogiRectangleModel, abbrev='rectlog', type='step'),
-          'User Expression': Group(model=ExpressionModel, abbrev='Expression', type='special'),
           'Spline': Group(model=SplineModel, abbrev='spline', type='special'),
           'Gaussian2d': Group(model=Gaussian2dModel, abbrev='gauss2d', type='special'),
 }
+
+# 'User Expression': Group(model=ExpressionModel, abbrev='Expression', type='special'),
+
+MODEL_ALIASES =  {'powerlaw': 'Power Law',
+                  'pseudovoigt': 'PseudoVoigt',
+                  'dho': 'Damped Harmonic Oscillator',
+                  'expgaussian': 'Exponential Gaussian',
+                  'atan_step': 'Arctan Step',
+                  'logi_step': 'Logistic Step',
+                  'atan_rectangle': 'Arctan Rectangle',
+                  'logi_rectangle': 'Logistic Rectangle'}
 
 ModelChoices = {'other': ['<General Models>'],  'peaks': ['<Peak Models>']}
 
@@ -107,29 +116,6 @@ for name, dat in MODELS.items():
     elif dat.type in ('other', 'step'):
         ModelChoices['other'].append(name)
 
-
-ModelAbbrevs = {'Constant': 'const',
-               'Linear': 'line',
-               'Quadratic': 'quad',
-               'Exponential': 'exp',
-               'PowerLaw': 'pow',
-               'Linear Step': 'line_step',
-               'Arctan Step': 'atan_step',
-               'ErrorFunction Step': 'erf_step',
-               'Logistic Step': 'logi_step',
-               'Rectangle': 'rect',
-               'Gaussian': 'gauss',
-               'Lorentzian': 'loren',
-               'Voigt': 'voigt',
-               'PseudoVoigt': 'pvoigt',
-               'DampedHarmonicOscillator': 'dho',
-               'Pearson7': 'pear7',
-               'StudentsT': 'studt',
-               'SkewedGaussian': 'sgauss',
-               'Moffat': 'moffat',
-               'BreitWigner': 'breit',
-               'Doniach': 'doniach',
-               'Lognormal': 'lognorm'}
 
 BaselineFuncs = ['No Baseline', 'Constant', 'Linear', 'Quadratic']
 
@@ -179,12 +165,6 @@ COMMANDS['do_curvefit'] = """# do curvefit
 curvefit_result = curvefit_run({group}, curvefit_model, curvefit_params)
 curvefit_result.user_options = {user_opts:s}
 """
-
-
-# def get_model_abbrev(modelname):
-#     if modelname in ModelAbbrevs:
-#         return ModelAbbrevs[modelname]
-#     return fix_varname(modelname).lower()
 
 def get_xlims(x, xmin=None, xmax=None):
     xeps = min(np.diff(x))/ 5.
@@ -315,7 +295,6 @@ class CurveFitResultFrame(wx.Frame):
         sizer.Add(wids['plot_choice'],(irow, 0), (1, 1), LEFT)
         sizer.Add(ppanel, (irow, 1), (1, 4), LEFT)
 
-
         irow += 1
         sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
 
@@ -423,7 +402,6 @@ class CurveFitResultFrame(wx.Frame):
         cview = self.wids['correl'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         cview.SetFont(self.font_fixedwidth)
 
-
         cview.AppendTextColumn('Parameter 1',    width=150)
         cview.AppendTextColumn('Parameter 2',    width=150)
         cview.AppendTextColumn('Correlation',    width=150)
@@ -460,15 +438,13 @@ class CurveFitResultFrame(wx.Frame):
 
     def onRemoveFromHistory(self, event=None):
         result = self.get_fitresult()
-        if wx.ID_YES != Popup(self,
-                              f"Remove fit '{result.label}' from history?\nThis cannot be undone.",
-                              "Remove fit?", style=wx.YES_NO):
-                return
-
-        self.datagroup.curvefit.fit_history.pop(self.nfit)
-        self.nfit = 0
-        self.show_results()
-
+        ret = Popup(self,
+                    f"Remove fit '{result.label}' from history?\nThis cannot be undone.",
+                   "Remove fit?", style=wx.YES_NO)
+        if ret == wx.ID_YES:
+            self.datagroup.curvefit.fit_history.pop(self.nfit)
+            self.nfit = 0
+            self.show_results()
 
     def onSaveAllStats(self, evt=None):
         "Save Parameters and Statistics to CSV"
@@ -497,7 +473,7 @@ class CurveFitResultFrame(wx.Frame):
         out = ['# Curve Fit Report %s' % time.ctime(),
                '# Fitted Array name: %s' %  user_opts['array_name'],
                '# Model form: %s' % model_desc,
-               '# Baseline form: %s' % user_opts['baseline_form'],
+               '# Baseline form: %s' % user_opts.get('baseline_form', 'No baseline'),
                '# Energy fit range: [%f, %f]' % (user_opts['xmin'], user_opts['xmax']),
                '#--------------------']
 
@@ -1628,8 +1604,10 @@ class CurveFitPanel(TaskPanel):
 
         result = cvfit.result
         bkg_comps = cvfit.user_options['bkg_components']
+
         for comp in result.model.components:
             isbkg = comp.prefix in bkg_comps
+            # print("USE MODEL ", comp, comp.func, comp.prefix, comp.opts)
             self.addModel(model=comp.func.__name__,
                           prefix=comp.prefix, isbkg=isbkg,
                           opts=comp.opts)
@@ -1864,10 +1842,18 @@ class ModelComponentPanel(GridPanel):
         GridPanel.__init__(self, parent, ncols=ncols, nrows=nrows, pad=pad, itemstyle=CEN)
 
         fit_comps = parent.fit_components
-        mod_abbrev = MODELS[modelname].abbrev
 
+        if modelname not in MODELS:
+            mname_alt = modelname.replace('_', ' ').replace('-', ' ').title()
+            if mname_alt in MODELS:
+                modelname = mname_alt
+            elif modelname.lower() in MODEL_ALIASES:
+                modelname = MODEL_ALIASES[modelname.lower()]
+
+        modgroup = MODELS[modelname]
+        # print('add Model : ', modelname, modgroup)
         if prefix is None:
-            curmodels = [f"{mod_abbrev}{i+1}_" for i in range(1+len(fit_comps))]
+            curmodels = [f"{modgroup.abbrev}{i+1}_" for i in range(1+len(fit_comps))]
             # print("Current Models ", curmodels, fit_comps.keys())
             for comp in fit_comps:
                 if comp in curmodels:
@@ -1880,7 +1866,7 @@ class ModelComponentPanel(GridPanel):
         self.title = prefix[:-1]
         self.isbkg = isbkg
         self.label = f"{modelname}(prefix='{prefix}')"
-        self.mclass = MODELS[modelname].model
+        self.mclass = modgroup.model
 
         self.build()
 
