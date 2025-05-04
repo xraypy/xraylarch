@@ -1402,28 +1402,25 @@ before clearing"""
             self.show_subframe('athena_import', AthenaImporter,
                                controller=self.controller, filename=fullpath,
                                read_ok_cb=self.onReadAthenaProject_OK)
-            return
 
         # check for Spec File
-        if is_specfile(fullpath):
+        elif is_specfile(fullpath):
             self.show_subframe('spec_import', SpecfileImporter,
                                filename=fullpath,
                                _larch=self.larch_buffer.larchshell,
                                config=self.last_spec_config,
                                read_ok_cb=self.onReadSpecfile_OK)
-            return
 
         # check for Larch Session File
-        if is_larch_session_file(fullpath):
+        elif is_larch_session_file(fullpath):
             self.onLoadSession(path=fullpath)
-            return
-
 
         # default to Column File
-        self.show_subframe('readfile', ColumnDataFileFrame, filename=fullpath,
-                        config=self.last_col_config,
-                        _larch=self.larch_buffer.larchshell,
-                        read_ok_cb=self.onRead_OK)
+        else:
+            self.show_subframe('readfile', ColumnDataFileFrame, filename=fullpath,
+                               config=self.last_col_config,
+                               _larch=self.larch_buffer.larchshell,
+                               read_ok_cb=self.onRead_OK)
 
     def onReadSpecfile_OK(self, script, path, scanlist, config=None):
         """read groups from a list of scans from a specfile"""

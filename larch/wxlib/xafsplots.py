@@ -1406,8 +1406,7 @@ def plot_curvefit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     if fit is None:
         raise ValueError('Group needs curvefit.fit_history or init_fit')
 
-    print(f"Plot Curvefit {show_init=}")
-    print( dir(fit) )
+    # print(f"Plot Curvefit {show_init=}")
     opts = fit.user_options
     xplot = getattr(fit, 'xdat', getattr(fit, 'x', None))
     yplot = getattr(fit, 'ydat', getattr(fit, 'y', None))
