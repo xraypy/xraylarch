@@ -2023,27 +2023,7 @@ class LarixApp(LarchWxApp):
                                 with_wx_inspect=self.with_wx_inspect,
                                 check_version=self.check_version)
         self.SetTopWindow(self.frame)
-        # if self.with_wx_inspect:
-        #    wx.GetApp().ShowInspectionTool()
         return True
 
 def larix(**kws):
     LarixApp(**kws)
-
-if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser(description=LARIX_TITLE)
-    parser.add_argument(
-        '-f', '--filename',
-        dest='filename',
-        help='data file to load')
-    parser.add_argument(
-        '-m', '--mode',
-        dest='mode',
-        help='mode to start larix')
-    parser.add_argument(
-        '-w', '--wx_inspect',
-        dest='wx_inspect',
-        help='wx debugging mode')
-    args = parser.parse_args()
-    LarixApp(**vars(args)).MainLoop()
