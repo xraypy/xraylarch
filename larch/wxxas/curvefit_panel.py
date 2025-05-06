@@ -1101,7 +1101,10 @@ class CurveFitParamsPanel(wx.Panel):
         self.update()
 
     def onPanelHidden(self, event=None):
-        self.update_components()
+        try:
+            self.update_components()
+        except:
+            pass
 
     def update_components(self):
         """ updates the component parameter widgets"""
@@ -1486,7 +1489,11 @@ class CurveFitPanel(TaskPanel):
                 self.mod_nb.DeletePage(i)
 
         for attr in dir(fcomp):
-            setattr(fcomp, attr, None)
+            if attr is not None:
+                try:
+                    setattr(fcomp, attr, None)
+                except:
+                    pass
 
         self.fit_components.pop(prefix)
         if len(self.fit_components) < 1:
@@ -1712,23 +1719,16 @@ class CurveFitPanel(TaskPanel):
         self.larch_eval("\n".join(cmds))
 
     def onFitSelected(self, event=None):
-        dgroup = self.controller.get_group()
-        if dgroup is None:
-            return
-
         opts = self.read_form()
-
-        self.show_subframe('curvefit_result', CurveFitResultFrame,
-                           datagroup=dgroup, fit_frame=self)
 
         selected_groups = self.controller.filelist.GetCheckedStrings()
         groups = [self.controller.file_groups[cn] for cn in selected_groups]
         ngroups = len(groups)
         for igroup, gname in enumerate(groups):
             dgroup = self.controller.get_group(gname)
-            if not hasattr(dgroup, 'norm'):
-                self.parent.process_normalization(dgroup)
+            # print("Fitting group ", gname)
             self.build_fitmodel(gname)
+
             opts['group'] = opts['gname']
             self.larch_eval(COMMANDS['curvefit_setup'].format(**opts))
 
@@ -1742,10 +1742,10 @@ class CurveFitPanel(TaskPanel):
             for label, comp in self.fit_components.items():
                 if comp.bkgbox.IsChecked():
                     bkg_comps.append(label)
-
             opts['bkg_components'] = bkg_comps
+
             imin, imax = self.get_xranges(dgroup.xplot)
-            cmds = ["## do curvefit for group %s / %s " % (gname, dgroup.filename) ]
+            cmds = [f"## do curvefit for group {gname} / {dgroup.filename}"]
 
             cmds.extend([COMMANDS['do_curvefit']])
             cmd = '\n'.join(cmds)
@@ -1760,10 +1760,10 @@ class CurveFitPanel(TaskPanel):
             dgroup.journal.add('curvefit', jnl)
             if igroup == 0:
                 self.autosave_modelresult(cvfit)
-
+            self.showresults_btn.Enable()
+            # print("Did fit for grouop ", dgroup, opts)
             self.subframes['curvefit_result'].add_results(dgroup, form=opts,
-                                                         larch_eval=self.larch_eval,
-                                                         show=igroup==ngroups-1)
+                                                         larch_eval=self.larch_eval)
 
     def onFitModel(self, event=None):
         dgroup = self.controller.get_group()
@@ -1806,7 +1806,6 @@ class CurveFitPanel(TaskPanel):
         self.autosave_modelresult(cvfit)
         self.onPlot()
         self.showresults_btn.Enable()
-
 
         self.show_subframe('curvefit_result', CurveFitResultFrame, fit_frame=self)
         self.subframes['curvefit_result'].add_results(dgroup, form=opts,
@@ -1882,7 +1881,7 @@ class ModelComponentPanel(GridPanel):
         bkgbox = Check(self, default=self.isbkg, label='Is Baseline?', size=(125, -1))
 
         delbtn = Button(self, 'Delete This Component', size=(200, -1),
-                        action=partial(parent.onDeleteComponent,prefix=prefix))
+                        action=partial(parent.onDeleteComponent, prefix=prefix))
 
         pick2msg = SimpleText(self, "    ", size=(125, -1))
         pick2btn = Button(self, 'Pick Values from Plot', size=(200, -1),
