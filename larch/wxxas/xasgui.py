@@ -637,6 +637,7 @@ class LarixFrame(wx.Frame):
         datatype = getattr(dgroup, 'datatype', 'xydata')
         if datatype.startswith('xas'):
             ipage, pagepanel = self.get_nbpage('xasnorm')
+        self.get_nbpage('exafs')[1].process(dgroup, force=force)
             if ipage == self.nb.GetSelection():
                 if not (hasattr(dgroup, 'norm') and hasattr(dgroup, 'e0')):
                     self.process_normalization(dgroup, force=True,
@@ -662,15 +663,17 @@ class LarixFrame(wx.Frame):
 
         self.controller.group = dgroup
         self.controller.groupname = groupname
-        if process:
+
+        plot_on_choose = force_plot
+        pchoose_wid = pagepanel.wids.get('plot_on_choose', None)
+        if pchoose_wid is not None and not plot_on_choose:
+            plot_on_choose = pchoose_wid.IsChecked()
+        if process or plot_on_choose:
             pagepanel.fill_form(dgroup)
-            plot_on_choose = force_plot
-            if not force_plot and 'plot_on_choose' in pagepanel.wids:
-                plot_on_choose = pagepanel.wids['plot_on_choose'].IsChecked()
             if plot_on_choose:
                 pagepanel.skip_process = False
                 pagepanel.process(dgroup=dgroup)
-                if force_plot and hasattr(pagepanel, 'plot'):
+                if hasattr(pagepanel, 'plot'):
                     pagepanel.plot(dgroup=dgroup)
                 pagepanel.skip_process = False
 
