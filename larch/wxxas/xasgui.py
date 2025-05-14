@@ -538,10 +538,13 @@ class LarixFrame(wx.Frame):
         """
         atab = LARIX_PANELS.get(name, None)
         if atab is None:
+            for ttab in LARIX_PANELS.values():
+                if name.lower() == ttab.title.lower():
+                    atab = ttab
+        if atab is None:
             return None
 
         current_panels = self.get_panels()
-        #print("Add panel , current = ", name, atab.title)
         if atab.title in current_panels:
             return current_panels[atab.title]
         # not in current tabs, so add it
@@ -569,15 +572,15 @@ class LarixFrame(wx.Frame):
     def get_nbpage(self, name):
         "get nb page by name"
         name = name.lower()
-        out = 0
-        if name not in LARIX_PANELS:
-            print("unknown panel : ", name, LARIX_PANELS)
-            return 0, self.nb.GetPage(0)
+        for pname, ppanel in LARIX_PANELS.items():
+            if name == pname.lower() or name == ppanel.title.lower():
+                name = pname
 
-        atab = LARIX_PANELS[name]
+        panel = LARIX_PANELS[name]
         current_panels = self.get_panels()
-        if atab.title in current_panels:
-            ipage = current_panels[atab.title]
+
+        if panel.title in current_panels:
+            ipage = current_panels[panel.title]
         else:
             ipage = self.add_analysis_panel(name)
         return ipage, self.nb.GetPage(ipage)
@@ -643,6 +646,7 @@ class LarixFrame(wx.Frame):
                 if ipan == cur_pan:
                     panname = name
 
+        # print("ShowFile ", panname, self.get_panels())
         ipage, pagepanel = self.get_nbpage(panname)
         if panname == 'xasnorm':
             if not (hasattr(dgroup, 'norm') and hasattr(dgroup, 'e0')):
@@ -1579,7 +1583,6 @@ before clearing"""
             jrnl = {'source_desc': f'{spath:s}: {gname:s}'}
             cmd = script.format(group=gid, prjgroup=gname)
             self.larch.eval(cmd)
-            print("READ ATHENA ", ig, cmd)
             dgroup = self.install_group(gid, label, process=False, plot='no',
                                         source=path, journal=jrnl)
             groups_added.append(gid)
@@ -1658,7 +1661,6 @@ before clearing"""
         cur_panel.skip_plotting = False
 
         if len(labels) > 0 and gid is not None:
-            print("READ Athena OK -> ShowFile" )
             self.ShowFile(groupname=gid, process=True, plot='yes')
         self.write_message("read %d datasets from %s" % (len(namelist), path))
         self.last_athena_file = path
