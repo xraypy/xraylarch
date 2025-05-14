@@ -779,6 +779,11 @@ class EXAFSPanel(TaskPanel):
         plotter = self.onPlotSel if self.last_plot=='selected' else self.onPlotOne
         plotter(dgroup=dgroup)
 
+    def plot(self, **kws):
+        """for compat"""
+        self.onPlot(**kws)
+
+
     def onPlotOne(self, evt=None, dgroup=None):
         if self.skip_plotting:
             return
@@ -795,6 +800,7 @@ class EXAFSPanel(TaskPanel):
 
         self.last_plot = 'one'
         self.controller.set_focus()
+
 
     def _get_plotcmd(self, conf, space=1, delay_draw=False, new=True,
                     offset=None, label=None, title=None):
