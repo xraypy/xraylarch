@@ -619,8 +619,8 @@ class LarixFrame(wx.Frame):
         label = evt.GetString()
         pass
 
-    def ShowFile(self, evt=None, groupname=None, process=True,
-                 filename=None, force_plot=False, **kws):
+    def ShowFile(self, evt=None, groupname=None,
+                 filename=None, process=True, plot='auto', **kws):
         if filename is None and evt is not None:
             filename = str(evt.GetString())
 
@@ -635,16 +635,18 @@ class LarixFrame(wx.Frame):
             return
 
         datatype = getattr(dgroup, 'datatype', 'xydata')
+        panname = 'xydata'
         if datatype.startswith('xas'):
-            ipage, pagepanel = self.get_nbpage('xasnorm')
-        self.get_nbpage('exafs')[1].process(dgroup, force=force)
-            if ipage == self.nb.GetSelection():
-                if not (hasattr(dgroup, 'norm') and hasattr(dgroup, 'e0')):
-                    self.process_normalization(dgroup, force=True,
-                                                  use_form=False)
+            cur_pan = self.nb.GetSelection()
+            panname = 'xasnorm'
+            for name, ipan in self.get_panels().items():
+                if ipan == cur_pan:
+                    panname = name
 
-        else:
-            ipage, pagepanel = self.get_nbpage('xydata')
+        ipage, pagepanel = self.get_nbpage(panname)
+        if panname == 'xasnorm':
+            if not (hasattr(dgroup, 'norm') and hasattr(dgroup, 'e0')):
+                process = True
 
         if filename is None:
             filename = dgroup.filename
@@ -664,18 +666,17 @@ class LarixFrame(wx.Frame):
         self.controller.group = dgroup
         self.controller.groupname = groupname
 
-        plot_on_choose = force_plot
-        pchoose_wid = pagepanel.wids.get('plot_on_choose', None)
-        if pchoose_wid is not None and not plot_on_choose:
-            plot_on_choose = pchoose_wid.IsChecked()
-        if process or plot_on_choose:
+        if plot == 'auto':
+            pchoose_wid = pagepanel.wids.get('plot_on_choose', None)
+            if pchoose_wid is not None:
+                plot = 'yes' if pchoose_wid.IsChecked() else 'no'
+        if process or plot == 'yes':
             pagepanel.fill_form(dgroup)
-            if plot_on_choose:
-                pagepanel.skip_process = False
-                pagepanel.process(dgroup=dgroup)
-                if hasattr(pagepanel, 'plot'):
-                    pagepanel.plot(dgroup=dgroup)
-                pagepanel.skip_process = False
+            pagepanel.process(dgroup=dgroup)
+
+        if plot=='yes' and hasattr(pagepanel, 'plot'):
+            pagepanel.plot(dgroup=dgroup)
+            pagepanel.skip_process = False
 
         self.controller.filelist.SetStringSelection(filename)
 
@@ -1223,7 +1224,7 @@ before clearing"""
             mfiles  = '[%s]' % (', '.join(mfiles))
             mgroups = '[%s]' % (', '.join(mgroups))
             desc = "%s: merge of %d groups" % (fname, len(groups))
-            self.install_group(gname, fname, source=desc,
+            self.install_group(gname, fname, source=desc, plot='yes',
                                journal={'source_desc': desc,
                                         'merged_groups': mgroups,
                                         'merged_filenames': mfiles})
@@ -1358,9 +1359,7 @@ before clearing"""
 
     def onLoadFitResult(self, event=None):
         pass
-        # print("onLoadFitResult??")
-        # self.nb.SetSelection(1)
-        # self.nb_panels[1].onLoadFitResult(event=event)
+
 
     def onReadDialog(self, event=None):
         dlg = wx.FileDialog(self, message="Read Data File",
@@ -1430,7 +1429,7 @@ before clearing"""
         self.larch.eval("_specfile = specfile('{path:s}')".format(path=path))
         dgroup = None
         fname = Path(path).name
-        first_group = None
+        # first_group = None
         cur_panel = self.nb.GetCurrentPage()
         cur_panel.skip_plotting = True
         symtable = self.larch.symtable
@@ -1450,6 +1449,7 @@ before clearing"""
                 # filename = f"{spath}:{yname}"
                 multi_chans.pop(0)
 
+        gname = None
         for scan in scanlist:
             gname = fix_varname("{:s}{:s}".format(fname[:6], scan))
             if hasattr(symtable, gname):
@@ -1461,15 +1461,15 @@ before clearing"""
 
             cur_panel.skip_plotting = (scan == scanlist[-1])
             yname = config['yarr1']
-            if first_group is None:
-                first_group = gname
+            # if first_group is None:
+            #     first_group = gname
             cmd = script.format(group=gname, specfile='_specfile',
                                 path=path, scan=scan, **config)
 
             self.larch.eval(cmd)
             displayname = f"{fname} scan{scan} {yname}"
             jrnl = {'source_desc': f"{fname}: scan{scan} {yname}"}
-            dgroup = self.install_group(gname, displayname, journal=jrnl)
+            dgroup = self.install_group(gname, displayname, journal=jrnl, plot='no')
             if len(multi_chans) > 0:
                 yplotline = None
                 for line in script.split('\n'):
@@ -1497,13 +1497,13 @@ before clearing"""
                                          iy1=mchan, iy2=multi_i0, ylabel=ylabel)
                     self.larch.eval(cmd)
                     self.install_group(ngroup, dname, source=path, journal=njournal,
-                                       force_plot=False)
+                                       plot='no')
 
 
         cur_panel.skip_plotting = False
 
-        if first_group is not None:
-            self.ShowFile(groupname=first_group, process=True, force_plot=True)
+        if gname is not None:
+            self.ShowFile(groupname=gname, process=True, plot='yes')
         self.write_message("read %d datasets from %s" % (len(scanlist), path))
         self.larch.eval('del _specfile')
 
@@ -1519,6 +1519,7 @@ before clearing"""
         if array_sel is not None:
             self.last_array_sel_spec = array_sel
 
+        gname = None
         for scan in scanlist:
             gname = fix_varname("{:s}{:s}".format(fname[:6], scan))
             if hasattr(symtable, gname):
@@ -1539,14 +1540,14 @@ before clearing"""
             jrnl = {'source_desc': f"{fname:s}: scan{scan:s} {yname:s}"}
             dgroup = self.install_group(gname, displayname,
                                         process=True,
-                                        force_plot=False,
+                                        plot='no',
                                         extra_sums=extra_sums,
                                         source=displayname,
                                         journal=jrnl)
         cur_panel.skip_plotting = False
 
-        if first_group is not None:
-            self.ShowFile(groupname=first_group, process=True, force_plot=True)
+        if gname is not None:
+            self.ShowFile(groupname=gname, process=True, plot='yes')
         self.write_message("read %d datasets from %s" % (len(scanlist), path))
         self.larch.eval('del _data_source')
 
@@ -1561,6 +1562,7 @@ before clearing"""
         labels = []
         groups_added = []
 
+        gid = None
         for ig, gname in enumerate(namelist):
             cur_panel.skip_plotting = (gname == namelist[-1])
             this = getattr(self.larch.symtable._prj, gname)
@@ -1577,7 +1579,8 @@ before clearing"""
             jrnl = {'source_desc': f'{spath:s}: {gname:s}'}
             cmd = script.format(group=gid, prjgroup=gname)
             self.larch.eval(cmd)
-            dgroup = self.install_group(gid, label, process=False,
+            print("READ ATHENA ", ig, cmd)
+            dgroup = self.install_group(gid, label, process=False, plot='no',
                                         source=path, journal=jrnl)
             groups_added.append(gid)
 
@@ -1654,11 +1657,9 @@ before clearing"""
         self.larch.eval("del _prj")
         cur_panel.skip_plotting = False
 
-        plot_first = True
-        if len(labels) > 0:
-            gname = self.controller.file_groups[labels[0]]
-            self.ShowFile(groupname=gname, process=True, force_plot=plot_first)
-            plot_first = False
+        if len(labels) > 0 and gid is not None:
+            print("READ Athena OK -> ShowFile" )
+            self.ShowFile(groupname=gid, process=True, plot='yes')
         self.write_message("read %d datasets from %s" % (len(namelist), path))
         self.last_athena_file = path
         self.controller.sync_xasgroups()
@@ -1719,7 +1720,7 @@ before clearing"""
         if 'yerr' in array_desc:
             journal['yerr'] = array_desc['yerr'].format(group=groupname)
 
-        self.install_group(groupname, filename, source=path, journal=journal)
+        self.install_group(groupname, filename, source=path, journal=journal, plot='auto')
 
         dtype = getattr(config, 'datatype', 'xydata')
         def install_multichans(config):
@@ -1755,7 +1756,7 @@ before clearing"""
                                                 yarray=yarray)
                 self.larch.eval(cmd)
                 self.install_group(ngroup, fname, source=path, journal=njournal,
-                                   force_plot=False)
+                                   plot='no')
 
         if len(multi_chans) > 0:
             install_multichans(config)
@@ -1767,7 +1768,7 @@ before clearing"""
             if 'yref' in array_desc:
                 refjournal['yplot'] = ydx = array_desc['yref'].format(group=refgroup)
                 refjournal['source_desc'] = f'{spath:s}: {ydx:s}'
-            self.install_group(refgroup, config['reffile'],
+            self.install_group(refgroup, config['reffile'], plot='no',
                                source=path, journal=refjournal)
 
         # check if rebin is needed
@@ -1825,7 +1826,7 @@ before clearing"""
             if 'yerr' in array_desc:
                 journal['yerr'] = array_desc['yerr'].format(group=gname)
 
-            self.install_group(gname, fname, source=path, journal=journal, plot=False)
+            self.install_group(gname, fname, source=path, journal=journal, plot='no')
             if len(multi_chans) > 0:
                 install_multichans(config)
 
@@ -1836,18 +1837,19 @@ before clearing"""
                     refjournal['yplot'] = ydx = array_desc['yref'].format(group=refgroup)
                     refjournal['source_desc'] = f'{spath:s}: {ydx:s}'
 
-                self.install_group(refgroup, reffile, source=path, journal=refjournal, plot=False)
+                self.install_group(refgroup, reffile, source=path, journal=refjournal,
+                                       plot='no')
 
 
         if gname is not None:
-            self.ShowFile(groupname=gname)
+            self.ShowFile(groupname=gname, process=True, plot='yes')
 
         self.write_message("read %s" % (spath))
         if do_rebin:
             RebinDataDialog(self, self.controller).Show()
 
     def install_group(self, groupname, filename=None, source=None, journal=None,
-                      process=True, force_plot=True):
+                      process=True, plot='auto'):
         """add groupname / filename to list of available data groups"""
         if isinstance(groupname, Group):
             dgroup = groupname
@@ -1865,7 +1867,7 @@ before clearing"""
         ipage, pagepanel = self.get_nbpage(startpage)
         self.nb.SetSelection(ipage)
         self.ShowFile(groupname=groupname, filename=filename,
-                      process=process, force_plot=force_plot)
+                      process=process, plot=plot)
 
     ##
     def get_recent_session_menu(self):
