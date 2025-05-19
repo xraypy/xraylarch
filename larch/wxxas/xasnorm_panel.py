@@ -330,7 +330,10 @@ class XASNormPanel(TaskPanel):
         conf['edge'] = getattr(dgroup,'edge', 'K')
         # print("Conf 1 ", dgroup.groupname, conf['atsym'], getattr(dgroup, 'e0', 'no e0'))
         if hasattr(dgroup, 'e0') and conf['atsym'] == '?':
-            self.set_atom_edge('?', '?')
+            atsym, edge = guess_edge(dgroup.e0)
+
+            dgroup.atsym = conf['atsym'] = atsym
+            dgroup.edge =  conf['edge'] = edge
 
         try:
             conf['e0_nominal'] = e0_nom = xray_edge(conf['atsym'] , conf['edge']).energy
@@ -476,7 +479,7 @@ class XASNormPanel(TaskPanel):
             atsym, edge = guess_edge(dgroup.e0)
 
         dgroup.atsym = conf['atsym'] = atsym
-        dgroup.edge = conf['edge'] = edge
+        dgroup.edge =  conf['edge'] = edge
 
         try:
             e0_nom = xray_edge(atsym , edge).energy
@@ -791,6 +794,8 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         eshift = form.get('energy_shift', ediff)
         e1 = getattr(dgroup, 'energy', [ediff])
         e2 = getattr(dgroup, 'energy_orig', None)
+        gname = dgroup.groupname
+
 
         if (not isinstance(e2, np.ndarray) or (len(e1) != len(e2))):
             cmds.append("{group:s}.energy_orig = {group:s}.energy[:]")
@@ -805,12 +810,11 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
                          "{group:s}.energy = {group:s}.xplot = {group:s}.energy_orig + {group:s}.energy_shift"])
 
         if len(cmds) > 0:
-            self.larch_eval(('\n'.join(cmds)).format(group=dgroup.groupname, eshift=eshift))
+            self.larch_eval(('\n'.join(cmds)).format(group=gname, eshift=eshift))
 
         e0 = form['e0']
         edge_step = form['edge_step']
-
-        copts = [dgroup.groupname]
+        copts = [gname]
         if not form['auto_e0']:
             if e0 < max(dgroup.energy) and e0 > min(dgroup.energy):
                 copts.append("e0=%.4f" % float(e0))
@@ -830,7 +834,21 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
                 val = f"{float(val):.2f}"
             copts.append(f"{attr}={val}")
 
-        self.larch_eval("pre_edge(%s) #a" % (', '.join(copts)))
+        xasmode = getattr(dgroup, 'xasmode', 'fluorescence')
+        if xasmode.startswith('calc'):
+            npts  =  int(1 + len(dgroup.mu) / 10)
+            #norm2 = dgroup.energy[-3] - e0
+            #norm1 = norm2 / 2.0
+            # xx_opts = {'e0': e0, 'pre1': 0, 'pre2': 0, 'npre': 0, 'nvict': 0, 'nnorm': 1,
+            #             'norm1': norm1, 'norm2': norm2}
+            # gropts =  ','.join(f'{k}={v}' for k, v in copts.items())
+            gropts =  ','.join(copts)
+            scmds = [f'{gname}.edge_step = {edge_step}',
+                     f'{gname}.norm = {gname}.mu[:]/{edge_step}',
+                     f'{gname}.pre_edge_details = group({gropts})']
+            self.larch_eval("\n".join(scmds))
+        else:
+            self.larch_eval("pre_edge(%s) #a" % (', '.join(copts)))
         self.larch_eval("{group:s}.norm_poly = 1.0*{group:s}.norm".format(**form))
         if not hasattr(dgroup, 'e0'):
             self.skip_process = False
@@ -843,7 +861,8 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
 
         dgroup.journal.add_ifnew('normalization_method', norm_method)
 
-        if force_mback or norm_method.startswith('mback'):
+        if ((not xasmode.startswith('calc')) and
+            (force_mback or norm_method.startswith('mback'))):
             form['normmeth'] = 'mback'
             copts = [dgroup.groupname]
             copts.append("z=%d" % atomic_number(form['atsym']))
@@ -890,8 +909,11 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
             conf['edge'] = dgroup.edge = edge
             # conf['atsym'] = atsym
             # conf['edge'] = edge
-        self.wids['atsym'].SetStringSelection(dgroup.atsym)
-        self.wids['edge'].SetStringSelection(dgroup.edge)
+        try:
+            self.wids['atsym'].SetStringSelection(dgroup.atsym)
+            self.wids['edge'].SetStringSelection(dgroup.edge)
+        except:
+            pass
 
         for attr in ('e0', 'edge_step'):
             conf[attr] = getattr(dgroup, attr)
