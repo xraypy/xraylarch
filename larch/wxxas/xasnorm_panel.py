@@ -834,7 +834,7 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
                 val = f"{float(val):.2f}"
             copts.append(f"{attr}={val}")
 
-        xasmode = getattr(dgroup, 'xasmode', 'fluorescence')
+        xasmode = getattr(dgroup, 'xasmode', 'unknown')
         if xasmode.startswith('calc'):
             npts  =  int(1 + len(dgroup.mu) / 10)
             #norm2 = dgroup.energy[-3] - e0
