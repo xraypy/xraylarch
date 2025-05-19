@@ -40,6 +40,8 @@ YERR_OPS = ('Constant', 'Sqrt(Y)', 'Array')
 CONV_OPS  = ('Lorenztian', 'Gaussian')
 
 DATATYPES = ('xydata', 'xas')
+XAS_MODE_TYPES = ('unknown', 'transmission', 'fluorescence', 'herfd', 'calculation')
+
 ENUNITS_TYPES = ('eV', 'keV', 'degrees', 'not energy')
 
 
@@ -646,7 +648,7 @@ class ColumnDataFileFrame(wx.Frame) :
         if self.config['yref2'] is None and 'i1' in self.array_labels:
             self.config['yref2'] = 'i1'
 
-        use_trans = self.config.get('is_trans', False) or 'log' in self.config['ypop']
+        # use_trans = self.config.get('xasmode', 'unknown') == 'transmission' or 'log' in self.config['ypop']
 
         message = "Data Columns for %s" % group.filename
         wx.Frame.__init__(self, None, -1,
@@ -679,6 +681,11 @@ class ColumnDataFileFrame(wx.Frame) :
         self.datatype = Choice(panel, choices=DATATYPES, action=self.onUpdate, size=(150, -1))
         self.datatype.SetStringSelection(self.workgroup.datatype)
 
+        self.xasmode = Choice(panel, choices=XAS_MODE_TYPES, action=self.onUpdate, size=(150, -1))
+        wmode = getattr(self.workgroup, 'xasmode', 'unknown')
+        self.xasmode.SetStringSelection(wmode)
+        self.xasmode.Enable(self.workgroup.datatype=='xas')
+
         self.en_units = Choice(panel, choices=ENUNITS_TYPES,
                                action=self.onEnUnitsSelect, size=(150, -1))
 
@@ -687,20 +694,16 @@ class ColumnDataFileFrame(wx.Frame) :
         self.yerr_op = Choice(panel, choices=YERR_OPS, action=self.onYerrChoice, size=(100, -1))
         self.yerr_op.SetSelection(0)
 
-        self.is_trans = Check(panel, label='is transmission data?',
-                              default=use_trans, action=self.onTransCheck)
-
         self.yerr_val = FloatCtrl(panel, value=1, precision=4, size=(75, -1))
         self.monod_val  = FloatCtrl(panel, value=3.1355316, precision=7, size=(75, -1))
 
         xlab = SimpleText(panel, ' X array = ')
         ylab = SimpleText(panel, ' Y array = ')
-        units_lab = SimpleText(panel, '  Units of X array:  ')
+        units_lab = SimpleText(panel, 'Units of X array: ')
         yerr_lab = SimpleText(panel, ' Y uncertainty = ')
         dtype_lab = SimpleText(panel, ' Data Type: ')
         monod_lab = SimpleText(panel, ' Mono D spacing (Ang): ')
         yerrval_lab = SimpleText(panel, ' Value:')
-        self.info_message = subtitle('    ', colour=GUI_COLORS.title_red)
 
         # yref
         self.has_yref = Check(panel, label='data file includes energy reference data',
@@ -761,7 +764,7 @@ class ColumnDataFileFrame(wx.Frame) :
         self.wid_refgroupname = wx.TextCtrl(panel, value=group.groupname + '_ref',
                                          size=(150, -1))
 
-        self.onTransCheck(is_trans=use_trans)
+        # self.onTransCheck(is_trans=use_trans)
         self.onYrefCheck(has_yref=self.config['has_yref'])
 
 
@@ -772,44 +775,44 @@ class ColumnDataFileFrame(wx.Frame) :
         _edit   = Button(bpanel, 'Edit Array Names', action=self.onEditNames)
         self.multi_sel = Button(bpanel, 'Select Multilple Columns',  action=self.onMultiColumn)
         self.multi_clear = Button(bpanel, 'Clear Multiple Columns',  action=self.onClearMultiColumn)
+        self.dtc_button  = Button(bpanel, 'Sum and Correct Fluoresence Data', action=self.onDTC)
+
         self.multi_clear.Disable()
         _edit.SetToolTip('Change the current Column Names')
-
         self.multi_sel.SetToolTip('Select Multiple Columns to import as separate groups')
         self.multi_clear.SetToolTip('Clear Multiple Column Selection')
+
+        self.dtc_button.SetToolTip('Select channels and do deadtime-corrections for multi-element fluorescence data')
+
         bsizer.Add(_ok)
         bsizer.Add(_cancel)
         bsizer.Add(_edit)
+        bsizer.Add(self.dtc_button)
         bsizer.Add(self.multi_sel)
         bsizer.Add(self.multi_clear)
+
         _ok.SetDefault()
         pack(bpanel, bsizer)
 
-        self.dtc_button  = Button(panel, 'Sum and Correct Fluoresence Data', action=self.onDTC)
-        self.dtc_button.SetToolTip('Select channels and do deadtime-corrections for multi-element fluorescence data')
 
         sizer = wx.GridBagSizer(2, 2)
         sizer.Add(title,     (0, 0), (1, 7), LEFT, 5)
 
         ir = 1
-        sizer.Add(subtitle(' X [Energy] Array:'),   (ir, 0), (1, 2), LEFT, 0)
-        sizer.Add(dtype_lab,       (ir, 3), (1, 1), RIGHT, 0)
-        sizer.Add(self.datatype,   (ir, 4), (1, 2), LEFT, 0)
+        sizer.Add(dtype_lab,       (ir, 0), (1, 1), LEFT, 0)
+        sizer.Add(self.datatype,   (ir, 1), (1, 1), LEFT, 0)
+        sizer.Add(SimpleText(panel, 'XAS Mode:'), (ir, 2), (1, 1), LEFT, 0)
+        sizer.Add(self.xasmode,     (ir, 3), (1, 2), LEFT, 0)
 
         ir += 1
-        sizer.Add(xlab,      (ir, 0), (1, 1), LEFT, 0)
-        sizer.Add(self.xarr, (ir, 1), (1, 2), LEFT, 0)
-        sizer.Add(units_lab,     (ir, 3), (1, 1), RIGHT, 0)
-        sizer.Add(self.en_units,  (ir, 4), (1, 2), LEFT, 0)
-
+        sizer.Add(xlab,           (ir, 0), (1, 1), LEFT, 0)
+        sizer.Add(self.xarr,      (ir, 1), (1, 1), LEFT, 0)
+        sizer.Add(units_lab,      (ir, 2), (1, 1), LEFT, 0)
+        sizer.Add(self.en_units,  (ir, 3), (1, 1), LEFT, 0)
         ir += 1
-        sizer.Add(monod_lab,     (ir, 2), (1, 2), RIGHT, 0)
-        sizer.Add(self.monod_val,(ir, 4), (1, 1), LEFT, 0)
+        sizer.Add(monod_lab,      (ir, 2), (1, 1), LEFT, 0)
+        sizer.Add(self.monod_val, (ir, 3), (1, 1), LEFT, 0)
 
-        ir += 1
-        sizer.Add(subtitle(' Y [\u03BC(E)] Array:'), (ir, 0), (1, 1), LEFT, 0)
-        sizer.Add(self.is_trans,                     (ir, 1), (1, 2), LEFT, 0)
-        sizer.Add(self.dtc_button,                   (ir, 3), (1, 2), RIGHT, 0)
         ir += 1
         sizer.Add(ylab,       (ir, 0), (1, 1), LEFT, 0)
         sizer.Add(self.ypop,  (ir, 1), (1, 1), LEFT, 0)
@@ -829,13 +832,11 @@ class ColumnDataFileFrame(wx.Frame) :
         ir += 1
         sizer.Add(SimpleText(panel, ' Display Name:'), (ir, 0), (1, 1), LEFT, 0)
         sizer.Add(self.wid_filename,                  (ir, 1), (1, 2), LEFT, 0)
-        sizer.Add(SimpleText(panel, ' Group Name:'),   (ir, 3), (1, 1), RIGHT, 0)
-        sizer.Add(self.wid_groupname,                 (ir, 4), (1, 2), LEFT, 0)
+        ir += 1
+        sizer.Add(SimpleText(panel, ' Group Name:'),   (ir, 0), (1, 1), LEFT, 0)
+        sizer.Add(self.wid_groupname,                 (ir, 1), (1, 2), LEFT, 0)
 
         ir += 1
-        sizer.Add(self.info_message,                  (ir, 0), (1, 5), LEFT, 1)
-
-        ir += 2
         sizer.Add(subtitle(' Reference [\u03BC_ref(E)] Array: '),
                   (ir, 0), (1, 2), LEFT, 0)
         sizer.Add(self.has_yref,   (ir, 2), (1, 3), LEFT, 0)
@@ -846,6 +847,7 @@ class ColumnDataFileFrame(wx.Frame) :
         sizer.Add(self.yref1, (ir, 2), (1, 1), LEFT, 0)
         sizer.Add(self.yrop,  (ir, 3), (1, 1), RIGHT, 0)
         sizer.Add(self.yref2, (ir, 4), (1, 2), LEFT, 0)
+
 
         ir += 1
         sizer.Add(SimpleText(panel, ' Reference Name:'), (ir, 0), (1, 1), LEFT, 0)
@@ -860,7 +862,7 @@ class ColumnDataFileFrame(wx.Frame) :
 
         self.nb = flatnotebook(self, {}, style=FNB_STYLE)
 
-        self.plotpanel = PlotPanel(self, messenger=self.plot_messages)
+        self.plotpanel = PlotPanel(self, messenger=self.set_message)
         try:
             plotopts = self._larch.symtable._sys.wx.plotopts
             self.plotpanel.conf.set_theme(plotopts['theme'])
@@ -872,7 +874,7 @@ class ColumnDataFileFrame(wx.Frame) :
         self.plotpanel.SetMinSize((200, 200))
         textpanel = wx.Panel(self)
         ftext = wx.TextCtrl(textpanel, style=wx.TE_MULTILINE|wx.TE_READONLY,
-                               size=(400, 250))
+                               size=(370, 275))
 
         ftext.SetValue(group.text)
         ftext.SetFont(Font(FONTSIZE))
@@ -918,7 +920,7 @@ class ColumnDataFileFrame(wx.Frame) :
                                         add_data=False)
         if sum is None:
             return
-        self.info_message.SetLabel(f"Added array '{label}' with summed and corrected fluorecence data")
+        self.set_message(f"Added array '{label}' with summed and corrected fluorecence data")
         self.workgroup.array_labels.append(label)
         self.set_array_labels(self.workgroup.array_labels)
         npts = len(sum)
@@ -932,7 +934,7 @@ class ColumnDataFileFrame(wx.Frame) :
 
     def onClearMultiColumn(self, event=None):
         self.config['multicol_config'] = {}
-        self.info_message.SetLabel(f" cleared reading of multiple columns")
+        self.set_message(f" cleared reading of multiple columns")
         self.multi_clear.Disable()
         self.yarr1.Enable()
         self.ypop.Enable()
@@ -961,7 +963,7 @@ class ColumnDataFileFrame(wx.Frame) :
             self.yop.Disable()
             y2 = self.yarr2.GetStringSelection()
             msg = f"  Will import {len(config['channels'])} Y arrays, divided by '{y2}'"
-            self.info_message.SetLabel(msg)
+            self.set_message(msg)
             self.multi_clear.Enable()
         if update:
             self.onUpdate()
@@ -1085,6 +1087,8 @@ class ColumnDataFileFrame(wx.Frame) :
         self.expressions = conf['expressions']
         filename = conf['filename']
         groupname = conf['groupname']
+        datatype  = conf['datatype']
+        xasmode = conf['xasmode']
 
         conf['array_labels'] = self.workgroup.array_labels
 
@@ -1100,7 +1104,7 @@ class ColumnDataFileFrame(wx.Frame) :
             sumcmd = "sum_fluor_channels({{group}}, {roi}, icr={icr}, ocr={ocr}, ltime={ltime})"
             buff.append(sumcmd.format(**dtc_conf))
 
-        buff.append("{group}.datatype = '%s'" % (conf['datatype']))
+        buff.append("{group}.datatype = '%s'" % (datatype))
 
         for attr in ('plot_xlabel', 'plot_ylabel'):
             val = getattr(self.workgroup, attr)
@@ -1128,6 +1132,7 @@ class ColumnDataFileFrame(wx.Frame) :
                 buff.append("{group}.xplot = {group}.x")
             buff.append("{group}.energy = {group}.xplot[:]")
             buff.append("{group}.mu = {group}.yplot[:]")
+            buff.append("{group}.xasmode = '%s'" % (xasmode))
             buff.append("sort_xafs({group}, overwrite=True, fix_repeats=True)")
         elif dtype == 'xydata':
             buff.append("{group}.xdat = {group}.xplot[:]")
@@ -1184,6 +1189,18 @@ class ColumnDataFileFrame(wx.Frame) :
         elif 'array' in yerr_choice.lower():
             self.yerr_arr.Enable()
         # self.onUpdate()
+
+    def onXASMode(self, evt=None):
+        xasmode = self.xasmode.GetStringSelction()
+        if xasmode == 'transmission':
+            self.ypop.SetStringSelection('-log(')
+        else:
+            self.ypop.SetStringSelection('')
+        try:
+            self.onUpdate()
+        except:
+            pass
+
 
     def onTransCheck(self, evt=None, is_trans=False):
         if evt is not None:
@@ -1274,10 +1291,13 @@ class ColumnDataFileFrame(wx.Frame) :
             self.en_units.SetStringSelection('not energy')
 
         ypop = self.ypop.GetStringSelection().strip()
-        self.is_trans.SetValue('log' in ypop)
+
+        if 'log' in ypop:
+            self.xasmode.SetStringSelection('transmission')
 
 
         conf = {'datatype': datatype,
+                'xasmode': self.xasmode.GetStringSelection(),
                 'ix':  self.xarr.GetSelection(),
                 'xarr': self.xarr.GetStringSelection(),
                 'en_units': self.en_units.GetStringSelection(),
@@ -1320,8 +1340,10 @@ class ColumnDataFileFrame(wx.Frame) :
         self.expressions = cout.pop('expressions')
         conf.update(cout)
 
+        self.xasmode.Enable(conf['datatype']=='xas')
+
         if energy_may_need_rebinning(workgroup):
-            self.info_message.SetLabel("Warning: XAS data may need to be rebinned!")
+            self.set_message("Warning: XAS data may need to be rebinned!")
 
         fname = Path(workgroup.filename).name
         popts = dict(marker='o', markersize=4, linewidth=1.5, title=fname,
@@ -1341,7 +1363,7 @@ class ColumnDataFileFrame(wx.Frame) :
             if 'plot' in self.nb.GetPageText(i).lower():
                 self.nb.SetSelection(i)
 
-    def plot_messages(self, msg, panel=1):
+    def set_message(self, msg, panel=1):
         self.statusbar.SetStatusText(msg, panel)
 
 
