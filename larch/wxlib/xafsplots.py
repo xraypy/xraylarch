@@ -423,7 +423,7 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, show_ek0=Fa
         if disp is not None:
             disp.panel.conf.draw_legend()
     #endif
-    redraw(win=win, xmin=emin, xmax=emax, ymin=ymin, ymax=ymax, _larch=_larch)
+    redraw(win=win, xmin=emin, xmax=emax, _larch=_larch)
 #enddef
 
 def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
