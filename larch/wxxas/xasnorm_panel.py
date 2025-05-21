@@ -987,7 +987,7 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         with_deriv = (plot2 == 'dmude')
         with_deriv2 = (plot2 == 'd2mude')
         with_norm = (plot2 == 'norm')
-        with_mback =  (plot2 == 'mback_norm')
+        with_mback = (plot2 == 'mback_mu')
         if process or (with_mback and not hasattr(dgroup, 'mback_mu')):
             self.ensure_xas_processed(dgroup, force_mback=True)
 
