@@ -72,8 +72,6 @@ from larch.io import (read_ascii, read_xdi, read_gsexdi, gsescan_group,
                       AthenaProject, make_hashkey, is_specfile, open_specfile)
 from larch.io.xas_data_source import open_xas_source
 
-from larch.xafs import pre_edge, pre_edge_baseline
-
 # FNB_STYLE = flat_nb.FNB_NO_X_BUTTON
 FNB_STYLE = flat_nb.FNB_X_ON_TAB
 FNB_STYLE |= flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
