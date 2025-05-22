@@ -1733,7 +1733,7 @@ before clearing"""
                     yplotline = line.replace("{group}", "{ngroup}")
             mscript = ["{ngroup} = deepcopy({group})",
                        yplotline,
-                       # "{ngroup}.mu = {ngroup}.{yarray} = {ngroup}.yplot[:]",
+                       "{ngroup}.mu = {ngroup}.{yarray} = {ngroup}.yplot[:]",
                       "{ngroup}.plot_ylabel = '{ylabel}'" ]
             if dtype == 'xydata':
                 mscript.append("{ngroup}.scale = ptp({ngroup}.ydat+1.e-15)")
