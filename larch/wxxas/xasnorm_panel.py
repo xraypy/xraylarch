@@ -836,19 +836,9 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
 
         xasmode = getattr(dgroup, 'xasmode', 'unknown')
         if xasmode.startswith('calc'):
-            npts  =  int(1 + len(dgroup.mu) / 10)
-            #norm2 = dgroup.energy[-3] - e0
-            #norm1 = norm2 / 2.0
-            # xx_opts = {'e0': e0, 'pre1': 0, 'pre2': 0, 'npre': 0, 'nvict': 0, 'nnorm': 1,
-            #             'norm1': norm1, 'norm2': norm2}
-            # gropts =  ','.join(f'{k}={v}' for k, v in copts.items())
-            gropts =  ','.join(copts)
-            scmds = [f'{gname}.edge_step = {edge_step}',
-                     f'{gname}.norm = {gname}.mu[:]/{edge_step}',
-                     f'{gname}.pre_edge_details = group({gropts})']
-            self.larch_eval("\n".join(scmds))
-        else:
-            self.larch_eval("pre_edge(%s) " % (', '.join(copts)))
+            copts.append('iscalc=True')
+
+        self.larch_eval("pre_edge(%s) " % (', '.join(copts)))
         self.larch_eval("{group:s}.norm_poly = 1.0*{group:s}.norm".format(**form))
         if not hasattr(dgroup, 'e0'):
             self.skip_process = False
