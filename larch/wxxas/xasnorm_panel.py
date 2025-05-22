@@ -848,7 +848,7 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
                      f'{gname}.pre_edge_details = group({gropts})']
             self.larch_eval("\n".join(scmds))
         else:
-            self.larch_eval("pre_edge(%s) #a" % (', '.join(copts)))
+            self.larch_eval("pre_edge(%s) " % (', '.join(copts)))
         self.larch_eval("{group:s}.norm_poly = 1.0*{group:s}.norm".format(**form))
         if not hasattr(dgroup, 'e0'):
             self.skip_process = False
