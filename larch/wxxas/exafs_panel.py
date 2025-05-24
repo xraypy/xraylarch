@@ -578,8 +578,8 @@ class EXAFSPanel(TaskPanel):
         self.set_defaultconfig(self.read_form())
 
     def onShowEk0(self, evt=None):
-        pass
-
+        plotter = self.onPlotSel if self.last_plot=='selected' else self.onPlotOne
+        wx.CallAfter(plotter)
 
     def onPushE0(self, evt=None):
         conf = self.read_form()
