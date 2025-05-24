@@ -73,7 +73,7 @@ class LarchApp(object):
         parser.add_argument('filename', nargs='?',  help=self.filetype)
 
         parser.add_argument('-m', '-mode', dest='run_mode',
-                            default='xas', help='set startup mode')
+                            default='none', help='set startup mode')
         parser.add_argument('-w', '-wx_inspect', dest='wx_inspect',
                             default=False, help='enable wxPython inspection and debugging')
 
