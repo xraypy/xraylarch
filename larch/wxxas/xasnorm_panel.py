@@ -575,7 +575,7 @@ class XASNormPanel(TaskPanel):
         dgroup = self.controller.get_group()
         groupname = dgroup.groupname
         self.ensure_xas_processed(dgroup, force_mback=True)
-        title = f'{dgroup.filename}: normalization methods'
+        title = f'{dgroup.filename}'
 
         self.larch_eval(f"""plot({groupname}.energy, {groupname}.norm_poly,
    new=True, delay_draw=True, label='norm (poly)', linewidth=3, show_legend=True,
