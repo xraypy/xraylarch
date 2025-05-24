@@ -265,6 +265,13 @@ class XYDataPanel(TaskPanel):
             dgroup = self.controller.get_group(groupname)
             if dgroup is None:
                 continue
+
+            if ((getattr(dgroup, 'plot_yarrays', None) is None or
+                 getattr(dgroup, 'dydx', None) is None or
+                 getattr(dgroup, 'd2ydx', None) is None or
+                 getattr(dgroup, 'ynorm', None) is None)):
+                self.process(dgroup=dgroup)
+
             trace = {'xdata': dgroup.xplot,
                      'ydata': getattr(dgroup, yarray_name) + ix*voff,
                      'label': dgroup.filename, 'new': newplot}
