@@ -78,7 +78,7 @@ FNB_STYLE |= flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
 LEFT = wx.ALIGN_LEFT
 CEN |=  wx.ALL
-FILE_WILDCARDS = "Data Files|*.0*;*.dat;*.DAT;*.xdi;*.prj;*.sp*c;*.h*5;*.larix|All files (*.*)|*.*"
+FILE_WILDCARDS = "Data Files|*.0*;*.dat;*.DAT;*.xdi;*.txt;*.TXT;*.prj;*.sp*c;*.h*5;*.larix|All files (*.*)|*.*"
 
 ICON_FILE = 'onecone.ico'
 LARIX_SIZE = (1050, 850)
@@ -136,6 +136,9 @@ class PreferencesFrame(wx.Frame):
         def text(panel, label, size):
             return SimpleText(panel, label, size=(size, -1), style=LEFT)
 
+        self.panselect = PanelSelectionPanel(self.nb, parent, controller)
+        self.nb.AddPage(self.panselect, 'analysis panels', True)
+
         for name, data in FULLCONF.items():
             self.wids[name] = {}
 
@@ -185,6 +188,9 @@ class PreferencesFrame(wx.Frame):
                     wid = TextCtrl(panel, size=(250, -1), value=val, action=cb)
 
                 label = HyperText(panel, key, action=helpcb, size=(150, -1))
+                label.SetToolTip(cvar.desc)
+                wid.SetToolTip(cvar.desc)
+
                 panel.Add((5, 5), newrow=True)
                 panel.Add(label)
                 panel.Add(wid)
@@ -231,15 +237,17 @@ class PreferencesFrame(wx.Frame):
         self.controller.config[section][option] = value
 
     def onSave(self, event=None):
+        self.controller.config['main']['panels'] = self.panselect.get_selections()
         self.controller.save_config()
 
-class PanelSelectionFrame(wx.Frame):
-    """select analysis panels to display"""
-    def __init__(self, parent, controller, **kws):
+class PanelSelectionPanel(wx.Panel):
+    """panel for Preferences Frame to select analysis tabs/panels to display"""
+    def __init__(self, parent, main, controller, **kws):
         self.controller = controller
         self.parent = parent
-        wx.Frame.__init__(self, None, -1,  'Larix Configuration: Analysis Panels',
-                          style=FRAMESTYLE, size=(650, 500))
+        self.main = main
+        wx.Panel.__init__(self, parent)
+
         self.wids = {}
 
         style    = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
@@ -247,35 +255,33 @@ class PanelSelectionFrame(wx.Frame):
         rlabstyle = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
         tstyle    = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 
-        font = parent.GetFont()
-
-        titlefont  = self.GetFont()
-        titlefont.PointSize += 2
-        titlefont.SetWeight(wx.BOLD)
-
         sizer = wx.GridBagSizer(5, 5)
         panel = scrolled.ScrolledPanel(self, size=(700, 750),
                                        style=wx.GROW|wx.TAB_TRAVERSAL)
 
         title = SimpleText(panel, 'Select Larix Modes and Analysis Panels',
-                           size=(500, 25),
-                           font=Font(FONTSIZE+1), style=LEFT,
-                           colour=GUI_COLORS.nb_text)
+                           size=(550, -1),
+                           font=Font(FONTSIZE+2), style=LEFT,
+                           colour=GUI_COLORS.title)
+
         modetitle = SimpleText(panel, 'Analysis Mode: ')
         panetitle = SimpleText(panel, 'Select Individual Analysis Panels: ')
 
         self.wids = wids = {}
-        self.current_mode = self.parent.mode
+        self.current_mode = self.main.mode
+        if self.current_mode in (None, 'none', 'None'):
+            self.current_mode = 'all'
         modenames = [m[0] for m in LARIX_MODES.values()]
 
         wids['modechoice'] = Choice(panel, choices=modenames, size=(350, -1),
                                     action=self.on_modechoice)
-        wids['modechoice'].SetStringSelection(LARIX_MODES[self.current_mode][0])
+        if self.current_mode in LARIX_MODES:
+            wids['modechoice'].SetStringSelection(LARIX_MODES[self.current_mode][0])
 
-        page_map = self.parent.get_panels()
-        irow = 0
-        sizer.Add(title, (irow, 0), (1, 2), labstyle|wx.ALL, 3)
+        page_map = self.main.get_panels()
         irow = 1
+        sizer.Add(title, (irow, 0), (1, 2), labstyle|wx.ALL, 3)
+        irow += 1
         sizer.Add(modetitle, (irow, 0), (1, 1), labstyle|wx.ALL, 3)
         sizer.Add(wids['modechoice'], (irow, 1), (1, 1), labstyle|wx.ALL, 3)
         irow += 1
@@ -290,7 +296,7 @@ class PanelSelectionFrame(wx.Frame):
 
         for key, atab in LARIX_PANELS.items():
             iname = (atab.title + ' '*strlen)[:strlen]
-            cb = wx.CheckBox(panel, -1, iname)#, style=wx.ALIGN_RIGHT)
+            cb = wx.CheckBox(panel, -1, iname)
             cb.SetValue(atab.title in page_map)
             desc = SimpleText(panel, LARIX_PANELS[key].desc)
             self.selections[key] = cb
@@ -301,12 +307,9 @@ class PanelSelectionFrame(wx.Frame):
         irow += 1
         sizer.Add(HLine(panel, (325, 3)), (irow, 0), (1, 2), labstyle|wx.ALL, 3)
 
-        btn_ok     = Button(panel, 'Apply', size=(70, -1), action=self.OnOK)
-        btn_cancel = Button(panel, 'Done', size=(70, -1), action=self.OnCancel)
-
+        btn_ok     = Button(panel, 'Apply Now', size=(150, -1), action=self.OnApply)
         irow += 1
         sizer.Add(btn_ok,     (irow, 0), (1, 1), labstyle|wx.ALL, 3)
-        sizer.Add(btn_cancel, (irow, 1), (1, 1), labstyle|wx.ALL, 3)
 
         pack(panel, sizer)
         panel.SetupScrolling()
@@ -315,8 +318,6 @@ class PanelSelectionFrame(wx.Frame):
 
         self.SetMinSize((750, 450))
         pack(self, mainsizer)
-        self.Show()
-        self.Raise()
 
     def on_modechoice(self, event=None):
         modename = event.GetString()
@@ -326,40 +327,37 @@ class PanelSelectionFrame(wx.Frame):
                 self.current_mode = key
         panels = LARIX_MODES[self.current_mode][1]
         self.Freeze()
-        for name in self.selections:
-            self.selections[name].SetValue(False)
-
-        for name in panels:
-            if name in self.selections:
-                self.selections[name].SetValue(True)
+        for name, wid in self.selections.items():
+            wid.SetValue(name in panels)
+        self.controller.config['main']['panels'] = self.get_selections()
         self.Thaw()
 
-    def OnOK(self, event=None):
-        self.parent.Hide()
-        self.parent.Freeze()
-        for i in range(self.parent.nb.GetPageCount()):
-            self.parent.nb.DeletePage(0)
+    def get_selections(self):
+        return [name for name, cb in self.selections.items() if cb.IsChecked()]
 
-        for name, cb in self.selections.items():
-            if cb.IsChecked():
-                try:
-                    self.parent.add_analysis_panel(name)
-                except:
-                    pass
-        self.parent.nb.SetSelection(0)
-        self.parent.mode = self.current_mode
-        self.parent.Thaw()
-        self.parent.Show()
+    def OnApply(self, event=None):
+        self.main.Hide()
+        self.main.Freeze()
+        for i in range(self.main.nb.GetPageCount()):
+            self.main.nb.DeletePage(0)
 
-    def OnCancel(self, event=None):
-        self.Destroy()
+        for name in self.get_selections():
+            try:
+                self.main.add_analysis_panel(name)
+            except:
+                pass
+        self.main.nb.SetSelection(0)
+        self.main.mode = self.current_mode
+        self.main.Thaw()
+        self.main.Show()
+
 
 class LarixFrame(wx.Frame):
     _about = f"""{LARIX_TITLE}
     Matt Newville <newville @ cars.uchicago.edu>
     """
     def __init__(self, parent=None, _larch=None, filename=None,
-                 with_wx_inspect=False, mode='xas', check_version=True, **kws):
+                 with_wx_inspect=False, mode=None, check_version=True, **kws):
         wx.Frame.__init__(self, parent, -1, size=LARIX_SIZE, style=FRAMESTYLE)
 
         if check_version:
@@ -369,9 +367,6 @@ class LarixFrame(wx.Frame):
             version_thread.start()
 
         self.with_wx_inspect = with_wx_inspect
-        self.mode = mode
-        if self.mode not in LARIX_MODES:
-            self.mode = 'xas'
         self.last_col_config = {}
         self.last_spec_config = {}
         self.last_session_file = None
@@ -390,8 +385,16 @@ class LarixFrame(wx.Frame):
                                            exit_on_close=False)
 
         self.larch = self.larch_buffer.larchshell
-
+        self.mode = mode
         self.controller = XASController(wxparent=self, _larch=self.larch)
+        panels = self.controller.config['main'].get('panels', None)
+        if mode in LARIX_MODES:
+            panels = LARIX_MODES[mode][1]
+        if panels is None:
+            panels = LARIX_MODES['xas'][1]
+
+        self.controller.config['main']['panels'] = panels
+
         iconfile = Path(icondir, ICON_FILE).as_posix()
         self.SetIcon(wx.Icon(iconfile, wx.BITMAP_TYPE_ICO))
 
@@ -424,6 +427,7 @@ class LarixFrame(wx.Frame):
         self.statusbar.SetStatusText('ready', 1)
         self.timers['autosave'].Start(30_000)
 
+
         if self.current_filename is not None:
             wx.CallAfter(self.onRead, self.current_filename)
 
@@ -440,6 +444,10 @@ class LarixFrame(wx.Frame):
         xsiz, ysiz = self.GetSize()
         plotpos = (xpos+xsiz+2, ypos)
         self.controller.get_display(stacked=False, position=plotpos)
+
+        if self.controller.config['main'].get('show_larch_buffer', False):
+            wx.CallAfter(self.onShowLarchBuffer)
+
         self.Raise()
 
 
@@ -507,11 +515,11 @@ class LarixFrame(wx.Frame):
                                on_change=self.onNBChanged,
                                style=FNB_STYLE,
                                size=(700, 700))
-        panels = LARIX_MODES[self.mode][1]
-        for key, atab in LARIX_PANELS.items():
-            if key in panels:
+
+        for panelname in self.controller.config['main']['panels']:
+            if panelname in LARIX_PANELS:
                 try:
-                    self.add_analysis_panel(key)
+                    self.add_analysis_panel(panelname)
                 except:
                     pass
         self.nb.SetSelection(0)
@@ -760,10 +768,6 @@ class LarixFrame(wx.Frame):
             MenuItem(self, session_menu, 'wx inspect\tCtrl+I',
                      'Show wx inspection window',   self.onwxInspect)
 
-        MenuItem(self, pref_menu, 'Select Analysis Panels and Modes',
-                'Select Analysis Panels and Modes',
-                 self.onPanelSelect)
-
         MenuItem(self, pref_menu, 'Edit Preferences\tCtrl+E', 'Customize Preferences',
                  self.onPreferences)
 
@@ -775,7 +779,6 @@ class LarixFrame(wx.Frame):
 
         MenuItem(self, group_menu, "Show Journal for This Group",
                  "Show Processing Journal for This Group", self.onGroupJournal)
-
 
         group_menu.AppendSeparator()
 
@@ -987,10 +990,6 @@ class LarixFrame(wx.Frame):
 
     def onPreferences(self, evt=None):
         self.show_subframe('preferences', PreferencesFrame,
-                           controller=self.controller)
-
-    def onPanelSelect(self, evt=None):
-        self.show_subframe('panel_select', PanelSelectionFrame,
                            controller=self.controller)
 
     def onLoadSession(self, evt=None, path=None):
@@ -2014,7 +2013,7 @@ before clearing"""
 
 
 class LarixApp(LarchWxApp):
-    def __init__(self, filename=None, check_version=True, mode='xas',
+    def __init__(self, filename=None, check_version=True, mode=None,
                  with_wx_inspect=False, **kws):
         self.filename = filename
         self.mode = mode
