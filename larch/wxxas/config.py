@@ -109,6 +109,9 @@ LARIX_PANELS = {
     'xydata':
     AnalysisTab('XY Data', 'larch.wxxas.xydata_panel.XYDataPanel',
                 'Read and Manipulate XY Data from Column Data files'),
+    'curvefit':
+    AnalysisTab('Curve Fitting', 'larch.wxxas.curvefit_panel.CurveFitPanel',
+                'General Curve Fitting of XY Data'),
     'xasnorm':
     AnalysisTab('XAS Normalization', 'larch.wxxas.xasnorm_panel.XASNormPanel',
                 'Normalization and Pre-edge subtraction for XANES and EXAFS'),
@@ -130,11 +133,16 @@ LARIX_PANELS = {
     'feffit':
     AnalysisTab('FEFF Fitting', 'larch.wxxas.feffit_panel.FeffitPanel',
                 'EXAFS Path Fitting with FEFF calculations'),
-    'curvefit':
-    AnalysisTab('Curve Fitting', 'larch.wxxas.curvefit_panel.CurveFitPanel',
-                'General Curve Fitting of XY Data'),
 
+#     'larch_buffer':
+#     AnalysisTab('Larch Buffer', 'larch.wxlib.LarchFrame',
+#                 'Inspect Larch commands and data (separate window)'),
 }
+
+#
+#     'xrd1d':
+#     AnalysisTab('XRD 1D Viewing', 'larch.wxxrd.xrd1d_display',
+#                'Browse and Search XRD 1D patterns'),
 
 LARIX_MODES = {
     'all': ('All', [k for k  in LARIX_PANELS]),
@@ -142,8 +150,8 @@ LARIX_MODES = {
     'xas': ('XANES and EXAFS', ('xasnorm', 'prepeaks', 'pca', 'lincombo', 'exafs', 'feffit')),
     'exafs': ('EXAFS only', ('xasnorm', 'exafs', 'feffit')),
     'xanes': ('XANES only', ('xasnorm', 'prepeaks', 'pca', 'lincombo')),
-    'xrf': ('XRF Mapping and Analysis', ('maproi', 'mapareas', 'maptomo', 'mapxrf')),
-    'xrd1d': ('XRD 1D', ('xrd1d', )),
+    # 'xrf': ('XRF Mapping and Analysis', ('maproi', 'mapareas', 'maptomo', 'mapxrf')),
+    # 'xrd1d': ('XRD 1D', ('xrd1d', )),
     }
 
 class CVar:
@@ -180,7 +188,8 @@ CONF_SECTIONS.update({'main': 'Main program configuration',
 
 main = [CVar('chdir_on_fileopen', True, 'bool', desc='whether to change working directory when opening a file'),
         CVar('workdir', get_homedir(), 'path', desc='starting working directory'),
-        CVar('use_last_workdir', True, 'bool',  desc='whehter to use the working directory of the last session\nor always start in workdir'),
+        CVar('use_last_workdir', True, 'bool',  desc='whether to use the working directory of the last session\nor always start in workdir'),
+        CVar('show_larch_buffer', False, 'bool',  desc='whether to show the Larch Buffer with data and commands on startup'),
         ]
 
 autosave = [CVar('savetime', 900, 'int', min=1, step=30, desc='time (in sec) between auto-saving Session files'),
@@ -329,7 +338,7 @@ _locals = locals()
 
 for section in ('main', 'autosave', 'pin', 'plot', 'xasnorm', 'exafs',
                 'feffit', 'prepeaks', 'lincombo', 'pca', 'regression',
-                'xydata', 'xrd1d', 'curvefit'):
+                'xydata', 'curvefit'):   # 'xrd1d',
     sname = section
     XASCONF[sname] = {}
     FULLCONF[sname] = {}
