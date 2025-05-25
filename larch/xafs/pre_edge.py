@@ -86,8 +86,8 @@ def find_e0_calc(energy, mu=None, group=None, **kws):
                                          fcn_name='find_e0')
     energy, mu = remove_nans2(energy, mu)
     # first find e0 without smoothing, then refine with smoothing
-    dmude = np.gradient(mu)/np.gradient(en)
-    imax = np.where(dmude > 0.99*dmudel.max())[0]
+    dmude = np.gradient(mu)/np.gradient(energy)
+    imax = np.where(dmude > 0.99*dmude.max())[0]
     return energy[imax]
 
 
@@ -231,7 +231,7 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, npre=1, pre1=No
     if pre1 > pre2:
         pre1, pre2 = pre2, pre1
     if iscalc:
-        pre1 = pre2 = e0 - energy[0]
+        pre1 = pre2 = energy[0] - e0
         ipre1 = ipre2 = 0
 
     ipre1 = index_of(energy-e0, pre1)
@@ -262,6 +262,7 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, npre=1, pre1=No
     if iscalc:
         pre_edge = mu[0] * np.ones(len(energy))
         precoefs = [mu[0], 0.0]
+        npre = 0
     elif npre == 0:
         if p2 == p1:
             p2 = p2 + 1
