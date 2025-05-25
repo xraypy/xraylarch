@@ -68,9 +68,13 @@ def make_lcfplot(dgroup, form, with_fit=True, nfit=0):
         elif form['arrayname'] == 'dmude':
             form['plotopt'] = 'show_deriv=True'
 
-        erange = form['ehi'] - form['elo']
-        form['pemin'] = 10*int( (form['elo'] - 5 - erange/4.0) / 10.0)
-        form['pemax'] = 10*int( (form['ehi'] + 5 + erange/4.0) / 10.0)
+        elo, ehi = form['elo'], form['ehi']
+        if elo > dgroup.energy.min():
+            elo, ehi = elo - dgroup.e0, ehi - dgroup.e0
+
+        erange = ehi - elo
+        form['pemin'] = 10*int((elo - 5 - erange/4.0) / 10.0)
+        form['pemax'] = 10*int((ehi + 5 + erange/4.0) / 10.0)
 
         cmds = ["""plot_mu({group:s}, {plotopt:s}, delay_draw=True, label='data',
         emin={pemin:.1f}, emax={pemax:.1f}, title='{filename:s}, {label:s}', win={win:d})"""]
@@ -450,9 +454,13 @@ class LinComboResultFrame(wx.Frame):
         if form['arrayname'] == 'flat':
             form['plotopt'] = 'show_flat=True'
 
-        erange = form['ehi'] - form['elo']
-        form['pemin'] = 10*int( (form['elo'] - 5 - erange/4.0) / 10.0)
-        form['pemax'] = 10*int( (form['ehi'] + 5 + erange/4.0) / 10.0)
+        elo, ehi = form['elo'], form['ehi']
+        if elo > dgroup.energy.min():
+            elo, ehi = elo - dgroup.e0, ehi - dgroup.e0
+
+        erange = ehi - elo
+        form['pemin'] = 10*int((elo - 5 - erange/4.0) / 10.0)
+        form['pemax'] = 10*int((ehi + 5 + erange/4.0) / 10.0)
 
         cmds = ["""plot_mu({group:s}, {plotopt:s}, delay_draw=True, label='data',
         emin={pemin:.1f}, emax={pemax:.1f}, title='{filename:s}', win={win:d})"""]
