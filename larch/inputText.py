@@ -204,6 +204,7 @@ class InputText:
         self.larch = _larch
         self.prompt = prompt
         self.prompt2 = prompt2
+        self.valid_commands = None
         self.saved_text = BLANK_TEXT
         self.history = HistoryBuffer(filename=historyfile,
                                      maxlines=maxhistory)
@@ -285,6 +286,8 @@ class InputText:
 
         if self.larch is not None:
             getsym = self.larch.symtable.get_symbol
+
+        if self.valid_commands is None:
             self.valid_commands = getsym('_sys.valid_commands', create=True)
 
         if self.history is not None and add_history:
