@@ -1,8 +1,90 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+Notable changes to this project should be documented in this file.
+The GitHub Release Notes will also be useful
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+
+## [2025.2.0 - 2025-05-25]
+
+### Larix improvements and bugfixes:
+
+ - many improvements to importing and showing XY data
+ - add initial working Curve Fitting Panel for XY and XAS data.
+ - add "XAS MODE" when reading XAS data, including 'calculation'
+ - better reading of FEFF/FDMNES calculated XAS spectra, use "mode=calculation" when reading these files.
+ - re-arrange Plotting choices for XAS Normalization Panel
+ - re-arrange Plotting choices for EXAFS  Panel
+ - allow "Plot relative to E0" - either Group's E0 or elements nominal E0 in XAS Normalization Panel
+ - allow "Plot-on-Choose Group" to be optional in XAS Normalization and EXAFS Panel
+ - add colored console logger
+ - add Constat+StepModel (arctan/error function) to pre-edge peak baselines, some related tweaks
+ - tweak colors and how pre-edge baselines are plotted
+ - fix exporting feffit results in filtered chi(k)
+ - add plot theme of '<Auto>' to use system dark/light mode
+ - add stderr columns to linear combination output files
+ - save element/edge on selection, save in group config
+ - fix identifying reference groups from Athena Project files.
+ - better use of functions from xafsplots -- more reproducible plots.
+ - better consistency of Panel form data and Group's config -- auto-saving when a Panel is hidden and re-exposed.
+ - better saving og element/edge in XAS Normalization Panel
+ - allow showing EK0 on EXAFS Panel
+ - import and expand fit models from lmfit, defining step/rectangle functions by form (linear, atan, erf, ..)
+ - show tracebacks but fail gracefully when trying to import broken analysis panels
+ - make sure ynorm is defined before trying to plot in XY Data panel
+ - setting Displayed Panels is now under Edit Preferences, and choices can be saved for future sessions.
+ - fix setting energy range for linear Combo plots
+ - when importing session, make sure the datatype-appropriate panel is shown
+ - more consistent font weights, using Bold for all "results tables".
+
+### Other GUIs:
+
+ - XRF Map: fix adding highlighted areas, saving points
+ - XRF Map: do not rescale tomo reconstruction with mean value
+ - XRF Display/Control: add ROI countrates for each detector
+ - XRF Display/Control: add color warnings for ROI, OCR, deadtime
+ - XRF Display/Control: make sure to read xrf calibration if needed
+
+### xraylarch library:
+
+ - fix typos in rebin
+ - more error-checking for pre-edge details
+ - force polyfit to always return a list of coefficients
+ - add step models to pre_edge prepeaks models
+ - return smoothing default method back to "boxcar"
+ - use read_ascii for epics scanfiles
+ - many improvements to `xafsplots` functions
+ - refactor xyz2struct: Use vectorized np.max for coordinate calculation
+ - better error checking for encoding ndarrays
+ - xafs/autobk.py: reduce impact of spline clamps by a factor of 10
+ - xafs/pre_edge.py: add 'iscalc' option to set tiny pre-edge range, and pre_edge=constant for calculated XAS.
+ - fix autorange for plot_bkg() with multiple traces
+
+### General development and maintenance:
+
+ - refactoring and cleanup of some tests
+ - update numpy.testing usage
+ - remove support of pymca from deglitch
+ - remove pandas dependencies
+ - using scipy-based spike removal in place of numpy and pandas
+ - more usage of pathlib where possible for Path names and removing files
+ - better use of GitHub Actions on Pull Requests
+ - improve tests to allow DISPLAY for some preliminary GUI testing
+ - add darkdetect dependency, working toward better support for DARK v LIGHT mode
+ - allow numpy>2 and Python 3.13, using Python 3.13 by default.
+ - update license and pointers to license
+
+
+## [2025.1.1 - 2025-01-12]
+
+### Fixes
+
+ - bugfix for generating and running Feff for XAFS calculations -- fixed PRINT flag
+ - more error checking in find_e0 for coercing to numpy arrays.
+ - add spline interpolation option for XAFS re-binning
+ - updated the binary Installers and GetLarch Installation scripts to use the latest conda/mamba packages.
+ - some doc updates
 
 ## [0.9.66 - not released]
 
@@ -58,7 +140,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
   - XAS_Viewer: Feff-fitting paths (and so also parameters) are refreshed for
-	each fit (#377, #374)
+    each fit (#377, #374)
   - XAS_Viewer: most main windows are now resizable (#372)
   - Better checking and auto-pip-installing of wxutls and wxmplot (#376)
 
@@ -67,14 +149,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
   - XAS Viewer: Entries for the fit histories of pre-edge peak fitting and Feff
-	fitting can now be erased.
+    fitting can now be erased.
 
 ### Fixed
 
   - XAS Viewer: the merging of groups now works ;).
   - XAS Viewer: setting and energy shift for a group will copy that shift to
-	other groups with the same energy reference. There is a preference setting
-	to turn off this automated copying of energy shifts.
+    other groups with the same energy reference. There is a preference setting
+    to turn off this automated copying of energy shifts.
   - XAS Viewer: fixed very slow plotting -- now just back to normal "not fast".
   - XAS Viewer: dialogs have generally better sizes.
   - XAS Viewer: fixes for plotting of Pre-edge peak fits.
@@ -86,41 +168,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
   - each Group of XAFS data will have a Journal - a list of entries with (label,
-	value, timestamp) that will be used to record processing steps. The XAFS
-	processing functions will write the parameters they were called with to this
-	Journal. Users can add notes as Journal entries too.
+    value, timestamp) that will be used to record processing steps. The XAFS
+    processing functions will write the parameters they were called with to this
+    Journal. Users can add notes as Journal entries too.
 
   - XAS Viewer allows editing of program-wide Preferences, that set the default
-	values and settings for the various analysis steps and program behavior.
+    values and settings for the various analysis steps and program behavior.
 
   - In many windows showing analysis results, XAS Viewer supports setting the
-	plot window number (1 through 9) so that more than one or two plot windows
-	can be shown at a time.
+    plot window number (1 through 9) so that more than one or two plot windows
+    can be shown at a time.
 
   - Session-wide Project files (.larix extension) can now be saved and reloaded.
-	These files contain essentially all the arrays for each Group of data,
-	including Journals, processing results, and fit histories. The "processing
-	workspaces" for pre-edge peak fitting, PCA, Linear Combinations,
-	Regressions, and Feff fitting. These Session files can be saved/loaded by
-	plain Python commands. When loading these into XAS Viewer, the fit histories
-	and workspaces will be available. To allow better debugging and tracking of
-	provenance, these Session Files include "configuration" data about the
-	Session (python, larch version, etc) and a complete set of Larch commands
-	for the session, though session commands are not "restored". The files are
-	compressed and use a customized JSON encoding.
+    These files contain essentially all the arrays for each Group of data,
+    including Journals, processing results, and fit histories. The "processing
+    workspaces" for pre-edge peak fitting, PCA, Linear Combinations,
+    Regressions, and Feff fitting. These Session files can be saved/loaded by
+    plain Python commands. When loading these into XAS Viewer, the fit histories
+    and workspaces will be available. To allow better debugging and tracking of
+    provenance, these Session Files include "configuration" data about the
+    Session (python, larch version, etc) and a complete set of Larch commands
+    for the session, though session commands are not "restored". The files are
+    compressed and use a customized JSON encoding.
 
   - These Session files are now auto-saved by XAS Viewer periodically (every 15
-	minutes of activity, by default, and rotated so that a small number (3, by
-	default) of the most recent auto-saved files are kept. On startup, "restore
-	the last session" is available (Ctrl-I).
+    minutes of activity, by default, and rotated so that a small number (3, by
+    default) of the most recent auto-saved files are kept. On startup, "restore
+    the last session" is available (Ctrl-I).
 
 ### Fixed
 
   - XAS Viewer PCA fixed.
   - XAS Viewer now displays how each Group was created, for example
-	"-log(i1/i0)".
+    "-log(i1/i0)".
   - XAS Viewer panels have more uniform energy range settings, relative to E0,
-	per group.
+    per group.
   - XAS Viewer has more consistent coloring and font sizes.
   - XAS Viewer Quit dialog now lists the last saved Session file.
   - XAS Viewer now works even harder to keep _xasgroups correct.
@@ -139,28 +221,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
  - Reading files from [FDMNES](http://fdmnes.neel.cnrs.fr/).
  - XAS Viewer allows reading in a reference spectrum from the same file as a spectrum.
  - XAS_Viewer better supports each spectrum having an "energy reference spectrum". This
-	can be set on reading spectra, or afterwards.  Recalibratng energies can propogate
-	calibrations to spectra that share a reference.
+    can be set on reading spectra, or afterwards.  Recalibratng energies can propogate
+    calibrations to spectra that share a reference.
  - XAS Viewer better supports an "energy shift" for each spectrum -- this can be copied
-	to other spectra or "undone" to go back to the original  (as read-in) data.
+    to other spectra or "undone" to go back to the original  (as read-in) data.
  - XAS Viewer: data can be deglitched while plotting in "k" space"
  - XAS Viewer: "flattened" spectra can be used for linear analysis in more places.
  - Example using Jupyter and Fe pre-edge peaks.
 
 ### Changed
  - XAS Viewer: the action of the "pin icon" for selecting points from a plot has now changed.
-	Previously hitting the pin icon meant "use most recently clicked point on plot".  Now,
-	hitting the pin icon starts a timer which will look for mouse clicks *after* hitting
-	the pin icon:
-	   a) if there are new mouse clicks on the plot, wait at least 3 seconds, and return
-		  the most recent position.
-	   b) if there are no mouse clicks after 15 seconds, return the most recent position
-		   (even before clicking on the pin)
+    Previously hitting the pin icon meant "use most recently clicked point on plot".  Now,
+    hitting the pin icon starts a timer which will look for mouse clicks *after* hitting
+    the pin icon:
+       a) if there are new mouse clicks on the plot, wait at least 3 seconds, and return
+          the most recent position.
+       b) if there are no mouse clicks after 15 seconds, return the most recent position
+           (even before clicking on the pin)
 
 
 ### Fixed
  - Reading columns names from one line header, and for files that announce as XDI but
-	break XDI specs (say, by having >128 columns).
+    break XDI specs (say, by having >128 columns).
  - Better handling of CIFs with partial occupancy when generating feff.inp.
  - NLEG is set to 6 by default when generating feff.inp.
  - By default, hydrogen atoms are removed when generating feff.inp (XAS Viewer and cif2feff)
@@ -170,11 +252,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
  - MapViewer: more robust and flexible search for tomographic rotation axis.
  - Fix for spec/HDF5 files with broken "scan" link.
  - XRF Display spectral fiitting: faster, better guesss for parameter scales, and show
-	filled eigenvectors (wxmplot 0.9.49)
+    filled eigenvectors (wxmplot 0.9.49)
  - MapViewer / XRF Display: much improved ADD ROIs, including pushing XRF ROIs added in
-	XRF Display back to the list in Mapviewer.
+    XRF Display back to the list in Mapviewer.
  - MapViewer: The order of ROIs added is now preserved, including for work arrays and
-	Abundances from XRF analysis.
+    Abundances from XRF analysis.
 
 
 ### Removed
@@ -233,9 +315,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
  - Larch's GUI applications on non-US Windows 10 machines.
  - There was a serious bug (possibly since Larch 0.9.52) for using wxPython applications with Python>=3.8 and wxPython>=4.1.0.
  - Fixes for turning CIF structures into Feff inputs and running Feff:
-	- more external CIF files from Crystallography Open Database and Materials Project can be converted to Feff.inp.
-	- external Feff.inp files can be loaded and run.
-	- the name of the folder created for any Feff calculation can be renamed before running Feff.
+    - more external CIF files from Crystallography Open Database and Materials Project can be converted to Feff.inp.
+    - external Feff.inp files can be loaded and run.
+    - the name of the folder created for any Feff calculation can be renamed before running Feff.
  - Fixed a bug on the EXAFS / background subtraction panel on "copied groups" to ensure that processing parameters (kweight, rbkg, etc) are kept separate.
 
 ### Changed
@@ -274,7 +356,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 - XAS viewer
   - Parameters saved in an Athena Project File are now correctly saved and read
-	into XAS Viewer (thanks Tyler Valentine!)
+    into XAS Viewer (thanks Tyler Valentine!)
 
 ### Added
 - XAS viewer
