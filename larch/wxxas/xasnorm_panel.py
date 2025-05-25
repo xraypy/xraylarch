@@ -395,6 +395,9 @@ class XASNormPanel(TaskPanel):
                     self.wids[attr].SetValue(val)
             self.set_nnorm_widget(opts.get('nnorm'))
 
+            xasmode = getattr(dgroup, 'xasmode', 'unknown')
+            if xasmode.startswith('calc'):
+                opts['npre'] = 0
             self.wids['energy_shift'].SetValue(opts['energy_shift'])
             self.wids['nvict'].SetStringSelection("%d" % opts['nvict'])
             self.wids['npre'].SetSelection(opts['npre'])
@@ -822,6 +825,9 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         if not form['auto_step']:
             copts.append("step=%s" % gformat(float(edge_step)))
 
+        xasmode = getattr(dgroup, 'xasmode', 'unknown')
+        if xasmode.startswith('calc'):
+            copts.append('iscalc=True')
         for attr in ('pre1', 'pre2', 'nvict', 'npre', 'nnorm', 'norm1', 'norm2'):
             val = form[attr]
             if val is None or val == 'auto':
@@ -830,13 +836,11 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
                 if val in NNORM_CHOICES:
                     val = NNORM_CHOICES[val]
                 val = int(val)
+                if attr == 'npre' and xasmode.startswith('calc'):
+                    val=0
             else:
                 val = f"{float(val):.2f}"
             copts.append(f"{attr}={val}")
-
-        xasmode = getattr(dgroup, 'xasmode', 'unknown')
-        if xasmode.startswith('calc'):
-            copts.append('iscalc=True')
 
         self.larch_eval("pre_edge(%s) " % (', '.join(copts)))
         self.larch_eval("{group:s}.norm_poly = 1.0*{group:s}.norm".format(**form))
