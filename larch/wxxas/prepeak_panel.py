@@ -1239,7 +1239,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             elif is_peakmodel and 'ampl' in pname:
                 value = 1.0
                 if has_data:
-                    value = ydata.ptp()
+                    value = np.ptp(ydata)
             if 'value' in hints:
                 value = hints['value']
 
