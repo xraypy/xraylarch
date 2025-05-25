@@ -226,7 +226,7 @@ class PrePeakFitResultFrame(wx.Frame):
         panel = scrolled.ScrolledPanel(splitter)
 
         panel.SetMinSize((775, 575))
-        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.NORMAL)
+        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
 
         # title row
         self.wids = wids = {}

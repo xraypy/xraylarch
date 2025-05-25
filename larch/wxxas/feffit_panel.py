@@ -1820,7 +1820,7 @@ class FeffitResultFrame(wx.Frame):
                                         size=(250, -1))
         set_color(self.filelist, 'list_fg', bg='list_bg')
 
-        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.NORMAL)
+        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
 
         panel = scrolled.ScrolledPanel(splitter)
 

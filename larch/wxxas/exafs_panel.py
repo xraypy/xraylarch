@@ -556,10 +556,14 @@ class EXAFSPanel(TaskPanel):
         for attr in ('bkg_clamplo', 'bkg_clamphi', 'fft_kwindow',
                      'fft_rwindow', 'plot2_win', 'plot_echoice',
                      'plot_erange', 'plot_kchoice', 'plot_rchoice'):
-            val = wids[attr].GetStringSelection()
-            if 'clamp' in attr:
-                val = int(val)
-            conf[attr] = val
+            try:
+                val = wids[attr].GetStringSelection()
+                if 'clamp' in attr:
+                    val = int(val)
+                conf[attr] = val
+            except:
+                print("failed to read exafs attr ", attr)
+
 
         for attr in ('show_ek0', 'plot_show_kwin', 'plot_show_rwin'):
             conf[attr] = wids[attr].IsChecked()

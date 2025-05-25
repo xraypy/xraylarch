@@ -165,8 +165,7 @@ class LinComboResultFrame(wx.Frame):
         panel = scrolled.ScrolledPanel(splitter)
 
         self.SetMinSize((650, 600))
-
-        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.NORMAL)
+        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
 
         self.wids = wids = {}
         wids['plot_one'] = Button(panel, 'Plot This Fit', size=(125, -1),
@@ -210,7 +209,6 @@ class LinComboResultFrame(wx.Frame):
                                               colour=GUI_COLORS.title, style=LEFT)
         sizer.Add(self.wids['paramstitle'], (irow, 0), (1, 3), LEFT)
 
-
         pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         pview.SetFont(self.font_fixedwidth)
         pview.SetMinSize((500, 200))
@@ -247,9 +245,9 @@ class LinComboResultFrame(wx.Frame):
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.SetFont(self.font_fixedwidth)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFitStat)
-        sview.AppendTextColumn(' Fit #', width=65)
-        sview.AppendTextColumn(' N_vary', width=80)
-        sview.AppendTextColumn(' N_eval', width=80)
+        sview.AppendTextColumn(' Fit #', width=60)
+        sview.AppendTextColumn(' N_vary', width=75)
+        sview.AppendTextColumn(' N_eval', width=75)
         sview.AppendTextColumn(' \u03c7\u00B2', width=100)
         sview.AppendTextColumn(' \u03c7\u00B2_reduced', width=100)
         sview.AppendTextColumn(' R Factor', width=100)
@@ -743,12 +741,12 @@ class LinearComboPanel(TaskPanel):
         add_text('Build Model : ')
         panel.Add(wids['add_selected'], dcol=4)
 
-        collabels = [' File /Group Name   ', 'weight', 'min', 'max']
+        collabels = [' File/Group Name   ', 'weight', 'min', 'max']
         colsizes = [325, 100, 100, 100]
         coltypes = ['str', 'float:12,4', 'float:12,4', 'float:12,4']
         coldefs  = ['', 1.0/MAX_COMPONENTS, 0.0, 1.0]
 
-        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.NORMAL)
+        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
         wids['table'] = DataTableGrid(panel, nrows=MAX_COMPONENTS,
                                       collabels=collabels,
                                       datatypes=coltypes, defaults=coldefs,

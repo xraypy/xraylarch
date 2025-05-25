@@ -218,7 +218,7 @@ class TaskPanel(wx.Panel):
         self.titleopts = dict(font=Font(FONTSIZE+2),
                               colour=GUI_COLORS.title_red, style=LEFT)
 
-        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.NORMAL)
+        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
 
         self.panel = GridPanel(self, ncols=7, nrows=10, pad=2, itemstyle=LEFT)
         self.panel.sizer.SetVGap(5)
