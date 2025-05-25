@@ -2074,11 +2074,22 @@ class LoadSessionDialog(wx.Frame):
         last_fname = None
         xasgroups = getattr(self.controller.symtable, self.xasgroups_name, {})
 
+        new_dtypes = []
         for key, val in xasgroups.items():
             dgroup = self.controller.get_group(val)
             if key not in self.controller.filelist.GetItems():
                 self.controller.filelist.Append(key)
                 last_fname = key
+                dtype = getattr(dgroup, 'datatype', 'xas')
+                if dtype is not None and dtype not in new_dtypes:
+                    new_dtypes.append(dtype)
+
+        for dtype in new_dtypes:
+            pagename = {'xas': 'xasnorm', 'xydata': 'xydata'}.get(dtype, 'xasnorm')
+            if pagename not in self.parent.get_panels():
+                self.parent.add_analysis_panel(pagename)
+            ipag, ppanl = self.parent.get_nbpage(pagename)
+            self.parent.nb.SetSelection(ipag)
 
         self.controller.recentfiles.append((time.time(), self.filename))
 
