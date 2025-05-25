@@ -133,13 +133,11 @@ LARIX_PANELS = {
     'feffit':
     AnalysisTab('FEFF Fitting', 'larch.wxxas.feffit_panel.FeffitPanel',
                 'EXAFS Path Fitting with FEFF calculations'),
+}
 
 #     'larch_buffer':
 #     AnalysisTab('Larch Buffer', 'larch.wxlib.LarchFrame',
 #                 'Inspect Larch commands and data (separate window)'),
-}
-
-#
 #     'xrd1d':
 #     AnalysisTab('XRD 1D Viewing', 'larch.wxxrd.xrd1d_display',
 #                'Browse and Search XRD 1D patterns'),
