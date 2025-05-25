@@ -245,7 +245,7 @@ class LinComboResultFrame(wx.Frame):
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.SetFont(self.font_fixedwidth)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFitStat)
-        sview.AppendTextColumn(' Fit #', width=60)
+        sview.AppendTextColumn(' Fit #', width=70)
         sview.AppendTextColumn(' N_vary', width=75)
         sview.AppendTextColumn(' N_eval', width=75)
         sview.AppendTextColumn(' \u03c7\u00B2', width=100)
@@ -364,7 +364,7 @@ class LinComboResultFrame(wx.Frame):
         wview = self.wids['weights'] = dv.DataViewListCtrl(wpan, style=DVSTYLE)
         wview.SetFont(self.font_fixedwidth)
         wview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFitParam)
-        wview.AppendTextColumn(' Fit #', width=65)
+        wview.AppendTextColumn(' Fit #', width=70)
         wview.AppendTextColumn(' E shift', width=80)
 
         for i, cname in enumerate(form['comp_names']):
