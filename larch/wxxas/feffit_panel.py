@@ -1048,6 +1048,8 @@ class FeffitPanel(TaskPanel):
 
             cmds = []
             _feffit_dataset = getattr(self.larch.symtable, '_feffit_dataset', None)
+            cmds.append(COMMANDS['feffit_trans'].format(**conf))
+
             if _feffit_dataset is None:
                 cmds.append(COMMANDS['feffit_dataset_init'])
             if has_data:
@@ -1060,8 +1062,6 @@ class FeffitPanel(TaskPanel):
                 cmds.append(COMMANDS['xft'].format(groupname=dgroup.groupname, **ftargs))
                 cmds.append(f"_feffit_dataset.set_datagroup({dgroup.groupname})")
                 cmds.append(f"_feffit_dataset.refine_bkg = {opts['refine_bkg']}")
-            cmds.append(COMMANDS['feffit_trans'].format(**conf))
-
 
             self.larch.eval('\n'.join(cmds))
         return opts
