@@ -115,6 +115,7 @@ class PreferencesFrame(wx.Frame):
     """ edit preferences"""
     def __init__(self, parent, controller, **kws):
         self.controller = controller
+        self.parent = parent
         wx.Frame.__init__(self, None, -1,  'Larix Preferences',
                           style=FRAMESTYLE, size=(700, 725))
 
@@ -237,7 +238,8 @@ class PreferencesFrame(wx.Frame):
         self.controller.config[section][option] = value
 
     def onSave(self, event=None):
-        self.controller.config['main']['panels'] = self.panselect.get_selections()
+        current_panels = list(self.parent.get_panels())
+        self.controller.config['main']['panels'] = current_panels
         self.controller.save_config()
 
 class PanelSelectionPanel(wx.Panel):
@@ -278,7 +280,6 @@ class PanelSelectionPanel(wx.Panel):
         if self.current_mode in LARIX_MODES:
             wids['modechoice'].SetStringSelection(LARIX_MODES[self.current_mode][0])
 
-        page_map = self.main.get_panels()
         irow = 1
         sizer.Add(title, (irow, 0), (1, 2), labstyle|wx.ALL, 3)
         irow += 1
@@ -291,13 +292,15 @@ class PanelSelectionPanel(wx.Panel):
 
         self.selections = {}
         strlen = 30
+        page_map = self.main.get_panels()
         for pagename in page_map:
-            strlen = max(strlen, len(pagename))
+            pagetitle = LARIX_PANELS[pagename].title
+            strlen = max(strlen, len(pagetitle))
 
         for key, atab in LARIX_PANELS.items():
             iname = (atab.title + ' '*strlen)[:strlen]
             cb = wx.CheckBox(panel, -1, iname)
-            cb.SetValue(atab.title in page_map)
+            cb.SetValue(key in page_map)
             desc = SimpleText(panel, LARIX_PANELS[key].desc)
             self.selections[key] = cb
             irow += 1
@@ -338,14 +341,23 @@ class PanelSelectionPanel(wx.Panel):
     def OnApply(self, event=None):
         self.main.Hide()
         self.main.Freeze()
+        selections = self.get_selections()
+        cur_panels = self.main.get_panels()
         for i in range(self.main.nb.GetPageCount()):
             self.main.nb.DeletePage(0)
 
-        for name in self.get_selections():
-            try:
-                self.main.add_analysis_panel(name)
-            except:
-                pass
+        for name in cur_panels:    # better preserve current order
+            if name in selections:
+                try:
+                    self.main.add_analysis_panel(name)
+                except:
+                    pass
+        for name in selections:
+            if name not in cur_panels:
+                try:
+                    self.main.add_analysis_panel(name)
+                except:
+                    pass
         self.main.nb.SetSelection(0)
         self.main.mode = self.current_mode
         self.main.Thaw()
@@ -534,7 +546,10 @@ class LarixFrame(wx.Frame):
         "return current mapping of displayed panels"
         out = {}
         for i in range(self.nb.GetPageCount()):
-            out[self.nb.GetPageText(i)] = i
+            tab_title = self.nb.GetPageText(i).lower()
+            for key, atab in LARIX_PANELS.items():
+                if atab.title.lower() == tab_title:
+                    out[key] = i
         return out
 
     def add_analysis_panel(self, name):
@@ -551,8 +566,8 @@ class LarixFrame(wx.Frame):
             return None
 
         current_panels = self.get_panels()
-        if atab.title in current_panels:
-            return current_panels[atab.title]
+        if name in current_panels:
+            return current_panels[name]
         # not in current tabs, so add it
         cons = atab.constructor.split('.')
         clsname = cons.pop()
@@ -566,7 +581,7 @@ class LarixFrame(wx.Frame):
             traceback.print_exception(sys.exception())
 
         current_panels = self.get_panels()
-        return current_panels.get(atab.title, None)
+        return current_panels.get(name, None)
 
     def process_normalization(self, dgroup, force=True, use_form=True, force_mback=False):
         self.get_nbpage('xasnorm')[1].process(dgroup, force=force,
@@ -584,9 +599,8 @@ class LarixFrame(wx.Frame):
 
         panel = LARIX_PANELS[name]
         current_panels = self.get_panels()
-
-        if panel.title in current_panels:
-            ipage = current_panels[panel.title]
+        if name in current_panels:
+            ipage = current_panels[name]
         else:
             ipage = self.add_analysis_panel(name)
         return ipage, self.nb.GetPage(ipage)
@@ -652,7 +666,6 @@ class LarixFrame(wx.Frame):
                 if ipan == cur_pan:
                     panname = name
 
-        # print("ShowFile ", panname, self.get_panels())
         ipage, pagepanel = self.get_nbpage(panname)
         if panname == 'xasnorm':
             if not (hasattr(dgroup, 'norm') and hasattr(dgroup, 'e0')):
@@ -1055,6 +1068,8 @@ class LarixFrame(wx.Frame):
                     return
 
         save_session(fname=fname, _larch=self.larch._larch)
+        self.controller.recentfiles.insert(0, (time.time(), fname))
+        self.get_recent_session_menu()
         stime = time.strftime("%H:%M")
         self.last_save_message = ("Session last saved", f"'{fname}'", f"{stime}")
         self.write_message(f"Saved session to '{fname}' at {stime}")
@@ -1558,6 +1573,7 @@ before clearing"""
         dgroup = None
         script = "{group:s} = _prj.{prjgroup:s}"
         cur_panel = self.nb.GetCurrentPage()
+
         cur_panel.skip_plotting = True
         parent, spath = path_split(path)
         labels = []
@@ -1656,6 +1672,10 @@ before clearing"""
 
         self.larch.eval("del _prj")
         cur_panel.skip_plotting = False
+        inorm, npan = self.get_nbpage('xasnorm')
+        iexafs, epan = self.get_nbpage('exafs')
+        if cur_panel not in (npan, epan):
+            self.nb.SetSelection(inorm)
 
         if len(labels) > 0 and gid is not None:
             self.ShowFile(groupname=gid, process=True, plot='yes')
@@ -1663,6 +1683,7 @@ before clearing"""
         self.last_athena_file = path
         self.controller.sync_xasgroups()
         self.controller.recentfiles.append((time.time(), path))
+        self.get_recent_session_menu()
 
     def onRead_OK(self, script, path, config):
         """ called when column data has been selected and is ready to be used
