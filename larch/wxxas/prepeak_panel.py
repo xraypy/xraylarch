@@ -766,7 +766,8 @@ class PrePeakPanel(TaskPanel):
         self.wids = {}
 
         fsopts = dict(digits=2, increment=0.25, min_val=-999999,
-                      max_val=999999, size=(125, -1), with_pin=True)
+                      max_val=999999, size=(125, -1), with_pin=True,
+                      action=self.set_config)
 
         ppeak_elo  = self.add_floatspin('ppeak_elo',  value=-13, **fsopts)
         ppeak_ehi  = self.add_floatspin('ppeak_ehi',  value=-3, **fsopts)
@@ -913,7 +914,6 @@ class PrePeakPanel(TaskPanel):
         """get processing configuration for a group"""
         if dgroup is None:
             dgroup = self.controller.get_group()
-
         conf = getattr(dgroup, 'prepeak_config', {})
         if 'e0' not in conf:
             conf = self.get_defaultconfig()
@@ -922,20 +922,26 @@ class PrePeakPanel(TaskPanel):
         dgroup.prepeak_config = conf
         if not hasattr(dgroup, 'prepeaks'):
             dgroup.prepeaks = Group()
-
         return conf
+
+    def set_config(self, event=None):
+        dgroup = self.controller.get_group()
+        conf = getattr(dgroup, 'prepeak_config', {})
+        fopts = self.read_form()
+        for attr in ('elo', 'ehi', 'emin', 'emax'):
+            conf[attr]  = fopts[attr]
+        dgroup.prepeak_config = conf
 
     def fill_form(self, dat):
         if isinstance(dat, Group):
             if not hasattr(dat, 'norm'):
                 self.parent.process_normalization(dat)
-            if hasattr(dat, 'prepeaks'):
-                self.wids['ppeak_emin'].SetValue(dat.prepeaks.emin)
-                self.wids['ppeak_emax'].SetValue(dat.prepeaks.emax)
-                self.wids['ppeak_elo'].SetValue(dat.prepeaks.elo)
-                self.wids['ppeak_ehi'].SetValue(dat.prepeaks.ehi)
+            conf = getattr(dat, 'prepeak_config', {})
+            for attr in ('elo', 'ehi', 'emin', 'emax'):
+                if attr in conf:
+                    self.wids[f'ppeak_{attr}'].SetValue(conf[attr])
+
         elif isinstance(dat, dict):
-            # self.wids['ppeak_e0'].SetValue(dat['e0'])
             self.wids['ppeak_emin'].SetValue(dat['emin'])
             self.wids['ppeak_emax'].SetValue(dat['emax'])
             self.wids['ppeak_elo'].SetValue(dat['elo'])
