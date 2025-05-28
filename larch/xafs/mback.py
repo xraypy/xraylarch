@@ -256,7 +256,7 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
 
     if _larch is not None:
         group = set_xafsGroup(group, _larch=_larch)
-    group.norm_poly = group.norm*1.0
+        group.norm_poly = group.norm*1.0
 
     if z is not None:              # need to run find_e0:
         e0_nominal = xray_edge(z, edge).energy
