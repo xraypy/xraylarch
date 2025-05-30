@@ -256,6 +256,11 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
 
     if _larch is not None:
         group = set_xafsGroup(group, _larch=_larch)
+
+    if getattr(group, 'pre_edge_details', None) is None:  # pre_edge never run
+        pre_edge(group, pre1=pre1, pre2=pre2, nvict=nvict,
+                norm1=norm1, norm2=norm2, e0=e0, nnorm=nnorm)
+
     group.norm_poly = group.norm*1.0
 
     if z is not None:              # need to run find_e0:
@@ -273,9 +278,6 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
     if atsym is None and z is not None:
         atsym = atomic_symbol(z)
 
-    if getattr(group, 'pre_edge_details', None) is None:  # pre_edge never run
-        pre_edge(group, pre1=pre1, pre2=pre2, nvict=nvict,
-                norm1=norm1, norm2=norm2, e0=e0, nnorm=nnorm)
     if pre1 is None:
         pre1 = group.pre_edge_details.pre1
     if pre2 is None:
