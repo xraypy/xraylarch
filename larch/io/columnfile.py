@@ -22,7 +22,7 @@ nanresult = namedtuple('NanResult', ('file_ok', 'message', 'nan_rows',
                                      'nan_cols', 'inf_rows', 'inf_cols'))
 
 TINY = 1.e-7
-MAX_FILESIZE = 100*1024*1024  # 100 Mb limit
+MAX_FILESIZE = 2**28  # 256 MB limit
 COMMENTCHARS = '#;%*!$'
 
 def look_for_nans(path):
