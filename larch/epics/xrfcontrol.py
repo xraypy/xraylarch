@@ -532,6 +532,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         mca_counts = self.det.mcas[self.det_fore-1].get('VAL')
         sum =  mca_counts[left:right].sum()
         thissum = 0
+        thisrate = 0
 
         if name in (None, ''):
             name = 'Selected'
