@@ -236,8 +236,9 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, npre=1, pre1=No
 
     ipre1 = index_of(energy-e0, pre1)
     ipre2 = index_of(energy-e0, pre2)
-    if npre==1 and ipre2 < ipre1 + 2 + nvict:
-        pre2 = (energy-e0)[int(ipre1 + 2 + nvict)]
+    if (ipre2 - ipre1) < 3:
+        nvict = 0
+        npre = 0
 
     if norm2 is None:
         norm2 = 5.0*round((max(energy) - e0)/5.0)
@@ -250,11 +251,12 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, npre=1, pre1=No
     if norm1 > norm2:
         norm1, norm2 = norm2, norm1
 
-    norm1 = min(norm1, norm2 - 10)
+    norm1 = min(norm1, norm2 - 2)
     if nnorm is None:
         nnorm = 2
         if norm2-norm1 < 300: nnorm = 1
         if norm2-norm1 <  30: nnorm = 0
+
     nnorm = max(min(nnorm, MAX_NNORM), 0)
     # preedge
     p1 = index_of(energy, pre1+e0)
@@ -285,9 +287,9 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, npre=1, pre1=No
     p1 = index_of(energy, norm1+e0)
     p2 = index_nearest(energy, norm2+e0)
     if p2-p1 < 2:
-        p2 = min(len(energy), p1 + 2)
-    if p2-p1 < 2:
-        p1 = p1-2
+        nnorm = 0
+    elif p2-p1 < 5:
+        nnorm = min(1, nnorm)
 
     presub = (mu-pre_edge)[p1:p2]
     coefs = polyfit(energy[p1:p2], presub, nnorm)
