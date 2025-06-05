@@ -2350,19 +2350,22 @@ class GSEXRM_MapFile(object):
         # print("Master File ", self.masterfile, self.scandb)
         header, rows, mtime = [], [], -1
 
-        if len(header) < 1 or mtime < 0:  # this is *not* the map that is currently being collected:
+        # if len(header) < 1 or mtime < 0:  # this is *not* the map that is currently being collected:
             # if file the master file is not new, the current row data is OK:
 
-            try:
-                header, rows = readMasterFile(self.masterfile)
-            except IOError:
-                raise GSEXRM_Exception("cannot read Master file from '%s'" %
-                                       self.masterfile)
-
-            mtime = os.stat(self.masterfile).st_mtime
-            if mtime < (self.master_modtime+1.0) and len(self.rowdata) > 1:
-                # print("READ MASTER not a new masterfile ", len(self.rowdata), len(rows))
-                return len(self.rowdata)
+        try:
+            header, rows = readMasterFile(self.masterfile)
+        except IOError:
+            raise GSEXRM_Exception("cannot read Master file from '%s'" %
+                                   self.masterfile)
+        # print(f"Read Master nrows={len(rows)}, current ={len(self.rowdata)}")
+        # if len(rows) < len(self.rowdata):
+        #    print("no new data in master file")
+        #    return len(self.rowdata)
+        # mtime = os.stat(self.masterfile).st_mtime
+        # if mtime < (self.master_modtime+1.0) and len(self.rowdata) > 1:
+        #     print("READ MASTER not a new masterfile ", len(self.rowdata), len(rows))
+        #    return len(self.rowdata)
 
         self.master_modtime = mtime
 
