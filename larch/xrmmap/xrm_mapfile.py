@@ -2362,11 +2362,10 @@ class GSEXRM_MapFile(object):
         # if len(rows) < len(self.rowdata):
         #    print("no new data in master file")
         #    return len(self.rowdata)
-        # mtime = os.stat(self.masterfile).st_mtime
         # if mtime < (self.master_modtime+1.0) and len(self.rowdata) > 1:
         #     print("READ MASTER not a new masterfile ", len(self.rowdata), len(rows))
         #    return len(self.rowdata)
-
+        mtime = os.stat(self.masterfile).st_mtime
         self.master_modtime = mtime
 
         self.notes['end_time'] = isotime(mtime)
