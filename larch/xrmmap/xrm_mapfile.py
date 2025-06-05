@@ -2347,25 +2347,8 @@ class GSEXRM_MapFile(object):
         if self.folder is None or not isGSEXRM_MapFolder(self.folder):
             return
         self.masterfile = unixpath(Path(self.folder, self.MasterFile))
+        # print("Master File ", self.masterfile, self.scandb)
         header, rows, mtime = [], [], -1
-        if self.scandb is not None:
-            # check that this map folder is the one currently running from scandb:
-            try:
-                db_folder = toppath(self.scandb.get_info('map_folder'))
-            except:
-                db_folder = None
-            disk_folder = toppath(Path(self.folder).absolute().as_posix())
-
-            if db_folder == disk_folder: # this is the current map
-                mastertext = self.scandb.get_slewscanstatus()
-                mtime = time.time()
-                header, rows = [], []
-                for srow in mastertext:
-                    line = str(srow.text.strip())
-                    if line.startswith('#'):
-                        header.append(line)
-                    else:
-                        rows.append(line.split())
 
         if len(header) < 1 or mtime < 0:  # this is *not* the map that is currently being collected:
             # if file the master file is not new, the current row data is OK:
@@ -2388,7 +2371,10 @@ class GSEXRM_MapFile(object):
         # carefully read rows to avoid repeated rows due to bad collection
         self.rowdata = []
         _yl, _xl, _s1 = None, None, None
+
         for row in rows:
+            if len(row) < 3:
+                continue
             yval, xrff, sisf = row[0], row[1], row[2]
             il = len(self.rowdata)-1
             if il > -1:
