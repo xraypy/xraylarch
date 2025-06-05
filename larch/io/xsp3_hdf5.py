@@ -156,18 +156,9 @@ def read_xsp3_hdf5(fname, npixels=None, verbose=False,
     else:
         out.counts = counts
 
-    if estimate_dtc:
-        dtc_taus = [XSPRESS3_TAU]*ndet
-
     for i in range(ndet):
-        chan = "CHAN%i" %(i+1)
-        clock_ticks = ndattr['%sSCA0' % chan][()]
-        reset_ticks = ndattr["%sSCA1" % chan][()]
-        all_events  = ndattr["%sSCA3" % chan][()]
-        if "%sEventWidth" in ndattr:
-            event_width = 1.0 + ndattr['%sEventWidth' % chan][()]
-        else:
-            event_width = 6.0
+        chan = f"CHAN{i+1}"
+        clock_ticks = ndattr[f'{chan}SCA0'][()]
 
         clock_ticks[np.where(clock_ticks<10)] = 10.0
         rtime = clockrate * clock_ticks
@@ -177,15 +168,30 @@ def read_xsp3_hdf5(fname, npixels=None, verbose=False,
         ocounts[np.where(ocounts<0.1)] = 0.1
         out.outputCounts[:, i] = ocounts
 
-        denom = clock_ticks - (all_events*event_width + reset_ticks)
-        denom[np.where(denom<2.0)] = 1.0
-        dtfactor = clock_ticks/denom
-        out.inputCounts[:, i] = dtfactor * ocounts
+        if f"{chan}DTFactor" in ndattr:
+            dtfactor = ndattr[f'{chan}DTFactor'][()]
+        else:
+            reset_ticks = 0.0*clock_ticks
+            all_events = 0.0*clock_ticks
+            event_width = 6.0
+            try:
+                reset_ticks = ndattr[f"{chan}SCA1"][()]
+            except:
+                pass
+            try:
+                all_events  = ndattr[f"{chan}SCA3"][()]
+            except:
+                pass
+            try:
+                event_width = 1.0 + ndattr[f'{chan}EventWidth'][()]
+            except:
+                pass
 
-        if estimate_dtc:
-            ocr = ocounts/(rtime*1.e-6)
-            icr = estimate_icr(ocr, dtc_taus[i], niter=3)
-            out.inputCounts[:, i] = icr * (rtime*1.e-6)
+            denom = clock_ticks - (all_events*event_width + reset_ticks)
+            denom[np.where(denom<2.0)] = 1.0
+            dtfactor = clock_ticks/denom
+
+        out.inputCounts[:, i] = dtfactor * ocounts
 
     h5file.close()
     t2 = time.time()
