@@ -980,7 +980,7 @@ class FeffitPanel(TaskPanel):
             dgroup = self.controller.get_group()
         if dgroup is None:
             conf = None
-        if not hasattr(dgroup, 'chi'):
+        elif not hasattr(dgroup, 'chi'):
             self.parent.process_exafs(dgroup)
 
         dconf = self.get_defaultconfig()
