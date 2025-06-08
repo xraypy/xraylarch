@@ -661,7 +661,9 @@ class EXAFSPanel(TaskPanel):
 
 
     def onRbkg(self, event=None):
-        self.wids['fft_rmin'].SetValue(self.wids['rbkg'].GetValue())
+        fft_rmin = self.wids['fft_rmin'].GetValue()
+        rbkg = self.wids['rbkg'].GetValue()
+        self.wids['fft_rmin'].SetValue(max(rbkg, fft_rmin))
         self.onProcess(event=event)
 
     def onProcess(self, event=None):
@@ -787,16 +789,14 @@ class EXAFSPanel(TaskPanel):
         """for compat"""
         self.onPlot(**kws)
 
-
     def onPlotOne(self, evt=None, dgroup=None):
         if self.skip_plotting:
             return
-        conf = {k: v for k, v in self.read_form().items() }
-        if dgroup is not None:
-            self.dgroup = dgroup
-            conf['group'] = dgroup.groupname
-        self.process(dgroup=self.dgroup)
-
+        if dgroup is None:
+            dgroup = self.dgroup
+        if getattr(dgroup, 'chir_mag', None) is None:
+            self.process(dgroup=dgroup, read_form=True)
+        conf = getattr(dgroup.config, self.configname)
         self.larch_eval(self._get_plotcmd(conf, space=1))
 
         if conf['plot2_win'] not in ('None', None):
@@ -861,10 +861,11 @@ class EXAFSPanel(TaskPanel):
             dgroup = self.controller.get_group(groupname)
             if dgroup is None:
                 continue
-
+            if getattr(dgroup, 'chir_mag', None) is None:
+                self.process(dgroup=dgroup, read_form=True)
+            conf = getattr(dgroup.config, self.configname)
             conf['group'] = groupname
             conf['label'] = f"'{dgroup.filename}'"
-            self.process(dgroup=dgroup)
 
             cmds.append(self._get_plotcmd(conf, space=1,
                                        delay_draw=True, new=(i==0),
