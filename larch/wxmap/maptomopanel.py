@@ -366,7 +366,7 @@ class TomographyPanel(GridPanel):
             except:
                 pass
 
-    def calculateSinogram(self,xrmfile=None):
+    def calculateSinogram(self, xrmfile=None):
         '''
         returns slice as [slices, x, 2th]
         '''
@@ -389,17 +389,18 @@ class TomographyPanel(GridPanel):
                 minvals[i] = self.iminvals[i].GetValue()
                 maxvals[i] = self.imaxvals[i].GetValue()
 
-        if plt3:
-            flagxrd = False
-            for det in det_name:
-                if det.startswith('xrd'): flagxrd = True
-        else:
-            flagxrd = True if det_name[0].startswith('xrd') else False
+
+#         if plt3:
+#             flagxrd = False
+#             for det in det_name:
+#                 if det.startswith('xrd'): flagxrd = True
+#         else:
+#             flagxrd = True if det_name[0].startswith('xrd') else False
 
         if xrmfile is None:
             xrmfile = self.owner.current_file
 
-        args={'trim_sino' : flagxrd,
+        args={'trim_sino' : False,
               'hotcols'   : False,
               'dtcorrect' : self.owner.dtcor}
 
@@ -440,6 +441,7 @@ class TomographyPanel(GridPanel):
                                                  det=det_name[0],
                                                  minval=minvals[0],
                                                  maxval=maxvals[0], **args)
+
         r_map, r_lab = normalize_map(r_map, normmap, roi_name[0])
         if plt3:
             g_map, sino_order = xrmfile.get_sinogram(roi_name[1], det=det_name[1],
