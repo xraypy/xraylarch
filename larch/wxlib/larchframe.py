@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+/usr/bin/env python
 #
 
 import sys
@@ -95,6 +95,7 @@ class LarchWxShell(object):
             style.SetFont(sfont)
             self.output.SetDefaultStyle(style)
             self.textstyle = wx.TextAttr('black', bgcol, sfont)
+
         self.SetPrompt(True)
 
     def onUpdate(self, event=None):
@@ -272,6 +273,8 @@ class LarchPanel(wx.Panel):
                                        input  = self.input)
 
         self.objtree.SetRootObject(self.larchshell.symtable)
+
+        self.output.SetInsertionPointEnd()
         # root = self.objtree.tree.GetRootItem()
 
 
