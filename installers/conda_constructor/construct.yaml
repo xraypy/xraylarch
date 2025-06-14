@@ -1,5 +1,5 @@
 name:  xraylarch
-version: 2025-01
+version: 2025-02
 
 channels:
     - https://conda.anaconda.org/conda-forge/
@@ -21,14 +21,13 @@ post_install: post_install_posix.sh    # [linux or osx]
 readme_file: readme.rtf # [osx]
 
 specs:
-    - python==3.12.8
+    - python==3.13.3
     - conda
-    - mamba
     - openssl
     - setuptools>=61.0
     - pip
     - requests
-    - numpy>=1.25,<2
+    - numpy>=1.25
     - scipy>=1.15
     - matplotlib>=3.9
     - h5py>=3.9
