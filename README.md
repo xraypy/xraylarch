@@ -1,8 +1,8 @@
-# Larch:  Data Analysis Tools for X-ray Spectroscopy and More
+## Larch:  Data Analysis Tools for X-ray Spectroscopy and More
 
 
-[(https://github.com/xraypy/xraylarch/actions/workflows/test-ubuntu.yml/badge.svg)](https://github.com/xraypy/xraylarch/actions/workflows/test-ubuntu.yml)]
-[(https://github.com/xraypy/xraylarch/actions/workflows/test-windows.yml/badge.svg)](https://github.com/xraypy/xraylarch/actions/workflows/test-windows.yml)]
+[(https://github.com/xraypy/xraylarch/actions/workflows/test-ubuntu.yml/badge.svg)](https://github.com/xraypy/xraylarch/actions/workflows/test-ubuntu.yml)
+[(https://github.com/xraypy/xraylarch/actions/workflows/test-windows.yml/badge.svg)](https://github.com/xraypy/xraylarch/actions/workflows/test-windows.yml)
 
 .. _scipy: https://scipy.org/
 .. _numpy: https://numpy.scipy.org/
@@ -50,34 +50,24 @@ The best citable reference for Larch is M. Newville, *Larch: An Analysis
 Package For XAFS And Related Spectroscopies*. Journal of Physics:
 Conference Series, 430:012007 (2013).
 
-# Larch Applications
+## Larch Applications
 
 These applications installed with Larch, in addition to a basic Python
 library. Here, GUI = Graphical User Interface, CLI = Command Line
 Interface, and `beta` indicates a work in progress.
 
 
-+-------------------+------------+---------------------------------------------------------+
-| Application Name  | GUI/CLI    | Description                                             |
-+===================+============+=========================================================+
-| larch             | CLI        | simple shell command-line interface                     |
-+-------------------+------------+---------------------------------------------------------+
-| Larch GUI         | GUI        | enhanced command-line interface with data browser       |
-+-------------------+------------+---------------------------------------------------------+
-| Larix             | GUI        | XAFS Processing and Analysis: XANES pre-edge peak       |
-| (was XAS Viewer)  |            | fitting, linear analysis, PCA/LASSO, EXAFS processing,  |
-|                   |            | Running Feff, fitting EXAFS data to Feff paths.         |
-+-------------------+------------+---------------------------------------------------------+
-| GSE Map Viewer    | GUI        | XRF Map Viewer for GSECARS X-ray microprobe data.       |
-+-------------------+------------+---------------------------------------------------------+
-| larch_xrf         | GUI        | Display and analyze XRF Spectra.                        |
-+-------------------+------------+---------------------------------------------------------+
-| larch_xrd1d       | GUI        | Display and work with 1-D XRD patterns, integrate XRD   |
-|                   |            | images, search for XRD patterns of known structures     |
-+-------------------+------------+---------------------------------------------------------+
-| feff6l            | CLI        | Feff 6 EXAFS calculations                               |
-+-------------------+------------+---------------------------------------------------------+
-| feff8l            | CLI        | Feff 8 EXAFS calculations (no XANES)                    |
-+-------------------+------------+---------------------------------------------------------+
-| qtrixs            | GUI `beta` | Display RIXS planes, take profiles                      |
-+-------------------+------------+---------------------------------------------------------+
+| Application Name  | GUI/CLI    | Description                                            |
+| ----------------- |----------- | ------------------------------------------------------ |
+| larch             | CLI        | simple shell command-line interface                    |
+| Larch GUI         | GUI        | enhanced command-line interface with data browser      |
+| Larix             | GUI        | XAFS Processing and Analysis: XANES pre-edge peak      |
+| (was XAS Viewer)  |            | fitting, linear analysis, PCA/LASSO, EXAFS processing  |
+|                   |            | Running Feff, fitting EXAFS data to Feff paths.        |
+| GSE Map Viewer    | GUI        | XRF Map Viewer for GSECARS X-ray microprobe data.      |
+| larch_xrf         | GUI        | Display and analyze XRF Spectra.                       |
+| larch_xrd1d       | GUI        | Display and work with 1-D XRD patterns, integrate XRD  |
+|                   |            | images, search for XRD patterns of known structures    |
+| feff6l            | CLI        | Feff 6 EXAFS calculations                              |
+| feff8l            | CLI        | Feff 8 EXAFS calculations (no XANES)                   |
+| qtrixs            | GUI `beta` | Display RIXS planes, take profiles                     |
