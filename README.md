@@ -1,10 +1,8 @@
-Larch:  Data Analysis Tools for X-ray Spectroscopy and More
-============================================================
+# Larch:  Data Analysis Tools for X-ray Spectroscopy and More
 
-.. image:: https://github.com/xraypy/xraylarch/actions/workflows/test-ubuntu.yml/badge.svg
-   :target: https://github.com/xraypy/xraylarch/actions/workflows/test-ubuntu.yml
-.. image::  https://github.com/xraypy/xraylarch/actions/workflows/test-windows.yml/badge.svg
-   :target: https://github.com/xraypy/xraylarch/actions/workflows/test-windows.yml
+
+[(https://github.com/xraypy/xraylarch/actions/workflows/test-ubuntu.yml/badge.svg)](https://github.com/xraypy/xraylarch/actions/workflows/test-ubuntu.yml)]
+[(https://github.com/xraypy/xraylarch/actions/workflows/test-windows.yml/badge.svg)](https://github.com/xraypy/xraylarch/actions/workflows/test-windows.yml)]
 
 .. _scipy: https://scipy.org/
 .. _numpy: https://numpy.scipy.org/
@@ -52,8 +50,7 @@ The best citable reference for Larch is M. Newville, *Larch: An Analysis
 Package For XAFS And Related Spectroscopies*. Journal of Physics:
 Conference Series, 430:012007 (2013).
 
-Larch Applications
------------------------
+# Larch Applications
 
 These applications installed with Larch, in addition to a basic Python
 library. Here, GUI = Graphical User Interface, CLI = Command Line
