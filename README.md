@@ -3,15 +3,14 @@
 
 [![A](https://github.com/xraypy/xraylarch/actions/workflows/test-ubuntu.yml/badge.svg)](https://github.com/xraypy/xraylarch/actions/workflows/test-ubuntu.yml)
 [![B](https://github.com/xraypy/xraylarch/actions/workflows/test-windows.yml/badge.svg)](https://github.com/xraypy/xraylarch/actions/workflows/test-windows.yml)
-
+[Documentation](http://xraypy.github.io/xraylarch)
 .. _scipy: https://scipy.org/
 .. _numpy: https://numpy.scipy.org/
 .. _matplotlib: https://matplotlib.org/
 .. _h5py: https://code.google.com/p/h5py/
 .. _Demeter: https://bruceravel.github.io/demeter/
 
-* Documentation: http://xraypy.github.io/xraylarch
-* Code: http://github.com/xraypy/xraylarch
+
 
 Larch is an open-source library and set of applications for processing and
 analyzing X-ray absorption and fluorescence spectroscopy data and X-ray
