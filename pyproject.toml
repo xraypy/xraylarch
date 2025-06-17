@@ -5,3 +5,106 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools_scm]
 write_to = "larch/_version.py"
 version_scheme = "post-release"
+
+[tool.setuptools.packages.find]
+include = ["larch", "larch.bin", "larch.bin.darwin64", "larch.bin.win64",
+           "larch.bin.linux64", "larch.epics", "larch.fitting", "larch.icons", "larch.io",
+           "larch.io.xas_data_source", "larch.math", "larch.plot", "larch.qtlib",
+           "larch.qtrixs", "larch.utils", "larch.wxlib", "larch.wxmap", "larch.wxxas",
+           "larch.wxxrd", "larch.xafs", "larch.xray", "larch.xrd", "larch.xrd.templates",
+           "larch.xrf", "larch.xrmmap", "larch.xsw"]
+
+[project]
+name = "xraylarch"
+dynamic = ["version"]
+requires-python = ">= 3.9"
+description = "Synchrotron X-ray data analysis in python"
+readme = "README.md"
+
+authors = [
+    {name = "Matthew Newville", email = "newville@cars.uchicago.edu"},
+    {name = "Mauro Rovezzi", email = "mauro.rovezzi@esrf.fr"},
+    {name = "Bruce Ravel", email = "bravel@nist.gov"},
+    {name = "Margaret Koker", email = "margaret.koker@lawrence.edu"}
+]
+
+license = "MIT"
+license-files = ["LICENSE"]
+keywords = ["X-ray", "XAS", "XRF", "XRD", "Physics", "Fitting"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    ]
+
+dependencies = ["numpy>=1.23",
+    "scipy>=1.12",
+    "lmfit>=1.3.1",
+    "asteval>=1.0.4",
+    "uncertainties>=3.2.1",
+    "pyshortcuts>=1.9.5",
+    "xraydb>=4.5.6",
+    "larixite",
+    "silx>=0.15.2",
+    "matplotlib>=3.8",
+    "sqlalchemy>=2.0",
+    "sqlalchemy_utils",
+    "h5py>=3.5",
+    "hdf5plugin",
+    "pillow>=8.3.2",
+    "numdifftools>=0.9.41",
+    "packaging",
+    "pip",
+    "pyyaml",
+    "toml",
+    "termcolor",
+    "dill",
+    "imageio",
+    "charset-normalizer",
+    "requests",
+    "scikit-image",
+    "scikit-learn",
+    "psutil",
+    "pymatgen>=2024.8.9",
+    "mp_api",
+    "fabio",
+    "pyfai",
+    "numexpr>=2.8.7"]
+
+
+[project.scripts]
+larch = "larch.apps:run_larch"
+larix = "larch.apps:run_larix"
+feff6l = "larch.apps:run_feff6l"
+feff8l = "larch.apps:run_feff8l"
+larch_server = "larch.apps:run_larch_server"
+larch_xrf = "larch.apps:run_larch_xrf"
+larch_xrd1d = "larch.apps:run_larch_xrd1d"
+gse_mapviewer = "larch.apps:run_gse_mapviewer"
+epics_xrf = "larch.apps:run_epics_xrf"
+
+[project.urls]
+Homepage = " https://github.com/xraypy/xraylarch"
+Documentation = "https://xraypy.github.io/xraylarch/"
+Tracker = "https://github.com/xraypy/xraylarch/issues"
+
+[project.optional-dependencies]
+dev = ["build", "twine", "pre-commit", "pytest", "pytest-xvfb", "pytest-cov", "coverage"]
+doc = ["Sphinx", "sphinx-copybutton", "sphinxcontrib-video", "sphinxcontrib-bibtex", "sphinxcontrib-argdoc"]
+
+wxgui = ["wxpython>=4.2.1",  "wxmplot>=2025.1.1", "wxutils>=0.3.4", "darkdetect"]
+
+qtgui = ["PyQt5", "pyqtwebengine", "pyqtgraph"]
+
+epics = ["pyepics>=3.5.7", "psycopg2-binary"]
+
+jupyter = ["jupyter_core>=5.0", "jupyter_client", "jupyter_server", "notebook", "nbformat",
+        "ipywidgets", "plotly", "bokeh", "py3dmol"]
+
+larix = ["xraylarch[wxgui, jupyter]"]
+all = ["xraylarch[dev, doc, wxgui, jupyter, qtgui, epics]"]
