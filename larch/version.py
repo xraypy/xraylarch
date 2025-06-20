@@ -143,3 +143,21 @@ def check_larchversion():
     message = message.format(remote_version=remote_version,
                              local_version=local_version)
     return VersionStatus(update_available,local_version, remote_version, message)
+
+NIGHTLY_URL  = 'https://millenia.cars.aps.anl.gov/xraylarch/downloads/'
+NIGHTLY_WHEEL = 'xraylarch-latest.txt'
+
+def install_nightly_build():
+    import requests
+    import subprocess
+    try:
+        url = f'{NIGHTLY_URL}/{NIGHTLY_WHEEL}'
+        req = requests.get(f'{NIGHTLY_URL}/{NIGHTLY_WHEEL}', verify=False, timeout=5.10)
+    except:
+        print("could not get nightly build", url)
+        return
+
+    if req.status_code == 200:
+        fname = req.text.split()[0]
+        print("Downloading wheel for nightly build: {fname}")
+        subprocess.check_call([sys.executable, '-m', 'pip', 'install', f'{NIGHTLY_URL}{fname}'])
