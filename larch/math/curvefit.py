@@ -13,7 +13,8 @@ from lmfit.models import (LorentzianModel, GaussianModel, VoigtModel,
 
 from xraydb import guess_edge, xray_edge, core_width
 
-from larch import Group, Make_CallArgs, isgroup, parse_group_args
+from larch import Group, isgroup
+from larch.larchlib import Make_CallArgs, parse_group_args
 
 from . import index_of, index_nearest, remove_nans2,  peak_indices
 
