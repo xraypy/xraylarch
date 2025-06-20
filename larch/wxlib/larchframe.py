@@ -12,6 +12,7 @@ import wx.lib.mixins.inspection
 import numpy
 import scipy
 import larch
+from larch.interpreter import Interpreter
 from pyshortcuts import uname, get_cwd, fix_varname
 
 from wxutils import (MenuItem, Font, Button, Choice, panel_pack)
@@ -63,7 +64,7 @@ class LarchWxShell(object):
         self.output = output
 
         if _larch is None:
-            self._larch  = larch.Interpreter(historyfile=historyfile,
+            self._larch  = Interpreter(historyfile=historyfile,
                                              writer=self)
             self._larch.run_init_scripts()
         self.writer  = self._larch.writer

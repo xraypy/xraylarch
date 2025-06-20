@@ -16,7 +16,8 @@ from pyshortcuts import uname, gformat, fix_varname
 
 from larch import Group, site_config
 from larch.utils import mkdir
-from larch.math import index_of, Parameter
+from larch.math import index_of
+from lmfit import Parameter
 
 from larch.math.fitmodels import (ConstantModel, LinearModel,
             QuadraticModel, PolynomialModel, SplineModel, SineModel,

@@ -20,7 +20,8 @@ from wxutils import (SimpleText, FloatCtrl, FloatSpin, Button,
                      RIGHT, LEFT, FRAMESTYLE, flatnotebook, HLine, Font)
 from pyshortcuts import fix_filename, fix_varname, gformat
 
-from larch import Group, Interpreter
+from larch import Group
+from larch.interpreter import Interpreter
 from larch.xafs.xafsutils import guess_energy_units
 from larch.utils.strutils import file2groupname
 from larch.io import look_for_nans, guess_filereader, is_specfile, sum_fluor_channels
