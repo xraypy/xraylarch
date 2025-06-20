@@ -7,6 +7,7 @@ site configuration for larch:
 """
 import sys
 import os
+import logging
 from pathlib import Path
 
 from subprocess import check_call, CalledProcessError, TimeoutExpired
@@ -14,11 +15,13 @@ from subprocess import check_call, CalledProcessError, TimeoutExpired
 from packaging.version import parse as version_parse
 
 from pyshortcuts import uname, get_homedir
-from .utils import log_warning, log_error
 from .version import __version__, __release_version__
 
 larch_version = __version__
 larch_release_version = __release_version__
+
+logging.basicConfig(format='%(levelname)s [%(asctime)s]: %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S', level=logging.WARNING)
 
 # lists of recommended packages that are not installed by default
 # but may be installed if several of the larch apps are run.
@@ -82,7 +85,7 @@ def make_user_larchdirs():
             except PermissionError:
                 log_warning(f'no permission to create directory {dname.as_posix()}')
             except (OSError, TypeError):
-                log_error(sys.exc_info()[1])
+                logging.error(sys.exc_info()[1])
 
     def write_file(fname, text):
         "write wrapper"
@@ -91,7 +94,7 @@ def make_user_larchdirs():
                 with open(fname, 'w', encoding=sys.getdefaultencoding()) as fileh:
                     fileh.write(f'# {text}\n')
             except IOError:
-                log_error(sys.exc_info()[1])
+                logging.error(sys.exc_info()[1])
 
     make_dir(user_larchdir)
     for fname, text in files.items():

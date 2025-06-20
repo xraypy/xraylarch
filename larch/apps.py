@@ -6,7 +6,7 @@ import locale
 import inspect
 import shutil
 from argparse import ArgumentParser
-from  pathlib import Path
+from pathlib import Path
 
 import matplotlib
 from pyshortcuts import make_shortcut, ico_ext, get_folders
