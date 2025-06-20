@@ -1,7 +1,7 @@
 import numpy as np
 
 from xraydb import xray_line, xray_edge, material_mu
-from larch import  parse_group_args, Make_CallArgs
+from larch.larchlib import  parse_group_args, Make_CallArgs
 from .xafsutils import set_xafsGroup
 from .pre_edge import preedge
 

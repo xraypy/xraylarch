@@ -4,7 +4,8 @@
 """
 from numpy import pi, sqrt, where
 
-from larch import parse_group_args, Group, isgroup, Make_CallArgs
+from larch import Group, isgroup
+from larch.larchlib import parse_group_args, Make_CallArgs
 
 from larch.math import index_of, realimag
 from .xafsutils import set_xafsGroup

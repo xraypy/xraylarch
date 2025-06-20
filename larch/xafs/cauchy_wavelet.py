@@ -23,7 +23,7 @@
 # 2014-Apr M Newville : translated to Python for Larch
 
 import numpy as np
-from larch import Make_CallArgs, parse_group_args
+from larch.larchlib import Make_CallArgs, parse_group_args
 from larch.math import complex_phase
 from .xafsutils import set_xafsGroup
 

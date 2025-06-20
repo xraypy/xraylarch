@@ -33,7 +33,8 @@ except (ImportError, ModuleNotFoundError):
 
 from scipy.special import i0 as bessel_i0
 
-from larch import (Group, Make_CallArgs, parse_group_args)
+from larch import Group
+from larch.larchlib import Make_CallArgs, parse_group_args
 
 from larch.math import complex_phase
 from .xafsutils import set_xafsGroup, FT_WINDOWS_SHORT

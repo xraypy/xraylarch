@@ -10,7 +10,8 @@ from lmfit import Parameter, Parameters, minimize, fit_report
 
 import uncertainties
 
-from larch import (Group, Make_CallArgs, parse_group_args, isgroup)
+from larch import Group, isgroup
+from larch.larchlib import Make_CallArgs, parse_group_args
 from larch.math import index_of, index_nearest, realimag, remove_dups
 
 from .xafsutils import ETOK, TINY_ENERGY, set_xafsGroup

@@ -10,8 +10,8 @@ from xraydb import (xray_edge, xray_line, xray_lines,
                     atomic_number, atomic_symbol)
 from lmfit import Parameter, Parameters, minimize
 
-from larch import Group, isgroup, parse_group_args, Make_CallArgs
-
+from larch import Group, isgroup
+from larch.larchlib import Make_CallArgs, parse_group_args
 from larch.math import index_of, index_nearest, remove_dups, remove_nans2
 
 from .xafsutils import set_xafsGroup, TINY_ENERGY

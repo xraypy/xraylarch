@@ -6,8 +6,8 @@ import numpy as np
 
 from lmfit import Parameters, Minimizer, report_fit
 from xraydb import guess_edge
-from larch import Group, Make_CallArgs, parse_group_args
-
+from larch import Group
+from larch.larchlib import Make_CallArgs, parse_group_args
 from larch.math import (index_of, index_nearest, interp, smooth,
                         polyfit, remove_dups, remove_nans, remove_nans2)
 from .xafsutils import set_xafsGroup, TINY_ENERGY

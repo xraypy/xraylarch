@@ -2,7 +2,8 @@
 Utility functions used for xafs analysis
 """
 import numpy as np
-from larch import Group, Journal
+from larch import Group
+from larch.larchlib import Journal
 from larch.utils import gformat
 import scipy.constants as consts
 KTOE = 1.e20*consts.hbar**2 / (2*consts.m_e * consts.e) # 3.8099819442818976

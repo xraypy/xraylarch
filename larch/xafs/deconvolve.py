@@ -4,7 +4,7 @@
 
 import numpy as np
 from scipy.signal import deconvolve
-from larch import parse_group_args, Make_CallArgs
+from larch.larchlib import parse_group_args, Make_CallArgs
 
 from larch.math import (gaussian, lorentzian, interp,
                         index_of, index_nearest, remove_dups,

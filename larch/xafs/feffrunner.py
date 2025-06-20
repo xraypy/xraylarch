@@ -12,7 +12,8 @@ from subprocess import Popen, PIPE
 
 from pyshortcuts import bytes2str, uname, get_cwd
 
-from larch import Group, isNamedClass
+from larch import Group
+from larch.larchlib import isNamedClass
 from larch.utils import isotime, bindir
 
 def find_exe(exename):

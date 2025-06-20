@@ -1,7 +1,8 @@
 import numpy as np
 from scipy.interpolate import CubicSpline
 
-from larch import Group, Make_CallArgs, parse_group_args
+from larch import Group
+from larch.larchlib import Make_CallArgs, parse_group_args
 from larch.math import (index_of, interp1d,
                         remove_dups, remove_nans, remove_nans2)
 from .xafsutils import ktoe, etok, TINY_ENERGY
@@ -123,7 +124,7 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
 
     if exafs2 is None:
         exafs2 = max(energy) - e0
-    
+
     # determine xanes step size:
     #  find mean of energy difference within 10 eV of E0
     if xanes_step is None:
