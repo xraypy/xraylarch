@@ -115,7 +115,7 @@ class XASController():
         elif isinstance(journal, (list, Journal)):
             jopts = repr(journal)
 
-        cmds = [f"{groupname:s}.groupname = '{groupname:s}'",
+        cmds = [f"{groupname:s}.groupname = {groupname:s}.__name__ = '{groupname:s}'",
                 f"{groupname:s}.filename = '{filename:s}'"]
         needs_config = not hasattr(thisgroup, 'config')
         if needs_config:
