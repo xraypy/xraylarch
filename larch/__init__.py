@@ -18,26 +18,19 @@ if os.name == 'nt':
 if (sys.version_info.major < 3 or sys.version_info.minor < 9):
     raise EnvironmentError('larch requires python 3.9 or higher')
 
-import matplotlib
+#import matplotlib
 
 # note: for HDF5 File / Filter Plugins to be useful, the
 # hdf5plugin module needs to be imported before h5py
 try:
-    import hdf5plugin
-    import h5py
+   import hdf5plugin
 except ImportError:
-    pass
+   pass
 
-## be careful here: it is easy to have cicrular imports!
+## limited imports
 from .version import __date__, __version__, __release_version__
-from .symboltable import Group, isgroup, repr_value
+from .symboltable import Group, isgroup
 from .larchlib import Make_CallArgs, parse_group_args, isNamedClass, Journal, Entry
-from .fitting import Parameter, isParameter, param_value, ParameterGroup
-
-from .inputText import InputText
 from .interpreter import Interpreter
-
-
-from . import larchlib
 from . import utils
 from . import site_config
