@@ -18,8 +18,6 @@ if os.name == 'nt':
 if (sys.version_info.major < 3 or sys.version_info.minor < 9):
     raise EnvironmentError('larch requires python 3.9 or higher')
 
-#import matplotlib
-
 # note: for HDF5 File / Filter Plugins to be useful, the
 # hdf5plugin module needs to be imported before h5py
 try:
