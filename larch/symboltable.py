@@ -45,9 +45,7 @@ class Group():
         return len(dir(self))
 
     def __repr__(self):
-        if self.__name__ is not None:
-            return f'<Group {self.__name__}>'
-        return '<Group>'
+        return f"<Group '{self.__name__}'>"
 
     def __copy__(self):
         out = Group()
