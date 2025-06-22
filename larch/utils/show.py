@@ -6,7 +6,7 @@ import os
 import sys
 import types
 import numpy
-from larch import Group, repr_value
+from larch.symboltable import Group, repr_value
 
 TERMCOLOR_COLORS = ('grey', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white')
 
