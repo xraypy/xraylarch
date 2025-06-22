@@ -658,6 +658,7 @@ class LarixFrame(wx.Frame):
             return
 
         datatype = getattr(dgroup, 'datatype', 'xydata')
+        # print(f"ShowFile {dgroup=}, {groupname=}, {datatype=}, {plot=}")
         panname = 'xydata'
         if datatype.startswith('xas'):
             cur_pan = self.nb.GetSelection()
@@ -1605,7 +1606,7 @@ before clearing"""
             dgroup = self.larch.symtable.get_group(gid)
 
             conf_xasnorm = dgroup.config.xasnorm
-            conf_exafs= dgroup.config.exafs
+            conf_exafs = dgroup.config.exafs
 
             apars = getattr(dgroup, 'athena_params', {})
             abkg = getattr(apars, 'bkg', {})
@@ -1723,7 +1724,7 @@ before clearing"""
         config['group'] = groupname
         config['path'] = path
         has_yref = config.get('has_yref', False)
-
+        # print("onRead_OK ", script.format(**config))
         self.larch.eval(script.format(**config))
 
         if config is not None:
@@ -1889,7 +1890,6 @@ before clearing"""
         self.ShowFile(groupname=groupname, filename=filename,
                       process=process, plot=plot)
 
-    ##
     def get_recent_session_menu(self):
         """ get recent sessions files for Menu list"""
         for menu_item in self.recent_menu.MenuItems:
