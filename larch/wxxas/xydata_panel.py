@@ -153,6 +153,7 @@ class XYDataPanel(TaskPanel):
             dgroup = self.controller.get_group()
         if dgroup is None:
             return self.get_defaultconfig()
+        self.ensure_ydat(dgroup)
         self.read_form()
 
         defconf = self.get_defaultconfig()
@@ -242,6 +243,7 @@ class XYDataPanel(TaskPanel):
 
         groupname = self.controller.file_groups[str(last_id)]
         dgroup = self.controller.get_group(groupname)
+        self.ensure_ydat(dgroup)
 
         plot_choices = PlotSel_Choices
 
@@ -265,7 +267,7 @@ class XYDataPanel(TaskPanel):
             dgroup = self.controller.get_group(groupname)
             if dgroup is None:
                 continue
-
+            self.ensure_ydat(dgroup)
             if ((getattr(dgroup, 'plot_yarrays', None) is None or
                  getattr(dgroup, 'dydx', None) is None or
                  getattr(dgroup, 'd2ydx', None) is None or
@@ -399,6 +401,15 @@ class XYDataPanel(TaskPanel):
             self.stale_groups = None
         self.onPlotEither()
 
+    def ensure_ydat(self, dgroup):
+        # supports some back-compat cases.
+        if (getattr(dgroup, 'ydat', None) is None and
+            getattr(dgroup, 'y', None) is not None):
+            dgroup.ydat = dgroup.y[:]
+        if (getattr(dgroup, 'xdat', None) is None and
+            getattr(dgroup, 'x', None) is not None):
+            dgroup.xdat = dgroup.x[:]
+
 
     def process(self, dgroup=None, force_mback=False, force=False, use_form=True, **kws):
         """ handle process (pre-edge/normalize) of XAS data from XAS form
@@ -409,6 +420,8 @@ class XYDataPanel(TaskPanel):
             dgroup = self.controller.get_group()
         if dgroup is None:
             return
+
+        self.ensure_ydat(dgroup)
 
         self.skip_process = True
         conf = self.get_config(dgroup)
@@ -433,12 +446,12 @@ class XYDataPanel(TaskPanel):
         self.unset_skip_process()
         return
 
-
     def get_plot_arrays(self, dgroup):
         lab = plotlabels.ynorm
         if dgroup is None:
             return
 
+        self.ensure_ydat(dgroup)
         dgroup.plot_y2label = None
         dgroup.plot_xlabel = plotlabels.xplot
         dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, lab)]
