@@ -240,10 +240,11 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, npre=1, pre1=No
         nvict = 0
         npre = 0
 
-    if norm2 is None:
-        norm2 = 5.0*round((max(energy) - e0)/5.0)
     if norm2 < 0:
-        norm2 = max(energy) - e0 - norm2
+        norm2 = max(energy) - e0
+    if norm2 is None or norm2 < 0:
+        norm2 = 5.0*round((max(energy) - e0)/5.0)
+
     norm2 = min(norm2, (max(energy) - e0))
     if norm1 is None:
         norm1 = min(25, 5.0*round(norm2/15.0))
@@ -252,6 +253,7 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, npre=1, pre1=No
         norm1, norm2 = norm2, norm1
 
     norm1 = min(norm1, norm2 - 2)
+
     if nnorm is None:
         nnorm = 2
         if norm2-norm1 < 300: nnorm = 1
@@ -286,7 +288,10 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, npre=1, pre1=No
     # normalization
     p1 = index_of(energy, norm1+e0)
     p2 = index_nearest(energy, norm2+e0)
+    if p1 > len(energy)-3:
+        p1 = len(energy)-3
     if p2-p1 < 2:
+        p1 = p1 - 2
         nnorm = 0
     elif p2-p1 < 5:
         nnorm = min(1, nnorm)
