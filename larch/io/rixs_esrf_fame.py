@@ -21,6 +21,8 @@ from silx.io.dictdump import dicttoh5
 from larch.utils.logging import getLogger
 
 _logger = getLogger("io_rixs_bm16")
+__author__ = "Mauro Rovezzi"
+__version__ = "25.1.2"  #: this is the local version for this module only
 
 
 def search_samples(
@@ -51,7 +53,7 @@ def search_samples(
 
 
 def get_rixs_filenames(samplepath: Path) -> list[Path]:
-    fnames = sorted(samplepath.glob("**/*RIXS*.h5"), key=lambda x: x.stat().st_ctime)
+    fnames = sorted(samplepath.glob("**/*RIXS*.h5", case_sensitive=False), key=lambda x: x.stat().st_ctime)
     _logger.info(f"{len(fnames)} RIXS planes:")
     for ifn, fname in enumerate(fnames):
         _logger.info(f"- {ifn}: {fname.name}")
@@ -136,22 +138,27 @@ def get_rixs_bm16(
         except Exception:
             sample_name = "SAMPLE_UNKNOWN"
 
+    mode = mode.lower()
+    assert mode in ("rixs", "rixs_et"), "RIXS mode not valid"
+    if mode == "rixs":
+        scntype = "trigscan"
+    else:
+        scntype = "emiscan"
     if isinstance(scans, str):
         scans = _str2rng(scans)
     if scans is None:
-        scans = [scn[0] for scn in ds.get_scans() if ".1" in scn[0]]
+        scans = [scn[0] for scn in ds.get_scans() if (".1" in scn[0] and scntype in scn[1])]
+        _logger.debug(f"mode {mode} -> found {len(scans)} {scntype} to load")
     assert isinstance(scans, list), "scans should be a list"
-
-    mode = mode.lower()
-    assert mode in ("rixs", "rixs_et"), "RIXS mode not valid"
 
     _counter = 0
     for scan in scans:
         try:
             ds.set_scan(scan)
             xscan, sig, lab, attrs = ds.get_curve(counter_signal, mon=counter_mon)
-        except Exception:
+        except Exception as err:
             _logger.error(f"cannot load scan {scan}!")
+            _logger.debug(f"--- [{type(err).__name__}] ---> {err}")
             continue
         # keV -> eV
         escan = xscan * 1000
