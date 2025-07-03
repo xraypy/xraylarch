@@ -5,6 +5,7 @@ build American Mineralogist Crystal Structure Databse (amcsd)
 
 import os
 import requests
+import atexit
 import numpy as np
 from itertools import groupby
 import larch
@@ -121,6 +122,9 @@ def iscifDB(dbname):
         result = all([t in meta.tables for t in _tables])
     except:
         pass
+    finally:
+        if engine is not None:
+            engine.dispose()
     return result
 
 
@@ -182,7 +186,7 @@ class cifDB(object):
         self.ciftbl  = Table('ciftbl', self.metadata)
 
         self.axis = np.array([float(q[0]) for q in self.query(self.qtbl.c.q).all()])
-
+        atexit.register(self.close)
 
     def query(self, *args, **kws):
         "generic query"
@@ -194,7 +198,6 @@ class cifDB(object):
         self.session.close()
 
     def create_cifdb(self,name=None,verbose=False):
-
         if name is None:
             self.dbname = 'amcsd_cif0.db'
             counter = 0
