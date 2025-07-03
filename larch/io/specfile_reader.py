@@ -990,7 +990,7 @@ class DataSourceSpecH5(object):
                 mon = dict(monitor=mon, cps=False)
             mon_name = mon["monitor"]
             mon_data = self.get_array(mon_name)
-            sig_data /= mon_data
+            sig_data = (sig_data / mon_data).astype(np.float64)
             sig_label += f"_mon({mon_name})"
             if mon["cps"]:
                 sig_data *= np.average(mon_data)  #: put back in counts
