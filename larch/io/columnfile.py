@@ -127,7 +127,7 @@ def getfloats(txt, allow_times=True):
     return words
 
 def colname(txt):
-    return fix_varname(txt.strip().lower()).replace('.', '_')
+    return fix_varname(txt.strip()).replace('.', '_')
 
 
 def parse_labelline(labelline, header):
@@ -460,7 +460,7 @@ def set_array_labels(group, labels=None, simple_labels=False,
     # generating array `tlabels` for test labels
     #
     # generate simple column labels, used as backup
-    clabels = ['col%d' % (i+1) for i in range(ncols)]
+    clabels = [f'col{(i+1)}' for i in range(ncols)]
 
     if isinstance(labels, str):
         labels = labels.split()
@@ -476,7 +476,7 @@ def set_array_labels(group, labels=None, simple_labels=False,
     # 2.a: check for not enough and too many labels
     if len(tlabels) < ncols:
         for i in range(len(tlabels), ncols):
-            tlabels.append("col%i" % (i+1))
+            tlabels.append(f"col{i+1}")
     elif len(tlabels) > ncols:
         tlabels = tlabels[:ncols]
 
@@ -495,16 +495,18 @@ def set_array_labels(group, labels=None, simple_labels=False,
                 j += 1
                 if j == len(extras):
                     break
-                lname = "%s_%s" % (tlabels[i], extras[j])
+                lname = f"{tlabels[i]}_{extras[j]}"
         if lname in labels:
             lname = clabels[i]
         labels.append(lname)
 
     ####
     # step 3: assign attribue names, set 'array_labels'
-    for i, name in enumerate(labels):
+    labels_lcase = [l.lower() for l in labels]
+    for i, name in enumerate(labels_lcase):
         setattr(group, name, group.data[i])
-    group.array_labels = labels
+    group.array_labels_orig = labels
+    group.array_labels = labels_lcase
     return group
 
 
@@ -664,7 +666,7 @@ def guess_filereader(path, return_text=False):
     if 'xdi' in line1:
         reader = 'read_xdi'
     if 'epics stepscan file' in line1 :
-        reader = 'read_ascii'
+        reader = 'read_gsexdi'
     if ("#s" in line1) or ("#f" in line1):
         reader = 'read_specfile'
     if 'fdmnes' in line1:
