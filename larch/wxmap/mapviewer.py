@@ -51,7 +51,7 @@ from larch.utils.physical_constants import PLANCK_HC
 
 from ..xrd import lambda_from_E, xrd1d, save1D, calculate_xvalues, read_poni
 from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup, DEFAULT_XRAY_ENERGY
-from ..apps import check_larchversion, update_larch
+from ..version import check_larchversion
 from ..epics import pv_fullname
 from ..wxlib.xrfdisplay import XRFDisplayFrame
 
@@ -1973,8 +1973,8 @@ class MapViewerFrame(wx.Frame):
         res = dlg.GetResponse()
         dlg.Destroy()
         if res.ok and res.run_updates:
-            from larch.apps import update_larch
-            update_larch()
+            from larch.verion import upgrade_from_pypi
+            upgrade_from_pypi()
             self.onClose(evt=event, prompt=False)
 
     def onClose(self, evt=None, prompt=True):

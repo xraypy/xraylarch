@@ -30,12 +30,6 @@ def pjoin(*args):
     "simple join"
     return Path(*args).absolute().as_posix()
 
-def update_larch(with_larix=True):
-    "pip upgrade larch"
-    target = 'xraylarch'
-    if with_larix:
-        target = 'xraylarch[larix]'
-    check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', target])
 
 #                 = get_homedir() + 'larch'  (#win)
 home_dir = get_homedir()

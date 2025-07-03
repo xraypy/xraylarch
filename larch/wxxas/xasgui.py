@@ -1296,8 +1296,8 @@ before clearing"""
         res = dlg.GetResponse()
         dlg.Destroy()
         if res.ok and res.run_updates:
-            from larch.apps import update_larch
-            update_larch()
+            from larch.verion import upgrade_from_pypi
+            upgrade_from_pypi()
             self.onClose(event=event, prompt=False)
 
     def onClose(self, event=None, prompt=True):
