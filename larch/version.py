@@ -12,6 +12,7 @@ from packaging.version import parse as ver_parse
 
 import importlib
 import urllib3
+from subprocess import check_call
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -147,12 +148,12 @@ def check_larchversion():
 NIGHTLY_URL  = 'https://millenia.cars.aps.anl.gov/xraylarch/downloads/'
 NIGHTLY_WHEEL = 'xraylarch-latest.txt'
 
-def install_nightly_build():
+def upgrade_nightly_build():
+    "pip install from latest nightly build"
     import requests
-    import subprocess
     try:
         url = f'{NIGHTLY_URL}/{NIGHTLY_WHEEL}'
-        req = requests.get(f'{NIGHTLY_URL}/{NIGHTLY_WHEEL}', verify=False, timeout=5.10)
+        req = requests.get(f'{NIGHTLY_URL}/{NIGHTLY_WHEEL}', verify=False, timeout=10.0)
     except:
         print("could not get nightly build", url)
         return
@@ -160,4 +161,9 @@ def install_nightly_build():
     if req.status_code == 200:
         fname = req.text.split()[0]
         print("Downloading wheel for nightly build: {fname}")
-        subprocess.check_call([sys.executable, '-m', 'pip', 'install', f'{NIGHTLY_URL}{fname}'])
+        check_call([sys.executable, '-m', 'pip', 'install', f'{NIGHTLY_URL}{fname}'])
+
+def upgrade_from_pypi():
+    "pip installl/upgrade larch from PyPI"
+    target = 'xraylarch[larix]' if with_larix else 'xraylarch'
+    check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', target])
