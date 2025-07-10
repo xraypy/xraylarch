@@ -1103,10 +1103,10 @@ class DeglitchDialog(wx.Dialog):
     def __init__(self, parent, controller, **kws):
         self.parent = parent
         self.controller = controller
+        self.controller.register_group_callback(self, self.on_group_changed)
         self.wids = {}
         self.plot_markers = None
         self.dgroup = self.controller.get_group()
-        groupnames = list(self.controller.file_groups.keys())
 
         self.reset_data_history()
         xplot, yplot = self.data
@@ -1125,11 +1125,7 @@ class DeglitchDialog(wx.Dialog):
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
         wids = self.wids
 
-        wids['grouplist'] = Choice(panel, choices=groupnames, size=(250, -1),
-                                action=self.on_groupchoice)
-
-        wids['grouplist'].SetStringSelection(self.dgroup.filename)
-        SetTip(wids['grouplist'], 'select a new group, clear undo history')
+        wids['grouplabel'] = SimpleText(panel, self.dgroup.filename)
 
         br_xlast = Button(panel, 'Remove point', size=(125, -1),
                           action=partial(self.on_remove, opt='x'))
@@ -1180,7 +1176,7 @@ class DeglitchDialog(wx.Dialog):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
 
         add_text('Deglitch Data for Group: ', dcol=2, newrow=False)
-        panel.Add(wids['grouplist'], dcol=5)
+        panel.Add(wids['grouplabel'], dcol=5)
 
         add_text('Single Energy : ', dcol=2)
         panel.Add(wids['xlast'])
@@ -1213,6 +1209,11 @@ class DeglitchDialog(wx.Dialog):
 
         fit_dialog_window(self, panel)
         self.plot_results(keep_limits=False)
+
+    def on_group_changed(self, event=None):
+        self.dgroup = self.controller.get_group()
+        self.wids['grouplabel'].SetLabel(self.dgroup.filename)
+        self.wids['save_as_name'].SetValue(self.dgroup.filename + '_clean')
 
     def onDone(self, event=None):
         self.Destroy()
@@ -1247,7 +1248,7 @@ class DeglitchDialog(wx.Dialog):
         return (xplot, yplot)
 
     def on_groupchoice(self, event=None):
-        self.dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
+        self.dgroup = self.controller.get_group()
         self.wids['save_as_name'].SetValue(self.dgroup.filename + '_clean')
         self.reset_data_history()
         self.plot_results(use_zoom=True)
@@ -1313,7 +1314,7 @@ class DeglitchDialog(wx.Dialog):
         self.plot_results()
 
     def on_saveas(self, event=None):
-        fname = self.wids['grouplist'].GetStringSelection()
+        fname = self.controller.get_group().filename
         new_fname = self.wids['save_as_name'].GetValue()
         ngroup = self.controller.copy_group(fname, new_filename=new_fname)
         xplot, yplot = self.get_xydata(datatype='mu')
