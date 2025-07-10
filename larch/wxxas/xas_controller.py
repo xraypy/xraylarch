@@ -35,6 +35,7 @@ class XASController():
         self.report_frame = None
         self.recentfiles = []
         self.panels = {}
+        self.datagroup_callbacks = []
         self.larch = _larch
         if _larch is None:
             self.larch = larch.Interpreter()
@@ -254,6 +255,22 @@ class XASController():
                         self.recentfiles.insert(0, (float(w[0]), w[1]))
                     except:
                         pass
+
+    def register_group_callback(self, obj, callback):
+        self.datagroup_callbacks.append([obj, callback])
+
+
+    def run_group_callbacks(self):
+        "run callbacks for group changes, checking that objects are still alive"
+        obj_cbs = [(obj, cb) for (obj, cb) in self.datagroup_callbacks]
+        self.datagroup_callbacks = []
+        for obj, cb in obj_cbs:
+            try:
+                obj.Raise()
+                cb()
+                self.datagroup_callbacks.append([obj, cb])
+            except:
+                print("object dropped from group callbacks : ", obj, cb)
 
 
     def autosave_session(self):
