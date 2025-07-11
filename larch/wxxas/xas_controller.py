@@ -257,7 +257,7 @@ class XASController():
                         pass
 
     def register_group_callback(self, obj, callback):
-        self.datagroup_callbacks.append([obj, callback])
+        self.datagroup_callbacks.insert(0, [obj, callback])
 
 
     def run_group_callbacks(self):
