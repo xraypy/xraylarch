@@ -584,8 +584,7 @@ class LarixFrame(wx.Frame):
         return current_panels.get(name, None)
 
     def process_normalization(self, dgroup, force=True, use_form=True, force_mback=False):
-        self.get_nbpage('xasnorm')[1].process(dgroup, force=force,
-                                              force_mback=False, use_form=use_form)
+        self.get_nbpage('xasnorm')[1].process(dgroup, force=force, force_mback=False)
 
     def process_exafs(self, dgroup, force=True):
         self.get_nbpage('exafs')[1].process(dgroup, force=force)
@@ -703,7 +702,7 @@ class LarixFrame(wx.Frame):
             pagepanel.skip_process = False
 
         self.controller.filelist.SetStringSelection(filename)
-
+        self.controller.run_group_callbacks()
 
     def createMenus(self):
         # ppnl = self.plotpanel
@@ -1125,7 +1124,6 @@ before clearing"""
             self.show_subframe('group_journal', GroupJournalFrame)
             self.subframes['group_journal'].set_group(dgroup)
 
-
     def onRenameGroup(self, event=None):
         fname = self.current_filename = self.controller.filelist.GetStringSelection()
         if fname is None:
@@ -1251,11 +1249,13 @@ before clearing"""
 
     def onDeglitchData(self, event=None):
         if self.has_datagroup():
-            DeglitchDialog(self, self.controller).Show()
+            self.show_subframe('deglitch', DeglitchDialog,
+                                controller=self.controller)
 
     def onSmoothData(self, event=None):
         if self.has_datagroup():
-            SmoothDataDialog(self, self.controller).Show()
+            self.show_subframe('smooth', SmoothDataDialog,
+                                controller=self.controller)
 
     def onRebinData(self, event=None):
         if self.has_datagroup():
@@ -1266,13 +1266,14 @@ before clearing"""
             OverAbsorptionDialog(self, self.controller).Show()
 
     def onSpectraCalc(self, event=None):
-
         if self.has_datagroup():
             SpectraCalcDialog(self, self.controller).Show()
 
     def onEnergyCalibrateData(self, event=None):
         if self.has_datagroup():
-            EnergyCalibrateDialog(self, self.controller).Show()
+            self.show_subframe('energy_calib', EnergyCalibrateDialog,
+                                controller=self.controller)
+
 
     def onDeconvolveData(self, event=None):
         if self.has_datagroup():
@@ -1359,7 +1360,7 @@ before clearing"""
                 del self.subframes[name]
         if not shown:
             self.subframes[name] = frameclass(self, **opts)
-
+            self.subframes[name].Show()
 
     def onCIFBrowse(self, event=None):
         self.show_subframe('cif_feff', CIFFrame, _larch=self.larch,
