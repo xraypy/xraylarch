@@ -775,9 +775,6 @@ class SmoothDataDialog(wx.Dialog):
 
         wids['grouplabel'] = SimpleText(panel, self.dgroup.filename)
 
-        #    wids['grouplist'].SetStringSelection(self.dgroup.filename)
-        # SetTip(wids['grouplist'], 'select a new group, clear undo history')
-
         smooth_ops = ('None', 'Boxcar', 'Savitzky-Golay', 'Convolution')
         conv_ops  = ('Lorenztian', 'Gaussian')
 
@@ -799,9 +796,6 @@ class SmoothDataDialog(wx.Dialog):
 
         self.par_o = FloatSpin(panel, value=1, digits=0, min_val=1, increment=1,
                                size=(60, -1), action=self.on_smooth)
-
-        # for fc in (self.sigma, self.par_n, self.par_o):
-        # self.sigma.SetAction(self.on_smooth)
 
         self.message = SimpleText(panel, label='         ', size=(200, -1))
 
@@ -834,8 +828,6 @@ class SmoothDataDialog(wx.Dialog):
         panel.Add((10, 10), newrow=True)
         panel.Add(self.message, dcol=5)
 
-        # panel.Add(wids['apply'], newrow=True)
-
         panel.Add(wids['save_as'],  newrow=True)
         panel.Add(wids['save_as_name'], dcol=5)
         panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
@@ -851,12 +843,11 @@ class SmoothDataDialog(wx.Dialog):
     def on_groupname(self, event=None):
         self.dgroup = self.controller.get_group()
         self.wids['grouplabel'].SetLabel(self.dgroup.filename)
-        self.wids['save_as_name'].SetValue(self.dgroup.filename + '_clean')
-        self.plot_results(use_zoom=True)
+        self.wids['save_as_name'].SetValue(self.dgroup.filename + '_smooth')
+        self.on_smooth(use_zoom=False)
 
-    def on_smooth(self, event=None, value=None):
+    def on_smooth(self, event=None, value=None, use_zoom=True):
         smoothop = self.smooth_op.GetStringSelection().lower()
-
         convop   = self.conv_op.GetStringSelection()
         self.conv_op.Enable(smoothop.startswith('conv'))
         self.sigma.Enable(smoothop.startswith('conv'))
@@ -894,7 +885,7 @@ class SmoothDataDialog(wx.Dialog):
 
         self.controller.larch.eval("_tmpy = %s" % self.cmd)
         self.data = self.dgroup.energy[:], self.controller.symtable._tmpy
-        self.plot_results()
+        self.plot_results(use_zoom=use_zoom)
 
     def on_apply(self, event=None):
         xplot, yplot = self.data
