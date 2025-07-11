@@ -252,7 +252,7 @@ class EnergyCalibrateDialog(wx.Dialog):
         self.parent = parent
         self.controller = controller
         self.dgroup = self.controller.get_group()
-        groupnames = list(self.controller.file_groups.keys())
+        self.controller.register_group_callback(self, self.on_groupname)
 
         ensure_en_orig(self.dgroup)
 
@@ -267,11 +267,9 @@ class EnergyCalibrateDialog(wx.Dialog):
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
 
         self.wids = wids = {}
-        wids['grouplist'] = Choice(panel, choices=groupnames, size=(275, -1),
-                                   action=self.on_groupchoice)
-        wids['grouplist'].SetStringSelection(self.dgroup.filename)
+        wids['grouplabel'] = SimpleText(panel, self.dgroup.filename)
 
-        refgroups = ['None'] + groupnames
+        refgroups = ['None'] + list(self.controller.file_groups.keys())
         wids['reflist'] = Choice(panel, choices=refgroups, size=(275, -1),
                                  action=self.on_align, default=0)
 
@@ -297,7 +295,7 @@ class EnergyCalibrateDialog(wx.Dialog):
         SetTip(wids['save_as'], 'Save shifted data as new group')
 
         wids['save_as_name'] = wx.TextCtrl(panel, -1,
-                                           self.dgroup.filename + '_eshift',
+                                           self.dgroup.filename + '_recalib',
                                            size=(275, -1))
 
         wids['sharedref_msg'] = wx.StaticText(panel, label="1 groups share this energy reference")
@@ -308,7 +306,7 @@ class EnergyCalibrateDialog(wx.Dialog):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
 
         add_text(' Current Group: ',  newrow=False)
-        panel.Add(wids['grouplist'], dcol=2)
+        panel.Add(wids['grouplabel'], dcol=2)
 
         add_text(' Auto-Align to : ')
         panel.Add(wids['reflist'], dcol=2)
@@ -346,7 +344,7 @@ class EnergyCalibrateDialog(wx.Dialog):
 
     def get_groups_shared_energyrefs(self, dgroup=None):
         if dgroup is None:
-            dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
+            dgroup = self.controller.get_group()
         sharedrefs = [dgroup.filename]
         try:
             eref = dgroup.config.xasnorm.get('energy_ref', None)
@@ -374,14 +372,13 @@ class EnergyCalibrateDialog(wx.Dialog):
         groups = self.get_groups_shared_energyrefs()
         self.controller.filelist.SetCheckedStrings(groups)
 
-    def on_groupchoice(self, event=None):
-        dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
-        self.dgroup = dgroup
-        others = self.get_groups_shared_energyrefs(dgroup)
-        self.wids['save_as_name'].SetValue(self.dgroup.filename + '_eshift')
-        self.plot_results()
+    def on_groupname(self, event=None):
+        self.dgroup = self.controller.get_group()
+        self.wids['grouplabel'].SetLabel(self.dgroup.filename)
+        self.wids['save_as_name'].SetValue(self.dgroup.filename + '_recalib')
+        self.on_align(use_zoom=False)
 
-    def on_align(self, event=None, name=None, value=None):
+    def on_align(self, event=None, name=None, value=None, use_zoom=True):
         ref = self.controller.get_group(self.wids['reflist'].GetStringSelection())
         dat = self.dgroup
         ensure_en_orig(dat)
@@ -420,15 +417,15 @@ class EnergyCalibrateDialog(wx.Dialog):
         ensure_en_orig(self.dgroup)
         xnew = self.dgroup.energy_orig + eshift
         self.data = xnew, self.dgroup.norm[:]
-        self.plot_results()
+        self.plot_results(use_zoom=use_zoom)
 
-    def on_calib(self, event=None, name=None):
+    def on_calib(self, event=None, name=None, use_zoom=True):
         wids = self.wids
         eshift = wids['eshift'].GetValue()
         ensure_en_orig(self.dgroup)
         xnew = self.dgroup.energy_orig + eshift
         self.data = xnew, self.dgroup.norm[:]
-        self.plot_results()
+        self.plot_results(use_zoom=use_zoom)
 
     def on_apply_one(self, event=None):
         xplot, yplot = self.data
