@@ -60,11 +60,13 @@ from .config import (FULLCONF, CONF_SECTIONS,  CVar, ATHENA_CLAMPNAMES,
                      LARIX_PANELS, LARIX_MODES)
 
 from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
-                          DeglitchDialog, ExportCSVDialog, RebinDataDialog,
-                          EnergyCalibrateDialog, SmoothDataDialog,
-                          OverAbsorptionDialog, DeconvolutionDialog,
-                          SpectraCalcDialog,  QuitDialog, LoadSessionDialog,
+                          ExportCSVDialog,   QuitDialog, LoadSessionDialog,
                           fit_dialog_window)
+
+from .datatasks import (RebinDataFrame, DeglitchFrame,
+                         EnergyCalibrateFrame, SmoothDataFrame,
+                         OverAbsorptionFrame, DeconvolutionFrame,
+                         SpectraCalcFrame)
 
 from larch.io import (read_ascii, read_xdi, read_gsexdi, gsescan_group,
                           groups2csv, is_athena_project,
@@ -1099,7 +1101,6 @@ before clearing"""
 
         fit_dialog_window(dlg, panel)
 
-
         if wx.ID_OK == dlg.ShowModal():
             self.autosave_session()
             self.controller.clear_session()
@@ -1249,35 +1250,38 @@ before clearing"""
 
     def onDeglitchData(self, event=None):
         if self.has_datagroup():
-            self.show_subframe('deglitch', DeglitchDialog,
+            self.show_subframe('deglitch', DeglitchFrame, label='deglitch',
                                 controller=self.controller)
 
     def onSmoothData(self, event=None):
         if self.has_datagroup():
-            self.show_subframe('smooth', SmoothDataDialog,
+            self.show_subframe('smooth', SmoothDataFrame, label='smooth',
                                 controller=self.controller)
 
     def onRebinData(self, event=None):
         if self.has_datagroup():
-            RebinDataDialog(self, self.controller).Show()
+            self.show_subframe('rebin', RebinDataFrame, label='rebin',
+                                controller=self.controller)
 
     def onCorrectOverAbsorptionData(self, event=None):
         if self.has_datagroup():
-            OverAbsorptionDialog(self, self.controller).Show()
+            self.show_subframe('abscorr', OverAbsorptionFrame, label='abscorr',
+                                controller=self.controller)
 
     def onSpectraCalc(self, event=None):
         if self.has_datagroup():
-            SpectraCalcDialog(self, self.controller).Show()
+            self.show_subframe('scalc', SpectraCalcFrame, label='scalc',
+                                controller=self.controller)
 
     def onEnergyCalibrateData(self, event=None):
         if self.has_datagroup():
-            self.show_subframe('energy_calib', EnergyCalibrateDialog,
+            self.show_subframe('encalib', EnergyCalibrateFrame, label='encalib',
                                 controller=self.controller)
-
 
     def onDeconvolveData(self, event=None):
         if self.has_datagroup():
-            DeconvolutionDialog(self, self.controller).Show()
+            self.show_subframe('deconv', DeconvolutionFrame, label='deconv',
+                                controller=self.controller)
 
     def onConfigDataFitting(self, event=None):
         pass
