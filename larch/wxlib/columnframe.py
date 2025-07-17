@@ -89,10 +89,10 @@ class DeadtimeCorrectionFrame(wx.Frame):
         self.yarr_labels = [s for s in self.parent.yarr_labels]
         wids = self.wids = {}
 
-        multi_title = wx.StaticText(panel, label=MULTICHANNEL_TITLE, size=(650, 150))
+        multi_title = wx.StaticText(panel, label=MULTICHANNEL_TITLE, size=(650, 125))
         multi_title.SetFont(Font(FONTSIZE-1))
         for s in ('roi', 'icr', 'ocr', 'ltime'):
-            wids[s] = Choice(panel, choices=self.yarr_labels, action=self.read_form, size=(150, -1))
+            wids[s] = Choice(panel, choices=self.yarr_labels, action=self.read_form, size=(175, -1))
             sel = self.config.get(s, '1.0')
             if sel == '1.0':
                 wids[s].SetStringSelection(sel)
@@ -100,7 +100,7 @@ class DeadtimeCorrectionFrame(wx.Frame):
                 wids[s].SetSelection(sel[0])
             wids[f'{s}_txt'] = SimpleText(panel, label='<list of column labels>', size=(275, -1))
 
-        wids['i0'] = Choice(panel, choices=self.yarr_labels, action=self.read_form, size=(150, -1))
+        wids['i0'] = Choice(panel, choices=self.yarr_labels, action=self.read_form, size=(175, -1))
         wids['i0'].SetToolTip("All Channels will be divided by the I0 array")
 
         wids['i0'].SetStringSelection(self.parent.yarr2.GetStringSelection())
@@ -108,7 +108,8 @@ class DeadtimeCorrectionFrame(wx.Frame):
         wids['nchans']  = FloatCtrl(panel, value=self.config.get('nchans', 4),
                                     precision=0, maxval=MAXCHANS, minval=1, size=(50, -1),
                                     action=self.on_nchans)
-        wids['bad_chans'] = TextCtrl(panel, value='', size=(175, -1), action=self.read_form)
+        wids['bad_chans'] = TextCtrl(panel, value='', size=(150, -1), action=self.read_form)
+        wids['bad_chans_rbv'] = SimpleText(panel, 'use a list of integers, starting with 1')
         bad_chans = self.config.get('bad_chans', [])
         if len(bad_chans) > 0:
             wids['bad_chans'].SetValue(', '.join(['%d' % c for c in bad_chans]))
@@ -129,19 +130,20 @@ class DeadtimeCorrectionFrame(wx.Frame):
         def tlabel(t):
             return SimpleText(panel, label=t)
 
-        sizer.Add(multi_title,       (0, 0), (2, 5), LEFT, 3)
-        ir = 2
+        sizer.Add(multi_title,       (0, 0), (1, 5), LEFT, 3)
+        ir = 1
         sizer.Add(HLine(panel, size=(650, 2)), (ir, 0), (1, 5), LEFT, 3)
 
         ir += 1
         sizer.Add(tlabel(' Number of Channels:'),   (ir, 0), (1, 1), LEFT, 3)
         sizer.Add(wids['nchans'],                   (ir, 1), (1, 1), LEFT, 3)
         sizer.Add(tlabel(' Step between Channels:'), (ir, 2), (1, 1), LEFT, 3)
-        sizer.Add(wids['step'],                     (ir, 3), (1, 1), LEFT, 3)
+        sizer.Add(wids['step'],                      (ir, 3), (1, 1), LEFT, 3)
 
         ir += 1
         sizer.Add(tlabel(' Bad Channels :'),   (ir, 0), (1, 1), LEFT, 3)
-        sizer.Add(wids['bad_chans'],           (ir, 1), (1, 2), LEFT, 3)
+        sizer.Add(wids['bad_chans'],           (ir, 1), (1, 1), LEFT, 3)
+        sizer.Add(wids['bad_chans_rbv'],       (ir, 2), (1, 2), LEFT, 3)
 
         ir += 1
         sizer.Add(HLine(panel, size=(650, 2)), (ir, 0), (1, 5), LEFT, 3)
@@ -276,18 +278,19 @@ class DeadtimeCorrectionFrame(wx.Frame):
             wids = self.wids
             nchans = int(wids['nchans'].GetValue())
             step = int(wids['step'].GetValue())
-            badchans = wids['bad_chans'].GetValue().replace(',', ' ').strip()
         except:
             return
 
         bad_channels = []
-        if len(badchans) > 0:
+        badstr = wids['bad_chans'].GetValue().replace(',', ' ').strip()
+        for word in badstr.split():
             try:
-                bad_channels = [int(s) for s in badchans.split()]
-                wids['bad_chans'].SetBackgroundColour(GUI_COLORS.text_invalidbg)
+                bad_channels.append(int(word))
             except:
-                bad_channels = []
-                wids['bad_chans'].SetBackgroundColour(GUI_COLORS.text_bg)
+                pass
+        badstr = ', '.join([str(b) for b in bad_channels])
+        wids['bad_chans_rbv'].SetLabel(f'will use: "{badstr}"')
+        # print("READ FORM bad_channels ", bad_channels)
 
         pchan = int(wids['plot_chan'].GetValue())
 
@@ -914,6 +917,7 @@ class ColumnDataFileFrame(wx.Frame) :
                            on_ok=self.onDTC_OK)
 
     def onDTC_OK(self, config, update=True, **kws):
+
         label, sum = sum_fluor_channels(self.workgroup, config['roi'],
                                         icr=config['icr'],
                                         ocr=config['ocr'],
@@ -968,7 +972,6 @@ class ColumnDataFileFrame(wx.Frame) :
             self.multi_clear.Enable()
         if update:
             self.onUpdate()
-
 
     def read_column_file(self, path):
         """read column file, generally as initial read"""
