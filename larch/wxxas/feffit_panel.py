@@ -860,6 +860,8 @@ class FeffitPanel(TaskPanel):
                                        action=self.onPlot)
         wids['plot_current']  = Button(pan,'Plot Current Model',
                                      action=self.onPlot,  size=(175, -1))
+        wids['copy_exafs']  = Button(pan,'Copy from EXAFS Panel',
+                                     action=self.onCopyEXAFS,  size=(175, -1))
 
         wids['refine_bkg'] = Check(pan, default=False,
                                    label='Refine Background during Fit?')
@@ -897,7 +899,7 @@ class FeffitPanel(TaskPanel):
         pan.Add(fit_rmin)
         add_text('R max: ', newrow=False)
         pan.Add(fit_rmax)
-        add_text('  ', newrow=True)
+        pan.Add(wids['copy_exafs'], newrow=True)
         pan.Add(wids['refine_bkg'], dcol=3)
 
         pan.Add(HLine(pan, size=(600, 2)), dcol=6, newrow=True)
@@ -1007,6 +1009,23 @@ class FeffitPanel(TaskPanel):
         setattr(dgroup.config, self.configname, conf)
         self.config_saved = conf
         return conf
+
+    def onCopyEXAFS(self, action=None, **kws):
+        dgroup = self.controller.get_group()
+        econf = getattr(dgroup.config, 'exafs', {})
+        for key in ('kmin', 'kmax', 'kwindow', 'dk',
+                    'rmin', 'rmax'):
+            val = econf.get(f'fft_{key}', None)
+            if val is not None:
+                dgroup.config['feffit'][f'fit_{key}'] = val
+                if 'win' in key:
+                    self.wids[f'fit_{key}'].SetStringSelection(val)
+                else:
+                    self.wids[f'fit_{key}'].SetValue(val)
+        kweight = str(econf.get(f'fft_kweight', 2))
+        self.wids['fit_kwstring'].SetStringSelection(kweight)
+
+
 
     def process(self, dgroup=None, **kws):
         # print("Feffit Panel Process ", dgroup, time.ctime())
