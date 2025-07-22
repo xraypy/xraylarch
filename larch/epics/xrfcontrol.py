@@ -552,7 +552,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                     thissum, thisrate = sum, rate
         mfmt = " {:s}: Cts={:10,.0f} :{:10,.1f} Hz"
         self.write_message(mfmt.format(name, thissum, thisrate), panel=panel)
-        self.wids['roi_name'].SetLabel(name)
+        cname = self.wids['roi_name'].GetLabel().strip()
+        if name != cname:
+            self.wids['roi_name'].SetLabel(name)
 
     def onSelectDet(self, event=None, index=0, init=False, **kws):
         if index > 0:
