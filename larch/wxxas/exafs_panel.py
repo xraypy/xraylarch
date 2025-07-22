@@ -158,14 +158,14 @@ class EXAFSPanel(TaskPanel):
         wids['plot_echoice'] = Choice(ppanel, choices=PlotE_Choices,
                                       action=self.onPlot, size=(175, -1))
         wids['plot_erange'] = Choice(ppanel, choices=list(Plot_EnergyRanges),
-                                         action=self.onPlot,
+                                         action=self.onProcess,
                                          size=(125, -1))
 
         wids['plot_kchoice'] = Choice(ppanel, choices=PlotK_Choices,
-                                      action=self.onPlot, size=(175, -1))
+                                      action=self.onProcess, size=(175, -1))
 
         wids['plot_rchoice'] = Choice(ppanel, choices=PlotR_Choices,
-                                      action=self.onPlot, size=(175, -1))
+                                      action=self.onProcess, size=(175, -1))
 
         for t in (1, 2):
             wids[f'plot{t}_space'] = pan = wx.Panel(ppanel)
@@ -185,9 +185,9 @@ class EXAFSPanel(TaskPanel):
         self.plot2_space = 'R'
 
         wids['plot_show_kwin'] = Check(ppanel, default=False, label='show k->R Window',
-                                            action=self.onPlot)
+                                           action=self.onProcess)
         wids['plot_show_rwin'] = Check(ppanel, default=False, label='show R->q Window',
-                                            action=self.onPlot)
+                                            action=self.onProcess)
 
         wids['plot_on_choose'] = Check(ppanel, default=defaults.get('auto_plot', True),
                                 label='Auto-Plot when choosing Current Group?')
@@ -408,10 +408,10 @@ class EXAFSPanel(TaskPanel):
             self.plot1_space = label.strip().lower()
         elif space == 2:
             self.plot2_space = label.strip().lower()
-        self.onPlot()
+        self.onProcess()
 
     def onPlotSpace(self, event=None):
-        self.onPlot()
+        self.onProcess()
 
     def get_config(self, dgroup=None):
         """get and set processing configuration for a group"""
