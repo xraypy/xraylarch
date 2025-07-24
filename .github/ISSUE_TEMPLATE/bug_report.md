@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a bug report to help us improve Larch
+about: For something that is not working as expected
 title: ''
 labels: ''
 assignees: ''
