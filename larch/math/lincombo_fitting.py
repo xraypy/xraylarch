@@ -19,13 +19,11 @@ from .utils import interp, index_of, etok
 
 
 def get_arrays(group, arrayname, xname='energy'):
-    y = None
-    if arrayname == 'chik':
+    x = getattr(group, xname, None)
+    y = getattr(group, arrayname, None)
+    if arrayname.startswith('chi'):
         x = getattr(group, 'k', None)
         y = getattr(group, 'chi', None)
-    else:
-        x = getattr(group, xname, None)
-        y = getattr(group, arrayname, None)
     return x, y
 
 def get_label(group):
@@ -251,7 +249,6 @@ def lincombo_fitall(group, components, weights=None, minvals=None, maxvals=None,
     # here we save the inputs weights and bounds for each component by name
     # so they can be imposed for the individual fits
     _save = {}
-
     if weights in (None, [None]*ncomps):
         weights = [None]*ncomps
     if minvals in (None, [None]*ncomps):
