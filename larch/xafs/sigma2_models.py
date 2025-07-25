@@ -114,7 +114,6 @@ def sigma2_debye(t, theta, path):
         atomy.append(y)
         atomz.append(z)
         atomm.append(am)
-
     return sigma2_correldebye(natoms, tempk, thetad, rnorm,
                               atomx, atomy, atomz, atomm)
 
@@ -151,9 +150,8 @@ def sigma2_correldebye(natoms, tk, theta, rnorm, x, y, z, atwt):
     ay = (natoms*ctypes.c_double)()
     az = (natoms*ctypes.c_double)()
     am = (natoms*ctypes.c_double)()
-
     for i in range(natoms):
-        ax[i], ay[i], az[i], am[i] = x[i], y[i], z[i], atwt[i]
+        ax[i], ay[i], az[i], am[i] = float(x[i]), float(y[i]), float(z[i]), float(atwt[i])
 
     return FEFF6LIB.sigma2_debye(na, t, th, rs, ax, ay, az, am)
 
