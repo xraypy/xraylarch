@@ -47,7 +47,7 @@ def make_lcfplot(dgroup, form, with_fit=True, nfit=0):
     form['filename'] = dgroup.filename
     form['nfit'] = nfit
     form['label'] = label = 'Fit #%2.2d' % (nfit+1)
-
+    arrname = form.get('arrayname', 'norm')
     if 'win' not in form: form['win'] = 1
     kspace = form['arrayname'].startswith('chi')
     if kspace:
@@ -61,11 +61,11 @@ def make_lcfplot(dgroup, form, with_fit=True, nfit=0):
 
     else:
         form['plotopt'] = 'show_norm=False'
-        if form['arrayname'] == 'norm':
+        if arrname == 'norm':
             form['plotopt'] = 'show_norm=True'
-        elif form['arrayname'] == 'flat':
+        elif arrname == 'flat':
             form['plotopt'] = 'show_flat=True'
-        elif form['arrayname'] == 'dmude':
+        elif arrname == 'dmude':
             form['plotopt'] = 'show_deriv=True'
 
         elo, ehi = form['elo'], form['ehi']
@@ -313,6 +313,10 @@ class LinComboResultFrame(wx.Frame):
 
     def add_results(self, dgroup, form=None, larch_eval=None, show=True):
         name = dgroup.filename
+        #         fitspace = ARRAYS.get(self.datagroup.lcf_result[0].arrayname, 'unknown')
+        #         if fitspace in (None, 'None', 'unknown'):
+        #             return
+        #         name = f'{dgroup.filename} , {fitspace}'
         if name not in self.filelist.GetItems():
             self.filelist.Append(name)
         self.datasets[name] = dgroup
@@ -817,10 +821,11 @@ class LinearComboPanel(TaskPanel):
 
     def onFitSpace(self, evt=None):
         fitspace = self.wids['fitspace'].GetStringSelection()
-        self.update_config(dict(fitspace=fitspace))
-
         arrname = Linear_ArrayChoices.get(fitspace, 'norm')
-        self.update_fit_xspace(arrname)
+        self.update_config({'fitspace': fitspace})
+
+        form = self.read_form()
+        self.update_fit_xspace(arrname, grouplist=form['comp_names'])
         self.plot()
 
     def onComponent(self, evt=None, comp=None):
@@ -961,7 +966,6 @@ class LinearComboPanel(TaskPanel):
         if len(groupname) == 0:
             print("no group to fit?")
             return
-
         script = """# do LCF for {gname:s}
 lcf_result = {func:s}({gname:s}, [{comps:s}],
             xmin={elo:.4f}, xmax={ehi:.4f},
