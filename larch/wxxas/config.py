@@ -65,7 +65,7 @@ def make_array_choice(opts):
     return out
 
 
-Linear_ArrayChoices = make_array_choice(['norm', 'flat', 'dmude', 'chi0', 'chi1', 'chi2'])
+Linear_ArrayChoices = make_array_choice(['norm', 'flat', 'dmude', 'chi0', 'chi1', 'chi2', 'chi3'])
 PrePeak_ArrayChoices = make_array_choice(['norm', 'flat', 'deconv', 'mu'])
 CurveFit_ArrayChoices = make_array_choice(['ydat', 'ynorm', 'dydx'])
 
