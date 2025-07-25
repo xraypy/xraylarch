@@ -14,7 +14,7 @@ import wx.lib.scrolledpanel as scrolled
 from larch import Group
 from larch.wxlib import (BitmapButton, SetTip, GridPanel, FloatCtrl,
                          FloatSpin, FloatSpinWithPin, get_icon, SimpleText,
-                         pack, Button, HLine, Choice, Check, MenuItem,
+                         pack, Button, HLine, Choice, Check, MenuItem, Popup,
                          CEN, LEFT, FRAMESTYLE, Font, FileSave, GUI_COLORS,
                          FileOpen, FONTSIZE, FONTSIZE_FW, DataTableGrid)
 
@@ -256,7 +256,7 @@ class TaskPanel(wx.Panel):
         self.elo_wids = self.add_floatspin('elo', value=elo, **opts)
         self.ehi_wids = self.add_floatspin('ehi', value=ehi, **opts)
 
-    def update_fit_xspace(self, arrayname):
+    def update_fit_xspace(self, arrayname, grouplist=None):
         fit_xspace = 'e'
         if arrayname.startswith('chi'):
             fit_xspace = 'r' if 'r' in arrayname else 'k'
@@ -266,15 +266,37 @@ class TaskPanel(wx.Panel):
 
         if self.fit_xspace == 'e' and fit_xspace == 'k': # e to k
             dgroup = self.controller.get_group()
+            self.ensure_xas_processed(dgroup)
             e0 = getattr(dgroup, 'e0', None)
             k  = getattr(dgroup, 'k', None)
-            if e0 is None or k is None:
+            kspace_missing = []
+            if k is None:
+                kspace_missing.append(dgroup)
+            if grouplist is not None:
+                for gname in grouplist:
+                    grp = self.controller.get_group(gname)
+                    print("GroupList:  ", gname, grp)
+                    self.ensure_xas_processed(grp)
+                    if getattr(grp, 'k', None) is None and grp not in kspace_missing:
+                        kspace_missing.append(grp)
+            print("Kspace Missing ", kspace_missing)
+
+            if e0 is None or len(kspace_missing) > 0:
+                msg = ["Cannont set fit space to k-space:",
+                       "these groups have chi(k) data"]
+                for g in kspace_missing:
+                    if g is not None:
+                        msg.append(f"    {g.filename}")
+                msg.append("")
+                Popup(self, "\n".join(msg), "Cannot fit in k-space for this data",
+                          style=wx.ICON_WARNING|wx.OK_DEFAULT)
                 return
+
             elo = self.wids['elo'].GetValue()
             ehi = self.wids['ehi'].GetValue()
             self.fit_last_erange = (elo, ehi)
             self.wids['elo'].SetValue(etok(elo-e0))
-            self.wids['ehi'].SetValue(etok(ehi+e0))
+            self.wids['ehi'].SetValue(etok(ehi-e0))
             self.fit_xspace = 'k'
             self.wids['fitspace_label'].SetLabel('Fit Range (1/\u212B):')
         elif self.fit_xspace == 'k' and fit_xspace == 'e': # k to e
