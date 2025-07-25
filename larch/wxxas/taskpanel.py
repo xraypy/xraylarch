@@ -275,12 +275,9 @@ class TaskPanel(wx.Panel):
             if grouplist is not None:
                 for gname in grouplist:
                     grp = self.controller.get_group(gname)
-                    print("GroupList:  ", gname, grp)
                     self.ensure_xas_processed(grp)
                     if getattr(grp, 'k', None) is None and grp not in kspace_missing:
                         kspace_missing.append(grp)
-            print("Kspace Missing ", kspace_missing)
-
             if e0 is None or len(kspace_missing) > 0:
                 msg = ["Cannont set fit space to k-space:",
                        "these groups have chi(k) data"]
