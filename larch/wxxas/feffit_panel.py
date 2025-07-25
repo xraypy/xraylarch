@@ -865,7 +865,7 @@ class FeffitPanel(TaskPanel):
 
         wids['refine_bkg'] = Check(pan, default=False,
                                    label='Refine Background during Fit?')
-        wids['do_fit']        = Button(pan, 'Fit Data to Model',
+        wids['do_fit']        = Button(pan, 'Fit Model to Data',
                                       action=self.onFitModel,  size=(175, -1))
         wids['show_results']  = Button(pan, 'Show Fit Results',
                                       action=self.onShowResults,  size=(175, -1))
