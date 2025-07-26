@@ -653,11 +653,10 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
 
     def onSet_EnergyShift(self, evt=None, value=None):
         conf = self.get_config()
+        dgroup = self.controller.get_group()
         eshift = self.wids['energy_shift'].GetValue()
         dgroup.energy_shift = conf['energy_shift'] = eshift
         if conf['auto_energy_shift']:
-            eshift = self.wids['energy_shift'].GetValue()
-            dgroup = self.controller.get_group()
             _eref = getattr(dgroup, 'energy_ref', '<;no eref;>')
             _gname = dgroup.groupname
             self.stale_groups = []
