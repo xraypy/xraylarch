@@ -238,6 +238,12 @@ class PreferencesFrame(wx.Frame):
         else:
             value = wid.GetValue()
         self.controller.config[section][option] = value
+        if section == 'plot':
+            plotter = self.parent.larch.symtable._plotter
+            for attr in ('plot1', 'plot2', 'plot3'):
+                disp = getattr(plotter, attr, None)
+                if disp is not None:
+                    disp.set_config(**{option: value})
 
     def onSave(self, event=None):
         current_panels = list(self.parent.get_panels())
@@ -423,7 +429,6 @@ class LarixFrame(wx.Frame):
         self.cursor_dat = {}
 
         self.subframes = {}
-        self.plotframe = None
         self.SetTitle(title)
         self.SetSize(LARIX_SIZE)
         self.SetMinSize(LARIX_MINSIZE)
@@ -440,7 +445,6 @@ class LarixFrame(wx.Frame):
         self.Raise()
         self.statusbar.SetStatusText('ready', 1)
         self.timers['autosave'].Start(30_000)
-
 
         if self.current_filename is not None:
             wx.CallAfter(self.onRead, self.current_filename)
