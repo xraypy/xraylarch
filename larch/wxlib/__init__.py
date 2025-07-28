@@ -113,7 +113,7 @@ if HAS_WXPYTHON:
     from .athena_importer import AthenaImporter
     from .specfile_importer import SpecfileImporter
     from .xas_importer import XasImporter
-    from .reportframe import ReportFrame, DictFrame, DataTableGrid
+    from .reportframe import ReportFrame, DictFrame, DataTableGrid, CSVFrame
     from .gui_utils import (databrowser, fileprompt, LarchWxApp, wx_update)
     from .larch_updater import LarchUpdaterDialog
     from .parameter import ParameterWidgets, ParameterPanel

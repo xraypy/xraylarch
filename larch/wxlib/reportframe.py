@@ -261,3 +261,62 @@ class DataTableGrid(wxgrid.Grid):
     def OnLeftDClick(self, evt):
         if self.CanEnableCellControl():
             self.EnableCellEditControl()
+
+class CSVFrame(wx.Frame):
+    """basic frame for displaying a CSV report"""
+    def __init__(self, parent=None, csv=None, size=(725, 600),
+                 title='Report', default_filename='out.csv', **kws):
+        self.default_filename = default_filename
+        self.wildcard = wildcard
+        wx.Frame.__init__(self, parent, size=size, style=FRAMESTYLE, **kws)
+        self.SetTitle(title)
+        self.menubar = wx.MenuBar()
+        fmenu = wx.Menu()
+
+        MenuItem(self, fmenu, "Save", "Save  to CSV File", self.onSave)
+        MenuItem(self, fmenu, "Quit",  "Exit", self.onClose)
+        self.menubar.Append(fmenu, "&File")
+        self.SetMenuBar(self.menubar)
+        self.Bind(wx.EVT_CLOSE,  self.onClose)
+
+        if csv is None:
+            csv = [['Key', 'Value'], ['A', '0'], ['B', '1']]
+        self.labels = csv.pop(0)
+        ncols = len(self.labels)
+        self.grid = DataTableGrid(self, nrows=len(csv)+1,
+                                  collabels=self.labels,
+                                  datatypes=['string']*ncols,
+                                  defaults=['']*ncols,
+                                  colsizes=[75]*ncols,
+                                  rowlabelsize=60)
+
+
+        self.grid.SetMinSize((500, 350))
+        self.grid.EnableEditing(False)
+        self.grid.table.data = csv
+        self.grid.table.View.Refresh()
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.grid, 1, wx.ALL|wx.GROW, 2)
+        pack(self, sizer)
+        self.Show()
+        self.Raise()
+
+
+    def onClose(self, event=None):
+        self.Destroy()
+
+    def onSave(self, eventt=None):
+        wildcard = 'CSV files (*.csv)|*.csv|All files (*.*)|*.*'
+        path = FileSave(self, message='Save to CSV file',
+                        wildcard=wildcard,
+                        default_file=self.default_filename)
+        if path is not None:
+            out = [', '.join(self.labels)]
+            for t in self.grid.table.data:
+                print(t)
+                out.append(', '.join([str(x) for x in t]))
+            out.append('')
+            out = '\n'.join(out)
+            with open(path, 'w', encoding=sys.getdefaultencoding()) as fh:
+                fh.write(out)
