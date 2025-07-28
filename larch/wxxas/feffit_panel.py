@@ -37,7 +37,7 @@ from larch.xafs import feffit_report, feffpath
 from larch.xafs.feffdat import FEFFDAT_VALUES
 from larch.xafs.xafsutils import FT_WINDOWS
 
-from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
+from larch.wxlib import (ReportFrame, CSVFrame, BitmapButton, FloatCtrl, FloatSpin,
                          SetTip, GridPanel, get_icon, SimpleText, pack,
                          Button, HLine, Choice, Check, MenuItem,
                          CEN, RIGHT, LEFT, FRAMESTYLE, Font, FONTSIZE,
@@ -1886,10 +1886,12 @@ class FeffitResultFrame(wx.Frame):
         wids['plot_current']  = Button(panel,'Plot Current Model',
                                      action=self.onPlot,  size=(175, -1))
 
-        wids['show_pathpars']  = Button(panel,'Show Path Parameters',
-                                        action=self.onShowPathParams, size=(175, -1))
+        wids['show_report']  = Button(panel,'Show Fit Report',
+                                        action=self.onShowFitReport, size=(200, -1))
         wids['show_script']  = Button(panel,'Show Fit Script',
-                                        action=self.onShowScript, size=(150, -1))
+                                        action=self.onShowScript, size=(200, -1))
+        wids['show_params']  = Button(panel,'Show CVS Path Params',
+                                        action=self.onShowParamsCSV, size=(200, -1))
 
         lpanel = wx.Panel(panel)
         wids['fit_label'] = wx.TextCtrl(lpanel, -1, ' ', size=(175, -1))
@@ -1931,8 +1933,10 @@ class FeffitResultFrame(wx.Frame):
         sizer.Add(wids['plot2_voff'],         (irow, 3), (1, 1), LEFT)
 
         irow += 1
-        sizer.Add(wids['show_pathpars'], (irow, 0), (1, 1), LEFT)
-        sizer.Add(wids['show_script'],   (irow, 1), (1, 1), LEFT)
+        sizer.Add(wids['show_report'],  (irow, 0), (1, 1), LEFT)
+        sizer.Add(wids['show_script'],  (irow, 1), (1, 1), LEFT)
+        sizer.Add(wids['show_params'],  (irow, 2), (1, 2), LEFT)
+
         irow += 1
         sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
 
@@ -2079,7 +2083,7 @@ class FeffitResultFrame(wx.Frame):
                                             default_filename=default_filename,
                                             wildcard=wildcard)
 
-    def onShowPathParams(self, event=None):
+    def onShowFitReport(self, event=None):
         result = self.get_fitresult()
         if result is None:
             return
@@ -2088,6 +2092,17 @@ class FeffitResultFrame(wx.Frame):
         title = f'Report for {self.datagroup.filename} fit "{result.label}"'
         fname = fix_filename(f'{self.datagroup.filename}_{result.label}.txt')
         self.show_report(text, title=title, default_filename=fname)
+
+    def onShowParamsCSV(self, event=None):
+        result = self.get_fitresult()
+        if result is None:
+            return
+        _ = feffit_report(result)
+        dset= result.datasets[0]
+        dset.prepare_fit(result.params)
+        csv = result.datasets[0].csv_path_report(format=False)
+        CSVFrame(parent=self.parent, csv=csv)
+
 
     def onShowScript(self, event=None):
         result = self.get_fitresult()
