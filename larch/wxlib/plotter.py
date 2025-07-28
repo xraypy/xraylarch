@@ -42,6 +42,7 @@ PLOTOPTS = {'theme': 'light',
             'height': 550,
             'width': 600,
             'linewidth': 2.5,
+            'markersize': 4.0,
             'show_grid': True,
             'show_fullbox': True}
 
@@ -111,19 +112,18 @@ class PlotDisplay(PlotFrame):
         PlotFrame.__init__(self, parent=None, size=size,
                            output_title='larchplot',
                            exit_callback=self.onExit, **kws)
-
         self.Show()
         self.Raise()
         self.panel.cursor_callback = self.onCursor
         self.panel.cursor_mode = 'zoom'
         self.window = int(window)
+        self.get_config()
         self._larch = _larch
         self._xylims = {}
         self.cursor_hist = []
         self.symname = '%s.plot%i' % (_larch_name, self.window)
         symtable = ensuremod(self._larch, _larch_name)
         self.panel.canvas.figure.set_facecolor('#FDFDFB')
-
         if symtable is not None:
             symtable.set_symbol(self.symname, self)
             if not hasattr(symtable, '%s.cursor_maxhistory' % _larch_name):
@@ -155,6 +155,27 @@ class PlotDisplay(PlotFrame):
         if len(self.cursor_hist) > hmax:
             self.cursor_hist = self.cursor_hist[:hmax]
         symtable.set_symbol('%s_cursor_hist' % self.symname, self.cursor_hist)
+
+    def get_config(self):
+        global PLOTOPTS
+        try:
+            PLOTOPTS = deepcopy(_larch.symtable._sys.wx.plotopts)
+        except:
+            pass
+        self.config = {k: v for k, v in PLOTOPTS.items()}
+
+    def set_config(self,  **kws):
+        for k, v in kws.items():
+            if k in self.config:
+                self.config[k] = v
+        pconf = self.panel.conf
+        pconf.set_theme(theme=self.config['theme'])
+        pconf.enable_grid(self.config['show_grid'])
+        pconf.axes_style = 'box' if self.config['show_fullbox'] else 'open'
+        for i in range(16):
+            pconf.set_trace_linewidth(self.config['linewidth'], trace=i)
+            pconf.set_trace_markersize(self.config['markersize'], trace=i)
+        self.SetSize((int(self.config['width']), int(self.config['height'])))
 
 
 class StackedPlotDisplay(StackedPlotFrame):
@@ -388,7 +409,8 @@ def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
             conf.enable_grid(PLOTOPTS['show_grid'])
             conf.axes_style = 'box' if PLOTOPTS['show_fullbox'] else 'open'
             for i in range(16):
-               conf.set_trace_linewidth(PLOTOPTS['linewidth'], trace=i)
+                conf.set_trace_linewidth(PLOTOPTS['linewidth'], trace=i)
+                conf.set_trace_markersize(PLOTOPTS['markersize'], trace=i)
     try:
         display.SetTitle(title)
 
