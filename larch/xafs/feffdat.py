@@ -25,7 +25,7 @@ from larch.symboltable import Group
 from larch.larchlib import isNamedClass
 from larch.utils.strutils import b32hash
 from larch.fitting import group2params, dict2params, isParameter, param_value
-from .xafsutils import ETOK, ktoe, set_xafsGroup, gfmt
+from .xafsutils import ETOK, ktoe, set_xafsGroup, gfmt, gformat
 from .sigma2_models import add_sigma2funcs
 
 SMALL_ENERGY = 1.e-6
@@ -441,6 +441,56 @@ class FeffPathGroup(Group):
         (deg, s02, e0, ei, delr, ss2, c3, c4) = self.__path_params()
         return dict(degen=deg, s02=s02, e0=e0, ei=ei, deltar=delr,
                     sigma2=ss2, third=c3, fourth=c4)
+
+    def dict_report(self):
+        """report as a dict"""
+        out = {'filename': self.filename,
+                 'label': self.label,
+                 'absorber': self.absorber,
+                 'shell': self.shell,
+                 'nleg': f'{self.nleg}',
+                 'reff': f'{self.reff:.6f}'}
+
+        geom = []
+        gshort = []
+        geomformat = '%s(ipot=%d): %s, %s, %s'
+        for atsym, iz, ipot, amass, x, y, z in self.geom:
+            geom.append(geomformat % (atsym, ipot, x, y, z))
+            gshort.append(f'{atsym}({ipot})')
+        out['geometry'] = '\n'.join(geom)
+        out['geom'] = '-'.join(gshort)
+
+        def sfmt(x): return gformat(x, length=8)
+
+        for pname in ('degen', 's02', 'e0', 'r',
+                      'deltar', 'sigma2', 'third', 'fourth', 'ei'):
+            val = strval = getattr(self, pname, 0)
+            parname = self.pathpar_name(pname)
+            std, expr = None, None
+            if pname == 'r':
+                parname = self.pathpar_name('deltar')
+                par = self.params.get(parname, None)
+                val = par.value + self._feffdat.reff
+                strval = 'reff + ' + getattr(self, 'deltar', 0)
+                std = par.stderr
+            else:
+                par = self.params.get(parname, None)
+                if par is not None:
+                   val = par.value
+                   std = par.stderr
+            if std is None  or std <= 0:
+                svalue = sfmt(val)
+                std = 0.0
+            else:
+                svalue = f"{sfmt(val)}({sfmt(std).strip()})"
+            out[pname] = svalue
+            out[pname+'_value'] = sfmt(val)
+            if abs(std) <  1.e-9:
+                out[pname+'_stderr'] = '0.0'
+            else:
+                out[pname+'_stderr'] = sfmt(std)
+            out[pname+'_expr'] = strval
+        return out
 
     def report(self):
         "return  text report of parameters"
