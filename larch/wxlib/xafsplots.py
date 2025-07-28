@@ -545,14 +545,14 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
     if show_window and hasattr(dgroup, 'kwin'):
         kwin = dgroup.kwin
         if scale_window:
-            kwin = kwin*max(abs(chi))
+            kwin *= max(abs(chi))
         _plot(dgroup.k, kwin+offset, zorder=12, label='window',  **opts)
     #endif
     redraw(win=win, xmax=kmax, _larch=_larch)
 #enddef
 
 def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
-              show_window=False, rmax=None, label=None, title=None,
+              show_window=False, scale_window=True, rmax=None, label=None, title=None,
               new=True, delay_draw=False, offset=0, win=1, _larch=None):
     """
     plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
@@ -567,6 +567,7 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
      show_real    bool whether to plot Re[chi(R)] [False]
      show_imag    bool whether to plot Im[chi(R)] [False]
      show_window  bool whether to R-windw for back FT (will be scaled) [False]
+     scale_window bool whether to scale k-window to max |chi(R)| [True]
      label        string for label [``None`` to use 'chir']
      title        string for plot title [None, may use filename if available]
      rmax         max R to show [None, end of data]
@@ -611,7 +612,9 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
         _plot(dgroup.r, dgroup.chir_im+offset, label='%s (imag)' % label, **opts)
     #endif
     if show_window and hasattr(dgroup, 'rwin'):
-        rwin = dgroup.rwin * max(dgroup.chir_mag)
+        rwin = dgroup.rwin
+        if scale_window:
+            rwin *= max(dgroup.chir_mag)
         opts['zorder'] = 15
         _plot(dgroup.r, rwin+offset, label='window',  **opts)
     #endif
