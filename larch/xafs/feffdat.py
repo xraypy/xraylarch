@@ -444,6 +444,15 @@ class FeffPathGroup(Group):
 
     def dict_report(self):
         """report as a dict"""
+        tmpvals = self.__path_params()
+        pathpars = {}
+        for pname in ('degen', 's02', 'e0', 'deltar',
+                      'sigma2', 'third', 'fourth', 'ei'):
+            parname = self.pathpar_name(pname)
+            if parname in self.params:
+                pathpars[pname] = (self.params[parname].value,
+                                   self.params[parname].stderr)
+
         out = {'filename': self.filename,
                  'label': self.label,
                  'absorber': self.absorber,
@@ -474,10 +483,13 @@ class FeffPathGroup(Group):
                 strval = 'reff + ' + getattr(self, 'deltar', 0)
                 std = par.stderr
             else:
-                par = self.params.get(parname, None)
-                if par is not None:
-                   val = par.value
-                   std = par.stderr
+                if pname in pathpars:
+                    val, std = pathpars[pname]
+                else:
+                    par = self.params.get(parname, None)
+                    if par is not None:
+                        val = par.value
+                        std = par.stderr
             if std is None  or std <= 0:
                 svalue = sfmt(val)
                 std = 0.0
