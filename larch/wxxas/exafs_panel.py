@@ -41,10 +41,9 @@ wavelet = 'EXAFS wavelet'
 PlotE_Choices = [norm_bkg, mu_bkg, chie]
 PlotK_Choices = [chik, chikq, chiq]
 PlotR_Choices = [chirmag, chirre, chirmr, wavelet]
-PlotWindowChoices = ['None', '2', '3', '4', '5']
+PlotWindowChoices = ['No 2nd Plot', '2', '3', '4', '5']
 
 PLOT_SPACES = ['E', 'k', 'R']
-
 
 PlotCmds = {mu_bkg:  "plot_bkg({group:s}, norm=False, ",
             norm_bkg:  "plot_bkg({group:s}, norm=True, ",
@@ -57,7 +56,6 @@ PlotCmds = {mu_bkg:  "plot_bkg({group:s}, norm=False, ",
             chikq:   "plot_chiq({group:s}, show_chik=True, ",
             wavelet: "plot_wavelet({group:s}, "
 }
-
 
 
 CLAMPLIST = ('0', '1', '2', '5', '10', '20', '50', '100', '200', '500', '1000',
@@ -79,7 +77,7 @@ NAMED_PLOTOPTS = {'default': {'plot1_space': 'k',
                               'plot_voffset': 0.0,
                               'plot_kweight': 2,
                               'plot_rmax': 8.0,
-                              'plot2_win': 'None',
+                              'plot2_win': 'No 2nd Plot',
                               'plot_echoice': 'norm+bkg',
                               'plot_erange': 'full E Range',
                               'plot_kchoice': 'chik',
@@ -107,6 +105,7 @@ class EXAFSPanel(TaskPanel):
     """EXAFS Panel"""
     def __init__(self, parent, controller, **kws):
 
+        self.plot_conf = {}
         self.plot_opts = {}
         for key, value in NAMED_PLOTOPTS.items():
             self.plot_opts[key] = value
@@ -133,19 +132,19 @@ class EXAFSPanel(TaskPanel):
                               action=self.onPlotSel)
 
         wids['plot_voffset'] = FloatSpin(ppanel, value=0, digits=2, increment=0.25,
-                                         action=self.onProcess, size=(125, -1))
+                                         action=self.onPlot, size=(125, -1))
 
         wids['plot_kweight'] = FloatSpin(ppanel, value=2, digits=1, increment=1,
-                                         action=self.onProcess, size=(90, -1),
+                                         action=self.onPlot, size=(90, -1),
                                          min_val=0, max_val=5)
 
         wids['plot_rmax'] = FloatSpin(ppanel, value=8, digits=1, increment=0.5,
-                                      action=self.onProcess, size=(90, -1),
+                                      action=self.onPlot, size=(90, -1),
                                       min_val=2, max_val=25)
 
         wids['plot2_win']  = Choice(ppanel, size=(125, -1), choices=PlotWindowChoices,
-                                   action=self.onProcess)
-        wids['plot2_win'].SetStringSelection('None')
+                                   action=self.onPlot)
+        wids['plot2_win'].SetSelection(0)
 
         wids['plot_opt']  = Choice(ppanel,  choices=list(self.plot_opts),
                                     size=(175, -1), action=self.onPlotOptSel)
@@ -158,14 +157,14 @@ class EXAFSPanel(TaskPanel):
         wids['plot_echoice'] = Choice(ppanel, choices=PlotE_Choices,
                                       action=self.onPlot, size=(175, -1))
         wids['plot_erange'] = Choice(ppanel, choices=list(Plot_EnergyRanges),
-                                         action=self.onProcess,
+                                         action=self.onPlot,
                                          size=(125, -1))
 
         wids['plot_kchoice'] = Choice(ppanel, choices=PlotK_Choices,
-                                      action=self.onProcess, size=(175, -1))
+                                      action=self.onPlot, size=(175, -1))
 
         wids['plot_rchoice'] = Choice(ppanel, choices=PlotR_Choices,
-                                      action=self.onProcess, size=(175, -1))
+                                      action=self.onPlot, size=(175, -1))
 
         for t in (1, 2):
             wids[f'plot{t}_space'] = pan = wx.Panel(ppanel)
@@ -185,9 +184,9 @@ class EXAFSPanel(TaskPanel):
         self.plot2_space = 'R'
 
         wids['plot_show_kwin'] = Check(ppanel, default=False, label='show k->R Window',
-                                           action=self.onProcess)
+                                           action=self.onPlot)
         wids['plot_show_rwin'] = Check(ppanel, default=False, label='show R->q Window',
-                                            action=self.onProcess)
+                                            action=self.onPlot)
 
         wids['plot_on_choose'] = Check(ppanel, default=defaults.get('auto_plot', True),
                                 label='Auto-Plot when choosing Current Group?')
@@ -210,7 +209,7 @@ class EXAFSPanel(TaskPanel):
 
         padd_text('Second Plot: ', newrow=True)
         ppanel.Add(self.wids['plot2_space'])
-        padd_text('Plot Window: ', newrow=False)
+        padd_text('2nd Window: ', newrow=False)
         ppanel.Add(self.wids['plot2_win'], dcol=2)
 
         padd_text('Energy : ', newrow=True)
@@ -236,7 +235,6 @@ class EXAFSPanel(TaskPanel):
         padd_text('Save Options: ', newrow=False)
         ppanel.Add(wids['plot_opt_save'], dcol=2)
         ppanel.pack()
-
 
         ####
         panel = self.panel
@@ -278,7 +276,8 @@ class EXAFSPanel(TaskPanel):
 
         wids['fft_dr'] = FloatSpin(panel, value=0.5,  **opts)
         wids['fft_rmaxout'] = FloatSpin(panel, value=12, min_val=2,
-                                        increment=0.5, digits=1, max_val=20)
+                                        increment=0.5, digits=1, max_val=20,
+                                        action=self.onProcess)
 
         opts.update({'increment': 1, 'digits': 1, 'max_val': 5})
         wids['bkg_kweight'] = FloatSpin(panel, value=2, **opts)
@@ -294,8 +293,6 @@ class EXAFSPanel(TaskPanel):
         wids['fft_rwindow'] = Choice(panel, choices=list(FT_WINDOWS),
                                      action=self.onProcess, size=(125, -1))
         wids['fft_rwindow'].SetStringSelection('Hanning')
-
-
         self.wids['is_frozen'] = Check(panel, default=False, label='Freeze Group',
                                        action=self.onFreezeGroup)
 
@@ -378,7 +375,6 @@ class EXAFSPanel(TaskPanel):
 
         panel.Add(SimpleText(panel, 'R min: '), newrow=True)
         panel.Add(fft_rmin)
-
         panel.Add(SimpleText(panel, 'R max:'), style=LEFT)
         panel.Add(fft_rmax)
         panel.Add(CopyBtn('fft_rrange'), style=RIGHT)
@@ -408,13 +404,10 @@ class EXAFSPanel(TaskPanel):
             self.plot1_space = label.strip().lower()
         elif space == 2:
             self.plot2_space = label.strip().lower()
-        self.onProcess()
-
-    def onPlotSpace(self, event=None):
-        self.onProcess()
+        self.onPlot()
 
     def get_config(self, dgroup=None):
-        """get and set processing configuration for a group"""
+        """get and processing configuration for a group (but not from form)"""
         if dgroup is None:
             dgroup = self.controller.get_group()
         if dgroup is None:
@@ -500,8 +493,11 @@ class EXAFSPanel(TaskPanel):
         for attr in ('ek0', 'rbkg'):
             wids[attr].SetValue(getattr(dgroup, attr))
 
-        for attr in ('bkg_kmin', 'bkg_kmax', 'bkg_kweight', 'fft_kmin',
-                     'fft_kmax', 'fft_kweight', 'fft_dk', 'fft_rmaxout'):
+        for attr in ('bkg_kmin', 'bkg_kmax', 'bkg_kweight',
+                    'bkg_clamplo', 'bkg_clamphi', 'fft_kmin',
+                    'fft_kmax', 'fft_kweight', 'fft_dk', 'fft_kwindow',
+                    'fft_rmin', 'fft_rmax', 'fft_dr', 'fft_rmaxout',
+                    'fft_rwindow'):
             try:
                 wids[attr].SetValue(float(opts.get(attr)))
             except:
@@ -529,33 +525,21 @@ class EXAFSPanel(TaskPanel):
 
         self.wids['is_frozen'].SetValue(frozen)
         self._set_frozen(frozen)
-
         self.skip_process = False
 
-    def read_form(self, dgroup=None, as_copy=False, save=True):
+    def read_form(self):
         "read form, return dict of values"
-        skip_save = self.skip_process
         self.skip_process = True
-        if dgroup is None:
-            dgroup = self.controller.get_group()
-        self.dgroup = dgroup
-
-        conf = {}
-        conf.update(self.get_config())
-        if dgroup is not None:
-            conf['group'] = dgroup.groupname
-
+        conf = self.get_config()
         wids = self.wids
         for attr in ('ek0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
                      'bkg_kweight', 'fft_kmin', 'fft_kmax',
                      'fft_kweight', 'fft_dk',  'fft_rmaxout',
-                     'fft_rmin', 'fft_rmax', 'fft_dr',
-                     'plot_voffset', 'plot_kweight', 'plot_rmax'):
+                     'fft_rmin', 'fft_rmax', 'fft_dr'):
             conf[attr] = wids[attr].GetValue()
 
         for attr in ('bkg_clamplo', 'bkg_clamphi', 'fft_kwindow',
-                     'fft_rwindow', 'plot2_win', 'plot_echoice',
-                     'plot_erange', 'plot_kchoice', 'plot_rchoice'):
+                     'fft_rwindow'):
             try:
                 val = wids[attr].GetStringSelection()
                 if 'clamp' in attr:
@@ -564,19 +548,29 @@ class EXAFSPanel(TaskPanel):
             except:
                 print("failed to read exafs attr ", attr)
 
+        time.sleep(0.001)
+        self.skip_process = False
+        dgroup = self.controller.get_group()
+        setattr(dgroup.config, self.configname, conf)
+        return conf
+
+    def read_plot_conf(self):
+        "read plot choices from form, return dict of values"
+        pconf = {}
+        wids = self.wids
+        for attr in ('plot_voffset', 'plot_kweight', 'plot_rmax'):
+            pconf[attr] = wids[attr].GetValue()
+
+        for attr in ('plot2_win', 'plot_echoice', 'plot_erange',
+                    'plot_kchoice', 'plot_rchoice'):
+            pconf[attr] = wids[attr].GetStringSelection()
 
         for attr in ('show_ek0', 'plot_show_kwin', 'plot_show_rwin'):
-            conf[attr] = wids[attr].IsChecked()
+            pconf[attr] = wids[attr].IsChecked()
 
-        conf['plot1_space'] = self.plot1_space
-        conf['plot2_space'] = self.plot2_space
-        time.sleep(0.001)
-        self.skip_process = skip_save
-        if as_copy:
-            conf = copy.deepcopy(conf)
-        if save and dgroup is not None:
-            setattr(dgroup.config, self.configname, conf)
-        return conf
+        pconf['plot1_space'] = self.plot1_space
+        pconf['plot2_space'] = self.plot2_space
+        self.plot_conf = pconf
 
     def onSaveConfigBtn(self, evt=None):
         self.set_defaultconfig(self.read_form())
@@ -641,7 +635,7 @@ class EXAFSPanel(TaskPanel):
                     grp.ek0 = opts['ek0']
                 if set_rbkg:
                     grp.rbkg = opts['rbkg']
-                self.process(dgroup=grp, read_form=False)
+                self.process(dgroup=grp, force=True)
 
     def _set_frozen(self, frozen):
         try:
@@ -650,10 +644,11 @@ class EXAFSPanel(TaskPanel):
         except:
             pass
 
-        for attr in ('ek0', 'rbkg', 'bkg_kmin', 'bkg_kmax', 'bkg_kweight',
+        for attr in ('ek0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
+                     'bkg_kweight', 'bkg_clamplo', 'bkg_clamphi',
                      'fft_kmin', 'fft_kmax', 'fft_kweight', 'fft_dk',
-                     'fft_rmin', 'fft_rmax', 'fft_dr',
-                     'bkg_clamplo', 'bkg_clamphi', 'fft_kwindow'):
+                     'fft_kwindow', 'fft_rmin', 'fft_rmax', 'fft_dr',
+                     'fft_rmaxout', 'fft_rwindow'):
             self.wids[attr].Enable(not frozen)
 
     def onFreezeGroup(self, evt=None):
@@ -672,31 +667,36 @@ class EXAFSPanel(TaskPanel):
             return
         self.last_process_time = time.time()
         self.skip_process = True
-        self.process(dgroup=self.dgroup, read_form=True)
+        self.dgroup = self.controller.get_group()
+
+        conf = getattr(self.dgroup.config, self.configname, None)
+        if conf is None:
+            conf = self.get_config(dgroup=dgroup)
+        if 'ek0' not in conf:
+            conf['ek0']  = conf.get('e0', getattr(dgroup, 'e0', -1))
+
+        self.read_form()
+        self.process(dgroup=self.dgroup)
         self.skip_process = False
         plotter = self.onPlotSel if self.last_plot=='selected' else self.onPlotOne
         wx.CallAfter(plotter)
 
-    def process(self, dgroup, read_form=True, force=False, **kws):
+    def process(self, dgroup, force=False, **kws):
         conf = {}
+        if dgroup is None:
+            dgroup = self.controller.get_group()
+        if dgroup is None:
+            return
+
         conf = getattr(dgroup.config, self.configname, None)
         if conf is None:
             conf = self.get_config(dgroup=dgroup)
         if 'ek0' not in conf:
             conf['ek0']  = conf.get('e0', getattr(dgroup, 'e0', -1))
-        if read_form:
-            conf.update(self.read_form())
 
-        conf.update(kws)
-        if dgroup is None or 'fft_kwindow' not in conf:
-            return
-
-        conf['group'] = gname = dgroup.groupname
-        try:
-            txt = autobk_cmd.format(**conf)
-        except:
-            conf.update(self.read_form())
-            txt = autobk_cmd.format(**conf)
+        gname = conf.get('group', None)
+        if gname is None:
+            gname = conf['group'] = dgroup.groupname
 
         bkgpars = []
         for attr in ('ek0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
@@ -704,10 +704,11 @@ class EXAFSPanel(TaskPanel):
             val = conf.get(attr, 0.0)
             if val is None:
                 val = -1.0
-            bkgpars.append("%.3f" % val)
+            bkgpars.append("%.4f" % val)
         bkgpars = ':'.join(bkgpars)
         lastpars = self.last_process_bkg.get(gname, '')
-        if force or (bkgpars != lastpars):
+        if (force or (bkgpars != lastpars) or
+              (getattr(dgroup, 'chi', None) is None)):
             self.larch_eval(autobk_cmd.format(**conf))
             self.last_process_bkg[gname] = bkgpars
             self.last_process_fft[gname] = None
@@ -715,14 +716,15 @@ class EXAFSPanel(TaskPanel):
         fftpars = [conf['fft_kwindow'], conf['fft_rwindow']]
         for attr in ('fft_kmin', 'fft_kmax', 'fft_kweight', 'fft_dk',
                      'fft_rmin', 'fft_rmax', 'fft_dr', 'fft_rmaxout'):
-            fftpars.append("%.3f" % conf.get(attr, 0.0))
+            fftpars.append("%.4f" % conf.get(attr, 0.0))
         fftpars = ':'.join(fftpars)
-        if fftpars != self.last_process_fft.get(gname, ''):
+        lastpars = self.last_process_fft.get(gname, '')
+        # print(f"process  {dgroup=}, fft: {fftpars != lastpars}, {fftpars=}")
+        if (force or (fftpars != lastpars) or
+             (getattr(dgroup, 'chir_mag', None) is None)):
             self.larch_eval(xftf_cmd.format(**conf))
             self.larch_eval(xftr_cmd.format(**conf))
             self.last_process_fft[gname] = fftpars
-
-        setattr(dgroup.config, self.configname, conf)
 
     def onPlotOptSave(self, value, event=None):
         name = value.strip()
@@ -773,41 +775,35 @@ class EXAFSPanel(TaskPanel):
         for attr in ('plot_show_kwin', 'plot_show_rwin'):
             wids[attr].SetValue(data[attr])
 
-        self.skip_plotting = False
-        self.onPlot()
-
+        wx.CallAfter(self.onPlot)
 
     def onPlot(self, event=None, dgroup=None):
-        if self.skip_plotting:
-            return
-        if dgroup is None:
-            dgroup = self.controller.get_group()
         plotter = self.onPlotSel if self.last_plot=='selected' else self.onPlotOne
-        plotter(dgroup=dgroup)
+        plotter()
 
     def plot(self, **kws):
         """for compat"""
         self.onPlot(**kws)
 
-    def onPlotOne(self, evt=None, dgroup=None):
-        if self.skip_plotting:
-            return
-        if dgroup is None:
-            dgroup = self.dgroup
+    def onPlotOne(self, evt=None):
+        dgroup = self.controller.get_group()
         if getattr(dgroup, 'chir_mag', None) is None:
-            self.process(dgroup=dgroup, read_form=True)
-        conf = getattr(dgroup.config, self.configname)
-        self.larch_eval(self._get_plotcmd(conf, space=1))
+            self.process(dgroup=dgroup, force=True)
 
-        if conf['plot2_win'] not in ('None', None):
-            self.larch_eval(self._get_plotcmd(conf, space=2))
+        self.read_plot_conf()
+        # print("PlotOne ", self.plot_conf)
+        self.larch_eval(self._get_plotcmd(dgroup, space=1))
+
+        if self.plot_conf['plot2_win'] in ('2', '3', '4', '5'):
+            self.larch_eval(self._get_plotcmd(dgroup, space=2))
 
         self.last_plot = 'one'
         self.controller.set_focus()
 
-
-    def _get_plotcmd(self, conf, space=1, delay_draw=False, new=True,
+    def _get_plotcmd(self, dgroup, space=1, delay_draw=False, new=True,
                     offset=None, label=None, title=None):
+
+        conf = self.plot_conf
         if space == 1:
             space_label = conf['plot1_space'].lower()
             win = '1'
@@ -816,7 +812,7 @@ class EXAFSPanel(TaskPanel):
             win = conf['plot2_win']
 
         if title is None:
-            title = f"'{self.dgroup.filename}'"
+            title = f"'{dgroup.filename}'"
 
         opts = {'win': win, 'title': title, 'new': new,
                 'delay_draw': delay_draw}
@@ -835,24 +831,28 @@ class EXAFSPanel(TaskPanel):
         elif space_label == 'k':
             cmd = PlotCmds[conf['plot_kchoice']]
             opts['show_window'] = conf['plot_show_kwin']
+            opts['scale_window'] = False
             opts['kweight'] = conf['plot_kweight']
         elif space_label == 'r':
             cmd = PlotCmds[conf['plot_rchoice']]
             opts['show_window'] = conf['plot_show_rwin']
+            opts['scale_window'] = False
             opts['rmax'] = conf['plot_rmax']
 
         opts = [f"{key}={val}" for key, val in opts.items()]
         cmd = cmd + ', '.join(opts) + ')'
-        return cmd.format(**conf)
+        cmd = cmd.format(group=dgroup.groupname)
+        # print("Get Plot Command: ", cmd)
+        return cmd
 
-    def onPlotSel(self, evt=None, dgroup=None):
-        if self.skip_plotting:
-            return
+
+    def onPlotSel(self, evt=None):
         group_ids = self.controller.filelist.GetCheckedStrings()
         if len(group_ids) < 1:
             return
 
-        conf = {k: v for k, v in self.read_form().items()}
+        self.read_plot_conf()
+        conf = self.plot_conf
         offset = float(conf['plot_voffset'])
         cmds = []
         title = f"'{len(group_ids)} Groups'"
@@ -861,20 +861,15 @@ class EXAFSPanel(TaskPanel):
             dgroup = self.controller.get_group(groupname)
             if dgroup is None:
                 continue
-            if getattr(dgroup, 'chir_mag', None) is None:
-                self.process(dgroup=dgroup, read_form=True)
-            conf = getattr(dgroup.config, self.configname)
-            conf['group'] = groupname
-            conf['label'] = f"'{dgroup.filename}'"
-
-            cmds.append(self._get_plotcmd(conf, space=1,
+            self.process(dgroup=dgroup)
+            cmds.append(self._get_plotcmd(dgroup, space=1,
                                        delay_draw=True, new=(i==0),
                                        offset=i*offset,
                                        label=f"'{dgroup.filename}'",
                                        title=title))
 
-            if conf['plot2_win'] not in ('None', None):
-                cmds.append(self._get_plotcmd(conf, space=2,
+            if conf['plot2_win'] in ('1', '2', '3', '4', '5'):
+                cmds.append(self._get_plotcmd(dgroup, space=2,
                                        delay_draw=True, new=(i==0),
                                        offset=i*offset,
                                        label=f"'{dgroup.filename}'",
@@ -882,9 +877,8 @@ class EXAFSPanel(TaskPanel):
 
 
         cmds.append("redraw(win=1, show_legend=True)")
-        if conf['plot2_win'] not in ('None', None):
+        if conf['plot2_win'] in ('1', '2', '3', '4', '5'):
             cmds.append("redraw(win=2, show_legend=True)")
         self.larch_eval('\n'.join(cmds))
         self.last_plot = 'selected'
-
         self.controller.set_focus()
