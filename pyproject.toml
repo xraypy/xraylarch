@@ -75,6 +75,7 @@ dependencies = ["numpy>=1.23",
     "fabio",
     "pyfai",
     "numexpr>=2.8.7",
+    "tabulate",
     "darkdetect"]
 
 

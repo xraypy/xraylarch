@@ -13,6 +13,10 @@ import numpy as np
 from numpy import array, arange, interp, pi, zeros, sqrt, concatenate
 
 from pyshortcuts import fix_varname, gformat
+try:
+    from tabulate import tabulate
+except ImportError:
+    tabulate = None
 
 from scipy.interpolate import splrep, splev
 from scipy.interpolate import InterpolatedUnivariateSpline as IUSpline
@@ -603,6 +607,31 @@ class FeffitDataSet(Group):
         if path_outputs:
             for path in self.paths.values():
                 xft(path)
+
+    def csv_path_report(self):
+        """make a CVS table report for the list of paths after a fit"""
+        table_keys = ['filename', 'geom', 'reff', 'degen', 's02','e0', 'r',
+                      'sigma2', 'third', 'fourth', 'ei',
+                      's02_expr', 'degen_expr', 'e0_expr', 'r_expr',
+                     'sigma2_expr','third_expr', 'fourth_expr', 'ei_expr']
+        headers = ['filename', 'geometry', 'R_eff', 'Degen', 'N*S02','E0', 'R',
+                   'sigma2', 'third',  'fourth', 'Ei',
+                   'N*S02 Expr', 'Degen  Expr', 'E0 Expr', 'R Expr',
+                   'sigma2 Expr', 'third Expr', 'fourth Expr', 'Ei Expr']
+        table = []
+        for path in self.pathlist:
+            dictvals =  path.dict_report()
+            table.append([dictvals[key] for key in table_keys])
+        if tabulate is None:
+            out = [', '.join(headers)]
+            for t in table:
+                out.append(', '.join(t))
+            out = '\n'.join(out)
+        else:
+            out = tabulate(table, headers=headers,
+                            tablefmt='tsv').replace('\t', ', ')
+        return out
+
 
 def feffit_dataset(data=None, paths=None, transform=None, refine_bkg=False,
                    epsilon_k=None, pathlist=None, _larch=None):
