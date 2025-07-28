@@ -608,7 +608,7 @@ class FeffitDataSet(Group):
             for path in self.paths.values():
                 xft(path)
 
-    def csv_path_report(self):
+    def csv_path_report(self, format=True):
         """make a CVS table report for the list of paths after a fit"""
         table_keys = ['filename', 'geom', 'reff', 'degen', 's02','e0', 'r',
                       'sigma2', 'third', 'fourth', 'ei',
@@ -622,14 +622,19 @@ class FeffitDataSet(Group):
         for path in self.pathlist:
             dictvals =  path.dict_report()
             table.append([dictvals[key] for key in table_keys])
-        if tabulate is None:
-            out = [', '.join(headers)]
-            for t in table:
-                out.append(', '.join(t))
-            out = '\n'.join(out)
+
+        if format:
+            if tabulate is None:
+                out = [', '.join(headers)]
+                for t in table:
+                    out.append(', '.join(t))
+                out = '\n'.join(out)
+            else:
+                out = tabulate(table, headers=headers,
+                                tablefmt='tsv').replace('\t', ', ')
         else:
-            out = tabulate(table, headers=headers,
-                            tablefmt='tsv').replace('\t', ', ')
+            out = [headers]
+            out.extend(table)
         return out
 
 
