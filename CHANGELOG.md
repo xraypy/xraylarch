@@ -5,6 +5,63 @@ The GitHub Release Notes will also be useful
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2025.2.1 - 2025-07-29]
+
+### Larix improvements and bugfixes:
+ -  allow adding feff paths without data
+ -  cleanups for XAS auto-normalization, and avoiding overprocessing
+ -  revert to using read_gsexdi for 'epics stepscan' data, cleanups
+ -  exafs_panel: avoid reproccessing all groups with form
+    values/setting for current group.
+ -  move data processing tasks to separate module, and to use the file
+    list from main window
+ -  add register/run callbacks from controller for when the Larix
+    Groupname changes -- used for data proceesing tasks
+ -  fix bad_channels when reading in multi-element detector data
+ -  editing plot preferences will push to current plot displays
+ -  exafs_panel: better separation of plotting and processing parameters
+ -  exafs_panel: better isolation of group processing parameters, and
+    copy of parameters.
+ -  lincombo: fix fits in k-space (thanks AJ Kropf), and LCF can now
+    use chi*k**3
+ -  lincombo: add popup warning when asking to fit data in k-space
+    when chi(k) is not yet available
+ -  feffit: add csv_path_report() method to FeffitDataset, use
+    tabulate if installed.
+
+
+## xraylarch library:
+ - fix a bug in mback_norm method (tj-eldridge <thomas.eldridge@esrf.frr)
+ - tolerate very short pre-edge and normalization ranges, reducing
+   npre and nnorm if necessary
+ - increase max size of column file
+ - more uniform use of numpy asmatrix
+ - general cleanups, force group to have a __name__ attribute
+ - fix support older sessions/projects
+ - fix error with polyfit and very short post-edge regions
+ - fix Rixs bm16 update (Mauro Rovezzi <mauro.rovezzi@esrf.fr>)
+ - better close for SQLite databases.
+ - fix correlated Debye model: force path coords to float
+ - xafsplots:  add scale_window to plot_chir()
+ - add dict_report method to FeffPath to return plain dict of values
+
+### Other GUIs:
+ - XRF Map: read dtfactor directly from HDF5 if available, otherwise
+   try to compute it.
+ - XRF Map: even more straightforward Read Master
+ - XRF Map: remove use of scandb in read_xrm master file, skip empty rows
+ - XRF Map: dont trim sinograms on XRD data
+ - Larch GUI: make sure larch buffer starts showing end of output text
+
+### General development and maintenance:
+ - add issue templates
+ - add darkdetect to dependcies, update constructor script
+ - make sure darkdetect dependency installs with plain pip install
+ - update MANIFEST, using pyproject.toml, remove setup.cfg
+ - update readme, change format
+ - add function and `larch -n` CLI option to install nightly build.
+ - add bash scripts to run tests with more care for temporary resources.
+
 
 ## [2025.2.0 - 2025-05-25]
 
