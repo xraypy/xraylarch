@@ -866,6 +866,8 @@ class LarixFrame(wx.Frame):
 
     def onSetTitle(self, savefile=None):
         """set title of main window"""
+        if savefile is None:
+            savefile = self.controller.autosave_session()
         if savefile is not None:
             self.SetTitle(f"Larix [{Path(savefile).name}]")
         else:
@@ -1045,6 +1047,8 @@ class LarixFrame(wx.Frame):
             os.chdir(fdir)
             self.controller.set_workdir()
 
+        self.onSetTitle()
+
     def onSaveSessionAs(self, evt=None):
         groups = self.controller.filelist.GetItems()
         if len(groups) < 1:
@@ -1082,6 +1086,7 @@ class LarixFrame(wx.Frame):
         self.last_save_message = ("Session last saved", f"'{fname}'", f"{stime}")
         self.write_message(f"Saved session to '{fname}' at {stime}")
         self.last_session_file = self.last_session_read = fname
+        self.onSetTitle()
 
     def onClearSession(self, evt=None):
         conf = self.controller.get_config('autosave',
