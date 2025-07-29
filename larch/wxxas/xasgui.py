@@ -11,7 +11,6 @@ from pathlib import Path
 from importlib import import_module
 from threading import Thread
 import numpy as np
-np.seterr(all='ignore')
 
 from functools import partial
 
@@ -76,6 +75,8 @@ from larch.io.xas_data_source import open_xas_source
 
 from .larix_app import LARIX_TITLE
 
+np.seterr(all='ignore')
+
 # FNB_STYLE = flat_nb.FNB_NO_X_BUTTON
 FNB_STYLE = flat_nb.FNB_X_ON_TAB
 FNB_STYLE |= flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
@@ -91,6 +92,7 @@ PLOTWIN_SIZE = (550, 550)
 
 QUIT_MESSAGE = '''Really Quit? You may want to save your project before quitting.
  This is not done automatically!'''
+
 
 def assign_gsescan_groups(group):
     labels = group.array_labels
@@ -250,6 +252,7 @@ class PreferencesFrame(wx.Frame):
         self.controller.config['main']['panels'] = current_panels
         self.controller.save_config()
 
+
 class PanelSelectionPanel(wx.Panel):
     """panel for Preferences Frame to select analysis tabs/panels to display"""
     def __init__(self, parent, main, controller, **kws):
@@ -260,7 +263,7 @@ class PanelSelectionPanel(wx.Panel):
 
         self.wids = {}
 
-        style    = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
+        style     = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
         labstyle  = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
         rlabstyle = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
         tstyle    = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
@@ -358,13 +361,13 @@ class PanelSelectionPanel(wx.Panel):
             if name in selections:
                 try:
                     self.main.add_analysis_panel(name)
-                except:
+                except Exception:
                     pass
         for name in selections:
             if name not in cur_panels:
                 try:
                     self.main.add_analysis_panel(name)
-                except:
+                except Exception:
                     pass
         self.main.nb.SetSelection(0)
         self.main.mode = self.current_mode
@@ -376,6 +379,7 @@ class LarixFrame(wx.Frame):
     _about = f"""{LARIX_TITLE}
     Matt Newville <newville @ cars.uchicago.edu>
     """
+
     def __init__(self, parent=None, _larch=None, filename=None,
                  with_wx_inspect=False, mode=None, check_version=True, **kws):
         wx.Frame.__init__(self, parent, -1, size=LARIX_SIZE, style=FRAMESTYLE)
@@ -394,7 +398,6 @@ class LarixFrame(wx.Frame):
         self.last_athena_file = None
         self.paths2read = []
         self.current_filename = filename
-        title = LARIX_TITLE
 
         self.larch_buffer = parent
         if not isinstance(parent, LarchFrame):
@@ -418,9 +421,9 @@ class LarixFrame(wx.Frame):
         iconfile = Path(icondir, ICON_FILE).as_posix()
         self.SetIcon(wx.Icon(iconfile, wx.BITMAP_TYPE_ICO))
 
+        savefile = Path(self.controller.autosave_session())
         self.last_autosave = 0
         self.last_save_message = ('Session has not been saved', '', '')
-
 
         self.timers = {'pin': wx.Timer(self),
                        'autosave': wx.Timer(self)}
@@ -429,6 +432,7 @@ class LarixFrame(wx.Frame):
         self.cursor_dat = {}
 
         self.subframes = {}
+        title = f"Larix [{savefile.name}]"
         self.SetTitle(title)
         self.SetSize(LARIX_SIZE)
         self.SetMinSize(LARIX_MINSIZE)
@@ -467,7 +471,6 @@ class LarixFrame(wx.Frame):
             wx.CallAfter(self.onShowLarchBuffer)
 
         self.Raise()
-
 
     def createMainPanel(self):
         display0 = wx.Display(0)
@@ -538,7 +541,7 @@ class LarixFrame(wx.Frame):
             if panelname in LARIX_PANELS:
                 try:
                     self.add_analysis_panel(panelname)
-                except:
+                except Exception:
                     pass
         self.nb.SetSelection(0)
 
@@ -582,7 +585,7 @@ class LarixFrame(wx.Frame):
             cls = getattr(import_module(module), clsname)
             nbpanel = cls(parent=self, controller=self.controller)
             self.nb.AddPage(nbpanel, atab.title, True)
-        except:
+        except Exception:
             print(f"cannot use analysis panel {atab}:")
             traceback.print_exception(sys.exception())
 
@@ -703,7 +706,7 @@ class LarixFrame(wx.Frame):
             pagepanel.fill_form(dgroup)
             pagepanel.process(dgroup=dgroup)
 
-        if plot=='yes' and hasattr(pagepanel, 'plot'):
+        if plot == 'yes' and hasattr(pagepanel, 'plot'):
             pagepanel.plot(dgroup=dgroup)
             pagepanel.skip_process = False
 
@@ -735,7 +738,6 @@ class LarixFrame(wx.Frame):
         MenuItem(self, file_menu, "&Save Larch Session As ...\tCtrl+A",
                  "Save Session to a File",  self.onSaveSessionAs)
 
-
         file_menu.AppendSeparator()
         MenuItem(self, file_menu, "Save Selected Groups to Athena Project File",
                  "Save Selected Groups to an Athena Project File",
@@ -746,7 +748,6 @@ class LarixFrame(wx.Frame):
                  self.onExportCSV)
 
         MenuItem(self, file_menu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
-
 
         MenuItem(self, session_menu, "&Read Larch Session",
                  "Read Previously Saved Session",  self.onLoadSession)
@@ -768,7 +769,6 @@ class LarixFrame(wx.Frame):
         self.recent_menu = wx.Menu()
         self.get_recent_session_menu()
         session_menu.Append(-1, 'Recent Session Files',  self.recent_menu)
-
 
         MenuItem(self, session_menu, "&Auto-Save Larch Session",
                  f"Save Session now",  self.autosave_session)
@@ -840,7 +840,6 @@ class LarixFrame(wx.Frame):
         MenuItem(self, xasdata_menu, "Add and Subtract Spectra",
                  "Calculations of Spectra",  self.onSpectraCalc)
 
-
         self.menubar.Append(file_menu, "&File")
         self.menubar.Append(session_menu, "Sessions")
         self.menubar.Append(pref_menu, "Preferences")
@@ -909,7 +908,7 @@ class LarixFrame(wx.Frame):
             return
 
         deffile = f"{filenames[0]:s}_{len(filenames):d}.csv"
-        wcards  = 'CSV Files (*.csv)|*.csv|All files (*.*)|*.*'
+        wcards = 'CSV Files (*.csv)|*.csv|All files (*.*)|*.*'
 
         outfile = FileSave(self, 'Save Groups to CSV File',
                            default_file=deffile, wildcard=wcards)
@@ -932,7 +931,7 @@ class LarixFrame(wx.Frame):
             groups2csv(savegroups, outfile, x=res.xarray, y=res.yarray,
                     delim=res.delim, individual=res.individual)
             self.write_message(f"Exported CSV file {outfile:s}")
-        except:
+        except Exception:
             title = "Could not export CSV File"
             message = [f"Could not export CSV File {outfile}"]
             ExceptionPopup(self, title, message)
@@ -945,9 +944,9 @@ class LarixFrame(wx.Frame):
             groups.append(self.controller.file_groups[str(checked)])
 
         if len(groups) < 1:
-             Popup(self, "No files selected to export to Project",
+            Popup(self, "No files selected to export to Project",
                    "No files selected")
-             return
+            return
         prompt, prjfile = self.get_athena_project()
         self.save_athena_project(prjfile, groups)
 
@@ -1006,7 +1005,6 @@ class LarixFrame(wx.Frame):
         self.write_message("Saved project file %s" % (filename))
         self.last_athena_file = filename
 
-
     def onPreferences(self, evt=None):
         self.show_subframe('preferences', PreferencesFrame,
                            controller=self.controller)
@@ -1027,7 +1025,7 @@ class LarixFrame(wx.Frame):
 
         try:
             _session  = read_session(path)
-        except:
+        except Exception:
             title = "Invalid Path for Larch Session"
             message = [f"{path} is not a valid Larch Session File"]
             ExceptionPopup(self, title, message)
@@ -1048,7 +1046,6 @@ class LarixFrame(wx.Frame):
             return
         self.last_session_file = None
         self.onSaveSession()
-
 
     def onSaveSession(self, evt=None):
         groups = self.controller.filelist.GetItems()
@@ -1110,10 +1107,8 @@ before clearing"""
             self.controller.clear_session()
         dlg.Destroy()
 
-
     def onConfigDataProcessing(self, event=None):
         pass
-
 
     def onCopyGroup(self, event=None, journal=None):
         fname = self.current_filename
@@ -1168,7 +1163,6 @@ before clearing"""
             fname = all_names.pop(n)
             self.controller.filelist.refresh(all_names)
             self.RemoveFile(fname)
-
 
     def onRemoveGroups(self, event=None):
         groups = []
@@ -1364,7 +1358,7 @@ before clearing"""
             try:
                 self.subframes[name].Raise()
                 shown = True
-            except:
+            except Exception:
                 del self.subframes[name]
         if not shown:
             self.subframes[name] = frameclass(self, **opts)
@@ -1385,7 +1379,6 @@ before clearing"""
 
     def onLoadFitResult(self, event=None):
         pass
-
 
     def onReadDialog(self, event=None):
         dlg = wx.FileDialog(self, message="Read Data File",
@@ -1525,7 +1518,6 @@ before clearing"""
                     self.install_group(ngroup, dname, source=path, journal=njournal,
                                        plot='no')
 
-
         cur_panel.skip_plotting = False
 
         if gname is not None:
@@ -1634,7 +1626,6 @@ before clearing"""
                 a = float(getattr(abkg, 'fixstep', 0.0))
                 conf_xasnorm['auto_step'] = (a < 0.5)
 
-
             # bkg
             for attr in ('e0', 'rbkg'):
                 if hasattr(abkg, attr):
@@ -1647,11 +1638,10 @@ before clearing"""
                     val = getattr(abkg, alt)
                     try:
                         val = float(getattr(abkg, alt))
-                    except:
+                    except Exception:
                         if alt.startswith('clamp') and isinstance(val, str):
                             val = ATHENA_CLAMPNAMES.get(val.lower(), 0)
                     conf_exafs[attr] = val
-
 
             # fft
             for attr in ('kmin', 'kmax', 'dk', 'kwindow', 'kw'):
@@ -1753,6 +1743,7 @@ before clearing"""
         self.install_group(groupname, filename, source=path, journal=journal, plot='auto')
 
         dtype = getattr(config, 'datatype', 'xydata')
+
         def install_multichans(config):
             yplotline = None
             yarray = 'mu' if dtype == 'xas' else 'ydat'
@@ -1808,7 +1799,7 @@ before clearing"""
         if thisgroup.datatype == 'xas':
             try:
                 en = thisgroup.energy
-            except:
+            except Exception:
                 do_rebin = True
                 en = thisgroup.energy = thisgroup.xplot
             # test for rebinning:
@@ -1869,7 +1860,6 @@ before clearing"""
 
                 self.install_group(refgroup, reffile, source=path, journal=refjournal,
                                        plot='no')
-
 
         if gname is not None:
             self.ShowFile(groupname=gname, process=True, plot='yes')
@@ -1988,7 +1978,6 @@ before clearing"""
             self.write_message('Select Point Error')
         self.cursor_dat = {}
 
-
     def onSelPoint(self, evt=None, opt='__', relative_e0=True, callback=None,
                    win=None):
         """
@@ -2030,7 +2019,7 @@ before clearing"""
                     self.cursor_dat['callback'](**self.cursor_dat)
             else:
                 self.write_message('No Points selected from plot window!')
-        else: # "pin first" mode
+        else:  # "pin first" mode
             if len(cursor_hist) > 2:  # purge old cursor history
                 setattr(self.larch.symtable._plotter, curhist_name, cursor_hist[:2])
 
@@ -2058,6 +2047,7 @@ class LarixApp(LarchWxApp):
                                 check_version=self.check_version)
         self.SetTopWindow(self.frame)
         return True
+
 
 def larix(**kws):
     LarixApp(**kws)
