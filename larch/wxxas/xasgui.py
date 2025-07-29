@@ -74,6 +74,8 @@ from larch.io import (read_ascii, read_xdi, read_gsexdi, gsescan_group,
                       AthenaProject, make_hashkey, is_specfile, open_specfile)
 from larch.io.xas_data_source import open_xas_source
 
+from .larix_app import LARIX_TITLE
+
 # FNB_STYLE = flat_nb.FNB_NO_X_BUTTON
 FNB_STYLE = flat_nb.FNB_X_ON_TAB
 FNB_STYLE |= flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
@@ -89,8 +91,6 @@ PLOTWIN_SIZE = (550, 550)
 
 QUIT_MESSAGE = '''Really Quit? You may want to save your project before quitting.
  This is not done automatically!'''
-
-LARIX_TITLE = "Larix: XAS Visualization and Analysis"
 
 def assign_gsescan_groups(group):
     labels = group.array_labels
