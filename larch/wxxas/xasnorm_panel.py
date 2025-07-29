@@ -9,23 +9,17 @@ import numpy as np
 
 from functools import partial
 from xraydb import guess_edge, atomic_number, xray_edge
-from pyshortcuts import gformat, fix_varname, fix_filename
+from pyshortcuts import gformat
 from larch import Group
-from larch.utils import path_split, file2groupname
-from larch.math import index_of
+from larch.utils import file2groupname
 from larch.xafs.xafsutils import guess_energy_units
 from larch.xafs.pre_edge import find_e0
 
-from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, get_icon,
-                         SimpleText, pack, Button, HLine, Choice, Check,
-                         GridPanel, CEN, RIGHT, LEFT, plotlabels,
-                         get_zoomlimits, set_zoomlimits)
+from larch.wxlib import (FloatSpin, SimpleText, pack, Button, HLine,
+                         Choice, Check, RIGHT, LEFT, plotlabels)
 
-
-from larch.utils.physical_constants import ATOM_NAMES
-from larch.wxlib.plotter import last_cursor_pos
 from .xas_dialogs import EnergyUnitsDialog
-from .taskpanel import TaskPanel, autoset_fs_increment, update_confval
+from .taskpanel import TaskPanel, autoset_fs_increment
 from .config import (make_array_choice, EDGES, ATSYMS, PREEDGE_FORMS,
                      NNORM_CHOICES, NNORM_STRINGS, NORM_METHODS,
                      Plot_EnergyRanges)
@@ -52,8 +46,10 @@ def get_auto_nnorm(norm1, norm2):
     "autoamatically set nnorm from range"
     nrange = abs(norm2 - norm1)
     nnorm = 2
-    if nrange < 300:   nnorm = 1
-    if nrange < 30:    nnorm = 0
+    if nrange < 300:
+        nnorm = 1
+    if nrange < 30:
+        nnorm = 0
     return nnorm
 
 class XASNormPanel(TaskPanel):
@@ -167,7 +163,7 @@ class XASNormPanel(TaskPanel):
         # step rows
         nnorm_panel = wx.Panel(panel)
         self.wids['nnorm'] = Choice(nnorm_panel, choices=list(NNORM_CHOICES),
-                                    size=(150, -1), action=self.onNNormChoice,
+                                    size=(150, -1), action=self.onNormMethod,
                                     default=2)
         self.wids['auto_nnorm'] = Check(nnorm_panel, default=True, label='auto?',
                                     action=self.onAuto_NNORM)
@@ -339,7 +335,6 @@ class XASNormPanel(TaskPanel):
         except:
             conf['e0_nominal'] = -1
 
-        xeref = getattr(dgroup, 'energy_ref', '')
         fname = getattr(dgroup, 'filename', None)
         if fname is None:
             fname = getattr(dgroup, 'groupname', None)
@@ -436,7 +431,8 @@ class XASNormPanel(TaskPanel):
         form_opts['edge_step'] = self.wids['step'].GetValue()
         for attr in ('pre1', 'pre2', 'norm1', 'norm2'):
             val = self.wids[attr].GetValue()
-            if val == 0: val = None
+            if val == 0:
+                val = None
             form_opts[attr] = val
         form_opts['energy_shift'] = self.wids['energy_shift'].GetValue()
 
@@ -483,15 +479,8 @@ class XASNormPanel(TaskPanel):
             dgroup.mback_params.edge = edge
         # print("End of Set Atom ", atsym, edge)
 
-
-    def onNNormChoice(self, evt=None):
-        auto_nnorm  = self.wids['auto_nnorm'].SetValue(0)
-        self.onNormMethod()
-
     def onNormMethod(self, evt=None):
         method = self.wids['norm_method'].GetStringSelection().lower()
-        auto_nnorm  = self.wids['auto_nnorm'].GetValue()
-
         dgroup = self.controller.get_group()
         nnorm  = NNORM_CHOICES.get(self.wids['nnorm'].GetStringSelection(), 1)
         if nnorm is None:
@@ -507,9 +496,9 @@ class XASNormPanel(TaskPanel):
         if method.startswith('mback'):
             cur_elem = self.wids['atsym'].GetStringSelection()
             if hasattr(dgroup, 'e0') and cur_elem in ('H', '?'):
+                atsym, edge = guess_edge(dgroup.e0)
                 self.wids['edge'].SetStringSelection(edge)
                 self.wids['atsym'].SetStringSelection(atsym)
-        # time.sleep(0.002)
         self.onReprocess()
 
     def _set_frozen(self, frozen):
@@ -529,9 +518,7 @@ class XASNormPanel(TaskPanel):
 
     def onEnergyRef(self, evt=None):
         dgroup = self.controller.get_group()
-        eref = self.wids['energy_ref'].GetStringSelection()
-        gname = self.controller.file_groups[eref]
-        dgroup.energy_ref = eref
+        dgroup.energy_ref = eref = self.wids['energy_ref'].GetStringSelection()
         self.update_config({'energy_ref': eref}, dgroup=dgroup)
 
 
@@ -578,11 +565,8 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
 
     def onCopyParam(self, name=None, evt=None):
         conf = self.get_config()
-        # print("onCopy Param ", name)
-        # conf.update(self.read_form())
         dgroup = self.controller.get_group()
         self.update_config(conf)
-        # self.fill_form(dgroup)
         opts = {}
         name = str(name)
         def copy_attrs(*args):
@@ -608,8 +592,6 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         elif name == 'energy_ref':
             copy_attrs('energy_ref')
 
-        # print("Copy opts ", opts)
-
         for checked in self.controller.filelist.GetCheckedStrings():
             groupname = self.controller.file_groups[str(checked)]
             grp = self.controller.get_group(groupname)
@@ -618,7 +600,6 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
                 for key, val in opts.items():
                     if hasattr(grp, key):
                         setattr(grp, key, val)
-                # self.fill_form(grp)
                 self.process(grp, force=True)
 
     def onAuto_XASE0(self, evt=None):
@@ -639,7 +620,6 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
 
     def onSet_XASE0(self, evt=None, value=None):
         "handle setting auto e0 / show e0"
-        auto_e0  = self.wids['auto_e0'].GetValue()
         self.update_config({'e0': self.wids['e0'].GetValue(),
                            'auto_e0':self.wids['auto_e0'].GetValue()})
         self.onReprocess()
@@ -736,10 +716,8 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
             dgroup = self.controller.get_group()
         if dgroup is None:
             return
-        # print(f"XASNORM Process {dgroup.groupname=}, {dgroup.filename=}")
         self.skip_process = True
         conf = self.get_config(dgroup)
-        # print("XASNORM config = ", conf)
         form = self.read_form()
 
         form['group'] = dgroup.groupname
@@ -791,7 +769,8 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
             ediff = (e1-e2).min()
 
         if abs(eshift-ediff) > 1.e-5 or abs(eshift-eshift_current) > 1.e-5:
-            if abs(eshift) > 1e15: eshift = 0.0
+            if abs(eshift) > 1e15:
+                eshift = 0.0
             cmds.extend(["{group:s}.energy_shift = {eshift:.4f}",
                          "{group:s}.energy = {group:s}.xplot = {group:s}.energy_orig + {group:s}.energy_shift"])
 
@@ -830,14 +809,12 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         if not hasattr(dgroup, 'e0'):
             self.skip_process = False
             dgroup.mu = dgroup.yplot * 1.0
-            opts = {'group': dgroup.groupname}
             return
 
         norm_method = form['norm_method'].lower()
         form['normmeth'] = 'poly'
 
         dgroup.journal.add_ifnew('normalization_method', norm_method)
-        # print(f"XASNORM Proceess {xasmode=}, {force_mback=}, {norm_method=}")
         if ((not xasmode.startswith('calc')) and
             (force_mback or norm_method.startswith('mback'))):
             form['normmeth'] = 'mback'
@@ -998,7 +975,6 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         self.controller.set_focus()
 
     def onPlotSel(self, evt=None, process=None, **kws):
-        newplot = True
         self.last_plot_type = 'multi'
         group_ids = self.controller.filelist.GetCheckedStrings()
         if len(group_ids) < 1:
