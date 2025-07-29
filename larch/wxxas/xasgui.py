@@ -431,7 +431,7 @@ class LarixFrame(wx.Frame):
         self.cursor_dat = {}
 
         self.subframes = {}
-        self.onSetTitle()
+        self.SetTitle(LARIX_TITLE)
         self.SetSize(LARIX_SIZE)
         self.SetMinSize(LARIX_MINSIZE)
         self.SetFont(Font(FONTSIZE))
@@ -1086,7 +1086,7 @@ class LarixFrame(wx.Frame):
         self.last_save_message = ("Session last saved", f"'{fname}'", f"{stime}")
         self.write_message(f"Saved session to '{fname}' at {stime}")
         self.last_session_file = self.last_session_read = fname
-        self.onSetTitle()
+        self.onSetTitle(Path(fname).name)
 
     def onClearSession(self, evt=None):
         conf = self.controller.get_config('autosave',
