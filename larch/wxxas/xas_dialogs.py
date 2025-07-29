@@ -549,6 +549,8 @@ class LoadSessionDialog(wx.Frame):
 
         self.controller.recentfiles.append((time.time(), self.filename))
 
-        wx.CallAfter(self.Destroy)
+        #wx.CallAfter(self.Destroy)
         if last_fname is not None:
             self.parent.ShowFile(filename=last_fname)
+
+        self.Destroy()
