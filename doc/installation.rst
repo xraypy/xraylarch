@@ -387,8 +387,15 @@ For the brave, a nightly build of the latest development version can be download
 
 .. code:: bash
 
-   python -m pip install https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-latest-py3-none-any.whl
+   larch -n
 
+or by visiting https://millenia.cars.aps.anl.gov/xraylarch/downloads,
+downloading the latest `xraylarch*.whl` file, and installing that as
+with
+
+.. code:: bash
+
+   python -m pip intall  xraylarch-2025.2.1.post.....whl
 
 We try to keep this working, but as this is an automated snapshot it might
 catch the development in the middle of trying to fix something tricky.
