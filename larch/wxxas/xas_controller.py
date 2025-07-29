@@ -22,6 +22,7 @@ from larch.site_config import home_dir, user_larchdir
 
 from .config import XASCONF, CONF_FILE,  OLDCONF_FILE
 
+
 class XASController():
     """
     class holding the Larch session and doing the processing work for Larix
@@ -59,11 +60,10 @@ class XASController():
         if not Path(self.larix_folder).exists():
             try:
                 mkdir(self.larix_folder)
-            except:
+            except Exception:
                 title = "Cannot create Larix folder"
                 message = [f"Cannot create directory {larix_folder}"]
                 ExceptionPopup(self, title, message)
-
 
         # may migrate old 'xas_viewer.conf' file to 'larix.conf'
         old_config_file = Path(self.larix_folder, OLDCONF_FILE).as_posix()
@@ -85,7 +85,6 @@ class XASController():
         self.config = self.larch.symtable._sys.larix_config = config
         self.larch.symtable._sys.wx.plotopts = config['plot']
         self.clean_autosave_sessions()
-
 
     def install_group(self, groupname, filename, source=None, journal=None):
         """add groupname / filename to list of available data groups"""
@@ -210,7 +209,7 @@ class XASController():
         try:
             with open(Path(self.larix_folder, 'workdir.txt'), 'w') as fh:
                 fh.write(f"{get_cwd()}\n")
-        except:
+        except Exception:
             pass
 
         buffer = []
@@ -225,7 +224,7 @@ class XASController():
         try:
             with open(Path(self.larix_folder, 'recent_sessions.txt'), 'w') as fh:
                 fh.write(buffer)
-        except:
+        except Exception:
             pass
 
     def init_workdir(self):
@@ -237,11 +236,11 @@ class XASController():
                     with open(wfile, 'r') as fh:
                         workdir = fh.readlines()[0][:-1]
                         self.config['main']['workdir'] = workdir
-                except:
+                except Exception:
                     pass
             try:
                 os.chdir(self.config['main']['workdir'])
-            except:
+            except Exception:
                 pass
 
         rfile = Path(self.larix_folder, 'recent_sessions.txt')
@@ -253,7 +252,7 @@ class XASController():
                     try:
                         w = line[:-1].split(None, maxsplit=1)
                         self.recentfiles.insert(0, (float(w[0]), w[1]))
-                    except:
+                    except Exception:
                         pass
 
     def register_group_callback(self, label, obj, callback):
@@ -271,11 +270,10 @@ class XASController():
                 obj, cb = val
                 obj.Raise()
                 cb()
-            except:
+            except Exception:
                 missing.append(key)
         for key in missing:
             self.unregister_group_callback(key)
-
 
     def autosave_session(self):
         conf = self.get_config('autosave', {})
@@ -310,7 +308,7 @@ class XASController():
                     try:
                         version = int(words[-1])
                         words.pop()
-                    except:
+                    except Exception:
                         version = 0
                     dat.append((ffile.as_posix(), version, mtime))
             return sorted(dat, key=lambda x: x[2])
@@ -349,7 +347,6 @@ class XASController():
                 flist.append((os.stat(ffile).st_mtime, ffile))
 
         return sorted(flist, key=lambda x: x[0], reverse=True)[:max_hist]
-
 
     def clear_session(self):
         self.larch.eval("clear_session()")
