@@ -421,7 +421,6 @@ class LarixFrame(wx.Frame):
         iconfile = Path(icondir, ICON_FILE).as_posix()
         self.SetIcon(wx.Icon(iconfile, wx.BITMAP_TYPE_ICO))
 
-        savefile = Path(self.controller.autosave_session())
         self.last_autosave = 0
         self.last_save_message = ('Session has not been saved', '', '')
 
@@ -432,8 +431,7 @@ class LarixFrame(wx.Frame):
         self.cursor_dat = {}
 
         self.subframes = {}
-        title = f"Larix [{savefile.name}]"
-        self.SetTitle(title)
+        self.onSetTitle()
         self.SetSize(LARIX_SIZE)
         self.SetMinSize(LARIX_MINSIZE)
         self.SetFont(Font(FONTSIZE))
@@ -865,6 +863,13 @@ class LarixFrame(wx.Frame):
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE,  self.onClose)
         self.Bind(wx.EVT_SYS_COLOUR_CHANGED, self.onSystemDarkMode)
+
+    def onSetTitle(self, savefile=None):
+        """set title of main window"""
+        if savefile is not None:
+            self.SetTitle(f"Larix [{Path(savefile).name}]")
+        else:
+            self.SetTitle(LARIX_TITLE)
 
     def onSystemDarkMode(self, event=None):
         """notify on light/dark mode change"""
