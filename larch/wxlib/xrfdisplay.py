@@ -258,17 +258,15 @@ class XRFDisplayFrame(wx.Frame):
         if self.mca is None:
             return
 
-        if (self.xmarker_left is not None and
-            self.xmarker_right is not None):
-            self.ShowROIStatus(self.xmarker_left,
-                               self.xmarker_right,
-                               name='', panel=3)
-
         if self.selected_roi is not None:
             roi = self.selected_roi
             left, right = roi.left, roi.right
             self.ShowROIStatus(left, right, name=roi.name, panel=0)
             self.ShowROIPatch(left, right)
+        elif (self.xmarker_left is not None and self.xmarker_right is not None):
+            self.ShowROIStatus(self.xmarker_left, self.xmarker_right,
+                               name='unnamed', panel=3)
+
 
     def createPlotPanel(self):
         """mca plot window"""

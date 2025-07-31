@@ -535,7 +535,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         thisrate = 0
 
         if name in (None, ''):
-            name = 'Selected'
+            name = 'selected'
         else:
             lname = name.lower()
             for nmca in range(1, self.nmca+1):
