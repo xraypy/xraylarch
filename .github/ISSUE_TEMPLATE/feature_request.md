@@ -3,6 +3,7 @@ name: Feature request
 about: Suggest an idea for implementing a new feature
 title: ''
 labels: ''
+type: 'feature'
 assignees: ''
 
 ---
