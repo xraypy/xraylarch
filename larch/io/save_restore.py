@@ -342,9 +342,10 @@ def load_session(fname, ignore_groups=None, include_xasgroups=None, _larch=None,
             continue
         if sym in c_xas_gnames or sym in include_xasgroups:
             newsym = unique_name(sym, c_xas_gnames)
-            c_xas_gnames.append(newsym)
-            if sym in s_xasgroups.values():
-                s_key = s_xasg_inv[sym]
+            if (sym in s_xasgroups.values() or
+                     (hasattr(val, 'energy') and hasattr(val, 'mu'))):
+                c_xas_gnames.append(newsym)
+                s_key = s_xasg_inv.get(sym, getattr(val, 'filename', newsym))
                 s_xasgroups[s_key] = newsym
                 s_xasg_inv = invert_dict(s_xasgroups)
             sym = newsym
