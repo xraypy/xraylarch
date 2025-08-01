@@ -372,7 +372,8 @@ def decode4js(obj):
         if 'ufunc' in mname:
             mname = mname.replace('<ufunc', '').replace('>', '').replace("'","").strip()
         out = SCIPY_FUNCTIONS.get(mname, None)
-
+    elif classname == 'DumpableObject':
+        out = decode4js(obj['value'])
     else:
         print("cannot decode ", classname, repr(obj)[:100])
     return out
