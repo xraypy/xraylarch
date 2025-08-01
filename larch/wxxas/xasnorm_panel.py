@@ -317,7 +317,11 @@ class XASNormPanel(TaskPanel):
             return self.get_defaultconfig()
 
         conf = deepcopy(self.controller.config[self.configname])
-        conf.update(getattr(dgroup.config, self.configname, {}))
+        if hasattr(dgroup, 'config'):
+            conf.update(getattr(dgroup.config, self.configname, {}))
+        else:
+            dgroup.config = Group()
+            setattr(dgroup.config, self.configname, {})
 
         if conf.get('edge_step', None) is None:
             conf['edge_step'] = getattr(dgroup, 'edge_step', 1)
