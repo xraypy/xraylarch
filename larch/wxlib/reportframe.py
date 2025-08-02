@@ -267,7 +267,6 @@ class CSVFrame(wx.Frame):
     def __init__(self, parent=None, csv=None, size=(725, 600),
                  title='Report', default_filename='out.csv', **kws):
         self.default_filename = default_filename
-        self.wildcard = wildcard
         wx.Frame.__init__(self, parent, size=size, style=FRAMESTYLE, **kws)
         self.SetTitle(title)
         self.menubar = wx.MenuBar()
