@@ -147,24 +147,6 @@ def encode4js(obj):
     elif isinstance(obj, h5py.Group):
         return {'__class__': 'HDF5Group', 'value': (obj.name, obj.file.filename),
                 'keys': list(obj.keys())}
-    elif isinstance(obj, slice):
-        return {'__class__': 'Slice', 'value': (obj.start, obj.stop, obj.step)}
-
-    elif isinstance(obj, list):
-        return {'__class__': 'List', 'value': [encode4js(item) for item in obj]}
-    elif isinstance(obj, tuple):
-        if hasattr(obj, '_fields'):  # named tuple!
-            return {'__class__': 'NamedTuple',
-                    '__name__': obj.__class__.__name__,
-                    '_fields': obj._fields,
-                    'value': [encode4js(item) for item in obj]}
-        else:
-            return {'__class__': 'Tuple', 'value': [encode4js(item) for item in obj]}
-    elif isinstance(obj, dict):
-        out = {'__class__': 'Dict'}
-        for key, val in obj.items():
-            out[encode4js(key)] = encode4js(val)
-        return out
     elif isinstance(obj, logging.Logger):
         level = 'DEBUG'
         for key, val in LoggingLevels.items():
@@ -226,6 +208,28 @@ def encode4js(obj):
         return out
     elif isinstance(obj, ModuleType):
         return {'__class__': 'Module',  'value': obj.__name__}
+
+    # note that list, tuple, dict comes late because some custom classes like
+    # Parameters inherit from dict
+    elif isinstance(obj, dict):
+        out = {'__class__': 'Dict'}
+        for key, val in obj.items():
+            out[encode4js(key)] = encode4js(val)
+        return out
+    elif isinstance(obj, slice):
+        return {'__class__': 'Slice', 'value': (obj.start, obj.stop, obj.step)}
+
+    elif isinstance(obj, list):
+        return {'__class__': 'List', 'value': [encode4js(item) for item in obj]}
+    elif isinstance(obj, tuple):
+        if hasattr(obj, '_fields'):  # named tuple!
+            return {'__class__': 'NamedTuple',
+                    '__name__': obj.__class__.__name__,
+                    '_fields': obj._fields,
+                    'value': [encode4js(item) for item in obj]}
+        else:
+            return {'__class__': 'Tuple', 'value': [encode4js(item) for item in obj]}
+
     elif hasattr(obj, '__getstate__') and not callable(obj):
         return {'__class__': 'StatefulObject',
                 '__type__': obj.__class__.__name__,
