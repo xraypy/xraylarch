@@ -30,7 +30,8 @@ from .sigma2_models import add_sigma2funcs
 
 SMALL_ENERGY = 1.e-6
 
-PATH_PARS = ('degen', 's02', 'e0', 'ei', 'deltar', 'sigma2', 'third', 'fourth')
+PATH_PARS = ('s02', 'e0', 'deltar', 'sigma2', 'third', 'fourth', 'ei')
+PATH_PARS_WITH_R = ('s02', 'e0', 'r', 'deltar', 'sigma2', 'third', 'fourth', 'ei')
 FDAT_ARRS = ('real_phc', 'mag_feff', 'pha_feff', 'red_fact',
              'lam', 'rep', 'pha', 'amp', 'k')
 
@@ -232,8 +233,8 @@ class FeffPathGroup(Group):
         self.shell = 'K'
         self.absorber = None
         self._feffdat = _feffdat
-        self.dataset = 'd001'
-        self.hashkey = 'p001'
+        self.dataset = None
+        self.hashkey = None
         self.k = None
         self.chi = None
 
@@ -438,16 +439,15 @@ class FeffPathGroup(Group):
         return out
 
     def path_paramvals(self, **kws):
-        (deg, s02, e0, ei, delr, ss2, c3, c4) = self.__path_params()
-        return dict(degen=deg, s02=s02, e0=e0, ei=ei, deltar=delr,
-                    sigma2=ss2, third=c3, fourth=c4)
+        (s02, e0, delr, ss2, c3, c4, ei) = self.__path_params()
+        return dict(s02=s02, e0=e0, deltar=delr,
+                    sigma2=ss2, third=c3, fourth=c4, ei=ei)
 
     def dict_report(self):
         """report as a dict"""
         tmpvals = self.__path_params()
         pathpars = {}
-        for pname in ('degen', 's02', 'e0', 'deltar',
-                      'sigma2', 'third', 'fourth', 'ei'):
+        for pname in PATH_PARS:
             parname = self.pathpar_name(pname)
             if parname in self.params:
                 pathpars[pname] = (self.params[parname].value,
@@ -458,6 +458,7 @@ class FeffPathGroup(Group):
                  'absorber': self.absorber,
                  'shell': self.shell,
                  'nleg': f'{self.nleg}',
+                 'degen': f'{self.degen}',
                  'reff': f'{self.reff:.6f}'}
 
         geom = []
@@ -471,8 +472,7 @@ class FeffPathGroup(Group):
 
         def sfmt(x): return gformat(x, length=8)
 
-        for pname in ('degen', 's02', 'e0', 'r',
-                      'deltar', 'sigma2', 'third', 'fourth', 'ei'):
+        for pname in PATH_PARS_WITH_R:
             val = strval = getattr(self, pname, 0)
             parname = self.pathpar_name(pname)
             std, expr = None, None
@@ -508,14 +508,13 @@ class FeffPathGroup(Group):
         "return  text report of parameters"
         tmpvals = self.__path_params()
         pathpars = {}
-        for pname in ('degen', 's02', 'e0', 'deltar',
-                      'sigma2', 'third', 'fourth', 'ei'):
+        for pname in PATH_PARS:
             parname = self.pathpar_name(pname)
             if parname in self.params:
                 pathpars[pname] = (self.params[parname].value,
                                    self.params[parname].stderr)
 
-        out = [f" = Path '{self.label}' = {self.absorber} {self.shell} Edge",
+        out = [f" = Path '{self.label}' {self.absorber} {self.shell} Edge",
                f"    feffdat file = {self.filename}, from feff run '{self.feffrun}'"]
         geomlabel  = '    geometry  atom      x        y        z      ipot'
         geomformat = '            %4s      %s, %s, %s  %d'
@@ -530,8 +529,10 @@ class FeffPathGroup(Group):
         out.append('     {:7s}= {:s}'.format('reff',
                                               gfmt(self._feffdat.reff)))
 
-        for pname in ('degen', 's02', 'e0', 'r',
-                      'deltar', 'sigma2', 'third', 'fourth', 'ei'):
+        out.append('     {:7s}= {:s}'.format('degen',
+                                              gfmt(self._feffdat.degen)))
+
+        for pname in PATH_PARS_WITH_R:
             val = strval = getattr(self, pname, 0)
             parname = self.pathpar_name(pname)
             std = None
@@ -597,10 +598,9 @@ class FeffPathGroup(Group):
             return
         reff = fdat.reff
         # get values for all the path parameters
-        (degen, s02, e0, ei, deltar, sigma2, third, fourth)  = \
-                self.__path_params(degen=degen, s02=s02, e0=e0, ei=ei,
-                                   deltar=deltar, sigma2=sigma2,
-                                   third=third, fourth=fourth)
+        (s02, e0, deltar, sigma2, third, fourth, ei)  = \
+          self.__path_params(s02=s02, e0=e0, deltar=deltar,
+                            sigma2=sigma2, third=third, fourth=fourth, ei=ei)
 
         # create e0-shifted energy and k, careful to look for |e0| ~= 0.
         en = k*k - e0*ETOK
@@ -640,7 +640,7 @@ class FeffPathGroup(Group):
                       1j*(2*q*reff + pha +
                           2*p*(deltar - 2*sigma2/reff - 2*pp*third/3) ))
 
-        cchi = degen * s02 * amp * cchi / (q*(reff + deltar)**2)
+        cchi = self.degen * s02 * amp * cchi / (q*(reff + deltar)**2)
         cchi[0] = 2*cchi[1] - cchi[2]
         # outputs:
         self.k = k
