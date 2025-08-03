@@ -33,7 +33,68 @@ from ..fitting import (correlated_values, eval_stderr, ParameterGroup,
 from .xafsutils import set_xafsGroup, gfmt
 from .xafsft import xftf_fast, xftr_fast, ftwindow
 from .autobk import autobk_delta_chi
-from .feffdat import FeffPathGroup, ff2chi
+from .feffdat import FeffPathGroup, ff2chi, PATH_PARS
+
+def propagate_uncertainties(result, datasets, _larch=None):
+    """propagate uncertainties from fitting Parameters to all constrained
+    Parameters, including Path Parameters
+    """
+    covar = getattr(result, 'covar', None)
+    if covar is not None:
+        n_idp = 0
+        for ds in datasets:
+            n_idp += ds.n_idp
+
+        if isinstance(result.params, dict):
+            pars = Parameters()
+            for key, val in result.params.items():
+                pars.add(val)
+            result.params = pars
+            result.params.update_constraints()
+
+        # We used scale_covar=Fllalse, so we rescale the uncertainties
+        redchi = getattr(result, 'redchi', getattr(result, 'chi2_reduced', 1.0))
+        err_scale = redchi*(result.nfree/(n_idp - result.nvarys))
+        for name, par in result.params.items():
+            if isParameter(par) and getattr(par, 'stderr', None) is not None:
+                par.stderr *= sqrt(err_scale)
+
+        # next, propagate uncertainties to constraints and path parameters.
+        result.covar *= err_scale
+        vsave, vbest = {}, []
+
+        # 1. save current params
+        for vname in result.var_names:
+            par = result.params[vname]
+            vsave[vname] = par
+            vbest.append(par.value)
+        # 2. get correlated uncertainties, set params accordingly
+        uvars = correlated_values(vbest, result.covar)
+        # 3. evaluate constrained params, save stderr
+        for nam, obj in result.params.items():
+            eval_stderr(obj, uvars,  result.var_names, result.params)
+
+        # 3. evaluate path_ params, save stderr
+        for ds in datasets:
+            if ds.hashkey in (None, 'None'):
+                ds.__generate_hashkey()
+            for label, path in ds.paths.items():
+                if path.dataset is None:
+                    path.dataset = ds.hashkey
+                path.params = result.params
+                path.store_feffdat()
+                for pname in PATH_PARS:
+                    obj = path.params[path.pathpar_name(pname)]
+                    eval_stderr(obj, uvars,  result.var_names, result.params)
+        # restore saved parameters again
+        for vname in result.var_names:
+            # setattr(params, vname, vsave[vname])
+            result.params[vname] = vsave[vname]
+
+        # clear any errors evaluting uncertainties
+        if _larch is not None and (len(_larch.error) > 0):
+            _larch.error = []
+
 
 class TransformGroup(Group):
     """A Group of transform parameters.
@@ -311,6 +372,7 @@ class FeffitDataSet(Group):
             if attr not in ('feffit_history',) and not hasattr(self.data, attr):
                 setattr(self.data, attr, getattr(data, attr, None))
         self.hashkey = None
+        self.__generate_hashkey()
         self.bkg_spline = {}
         self._chi = None
         self._bkg = 0.0
@@ -326,7 +388,7 @@ class FeffitDataSet(Group):
         for aname in ('e0', 'ek0', 'rbkg', 'edge_step'):
             dat.append(getattr(self.data, aname, 0.00))
 
-        for aname in ('energy', 'norm', 'chi'):
+        for aname in ('energy', 'norm', 'bkg', 'chi'):
             arr = getattr(self.data, aname, None)
             if isinstance(arr, np.ndarray):
                 dat.extend([arr.min(), arr.max(), arr.mean(),
@@ -334,11 +396,15 @@ class FeffitDataSet(Group):
                 dat.extend(arr[:30:3])
         s = "|".join([gformat(x) for x in dat])
         self.hashkey = f"d{(b32hash(s)[:hlen].lower())}"
-        # may need to look for hash collisions: hlen=6 gives 1e9 keys
+
+        # may need to look for hash collisions: hlen=7 gives 34e9 keys
         # collision are probably the same dataset, so just go with a
         # random string
         if other_hashkeys is not None:
-            ntry = 0
+            while self.hashkey in other_hashkeys:
+                for delim in (':', ';', '&', '*', '#', '@'):
+                    s = delim.join([gformat(x) for x in dat])
+                    self.hashkey = f"d{(b32hash(s)[:hlen].lower())}"
             while self.hashkey in other_hashkeys:
                 ntry += 1
                 if ntry > 1e6:
@@ -612,7 +678,7 @@ class FeffitDataSet(Group):
         """make a CVS table report for the list of paths after a fit"""
         table_keys = ['filename', 'geom', 'reff', 'degen', 's02','e0', 'r',
                       'sigma2', 'third', 'fourth', 'ei',
-                      's02_expr', 'degen_expr', 'e0_expr', 'r_expr',
+                      's02_expr', 'e0_expr', 'r_expr',
                      'sigma2_expr','third_expr', 'fourth_expr', 'ei_expr']
         headers = ['filename', 'geometry', 'R_eff', 'Degen', 'N*S02','E0', 'R',
                    'sigma2', 'third',  'fourth', 'Ei',
@@ -620,6 +686,8 @@ class FeffitDataSet(Group):
                    'sigma2 Expr', 'third Expr', 'fourth Expr', 'Ei Expr']
         table = []
         for path in self.pathlist:
+            if path.dataset is None:
+                path.dataset = self.hashkey
             path.params = params
             dictvals =  path.dict_report()
             table.append([dictvals[key] for key in table_keys])
@@ -748,6 +816,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True,
             return
         ds.prepare_fit(params=params, other_hashkeys=dset_hashkeys)
         dset_hashkeys.append(ds.hashkey)
+        # print('Feffit , prepared dataset for fit ', ds, ds.hashkey)
     # try to identify variable Parameters that are not actually used
     vars, exprs = [], []
     for p in params.values():
@@ -795,46 +864,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True,
     aic = neg2_loglikel + 2 * result.nvarys
     bic = neg2_loglikel + np.log(n_idp) * result.nvarys
 
-    # We used scale_covar=False, so we rescale the uncertainties
-    # by reduced chi-square * (ndata - nvarys)/(nidp - nvarys)
-    covar = getattr(result, 'covar', None)
-    if covar is not None:
-        err_scale = result.redchi*(result.nfree/(n_idp - result.nvarys))
-        for name, par in result.params.items():
-            if isParameter(par) and getattr(par, 'stderr', None) is not None:
-                par.stderr *= sqrt(err_scale)
-
-        # next, propagate uncertainties to constraints and path parameters.
-        result.covar *= err_scale
-        vsave, vbest = {}, []
-
-        # 1. save current params
-        for vname in result.var_names:
-            par = result.params[vname]
-            vsave[vname] = par
-            vbest.append(par.value)
-        # 2. get correlated uncertainties, set params accordingly
-        uvars = correlated_values(vbest, result.covar)
-        # 3. evaluate constrained params, save stderr
-        for nam, obj in result.params.items():
-            eval_stderr(obj, uvars,  result.var_names, result.params)
-
-        # 3. evaluate path_ params, save stderr
-        for ds in datasets:
-            for label, path in ds.paths.items():
-                path.store_feffdat()
-                for pname in ('degen', 's02', 'e0', 'ei',
-                              'deltar', 'sigma2', 'third', 'fourth'):
-                    obj = path.params[path.pathpar_name(pname)]
-                    eval_stderr(obj, uvars,  result.var_names, result.params)
-        # restore saved parameters again
-        for vname in result.var_names:
-            # setattr(params, vname, vsave[vname])
-            params[vname] = vsave[vname]
-
-        # clear any errors evaluting uncertainties
-        if _larch is not None and (len(_larch.error) > 0):
-            _larch.error = []
+    propagate_uncertainties(result, datasets, _larch=_larch)
 
     # reset the parameters group with the newly updated uncertainties
     params2group(result.params, work_paramgroup)
@@ -844,10 +874,11 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True,
         ds.save_outputs(rmax_out=rmax_out, path_outputs=path_outputs)
 
     out = Group(name='feffit results', params=result.params,
-                paramgroup=work_paramgroup, fit_kws=fit_kws, datasets=datasets,
-                fit_details=result, chi_square=chi_square, n_independent=n_idp,
-                chi2_reduced=chi2_reduced, rfactor=rfactor, aic=aic, bic=bic,
-                covar=covar)
+                paramgroup=work_paramgroup, fit_kws=fit_kws,
+                datasets=datasets, fit_details=result,
+                chi_square=chi_square, n_independent=n_idp,
+                chi2_reduced=chi2_reduced, redchi=chi2_reduced,
+                rfactor=rfactor, aic=aic, bic=bic, covar=result.covar)
 
     for attr in ('params', 'nvarys', 'nfree', 'ndata', 'var_names', 'nfev',
                  'success', 'errorbars', 'message', 'lmdif_message'):
@@ -933,7 +964,15 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
     add_string('Bayesian info crit', getval('bic'))
 
     out.append(' ')
-    out.append(header % 'Variables')
+    out.append(header % 'Parameters')
+    needs_uncertainties = False
+    for name, par in params.items():
+        if par.stderr is None and (par.vary or
+                                   par.expr not in (None, '', 'None')):
+            needs_uncertainties = True
+    if needs_uncertainties:
+        propagate_uncertainties(result, datasets, _larch=_larch)
+
     for name, par in params.items():
         if any([name.endswith('_%s' % phash) for phash in path_hashkeys]):
             continue
@@ -1023,9 +1062,19 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
         #
 
         if with_paths:
+            for label, path in ds.paths.items():
+                if path.dataset is None:
+                    path.dataset = ds.hashkey
+                path.params = result.params
+                path.store_feffdat()
+
             out.append(' ')
             out.append(header % 'Paths')
             for label, path in ds.paths.items():
+                if path.dataset is None:
+                    path.dataset = ds.hashkey
+                path.params = result.params
+                path.store_feffdat()
                 out.append('%s\n' % path.report())
     out.append('='*len(topline))
     return '\n'.join(out)
