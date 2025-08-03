@@ -28,7 +28,7 @@ from larch.larchlib import isNamedClass
 from larch.utils.strutils import b32hash, random_varname
 from ..math import index_of, realimag, complex_phase, remove_nans
 from ..fitting import (correlated_values, eval_stderr, ParameterGroup,
-                       group2params, params2group, isParameter)
+                       dict2params, group2params, params2group, isParameter)
 
 from .xafsutils import set_xafsGroup, gfmt
 from .xafsft import xftf_fast, xftr_fast, ftwindow
@@ -46,11 +46,7 @@ def propagate_uncertainties(result, datasets, _larch=None):
             n_idp += ds.n_idp
 
         if isinstance(result.params, dict):
-            pars = Parameters()
-            for key, val in result.params.items():
-                pars.add(val)
-            result.params = pars
-            result.params.update_constraints()
+            result.params = dict2params(result.params)
 
         # We used scale_covar=Fllalse, so we rescale the uncertainties
         redchi = getattr(result, 'redchi', getattr(result, 'chi2_reduced', 1.0))
