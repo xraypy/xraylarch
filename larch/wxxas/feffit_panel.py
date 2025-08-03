@@ -33,7 +33,7 @@ from larch.utils.jsonutils import encode4js, decode4js
 from larch.inputText import is_complete
 from larch.utils import mkdir, isValidName
 from larch.io.export_modelresult import export_modelresult
-from larch.xafs import feffit_report, feffpath
+from larch.xafs import feffit_report, feffpath, propagate_uncertainties
 from larch.xafs.feffdat import FEFFDAT_VALUES
 from larch.xafs.xafsutils import FT_WINDOWS
 
@@ -2087,6 +2087,15 @@ class FeffitResultFrame(wx.Frame):
         result = self.get_fitresult()
         if result is None:
             return
+
+        needs_uncertainties = False
+        for name, par in result.params.items():
+            if par.stderr is None and (par.vary or
+                                       par.expr not in (None, '', 'None')):
+                needs_uncertainties = True
+        if needs_uncertainties:
+            propagate_uncertainties(result, result.datasets)
+
         text = f'# Feffit Report for {self.datagroup.filename} fit "{result.label}"\n'
         text = text + feffit_report(result)
         title = f'Report for {self.datagroup.filename} fit "{result.label}"'
@@ -2097,9 +2106,15 @@ class FeffitResultFrame(wx.Frame):
         result = self.get_fitresult()
         if result is None:
             return
+
+        needs_uncertainties = False
+        for name, par in result.params.items():
+            if par.stderr is None and (par.vary or
+                                       par.expr not in (None, '', 'None')):
+                needs_uncertainties = True
+        if needs_uncertainties:
+            propagate_uncertainties(result, result.datasets)
         dset =  result.datasets[0]
-        # print("onShow PARAMS CSV " , dset, dset.hashkey)
-        # print("onShow PARAMS CSV " , result.params.keys())
         CSVFrame(parent=self.parent, csv=dset.csv_path_report(result.params, format=False))
 
 

@@ -29,7 +29,7 @@ from .prepeaks import prepeaks_setup, pre_edge_baseline, prepeaks_fit
 from .feffdat import FeffDatFile, FeffPathGroup, feffpath, path2chi, ff2chi, use_feffpath
 from .feffit import (FeffitDataSet, TransformGroup, feffit,
                      feffit_dataset, feffit_transform, feffit_report,
-                     feffit_conf_map)
+                     propagate_uncertainties, feffit_conf_map)
 
 from .autobk import autobk, autobk_lmfit, autobk_delta_chi
 from .mback import mback, mback_norm
