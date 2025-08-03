@@ -158,7 +158,7 @@ _feffit_dataset = feffit_dataset(data={groupname:s}, transform={trans:s},
                                  paths={paths:s})
 _feffit_result = feffit({params}, _feffit_dataset)
 if not hasattr({groupname:s}, 'feffit_history'): {groupname}.feffit_history = []
-{groupname:s}.feffit_history.insert(0, deeepcopy(_feffit_result))
+{groupname:s}.feffit_history.insert(0, deepcopy(_feffit_result))
 """
 
 COMMANDS['path2chi'] = """# generate chi(k), chi(R), and chi(q) for each path
@@ -2098,7 +2098,8 @@ class FeffitResultFrame(wx.Frame):
         if result is None:
             return
         dset =  result.datasets[0]
-        params = result.params
+        # print("onShow PARAMS CSV " , dset, dset.hashkey)
+        # print("onShow PARAMS CSV " , result.params.keys())
         CSVFrame(parent=self.parent, csv=dset.csv_path_report(result.params, format=False))
 
 
