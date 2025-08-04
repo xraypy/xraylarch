@@ -715,28 +715,38 @@ class LarixFrame(wx.Frame):
         # ppnl = self.plotpanel
         self.menubar = wx.MenuBar()
         file_menu = wx.Menu()
-        session_menu = wx.Menu()
         pref_menu = wx.Menu()
         group_menu = wx.Menu()
         xasdata_menu = wx.Menu()
         feff_menu = wx.Menu()
         m = {}
 
+        # File menu
+        # import/load data
         MenuItem(self, file_menu, "&Open Data File\tCtrl+O",
-                 "Open Data File",  self.onReadDialog)
-
-        file_menu.AppendSeparator()
+                 "Open a Data File in the current Session",  self.onReadDialog)
 
         MenuItem(self, file_menu, "&Read Larch Session\tCtrl+R",
                  "Read Previously Saved Session",  self.onLoadSession)
 
+        self.recent_menu = wx.Menu()
+        self.get_recent_session_menu()
+        file_menu.Append(-1, 'Recent Session Files',  self.recent_menu)
+
+        file_menu.AppendSeparator()
+
+        MenuItem(self, file_menu, "Clear Larch Session",
+            "Clear all data from this Session",  self.onClearSession)
+
+        file_menu.AppendSeparator()
+
+        # export/save data
         MenuItem(self, file_menu, "&Save Larch Session\tCtrl+S",
                  "Save Session to a File",  self.onSaveSession)
 
         MenuItem(self, file_menu, "&Save Larch Session As ...\tCtrl+A",
                  "Save Session to a File",  self.onSaveSessionAs)
 
-        file_menu.AppendSeparator()
         MenuItem(self, file_menu, "Save Selected Groups to Athena Project File",
                  "Save Selected Groups to an Athena Project File",
                  self.onExportAthenaProject)
@@ -745,46 +755,31 @@ class LarixFrame(wx.Frame):
                  "Save Selected Groups to a CSV File",
                  self.onExportCSV)
 
+        file_menu.AppendSeparator()
+
+        MenuItem(self, file_menu, 'Show Larch Buffer\tCtrl+L',
+                 'Show Larch Programming Buffer',
+                 self.onShowLarchBuffer)
+
+        MenuItem(self, file_menu, 'Save Larch History as Script\tCtrl+H',
+                 'Save Session History as Larch Script',
+                 self.onSaveLarchHistory)
+
+        if self.with_wx_inspect:
+            MenuItem(self, file_menu, 'wx inspect\tCtrl+I',
+                     'Show wx inspection window',   self.onwxInspect)
+
+        file_menu.AppendSeparator()
+
         MenuItem(self, file_menu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
-
-        MenuItem(self, session_menu, "&Read Larch Session",
-                 "Read Previously Saved Session",  self.onLoadSession)
-
-        MenuItem(self, session_menu, "&Save Larch Session",
-                 "Save Session to a File",  self.onSaveSession)
-
-        MenuItem(self, session_menu, "&Save Larch Session As ...",
-                 "Save Session to a File",  self.onSaveSessionAs)
-
-        MenuItem(self, session_menu, "Clear Larch Session",
-                 "Clear all data from this Session",  self.onClearSession)
 
         # autosaved session
         conf = self.controller.get_config('autosave',
                                           {'fileroot': 'autosave'})
         froot= conf['fileroot']
 
-        self.recent_menu = wx.Menu()
-        self.get_recent_session_menu()
-        session_menu.Append(-1, 'Recent Session Files',  self.recent_menu)
 
-        MenuItem(self, session_menu, "&Auto-Save Larch Session",
-                 f"Save Session now",  self.autosave_session)
-
-        session_menu.AppendSeparator()
-
-        MenuItem(self, session_menu, 'Show Larch Buffer\tCtrl+L',
-                 'Show Larch Programming Buffer',
-                 self.onShowLarchBuffer)
-
-        MenuItem(self, session_menu, 'Save Larch History as Script\tCtrl+H',
-                 'Save Session History as Larch Script',
-                 self.onSaveLarchHistory)
-
-        if self.with_wx_inspect:
-            MenuItem(self, session_menu, 'wx inspect\tCtrl+I',
-                     'Show wx inspection window',   self.onwxInspect)
-
+        # Preferences menu
         MenuItem(self, pref_menu, 'Edit Preferences\tCtrl+E', 'Customize Preferences',
                  self.onPreferences)
 
@@ -839,7 +834,6 @@ class LarixFrame(wx.Frame):
                  "Calculations of Spectra",  self.onSpectraCalc)
 
         self.menubar.Append(file_menu, "&File")
-        self.menubar.Append(session_menu, "Sessions")
         self.menubar.Append(pref_menu, "Preferences")
         self.menubar.Append(group_menu, "Groups")
         self.menubar.Append(xasdata_menu, "XAS Data")
