@@ -464,7 +464,7 @@ class MapPanel(GridPanel):
         y = xrmfile.get_pos(1, mean=True)
 
         fname = Path(xrmfile.filename).name
-        title = f'{fname}: {ylabl} vs. {xlab}'
+        title = f'{fname}: {ylab} vs. {xlab}'
 
         correl_plot = CorrelatedMapFrame(parent=self.owner, xrmfile=xrmfile)
         correl_plot.display(map1, map2, name1=xlab, name2=ylab,
