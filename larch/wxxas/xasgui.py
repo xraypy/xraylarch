@@ -1054,6 +1054,7 @@ class LarixFrame(wx.Frame):
         groups = self.controller.filelist.GetItems()
         if len(groups) < 1:
             return
+        self.controller.sync_xasgroups()
 
         fname = self.last_session_file
         if fname is None:
@@ -1167,6 +1168,7 @@ before clearing"""
             fname = all_names.pop(n)
             self.controller.filelist.refresh(all_names)
             self.RemoveFile(fname)
+            self.controller.sync_xasgroups()
 
     def onRemoveGroups(self, event=None):
         groups = []
