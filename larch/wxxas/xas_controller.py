@@ -163,9 +163,15 @@ class XASController():
         return filename
 
     def sync_xasgroups(self):
-        "make sure `_xasgroups` is identical to file_groups"
-        if self.file_groups != self.symtable._xasgroups:
-            self.symtable._xasgroups = self.file_groups
+        """
+        make sure the symbol `_xasgroups` is identical to file_groups and
+        that these are correctly ordered using the list of the FileList
+        """
+        xgroup = {}
+        curr = self.symtable._xasgroups
+        for key in self.filelist.GetItems():
+            xgroup[key] = self.file_groups.get(key, curr.get(key, None))
+        self.symtable._xasgroups = self.file_groups = xgroup
 
     def get_config(self, key, default=None):
         "get top-level, program-wide configuration setting"
@@ -290,6 +296,7 @@ class XASController():
         if Path(savefile).exists():
             curf = savefile.replace('.larix', '_1.larix' )
             shutil.move(savefile, curf)
+        self.sync_xasgroups()
         save_session(savefile, _larch=self.larch)
         return savefile
 
