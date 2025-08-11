@@ -214,7 +214,10 @@ def encode4js(obj):
     elif isinstance(obj, dict):
         out = {'__class__': 'Dict'}
         for key, val in obj.items():
-            out[encode4js(key)] = encode4js(val)
+            try:
+                out[encode4js(key)] = encode4js(val)
+            except RecursionError:
+                pass
         return out
     elif isinstance(obj, slice):
         return {'__class__': 'Slice', 'value': (obj.start, obj.stop, obj.step)}
