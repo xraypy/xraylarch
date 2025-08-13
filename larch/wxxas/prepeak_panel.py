@@ -6,6 +6,8 @@ np.seterr(all='ignore')
 
 from functools import partial
 import json
+import time
+import traceback
 
 import wx
 import wx.lib.scrolledpanel as scrolled
@@ -551,13 +553,183 @@ class PrePeakFitResultFrame(wx.Frame):
         if len(self.peakfit_history) > 0:
             return self.peakfit_history[self.nfit]
 
+
+    def set_prepeak_plot_limits(self, dgroup=None, win=1, nfit=None):
+        """Set plot limits to the pre-edge fit range using absolute energies
+        
+        Works with both PrePeakPanel and PrePeakFitResultFrame classes.
+        
+        Parameters:
+        -----------
+        dgroup : Group, optional
+            Data group to use. If None, gets current group from controller
+        win : int, optional  
+            Plot window number (default: 1)
+        nfit : int, optional
+            Fit number for PrePeakFitResultFrame (default: None, uses self.nfit)
+        """
+        # Determine if this is called from PrePeakPanel or PrePeakFitResultFrame
+        if hasattr(self, 'peakframe'):
+            # Called from PrePeakFitResultFrame
+            controller = self.peakframe.controller
+            larch_eval = self.peakframe.larch_eval
+            if dgroup is None:
+                dgroup = self.datagroup
+            # Get fit options from the fit result
+            if nfit is None:
+                nfit = getattr(self, 'nfit', 0)
+            fit_result = self.get_fitresult(nfit)
+            if fit_result and hasattr(fit_result, 'user_options'):
+                opts = fit_result.user_options
+            else:
+                # Fallback - try to read form from peakframe
+                opts = self.peakframe.read_form()
+        else:
+            # Called from PrePeakPanel
+            controller = self.controller
+            larch_eval = self.larch_eval
+            if dgroup is None:
+                dgroup = controller.get_group()
+            opts = self.read_form()
+        
+        if dgroup is None:
+            print("No data group available")
+            return
+            
+        try:
+            # Get e0 (absorption edge energy) from the data group
+            e0 = getattr(dgroup, 'e0', 0)
+            
+            # Convert relative energies to absolute energies
+            emin_abs = opts['emin'] + e0  # e.g., -20 + 7120 = 7100 eV
+            emax_abs = opts['emax'] + e0  # e.g., 0 + 7120 = 7120 eV
+            
+            print(f"e0 = {e0:.1f} eV")
+            print(f"Relative range: {opts['emin']:.1f} to {opts['emax']:.1f} eV")
+            print(f"Absolute range: {emin_abs:.1f} to {emax_abs:.1f} eV")
+            
+            # Get the actual data arrays - use the ones from prepeaks if available
+            if hasattr(dgroup, 'prepeaks'):
+                # Use prepeaks data if it exists (after prepeaks_setup)
+                xdata = getattr(dgroup.prepeaks, 'energy', getattr(dgroup, 'energy', None))
+                ydata = getattr(dgroup.prepeaks, 'norm', getattr(dgroup, 'yplot', None))
+                if xdata is not None:
+                    print(f"Using prepeaks data: x range {np.min(xdata):.1f} to {np.max(xdata):.1f}")
+            else:
+                # Fallback to main data
+                xdata = getattr(dgroup, 'energy', getattr(dgroup, 'xplot', None))
+                ydata = getattr(dgroup, 'yplot', getattr(dgroup, opts.get('array_name', 'norm'), None))
+                if xdata is not None:
+                    print(f"Using main data: x range {np.min(xdata):.1f} to {np.max(xdata):.1f}")
+            
+            if xdata is None or ydata is None:
+                print("No data available for plotting")
+                return
+                
+            # Find data within absolute energy range
+            mask = (xdata >= emin_abs) & (xdata <= emax_abs)
+            if not np.any(mask):
+                print(f"No data found in range {emin_abs:.1f} to {emax_abs:.1f} eV")
+                return
+                
+            x_fit_range = xdata[mask]
+            y_fit_range = ydata[mask]
+            
+            print(f"Found {len(y_fit_range)} data points in fit range")
+            print(f"Y data range: {np.min(y_fit_range):.6f} to {np.max(y_fit_range):.6f}")
+            
+            if len(y_fit_range) == 0:
+                return
+                
+            # Calculate limits using absolute energies
+            x_min, x_max = np.min(x_fit_range), np.max(x_fit_range)
+            y_min, y_max = np.min(y_fit_range), np.max(y_fit_range)
+            
+            x_range = x_max - x_min
+            y_range = y_max - y_min
+            
+            # Handle case where y_range is very small or zero
+            if y_range < 1e-10:
+                y_padding = max(abs(y_min), abs(y_max)) * 0.1
+                if y_padding == 0:
+                    y_padding = 0.001
+            else:
+                y_padding = y_range * 0.1
+                
+            x_padding = x_range * 0.05
+            
+            xlims = [x_min - x_padding, x_max + x_padding]
+            ylims = [y_min - y_padding, y_max + y_padding]
+            
+            print(f"Setting plot limits: x=[{xlims[0]:.1f}, {xlims[1]:.1f}], y=[{ylims[0]:.6f}, {ylims[1]:.6f}]")
+            
+            # Try multiple approaches to set limits
+            success = False
+            
+            # Method 1: Direct access to plot window
+            try:
+                plotframe = controller.get_display(win=win)
+                if plotframe and hasattr(plotframe, 'panel') and hasattr(plotframe.panel, 'axes'):
+                    plotframe.panel.axes.set_xlim(xlims)
+                    plotframe.panel.axes.set_ylim(ylims)
+                    plotframe.panel.draw()
+                    success = True
+                    print("Successfully set limits via direct access")
+            except Exception as e:
+                print(f"Direct access failed: {e}")
+                
+            # Method 2: Larch _plotter commands
+            if not success:
+                try:
+                    larch_eval(f"_plotter.axes.set_xlim([{xlims[0]:.6f}, {xlims[1]:.6f}])")
+                    larch_eval(f"_plotter.axes.set_ylim([{ylims[0]:.8f}, {ylims[1]:.8f}])")
+                    larch_eval("_plotter.draw()")
+                    success = True
+                    print("Successfully set limits via Larch commands")
+                except Exception as e:
+                    print(f"Larch commands failed: {e}")
+                    
+            # Method 3: Alternative Larch approach with get_display
+            if not success:
+                try:
+                    cmd = f"""
+    plot_window = get_display()
+    if plot_window is not None:
+        plot_window.panel.axes.set_xlim([{xlims[0]:.6f}, {xlims[1]:.6f}])
+        plot_window.panel.axes.set_ylim([{ylims[0]:.8f}, {ylims[1]:.8f}])
+        plot_window.panel.draw()
+    """
+                    larch_eval(cmd)
+                    success = True
+                    print("Successfully set limits via alternative Larch")
+                except Exception as e:
+                    print(f"Alternative Larch failed: {e}")
+                    
+            if not success:
+                print("Warning: Could not set plot limits using any method")
+                
+        except Exception as e:
+            print(f"Error in set_prepeak_plot_limits: {e}")
+            traceback.print_exc()
+
+
     def onPlot(self, event=None):
+        """Modified onPlot method for PrePeakFitResultFrame with auto-scaling"""
         show_resid = self.wids['plot_resid'].IsChecked()
         sub_bline = self.wids['plot_bline'].IsChecked()
-        win  = int(self.wids['plot_win'].GetStringSelection())
+        win = int(self.wids['plot_win'].GetStringSelection())
+        
         cmd = "plot_prepeaks_fit(%s, nfit=%i, show_residual=%s, subtract_baseline=%s, win=%d)"
         cmd = cmd % (self.datagroup.groupname, self.nfit, show_resid, sub_bline, win)
         self.peakframe.larch_eval(cmd)
+        
+        # Add small delay and then set proper plot limits
+        import time
+        time.sleep(0.1)
+        
+        # Set plot limits using the universal function
+        self.set_prepeak_plot_limits(dgroup=self.datagroup, win=win, nfit=self.nfit)
+        
         self.peakframe.controller.set_focus(topwin=self)
 
     def onSelectFit(self, evt=None):
@@ -634,6 +806,7 @@ class PrePeakFitResultFrame(wx.Frame):
             self.show_results(datagroup=dgroup, form=form, larch_eval=larch_eval)
 
     def show_results(self, datagroup=None, form=None, show_plot=False, larch_eval=None):
+        """Modified show_results method with auto-scaling"""
         if datagroup is not None:
             self.datagroup = datagroup
         if larch_eval is not None:
@@ -661,12 +834,20 @@ class PrePeakFitResultFrame(wx.Frame):
         self.show_fitresult(nfit=0)
 
         if show_plot:
-            show_resid= self.wids['plot_resid'].IsChecked()
+            show_resid = self.wids['plot_resid'].IsChecked()
             sub_bline = self.wids['plot_bline'].IsChecked()
-            cmd = "plot_prepeaks_fit(%s, nfit=0, show_residual=%s, subtract_baseline=%s)"
-            cmd = cmd % (datagroup.groupname, show_resid, sub_bline)
+            win = int(self.wids['plot_win'].GetStringSelection())
+            
+            cmd = "plot_prepeaks_fit(%s, nfit=0, show_residual=%s, subtract_baseline=%s, win=%d)"
+            cmd = cmd % (datagroup.groupname, show_resid, sub_bline, win)
 
             self.peakframe.larch_eval(cmd)
+            
+            # Add proper plot limits
+            import time
+            time.sleep(0.1)
+            self.set_prepeak_plot_limits(dgroup=datagroup, win=win, nfit=0)
+            
             self.peakframe.controller.set_focus(topwin=self)
 
     def get_model_desc(self, model):
@@ -1106,17 +1287,50 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         g = self.build_fitmodel(dgroup.groupname)
         self.onPlot(show_init=True)
 
-    def set_prepeak_plot_limits(self, dgroup=None, win=1):
-        """Set plot limits to the pre-edge fit range using absolute energies"""
-        if dgroup is None:
-            dgroup = self.controller.get_group()
+    
+    def set_prepeak_plot_limits(self, dgroup=None, win=1, nfit=None):
+        """Set plot limits to the pre-edge fit range using absolute energies
+        
+        Works with both PrePeakPanel and PrePeakFitResultFrame classes.
+        
+        Parameters:
+        -----------
+        dgroup : Group, optional
+            Data group to use. If None, gets current group from controller
+        win : int, optional  
+            Plot window number (default: 1)
+        nfit : int, optional
+            Fit number for PrePeakFitResultFrame (default: None, uses self.nfit)
+        """
+        # Determine if this is called from PrePeakPanel or PrePeakFitResultFrame
+        if hasattr(self, 'peakframe'):
+            # Called from PrePeakFitResultFrame
+            controller = self.peakframe.controller
+            larch_eval = self.peakframe.larch_eval
+            if dgroup is None:
+                dgroup = self.datagroup
+            # Get fit options from the fit result
+            if nfit is None:
+                nfit = getattr(self, 'nfit', 0)
+            fit_result = self.get_fitresult(nfit)
+            if fit_result and hasattr(fit_result, 'user_options'):
+                opts = fit_result.user_options
+            else:
+                # Fallback - try to read form from peakframe
+                opts = self.peakframe.read_form()
+        else:
+            # Called from PrePeakPanel
+            controller = self.controller
+            larch_eval = self.larch_eval
+            if dgroup is None:
+                dgroup = controller.get_group()
+            opts = self.read_form()
         
         if dgroup is None:
+            print("No data group available")
             return
             
         try:
-            opts = self.read_form()
-            
             # Get e0 (absorption edge energy) from the data group
             e0 = getattr(dgroup, 'e0', 0)
             
@@ -1133,12 +1347,14 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                 # Use prepeaks data if it exists (after prepeaks_setup)
                 xdata = getattr(dgroup.prepeaks, 'energy', getattr(dgroup, 'energy', None))
                 ydata = getattr(dgroup.prepeaks, 'norm', getattr(dgroup, 'yplot', None))
-                print(f"Using prepeaks data: x range {np.min(xdata):.1f} to {np.max(xdata):.1f}")
+                if xdata is not None:
+                    print(f"Using prepeaks data: x range {np.min(xdata):.1f} to {np.max(xdata):.1f}")
             else:
                 # Fallback to main data
                 xdata = getattr(dgroup, 'energy', getattr(dgroup, 'xplot', None))
-                ydata = getattr(dgroup, 'yplot', getattr(dgroup, opts['array_name'], None))
-                print(f"Using main data: x range {np.min(xdata):.1f} to {np.max(xdata):.1f}")
+                ydata = getattr(dgroup, 'yplot', getattr(dgroup, opts.get('array_name', 'norm'), None))
+                if xdata is not None:
+                    print(f"Using main data: x range {np.min(xdata):.1f} to {np.max(xdata):.1f}")
             
             if xdata is None or ydata is None:
                 print("No data available for plotting")
@@ -1186,7 +1402,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             
             # Method 1: Direct access to plot window
             try:
-                plotframe = self.controller.get_display(win=win)
+                plotframe = controller.get_display(win=win)
                 if plotframe and hasattr(plotframe, 'panel') and hasattr(plotframe.panel, 'axes'):
                     plotframe.panel.axes.set_xlim(xlims)
                     plotframe.panel.axes.set_ylim(ylims)
@@ -1199,9 +1415,9 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             # Method 2: Larch _plotter commands
             if not success:
                 try:
-                    self.larch_eval(f"_plotter.axes.set_xlim([{xlims[0]:.6f}, {xlims[1]:.6f}])")
-                    self.larch_eval(f"_plotter.axes.set_ylim([{ylims[0]:.8f}, {ylims[1]:.8f}])")
-                    self.larch_eval("_plotter.draw()")
+                    larch_eval(f"_plotter.axes.set_xlim([{xlims[0]:.6f}, {xlims[1]:.6f}])")
+                    larch_eval(f"_plotter.axes.set_ylim([{ylims[0]:.8f}, {ylims[1]:.8f}])")
+                    larch_eval("_plotter.draw()")
                     success = True
                     print("Successfully set limits via Larch commands")
                 except Exception as e:
@@ -1217,7 +1433,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         plot_window.panel.axes.set_ylim([{ylims[0]:.8f}, {ylims[1]:.8f}])
         plot_window.panel.draw()
     """
-                    self.larch_eval(cmd)
+                    larch_eval(cmd)
                     success = True
                     print("Successfully set limits via alternative Larch")
                 except Exception as e:
@@ -1228,7 +1444,6 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                 
         except Exception as e:
             print(f"Error in set_prepeak_plot_limits: {e}")
-            import traceback
             traceback.print_exc()
 
     def onPlot(self, evt=None, baseline_only=False, show_init=False):
@@ -1256,7 +1471,6 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         self.larch_eval(cmd.format(**opts))
         
         # Wait a moment for the plot to be created, then set proper limits
-        import time
         time.sleep(0.1)  # Small delay to ensure plot is ready
         
         # Set plot limits to pre-edge range with absolute energies
