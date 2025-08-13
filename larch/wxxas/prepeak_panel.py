@@ -844,7 +844,6 @@ class PrePeakFitResultFrame(wx.Frame):
             self.peakframe.larch_eval(cmd)
             
             # Add proper plot limits
-            import time
             time.sleep(0.1)
             self.set_prepeak_plot_limits(dgroup=datagroup, win=win, nfit=0)
             
