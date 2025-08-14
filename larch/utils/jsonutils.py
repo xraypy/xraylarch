@@ -244,7 +244,6 @@ def encode4js(obj):
         elif callable(obj):
             return {'__class__': 'Method', '__name__': repr(obj)}
         elif hasattr(obj, 'dumps'):
-            print("Encode Warning: using dumps for ", obj)
             return {'__class__': 'DumpableObject', 'value': obj.dumps()}
         else:
             print("Encode Warning: generic object dump for ", repr(obj))
@@ -259,7 +258,7 @@ def encode4js(obj):
                     out[attr] = encode4js(thing)
             return out
     except RecursionError:
-        warn(f"recursion error trying to save {item} for Group {obj.__name__}")
+        warn(f"recursion error trying to save object {obj.__class__.__name__}")
     return obj
 
 def decode4js(obj):
@@ -379,10 +378,12 @@ def decode4js(obj):
             elif classname == 'FeffitDataSet':
                 from larch.xafs import FeffitDataSet
                 dset = FeffitDataSet()
-                for attr in ('_bkg', '_chi', '_prepared', 'bkg_spline', 'data',
-                             'epsilon_k', 'epsilon_r', 'has_data', 'hashkey',
-                             'model', 'n_idp', 'pathlist', 'paths', 'transform'):
+                dset.set_datagroup(out['data'], epsilon_k=out['epsilon_k'])
+                for attr in ('_bkg', '_chi', '_prepared', 'bkg_spline',
+                             'has_data', 'hashkey', 'model', 'n_idp',
+                             'pathlist', 'paths', 'transform'):
                     setattr(dset, attr, decode4js(out[attr]))
+                out = dset
             else:
                 out = LarchGroupTypes[classname](**out)
         elif classname == 'Method':
