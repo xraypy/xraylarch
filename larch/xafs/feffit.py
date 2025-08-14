@@ -73,7 +73,7 @@ def propagate_uncertainties(result, datasets, _larch=None):
         # 3. evaluate path_ params, save stderr
         for ds in datasets:
             if ds.hashkey in (None, 'None'):
-                ds.__generate_hashkey()
+                ds._generate_hashkey()
             for label, path in ds.paths.items():
                 if path.dataset is None:
                     path.dataset = ds.hashkey
@@ -368,23 +368,23 @@ class FeffitDataSet(Group):
             if attr not in ('feffit_history',) and not hasattr(self.data, attr):
                 setattr(self.data, attr, getattr(data, attr, None))
         self.hashkey = None
-        self.__generate_hashkey()
+        self._generate_hashkey()
         self.bkg_spline = {}
         self._chi = None
         self._bkg = 0.0
         self._prepared = False
+        self.__generate_hashkey = self._generate_hashkey
 
-
-    def __generate_hashkey(self, other_hashkeys=None):
+    def _generate_hashkey(self, other_hashkeys=None):
         """generate hash for dataset"""
-        if self.hashkey is not None:
+        if self.hashkey not in (None, 'None'):
             return
         hlen = 7
         dat = []
         for aname in ('e0', 'ek0', 'rbkg', 'edge_step'):
             dat.append(getattr(self.data, aname, 0.00))
 
-        for aname in ('energy', 'norm', 'bkg', 'chi'):
+        for aname in ('energy', 'norm', 'chi'):
             arr = getattr(self.data, aname, None)
             if isinstance(arr, np.ndarray):
                 dat.extend([arr.min(), arr.max(), arr.mean(),
@@ -429,6 +429,20 @@ class FeffitDataSet(Group):
                              model=self.model,
                              _larch=self._larch)
 
+    def _set_from_dict(self, data=None, **kws):
+        self.set_datagroup(data)
+        for attr in ('_bkg', '_chi', '_prepared', 'bkg_spline',
+                     'epsilon_k', 'has_data', 'hashkey', 'model',
+                     'n_idp', 'pathlist', 'paths', 'transform'):
+            if attr in kws:
+                setattr(self, attr, attr[attr])
+        if self.hashkey in (None, 'None'):
+            self._generate_hashkey()
+        self.set_epsilon_k(self.epsilon_k)
+        for path in self.paths.values():
+            path.dataset = dset.hashkey
+
+
     def prepare_fit(self, params, other_hashkeys=None):
         """prepare for fit with this dataset"""
         trans = self.transform
@@ -470,7 +484,7 @@ class FeffitDataSet(Group):
                         _dchi = interp(self.model.k, self.data.k, _dchi)
                     self.set_epsilon_k(np.sqrt(_dchi**2 + cur_eps_k**2))
 
-        self.__generate_hashkey(other_hashkeys=other_hashkeys)
+        self._generate_hashkey(other_hashkeys=other_hashkeys)
         # for each path in the list of paths, setup the Path Parameters
         # to use the current Parameters namespace
         if isinstance(params, Group):
@@ -545,7 +559,11 @@ class FeffitDataSet(Group):
         """set epsilon_k and epsilon_r -- ucertainties in chi(k) and chi(R)"""
         eps_k = remove_nans(eps_k, 0.001)
         trans = self.transform
-        all_kweights = isinstance(trans.kweight, Iterable)
+        if (isinstance(trans.kweight, Iterable) and
+            isinstance(eps_k, Iterable)):
+            if len(trans.kweight) == len(eps_k):
+                eps_k = eps_k[0]
+
         if isinstance(trans.kweight, Iterable):
             self.epsilon_k = []
             self.epsilon_r = []
