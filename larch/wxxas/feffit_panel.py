@@ -2096,10 +2096,11 @@ class FeffitResultFrame(wx.Frame):
         if needs_uncertainties:
             propagate_uncertainties(result, result.datasets)
 
-        text = f'# Feffit Report for {self.datagroup.filename} fit "{result.label}"\n'
+        label = getattr(result, 'label', self.wids['fit_label'].GetValue())
+        text = f'# Feffit Report for {self.datagroup.filename} fit "{label}"\n'
         text = text + feffit_report(result)
-        title = f'Report for {self.datagroup.filename} fit "{result.label}"'
-        fname = fix_filename(f'{self.datagroup.filename}_{result.label}.txt')
+        title = f'Report for {self.datagroup.filename} fit "{label}"'
+        fname = fix_filename(f'{self.datagroup.filename}_{label}.txt')
         self.show_report(text, title=title, default_filename=fname)
 
     def onShowParamsCSV(self, event=None):
@@ -2122,11 +2123,12 @@ class FeffitResultFrame(wx.Frame):
         result = self.get_fitresult()
         if result is None:
             return
-        text = [f'# Feffit Script for {self.datagroup.filename} fit "{result.label}"']
+        label = getattr(result, 'label', self.wids['fit_label'].GetValue())
+        text = [f'# Feffit Script for {self.datagroup.filename} fit "{label}"']
         text.extend(result.commands)
         text = '\n'.join(text)
-        title = f'Script for {self.datagroup.filename} fit "{result.label}"'
-        fname = fix_filename(f'{self.datagroup.filename}_{result.label}.lar')
+        title = f'Script for {self.datagroup.filename} fit "{label}"'
+        fname = fix_filename(f'{self.datagroup.filename}_{label}.lar')
         self.show_report(text, title=title, default_filename=fname,
                          wildcard='Larch/Python Script (*.lar)|*.lar')
 
@@ -2142,8 +2144,9 @@ class FeffitResultFrame(wx.Frame):
         result = self.get_fitresult()
         if result is None:
             return
+        label = getattr(result, 'label', self.wids['fit_label'].GetValue())
         if wx.ID_YES != Popup(self,
-                              f"Remove fit '{result.label}' from history?\nThis cannot be undone.",
+                              f"Remove fit '{label}' from history?\nThis cannot be undone.",
                               "Remove fit?", style=wx.YES_NO):
                 return
         self.datagroup.feffit_history.pop(self.nfit)
@@ -2154,7 +2157,7 @@ class FeffitResultFrame(wx.Frame):
         result = self.get_fitresult()
         if result is None:
             return
-        dset   = result.datasets[0]
+        dset  = result.datasets[0]
         dgroup = dset.data
 
         trans  = dset.transform
@@ -2185,10 +2188,12 @@ class FeffitResultFrame(wx.Frame):
 
 
         result_name  = f'{self.datagroup.groupname}.feffit_history[{self.nfit}]'
-        opts['label'] = f'{result_name}.label'
+        label = getattr(result, 'label', self.wids['fit_label'].GetValue())
+
+        opts['label'] = label
         opts['filename'] = self.datagroup.filename
         opts['pargroup_name'] = f'{result_name}.paramgroup'
-        opts['title'] = f'{self.datagroup.filename}: {result.label}'
+        opts['title'] = f'{self.datagroup.filename}: {label}'
 
         for attr in ('kmin', 'kmax', 'dk', 'rmin', 'rmax', 'fitspace'):
             opts[attr] = getattr(trans, attr)
@@ -2206,7 +2211,8 @@ class FeffitResultFrame(wx.Frame):
         result = self.get_fitresult()
         if result is None:
             return
-        fname = fix_filename(f'{self.datagroup.filename}_{result.label:s}.lar')
+        label = getattr(result, 'label', self.wids['fit_label'].GetValue())
+        fname = fix_filename(f'{self.datagroup.filename}_{label:s}.lar')
 
         path = FileSave(self, message='Save text to file',
                         wildcard=wildcard, default_file=fname)
@@ -2222,8 +2228,8 @@ class FeffitResultFrame(wx.Frame):
         result = self.get_fitresult()
         if result is None:
             return
-
-        fname = fix_filename(f'{self.datagroup.filename}_{result.label:s}_{form}')
+        label = getattr(result, 'label', self.wids['fit_label'].GetValue())
+        fname = fix_filename(f'{self.datagroup.filename}_{label:s}_{form}')
         fname = fname.replace('.', '_')
         fname = fname + '.txt'
 
@@ -2236,7 +2242,7 @@ class FeffitResultFrame(wx.Frame):
 
         text = feffit_report(result)
         desc = self.outforms[form]
-        buff = [f'# Results for {self.datagroup.filename} "{result.label}": {desc}']
+        buff = [f'# Results for {self.datagroup.filename} "{label}": {desc}']
 
         for line in text.split('\n'):
             buff.append('# %s' % line)
@@ -2389,16 +2395,17 @@ class FeffitResultFrame(wx.Frame):
         wids = self.wids
         wids['stats'].DeleteAllItems()
         for i, res in enumerate(self.feffit_history):
-            args = ["%d" % (i+1), res.label, "%.d" % (len(res.datasets[0].paths))]
+            label = getattr(res, 'label', f'fit {i+1}')
+            args = [f"{i+1}", label, f'{len(res.datasets[0].paths)}']
             for attr in ('nvarys', 'n_independent', 'chi_square',
                          'chi2_reduced', 'rfactor'):
                 val = getattr(res, attr)
                 if isinstance(val, int):
-                    val = '%d' % val
+                    val = f'{val}'
                 elif attr == 'n_independent':
-                    val = "%.2f" % val
+                    val = f'{val:.2f}'
                 else:
-                    val = "%.4f" % val
+                    val = f'{val:.4f}'
                     # val = gformat(val, 9)
                 args.append(val)
             wids['stats'].AppendItem(tuple(args))
@@ -2419,7 +2426,8 @@ class FeffitResultFrame(wx.Frame):
             path_hashkeys.extend([p.hashkey for p in ds.paths.values()])
 
         wids = self.wids
-        wids['fit_label'].SetValue(result.label)
+        print("Show Fit Result ", type(result), dir(result))
+        wids['fit_label'].SetValue(getattr(result, 'label', f'fit {nfit}'))
         wids['data_title'].SetLabel(self.datagroup.filename)
         wids['params'].DeleteAllItems()
         wids['paramsdata'] = []
