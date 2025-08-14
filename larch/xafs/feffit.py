@@ -435,12 +435,12 @@ class FeffitDataSet(Group):
                      'epsilon_k', 'has_data', 'hashkey', 'model',
                      'n_idp', 'pathlist', 'paths', 'transform'):
             if attr in kws:
-                setattr(self, attr, attr[attr])
+                setattr(self, attr, kws[attr])
         if self.hashkey in (None, 'None'):
             self._generate_hashkey()
         self.set_epsilon_k(self.epsilon_k)
         for path in self.paths.values():
-            path.dataset = dset.hashkey
+            path.dataset = self.hashkey
 
 
     def prepare_fit(self, params, other_hashkeys=None):

@@ -2125,7 +2125,7 @@ class FeffitResultFrame(wx.Frame):
             return
         label = getattr(result, 'label', self.wids['fit_label'].GetValue())
         text = [f'# Feffit Script for {self.datagroup.filename} fit "{label}"']
-        text.extend(result.commands)
+        text.extend(getattr(result, 'commands', ['no commands found'])
         text = '\n'.join(text)
         title = f'Script for {self.datagroup.filename} fit "{label}"'
         fname = fix_filename(f'{self.datagroup.filename}_{label}.lar')
