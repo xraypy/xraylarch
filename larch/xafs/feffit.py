@@ -961,13 +961,8 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
 
     out.append(' ')
     out.append(header % 'Parameters')
-    needs_uncertainties = False
-    for name, par in params.items():
-        if par.stderr is None and (par.vary or
-                                   par.expr not in (None, '', 'None')):
-            needs_uncertainties = True
-    if needs_uncertainties:
-        propagate_uncertainties(result, datasets, _larch=_larch)
+
+    propagate_uncertainties(result, datasets, _larch=_larch)
 
     for name, par in params.items():
         if any([name.endswith('_%s' % phash) for phash in path_hashkeys]):
@@ -1058,11 +1053,14 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
         #
 
         if with_paths:
+            # make sure all Path Parameters are included, and then
+            # propagate uncertainties to those
             for label, path in ds.paths.items():
                 if path.dataset is None:
                     path.dataset = ds.hashkey
                 path.params = result.params
                 path.store_feffdat()
+            propagate_uncertainties(result, datasets, _larch=_larch)
 
             out.append(' ')
             out.append(header % 'Paths')
