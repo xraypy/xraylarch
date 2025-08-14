@@ -17,7 +17,7 @@ import wx
 from pathlib import Path
 from copy import deepcopy
 from wxmplot import PlotFrame, ImageFrame, StackedPlotFrame
-
+from wxmplot.interactive import get_wxapp
 import larch
 from ..utils import mkdir
 from ..xrf import isLarchMCAGroup
@@ -328,7 +328,7 @@ def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
 
     def _get_disp(symname, creator, win, ddict, wxparent,
                   size, position, height, width, _larch):
-        wxapp = wx.GetApp()
+        wxapp = get_wxapp()
         display = None
         new_display = False
         if win in ddict:
