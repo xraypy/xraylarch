@@ -378,11 +378,7 @@ def decode4js(obj):
             elif classname == 'FeffitDataSet':
                 from larch.xafs import FeffitDataSet
                 dset = FeffitDataSet()
-                dset.set_datagroup(out['data'], epsilon_k=out['epsilon_k'])
-                for attr in ('_bkg', '_chi', '_prepared', 'bkg_spline',
-                             'has_data', 'hashkey', 'model', 'n_idp',
-                             'pathlist', 'paths', 'transform'):
-                    setattr(dset, attr, decode4js(out[attr]))
+                dset._set_from_dict(**out)
                 out = dset
             else:
                 out = LarchGroupTypes[classname](**out)
