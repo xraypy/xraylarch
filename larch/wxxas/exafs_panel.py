@@ -687,43 +687,43 @@ class EXAFSPanel(TaskPanel):
             dgroup = self.controller.get_group()
         if dgroup is None:
             return
-
         conf = getattr(dgroup.config, self.configname, None)
         if conf is None:
             conf = self.get_config(dgroup=dgroup)
         if 'ek0' not in conf:
             conf['ek0']  = conf.get('e0', getattr(dgroup, 'e0', -1))
 
-        gname = conf.get('group', None)
-        if gname is None:
-            gname = conf['group'] = dgroup.groupname
+        # copy config to command args (so that group can be added)
+        opts = {k:v for k, v in conf.items()}
+        opts['group'] = gname = dgroup.groupname
 
         bkgpars = []
         for attr in ('ek0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
                      'bkg_kweight', 'bkg_clamplo', 'bkg_clamphi'):
-            val = conf.get(attr, 0.0)
+            val = opts.get(attr, 0.0)
             if val is None:
                 val = -1.0
-            bkgpars.append("%.4f" % val)
+            bkgpars.append(f"{val}:.4f")
         bkgpars = ':'.join(bkgpars)
         lastpars = self.last_process_bkg.get(gname, '')
         if (force or (bkgpars != lastpars) or
               (getattr(dgroup, 'chi', None) is None)):
-            self.larch_eval(autobk_cmd.format(**conf))
+            self.larch_eval(autobk_cmd.format(**opts))
             self.last_process_bkg[gname] = bkgpars
             self.last_process_fft[gname] = None
 
-        fftpars = [conf['fft_kwindow'], conf['fft_rwindow']]
+        fftpars = [opts['fft_kwindow'], opts['fft_rwindow']]
         for attr in ('fft_kmin', 'fft_kmax', 'fft_kweight', 'fft_dk',
                      'fft_rmin', 'fft_rmax', 'fft_dr', 'fft_rmaxout'):
-            fftpars.append("%.4f" % conf.get(attr, 0.0))
+            val = opts.get(attr, 0.0)
+            fftpars.append(f"{val:.4f}")
         fftpars = ':'.join(fftpars)
         lastpars = self.last_process_fft.get(gname, '')
         # print(f"process  {dgroup=}, fft: {fftpars != lastpars}, {fftpars=}")
         if (force or (fftpars != lastpars) or
              (getattr(dgroup, 'chir_mag', None) is None)):
-            self.larch_eval(xftf_cmd.format(**conf))
-            self.larch_eval(xftr_cmd.format(**conf))
+            self.larch_eval(xftf_cmd.format(**opts))
+            self.larch_eval(xftr_cmd.format(**opts))
             self.last_process_fft[gname] = fftpars
 
     def onPlotOptSave(self, value, event=None):
