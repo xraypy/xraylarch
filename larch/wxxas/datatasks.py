@@ -1059,6 +1059,7 @@ class DeglitchFrame(wx.Frame):
         self.parent = parent
         self.controller = controller
         self.label = label
+        self.last_plottype = None
         self.controller.register_group_callback(label, self, self.on_groupname)
         self.wids = {}
         self.plot_markers = None
@@ -1256,22 +1257,32 @@ class DeglitchFrame(wx.Frame):
         energies_removed  = xplot[np.where(~mask)].tolist()
         dgroup.energy = dgroup.xplot = xplot[mask]
         dgroup.mu     = dgroup.yplot = yplot[mask]
+
         self.reset_data_history()
         dgroup.journal.add('deglitch_removed_energies', energies_removed)
         self.parent.process_normalization(dgroup)
         self.plot_results()
 
     def on_saveas(self, event=None):
-        fname = self.controller.get_group().filename
-        new_fname = self.wids['save_as_name'].GetValue()
-        ngroup = self.controller.copy_group(fname, new_filename=new_fname)
+        fname = self.dgroup.filename
         xplot, yplot = self.get_xydata(datatype='mu')
+
+        new_fname = self.wids['save_as_name'].GetValue()
+        ngroup = self.controller.copy_group(fname, new_filename=new_fname,
+                                  new_groupname=self.dgroup.groupname+'_clean')
         mask = self.xmasks[-1]
         energies_removed  = xplot[np.where(~mask)].tolist()
 
         ngroup.energy = ngroup.xplot = xplot[mask]
         ngroup.mu     = ngroup.yplot = yplot[mask]
         ngroup.energy_orig = 1.0*ngroup.energy
+        has_chik = hasattr(ngroup, 'chi')
+        has_mback = hasattr(ngroup, 'norm_mback')
+        for attr in ('pre_edge', 'norm', 'norm_poly', 'norm_mback',
+                     'edge_step','edge_step_mback', 'k', 'bkg',
+                     'chi', 'chir_mag'):
+            if hasattr(ngroup, attr):
+                delattr(ngroup, attr)
 
         ogroup = self.controller.get_group(fname)
         olddesc = ogroup.journal.get('source_desc').value
@@ -1280,7 +1291,9 @@ class DeglitchFrame(wx.Frame):
         ngroup.journal.add('source_desc', f"deglitched({olddesc})")
         ngroup.journal.add('deglitch_removed_energies', energies_removed)
 
-        self.parent.process_normalization(ngroup)
+        self.parent.process_normalization(ngroup, force=True, force_mback=has_mback)
+        if has_chik:
+            self.parent.process_exafs(ngroup, force=True)
 
     def plot_results(self, event=None, use_zoom=True):
         ppanel = self.controller.get_display(stacked=False).panel
@@ -1292,7 +1305,8 @@ class DeglitchFrame(wx.Frame):
 
         plotstr = self.wids['plotopts'].GetStringSelection()
         plottype = DEGLITCH_PLOTS[plotstr]
-
+        same_plottype = (plottype == self.last_plottype)
+        self.last_plottype = plottype
         xlabel=plotlabels.energy
         if plottype in ('chie', 'chiew'):
             # xmin = self.dgroup.e0
@@ -1310,7 +1324,8 @@ class DeglitchFrame(wx.Frame):
         dgroup.plot_xlabel = xlabel
         dgroup.plot_ylabel = ylabel
 
-        xlim, ylim = get_view_limits(ppanel)
+        if same_plottype:
+            xlim, ylim = get_view_limits(ppanel)
 
         ppanel.plot(xplot, yplot, zorder=10, marker=None, linewidth=3,
                     label='original', ylabel=ylabel, **opts)
@@ -1324,9 +1339,9 @@ class DeglitchFrame(wx.Frame):
         def ek_formatter(x, pos):
             ex = float(x) - self.dgroup.e0
             s = '' if ex < 0 else '\n[%.1f]' % (etok(ex))
-            return r"%1.4g%s" % (x, s)
+            return r"%.0f%s" % (x, s)
 
-        if use_zoom:
+        if use_zoom and same_plottype:
             set_view_limits(ppanel, xlim, ylim)
         if plottype in ('chie', 'chiew'):
             ppanel.axes.xaxis.set_major_formatter(FuncFormatter(ek_formatter))
