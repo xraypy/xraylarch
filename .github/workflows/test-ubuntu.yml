@@ -39,4 +39,7 @@ jobs:
         run: |
           pip install ".[all]"
       - name: Run test suite
-        run: pytest --xvfb-backend xvfb tests/
+        run: |
+          # pytest --xvfb-backend xvfb tests/
+          cd tests
+          sh run_tests.sh
