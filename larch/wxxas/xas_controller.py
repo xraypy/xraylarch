@@ -456,7 +456,7 @@ class XASController():
     def set_plot_erange(self, erange):
         self.plot_erange = erange
 
-    def copy_group(self, filename, new_filename=None):
+    def copy_group(self, filename, new_groupname=None, new_filename=None):
         """copy XAS group (by filename) to new group"""
         groupname = self.file_groups[filename]
         if not hasattr(self.larch.symtable, groupname):
@@ -467,13 +467,17 @@ class XASController():
 
         for attr in dir(ogroup):
             val = getattr(ogroup, attr, None)
-            if val is not None:
+            if isinstance(val, np.ndarray):
+                setattr(ngroup, attr, 1.0*val[:])
+            elif val is not None:
                 setattr(ngroup, attr, deepcopy(val))
 
         if new_filename is None:
             new_filename = filename + '_1'
+        if new_groupname is None:
+            new_groupname = ogroup.groupname + '_1'
         ngroup.filename = unique_name(new_filename, self.file_groups.keys())
-        ngroup.groupname = unique_name(groupname, self.file_groups.values())
+        ngroup.groupname = unique_name(new_groupname, self.file_groups.values())
         ngroup.journal.add('source_desc', f"copied from '{filename:s}'")
         setattr(self.larch.symtable, ngroup.groupname, ngroup)
         return ngroup
