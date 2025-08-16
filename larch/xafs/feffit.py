@@ -80,8 +80,12 @@ def propagate_uncertainties(result, datasets, _larch=None):
                 path.params = result.params
                 path.store_feffdat()
                 for pname in PATH_PARS:
-                    obj = path.params[path.pathpar_name(pname)]
-                    eval_stderr(obj, uvars,  result.var_names, result.params)
+                    try:
+                        obj = path.params[path.pathpar_name(pname)]
+                        eval_stderr(obj, uvars,  result.var_names, result.params)
+                    except KeyError:
+                        pass
+
         # restore saved parameters again
         for vname in result.var_names:
             # setattr(params, vname, vsave[vname])
