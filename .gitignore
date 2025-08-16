@@ -37,3 +37,4 @@ Thumbs.db
 .empty/
 .eggs/
 .coverage
+*code-workspace
