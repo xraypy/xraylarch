@@ -213,8 +213,6 @@ def read_session(fname, clean_xasgroups=True):
 
     See Also:
        load_session
-
-
     """
     text = read_textfile(fname)
     lines = text.split('\n')
@@ -296,7 +294,9 @@ def load_session(fname, ignore_groups=None, include_xasgroups=None, _larch=None,
 
     """
     if _larch is None:
-        raise ValueError('load session needs a larch session')
+        symtab = Group(_sys=Group())
+    else:
+        symtab = _larch.symtable
 
     session = read_session(fname)
 
@@ -309,13 +309,11 @@ def load_session(fname, ignore_groups=None, include_xasgroups=None, _larch=None,
     #  _feffpaths, _feffcache, _xasgroups
     s_symbols = session.symbols
     s_xasgroups = s_symbols.pop('_xasgroups', {})
-
     s_xasg_inv = invert_dict(s_xasgroups)
 
     s_feffpaths = s_symbols.pop('_feffpaths', {})
     s_feffcache = s_symbols.pop('_feffcache', EMPTY_FEFFCACHE)
 
-    symtab = _larch.symtable
     if not hasattr(symtab, '_xasgroups'):
         symtab._xasgroups = {}
     if not hasattr(symtab, '_feffpaths'):
@@ -346,7 +344,11 @@ def load_session(fname, ignore_groups=None, include_xasgroups=None, _larch=None,
                      (hasattr(val, 'energy') and hasattr(val, 'mu'))):
                 c_xas_gnames.append(newsym)
                 s_key = s_xasg_inv.get(sym, getattr(val, 'filename', newsym))
+                if s_key in s_xasgroups:
+                    s_key = unique_name(s_key, s_xasgroups)
                 s_xasgroups[s_key] = newsym
+                val.groupname = newsym
+                val.filename = s_key
                 s_xasg_inv = invert_dict(s_xasgroups)
             sym = newsym
 
@@ -366,3 +368,7 @@ def load_session(fname, ignore_groups=None, include_xasgroups=None, _larch=None,
 
     for name in ('paths', 'runs'):
         symtab._feffcache[name].update(s_feffcache[name])
+    out = None
+    if _larch is None:
+        out = symtab
+    return symtab
