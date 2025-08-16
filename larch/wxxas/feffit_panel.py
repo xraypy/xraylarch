@@ -767,6 +767,9 @@ class FeffitPanel(TaskPanel):
     def onPanelExposed(self, **kws):
         # called when notebook is selected
         dgroup = self.controller.get_group()
+        if dgroup is None:
+            return
+
         try:
             pargroup = self.get_paramgroup()
             self.params_panel.update()
@@ -777,26 +780,7 @@ class FeffitPanel(TaskPanel):
                 self.parent.process_exafs(dgroup)
             self.fill_form(dgroup)
         except:
-            pass # print(" Cannot Fill feffit panel from group ")
-        if dgroup is not self.dgroup:
-            # setting up feffit for this group
-            self.dgroup = dgroup
-            try:
-                has_fit_hist = len(self.dgroup.feffit_history) > 0
-            except:
-                has_fit_hist = getattr(self.larch.symtable, '_feffit_dataset', None) is not None
-
-            if has_fit_hist:
-                self.wids['show_results'].Enable()
-
-
-            feffpaths = getattr(self.larch.symtable, '_feffpaths', None)
-            if feffpaths is not None:
-                self.reset_paths()
-
-            self.params_panel.update()
-            self.skip_unused_params()
-            self.params_need_update = False
+            print(" Cannot Fill feffit panel from group ")
 
     def build_display(self):
         self.paths_nb = flatnotebook(self, {}, on_change=self.onPathsNBChanged,
@@ -1026,7 +1010,6 @@ class FeffitPanel(TaskPanel):
         self.wids['fit_kwstring'].SetStringSelection(kweight)
 
 
-
     def process(self, dgroup=None, **kws):
         # print("Feffit Panel Process ", dgroup, time.ctime())
         if dgroup is None:
@@ -1085,9 +1068,11 @@ class FeffitPanel(TaskPanel):
             self.larch.eval('\n'.join(cmds))
         return opts
 
-    def fill_form(self, dat):
-        dgroup = self.controller.get_group()
-        conf = self.get_config(dat)
+    def fill_form(self, dgroup=None):
+        print(" Feffit Fill Form_1  ", dgroup)
+        if dgroup is None:
+            dgroup = self.controller.get_group()
+        conf = self.get_config(dgroup)
 
         for attr in ('fit_kmin', 'fit_kmax', 'fit_rmin', 'fit_rmax', 'fit_dk'):
             self.wids[attr].SetValue(conf[attr])
@@ -1103,6 +1088,24 @@ class FeffitPanel(TaskPanel):
         for key, val in Feffit_KWChoices.items():
             if conf['fit_kwstring'] == val:
                 self.wids['fit_kwstring'].SetStringSelection(key)
+
+        try:
+            has_fit_hist = len(dgroup.feffit_history) > 0
+        except:
+            has_fit_hist = getattr(self.larch.symtable, '_feffit_dataset', None) is not None
+        self.wids['show_results'].Enable(has_fit_hist)
+        print(" Feffit Fill Form ", dgroup, has_fit_hist)
+        feffpaths = getattr(self.larch.symtable, '_feffpaths', None)
+        if feffpaths is not None:
+            print(" reset paths")
+            self.reset_paths()
+
+        print(" params update")
+        self.params_panel.update()
+        self.skip_unused_params()
+        self.params_need_update = False
+        print(" done")
+
 
     def read_form(self, dgroup=None):
         "read form, returning dict of values"
@@ -1807,11 +1810,10 @@ class FeffitResultFrame(wx.Frame):
             xasgroups = getattr(symtab, '_xasgroups', None)
             if xasgroups is not None:
                 for dname, dgroup in xasgroups.items():
-                    dgroup = getattr(symtab, dgroup, None)
-                    hist = getattr(dgroup, 'feffit_history', None)
-                    if hist is not None:
-                        self.add_results(dgroup, show=True)
-
+                    mgroup = getattr(symtab, dgroup, None)
+                    hist = getattr(mgroup, 'feffit_history', [])
+                    if hist is not None and len(hist) > 0:
+                        self.add_results(mgroup, show=True)
 
     def createMenus(self):
         self.menubar = wx.MenuBar()
@@ -2094,7 +2096,10 @@ class FeffitResultFrame(wx.Frame):
                                        par.expr not in (None, '', 'None')):
                 needs_uncertainties = True
         if needs_uncertainties:
-            propagate_uncertainties(result, result.datasets)
+            try:
+                propagate_uncertainties(result, result.datasets)
+            except Exception:
+                pass
 
         label = getattr(result, 'label', self.wids['fit_label'].GetValue())
         text = f'# Feffit Report for {self.datagroup.filename} fit "{label}"\n'
@@ -2385,10 +2390,8 @@ class FeffitResultFrame(wx.Frame):
             self.datagroup = datagroup
         if larch_eval is not None:
             self.larch_eval = larch_eval
-
         datagroup = self.datagroup
         self.feffit_history = getattr(self.datagroup, 'feffit_history', [])
-
         cur = self.get_fitresult()
         if cur is None:
             return
@@ -2426,8 +2429,7 @@ class FeffitResultFrame(wx.Frame):
             path_hashkeys.extend([p.hashkey for p in ds.paths.values()])
 
         wids = self.wids
-        print("Show Fit Result ", type(result), dir(result))
-        wids['fit_label'].SetValue(getattr(result, 'label', f'fit {nfit}'))
+        wids['fit_label'].SetValue(getattr(result, 'label', f'fit {nfit+1}'))
         wids['data_title'].SetLabel(self.datagroup.filename)
         wids['params'].DeleteAllItems()
         wids['paramsdata'] = []
