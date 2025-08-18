@@ -1069,7 +1069,6 @@ class FeffitPanel(TaskPanel):
         return opts
 
     def fill_form(self, dgroup=None):
-        print(" Feffit Fill Form_1  ", dgroup)
         if dgroup is None:
             dgroup = self.controller.get_group()
         conf = self.get_config(dgroup)
@@ -1094,18 +1093,13 @@ class FeffitPanel(TaskPanel):
         except:
             has_fit_hist = getattr(self.larch.symtable, '_feffit_dataset', None) is not None
         self.wids['show_results'].Enable(has_fit_hist)
-        print(" Feffit Fill Form ", dgroup, has_fit_hist)
         feffpaths = getattr(self.larch.symtable, '_feffpaths', None)
         if feffpaths is not None:
-            print(" reset paths")
             self.reset_paths()
 
-        print(" params update")
         self.params_panel.update()
         self.skip_unused_params()
         self.params_need_update = False
-        print(" done")
-
 
     def read_form(self, dgroup=None):
         "read form, returning dict of values"
