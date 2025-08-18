@@ -34,20 +34,19 @@ class FileCheckList(wx.CheckListBox):
         self.rclick_actions = {}
         alt = "cmd" if uname == "darwin" else "alt"
 
-        core_actions = [("Select All",         self.select_all, "ctrl+A"),
-                        ("Select All above",   self.select_allabove, "ctrl+shift+up"),
-                        ("Select All below",   self.select_allbelow, "ctrl+shift+down"),
-                        ("Select None",        self.select_none, "ctrl+D"),
-                        ("Select None above",  self.select_noneabove,  "ctrl+shift+left"),
-                        ("Select None below",  self.select_nonebelow, "ctrl+shift+right"),
+        core_actions = [("Select All\tCtrl+A",         self.select_all, "ctrl+A"),
+                        ("Select All above\tCtrl+Shift+Up",   self.select_allabove, "ctrl+shift+up"),
+                        ("Select All below\tCtrl+Shift+Down",   self.select_allbelow, "ctrl+shift+down"),
+                        ("Select None\tCtrl+D",        self.select_none, "ctrl+D"),
+                        ("Select None above\tCtrl+Shift+Left",  self.select_noneabove,  "ctrl+shift+left"),
+                        ("Select None below\tCtrl+Shift+Right",  self.select_nonebelow, "ctrl+shift+right"),
                         ("--sep--", None, None),
-                        ("Move up",           self.move_up, f"{alt}+up"),
-                        ("Move down",         self.move_down, f"{alt}+down"),
-                        ("Move to Top",       self.move_to_top, f"{alt}+left"),
-                        ("Move to Bottom",    self.move_to_bottom, f"{alt}+right")]
+                        (f"Move up\t{alt.title()}+Up",           self.move_up, f"{alt}+up"),
+                        (f"Move down\t{alt.title()}+Down",         self.move_down, f"{alt}+down"),
+                        (f"Move to Top\t{alt.title()}+Left",       self.move_to_top, f"{alt}+left"),
+                        (f"Move to Bottom\t{alt.title()}+Right",    self.move_to_bottom, f"{alt}+right")]
         if with_remove_from_list:
-            core_actions.append(("--sep--", None, None))
-            core_actions.append(("Remove from List", self.remove_from_list, "alt+del"))
+            core_actions.append((f"Remove from List\t{alt.title()}+Delete", self.remove_from_list, f"{alt}+delete"))
 
         click_actions =  []
         if pre_actions is not None:
@@ -56,15 +55,18 @@ class FileCheckList(wx.CheckListBox):
         click_actions.extend(core_actions)
         if post_actions is not None:
             click_actions.append(("--sep--", None, None))
-
             click_actions.extend(post_actions)
-        click_actions.append(("--sep--", None, None))
+            
         self.key_bindings = {}
+        isep = 0
         if right_click:
             self.Bind(wx.EVT_RIGHT_DOWN, self.onRightClick)
             for dat in click_actions:
                 keybind = None
                 title = dat[0]
+                if title.startswith("--sep"):
+                    isep += 1
+                    title = f"{title}_{isep}"
                 action = dat[1]
                 if len(dat) == 3:
                     keybind = dat[2]
@@ -76,11 +78,17 @@ class FileCheckList(wx.CheckListBox):
                 self.Bind(wx.EVT_MENU, self.onRightEvent)
 
     def key_event(self, evt=None):
-        # print("Key Event code / modifiers ", evt.GetKeyCode(), evt.GetModifiers())
         thiskey = evt.GetKeyCode()
-        arrows = {wx.WXK_LEFT: 'left', wx.WXK_RIGHT: 'right',
-                  wx.WXK_UP: 'up',  wx.WXK_DOWN: 'down'}
-        key = arrows.get(thiskey, chr(thiskey))
+
+        keymap = {wx.WXK_LEFT: 'left', wx.WXK_RIGHT: 'right',
+                  wx.WXK_UP: 'up',  wx.WXK_DOWN: 'down',
+                  wx.WXK_DELETE: 'delete', wx.WXK_F1: 'f1',
+                  wx.WXK_F2: 'f2', wx.WXK_F3: 'f3', wx.WXK_F4: 'f4',
+                  wx.WXK_ADD: 'add', wx.WXK_SUBTRACT: 'sub', 
+                  wx.WXK_MULTIPLY: 'mul', wx.WXK_DIVIDE: 'div'}
+
+        key = keymap.get(thiskey, chr(thiskey))
+        
         if evt.HasAnyModifiers():
             mod = evt.GetModifiers()
             if evt.AltDown():
@@ -91,7 +99,6 @@ class FileCheckList(wx.CheckListBox):
                 mod -= 4
             if evt.MetaDown():
                 key = f'meta+{key}'
-
             if mod == 2:
                 mname = 'cmd' if uname == 'darwin' else 'ctrl'
                 key = f'{mname}+{key}'
@@ -111,7 +118,7 @@ class FileCheckList(wx.CheckListBox):
         menu = wx.Menu()
         self.rclick_wids = {}
         for label, action in self.rclick_actions.items():
-            if label == '--sep--':
+            if label.startswith('--sep--'):
                 menu.AppendSeparator()
             else:
                 wid = menu.Append(-1, label)
