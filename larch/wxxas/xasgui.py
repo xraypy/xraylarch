@@ -493,10 +493,17 @@ class LarixFrame(wx.Frame):
         sel_none = Btn('Select None',   120, self.onSelNone)
         sel_all  = Btn('Select All',    120, self.onSelAll)
 
-        file_actions = [('Show Group Journal', self.onGroupJournal, "ctrl+J"),
-                        ('Copy Group', self.onCopyGroup, "ctrl+C"),
-                        ('Rename Group', self.onRenameGroup, None),
-                        ('Remove Group', self.onRemoveGroup, None)]
+        file_actions = [("Show Group Journal\tCtrl+J", self.onGroupJournal, "ctrl+J"),
+                        ("--sep--", None, None),
+                        ("Copy Group\tCtrl+C", self.onCopyGroup, "ctrl+C"),
+                        ("Rename Group\tCtrl+N", self.onRenameGroup, "ctrl+N"),
+                        ("Remove Group\tCtrl+X", self.onRemoveGroup, "ctrl+X"),
+                        ("Remove Selected Group\tCtrl+Delete", self.onRemoveGroups, "ctrl+delete"),
+                        ("Merge Selected Group\tCtrl+Shift+M", self.onMergeData, "ctrl+shift+M"),                                                
+                        ("--sep--", None, None),
+                        ("Freeze Selected Groups\tCtrl+F", self.onFreezeGroups, "ctrl+F"),
+                        ("UnFreeze Selected Groups\tCtrl+Shift+F", self.onUnFreezeGroups, "ctrl+shift+F"),
+                        ]
 
         self.controller.filelist = FileCheckList(leftpanel, main=self,
                                                  pre_actions=file_actions,
@@ -775,13 +782,13 @@ class LarixFrame(wx.Frame):
         MenuItem(self, pref_menu, 'Edit Preferences\tCtrl+E', 'Customize Preferences',
                  self.onPreferences)
 
-        MenuItem(self, group_menu, "Copy This Group",
+        MenuItem(self, group_menu, "Copy This Group\tCtrl+C",
                  "Copy This Group", self.onCopyGroup)
 
-        MenuItem(self, group_menu, "Rename This Group",
+        MenuItem(self, group_menu, "Rename This Group\tCtrl+N",
                  "Rename This Group", self.onRenameGroup)
 
-        MenuItem(self, group_menu, "Show Journal for This Group",
+        MenuItem(self, group_menu, "Show Journal for This Group\tCtrl+J",
                  "Show Processing Journal for This Group", self.onGroupJournal)
 
         group_menu.AppendSeparator()
@@ -791,15 +798,15 @@ class LarixFrame(wx.Frame):
 
         group_menu.AppendSeparator()
 
-        MenuItem(self, group_menu, "Merge Selected Groups",
+        MenuItem(self, group_menu, "Merge Selected Groups\tCtrl+Shift+M",
                  "Merge Selected Groups", self.onMergeData)
 
         group_menu.AppendSeparator()
 
-        MenuItem(self, group_menu, "Freeze Selected Groups",
+        MenuItem(self, group_menu, "Freeze Selected Groups\tCtrl+F",
                  "Freeze Selected Groups", self.onFreezeGroups)
 
-        MenuItem(self, group_menu, "UnFreeze Selected Groups",
+        MenuItem(self, group_menu, "UnFreeze Selected Groups\tCtrl+Shift+F",
                  "UnFreeze Selected Groups", self.onUnFreezeGroups)
 
         MenuItem(self, xasdata_menu, "Deglitch Data",  "Deglitch Data",
