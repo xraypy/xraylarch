@@ -4,6 +4,7 @@ import shutil
 from glob import glob
 from pathlib import Path
 from copy import deepcopy
+from threading import Thread
 
 import numpy as np
 import wx
@@ -34,6 +35,7 @@ class XASController():
         self.groupname = None
         self.plot_erange = None
         self.report_frame = None
+        self.saver_thread = None
         self.recentfiles = []
         self.panels = {}
         self.datagroup_callbacks = {}
@@ -285,6 +287,14 @@ class XASController():
         conf = self.get_config('autosave', {})
         fileroot = conf.get('fileroot', 'autosave')
         nhistory = max(8, int(conf.get('nhistory', 4)))
+        if self.saver_thread is not None:
+            i = 0
+            while self.saver_thread.is_alive():
+                i += 1
+                time.sleep(0.25)
+                self.saver_thread.join()
+                if i > 240:
+                    break
 
         fname =  f"{fileroot:s}_{get_sessionid():s}.larix"
         savefile = Path(self.larix_folder, fname).as_posix()
@@ -297,7 +307,10 @@ class XASController():
             curf = savefile.replace('.larix', '_1.larix' )
             shutil.move(savefile, curf)
         self.sync_xasgroups()
-        save_session(savefile, _larch=self.larch)
+        self.saver_thread = Thread(target=save_session, args=(savefile,), kwargs={'_larch': self.larch})
+        self.saver_thread.start()
+        time.sleep(0.25)
+
         return savefile
 
     def clean_autosave_sessions(self):
