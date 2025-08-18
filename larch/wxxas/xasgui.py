@@ -493,18 +493,16 @@ class LarixFrame(wx.Frame):
         sel_none = Btn('Select None',   120, self.onSelNone)
         sel_all  = Btn('Select All',    120, self.onSelAll)
 
-        file_actions = [('Show Group Journal', self.onGroupJournal),
-                        ('Copy Group', self.onCopyGroup),
-                        ('Rename Group', self.onRenameGroup),
-                        ('Remove Group', self.onRemoveGroup)]
+        file_actions = [('Show Group Journal', self.onGroupJournal, "ctrl+J"),
+                        ('Copy Group', self.onCopyGroup, "ctrl+C"),
+                        ('Rename Group', self.onRenameGroup, None),
+                        ('Remove Group', self.onRemoveGroup, None)]
 
         self.controller.filelist = FileCheckList(leftpanel, main=self,
                                                  pre_actions=file_actions,
                                                  select_action=self.ShowFile,
                                                  remove_action=self.RemoveFile)
         set_color(self.controller.filelist, 'list_fg', bg='list_bg')
-        # self.controller.filelist.check_event  = self.filelist_check_event
-        self.controller.filelist.Bind(wx.EVT_CHECKLISTBOX, self.filelist_check_event)
 
         tsizer = wx.BoxSizer(wx.HORIZONTAL)
         tsizer.Add(sel_all, 1, LEFT|wx.GROW, 1)
@@ -638,15 +636,6 @@ class LarixFrame(wx.Frame):
             if s in self.controller.file_groups:
                 group = self.controller.file_groups.pop(s)
             self.controller.sync_xasgroups()
-
-    def filelist_check_event(self, evt=None):
-        """MN 2024-Feb this is included to better 'swallow' the checked event,
-        so that it does in fact run ShowFile().
-        This could be removed eventually, as wxutils will also no longer run
-        filelist.SetSelection()"""
-        index = evt.GetSelection()
-        label = evt.GetString()
-        pass
 
     def ShowFile(self, evt=None, groupname=None,
                  filename=None, process=True, plot='auto', **kws):
