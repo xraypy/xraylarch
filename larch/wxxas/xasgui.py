@@ -501,7 +501,9 @@ class LarixFrame(wx.Frame):
         self.controller.filelist = FileCheckList(leftpanel, main=self,
                                                  pre_actions=file_actions,
                                                  select_action=self.ShowFile,
-                                                 remove_action=self.RemoveFile)
+                                                 remove_action=self.RemoveFile,
+                                                 with_remove_from_list=False)
+        
         set_color(self.controller.filelist, 'list_fg', bg='list_bg')
 
         tsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -699,7 +701,8 @@ class LarixFrame(wx.Frame):
 
         self.controller.filelist.SetStringSelection(filename)
         self.controller.run_group_callbacks()
-
+        wx.CallAfter(self.controller.filelist.SetFocus)
+        
     def createMenus(self):
         # ppnl = self.plotpanel
         self.menubar = wx.MenuBar()
@@ -733,7 +736,7 @@ class LarixFrame(wx.Frame):
         MenuItem(self, file_menu, "&Save Larch Session\tCtrl+S",
                  "Save Session to a File",  self.onSaveSession)
 
-        MenuItem(self, file_menu, "&Save Larch Session As ...\tCtrl+A",
+        MenuItem(self, file_menu, "&Save Larch Session As ...",
                  "Save Session to a File",  self.onSaveSessionAs)
 
         MenuItem(self, file_menu, "Save Selected Groups to Athena Project File",
