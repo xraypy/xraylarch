@@ -72,6 +72,12 @@ class OverAbsorptionFrame(wx.Frame):
 
         self.label = label
         self.controller.register_group_callback(label, self, self.on_groupname)
+        self.plotpanel = self.controller.get_display(stacked=False).panel
+        try:
+            self.plot_conf = self.plotpanel.get_config()
+        except Exception:
+            self.plot_conf = {}
+        self.no_plot = False
 
         self.data = [self.dgroup.energy[:], self.dgroup.norm[:]]
 
@@ -144,6 +150,11 @@ class OverAbsorptionFrame(wx.Frame):
 
     def onDone(self, event=None):
         self.controller.unregister_group_callback(self.label)
+        self.no_plot = True
+        try:
+            self.plotpanel.set_config(**self.plot_conf)
+        except Exception:
+            pass
         self.Destroy()
 
     def set_default_elem_edge(self, dgroup):
@@ -202,6 +213,8 @@ class OverAbsorptionFrame(wx.Frame):
         ngroup.journal.add('fluor_correction_command', self.cmd)
 
     def plot_results(self, event=None, use_zoom=True):
+        if self.no_plot:
+            return
         ppanel = self.controller.get_display(stacked=False).panel
 
         dgroup = self.dgroup
@@ -1061,6 +1074,12 @@ class DeglitchFrame(wx.Frame):
         self.label = label
         self.last_plottype = None
         self.controller.register_group_callback(label, self, self.on_groupname)
+        self.plotpanel = self.controller.get_display(stacked=False).panel
+        try:
+            self.plot_conf = self.plotpanel.get_config()
+        except Exception:
+            self.plot_conf = {}
+        self.no_plot = False
         self.wids = {}
         self.plot_markers = None
         self.dgroup = self.controller.get_group()
@@ -1171,6 +1190,11 @@ class DeglitchFrame(wx.Frame):
 
     def onDone(self, event=None):
         self.controller.unregister_group_callback(self.label)
+        self.no_plot = True
+        try:
+            self.plotpanel.set_config(**self.plot_conf)
+        except Exception:
+            pass
         self.Destroy()
 
     def reset_data_history(self):
@@ -1205,7 +1229,6 @@ class DeglitchFrame(wx.Frame):
     def on_rangechoice(self, event=None):
         sel = self.choice_range.GetStringSelection()
         self.wids['range2'].Enable(sel == 'between')
-
 
     def on_plotchoice(self, event=None):
         plotstr = self.wids['plotopts'].GetStringSelection()
@@ -1296,7 +1319,9 @@ class DeglitchFrame(wx.Frame):
             self.parent.process_exafs(ngroup, force=True)
 
     def plot_results(self, event=None, use_zoom=True):
-        ppanel = self.controller.get_display(stacked=False).panel
+        if self.no_plot:
+            return
+        ppanel = self.plotpanel
 
         xplot, yplot = self.data
         dgroup = self.dgroup
