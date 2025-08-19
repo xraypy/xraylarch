@@ -32,7 +32,9 @@ class FileCheckList(wx.CheckListBox):
 
         self.remove_action = remove_action
         self.rclick_actions = {}
-        alt = "cmd" if uname == "darwin" else "alt"
+        alt = "ctrl+alt" if uname == "darwin" else "alt"
+        aname = "Ctrl+Alt" if uname == "darwin" else "Alt"
+
 
         core_actions = [("Select All\tCtrl+A",         self.select_all, "ctrl+A"),
                         ("Select All above\tCtrl+Shift+Up",   self.select_allabove, "ctrl+shift+up"),
@@ -41,12 +43,12 @@ class FileCheckList(wx.CheckListBox):
                         ("Select None above\tCtrl+Shift+Left",  self.select_noneabove,  "ctrl+shift+left"),
                         ("Select None below\tCtrl+Shift+Right",  self.select_nonebelow, "ctrl+shift+right"),
                         ("--sep--", None, None),
-                        (f"Move up\t{alt.title()}+Up",           self.move_up, f"{alt}+up"),
-                        (f"Move down\t{alt.title()}+Down",         self.move_down, f"{alt}+down"),
-                        (f"Move to Top\t{alt.title()}+Left",       self.move_to_top, f"{alt}+left"),
-                        (f"Move to Bottom\t{alt.title()}+Right",    self.move_to_bottom, f"{alt}+right")]
+                        (f"Move up\t{aname}+Up",           self.move_up, f"{alt}+up"),
+                        (f"Move down\t{aname}+Down",         self.move_down, f"{alt}+down"),
+                        (f"Move to Top\t{aname}+Left",       self.move_to_top, f"{alt}+left"),
+                        (f"Move to Bottom\t{aname}+Right",    self.move_to_bottom, f"{alt}+right")]
         if with_remove_from_list:
-            core_actions.append((f"Remove from List\t{alt.title()}+Delete", self.remove_from_list, f"{alt}+delete"))
+            core_actions.append((f"Remove from List.. Alt+Delete", self.remove_from_list, f"{alt}+delete"))
 
         click_actions =  []
         if pre_actions is not None:
@@ -56,7 +58,7 @@ class FileCheckList(wx.CheckListBox):
         if post_actions is not None:
             click_actions.append(("--sep--", None, None))
             click_actions.extend(post_actions)
-            
+
         self.key_bindings = {}
         isep = 0
         if right_click:
@@ -84,11 +86,11 @@ class FileCheckList(wx.CheckListBox):
                   wx.WXK_UP: 'up',  wx.WXK_DOWN: 'down',
                   wx.WXK_DELETE: 'delete', wx.WXK_F1: 'f1',
                   wx.WXK_F2: 'f2', wx.WXK_F3: 'f3', wx.WXK_F4: 'f4',
-                  wx.WXK_ADD: 'add', wx.WXK_SUBTRACT: 'sub', 
+                  wx.WXK_ADD: 'add', wx.WXK_SUBTRACT: 'sub',
                   wx.WXK_MULTIPLY: 'mul', wx.WXK_DIVIDE: 'div'}
 
         key = keymap.get(thiskey, chr(thiskey))
-        
+
         if evt.HasAnyModifiers():
             mod = evt.GetModifiers()
             if evt.AltDown():
@@ -101,11 +103,13 @@ class FileCheckList(wx.CheckListBox):
                 key = f'meta+{key}'
             if mod == 2:
                 mname = 'cmd' if uname == 'darwin' else 'ctrl'
+                mname = 'ctrl'
                 key = f'{mname}+{key}'
             elif mod == 16 and uname == 'darwin':
-                key = f'ctrl+{key}'            
+                key = f'rawctrl+{key}'
 
         action = self.key_bindings.get(key, None)
+        # print("Event ", key, evt.HasAnyModifiers(), evt.GetModifiers(), 'alt : ', evt.AltDown() )
         # print(f"   checklist key_event:  {key=}, {action=}")
         if action is not None:
             action()
@@ -146,7 +150,7 @@ class FileCheckList(wx.CheckListBox):
         self.Clear()
         for name in names:
             self.Append(name)
-        self.SetCheckedStrings(checked)            
+        self.SetCheckedStrings(checked)
 
     def _get_current(self):
         idx, names = self.GetSelection(), self.GetItems()
@@ -162,20 +166,20 @@ class FileCheckList(wx.CheckListBox):
 
     def move_up(self, event=None):
         idx, names, this =  self._get_current()
-        slist = list(self.GetCheckedStrings())        
+        slist = list(self.GetCheckedStrings())
         if idx > 0:
             names.pop(idx)
             names.insert(idx-1, this)
             self.refresh(names)
         self.SetStringSelection(this)
-            
+
     def move_down(self, event=None):
         idx, names, this =  self._get_current()
         if idx > -1 and idx < len(names):
             names.pop(idx)
             names.insert(idx+1, this)
             self.refresh(names)
-        self.SetStringSelection(this)            
+        self.SetStringSelection(this)
 
     def move_to_top(self, event=None):
         idx, names, this =  self._get_current()
@@ -184,14 +188,14 @@ class FileCheckList(wx.CheckListBox):
             names.insert(0, this)
             self.refresh(names)
         self.SetStringSelection(this)
-        
+
     def move_to_bottom(self, event=None):
         idx, names, this =  self._get_current()
         if idx > -1:
             names.pop(idx)
             names.append(this)
             self.refresh(names)
-        self.SetStringSelection(this)            
+        self.SetStringSelection(this)
 
     def select_all(self, event=None):
         self.SetCheckedStrings(self.GetStrings())
