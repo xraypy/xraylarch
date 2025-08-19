@@ -270,12 +270,13 @@ def read_session(fname, clean_xasgroups=True):
     return SessionStore(config, cmd_history, symbols)
 
 
-def load_session(fname, ignore_groups=None, include_xasgroups=None, _larch=None, verbose=False):
+def load_session(fname, xasgroups=None, ignore_groups=None, include_xasgroups=None, _larch=None, verbose=False):
     """load all data from a Larch Session File into current larch session,
     merging into existing groups as appropriate (see Notes below)
 
     Arguments:
        fname  (str):  name of session file
+       xasgroups (list of strings): complete list of symbols to import (overrides ignore_groups/include_xasgroups)
        ignore_groups (list of strings): list of symbols to not import
        include_xasgroups (list of strings): list of symbols to import as XAS spectra,
                            even if not expicitly set in `_xasgroups`
@@ -292,28 +293,35 @@ def load_session(fname, ignore_groups=None, include_xasgroups=None, _larch=None,
         2. to avoid name clashes, group and file names in the `_xasgroups` dictionary
            may be modified on loading
 
+        3. on xasgroups, ignore_groups, include_xasgrooups:
+           if xasgroups is None, the _xasgroups from the Session will be used,
+              with ignore_groups listing groups to ignore, and include_xasgroups listing
+              groups not in _xasgroups, but that should be added.
+           if xasgroups is not None, it will be used, ignoring the _xasgroups from the Session,
+              and ignoring ignore_groups and include_xasgroups.
+
     """
+    # groups to merge into existing session: (_feffpaths, _feffcache, _xasgroups) are pop()ed here
+    session = read_session(fname)
+    sess_symbols = session.symbols
+    sess_feffpaths = sess_symbols.pop('_feffpaths', {})
+    sess_feffcache = sess_symbols.pop('_feffcache', EMPTY_FEFFCACHE)
+    sess_xasgroups = sess_symbols.pop('_xasgroups', {})
+    sess_allgroups = list(sess_symbols)
+    sess_xasdat = {}
+    for key, val in sess_symbols.items():
+        if isgroup(val) and hasattr(val, 'energy') and hasattr(val, 'mu'):
+            fname = getattr(val, 'filename', None)
+            gname = getattr(val, 'groupname', None)
+            if fname is not None and gname is not None:
+                sess_xasdat[fname] = gname
+                sess_xasdat[gname] = gname
+
+    # current symbol table
     if _larch is None:
         symtab = Group(_sys=Group())
     else:
         symtab = _larch.symtable
-
-    session = read_session(fname)
-
-    if ignore_groups is None:
-        ignore_groups = []
-    if include_xasgroups is None:
-        include_xasgroups = []
-
-    # special groups to merge into existing session:
-    #  _feffpaths, _feffcache, _xasgroups
-    s_symbols = session.symbols
-    s_xasgroups = s_symbols.pop('_xasgroups', {})
-    s_xasg_inv = invert_dict(s_xasgroups)
-
-    s_feffpaths = s_symbols.pop('_feffpaths', {})
-    s_feffcache = s_symbols.pop('_feffcache', EMPTY_FEFFCACHE)
-
     if not hasattr(symtab, '_xasgroups'):
         symtab._xasgroups = {}
     if not hasattr(symtab, '_feffpaths'):
@@ -328,37 +336,49 @@ def load_session(fname, ignore_groups=None, include_xasgroups=None, _larch=None,
                     'command_history': session.command_history}
     symtab._sys.restored_sessions[fname] = restore_data
 
-    c_xas_gnames = list(symtab._xasgroups.values())
+    # get list of names of xasgroups:
+    if xasgroups is None:
+        xasgroups = list(sess_xasgroups)
+        if ignore_groups is not None:
+            for name in ignore_groups:
+                if name in xasgroups:
+                    xasgroups.pop(name)
+        if include_xasgroups is not None:
+            for name in include_xasgroups:
+                if name in xasgroups.keys() or name in xasgroup.values():
+                    continue
+                elif name in sess_allgroups:
+                    xasgroups.append(name)
+    # xasgroups is now the list of groups, we want to dict of {filename: groupname}
+    _xasgroups = {}
+    for name in xasgroups:
+        if name in sess_xasgroups:
+            _xasgroups[name] = sess_xasgroups[name]
+        elif name in sess_xasdat:
+            xasgroups[name] = sess_xasdat[name]
+        elif name in sess_allgroups:
+            _xasgroups[name] = name
 
-    for sym, val in s_symbols.items():
-        if sym in ignore_groups:
-            if sym in s_xasgroups.values():
-                s_key = s_xasg_inv[sym]
-                s_xasgroups.pop(s_key)
-                s_xasg_inv = invert_dict(s_xasgroups)
+    for sym, gname in _xasgroups.items():
+        obj = sess_symbols.pop(gname, None)
+        if gname is not None:
+            if sym in symtab._xasgroups:
+                sym = unique_name(sym, symtab._xasgroups.keys())
+                obj.filename = sym
+            if getattr(obj, 'groupname', None) is None:
+                obj.groupname = gname
+            if getattr(obj, 'filename', None) is None:
+                obj.filename = sym
+            setattr(symtab, gname, obj)
+            symtab._xasgroups[sym] = gname
 
-            continue
-        if sym in c_xas_gnames or sym in include_xasgroups:
-            newsym = unique_name(sym, c_xas_gnames)
-            if (sym in s_xasgroups.values() or
-                     (hasattr(val, 'energy') and hasattr(val, 'mu'))):
-                c_xas_gnames.append(newsym)
-                s_key = s_xasg_inv.get(sym, getattr(val, 'filename', newsym))
-                if s_key in s_xasgroups:
-                    s_key = unique_name(s_key, s_xasgroups)
-                s_xasgroups[s_key] = newsym
-                val.groupname = newsym
-                val.filename = s_key
-                s_xasg_inv = invert_dict(s_xasgroups)
-            sym = newsym
+    # print("added xasgroups: ", symtab._xasgroups)
+    # print("Load remaining groups: ", sess_symbols.keys())
+    for sym, obj in sess_symbols.items():
+        setattr(symtab, sym, obj)
 
-        if verbose and hasattr(symtab, sym):
-            print(f"warning overwriting '{sym}'")
-        setattr(symtab, sym, val)
+    symtab._feffpaths.update(sess_feffpaths)
 
-    symtab._feffpaths.update(s_feffpaths)
-
-    symtab._xasgroups.update(s_xasgroups)
     missing = []
     for name, group in symtab._xasgroups.items():
         if group not in symtab:
@@ -367,8 +387,6 @@ def load_session(fname, ignore_groups=None, include_xasgroups=None, _larch=None,
         symtab._xasgroups.pop(name)
 
     for name in ('paths', 'runs'):
-        symtab._feffcache[name].update(s_feffcache[name])
-    out = None
-    if _larch is None:
-        out = symtab
-    return symtab
+        symtab._feffcache[name].update(sess_feffcache[name])
+
+    return symtab if _larch is None else None
