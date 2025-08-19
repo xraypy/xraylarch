@@ -28,8 +28,8 @@ except (ImportError, AttributeError):
 _larch_name = '_sys.wx'
 _larch_builtins = {}
 
-FONTSIZE = 10
-FONTSIZE_FW = 10
+FONTSIZE = 8
+FONTSIZE_FW = 8
 if uname == 'win':
     FONTSIZE = 10
     FONTSIZE_FW = 11
@@ -37,7 +37,6 @@ if uname == 'win':
 elif uname == 'darwin':
     FONTSIZE = 11
     FONTSIZE_FW = 12
-
 
 def DarwinHLine(parent, size=(700, 3)):
     """Horizontal line for MacOS
