@@ -33,18 +33,15 @@ from larch.utils.strutils import (file2groupname, unique_name,
 
 from larch.larchlib import read_workdir, save_workdir, read_config, save_config
 
-from larch.wxlib import (LarchFrame, ColumnDataFileFrame,
-                         AthenaImporter, SpecfileImporter,
-                         XasImporter, FileCheckList, FloatCtrl,
-                         FloatSpin, SetTip, get_icon, SimpleText,
-                         TextCtrl, pack, Button, Popup, HLine,
-                         FileSave, FileOpen, Choice, Check, MenuItem,
-                         HyperText, set_color, GUI_COLORS, CEN, LEFT,
-                         FRAMESTYLE, Font, FONTSIZE, flatnotebook,
-                         LarchUpdaterDialog, GridPanel, CIFFrame,
-                         Structure2FeffFrame, FeffResultsFrame,
-                         LarchWxApp, OkCancel, ExceptionPopup,
-                         set_color)
+from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
+                         SpecfileImporter, XasImporter, FileCheckList,
+                         FloatCtrl, FloatSpin, SetTip, get_icon, SimpleText,
+                         TextCtrl, pack, Button, Popup, HLine, FileSave,
+                         FileOpen, Choice, Check, MenuItem, HyperText,
+                         set_color, GUI_COLORS, CEN, LEFT, FRAMESTYLE,
+                         flatnotebook, LarchUpdaterDialog, GridPanel, CIFFrame,
+                         Structure2FeffFrame, FeffResultsFrame, LarchWxApp,
+                         OkCancel, ExceptionPopup, set_color, get_font)
 
 
 from larch.wxlib.plotter import get_display
@@ -128,7 +125,7 @@ class PreferencesFrame(wx.Frame):
 
         self.title = SimpleText(tpanel, 'Edit Preference and Defaults',
                                 size=(500, 25),
-                                font=Font(FONTSIZE+1), style=LEFT,
+                                font=get_font(larger=1), style=LEFT,
                                 colour=GUI_COLORS.nb_text)
 
         self.save_btn = Button(tpanel, 'Save for Future sessions',
@@ -148,10 +145,10 @@ class PreferencesFrame(wx.Frame):
             self.wids[name] = {}
 
             panel = GridPanel(self.nb, ncols=3, nrows=8, pad=3, itemstyle=LEFT)
-            panel.SetFont(Font(FONTSIZE))
+            panel.SetFont(get_font())
             title = CONF_SECTIONS.get(name, name)
             title = SimpleText(panel, f"  {title}",
-                               size=(550, -1), font=Font(FONTSIZE+2),
+                               size=(550, -1), font=get_font(larger=1),
                                colour=GUI_COLORS.title, style=LEFT)
 
             self.wids[name]['_key_'] = SimpleText(panel, " <name> ",
@@ -274,7 +271,7 @@ class PanelSelectionPanel(wx.Panel):
 
         title = SimpleText(panel, 'Select Larix Modes and Analysis Panels',
                            size=(550, -1),
-                           font=Font(FONTSIZE+2), style=LEFT,
+                           font=get_font(larger=1), style=LEFT,
                            colour=GUI_COLORS.title)
 
         modetitle = SimpleText(panel, 'Analysis Mode: ')
@@ -434,7 +431,7 @@ class LarixFrame(wx.Frame):
         self.SetTitle(LARIX_TITLE)
         self.SetSize(LARIX_SIZE)
         self.SetMinSize(LARIX_MINSIZE)
-        self.SetFont(Font(FONTSIZE))
+        self.SetFont(get_font())
         self.createMainPanel()
         self.createMenus()
         self.statusbar = self.CreateStatusBar(2, style=wx.STB_DEFAULT_STYLE)
@@ -487,7 +484,7 @@ class LarixFrame(wx.Frame):
 
         def Btn(msg, x, act):
             b = Button(ltop, msg, size=(x, 30),  action=act)
-            b.SetFont(Font(FONTSIZE))
+            b.SetFont(get_font())
             return b
 
         sel_none = Btn('Select None',   120, self.onSelNone)
@@ -530,7 +527,7 @@ class LarixFrame(wx.Frame):
         panel.SetMinSize((450, 550))
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.title = SimpleText(panel, ' ', size=(500, 25),
-                                font=Font(FONTSIZE+3), style=LEFT,
+                                font=get_font(), style=LEFT,
                                 colour=GUI_COLORS.nb_text)
 
         ir = 0
@@ -1092,7 +1089,7 @@ class LarixFrame(wx.Frame):
 before clearing"""
 
         dlg = wx.Dialog(None, -1, title="Clear all Session data?", size=(550, 300))
-        dlg.SetFont(Font(FONTSIZE))
+        dlg.SetFont(get_font())
         panel = GridPanel(dlg, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
         panel.Add(wx.StaticText(panel, label="Clear all Session Data?"), dcol=2)

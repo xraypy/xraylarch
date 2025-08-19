@@ -15,7 +15,7 @@ from larch.utils import path_split
 from larch.wxlib import (GridPanel, FloatCtrl, FloatSpin,
                          FloatSpinWithPin, SimpleText, Choice, SetTip,
                          Button, HLine, LEFT, pack,
-                         plotlabels, Font, FONTSIZE, FRAMESTYLE)
+                         plotlabels, get_font, FRAMESTYLE)
 
 from larch.xafs import etok, ktoe, find_energy_step
 from larch.utils.physical_constants import ATOM_SYMS
@@ -84,7 +84,7 @@ class OverAbsorptionFrame(wx.Frame):
         wx.Frame.__init__(self, parent, -1, size=(550, 400),
                           style=FRAMESTYLE)
         self.SetTitle("Correct Over-absorption")
-        self.SetFont(Font(FONTSIZE))
+        self.SetFont(get_font())
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
         self.wids = wids = {}
 
@@ -261,7 +261,7 @@ class EnergyCalibrateFrame(wx.Frame):
 
         wx.Frame.__init__(self, parent, -1, size=(550, 400), style=FRAMESTYLE)
         self.SetTitle("Calibrate / Align Energy")
-        self.SetFont(Font(FONTSIZE))
+        self.SetFont(get_font())
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
 
         self.wids = wids = {}
@@ -552,7 +552,7 @@ class RebinDataFrame(wx.Frame):
 
         wx.Frame.__init__(self, parent, -1, size=(550, 400), style=FRAMESTYLE)
         self.SetTitle("Rebin mu(E) Data")
-        self.SetFont(Font(FONTSIZE))
+        self.SetFont(get_font())
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
         self.wids = wids = {}
@@ -755,7 +755,7 @@ class SmoothDataFrame(wx.Frame):
 
         wx.Frame.__init__(self, parent, -1, size=(550, 400), style=FRAMESTYLE)
         self.SetTitle("Smooth mu(E) Data")
-        self.SetFont(Font(FONTSIZE))
+        self.SetFont(get_font())
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
 
         self.wids = wids = {}
@@ -946,7 +946,7 @@ class DeconvolutionFrame(wx.Frame):
 
         wx.Frame.__init__(self, parent, -1, size=(550, 400), style=FRAMESTYLE)
         self.SetTitle("Deconvolve mu(E) Data")
-        self.SetFont(Font(FONTSIZE))
+        self.SetFont(get_font())
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
 
         self.wids = wids = {}
@@ -1093,7 +1093,7 @@ class DeglitchFrame(wx.Frame):
 
         wx.Frame.__init__(self, parent, -1, size=(550, 400), style=FRAMESTYLE)
         self.SetTitle("Select Points to Remove")
-        self.SetFont(Font(FONTSIZE))
+        self.SetFont(get_font())
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
         wids = self.wids
 
@@ -1430,10 +1430,9 @@ class SpectraCalcFrame(wx.Frame):
 
         self.data = [self.dgroup.energy[:], self.dgroup.norm[:]]
 
-
         wx.Frame.__init__(self, parent, -1, size=(475, 525), style=FRAMESTYLE)
         self.SetTitle("Spectra Calculations: Add, Subtract Spectra")
-        self.SetFont(Font(FONTSIZE))
+        self.SetFont(get_font())
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
 
         def add_text(text, dcol=1, newrow=True):

@@ -10,7 +10,7 @@ import numpy as np
 import wx
 import darkdetect
 
-from pyshortcuts import fix_varname, get_cwd
+from pyshortcuts import fix_varname, get_cwd, uname
 import larch
 from larch import Group, Journal, Entry
 from larch.larchlib import read_config, save_config
