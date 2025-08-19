@@ -253,6 +253,12 @@ class EnergyCalibrateFrame(wx.Frame):
         self.dgroup = self.controller.get_group()
         self.label = label
         self.controller.register_group_callback(label, self, self.on_groupname)
+        self.plotpanel = self.controller.get_display(stacked=False).panel
+        try:
+            self.plot_conf = self.plotpanel.get_config()
+        except Exception:
+            self.plot_conf = {}
+        self.no_plot = False
 
         ensure_en_orig(self.dgroup)
 
@@ -372,6 +378,11 @@ class EnergyCalibrateFrame(wx.Frame):
 
     def onDone(self, event=None):
         self.controller.unregister_group_callback(self.label)
+        self.no_plot = True
+        try:
+            self.plotpanel.set_config(**self.plot_conf)
+        except Exception:
+            pass
         self.Destroy()
 
     def on_groupname(self, event=None):
@@ -478,6 +489,8 @@ class EnergyCalibrateFrame(wx.Frame):
         ngroup.journal.add('energy_shift ', 0.0)
 
     def plot_results(self, event=None, use_zoom=True):
+        if self.no_plot:
+            return
         ppanel = self.controller.get_display(stacked=False).panel
         ppanel.oplot
         xnew, ynew = self.data
@@ -542,6 +555,13 @@ class RebinDataFrame(wx.Frame):
         self.dgroup = self.controller.get_group()
         self.label = label
         self.controller.register_group_callback(label, self, self.on_groupname)
+        self.plotpanel = self.controller.get_display(stacked=False).panel
+        try:
+            self.plot_conf = self.plotpanel.get_config()
+        except Exception:
+            self.plot_conf = {}
+        self.no_plot = False
+
 
         xmin = min(self.dgroup.energy)
         xmax = max(self.dgroup.energy)
@@ -638,6 +658,11 @@ class RebinDataFrame(wx.Frame):
 
     def onDone(self, event=None):
         self.controller.unregister_group_callback(self.label)
+        self.no_plot = True
+        try:
+            self.plotpanel.set_config(**self.plot_conf)
+        except Exception:
+            pass
         self.Destroy()
 
     def on_groupname(self, event=None):
@@ -717,6 +742,8 @@ class RebinDataFrame(wx.Frame):
         ngroup.journal.add('rebin_command ', self.cmd)
 
     def plot_results(self, event=None, use_zoom=True):
+        if self.no_plot:
+            return
         ppanel = self.controller.get_display(stacked=False).panel
         xnew, ynew, yerr, e0 = self.data
         dgroup = self.dgroup
@@ -750,6 +777,12 @@ class SmoothDataFrame(wx.Frame):
         self.dgroup = self.controller.get_group()
         self.label = label
         self.controller.register_group_callback(label, self, self.on_groupname)
+        self.plotpanel = self.controller.get_display(stacked=False).panel
+        try:
+            self.plot_conf = self.plotpanel.get_config()
+        except Exception:
+            self.plot_conf = {}
+        self.no_plot = False
 
         self.data = [self.dgroup.energy[:], self.dgroup.mu[:]]
 
@@ -827,6 +860,11 @@ class SmoothDataFrame(wx.Frame):
 
     def onDone(self, event=None):
         self.controller.unregister_group_callback(self.label)
+        self.no_plot = True
+        try:
+            self.plotpanel.set_config(**self.plot_conf)
+        except Exception:
+            pass
         self.Destroy()
 
     def on_groupname(self, event=None):
@@ -905,6 +943,8 @@ class SmoothDataFrame(wx.Frame):
 
 
     def plot_results(self, event=None, use_zoom=True):
+        if self.no_plot:
+            return
         ppanel = self.controller.get_display(stacked=False).panel
         xnew, ynew = self.data
         dgroup = self.dgroup
@@ -938,6 +978,12 @@ class DeconvolutionFrame(wx.Frame):
         self.dgroup = self.controller.get_group()
         self.label = label
         self.controller.register_group_callback(label, self, self.on_groupname)
+        self.plotpanel = self.controller.get_display(stacked=False).panel
+        try:
+            self.plot_conf = self.plotpanel.get_config()
+        except Exception:
+            self.plot_conf = {}
+        self.no_plot = False
 
         # groupnames = list(self.controller.file_groups.keys())
 
@@ -992,6 +1038,11 @@ class DeconvolutionFrame(wx.Frame):
 
     def onDone(self, event=None):
         self.controller.unregister_group_callback(self.label)
+        self.no_plot = True
+        try:
+            self.plotpanel.set_config(**self.plot_conf)
+        except Exception:
+            pass
         self.Destroy()
 
     def on_saveas(self, event=None):
@@ -1042,6 +1093,8 @@ class DeconvolutionFrame(wx.Frame):
         self.plot_results()
 
     def plot_results(self, event=None, use_zoom=True):
+        if self.no_plot:
+            return
         ppanel = self.controller.get_display(stacked=False).panel
         xnew, ynew = self.data
         dgroup = self.dgroup
