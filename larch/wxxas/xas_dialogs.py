@@ -9,7 +9,7 @@ from wxmplot import PlotPanel
 from larch.wxlib import (GridPanel, FloatCtrl, set_color, SimpleText,
                          Choice, Check, Button, HLine, OkCancel, LEFT,
                          pack, plotlabels, ReportFrame, DictFrame,
-                         FileCheckList, Font, FONTSIZE)
+                         FileCheckList, get_font)
 
 from larch.utils.physical_constants import DEG2RAD, PLANCK_HC
 
@@ -39,7 +39,7 @@ class EnergyUnitsDialog(wx.Dialog):
 
         title = "Select Energy Units to convert to 'eV'"
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
-        self.SetFont(Font(FONTSIZE))
+        self.SetFont(get_font())
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
         self.en_units = Choice(panel, choices=self.unit_choices, size=(125, -1),
@@ -141,7 +141,7 @@ class ExportCSVDialog(wx.Dialog):
     def __init__(self, parent, groupnames, **kws):
         title = "Export Selected Groups"
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
-        self.SetFont(Font(FONTSIZE))
+        self.SetFont(get_font())
         self.xchoices = {'Energy': 'energy',
                          'k': 'k',
                          'R': 'r',
@@ -221,7 +221,7 @@ class QuitDialog(wx.Dialog):
     def __init__(self, parent, message, **kws):
         title = "Quit Larch Larix?"
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title, size=(500, 150))
-        self.SetFont(Font(FONTSIZE))
+        self.SetFont(get_font())
         self.needs_save = True
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
@@ -261,7 +261,7 @@ class RenameDialog(wx.Dialog):
     def __init__(self, parent, oldname,  **kws):
         title = "Rename Group %s" % (oldname)
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
-        self.SetFont(Font(FONTSIZE))
+        self.SetFont(get_font())
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
         self.newname   = wx.TextCtrl(panel, -1, oldname,  size=(250, -1))
@@ -291,7 +291,7 @@ class RemoveDialog(wx.Dialog):
         title = "Remove %i Selected Group" % len(grouplist)
         self.grouplist = grouplist
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
-        self.SetFont(Font(FONTSIZE))
+        self.SetFont(get_font())
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
         panel.Add(SimpleText(panel, 'Remove %i Selected Groups?' % (len(grouplist))),
