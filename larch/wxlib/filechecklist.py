@@ -150,7 +150,7 @@ class FileCheckList(wx.CheckListBox):
         self.Clear()
         for name in names:
             self.Append(name)
-        self.SetCheckedStrings(checked)
+        self.SetCheckedStrings([n for n in checked if n in names])
 
     def _get_current(self):
         idx, names = self.GetSelection(), self.GetItems()
