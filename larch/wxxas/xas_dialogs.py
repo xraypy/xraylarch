@@ -510,21 +510,16 @@ class LoadSessionDialog(wx.Frame):
         for fname, gname in self.allgroups.items():
             if fname not in sel_groups:
                 ignore.append(gname)
+        if len(self.extra_groups) > 0:
+            for fname in self.allgroups and fname not in sel_groups:
+                self_groups.append(fname)
 
         fname = Path(self.filename).as_posix()
         if fname.endswith('/'):
             fname = fname[:-1]
-        lcmd = [f"load_session('{fname}'"]
-        if len(ignore) > 0:
-            ignore = repr(ignore)
-            lcmd.append(f", ignore_groups={ignore}")
-        if len(self.extra_groups) > 0:
-            extra = repr(self.extra_groups)
-            lcmd.append(f", include_xasgroups={extra}")
 
-        lcmd = ''.join(lcmd) + ')'
-
-        cmds = ["# Loading Larch Session with ", lcmd, '######']
+        cmds = ["# Loading Larch Session: ",
+                f"load_session('{fname}', xasgroups={repr(sel_groups)})"]
 
         self.controller.larch.eval('\n'.join(cmds))
         last_fname = None
