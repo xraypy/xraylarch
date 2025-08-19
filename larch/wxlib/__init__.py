@@ -38,6 +38,36 @@ elif uname == 'darwin':
     FONTSIZE = 11
     FONTSIZE_FW = 12
 
+def fontsize(fixed_width=False):
+    """return best default fontsize"""
+    font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
+    if fixed_width and uname in ('win', 'darwin'):
+        font = font.Larger()
+    return int(font.GetFractionalPointSize())
+
+
+def Font(size, serif=False, fixed_width=False):
+    """define a font by size and serif/ non-serif
+    f = Font(10, serif=True)
+    """
+    family = wx.DEFAULT
+    if not serif:
+        family = wx.SWISS
+    if fixed_width:
+        family = wx.MODERN
+    return wx.Font(size, family, wx.NORMAL, wx.BOLD, 0, "")
+
+def get_font(larger=0, smaller=0, serif=False, fixed_width=False):
+    "return a font"
+    fnt = Font(fontsize(fixed_width=fixed_width),
+               serif=serif, fixed_width=fixed_width)
+    for i in range(larger):
+        fnt = fnt.Larger()
+    for i in range(smaller):
+        fnt = fnt.Smaller()
+    return fnt
+
+
 def DarwinHLine(parent, size=(700, 3)):
     """Horizontal line for MacOS
     h = HLine(parent, size=(700, 3)
@@ -87,7 +117,7 @@ _larch_builtins['_plotter'] = dict(plot=nullfunc,
                                    fit_plot=nullfunc)
 
 if HAS_WXPYTHON:
-    from wxutils import (set_sizer, pack, SetTip, Font, HLine, Check,
+    from wxutils import (set_sizer, pack, SetTip, HLine, Check,
                          MenuItem, Popup, RIGHT, LEFT, CEN , LTEXT,
                          FRAMESTYLE, hms, DateTimeCtrl, Button,
                          TextCtrl, ToggleButton, BitmapButton, Choice,
