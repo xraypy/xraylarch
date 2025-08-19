@@ -498,8 +498,8 @@ class LarixFrame(wx.Frame):
                         ("Copy Group\tCtrl+C", self.onCopyGroup, "ctrl+C"),
                         ("Rename Group\tCtrl+N", self.onRenameGroup, "ctrl+N"),
                         ("Remove Group\tCtrl+X", self.onRemoveGroup, "ctrl+X"),
-                        ("Remove Selected Group\tCtrl+Delete", self.onRemoveGroups, "ctrl+delete"),
-                        ("Merge Selected Group\tCtrl+Shift+M", self.onMergeData, "ctrl+shift+M"),                                                
+                        ("Remove Selected Groups\tCtrl+Delete", self.onRemoveGroups, "ctrl+delete"),
+                        ("Merge Selected Groups\tCtrl+Shift+M", self.onMergeData, "ctrl+shift+M"),
                         ("--sep--", None, None),
                         ("Freeze Selected Groups\tCtrl+F", self.onFreezeGroups, "ctrl+F"),
                         ("UnFreeze Selected Groups\tCtrl+Shift+F", self.onUnFreezeGroups, "ctrl+shift+F"),
@@ -510,7 +510,7 @@ class LarixFrame(wx.Frame):
                                                  select_action=self.ShowFile,
                                                  remove_action=self.RemoveFile,
                                                  with_remove_from_list=False)
-        
+
         set_color(self.controller.filelist, 'list_fg', bg='list_bg')
 
         tsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -709,9 +709,8 @@ class LarixFrame(wx.Frame):
         self.controller.filelist.SetStringSelection(filename)
         self.controller.run_group_callbacks()
         wx.CallAfter(self.controller.filelist.SetFocus)
-        
+
     def createMenus(self):
-        # ppnl = self.plotpanel
         self.menubar = wx.MenuBar()
         file_menu = wx.Menu()
         pref_menu = wx.Menu()
@@ -743,7 +742,7 @@ class LarixFrame(wx.Frame):
         MenuItem(self, file_menu, "&Save Larch Session\tCtrl+S",
                  "Save Session to a File",  self.onSaveSession)
 
-        MenuItem(self, file_menu, "&Save Larch Session As ...",
+        MenuItem(self, file_menu, "&Save Larch Session As ...\tCtrl+Shift+S",
                  "Save Session to a File",  self.onSaveSessionAs)
 
         MenuItem(self, file_menu, "Save Selected Groups to Athena Project File",
@@ -793,7 +792,7 @@ class LarixFrame(wx.Frame):
 
         group_menu.AppendSeparator()
 
-        MenuItem(self, group_menu, "Remove Selected Groups",
+        MenuItem(self, group_menu, "Remove Selected Groups\tCtrl+Delete",
                  "Remove Selected Group", self.onRemoveGroups)
 
         group_menu.AppendSeparator()
