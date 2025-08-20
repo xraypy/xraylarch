@@ -119,11 +119,11 @@ class PreferencesFrame(wx.Frame):
         self.parent = parent
         wx.Frame.__init__(self, None, -1,  'Larix Preferences',
                           style=FRAMESTYLE, size=(700, 725))
-
+        self.SetFont(get_font())
         sizer = wx.BoxSizer(wx.VERTICAL)
         tpanel = wx.Panel(self)
 
-        self.title = SimpleText(tpanel, 'Edit Preference and Defaults',
+        self.title = SimpleText(tpanel, '  Edit Preference and Defaults',
                                 size=(500, 25),
                                 font=get_font(larger=1), style=LEFT,
                                 colour=GUI_COLORS.nb_text)
@@ -259,6 +259,7 @@ class PanelSelectionPanel(wx.Panel):
         wx.Panel.__init__(self, parent)
 
         self.wids = {}
+        self.SetFont(get_font())
 
         style     = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
         labstyle  = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
@@ -274,8 +275,8 @@ class PanelSelectionPanel(wx.Panel):
                            font=get_font(larger=1), style=LEFT,
                            colour=GUI_COLORS.title)
 
-        modetitle = SimpleText(panel, 'Analysis Mode: ')
-        panetitle = SimpleText(panel, 'Select Individual Analysis Panels: ')
+        modetitle = SimpleText(panel, '  Analysis Mode: ')
+        panetitle = SimpleText(panel, '  Select Individual Analysis Panels: ')
 
         self.wids = wids = {}
         self.current_mode = self.main.mode
@@ -294,7 +295,7 @@ class PanelSelectionPanel(wx.Panel):
         sizer.Add(modetitle, (irow, 0), (1, 1), labstyle|wx.ALL, 3)
         sizer.Add(wids['modechoice'], (irow, 1), (1, 1), labstyle|wx.ALL, 3)
         irow += 1
-        sizer.Add(HLine(panel, (325, 3)), (irow, 0), (1, 2), labstyle|wx.ALL, 3)
+        sizer.Add(HLine(panel, (450, 3)), (irow, 0), (1, 2), labstyle|wx.ALL, 3)
         irow += 1
         sizer.Add(panetitle, (irow, 0), (1, 2), labstyle|wx.ALL, 3)
 
@@ -307,16 +308,16 @@ class PanelSelectionPanel(wx.Panel):
 
         for key, atab in LARIX_PANELS.items():
             iname = (atab.title + ' '*strlen)[:strlen]
-            cb = wx.CheckBox(panel, -1, iname)
-            cb.SetValue(key in page_map)
-            desc = SimpleText(panel, LARIX_PANELS[key].desc)
-            self.selections[key] = cb
+            cbox = wx.CheckBox(panel, -1, iname)
+            cbox.SetValue(key in page_map)
+            desc = SimpleText(panel, atab.desc)
+            self.selections[key] = cbox
             irow += 1
-            sizer.Add(cb, (irow, 0), (1, 1), labstyle,  5)
-            sizer.Add(desc, (irow, 1), (1, 1), labstyle,  5)
+            sizer.Add(cbox, (irow, 0), (1, 1), labstyle,  2)
+            sizer.Add(desc, (irow, 1), (1, 1), labstyle,  2)
 
         irow += 1
-        sizer.Add(HLine(panel, (325, 3)), (irow, 0), (1, 2), labstyle|wx.ALL, 3)
+        sizer.Add(HLine(panel, (450, 3)), (irow, 0), (1, 2), labstyle|wx.ALL, 3)
 
         btn_ok     = Button(panel, 'Apply Now', size=(150, -1), action=self.OnApply)
         irow += 1
@@ -833,11 +834,11 @@ class LarixFrame(wx.Frame):
         self.menubar.Append(group_menu, "Groups")
         self.menubar.Append(xasdata_menu, "XAS Data")
 
-        MenuItem(self, feff_menu, "Browse CIF Structures, Run Feff",
+        MenuItem(self, feff_menu, "Run Feff from CIF Structures",
                  "Browse CIF Structure, run Feff", self.onCIFBrowse)
-        MenuItem(self, feff_menu, "Generate Feff input from general structures, Run Feff",
+        MenuItem(self, feff_menu, "Run Feff from general structures",
                  "Generate Feff input from general structures, run Feff", self.onStructureBrowse)
-        MenuItem(self, feff_menu, "Browse Feff Calculations, Import Paths",
+        MenuItem(self, feff_menu, "Import Feff Paths from Feff Calculations",
                  "Browse Feff Calculations, Get Feff Paths", self.onFeffBrowse)
 
         self.menubar.Append(feff_menu, "Feff")
