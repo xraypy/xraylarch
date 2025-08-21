@@ -106,7 +106,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=None,
     # passed-in group or from running pre_edge()
     group = set_xafsGroup(group, _larch=_larch)
 
-    if edge_step is None and isgroup(group, 'edge_step'):
+    if edge_step is None and hasattr(group, 'edge_step'):
         edge_step = group.edge_step
     if e0 is not None and ek0 is None:  # command-line e0 still valid
         ek0 = e0
@@ -115,6 +115,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=None,
     if ek0 is None and isgroup(group, 'e0'):
         ek0 = group.e0
 
+    # print(f"AUTOBK {group=}, {ek0=}, {edge_step=}")
     if ek0 is not None and (ek0 < energy.min() or ek0 > energy.max()):
         ek0 = None
     if ek0 is None or edge_step is None:
