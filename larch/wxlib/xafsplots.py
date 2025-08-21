@@ -461,7 +461,10 @@ def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
         raise ValueError("XAFS data group has no array for mu")
     #endif
     e0   = dgroup.e0
-    chie = mu - dgroup.bkg
+    chie = getattr(dgroup, 'chie', None)
+    if chie is None and hasattr(dgroup, 'bkg') and hasattr(dgroup, 'edge_step'):
+        chie = (mu - dgroup.bkg)/max(1.e-8, dgroup.edge_step)
+
     ylabel = plotlabels.chie
     if abs(eweight) > 1.e-2:
         chie *= (dgroup.energy-e0)**(eweight)
