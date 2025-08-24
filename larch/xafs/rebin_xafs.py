@@ -113,6 +113,9 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
                                          defaults=(mu,), group=group,
                                         fcn_name='rebin_xafs')
 
+    emin = min(energy) - e0
+    emax = max(energy) - e0
+
     if e0 is None:
         e0 = getattr(group, 'e0', None)
 
@@ -120,21 +123,41 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
         raise ValueError("need e0")
 
     if pre1 is None:
-        pre1 = pre_step*int((min(energy) - e0)/pre_step)
+        pre1 = pre_step*int(emin/pre_step)
 
     if exafs2 is None:
-        exafs2 = max(energy) - e0
+        exafs2 = emax
 
     # determine xanes step size:
     #  find mean of energy difference within 10 eV of E0
     if xanes_step is None:
         xanes_step = 0.05 * max(1, int(e0 / 1250.0))  # E0/25000, round down to 0.05
 
+    # clip into data range
+    pre1 = max(pre1, emin)
+    pre2 = min(max(pre2, pre1 + abs(pre_step)), emax)
+    exafs1 = min(max(exafs1, pre2 + abs(xanes_step)), emax)
+    exafs2 = min(max(exafs2, exafs1 + abs(exafs_kstep) * 20), emax)
+
+    # enforce monotonically increasing
+    if pre2 <= pre1:
+        pre2 = min(pre1 + abs(pre_step), emax)
+    if exafs1 <= pre2:
+        exafs1 = min(pre2 + abs(xanes_step), emax)
+    if exafs2 <= exafs1:
+        exafs2 = min(exafs1 + abs(exafs_kstep) * 20, emax)
+
     # create new energy array from the 3 segments (pre, xanes, exafs)
+    # pre:   (pre1 -> pre2) with pre_step (in E-space)
+    # xanes: (pre2 -> exafs1) with xanes_step (in E-space)
+    # exafs: (exafs1 -> exafs2) with exafs_kstep (in k-space)
     en = []
     for start, stop, step, isk in ((pre1, pre2, pre_step, False),
                                    (pre2, exafs1, xanes_step, False),
                                    (exafs1, exafs2, exafs_kstep, True)):
+        if start == stop:
+            continue
+
         if isk:
             start = etok(start)
             stop = etok(stop)
