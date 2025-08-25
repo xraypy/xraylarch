@@ -25,7 +25,7 @@ from wx.py import introspect
 from larch.symboltable import SymbolTable, Group
 from larch.larchlib import Procedure
 from wxutils  import Button, pack
-from . import FONTSIZE
+from . import get_font
 
 VERSION = '0.9.5(Larch)'
 
@@ -378,9 +378,7 @@ class FillingText(wx.TextCtrl):
 
         wx.TextCtrl.__init__(self, parent, id, style=style)
         self.CanCopy()
-        self.fontsize = FONTSIZE
-        fixfont = wx.Font(FONTSIZE, wx.MODERN, wx.NORMAL, wx.BOLD, 0, "")
-        self.SetFont(fixfont)
+        self.SetFont(get_font(fixed_width=True))
 
     def push(self, command, more):
         """Receiver for Interpreter.push signal."""

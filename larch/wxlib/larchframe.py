@@ -22,7 +22,7 @@ from .readlinetextctrl import ReadlineTextCtrl
 from .larchfilling import Filling
 from .columnframe import ColumnDataFileFrame
 from .athena_importer import AthenaImporter
-from . import inputhook
+from . import inputhook, get_font, FONTSIZE
 
 from larch.io import (read_ascii, read_xdi, read_gsexdi,
                       gsescan_group, is_athena_project, AthenaProject)
@@ -34,12 +34,6 @@ ICON_FILE = 'larch.ico'
 BACKGROUND_COLOUR = '#FCFCFA'
 FOREGROUND_COLOUR = '#050520'
 
-FONTSIZE_FW = 14
-if uname == 'win':
-    FONTSIZE_FW = 12
-elif uname == 'darwin':
-    FONTSIZE_FW = 14
-
 def makeColorPanel(parent, color):
     p = wx.Panel(parent, -1)
     p.SetBackgroundColour(color)
@@ -48,8 +42,6 @@ def makeColorPanel(parent, color):
 def wx_inspect():
     wx.GetApp().ShowInspectionTool()
 
-def get_font(size):
-    return wx.Font(size, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
 
 class LarchWxShell(object):
     ps1 = 'Larch>'
@@ -62,6 +54,7 @@ class LarchWxShell(object):
         self.prompt = prompt
         self.input  = input
         self.output = output
+        self.fontsize = FONTSIZE + 2
 
         if _larch is None:
             self._larch  = Interpreter(historyfile=historyfile,
@@ -84,7 +77,6 @@ class LarchWxShell(object):
         self.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
         self.symtable.set_symbol('_sys.wx.parent', wx.GetApp().GetTopWindow())
         self.symtable.set_symbol('_sys.last_eval_time', 0.0)
-        self.fontsize = FONTSIZE_FW
 
         if self.output is not None:
             style = self.output.GetDefaultStyle()
@@ -226,7 +218,7 @@ class LarchPanel(wx.Panel):
         self.output.SetBackgroundColour(BACKGROUND_COLOUR)
         self.output.SetForegroundColour(FOREGROUND_COLOUR)
         if font is None:
-            font = get_font(self.fontsize)
+            font = get_font(larger=1)
 
         self.output.SetFont(font)
         self.objtree.tree.SetFont(font)
@@ -343,13 +335,12 @@ class LarchFrame(wx.Frame):
         self.historyfile = historyfile
         self.subframes = {}
         self.last_array_sel = {}
-        self.fontsize = FONTSIZE_FW
-
+        self.fontsize = FONTSIZE + 2
         wx.Frame.__init__(self, parent, -1, size=(800, 725),
                           style= wx.DEFAULT_FRAME_STYLE)
         self.SetTitle('LarchGUI')
 
-        self.font = get_font(self.fontsize)
+        self.font = get_font(larger=2)
         self.SetFont(self.font)
         sbar = self.CreateStatusBar(2, wx.CAPTION)
 
@@ -632,12 +623,10 @@ class LarchFrame(wx.Frame):
         version_message =  '\n'.join(out)
         dlg = wx.Dialog(self, wx.ID_ANY, size=(700, 400),
                         title='Larch Versions')
-
-        font = get_font(self.fontsize)
+        font = get_font(larger=2)
         dlg.SetFont(font)
         panel = wx.Panel(dlg)
         txt = wx.StaticText(panel, label=version_message)
-        s = wx.Sizer
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(txt, 1, wx.LEFT|wx.ALL, 5)
         panel.SetSizer(sizer)
