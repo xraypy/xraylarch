@@ -566,19 +566,5 @@ exports = {'param': param,
            'lm_load_modelresult': load_modelresult,
            }
 
-for name in ('BreitWignerModel', 'ComplexConstantModel',
-             'ConstantModel', 'DampedHarmonicOscillatorModel',
-             'DampedOscillatorModel', 'DoniachModel',
-             'ExponentialGaussianModel', 'ExponentialModel',
-             'ExpressionModel', 'GaussianModel', 'Interpreter',
-             'LinearModel', 'LognormalModel', 'LorentzianModel',
-             'MoffatModel', 'ParabolicModel', 'Pearson7Model',
-             'PolynomialModel', 'PowerLawModel',
-             'PseudoVoigtModel', 'QuadraticModel',
-             'RectangleModel', 'SkewedGaussianModel',
-             'StepModel', 'StudentsTModel', 'VoigtModel'):
-    val = getattr(lmfit.models, name, None)
-    if val is not None:
-        exports[name] = val
 
 _larch_builtins = {'_math': exports}

@@ -2,6 +2,7 @@ __DOC__ = """Mathematical functions for Larch"""
 
 import numpy as np
 
+import lmfit
 from lmfit import Parameter
 
 from .utils import (linregress, realimag, as_ndarray,
@@ -18,6 +19,9 @@ from .lineshapes import (gaussian, lorentzian, voigt, pvoigt, hypermet,
 
 from .peaks import peak_indices
 from .fitpeak import fit_peak
+
+from . import fitmodels
+
 from .curvefit import curvefit_setup, curvefit_run
 from .convolution1D import glinbroad
 from .lincombo_fitting import lincombo_fit, lincombo_fitall, groups2matrix
@@ -107,3 +111,22 @@ _larch_builtins = {'_math': dict(linregress=linregress, polyfit=polyfit,
                                         'vector_product': trans.vector_product,
                                         'angle_between_vectors': trans.angle_between_vectors,
                                         'inverse_matrix': trans.inverse_matrix}}
+
+
+for name in ('BreitWignerModel', 'ComplexConstantModel',
+             'ConstantModel', 'DampedHarmonicOscillatorModel',
+             'DampedOscillatorModel', 'DoniachModel',
+             'ExponentialGaussianModel', 'ExponentialModel',
+             'ExpressionModel', 'GaussianModel', 'Interpreter',
+             'LinearModel', 'LognormalModel', 'LorentzianModel',
+             'MoffatModel', 'ParabolicModel', 'Pearson7Model',
+             'PolynomialModel', 'PowerLawModel',
+             'PseudoVoigtModel', 'QuadraticModel',
+             'RectangleModel', 'SkewedGaussianModel',
+             'StepModel', 'StudentsTModel', 'VoigtModel'):
+    _larch_builtins['_math'][name] = getattr(lmfit.models, name, None)
+
+for name in  ('LinearStepModel', 'AtanStepModel', 'LogiStepModel',
+              'ErfStepModel', 'LinearRectangleModel',
+              'AtanRectangleModel', 'LogiRectangleModel','ErfRectangleModel'):
+    _larch_builtins['_math'][name] = getattr(fitmodels, name, None)
