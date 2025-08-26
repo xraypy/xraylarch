@@ -67,7 +67,7 @@ def make_array_choice(opts):
 
 Linear_ArrayChoices = make_array_choice(['norm', 'flat', 'dmude', 'chi0', 'chi1', 'chi2', 'chi3'])
 PrePeak_ArrayChoices = make_array_choice(['norm', 'flat', 'deconv', 'mu'])
-CurveFit_ArrayChoices = make_array_choice(['ydat', 'ynorm', 'dydx'])
+CurveFit_ArrayChoices = make_array_choice(['ydat', 'ynorm', 'norm', 'flat', 'dydx', 'dmude'])
 
 YERR_CHOICES = ('Constant', 'Sqrt(Y)', 'Array')
 XRANGE_CHOICES = ('Full X Range', 'Set X Limits')
