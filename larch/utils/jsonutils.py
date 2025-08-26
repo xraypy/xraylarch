@@ -115,6 +115,7 @@ def encode4js(obj):
             if 'complex' in out['__dtype__']:
                 out['value'] = [(obj.real).tolist(), (obj.imag).tolist()]
             elif out['__dtype__'] == 'object':
+                print("Warn: encoding object ndarray")
                 out['value'] = [encode4js(i) for i in out['value']]
             return out
         elif isinstance(obj, (bool, np.bool_)):
