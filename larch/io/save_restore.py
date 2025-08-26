@@ -1,5 +1,6 @@
 import json
 import time
+import traceback
 import numpy as np
 import uuid, socket, platform
 from collections import namedtuple
@@ -66,7 +67,7 @@ def read_groups(fname):
 
 
 def save_session(fname=None, symbols=None, histbuff=None,
-                auto_xasgroups=False, _larch=None):
+                auto_xasgroups=False, _larch=None, verbose=False):
     """save all groups and data into a Larch Save File (.larix)
     A portable compressed json file, that can be loaded with `read_session()`
 
@@ -105,6 +106,8 @@ def save_session(fname=None, symbols=None, histbuff=None,
     if _larch is None:
         raise ValueError('_larch not defined')
     symtab = _larch.symtable
+    if verbose:
+        print(f"#save_session {isotime()}:  {fname}")
 
     buff = ["##LARIX: 1.0      Larch Session File",
             "##Date Saved: %s"   % time.strftime('%Y-%m-%d %H:%M:%S'),
@@ -125,22 +128,27 @@ def save_session(fname=None, symbols=None, histbuff=None,
     core_groups = symtab._sys.core_groups
     buff.append('##Larch Core Groups: %s' % (json.dumps(core_groups)))
 
+    if verbose:
+        print(f"#save_session {isotime()}:  core groups encoded")
     config = symtab._sys.config
     for attr in dir(config):
         buff.append('##Larch %s: %s' % (attr, json.dumps(getattr(config, attr, None))))
     buff.append("##</CONFIG>")
-
+    if verbose:
+        print(f"#save_session {isotime()}:  config encoded")
 
     if histbuff is None:
         try:
             histbuff = _larch.input.history.get(session_only=True)
         except:
-            histbuff = None
+            histbuff = []
 
     if histbuff is not None:
         buff.append("##<Session Commands>")
         buff.extend(["%s" % l for l in histbuff])
         buff.append("##</Session Commands>")
+    if verbose:
+        print(f"#save_session {isotime()}:  history saved {histbuff}")
 
     if symbols is None:
         symbols = []
@@ -148,28 +156,48 @@ def save_session(fname=None, symbols=None, histbuff=None,
             if attr not in core_groups:
                 symbols.append(attr)
     nsyms = len(symbols)
+    if verbose:
+        print(f"#save_session {isotime()}:  will save {nsyms} symbols")
 
-    _xasgroups = None
-    if '_xasgroups' not in symbols and auto_xasgroups:
+    _xasgroups = getattr(symbols, '_xasgroups', None)
+    if _xasgroups is None and auto_xasgroups:
         nsyms +=1
         _xasgroups = {}
         for sname in symbols:
             obj = getattr(symtab, sname, None)
             if isgroup(obj):
                 gname = getattr(obj, 'groupname', None)
-                fname = getattr(obj, 'filename', None)
-                if gname is not None and fname is not None:
-                    _xasgroups[fname] = gname
+                xname = getattr(obj, 'filename', None)
+                if gname is not None and xname is not None:
+                    _xasgroups[xname] = gname
 
     buff.append("##<Symbols: count=%d>"  % len(symbols))
     if _xasgroups is not None:
         buff.append('<:_xasgroups:>')
         buff.append(json.dumps(encode4js(_xasgroups)))
-
+    if verbose:
+        print(f"#save_session {isotime()}:  _xasgroups saved")
     for attr in symbols:
-        if attr not in core_groups:
+        if attr not in core_groups and attr != '_xasgroups':
             buff.append(f'<:{attr}:>')
-            buff.append(json.dumps(encode4js(getattr(symtab, attr))))
+            if verbose:
+                print(f"#save_session {isotime()}: saving {attr}")
+            try:
+                dat = encode4js(getattr(symtab, attr))
+            except (TypeError, ValueError) as exc:
+                print(f"Warning: could not encode data for group {attr}")
+                print(" data group: ", getattr(symtab, attr))
+                tblist = [tb for tb in traceback.extract_tb(sys.exc_info()[2])]
+                print(''.join(traceback.format_list(tblist)))
+            try:
+                buff.append(json.dumps(dat))
+            except TypeError as exc:
+                print(f"Warning: could not write data encoded for {attr}")
+                print(" data :", dat)
+                tblist = [tb for tb in traceback.extract_tb(sys.exc_info()[2])]
+                print(''.join(traceback.format_list(tblist)))
+
+
 
     buff.append("##</Symbols>")
     buff.append("")
