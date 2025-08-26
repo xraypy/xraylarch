@@ -315,7 +315,8 @@ class LoadSessionDialog(wx.Frame):
     """Read, show data from saved larch session"""
 
     xasgroups_name = '_xasgroups'
-    feffgroups_name = ['_feffpaths', '_feffcache']
+    feff_groups = ['_feffpaths', '_feffcache']
+    main_groups = ['_feffit_params', 'curvefit_params']
 
     def __init__(self, parent, session, filename, controller, **kws):
         self.parent = parent
@@ -364,9 +365,9 @@ class LoadSessionDialog(wx.Frame):
         symtable = controller.symtable
 
         self.allgroups = session.symbols.get(self.xasgroups_name, {})
-        self.extra_groups = []
+        self.extra_xasgroups = []
         for key, val in session.symbols.items():
-            if key == self.xasgroups_name or key in self.feffgroups_name:
+            if key == self.xasgroups_name or key in self.feff_groups:
                 continue
             if key in self.allgroups:
                 continue
@@ -374,7 +375,7 @@ class LoadSessionDialog(wx.Frame):
                 if key in self.allgroups.keys() or key in self.allgroups.values():
                     continue
                 self.allgroups[key] = key
-                self.extra_groups.append(key)
+                self.extra_xasgroups.append(key)
 
 
         checked = []
@@ -386,7 +387,7 @@ class LoadSessionDialog(wx.Frame):
 
         group_names = list(self.allgroups.values())
         group_names.append(self.xasgroups_name)
-        group_names.extend(self.feffgroups_name)
+        group_names.extend(self.feff_groups)
 
         wids['view_conf'] = Button(panel, 'Show Session Configuration',
                                      size=(200, 30), action=self.onShowConfig)
@@ -501,25 +502,29 @@ class LoadSessionDialog(wx.Frame):
         self.Destroy()
 
     def onImport(self, event=None):
-        ignore = []
+        xas_groups, ignore = [], []
         for gname, chbox in self.overwrite_checkboxes.items():
             if not chbox.IsChecked():
                 ignore.append(gname)
 
-        sel_groups = self.grouplist.GetCheckedStrings()
+        checked = self.grouplist.GetCheckedStrings()
+        for fname in self.allgroups:
+            xlist = xas_groups if fname in checked else ignore
+            xlist.append(fname)
+
+        for fname in self.extra_xasgroups:
+            if fname not in xas_groups:
+                xas_groups.append(fname)
         for fname, gname in self.allgroups.items():
-            if fname not in sel_groups:
-                ignore.append(gname)
-        if len(self.extra_groups) > 0:
-            for fname in self.allgroups and fname not in sel_groups:
-                self_groups.append(fname)
+            if fname not in xas_groups and fname not in ignore:
+                xas_groups.append(fname)
 
         fname = Path(self.filename).as_posix()
         if fname.endswith('/'):
             fname = fname[:-1]
 
         cmds = ["# Loading Larch Session: ",
-                f"load_session('{fname}', xasgroups={repr(sel_groups)})"]
+                f"load_session('{fname}', xasgroups={repr(xas_groups)})"]
 
         self.controller.larch.eval('\n'.join(cmds))
         last_fname = None
