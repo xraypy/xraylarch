@@ -310,7 +310,9 @@ def load_session(fname, xasgroups=None, ignore_groups=None, include_xasgroups=No
     sess_allgroups = list(sess_symbols)
     sess_xasdat = {}
     for key, val in sess_symbols.items():
-        if isgroup(val) and hasattr(val, 'energy') and hasattr(val, 'mu'):
+        if (isgroup(val) and
+                ((hasattr(val, 'energy') and hasattr(val, 'mu')) or
+                 (hasattr(val, 'xdat') and hasattr(val, 'ydat')))):
             fname = getattr(val, 'filename', None)
             gname = getattr(val, 'groupname', None)
             if fname is not None and gname is not None:
@@ -339,23 +341,22 @@ def load_session(fname, xasgroups=None, ignore_groups=None, include_xasgroups=No
     # get list of names of xasgroups:
     if xasgroups is None:
         xasgroups = list(sess_xasgroups)
-        if ignore_groups is not None:
-            for name in ignore_groups:
-                if name in xasgroups:
-                    xasgroups.pop(name)
-        if include_xasgroups is not None:
-            for name in include_xasgroups:
-                if name in xasgroups.keys() or name in xasgroup.values():
-                    continue
-                elif name in sess_allgroups:
-                    xasgroups.append(name)
-    # xasgroups is now the list of groups, we want to dict of {filename: groupname}
+    xasgroup_list = [a for a in xasgroups]
+    if ignore_groups is not None:
+        for name in ignore_groups:
+            if name in xasgroup_list:
+                xasgroup_list.pop(name)
+    if include_xasgroups is not None:
+        for name in include_xasgroups:
+            if name not in xasgroup_list and name in sess_allgroups:
+                xasgroup_list.append(name)
+    # xasgroup_list is now the list of groups, we want to dict of {filename: groupname}
     _xasgroups = {}
-    for name in xasgroups:
+    for name in xasgroup_list:
         if name in sess_xasgroups:
             _xasgroups[name] = sess_xasgroups[name]
         elif name in sess_xasdat:
-            xasgroups[name] = sess_xasdat[name]
+            _xasgroups[name] = sess_xasdat[name]
         elif name in sess_allgroups:
             _xasgroups[name] = name
 
