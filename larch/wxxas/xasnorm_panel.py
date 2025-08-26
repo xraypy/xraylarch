@@ -679,6 +679,7 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
             conf[attr] = self.wids[attr].GetValue()
         if abs(conf['pre1'] - conf['pre2']) < 2.0:
             conf['npre'] = 0
+            self.wids['npre'].SetSelection(0)
 
         self.update_config(conf)
         self.onReprocess()
