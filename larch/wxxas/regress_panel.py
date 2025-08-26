@@ -215,7 +215,7 @@ class RegressionPanel(TaskPanel):
         self.update_fit_xspace(arrname)
 
 
-    def fill_form(self, dgroup=None, opts=None):
+    def fill_form(self, dgroup=None, opts=None, initial=False):
         conf = deepcopy(self.get_config(dgroup=dgroup, with_erange=True))
         if opts is None:
             opts = {}

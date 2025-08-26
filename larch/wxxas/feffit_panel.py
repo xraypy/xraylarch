@@ -1068,7 +1068,7 @@ class FeffitPanel(TaskPanel):
             self.larch.eval('\n'.join(cmds))
         return opts
 
-    def fill_form(self, dgroup=None):
+    def fill_form(self, dgroup=None, initial=False):
         if dgroup is None:
             dgroup = self.controller.get_group()
         conf = self.get_config(dgroup)

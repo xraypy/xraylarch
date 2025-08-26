@@ -181,7 +181,7 @@ class PCAPanel(TaskPanel):
         self.update_config({'weight_min': wmin})
         # autoset_fs_increment(self.wids['weight_min'], wmin)
 
-    def fill_form(self, dgroup):
+    def fill_form(self, dgroup, initial=False):
         opts = self.get_config(dgroup, with_erange=True)
         self.dgroup = dgroup
 

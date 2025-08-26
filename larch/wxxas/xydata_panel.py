@@ -176,7 +176,7 @@ class XYDataPanel(TaskPanel):
         setattr(dgroup.config, self.configname, conf)
         return conf
 
-    def fill_form(self, dgroup):
+    def fill_form(self, dgroup, initial=False):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
         self.skip_process = True

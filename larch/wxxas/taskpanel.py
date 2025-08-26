@@ -443,7 +443,7 @@ class TaskPanel(wx.Panel):
         if dgroup is not None:
             setattr(dgroup.config, self.configname, conf)
 
-    def fill_form(self, dat):
+    def fill_form(self, dat, initial=False):
         if isinstance(dat, Group):
             dat = group2dict(dat)
 

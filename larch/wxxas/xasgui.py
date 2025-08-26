@@ -697,7 +697,7 @@ class LarixFrame(wx.Frame):
             if pchoose_wid is not None:
                 plot = 'yes' if pchoose_wid.IsChecked() else 'no'
         if process or plot == 'yes':
-            pagepanel.fill_form(dgroup)
+            pagepanel.fill_form(dgroup, initial=True)
             pagepanel.process(dgroup=dgroup)
 
         if plot == 'yes' and hasattr(pagepanel, 'plot'):

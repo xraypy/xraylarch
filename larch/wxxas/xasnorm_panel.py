@@ -52,6 +52,11 @@ def get_auto_nnorm(norm1, norm2):
         nnorm = 0
     return nnorm
 
+def get_auto_npre(pre1, pre2):
+    "autoamatically set npre from range"
+    nrange = abs(pre2 - pre1)
+    return 0 if nrange < 5.0 else 1
+
 class XASNormPanel(TaskPanel):
     """XAS normalization Panel"""
     def __init__(self, parent, controller=None, **kws):
@@ -355,7 +360,7 @@ class XASNormPanel(TaskPanel):
         setattr(dgroup.config, self.configname, conf)
         return conf
 
-    def fill_form(self, dgroup):
+    def fill_form(self, dgroup, initial=False):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
         self.skip_process = True
@@ -384,6 +389,9 @@ class XASNormPanel(TaskPanel):
             xasmode = getattr(dgroup, 'xasmode', 'unknown')
             if xasmode.startswith('calc'):
                 opts['npre'] = 0
+            elif initial:
+                opts['npre'] = get_auto_npre(opts['pre1'], opts['pre2'])
+
             self.wids['energy_shift'].SetValue(opts['energy_shift'])
             self.wids['nvict'].SetStringSelection("%d" % opts['nvict'])
             self.wids['npre'].SetSelection(opts['npre'])
@@ -669,6 +677,9 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         conf = {}
         for attr in ('pre1', 'pre2', 'norm1', 'norm2'):
             conf[attr] = self.wids[attr].GetValue()
+        if abs(conf['pre1'] - conf['pre2']) < 2.0:
+            conf['npre'] = 0
+
         self.update_config(conf)
         self.onReprocess()
 

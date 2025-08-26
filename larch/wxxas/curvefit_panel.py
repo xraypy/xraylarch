@@ -1382,7 +1382,7 @@ class CurveFitPanel(TaskPanel):
             self.wids['curvefit_xmin'].SetValue(xmin)
             self.wids['curvefit_xmax'].SetValue(xmax)
 
-    def fill_form(self, dat):
+    def fill_form(self, dat, initial=False):
         if isinstance(dat, Group):
             xmin  = dat.xdat.xmin()
             xmax  = dat.xdat.xmax()
