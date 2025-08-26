@@ -51,8 +51,7 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl,
 from larch.wxlib.parameter import ParameterWidgets
 from larch.wxlib.plotter import last_cursor_pos
 from .taskpanel import TaskPanel
-from .config import (CurveFit_ArrayChoices, PlotWindowChoices,
-                     XRANGE_CHOICES, YERR_CHOICES)
+from .config import (CurveFit_ArrayChoices, PlotWindowChoices, YERR_CHOICES)
 
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
@@ -1186,51 +1185,24 @@ class CurveFitPanel(TaskPanel):
         self.wids = {}
 
         # xrange row
-        xrpanel = wx.Panel(pan)
-        xrsizer = wx.BoxSizer(wx.HORIZONTAL)
-        fsopts = dict(parent=xrpanel, digits=2, increment=1,
+        fsopts = dict(parent=pan, digits=2, increment=1,
                       size=(125, -1), with_pin=True)
 
         curvefit_xmin  = self.add_floatspin('curvefit_xmin',  value=-1, **fsopts)
         curvefit_xmax  = self.add_floatspin('curvefit_xmax',  value=+1, **fsopts)
 
-        self.xrange_choice = Choice(xrpanel, size=(150, -1),
-                                   choices=XRANGE_CHOICES,
-                                   action=self.onXrangeChoice)
+        self.wids['show_fitrange']  = Check(pan, label='show?', default=True,
+                                           size=(50, -1),  action=self.onPlot)
+        self.wids['full_fitrange']  = Button(pan, label='use full range?',
+                                           size=(125, -1),  action=self.onFull_Xrange)
 
-        self.wids['show_fitrange']  = Check(xrpanel, label='show?', default=True,
-                                           size=(75, -1),  action=self.onPlot)
-
-        xrsizer.Add(self.xrange_choice, 0)
-        xrsizer.Add(SimpleText(xrpanel, ' X min:'), 0)
-        xrsizer.Add(curvefit_xmin, 0)
-        xrsizer.Add(SimpleText(xrpanel, ' X max: '), 0)
-        xrsizer.Add(curvefit_xmax, 0)
-        xrsizer.Add(self.wids['show_fitrange'], 0)
-        pack(xrpanel, xrsizer)
-
-        self.wids['curvefit_xmin'].Disable()
-        self.wids['curvefit_xmax'].Disable()
-        self.xrange_choice.SetSelection(0)
-
-        # yerror row
-        yerrpanel = wx.Panel(pan)
-        yerrsizer = wx.BoxSizer(wx.HORIZONTAL)
-
-        self.wids['yerr_choice'] = Choice(yerrpanel, choices=YERR_CHOICES, default=0,
+        self.wids['yerr_choice'] = Choice(pan, choices=YERR_CHOICES, default=0,
                                           action=self.onYerrChoice, size=(150, -1))
-        self.wids['yerr_array'] = Choice(yerrpanel, choices=['-'],
+        self.wids['yerr_array'] = Choice(pan, choices=['-'],
                                            action=self.onYerrChoice, size=(225, -1))
         self.wids['yerr_array'].Disable()
-        self.wids['yerr_value'] = FloatCtrl(yerrpanel, value=1.0, minval=0, precision=5, size=(75, -1))
-
-        yerrsizer.Add(self.wids['yerr_choice'], 0)
-        yerrsizer.Add(SimpleText(yerrpanel, ' Value: '), 0)
-        yerrsizer.Add(self.wids['yerr_value'], 0)
-        yerrsizer.Add(SimpleText(yerrpanel, 'Array Name: '), 0)
-        yerrsizer.Add(self.wids['yerr_array'], 0)
-
-        pack(yerrpanel, yerrsizer)
+        self.wids['yerr_value'] = FloatCtrl(pan, value=1.0, minval=0,
+                                                precision=5, size=(75, -1))
 
         self.loadresults_btn = Button(pan, 'Load Fit Result',
                                       action=self.onLoadFitResult, size=(175, -1))
@@ -1278,34 +1250,38 @@ class CurveFitPanel(TaskPanel):
         pan.Add(self.array_choice, dcol=3)
 
         add_text(' Y uncertainty: ')
-        pan.Add(yerrpanel, dcol=5)
 
-        add_text( ' X range: ')
-        pan.Add(xrpanel, dcol=5)
+        pan.Add(self.wids['yerr_choice'])
+        add_text('  Value: ', newrow=False)
+        pan.Add(self.wids['yerr_value'])
+        add_text('  Array Name: ', newrow=False)
+        pan.Add(self.wids['yerr_array'], dcol=3)
+
+        add_text( ' X min: ')
+        pan.Add(curvefit_xmin)
+        add_text(' X max: ', newrow=False)
+        pan.Add(curvefit_xmax, dcol=2)
+        pan.Add(self.wids['show_fitrange'])
+        pan.Add(self.wids['full_fitrange'])
 
         pan.Add((10, 10), newrow=True)
-        pan.Add(self.loadresults_btn)
-        pan.Add(self.showresults_btn)
+        pan.Add(self.loadresults_btn, dcol=2)
+        pan.Add(self.showresults_btn, dcol=3)
 
         pan.Add(HLine(pan, size=(600, 2)), dcol=6, newrow=True)
 
-        #  add model
-        ts = wx.BoxSizer(wx.HORIZONTAL)
-        ts.Add(models_peaks)
-        ts.Add(models_other)
-
         pan.Add(SimpleText(pan, 'Add Component: '), newrow=True)
-        pan.Add(ts, dcol=4)
-        pan.Add(self.plotmodel_btn)
-
+        pan.Add(models_peaks, dcol=2)
+        pan.Add(models_other, dcol=2)
+        pan.Add(self.plotmodel_btn, dcol=2)
 
         pan.Add(SimpleText(pan, 'Messages: '), newrow=True)
         pan.Add(self.message, dcol=4)
-        pan.Add(self.fitmodel_btn)
+        pan.Add(self.fitmodel_btn, dcol=2)
         pan.Add(SimpleText(pan, '  '), dcol=5, newrow=True)
-        pan.Add(self.fitselected_btn)
+        pan.Add(self.fitselected_btn, dcol=2)
 
-        pan.Add(HLine(pan, size=(600, 2)), dcol=6, newrow=True)
+        pan.Add(HLine(pan, size=(600, 2)), dcol=7, newrow=True)
         pan.pack()
 
         self.mod_nb = flatnotebook(self, {}, on_change=self.onModelPanelExposed)
@@ -1340,13 +1316,22 @@ class CurveFitPanel(TaskPanel):
 
         return conf
 
+    def onFull_Xrange(self, event=None):
+        dgroup = self.controller.get_group()
+        if isinstance(dgroup, Group):
+            xmin  = dgroup.xdat.min()
+            xmax  = dgroup.xdat.max()
+            self.wids['curvefit_xmin'].SetValue(xmin)
+            self.wids['curvefit_xmax'].SetValue(xmax)
+
     def onYerrChoice(self, event=None):
         yerr_type = self.wids['yerr_choice'].GetSelection() # Constant, Sqrt, Array
         self.wids['yerr_array'].Enable(yerr_type==2)
         self.wids['yerr_value'].Enable(yerr_type==0)
+        print("onYerrChoice ", yerr_type)
         if yerr_type == 2:
             dgroup = self.controller.get_group()
-            xarr = getattr(dgroup, 'x', None)
+            xarr = getattr(dgroup, 'xdat', None)
             if xarr is None:
                 return
             npts = len(xarr)
@@ -1359,7 +1344,7 @@ class CurveFitPanel(TaskPanel):
             for attr in dir(dgroup):
                 obj = getattr(dgroup, attr, None)
                 if isinstance(obj, np.ndarray) and len(obj) == npts:
-                    if attr not in ('x', 'y'):
+                    if attr not in ('xdat', 'ydat'):
                         arrlist.append(attr)
                         if attr not in cur_list:
                             needs_update = True
@@ -1371,21 +1356,10 @@ class CurveFitPanel(TaskPanel):
                 except:
                     pass
 
-    def onXrangeChoice(self, evt=None):
-        sel = self.xrange_choice.GetSelection()
-        self.wids['curvefit_xmin'].Enable(sel==1)
-        self.wids['curvefit_xmax'].Enable(sel==1)
-        if sel == 1:
-            dgroup = self.controller.get_group()
-            xmin = dgroup.xdat.min()
-            xmax = dgroup.xdat.max()
-            self.wids['curvefit_xmin'].SetValue(xmin)
-            self.wids['curvefit_xmax'].SetValue(xmax)
-
     def fill_form(self, dat, initial=False):
         if isinstance(dat, Group):
-            xmin  = dat.xdat.xmin()
-            xmax  = dat.xdat.xmax()
+            xmin  = dat.xdat.min()
+            xmax  = dat.xdat.max()
 
             if hasattr(dat, 'curvefit'):
                 xmin = dat.curvefit.xmin
@@ -1411,13 +1385,8 @@ class CurveFitPanel(TaskPanel):
                      'array_desc': array_desc.lower(),
                      'array_name': CurveFit_ArrayChoices[array_desc],
                      'bkg_components': []}
-        xrange_sel = self.xrange_choice.GetSelection()
-        if xrange_sel == 0:
-            form_opts['xmin'] = dgroup.xdat.min()
-            form_opts['xmax'] = dgroup.xdat.max()
-        else:
-            form_opts['xmin'] = self.wids['curvefit_xmin'].GetValue()
-            form_opts['xmax'] = self.wids['curvefit_xmax'].GetValue()
+        form_opts['xmin'] = self.wids['curvefit_xmin'].GetValue()
+        form_opts['xmax'] = self.wids['curvefit_xmax'].GetValue()
         form_opts['show_fitrange'] = self.wids['show_fitrange'].IsChecked()
         return form_opts
 
