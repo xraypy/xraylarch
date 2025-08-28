@@ -13,6 +13,8 @@ Exposed functions here are
 import time
 import os
 import sys
+import yaml
+import shutil
 import wx
 from pathlib import Path
 from copy import deepcopy
@@ -38,15 +40,50 @@ PLOT_DISPLAYS = {}
 FITPLOT_DISPLAYS = {}
 XRF_DISPLAYS = {}
 DISPLAY_LIMITS = None
+_larch_name = '_plotter'
+
 PLOTOPTS = {'theme': 'light',
-            'height': 550,
-            'width': 600,
+            'window_size': [650, 600],
+            'auto_margins': True,
+            'axes_style': 'box',
+            'facecolor': '#fefefe',
+            'framecolor': '#fcfcfa',
+            'gridcolor': '#ecece5',
+            'hidewith_legend': True,
+            'labelfont': 9.0,
+            'legend_loc': 'best',
+            'legend_onaxis': 'on plot',
+            'legendfont': 8.0,
+            'linecolors': ['#1f77b4', '#d62728', '#2ca02c', '#ff7f0e', '#9467bd',
+                           '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'],
+            'line_fill': False,
+            'line_alpha': 1.0,
+            'line_drawstyle': 'default',
+            'line_marker': 'no symbol',
+            'linestyle': 'solid',
             'linewidth': 2.5,
             'markersize': 4.0,
+            'markercolor': 'black',
+            'margins': [0.11, 0.08, 0.04, 0.14],
+            'plot_type': 'lineplot',
+            'scatter_normalcolor': 'blue',
+            'scatter_normaledge': 'blue',
+            'scatter_selectcolor': 'red',
+            'scatter_selectedge': 'red',
+            'scatter_size': 30,
             'show_grid': True,
-            'show_fullbox': True}
+            'show_legend': True,
+            'show_legend_frame': False,
+            'textcolor': '#000000',
+            'titlefont': 10.0,
+            'viewpad': 2.5,
+            'xscale': 'linear',
+            'yscale': 'linear',
+            'y2scale': 'linear',
+            'y3scale': 'linear',
+            'y4scale': 'linear',
+            'zoom_style': 'both x and y'}
 
-_larch_name = '_plotter'
 
 __DOC__ = '''
 General Plotting and Image Display Functions
@@ -67,6 +104,82 @@ xrf_plot         browsable display for XRF spectra
 
 MAX_WINDOWS = 25
 MAX_CURSHIST = 100
+WXMPLOT_CONF = 'wxmplot.yaml'
+NTRACES = 16
+
+def get_plot_config(**kws):
+    """get plot configuration dictionary"""
+    conf = deepcopy(PLOTOPTS)
+
+    saved_conf = {}
+    conffile = Path(user_larchdir, WXMPLOT_CONF)
+    if conffile.exists():
+        saved_conf = yaml.safe_load(open(conffile.as_posix(), 'r').read())
+    for key in conf:
+        if key in saved_conf:
+            conf[key] = saved_conf[key]
+
+    # if the saved configuration has 'traces',
+    # use the first for default trace properties
+    traces = saved_conf.get('traces', [{}])
+    traces.extend([{}]*NTRACES)
+    t0 = traces[0]
+
+    conf['linestyle'] = t0.get('style', conf['linestyle'])
+    for attr in ('linewidth', 'markersize', 'markercolor'):
+        conf[attr] = t0.get(attr, conf[attr])
+    for attr in ('alpha', 'drawstyle', 'fill', 'marker'):
+        cname = f'line_{attr}'
+        conf[cname] = t0.get(attr, conf[cname])
+
+    conf.update(**kws)
+
+    # build traces from default trace properties, overwrite with saved trace properties
+    conf['traces'] = []
+    ncol = len(conf['linecolors'])
+    for i in range(NTRACES):
+        t = {'color': conf['linecolors'][i % ncol],
+             'style': conf.get('linestyle', 'solid'),
+             'linewidth': conf.get('linewidth', 2.5),
+             'zorder': (i+1)*5,
+             'fill': conf.get('line_fill', False),
+             'drawstyle': conf.get('line_drawstyle', 'default'),
+             'alpha': conf.get('line_alpha', 1),
+             'marker': conf.get('line_marker', 'no symbol'),
+             'markersize': conf.get('markersize', 4),
+             'markercolor': conf.get('markercolor', 'black')}
+        t.update(traces[i])
+        conf['traces'].append(t)
+    return conf
+
+
+def save_plot_config(win=1):
+    """save plot configuration of current plot for future sessions"""
+    conf = None
+    display = get_display(win=win)
+    if display is None:
+        return
+    try:
+        conf = display.panel.get_config()
+    except Exception:
+        print("cannot save plot configuration")
+
+    if conf is not None:
+        confstr = yaml.dump(conf, default_flow_style=None, indent=5, sort_keys=False)
+        conffile = Path(user_larchdir, WXMPLOT_CONF)
+        if conffile.exists():
+            orig = conffile.absolute().as_posix()
+            save = orig.replace('.yaml', '_1.yaml')
+            print(orig, save)
+            try:
+                shutil.copy(orig, save)
+            except Exception:
+                pass
+        with open(conffile, 'w') as fh:
+            fh.write(confstr)
+
+
+
 
 class XRFDisplay(XRFDisplayFrame):
     def __init__(self, wxparent=None, window=1, _larch=None,
@@ -80,7 +193,7 @@ class XRFDisplay(XRFDisplayFrame):
         self.window = int(window)
         self._larch = _larch
         self._xylims = {}
-        self.symname = '%s.xrf%i' % (_larch_name, self.window)
+        self.symname = f'{_larch_name}.xrf{self.window}'
         symtable = ensuremod(self._larch, _larch_name)
 
         if symtable is not None:
@@ -104,8 +217,8 @@ class XRFDisplay(XRFDisplayFrame):
         symtable = ensuremod(self._larch, _larch_name)
         if symtable is None:
             return
-        symtable.set_symbol('%s_xrf_x'  % self.symname, x)
-        symtable.set_symbol('%s_xrf_y'  % self.symname, y)
+        symtable.set_symbol(f'{self.symname}_xrf_x', x)
+        symtable.set_symbol(f'{self.symname}_xrf_y', y)
 
 class PlotDisplay(PlotFrame):
     def __init__(self, wxparent=None, window=1, _larch=None, size=None, **kws):
@@ -121,13 +234,12 @@ class PlotDisplay(PlotFrame):
         self._larch = _larch
         self._xylims = {}
         self.cursor_hist = []
-        self.symname = '%s.plot%i' % (_larch_name, self.window)
+        self.symname = f'{_larch_name}.plot{self.window}'
         symtable = ensuremod(self._larch, _larch_name)
-        self.panel.canvas.figure.set_facecolor('#FDFDFB')
         if symtable is not None:
             symtable.set_symbol(self.symname, self)
-            if not hasattr(symtable, '%s.cursor_maxhistory' % _larch_name):
-                symtable.set_symbol('%s.cursor_maxhistory' % _larch_name, MAX_CURSHIST)
+            if not hasattr(symtable, f'{_larch_name}.cursor_maxhistory'):
+                symtable.set_symbol(f'{_larch_name}.cursor_maxhistory', MAX_CURSHIST)
 
         if window not in PLOT_DISPLAYS:
             PLOT_DISPLAYS[window] = self
@@ -157,25 +269,15 @@ class PlotDisplay(PlotFrame):
         symtable.set_symbol('%s_cursor_hist' % self.symname, self.cursor_hist)
 
     def get_config(self):
-        global PLOTOPTS
-        try:
-            PLOTOPTS = deepcopy(_larch.symtable._sys.wx.plotopts)
-        except:
-            pass
-        self.config = {k: v for k, v in PLOTOPTS.items()}
+        return get_plot_config()
 
     def set_config(self,  **kws):
-        for k, v in kws.items():
-            if k in self.config:
-                self.config[k] = v
-        pconf = self.panel.conf
-        pconf.set_theme(theme=self.config['theme'])
-        pconf.enable_grid(self.config['show_grid'])
-        pconf.axes_style = 'box' if self.config['show_fullbox'] else 'open'
-        for i in range(16):
-            pconf.set_trace_linewidth(self.config['linewidth'], trace=i)
-            pconf.set_trace_markersize(self.config['markersize'], trace=i)
-        self.SetSize((int(self.config['width']), int(self.config['height'])))
+        cnf = get_plot_config()
+        cnf.update(**kws)
+        try:
+            self.panel.set_config(**cnf)
+        except:
+            print("could not set plot config")
 
 
 class StackedPlotDisplay(StackedPlotFrame):
@@ -286,11 +388,6 @@ def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
             getattr(_larch.symtable._plotter, 'no_plotting', False)):
             return None
 
-        global PLOTOPTS
-        try:
-            PLOTOPTS = deepcopy(_larch.symtable._sys.wx.plotopts)
-        except:
-            pass
 
         global DISPLAY_LIMITS
         if DISPLAY_LIMITS is None:
@@ -327,7 +424,7 @@ def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
         title = wintitle
 
     def _get_disp(symname, creator, win, ddict, wxparent,
-                  size, position, height, width, _larch):
+                  size, position, _larch):
         wxapp = get_wxapp()
         display = None
         new_display = False
@@ -347,13 +444,11 @@ def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
                 except RuntimeError:  # window has been deleted
                     display = None
 
+        plot_conf = get_plot_config()
         if display is None:
-            if size is None:
-                if height is None:
-                    height = PLOTOPTS['height']
-                if width is None:
-                    width = PLOTOPTS['width']
-                size = (int(width), int(height))
+            if size is not None:
+                conf = get_plot_config()
+                size = conf['window_size']
             display = creator(window=win, wxparent=wxparent,
                               size=size, _larch=_larch)
             new_display = True
@@ -387,30 +482,16 @@ def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
         return display, new_display
 
 
+    plot_conf = get_plot_config()
     display, isnew  = _get_disp(symname, creator, win, display_dict, wxparent,
-                                size, position, height, width, _larch)
+                               size, position,  _larch)
     if isnew and creator in (PlotDisplay, StackedPlotDisplay):
-        if theme is not None:
-            PLOTOPTS['theme'] = theme
-        if show_grid is not None:
-            PLOTOPTS['show_grid'] = show_grid
-        if show_fullbox is not None:
-            PLOTOPTS['show_fullbox'] = show_fullbox
-        if linewidth is not None:
-            PLOTOPTS['linewidth'] = linewidth
-        if markersize is not None:
-            PLOTOPTS['markersize'] = markersize
         panels = [display.panel]
         if creator == StackedPlotDisplay:
             panels.append(display.panel_bot)
         for panel in panels:
-            conf = panel.conf
-            conf.set_theme(theme=PLOTOPTS['theme'])
-            conf.enable_grid(PLOTOPTS['show_grid'])
-            conf.axes_style = 'box' if PLOTOPTS['show_fullbox'] else 'open'
-            for i in range(16):
-                conf.set_trace_linewidth(PLOTOPTS['linewidth'], trace=i)
-                conf.set_trace_markersize(PLOTOPTS['markersize'], trace=i)
+            panel.set_config(**plot_conf)
+
     try:
         display.SetTitle(title)
 

@@ -166,7 +166,8 @@ if HAS_WXPYTHON:
                           get_display, _closeDisplays, _getcursor,
                           last_cursor_pos, _imshow, _contour, _xrf_plot,
                           _xrf_oplot, _fitplot, _redraw_plot,
-                          get_zoomlimits, set_zoomlimits)
+                          get_zoomlimits, set_zoomlimits,
+                          save_plot_config, get_plot_config)
 
 
 
@@ -179,11 +180,13 @@ if HAS_WXPYTHON:
                                        plot_arrow=_plot_arrow,
                                        plot_setlimits=_plot_setlimits,
                                        plot_axvline=_plot_axvline,
-                                      plot_axhline=_plot_axhline,
+                                       plot_axhline=_plot_axhline,
                                        scatterplot=_scatterplot, hist=_hist,
                                        update_trace=_update_trace,
                                        save_plot=_saveplot,
                                        save_image=_saveimg,
+                                       save_plot_config=save_plot_config,
+                                       get_plot_config=get_plot_config,
                                        get_display=get_display,
                                        close_all_displays=_closeDisplays,
                                        get_cursor=_getcursor,
