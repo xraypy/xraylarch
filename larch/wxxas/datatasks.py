@@ -15,7 +15,8 @@ from larch.utils import path_split
 from larch.wxlib import (GridPanel, FloatCtrl, FloatSpin,
                          FloatSpinWithPin, SimpleText, Choice, SetTip,
                          Button, HLine, LEFT, pack,
-                         plotlabels, get_font, FRAMESTYLE)
+                         plotlabels, get_font, FRAMESTYLE,
+                         get_panel_plot_config, set_panel_plot_config)
 
 from larch.xafs import etok, ktoe, find_energy_step
 from larch.utils.physical_constants import ATOM_SYMS
@@ -62,7 +63,6 @@ def set_view_limits(ppanel, xlim, ylim):
     ppanel.axes.set_xlim(xlim, emit=True)
     ppanel.axes.set_ylim(ylim, emit=True)
 
-
 class OverAbsorptionFrame(wx.Frame):
     """window for correcting over-absorption"""
     def __init__(self, parent, controller, label='abscorr', **kws):
@@ -73,10 +73,8 @@ class OverAbsorptionFrame(wx.Frame):
         self.label = label
         self.controller.register_group_callback(label, self, self.on_groupname)
         self.plotpanel = self.controller.get_display(stacked=False).panel
-        try:
-            self.plot_conf = self.plotpanel.get_config()
-        except Exception:
-            self.plot_conf = {}
+        self.plot_conf = get_panel_plot_config(self.plotpanel)
+
         self.no_plot = False
 
         self.data = [self.dgroup.energy[:], self.dgroup.norm[:]]
@@ -151,10 +149,7 @@ class OverAbsorptionFrame(wx.Frame):
     def onDone(self, event=None):
         self.controller.unregister_group_callback(self.label)
         self.no_plot = True
-        try:
-            self.plotpanel.set_config(**self.plot_conf)
-        except Exception:
-            pass
+        set_panel_plot_config(self.plotpanel, **self.plot_conf)
         self.Destroy()
 
     def set_default_elem_edge(self, dgroup):
@@ -254,10 +249,7 @@ class EnergyCalibrateFrame(wx.Frame):
         self.label = label
         self.controller.register_group_callback(label, self, self.on_groupname)
         self.plotpanel = self.controller.get_display(stacked=False).panel
-        try:
-            self.plot_conf = self.plotpanel.get_config()
-        except Exception:
-            self.plot_conf = {}
+        self.plot_conf = get_panel_plot_config(self.plotpanel)
         self.no_plot = False
 
         ensure_en_orig(self.dgroup)
@@ -379,10 +371,7 @@ class EnergyCalibrateFrame(wx.Frame):
     def onDone(self, event=None):
         self.controller.unregister_group_callback(self.label)
         self.no_plot = True
-        try:
-            self.plotpanel.set_config(**self.plot_conf)
-        except Exception:
-            pass
+        set_panel_plot_config(self.plotpanel, **self.plot_conf)
         self.Destroy()
 
     def on_groupname(self, event=None):
@@ -556,10 +545,7 @@ class RebinDataFrame(wx.Frame):
         self.label = label
         self.controller.register_group_callback(label, self, self.on_groupname)
         self.plotpanel = self.controller.get_display(stacked=False).panel
-        try:
-            self.plot_conf = self.plotpanel.get_config()
-        except Exception:
-            self.plot_conf = {}
+        self.plot_conf = get_panel_plot_config(self.plotpanel)
         self.no_plot = False
 
 
@@ -659,10 +645,7 @@ class RebinDataFrame(wx.Frame):
     def onDone(self, event=None):
         self.controller.unregister_group_callback(self.label)
         self.no_plot = True
-        try:
-            self.plotpanel.set_config(**self.plot_conf)
-        except Exception:
-            pass
+        set_panel_plot_config(self.plotpanel, **self.plot_conf)
         self.Destroy()
 
     def on_groupname(self, event=None):
@@ -778,10 +761,7 @@ class SmoothDataFrame(wx.Frame):
         self.label = label
         self.controller.register_group_callback(label, self, self.on_groupname)
         self.plotpanel = self.controller.get_display(stacked=False).panel
-        try:
-            self.plot_conf = self.plotpanel.get_config()
-        except Exception:
-            self.plot_conf = {}
+        self.plot_conf = get_panel_plot_config(self.plotpanel)
         self.no_plot = False
 
         self.data = [self.dgroup.energy[:], self.dgroup.mu[:]]
@@ -861,10 +841,7 @@ class SmoothDataFrame(wx.Frame):
     def onDone(self, event=None):
         self.controller.unregister_group_callback(self.label)
         self.no_plot = True
-        try:
-            self.plotpanel.set_config(**self.plot_conf)
-        except Exception:
-            pass
+        set_panel_plot_config(self.plotpanel, **self.plot_conf)
         self.Destroy()
 
     def on_groupname(self, event=None):
@@ -979,10 +956,7 @@ class DeconvolutionFrame(wx.Frame):
         self.label = label
         self.controller.register_group_callback(label, self, self.on_groupname)
         self.plotpanel = self.controller.get_display(stacked=False).panel
-        try:
-            self.plot_conf = self.plotpanel.get_config()
-        except Exception:
-            self.plot_conf = {}
+        self.plot_conf = get_panel_plot_config(self.plotpanel)
         self.no_plot = False
 
         # groupnames = list(self.controller.file_groups.keys())
@@ -1039,10 +1013,7 @@ class DeconvolutionFrame(wx.Frame):
     def onDone(self, event=None):
         self.controller.unregister_group_callback(self.label)
         self.no_plot = True
-        try:
-            self.plotpanel.set_config(**self.plot_conf)
-        except Exception:
-            pass
+        set_panel_plot_config(self.plotpanel, **self.plot_conf)
         self.Destroy()
 
     def on_saveas(self, event=None):
@@ -1128,10 +1099,7 @@ class DeglitchFrame(wx.Frame):
         self.last_plottype = None
         self.controller.register_group_callback(label, self, self.on_groupname)
         self.plotpanel = self.controller.get_display(stacked=False).panel
-        try:
-            self.plot_conf = self.plotpanel.get_config()
-        except Exception:
-            self.plot_conf = {}
+        self.plot_conf = get_panel_plot_config(self.plotpanel)
         self.no_plot = False
         self.wids = {}
         self.plot_markers = None
@@ -1244,10 +1212,7 @@ class DeglitchFrame(wx.Frame):
     def onDone(self, event=None):
         self.controller.unregister_group_callback(self.label)
         self.no_plot = True
-        try:
-            self.plotpanel.set_config(**self.plot_conf)
-        except Exception:
-            pass
+        set_panel_plot_config(self.plotpanel, **self.plot_conf)
         self.Destroy()
 
     def reset_data_history(self):
