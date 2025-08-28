@@ -42,7 +42,7 @@ XRF_DISPLAYS = {}
 DISPLAY_LIMITS = None
 _larch_name = '_plotter'
 
-PLOTOPTS = {'theme': 'light',
+PLOTOPTS = {'theme': '<auto>',
             'window_size': [650, 600],
             'auto_margins': True,
             'axes_style': 'box',
@@ -119,6 +119,11 @@ def get_plot_config(**kws):
         if key in saved_conf:
             conf[key] = saved_conf[key]
 
+    # check for theme of "<auto>"
+    if conf.get('theme', '<auto>').lower().startswith('<auto>'):
+        isdark = wx.SystemSettings.GetAppearance().IsDark()
+        conf['theme'] = 'dark' if isdark else 'light'
+
     # if the saved configuration has 'traces',
     # use the first for default trace properties
     traces = saved_conf.get('traces', [{}])
@@ -178,7 +183,19 @@ def save_plot_config(win=1):
         with open(conffile, 'w') as fh:
             fh.write(confstr)
 
+def get_panel_plot_config(panel):
+    """get plot configuration for current plot (or default if that fails)"""
+    try:
+        conf = panel.get_config()
+    except Exception:
+        conf = get_plot_config()
+    return conf
 
+def set_panel_plot_config(panel, **kws):
+    """set plot configuration for current plot)"""
+    cnf = get_panel_plot_config(panel)
+    cnf.update(**kws)
+    panel.set_config(**cnf)
 
 
 class XRFDisplay(XRFDisplayFrame):

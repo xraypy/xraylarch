@@ -167,8 +167,8 @@ if HAS_WXPYTHON:
                           last_cursor_pos, _imshow, _contour, _xrf_plot,
                           _xrf_oplot, _fitplot, _redraw_plot,
                           get_zoomlimits, set_zoomlimits,
-                          save_plot_config, get_plot_config)
-
+                          save_plot_config, get_plot_config,
+                          get_panel_plot_config, set_panel_plot_config)
 
 
     if uname == 'darwin':
