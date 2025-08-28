@@ -89,7 +89,7 @@ def nullfunc(*args, **kws):
 
 _larch_builtins = {'_sys.wx': dict(gcd=nullfunc,
                                    databrowser=nullfunc,
-                                   filepromspt=nullfunc,
+                                   fileprompt=nullfunc,
                                    wx_update=nullfunc)}
 
 _larch_builtins['_plotter'] = dict(plot=nullfunc,
@@ -156,7 +156,7 @@ if HAS_WXPYTHON:
 
     _larch_builtins = {'_sys.wx': dict(gcd=gcd,
                                        databrowser=databrowser,
-                                       filepromspt=fileprompt,
+                                       fileprompt=fileprompt,
                                        wx_update=wx_update)}
 
     from .plotter import (_plot, _oplot, _newplot, _plot_text, fileplot,
