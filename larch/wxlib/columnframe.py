@@ -224,17 +224,15 @@ class DeadtimeCorrectionFrame(wx.Frame):
                                         ltime=self.config['ltime'],
                                         add_data=False)
         if sum is not None:
-            popts = dict(marker=None, markersize=0, linewidth=2.5,
-                         show_legend=True, ylabel=label, label=label,
-                         xlabel='Energy (eV)')
-            self.parent.plotpanel.plot(en, sum/i0, new=True, **popts)
+            self.parent.plotpanel.plot(en, sum/i0, new=True,
+                                       ylabel=label, label=label,
+                                       xlabel='Energy (eV)')
 
     def onPlotEach(self, event=None):
         self.read_form()
         new = True
         en, i0 = self.get_en_i0()
-        popts = dict(marker=None, markersize=0, linewidth=2.5,
-                     show_legend=True,  xlabel='Energy (eV)',
+        popts = dict(show_legend=True,  xlabel='Energy (eV)',
                      ylabel=f'Corrected Channels')
 
         nused = 0
@@ -256,7 +254,7 @@ class DeadtimeCorrectionFrame(wx.Frame):
         if roi is None:
             return
         ylabel = self.wids['roi'].GetStringSelection()
-        popts = dict(marker=None, markersize=0, linewidth=2.5, show_legend=True,
+        popts = dict(show_legend=True,
                      ylabel=f'Chan{pchan}', xlabel='Energy (eV)',
                      label=f'Chan{pchan} Raw')
 
@@ -416,8 +414,7 @@ class MultiColumnFrame(wx.Frame) :
         self.config['i0']  = self.wids['i0'].GetSelection()
         channels = []
         x = self.group.xplot
-        popts = dict(marker=None, markersize=0, linewidth=2.5,
-                     ylabel='selected arrays', show_legend=True,
+        popts = dict(ylabel='selected arrays', show_legend=True,
                      xlabel=self.group.plot_xlabel, delay_draw=True)
         first = True
         for wname, wid in self.wids.items():
@@ -445,9 +442,8 @@ class MultiColumnFrame(wx.Frame) :
             except:
                 label = f'column {index+1}'
 
-            popts = dict(marker=None, markersize=0, linewidth=2.5,
-                         ylabel=label, xlabel=self.group.plot_xlabel, label=label)
-            self.parent.plotpanel.plot(x, y, **popts)
+            self.parent.plotpanel.plot(x, y, ylabel=label,
+                                      xlabel=self.group.plot_xlabel, label=label)
 
     def onOK_Multi(self, evt=None):
         group = self.group
@@ -553,9 +549,8 @@ class EditColumnFrame(wx.Frame) :
             x = self.group.index
             y = self.group.data[index, :]
             label = self.wids["ret_%i" % index].GetLabel()
-            popts = dict(marker='o', markersize=4, linewidth=1.5,
-                         ylabel=label, xlabel='data point', label=label)
-            self.parent.plotpanel.plot(x, y, **popts)
+            self.parent.plotpanel.plot(x, y, marker='o', ylabel=label,
+                                       xlabel='data point', label=label)
 
     def onColNumber(self, evt=None, index=-1):
         for name, wid in self.wids.items():
@@ -867,12 +862,8 @@ class ColumnDataFileFrame(wx.Frame) :
         self.nb = flatnotebook(self, {}, style=FNB_STYLE)
 
         self.plotpanel = PlotPanel(self, messenger=self.set_message)
-        try:
-            plotopts = self._larch.symtable._sys.wx.plotopts
-            self.plotpanel.conf.set_theme(plotopts['theme'])
-            self.plotpanel.conf.enable_grid(plotopts['show_grid'])
-        except:
-            pass
+        from .plotter import set_panel_plot_config
+        set_panel_plot_config(self.plotpanel)
 
 
         self.plotpanel.SetMinSize((200, 200))
@@ -1350,7 +1341,7 @@ class ColumnDataFileFrame(wx.Frame) :
             self.set_message("Warning: XAS data may need to be rebinned!")
 
         fname = Path(workgroup.filename).name
-        popts = dict(marker='o', markersize=4, linewidth=1.5, title=fname,
+        popts = dict(marker='o', title=fname,
                      xlabel=workgroup.plot_xlabel,
                      ylabel=workgroup.plot_ylabel,
                      label=workgroup.plot_ylabel)
@@ -1360,8 +1351,7 @@ class ColumnDataFileFrame(wx.Frame) :
             yrlabel = getattr(workgroup, 'plot_yrlabel', 'reference')
             self.plotpanel.oplot(workgroup.xplot, workgroup.yref,
                                  y2label=yrlabel,
-                                 linewidth=2.0, color='#E08070',
-                                 label=yrlabel, zorder=-40, side='right')
+                                 label=yrlabel, zorder=-10, side='right')
 
         for i in range(self.nb.GetPageCount()):
             if 'plot' in self.nb.GetPageText(i).lower():
