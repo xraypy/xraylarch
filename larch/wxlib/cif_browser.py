@@ -295,12 +295,8 @@ class CIFFrame(wx.Frame):
             pass
 
         self.plotpanel = PlotPanel(rightpanel, messenger=_swallow_plot_messages)
-        try:
-            plotopts = self.larch.symtable._sys.wx.plotopts
-            self.plotpanel.conf.set_theme(plotopts['theme'])
-            self.plotpanel.conf.enable_grid(plotopts['show_grid'])
-        except:
-            pass
+        from .plotter import set_panel_plot_config
+        set_panel_plot_config(sef.plotpanel)
 
         self.plotpanel.SetMinSize((250, 250))
         self.plotpanel.SetMaxSize((675, 400))
@@ -786,20 +782,16 @@ class CIFFrame(wx.Frame):
             qd_label = r'$Q\rm\,(\AA^{-1}) \,\> [d \rm\,(\AA)]$'
             title = self.cif_label + '\n' + '(cif %d)' % (self.current_cif.ams_id)
             ppan = self.plotpanel
-            ppan.plot(qval, ival, linewidth=0, marker='o', markersize=2,
+
+            ppan.plot(qval, ival, linewidth=0, marker='o',
                       xlabel=qd_label, ylabel='Relative Intensity',
-                      title=title, titlefontsize=8, delay_draw=True)
+                      title=title, delay_draw=True)
 
             ppan.axes.bar(qval, ival, 0.1, color='blue')
             ppan.axes.xaxis.set_major_formatter(FuncFormatter(qd_formatter))
             ppan.canvas.draw()
             self.has_xrd1d = True
-
         display_xrd1d()
-#         self.xrd1d_thread = Thread(target=display_xrd1d)
-#         self.xrd1d_thread.start()
-#         time.sleep(0.25)
-#         self.xrd1d_thread.join()
 
 
     def onSelAll(self, event=None):

@@ -263,18 +263,10 @@ class SpecfileImporter(wx.Frame) :
         pack(panel, sizer)
 
         self.nb = fnb.FlatNotebook(rightpanel, -1, agwStyle=FNB_STYLE)
-        # self.nb.SetTabAreaColour(wx.Colour(248,248,240))
-        # self.nb.SetActiveTabColour(wx.Colour(254,254,195))
-        # self.nb.SetNonActiveTabTextColour(wx.Colour(40,40,180))
-        # self.nb.SetActiveTabTextColour(wx.Colour(80,0,0))
 
         self.plotpanel = PlotPanel(rightpanel, messenger=self.plot_messages)
-        try:
-            plotopts = self._larch.symtable._sys.wx.plotopts
-            self.plotpanel.conf.set_theme(plotopts['theme'])
-            self.plotpanel.conf.enable_grid(plotopts['show_grid'])
-        except:
-            pass
+        from .plotter import set_panel_plot_config
+        set_panel_plot_config(sef.plotpanel)
 
         self.plotpanel.SetMinSize((300, 250))
 
@@ -646,7 +638,7 @@ class SpecfileImporter(wx.Frame) :
         if energy_may_need_rebinning(workgroup):
             self.message.SetLabel("Warning: XAS data may need to be rebinned!")
 
-        popts = dict(marker='o', markersize=4, linewidth=1.5,
+        popts = dict(marker='o',
                      title=Path(workgroup.filename).name,
                      ylabel=workgroup.plot_ylabel,
                      xlabel=workgroup.plot_xlabel,
