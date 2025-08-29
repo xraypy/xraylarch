@@ -197,6 +197,26 @@ def set_panel_plot_config(panel, **kws):
     cnf.update(**kws)
     panel.set_config(**cnf)
 
+def get_zorders(display=None, panel=None):
+    """"get list of z-orders for current traces of a display or panel
+    so that a z-order can be set using the previous values
+    """
+    if panel is None and display is not None:
+        panel = getattr(display, 'panel', None)
+    zorders = [0]
+    if panel is not None:
+        try:
+            conf = panel.conf
+            ntrace = max(1, conf.ntrace)
+            zorders = [t.zorder for t in conf.traces[:ntrace]]
+        except:
+            pass
+    if len(zorders) < 1:
+        zorders.append(0)
+    return zorders
+
+
+
 
 class XRFDisplay(XRFDisplayFrame):
     def __init__(self, wxparent=None, window=1, _larch=None,
@@ -295,14 +315,6 @@ class PlotDisplay(PlotFrame):
             self.panel.set_config(**cnf)
         except:
             print("could not set plot config")
-
-    def get_zorders(self):
-        """"get list of z-orders for current traces so that a
-        z-order can be set using the previous values
-        """
-        conf = self.panel.conf
-        ntrace = conf.ntrace
-        return [t.zorder for t in conf.traces[:ntrace]]
 
 
 class StackedPlotDisplay(StackedPlotFrame):
@@ -458,6 +470,7 @@ def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
                 s = display.GetSize()
             except RuntimeError:  # window has been deleted
                 ddict.pop(win)
+                print("get_display  no window 1")
                 display = None
 
         if display is None and hasattr(_larch, 'symtable'):
@@ -466,6 +479,7 @@ def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
                 try:
                     s = display.GetSize()
                 except RuntimeError:  # window has been deleted
+                    print("get_display  no window 2")
                     display = None
 
         plot_conf = get_plot_config()
@@ -687,7 +701,8 @@ def _update_trace(x, y, trace=1, win=1, _larch=None, wxparent=None,
 
 def wx_update(_larch=None, **kws):
     try:
-        _larch.symtable.get_symbol('_sys.wx.ping')(timeout=0.002)
+        ping = _larch.symtable.get_symbol('_sys.wx.ping')
+        ping(timeout=0.001)
     except:
         pass
 
