@@ -16,7 +16,7 @@ from larch.xafs.xafsutils import guess_energy_units
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, get_icon,
                          SimpleText, pack, Button, HLine, Choice, Check,
                          GridPanel, CEN, RIGHT, LEFT, plotlabels,
-                         get_zoomlimits, set_zoomlimits)
+                         get_zoomlimits, set_zoomlimits, get_plot_config)
 
 from larch.utils.physical_constants import ATOM_NAMES
 from larch.wxlib.plotter import last_cursor_pos
@@ -255,12 +255,7 @@ class XYDataPanel(TaskPanel):
         voff = self.wids['plot_voff'].GetValue()
         plot_traces = []
         newplot = True
-        plotopts = self.controller.get_plot_conf()
-        popts = {'style': 'solid', 'marker': None}
-        popts['linewidth'] = plotopts.pop('linewidth')
-        popts['marksize'] = plotopts.pop('markersize')
-        popts['grid'] = plotopts.pop('show_grid')
-        popts['fullbox'] = plotopts.pop('show_fullbox')
+        plotopts = get_plot_config()
 
         for ix, checked in enumerate(group_ids):
             groupname = self.controller.file_groups[str(checked)]
@@ -273,24 +268,23 @@ class XYDataPanel(TaskPanel):
                  getattr(dgroup, 'd2ydx', None) is None or
                  getattr(dgroup, 'ynorm', None) is None)):
                 self.process(dgroup=dgroup)
-
-            trace = {'xdata': dgroup.xplot,
+            plot_traces.append({'xdata': dgroup.xplot,
                      'ydata': getattr(dgroup, yarray_name) + ix*voff,
-                     'label': dgroup.filename, 'new': newplot}
-            trace.update(popts)
-            plot_traces.append(trace)
+                     'label': dgroup.filename,
+                     'new': newplot})
             newplot = False
 
         ppanel = self.controller.get_display(stacked=False).panel
+        ppanel.set_config(**plotopts)
         zoom_limits = get_zoomlimits(ppanel, dgroup)
 
-        nplot_traces = len(ppanel.conf.traces)
-        nplot_request = len(plot_traces)
-        if nplot_request > nplot_traces:
-            linecolors = ppanel.conf.linecolors
-            ncols = len(linecolors)
-            for i in range(nplot_traces, nplot_request+5):
-                ppanel.conf.init_trace(i,  linecolors[i%ncols], 'dashed')
+#         nplot_traces = len(ppanel.conf.traces)
+#         nplot_request = len(plot_traces)
+#         if nplot_request > nplot_traces:
+#             linecolors = ppanel.conf.linecolors
+#             ncols = len(linecolors)
+#             for i in range(nplot_traces, nplot_request+5):
+#                 ppanel.conf.init_trace(i,  linecolors[i%ncols], 'dashed')
 
 
         ppanel.plot_many(plot_traces, xlabel=plotlabels.xplot, ylabel=ylabel,
