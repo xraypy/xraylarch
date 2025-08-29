@@ -15,7 +15,7 @@ from larch.utils import path_split
 from larch.wxlib import (GridPanel, FloatCtrl, FloatSpin,
                          FloatSpinWithPin, SimpleText, Choice, SetTip,
                          Button, HLine, LEFT, pack,
-                         plotlabels, get_font, FRAMESTYLE,
+                         plotlabels, get_font, FRAMESTYLE, get_zorders,
                          get_panel_plot_config, set_panel_plot_config)
 
 from larch.xafs import etok, ktoe, find_energy_step
@@ -62,6 +62,7 @@ def set_view_limits(ppanel, xlim, ylim):
     "set zoom limits for a plot panel, as found from get_view_limits"
     ppanel.axes.set_xlim(xlim, emit=True)
     ppanel.axes.set_ylim(ylim, emit=True)
+
 
 class OverAbsorptionFrame(wx.Frame):
     """window for correcting over-absorption"""
@@ -227,11 +228,13 @@ class OverAbsorptionFrame(wx.Frame):
         if not hasattr(dgroup, 'norm_corr'):
             dgroup.norm_corr = dgroup.norm[:]
 
-        ppanel.plot(dgroup.energy, dgroup.norm_corr, zorder=10, marker=None,
+
+        ppanel.plot(dgroup.energy, dgroup.norm_corr, marker=None,
                     title='Over-absorption Correction:\n %s' % fname,
                     label='corrected', **opts)
-
-        ppanel.oplot(dgroup.energy, dgroup.norm, zorder=10, marker='o',
+        zorders = get_zorders(panel=ppanel)
+        znext = zorders[0] - 2
+        ppanel.oplot(dgroup.energy, dgroup.norm, zorder=znext, marker='o',
                      markersize=3, label='original', **opts)
         if use_zoom:
             set_view_limits(ppanel, xlim, ylim)
@@ -514,13 +517,13 @@ class EnergyCalibrateFrame(wx.Frame):
         if use_deriv:
             yold = np.gradient(yold)/np.gradient(xold)
 
-        ppanel.plot(xold, yold, zorder=10, marker='o', markersize=3,
-                     label='original', linewidth=2, color='#1f77b4',
+        ppanel.plot(xold, yold,  marker='o', markersize=3,
+                     label='original', color='#1f77b4',
                      title=f'Energy Calibration:\n {fname}', **opts)
-
-        ppanel.oplot(xnew, ynew, zorder=15, marker='+', markersize=3,
-                    linewidth=2, label='shifted',
-                    color='#d62728', **opts)
+        zorders = get_zorders(panel=ppanel)
+        znext = zorders[0] + 2
+        ppanel.oplot(xnew, ynew, zorder=znext, marker='+', markersize=3,
+                     label='shifted', color='#d62728', **opts)
 
         if wids['reflist'].GetStringSelection() != 'None':
             refgroup = self.controller.get_group(wids['reflist'].GetStringSelection())
@@ -528,7 +531,7 @@ class EnergyCalibrateFrame(wx.Frame):
             if use_deriv:
                 yref = np.gradient(yref)/np.gradient(xref)
 
-            ppanel.oplot(xref, yref, style='solid', zorder=5, color='#2ca02c',
+            ppanel.oplot(xref, yref, style='solid', zorder=znext-5, color='#2ca02c',
                          marker=None, label=refgroup.filename, **opts)
         if use_zoom:
             set_view_limits(ppanel, xlim, ylim)
@@ -738,14 +741,15 @@ class RebinDataFrame(wx.Frame):
             opts['xmin'] = dgroup.e0 + self.controller.plot_erange[0]
             opts['xmax'] = dgroup.e0 + self.controller.plot_erange[1]
 
-        ppanel.plot(xnew, ynew, zorder=20, marker='square',
-                    linewidth=3, title='Enegy rebinning:\n %s' % fname,
+        ppanel.plot(xnew, ynew, marker='square',
+                    title='Enegy rebinning:\n %s' % fname,
                     label='rebinned', xlabel=plotlabels.energy,
                     ylabel=plotlabels.mu, **opts)
+        zorders = get_zorders(panel=ppanel)
+        znext = zorders[0] - 2
 
         xold, yold = self.dgroup.energy, self.dgroup.mu
-        ppanel.oplot(xold, yold, zorder=10,
-                     marker='o', markersize=4, linewidth=2.0,
+        ppanel.oplot(xold, yold, zorder=znext, marker='o',
                      label='original', show_legend=True, **opts)
         if use_zoom:
             set_view_limits(ppanel, xlim, ylim)
@@ -933,14 +937,14 @@ class SmoothDataFrame(wx.Frame):
             opts['xmin'] = dgroup.e0 + self.controller.plot_erange[0]
             opts['xmax'] = dgroup.e0 + self.controller.plot_erange[1]
 
-        ppanel.plot(xnew, ynew, zorder=20, marker=None,
-                    linewidth=3, title='Smoothing:\n %s' % fname,
+        ppanel.plot(xnew, ynew, marker=None,
+                    title='Smoothing:\n %s' % fname,
                     label='smoothed', xlabel=plotlabels.energy,
                     ylabel=plotlabels.mu, **opts)
-
+        zorders = get_zorders(panel=ppanel)
+        znext = zorders[0] - 2
         xold, yold = self.dgroup.energy, self.dgroup.mu
-        ppanel.oplot(xold, yold, zorder=10,
-                     marker='o', markersize=4, linewidth=2.0,
+        ppanel.oplot(xold, yold, zorder=znext,  marker='o',
                      label='original', show_legend=True, **opts)
         if use_zoom:
             set_view_limits(ppanel, xlim, ylim)
@@ -1077,14 +1081,14 @@ class DeconvolutionFrame(wx.Frame):
             opts['xmin'] = dgroup.e0 + self.controller.plot_erange[0]
             opts['xmax'] = dgroup.e0 + self.controller.plot_erange[1]
 
-        ppanel.plot(xnew, ynew, zorder=20, marker=None,
-                    linewidth=3, title='Deconvolving:\n %s' % fname,
+        ppanel.plot(xnew, ynew, marker=None,
+                    title='Deconvolving:\n %s' % fname,
                     label='deconvolved', xlabel=plotlabels.energy,
                     ylabel=plotlabels.mu, **opts)
-
+        zorders = get_zorders(panel=ppanel)
+        znext = zorders[0] - 2
         xold, yold = self.dgroup.energy, self.dgroup.norm
-        ppanel.oplot(xold, yold, zorder=10,
-                     marker='o', markersize=4, linewidth=2.0,
+        ppanel.oplot(xold, yold, zorder=znext,  marker='o',
                      label='original', show_legend=True, **opts)
         if use_zoom:
             set_view_limits(ppanel, xlim, ylim)
@@ -1369,15 +1373,15 @@ class DeglitchFrame(wx.Frame):
 
         if same_plottype:
             xlim, ylim = get_view_limits(ppanel)
-
-        ppanel.plot(xplot, yplot, zorder=10, marker=None, linewidth=3,
+        ppanel.plot(xplot, yplot, marker=None,
                     label='original', ylabel=ylabel, **opts)
+        zorders = get_zorders(panel=ppanel)
+        znext = zorders[0] + 2
 
         if len(self.xmasks) > 1:
             mask = self.xmasks[-1]
-            ppanel.oplot(xplot[mask], yplot[mask], zorder=15,
-                         marker='o', markersize=3, linewidth=2.0,
-                         label='current', show_legend=True, **opts)
+            ppanel.oplot(xplot[mask], yplot[mask], zorder=znext,
+                         marker='o', label='current', show_legend=True, **opts)
 
         def ek_formatter(x, pos):
             ex = float(x) - self.dgroup.e0
@@ -1392,7 +1396,9 @@ class DeglitchFrame(wx.Frame):
         if self.plot_markers is not None:
             rchoice = self.choice_range.GetStringSelection().lower()
             xwork, ywork = self.data
-            opts = dict(marker='o', markersize=6, zorder=2, label='_nolegend_',
+            zorders = get_zorders(panel=ppanel)
+            znext = zorders[0] - 2
+            opts = dict(marker='o', markersize=6, zorder=znext, label='_nolegend_',
                         markerfacecolor='#66000022', markeredgecolor='#440000')
             if self.plot_markers == 'xlast':
                 bad = index_nearest(xwork, self.wids['xlast'].GetValue())
