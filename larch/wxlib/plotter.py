@@ -296,12 +296,19 @@ class PlotDisplay(PlotFrame):
         except:
             print("could not set plot config")
 
+    def get_zorders(self):
+        """"get list of z-orders for current traces so that a
+        z-order can be set using the previous values
+        """
+        conf = self.panel.conf
+        ntrace = conf.ntrace
+        return [t.zorder for t in conf.traces[:ntrace]]
+
 
 class StackedPlotDisplay(StackedPlotFrame):
     def __init__(self, wxparent=None, window=1, _larch=None,  size=None, **kws):
         StackedPlotFrame.__init__(self, parent=None,
                                   exit_callback=self.onExit, **kws)
-
         self.Show()
         self.Raise()
         self.panel.cursor_callback = self.onCursor
