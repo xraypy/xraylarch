@@ -664,7 +664,7 @@ def plot_chiq(dgroup, kweight=None, kmax=None, show_chik=False, label=None,
     kweight = _get_kweight(dgroup, kweight)
     nk = len(dgroup.k)
     chiq = dgroup.chiq_re[:nk]
-    opts = dict(win=win, show_legend=True, delay_draw=True, linewidth=3, _larch=_larch)
+    opts = dict(win=win, show_legend=True, delay_draw=True, _larch=_larch)
     if label is None:
         label = 'chi(q) (filtered)'
     #endif
@@ -784,8 +784,7 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
     data_chik  = dat.chi * dat.k**kweight
     model_chik = mod.chi * mod.k**kweight
 
-    opts=dict(labelfontsize=10, legendfontsize=10, linewidth=3,
-              show_legend=True, delay_draw=True, win=win, title=title,
+    opts=dict(show_legend=True, delay_draw=True, win=win, title=title,
               _larch=_larch)
 
     # k-weighted chi(k) in first plot window
@@ -1057,8 +1056,7 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
 
     popts = dict(xmin=px0, xmax=px1, ymin=py0, ymax=py1, title=title,
                  xlabel='Energy (eV)', ylabel='mu (normalized)', delay_draw=True,
-                 show_legend=True, style='solid', linewidth=3,
-                 label='data', new=True,
+                 show_legend=True,   label='data', new=True,
                  marker='None', markersize=4, win=win, _larch=_larch)
     popts.update(kws)
 
@@ -1138,7 +1136,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     plotopts = dict(title='%s:\npre-edge peak' % dgroup.filename,
                     xlabel='Energy (eV)', ylabel=opts['array_desc'],
                     delay_draw=True, show_legend=True, style='solid',
-                    linewidth=3, marker='None', markersize=4)
+                    marker='no symbol')
 
     if subtract_baseline:
         yplot -= baseline
@@ -1223,8 +1221,7 @@ def plot_pca_components(result, min_variance=1.e-5, win=1, _larch=None, **kws):
     popts = dict(xmin=result.xmin, xmax=result.xmax, title=title,
                  xlabel=plotlabels.energy, ylabel=plotlabels.norm,
                  delay_draw=True, show_legend=True, style='solid',
-                 linewidth=3, new=True, marker='None', markersize=4,
-                 win=win, _larch=_larch)
+                 new=True, marker='no symbol', win=win, _larch=_larch)
 
     popts.update(kws)
 
@@ -1249,7 +1246,7 @@ def plot_pca_weights(result, win=1, _larch=None, **kws):
     popts = dict(title=title, xlabel='Component #',
                  xmax=max_comps+1.5, xmin=0.25, ymax=1, ylabel='variance',
                  style='solid', ylog_scale=True, show_legend=True,
-                 linewidth=1, new=True, marker='o', win=win, _larch=_larch)
+                 new=True, marker='o', win=win, _larch=_larch)
 
     popts.update(kws)
 
@@ -1276,7 +1273,7 @@ def plot_pca_weights(result, win=1, _larch=None, **kws):
     zind = zorders[-1] + 2
     _plot(xi, result.ind[1:], zorder=zind, y2label='Indicator Value',
           label='IND', style='solid', win=win, show_legend=True,
-          linewidth=1, marker='o', side='right', _larch=_larch)
+          marker='o', side='right', _larch=_larch)
 
 
 
@@ -1293,7 +1290,7 @@ def plot_pca_fit(dgroup, win=1, with_components=False, _larch=None, **kws):
     popts = dict(xmin=model.xmin, xmax=model.xmax, title=title,
                  xlabel=plotlabels.energy, ylabel=plotlabels.norm,
                  delay_draw=True, show_legend=True, style='solid',
-                 linewidth=3, new=True, marker='None', markersize=4,
+                 new=True, marker='no symbol',
                  stacked=True, win=win, _larch=_larch)
     popts.update(kws)
     yplot = getattr(result, 'yplot', getattr(result, 'ydat', None))
@@ -1461,8 +1458,7 @@ def plot_curvefit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
 
     plotopts = dict(title='%s:\ncurvefit' % dgroup.filename,
                     xlabel='x', ylabel=opts['array_desc'],
-                    delay_draw=True, show_legend=True, style='solid',
-                    linewidth=3, marker='None', markersize=4)
+                    delay_draw=True, show_legend=True)
 
     if subtract_baseline:
         yplot-= baseline
