@@ -258,9 +258,8 @@ def plot_mu(dgroup, show_norm=False, show_flat=False,
 
     title = _get_title(dgroup, title=title)
 
-    opts = dict(win=win, show_legend=True, linewidth=3,
-                title=title, xmin=emin, xmax=emax, zorder=20,
-                delay_draw=True, _larch=_larch)
+    opts = dict(win=win, show_legend=True, title=title, xmin=emin,
+                xmax=emax, delay_draw=True, _larch=_larch)
 
     _plot(dgroup.energy-en_offset, mu+offset, xlabel=plotlabels.energy, ylabel=ylabel,
           label=label, new=new, **opts)
@@ -320,10 +319,12 @@ def plot_mu(dgroup, show_norm=False, show_flat=False,
     marker_popts = {'marker': 'o', 'markersize': 5, 'label': '_nolegend_',
                     'markerfacecolor': '#888', 'markeredgecolor': '#A00'}
     disp = get_display(win=win, _larch=_larch)
+    zorders = disp.get_zorders()
+    zline = zorders[0] - 2
     axes = disp.panel.axes
     if show_e0:
         if 'vli'in markerstyle.lower():
-            _plot_axvline(dgroup.e0-en_offset, zorder=2, size=3, win=win,
+            _plot_axvline(dgroup.e0-en_offset, zorder=zline, size=3, win=win,
                           label='__nolegend__',color=plotlabels.e0color,
                           _larch=_larch)
         else:
@@ -335,7 +336,7 @@ def plot_mu(dgroup, show_norm=False, show_flat=False,
     for _mark_en in marker_energies:
         ex = dgroup.e0 + _mark_en
         if 'vli'in markerstyle.lower():
-            _plot_axvline(ex-en_offset, zorder=2, size=3, win=win,
+            _plot_axvline(ex-en_offset, zorder=zline, size=3, win=win,
                           label='__nolegend__',color=plotlabels.e0color,
                           _larch=_larch)
         else:
@@ -393,17 +394,18 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, show_ek0=Fa
         label = "%s (norm)" % label
     #endif
     title = _get_title(dgroup, title=title)
-    opts = dict(win=win, show_legend=True, linewidth=3,
-                delay_draw=True, _larch=_larch)
+    opts = dict(win=win, show_legend=True, delay_draw=True, _larch=_larch)
     _plot(dgroup.energy-en_offset, mu+offset, xlabel=plotlabels.energy, ylabel=ylabel,
-         title=title, label=label, zorder=20, new=new, xmin=emin, xmax=emax,
-         **opts)
+         title=title, label=label, new=new, xmin=emin, xmax=emax, **opts)
     ymin, ymax = None, None
     disp = get_display(win=win, _larch=_larch)
     if disp is not  None:
         xylims = disp.panel.get_viewlimits()
         ymin, ymax = xylims[2], xylims[3]
-    _plot(dgroup.energy-en_offset, bkg+offset, zorder=18, label='bkg', **opts)
+    disp = get_display(win=win, _larch=_larch)
+    zorders = disp.get_zorders()
+    zbkg = zorders[-1] - 2
+    _plot(dgroup.energy-en_offset, bkg+offset, zorder=zbkg, label='bkg', **opts)
 
     e0val = None
     if show_e0 and hasattr(dgroup, 'e0'):
@@ -489,9 +491,8 @@ def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
         return r"%1.4g%s" % (x, s)
 
     _plot(dgroup.energy-e0, chie+offset, xlabel=xlabel, ylabel=ylabel,
-          title=title, label=label, zorder=20, new=new, xmin=emin,
-          xmax=emax, win=win, show_legend=True, delay_draw=delay_draw,
-          linewidth=3, _larch=_larch)
+          title=title, label=label, new=new, xmin=emin,
+          xmax=emax, win=win, show_legend=True, delay_draw=delay_draw, _larch=_larch)
 
     if show_k:
         disp = get_display(win=win, _larch=_larch)
@@ -534,8 +535,7 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
     kweight = _get_kweight(dgroup, kweight)
 
     chi = dgroup.chi * dgroup.k ** kweight
-    opts = dict(win=win, show_legend=True, delay_draw=True, linewidth=3,
-                _larch=_larch)
+    opts = dict(win=win, show_legend=True, delay_draw=True, _larch=_larch)
     if label is None:
         label = 'chi'
     #endif
@@ -543,13 +543,16 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
         title = _get_title(dgroup, title=title)
     _plot(dgroup.k, chi+offset, xlabel=plotlabels.k,
          ylabel=plotlabels.chikw.format(kweight), title=title,
-         label=label, zorder=20, new=new, xmax=kmax, **opts)
+         label=label, new=new, xmax=kmax, **opts)
 
     if show_window and hasattr(dgroup, 'kwin'):
+        disp = get_display(win=win, _larch=_larch)
+        zorders = disp.get_zorders()
+        zwin = zorders[-1] - 2
         kwin = dgroup.kwin
         if scale_window:
             kwin *= max(abs(chi))
-        _plot(dgroup.k, kwin+offset, zorder=12, label='window',  **opts)
+        _plot(dgroup.k, kwin+offset, zorder=zwin, label='window',  **opts)
     #endif
     redraw(win=win, xmax=kmax, _larch=_larch)
 #enddef
@@ -589,8 +592,8 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
     if new:
         title = _get_title(dgroup, title=title)
 
-    opts = dict(win=win, show_legend=True, linewidth=3, title=title,
-                zorder=20, xmax=rmax, xlabel=plotlabels.r, new=new,
+    opts = dict(win=win, show_legend=True, title=title,
+                xmax=rmax, xlabel=plotlabels.r, new=new,
                 delay_draw=True, _larch=_larch)
 
     ylabel = plotlabels.chirlab(kweight, show_mag=show_mag,
@@ -615,11 +618,13 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
         _plot(dgroup.r, dgroup.chir_im+offset, label='%s (imag)' % label, **opts)
     #endif
     if show_window and hasattr(dgroup, 'rwin'):
+        disp = get_display(win=win, _larch=_larch)
+        zorders = disp.get_zorders()
+        zwin = zorders[-1] - 2
         rwin = dgroup.rwin
         if scale_window:
             rwin *= max(dgroup.chir_mag)
-        opts['zorder'] = 15
-        _plot(dgroup.r, rwin+offset, label='window',  **opts)
+        _plot(dgroup.r, rwin+offset, label='window', zorder=zwin, **opts)
     #endif
 
     if show_mag or show_real or show_imag or show_window:
@@ -668,17 +673,22 @@ def plot_chiq(dgroup, kweight=None, kmax=None, show_chik=False, label=None,
 
     _plot(dgroup.k, chiq+offset, xlabel=plotlabels.k,
          ylabel=plotlabels.chikw.format(kweight), title=title,
-         label=label, zorder=20, new=new, xmax=kmax, **opts)
+         label=label, new=new, xmax=kmax, **opts)
 
+    disp = get_display(win=win, _larch=_larch)
     if show_chik:
+        zorders = disp.get_zorders()
+        zchik = zorders[-1] - 2
         chik = dgroup.chi * dgroup.k ** kweight
-        _plot(dgroup.k, chik+offset, zorder=16, label='chi(k)',  **opts)
+        _plot(dgroup.k, chik+offset, zorder=zchik, label='chi(k)',  **opts)
     #endif
     if show_window and hasattr(dgroup, 'kwin'):
+        zorders = disp.get_zorders()
+        zwin = zorders[-1] - 2
         kwin = dgroup.kwin
         if scale_window:
             kwin = kwin*max(abs(chiq))
-        _plot(dgroup.k, kwin+offset, zorder=12, label='window',  **opts)
+        _plot(dgroup.k, kwin+offset, zorder=zwin, label='window',  **opts)
     #endif
 
     redraw(win=win, xmax=kmax, _larch=_larch)
@@ -1236,7 +1246,7 @@ def plot_pca_weights(result, win=1, _larch=None, **kws):
 
     title = "PCA Variances (SCREE) and Indicator Values"
 
-    popts = dict(title=title, xlabel='Component #', zorder=10,
+    popts = dict(title=title, xlabel='Component #',
                  xmax=max_comps+1.5, xmin=0.25, ymax=1, ylabel='variance',
                  style='solid', ylog_scale=True, show_legend=True,
                  linewidth=1, new=True, marker='o', win=win, _larch=_larch)
@@ -1251,13 +1261,20 @@ def plot_pca_weights(result, win=1, _larch=None, **kws):
     xe = 1 + arange(ncomps-1, max_comps)
     ye = result.variances[ncomps-1:ncomps+max_comps]
 
-    popts.update(dict(new=False, zorder=5, style='short dashed',
+
+    disp = get_display(win=win, _larch=_larch)
+    zorders = disp.get_zorders()
+    zvar = zorders[-1] - 2
+
+    popts.update(dict(new=False, zorder=zvar, style='short dashed',
                       color='#B34050', ymin=2e-3*result.variances[ncomps-1]))
     _plot(xe, ye, label='not significant', **popts)
 
     xi = 1 + arange(len(result.ind)-1)
 
-    _plot(xi, result.ind[1:], zorder=15, y2label='Indicator Value',
+    zorders = disp.get_zorders()
+    zind = zorders[-1] + 2
+    _plot(xi, result.ind[1:], zorder=zind, y2label='Indicator Value',
           label='IND', style='solid', win=win, show_legend=True,
           linewidth=1, marker='o', side='right', _larch=_larch)
 
@@ -1332,18 +1349,19 @@ def plot_diffkk(dgroup, emin=None, emax=None, new=True, label=None,
 
     labels = {'f2': r"$f_2(E)$", 'fpp': r"$f''(E)$", 'fp': r"$f'(E)$", 'f1': r"$f_1(E)$"}
 
-    opts = dict(win=win, show_legend=True, linewidth=3,
-                delay_draw=True, _larch=_larch)
+    opts = dict(win=win, show_legend=True, delay_draw=True, _larch=_larch)
 
     _plot(dgroup.energy, f2, xlabel=plotlabels.energy, ylabel=ylabel,
-          title=title, label=labels['f2'], zorder=20, new=new, xmin=emin, xmax=emax,
-          **opts)
-    zorder = 15
+          title=title, label=labels['f2'], new=new, xmin=emin, xmax=emax, **opts)
+
+    disp = get_display(win=win, _larch=_larch)
+    zorders = disp.get_zorders()
+    zval = zorders[-1] - 2
     for attr in ('fpp', 'f1', 'fp'):
         yval = getattr(dgroup, attr)
         if yval is not None:
-            _plot(dgroup.energy, yval, zorder=zorder, label=labels[attr], **opts)
-            zorder = zorder - 3
+            _plot(dgroup.energy, yval, zorder=zval, label=labels[attr], **opts)
+            zval = zval - 2
 
     redraw(win=win, xmin=emin, xmax=emax, _larch=_larch)
 #enddef
@@ -1376,15 +1394,18 @@ def plot_feffdat(feffpath, with_phase=True, title=None,
     #endif
 
     _plot(fdat.k, fdat.mag_feff, xlabel=plotlabels.k,
-          ylabel='|F(k)|', title=title, label='magnitude', zorder=20,
+          ylabel='|F(k)|', title=title, label='magnitude',
           new=new, win=win, show_legend=True,
-          delay_draw=delay_draw, linewidth=3, _larch=_larch)
+          delay_draw=delay_draw, _larch=_larch)
 
     if with_phase:
+        disp = get_display(win=win, _larch=_larch)
+        zorders = disp.get_zorders()
+        zval = zorders[-1] - 2
         _plot(fdat.k, fdat.pha_feff, xlabel=plotlabels.k,
               y2label='Phase(k)', title=title, label='phase', side='right',
-              zorder=10, new=False, win=win, show_legend=True,
-              delay_draw=delay_draw, linewidth=3, _larch=_larch)
+              zorder=zval, new=False, win=win, show_legend=True,
+              delay_draw=delay_draw, _larch=_larch)
     #endif
 
     if delay_draw:
