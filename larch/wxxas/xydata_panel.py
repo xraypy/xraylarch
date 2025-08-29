@@ -255,7 +255,9 @@ class XYDataPanel(TaskPanel):
         voff = self.wids['plot_voff'].GetValue()
         plot_traces = []
         newplot = True
-        plotopts = get_plot_config()
+        ppanel = self.controller.get_display(stacked=False).panel
+
+        plotopts = get_panel_plot_config(ppanel)
 
         for ix, checked in enumerate(group_ids):
             groupname = self.controller.file_groups[str(checked)]
@@ -274,8 +276,6 @@ class XYDataPanel(TaskPanel):
                      'new': newplot})
             newplot = False
 
-        ppanel = self.controller.get_display(stacked=False).panel
-        ppanel.set_config(**plotopts)
         zoom_limits = get_zoomlimits(ppanel, dgroup)
 
 #         nplot_traces = len(ppanel.conf.traces)
@@ -513,7 +513,7 @@ class XYDataPanel(TaskPanel):
         if plot_yarrays is None and hasattr(dgroup, 'plot_yarrays'):
             plot_yarrays = dgroup.plot_yarrays
 
-        popts = self.controller.get_plot_conf()
+        popts = get_panel_plot_confing(ppanel)
         popts.update(kws)
         popts['grid'] = popts.pop('show_grid')
         popts['fullbox'] = popts.pop('show_fullbox')
@@ -549,20 +549,16 @@ class XYDataPanel(TaskPanel):
         popts['show_legend'] = len(plot_yarrays) > 1
         narr = len(plot_yarrays) - 1
 
-        _linewidth = popts['linewidth']
         for i, pydat in enumerate(plot_yarrays):
             yaname, yopts, yalabel = pydat
             popts.update(yopts)
             if yalabel is not None:
                 popts['label'] = yalabel
-            linewidht = _linewidth
-            if 'linewidth' in popts:
-                linewidth = popts.pop('linewidth')
             popts['delay_draw'] = delay_draw
 
             if yaname == 'i0' and not hasattr(dgroup, yaname):
                 dgroup.i0 = np.ones(len(dgroup.xplot))
-            plotcmd(dgroup.xplot, getattr(dgroup, yaname)+yoff, linewidth=linewidth, **popts)
+            plotcmd(dgroup.xplot, getattr(dgroup, yaname)+yoff, **popts)
             plotcmd = ppanel.oplot
 
         if with_extras and plot_extras is not None:

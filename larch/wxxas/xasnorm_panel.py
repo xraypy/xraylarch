@@ -568,10 +568,10 @@ class XASNormPanel(TaskPanel):
         title = f'{dgroup.filename}'
 
         self.larch_eval(f"""plot({groupname}.energy, {groupname}.norm_poly,
-   new=True, delay_draw=True, label='norm (poly)', linewidth=3, show_legend=True,
+   new=True, delay_draw=True, label='norm (poly)', show_legend=True,
    {title=},  xlabel=r'{plotlabels.energy}', ylabel=r'{plotlabels.norm}')
 plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
-      linewidth=3, new=False, delay_draw=False)""")
+      new=False, delay_draw=False)""")
 
         self.controller.set_focus()
 
