@@ -32,12 +32,14 @@ try:
 except ImportError:
     HAS_WXPYTHON = False
 
+get_display = _plot = _oplot = None
+_fitplot = _plot_marker = _plot_axvline = None
+def get_zorders(*args):
+    return [0]
+
 if HAS_WXPYTHON:
     from .plotter import (get_display, _plot, _oplot,  _fitplot,
-                         _plot_marker, _plot_axvline, _imshow)
-else:
-    get_display = _plot = _oplot = None
-    _fitplot = _plot_marker = _plot_axvline = None
+                         _plot_marker, _plot_axvline, _imshow, get_zorders)
 
 LineColors = ('#1f77b4', '#d62728', '#2ca02c', '#ff7f0e', '#9467bd',
               '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf')
@@ -319,7 +321,7 @@ def plot_mu(dgroup, show_norm=False, show_flat=False,
     marker_popts = {'marker': 'o', 'markersize': 5, 'label': '_nolegend_',
                     'markerfacecolor': '#888', 'markeredgecolor': '#A00'}
     disp = get_display(win=win, _larch=_larch)
-    zorders = disp.get_zorders()
+    zorders = get_zorders(display=disp)
     zline = zorders[0] - 2
     axes = disp.panel.axes
     if show_e0:
@@ -394,7 +396,7 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, show_ek0=Fa
         label = "%s (norm)" % label
     #endif
     title = _get_title(dgroup, title=title)
-    opts = dict(win=win, show_legend=True, delay_draw=True, _larch=_larch)
+    opts = dict(win=win, show_legend=True, _larch=_larch)
     _plot(dgroup.energy-en_offset, mu+offset, xlabel=plotlabels.energy, ylabel=ylabel,
          title=title, label=label, new=new, xmin=emin, xmax=emax, **opts)
     ymin, ymax = None, None
@@ -402,11 +404,10 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, show_ek0=Fa
     if disp is not  None:
         xylims = disp.panel.get_viewlimits()
         ymin, ymax = xylims[2], xylims[3]
-    disp = get_display(win=win, _larch=_larch)
-    zorders = disp.get_zorders()
+    zorders = get_zorders(display=disp)
     zbkg = zorders[-1] - 2
     _plot(dgroup.energy-en_offset, bkg+offset, zorder=zbkg, label='bkg', **opts)
-
+    # print(f"plotted bkg")
     e0val = None
     if show_e0 and hasattr(dgroup, 'e0'):
         e0val = dgroup.e0
@@ -546,9 +547,8 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
          label=label, new=new, xmax=kmax, **opts)
 
     if show_window and hasattr(dgroup, 'kwin'):
-        disp = get_display(win=win, _larch=_larch)
-        zorders = disp.get_zorders()
-        zwin = zorders[-1] - 2
+        zorders = get_zorders(get_display(win=win, _larch=_larch))
+        zwin = zorders[0] - 2
         kwin = dgroup.kwin
         if scale_window:
             kwin *= max(abs(chi))
@@ -618,9 +618,8 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
         _plot(dgroup.r, dgroup.chir_im+offset, label='%s (imag)' % label, **opts)
     #endif
     if show_window and hasattr(dgroup, 'rwin'):
-        disp = get_display(win=win, _larch=_larch)
-        zorders = disp.get_zorders()
-        zwin = zorders[-1] - 2
+        zorders = get_zorders(get_display(win=win, _larch=_larch))
+        zwin = zorders[0] - 2
         rwin = dgroup.rwin
         if scale_window:
             rwin *= max(dgroup.chir_mag)
@@ -677,13 +676,13 @@ def plot_chiq(dgroup, kweight=None, kmax=None, show_chik=False, label=None,
 
     disp = get_display(win=win, _larch=_larch)
     if show_chik:
-        zorders = disp.get_zorders()
-        zchik = zorders[-1] - 2
+        zorders = get_zorders(display=disp)
+        zchik = zorders[0] - 2
         chik = dgroup.chi * dgroup.k ** kweight
         _plot(dgroup.k, chik+offset, zorder=zchik, label='chi(k)',  **opts)
     #endif
     if show_window and hasattr(dgroup, 'kwin'):
-        zorders = disp.get_zorders()
+        zorders = get_zorders(display=disp)
         zwin = zorders[-1] - 2
         kwin = dgroup.kwin
         if scale_window:
@@ -1260,7 +1259,7 @@ def plot_pca_weights(result, win=1, _larch=None, **kws):
 
 
     disp = get_display(win=win, _larch=_larch)
-    zorders = disp.get_zorders()
+    zorders = get_zorders(display=disp)
     zvar = zorders[-1] - 2
 
     popts.update(dict(new=False, zorder=zvar, style='short dashed',
@@ -1269,7 +1268,7 @@ def plot_pca_weights(result, win=1, _larch=None, **kws):
 
     xi = 1 + arange(len(result.ind)-1)
 
-    zorders = disp.get_zorders()
+    zorders = get_zorders(display=disp)
     zind = zorders[-1] + 2
     _plot(xi, result.ind[1:], zorder=zind, y2label='Indicator Value',
           label='IND', style='solid', win=win, show_legend=True,
@@ -1351,8 +1350,7 @@ def plot_diffkk(dgroup, emin=None, emax=None, new=True, label=None,
     _plot(dgroup.energy, f2, xlabel=plotlabels.energy, ylabel=ylabel,
           title=title, label=labels['f2'], new=new, xmin=emin, xmax=emax, **opts)
 
-    disp = get_display(win=win, _larch=_larch)
-    zorders = disp.get_zorders()
+    zorders = get_zorders(get_display(win=win, _larch=_larch))
     zval = zorders[-1] - 2
     for attr in ('fpp', 'f1', 'fp'):
         yval = getattr(dgroup, attr)
@@ -1396,8 +1394,7 @@ def plot_feffdat(feffpath, with_phase=True, title=None,
           delay_draw=delay_draw, _larch=_larch)
 
     if with_phase:
-        disp = get_display(win=win, _larch=_larch)
-        zorders = disp.get_zorders()
+        zorders = get_zorders(get_display(win=win, _larch=_larch))
         zval = zorders[-1] - 2
         _plot(fdat.k, fdat.pha_feff, xlabel=plotlabels.k,
               y2label='Phase(k)', title=title, label='phase', side='right',
