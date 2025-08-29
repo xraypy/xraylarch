@@ -65,11 +65,7 @@ class Shell(cmd.Cmd):
                 symtable.set_symbol('_sys.wx.force_wxupdate', False)
                 symtable.set_symbol('_sys.wx.parent', None)
                 symtable.set_symbol('_sys.wx.inputhook', inputhook)
-                if uname == 'darwin':
-                    symtable.set_symbol('_sys.wx.ping', inputhook.ping_darwin)
-                else:
-                    symtable.set_symbol('_sys.wx.ping', inputhook.ping)
-
+                symtable.set_symbol('_sys.wx.ping', inputhook.ping)
                 inputhook.ON_INTERRUPT = self.onCtrlC
                 inputhook.WXLARCH_SYM = symtable
             except:

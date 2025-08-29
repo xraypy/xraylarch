@@ -29,11 +29,12 @@ IN_MODAL_DIALOG = False
 def update_requested():
     "check if update has been requested"
     global WXLARCH_SYM, UPDATE_VAR, UPDATE_GROUP, UPDATE_GROUPNAME
+    req = False
     if WXLARCH_SYM is not None:
         if UPDATE_GROUP is None:
             UPDATE_GROUP = WXLARCH_SYM.get_symbol(UPDATE_GROUPNAME)
-        return getattr(UPDATE_GROUP, UPDATE_VAR, False)
-    return False
+        req = getattr(UPDATE_GROUP, UPDATE_VAR, False)
+    return req
 
 def clear_update_request():
     "clear update request"
@@ -215,7 +216,7 @@ def inputhook_darwin():
             eloop = EventLoopRunner(parent=app)
             ptime = POLLTIME
             if update_requested():
-                ptime /= 10
+                ptime /= 2
             eloop.run(poll_time=int(ptime+1))
     except KeyboardInterrupt:
         if callable(ON_INTERRUPT):
@@ -224,13 +225,14 @@ def inputhook_darwin():
 
 
 def ping_darwin(timeout=0.001):
-    inputhook_darwin()
+    ping(timeout=timeout)
+    # inputhook_darwin()
 
-if uname == 'darwin':
-    # On OSX, evtloop.Pending() always returns True, regardless of there being
-    # any events pending. As such we can't use implementations 1 or 3 of the
-    # inputhook as those depend on a pending/dispatch loop.
-    inputhook_wx = inputhook_darwin
+# if uname == 'darwin':
+#     # On OSX, evtloop.Pending() always returns True, regardless of there being
+#     # any events pending. As such we can't use implementations 1 or 3 of the
+#     # inputhook as those depend on a pending/dispatch loop.
+#     pass # inputhook_wx = inputhook_darwin
 
 try:
     capture_CtrlC()
