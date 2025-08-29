@@ -85,7 +85,6 @@ class XASController():
                             config[sname] = val
 
         self.config = self.larch.symtable._sys.larix_config = config
-        self.larch.symtable._sys.wx.plotopts = config['plot']
         self.clean_autosave_sessions()
 
     def install_group(self, groupname, filename, source=None, journal=None):
@@ -190,18 +189,6 @@ class XASController():
                      'regression', 'xasnorm'):
             setattr(dgroup.config, sect, deepcopy(self.config[sect]))
 
-    def get_plot_conf(self):
-        """get basic plot options to pass to plot() ** not window sizes **"""
-        dx = {'linewidth': 3, 'markersize': 4,
-              'show_grid': True, 'show_fullbox': True, 'theme': '<Auto>'}
-        pconf = self.config['plot']
-        out = {}
-        for attr, val in dx.items():
-            out[attr] = pconf.get(attr, val)
-        if out['theme'].startswith('<Au'):
-            out['theme'] = 'dark' if darkdetect.isDark() else 'light'
-        return out
-
     def save_config(self):
         """save configuration"""
         save_config(self.config_file, self.config)
@@ -286,14 +273,14 @@ class XASController():
     def autosave_session(self):
         conf = self.get_config('autosave', {})
         fileroot = conf.get('fileroot', 'autosave')
-        nhistory = max(8, int(conf.get('nhistory', 4)))
+        nhistory = max(12, int(conf.get('nhistory', 2)))
         if self.saver_thread is not None:
             i = 0
             while self.saver_thread.is_alive():
                 i += 1
-                time.sleep(0.25)
+                time.sleep(0.1)
                 self.saver_thread.join()
-                if i > 240:
+                if i > 150:
                     break
 
         fname =  f"{fileroot:s}_{get_sessionid():s}.larix"
@@ -396,12 +383,9 @@ class XASController():
     def get_display(self, win=1, stacked=False,
                     size=None, position=None):
         wintitle='Larch XAS Plot Window %i' % win
-
-        conf = self.get_plot_conf()
-        opts = dict(wintitle=wintitle, stacked=stacked,
-                    size=size, position=position, win=win)
-        opts.update(conf)
-        return self.symtable._plotter.get_display(**opts)
+        return self.symtable._plotter.get_display(
+                     wintitle=wintitle, stacked=stacked,
+                     size=size, position=position, win=win)
 
     def set_focus(self, topwin=None):
         """
