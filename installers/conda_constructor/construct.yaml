@@ -35,7 +35,6 @@ specs:
     - charset-normalizer
     - pillow>=10
     - pyyaml
-    - toml
     - dill
     - pywin32          # [win]
     - patchelf         # [linux]
