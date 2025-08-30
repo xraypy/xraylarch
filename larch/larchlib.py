@@ -23,6 +23,7 @@ try:
     import tomllib
 except ImportError:
     import tomli as tomllib
+import tomli_w
 
 HAS_TERMCOLOR = False
 try:
@@ -443,7 +444,7 @@ def save_config(conffile, config):
 
     """
     cfile = Path(user_larchdir, conffile).absolute()
-    dat = toml.dumps(config).encode('utf-8')
+    dat = tomli_w.dumps(config).encode('utf-8')
     with open(cfile, 'wb') as fh:
         fh.write(dat)
     #except:
