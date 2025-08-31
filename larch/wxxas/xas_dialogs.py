@@ -9,7 +9,7 @@ from wxmplot import PlotPanel
 from larch.wxlib import (GridPanel, FloatCtrl, set_color, SimpleText,
                          Choice, Check, Button, HLine, OkCancel, LEFT,
                          pack, plotlabels, ReportFrame, DictFrame,
-                         FileCheckList, get_font)
+                         FileCheckList, get_font, get_plot_config)
 
 from larch.utils.physical_constants import DEG2RAD, PLANCK_HC
 
@@ -423,14 +423,12 @@ class LoadSessionDialog(wx.Frame):
         panel.pack()
 
         self.plotpanel = PlotPanel(rightpanel, messenger=self.plot_messages)
+        self.plotpanel.set_config(**get_plot_config())
         self.plotpanel.SetSize((475, 450))
-        plotconf = self.controller.get_config('plot')
-        self.plotpanel.conf.set_theme(plotconf['theme'])
-        self.plotpanel.conf.enable_grid(plotconf['show_grid'])
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(panel, 0, LEFT, 2)
-        sizer.Add(self.plotpanel, 1, LEFT, 2)
+        sizer.Add(self.plotpanel, 1, wx.GROW|wx.ALL|LEFT, 2)
 
         pack(rightpanel, sizer)
 
@@ -508,9 +506,13 @@ class LoadSessionDialog(wx.Frame):
                 ignore.append(gname)
 
         checked = self.grouplist.GetCheckedStrings()
+        for fname in checked:
+            xas_groups.append(fname)
+
         for fname in self.allgroups:
             xlist = xas_groups if fname in checked else ignore
-            xlist.append(fname)
+            if fname not in xlist:
+                xlist.append(fname)
 
         for fname in self.extra_xasgroups:
             if fname not in xas_groups:
@@ -525,7 +527,6 @@ class LoadSessionDialog(wx.Frame):
 
         cmds = ["# Loading Larch Session: ",
                 f"load_session('{fname}', xasgroups={repr(xas_groups)})"]
-
         self.controller.larch.eval('\n'.join(cmds))
         last_fname = None
         xasgroups = getattr(self.controller.symtable, self.xasgroups_name, {})
