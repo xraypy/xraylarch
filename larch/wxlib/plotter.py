@@ -171,6 +171,7 @@ def save_plot_config(win=1):
     except Exception:
         print("cannot save plot configuration")
 
+    out = False
     if conf is not None:
         confstr = yaml.dump(conf, default_flow_style=None, indent=5, sort_keys=False)
         conffile = Path(user_larchdir, WXMPLOT_CONF)
@@ -183,6 +184,8 @@ def save_plot_config(win=1):
                 pass
         with open(conffile, 'w') as fh:
             fh.write(confstr)
+        out = conffile
+    return out.absolute().as_posix()
 
 def get_panel_plot_config(panel):
     """get plot configuration for current plot (or default if that fails)"""
