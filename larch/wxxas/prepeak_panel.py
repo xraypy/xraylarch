@@ -1730,7 +1730,6 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
 
         dgroup._tmp = mod.eval(guesses, x=dgroup.xplot)
         plotframe = self.controller.get_display(win=1)
-        plotframe.panel.conf.set_theme()
 
         plotframe.cursor_hist = []
         plotframe.oplot(dgroup.xplot, dgroup._tmp)

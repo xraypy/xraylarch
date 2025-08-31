@@ -1533,7 +1533,6 @@ class CurveFitPanel(TaskPanel):
 
         dgroup._tmp = mod.eval(guesses, x=dgroup.xplot)
         plotframe = self.controller.get_display(win=1)
-        plotframe.panel.conf.set_theme()
 
         plotframe.cursor_hist = []
         plotframe.oplot(dgroup.xplot, dgroup._tmp)
