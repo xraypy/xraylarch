@@ -44,7 +44,7 @@ from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
                          OkCancel, ExceptionPopup, set_color, get_font)
 
 
-from larch.wxlib.plotter import get_display
+from larch.wxlib.plotter import get_display, save_plot_config
 
 from larch.fitting import fit_report
 from larch.site_config import icondir, home_dir, user_larchdir
@@ -141,6 +141,22 @@ class PreferencesFrame(wx.Frame):
         self.panselect = PanelSelectionPanel(self.nb, parent, controller)
         self.nb.AddPage(self.panselect, 'analysis panels', True)
 
+        ppanel = GridPanel(self.nb, ncols=3, nrows=8, pad=3, itemstyle=LEFT)
+
+        title = SimpleText(ppanel, ' Plot Configuration ',
+                           size=(550, -1), font=get_font(larger=1),
+                           colour=GUI_COLORS.title, style=LEFT)
+        wid = Button(ppanel, ' Save Plot Configuration',
+                     size=(250, -1), action=self.onSavePlotOpts)
+        wid.SetToolTip('Save the current plot configuration for Plot Window 1')
+
+        ppanel.Add((5, 5), newrow=True)
+        ppanel.Add(title, newrow=True, dcol=4)
+        ppanel.Add((5, 5), newrow=True)
+        ppanel.Add(wid, newrow=True, dcol=4)
+        ppanel.pack()
+        self.nb.AddPage(ppanel, ' plot ', True)
+
         for name, data in FULLCONF.items():
             self.wids[name] = {}
 
@@ -217,6 +233,14 @@ class PreferencesFrame(wx.Frame):
         self.Show()
         self.Raise()
 
+    def onSavePlotOpts(self, event=None):
+        out = save_plot_config()
+        if not out:
+            msg = 'could not save plot options'
+        else:
+            msg = f"wrote '{out}'"
+        self.parent.write_message(msg)
+
     def update_help(self, label=None, event=None, section='main', option=None):
         cvar = FULLCONF[section][option]
         self.wids[section]['_key_'].SetLabel("%s : " % option)
@@ -237,12 +261,6 @@ class PreferencesFrame(wx.Frame):
         else:
             value = wid.GetValue()
         self.controller.config[section][option] = value
-        if section == 'plot':
-            plotter = self.parent.larch.symtable._plotter
-            for attr in ('plot1', 'plot2', 'plot3'):
-                disp = getattr(plotter, attr, None)
-                if disp is not None:
-                    disp.set_config(**{option: value})
 
     def onSave(self, event=None):
         current_panels = list(self.parent.get_panels())
