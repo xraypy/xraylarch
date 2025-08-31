@@ -7,7 +7,6 @@ import os
 from datetime import datetime
 import ast
 import traceback
-import toml
 import inspect
 from collections import namedtuple
 from pathlib import Path
@@ -19,6 +18,12 @@ from .symboltable import Group, isgroup
 from .site_config import user_larchdir
 from .closure import Closure
 from .utils import uname, bindir, get_cwd, read_textfile
+
+try:
+    import tomllib
+except ImportError:
+    import tomli as tomllib
+import tomli_w
 
 HAS_TERMCOLOR = False
 try:
@@ -428,7 +433,7 @@ def read_config(conffile):
     if cfile.exists():
         data = read_textfile(cfile)
         try:
-            out = toml.loads(data)
+            out = tomllib.loads(data)
         except:
             pass
     return out
@@ -439,7 +444,7 @@ def save_config(conffile, config):
 
     """
     cfile = Path(user_larchdir, conffile).absolute()
-    dat = toml.dumps(config).encode('utf-8')
+    dat = tomli_w.dumps(config).encode('utf-8')
     with open(cfile, 'wb') as fh:
         fh.write(dat)
     #except:
