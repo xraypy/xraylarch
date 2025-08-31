@@ -436,9 +436,9 @@ def read_config(conffile):
     """
     cfile = Path(user_larchdir, conffile).absolute()
     out = None
-    readers = [yaml_reader, toml_reader]
-    if cfile.name.endswith('.toml')
-        readers = [toml_reader, yaml_reader]
+    readers = [yaml.safe_load, tomllib.loads]
+    if cfile.name.endswith('.toml'):
+        readers = [yaml.safe_load, tomllib.loads]
 
     if cfile.exists():
         data = read_textfile(cfile)
@@ -459,8 +459,11 @@ def save_config(conffile, config, form='yaml'):
 
     """
     cfile = Path(user_larchdir, conffile).absolute()
-    if form == 'toml' and HAS_TOMLI_W:
-        dat = tomli_w.dumps(config)
+    if form == 'toml':
+        if HAS_TOMLI_W:
+            dat = tomli_w.dumps(config)
+        else:
+            dat = tomllib.dumps(config)
     else:
         dat = yaml.dump(config, default_flow_style=None,
                         indent=5, sort_keys=False)

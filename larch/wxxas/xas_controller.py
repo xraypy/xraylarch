@@ -191,7 +191,7 @@ class XASController():
 
     def save_config(self):
         """save configuration"""
-        save_config(self.config_file, self.config)
+        save_config(self.config_file, self.config, form='yaml')
 
     def chdir_on_fileopen(self):
         return self.config['main']['chdir_on_fileopen']
