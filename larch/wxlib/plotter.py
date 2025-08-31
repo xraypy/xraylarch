@@ -28,6 +28,7 @@ from ..site_config import user_larchdir
 
 from .xrfdisplay import XRFDisplayFrame
 
+
 mplconfdir = Path(user_larchdir, 'matplotlib').as_posix()
 mkdir(mplconfdir)
 os.environ['MPLCONFIGDIR'] = mplconfdir
@@ -155,6 +156,7 @@ def get_plot_config(**kws):
              'markercolor': conf.get('markercolor', 'black')}
         t.update(traces[i])
         conf['traces'].append(t)
+    # print("Get Plot Config ", conf['traces'][0], conf['theme'], conf['margins'])
     return conf
 
 
@@ -175,7 +177,6 @@ def save_plot_config(win=1):
         if conffile.exists():
             orig = conffile.absolute().as_posix()
             save = orig.replace('.yaml', '_1.yaml')
-            print(orig, save)
             try:
                 shutil.copy(orig, save)
             except Exception:
@@ -195,6 +196,7 @@ def set_panel_plot_config(panel, **kws):
     """set plot configuration for current plot)"""
     cnf = get_panel_plot_config(panel)
     cnf.update(**kws)
+    # print("Set Panel Plot Config", cnf)
     panel.set_config(**cnf)
 
 def get_zorders(display=None, panel=None):
@@ -306,7 +308,7 @@ class PlotDisplay(PlotFrame):
         symtable.set_symbol('%s_cursor_hist' % self.symname, self.cursor_hist)
 
     def get_config(self):
-        return get_plot_config()
+        return get_panel_plot_config(self.panel)
 
     def set_config(self,  **kws):
         cnf = get_plot_config()
@@ -459,6 +461,7 @@ def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
     if wintitle is not None:
         title = wintitle
 
+
     def _get_disp(symname, creator, win, ddict, wxparent,
                   size, position, _larch):
         wxapp = get_wxapp()
@@ -470,7 +473,6 @@ def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
                 s = display.GetSize()
             except RuntimeError:  # window has been deleted
                 ddict.pop(win)
-                print("get_display  no window 1")
                 display = None
 
         if display is None and hasattr(_larch, 'symtable'):
@@ -482,11 +484,7 @@ def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
                     print("get_display  no window 2")
                     display = None
 
-        plot_conf = get_plot_config()
         if display is None:
-            if size is not None:
-                conf = get_plot_config()
-                size = conf['window_size']
             display = creator(window=win, wxparent=wxparent,
                               size=size, _larch=_larch)
             new_display = True
@@ -519,10 +517,11 @@ def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
         ddict[win] = display
         return display, new_display
 
-
     plot_conf = get_plot_config()
+    if size is not None:
+        size = plot_conf['window_size']
     display, isnew  = _get_disp(symname, creator, win, display_dict, wxparent,
-                               size, position,  _larch)
+                               size, position, _larch)
     if isnew and creator in (PlotDisplay, StackedPlotDisplay):
         panels = [display.panel]
         if creator == StackedPlotDisplay:
@@ -532,7 +531,6 @@ def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
 
     try:
         display.SetTitle(title)
-
     except:
         display_dict.pop(win)
         display, isnew = _get_disp(symname, creator, win, display_dict, wxparent,
