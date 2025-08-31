@@ -19,11 +19,17 @@ from .site_config import user_larchdir
 from .closure import Closure
 from .utils import uname, bindir, get_cwd, read_textfile
 
+import yaml
 try:
     import tomllib
 except ImportError:
     import tomli as tomllib
-import tomli_w
+
+try:
+    import tomli_w
+    HAS_TOMLI_W = True
+except:
+    HAS_TOMLI_W = False
 
 HAS_TERMCOLOR = False
 try:
@@ -430,25 +436,36 @@ def read_config(conffile):
     """
     cfile = Path(user_larchdir, conffile).absolute()
     out = None
+    readers = [yaml_reader, toml_reader]
+    if cfile.name.endswith('.tomml')
+        readers = [toml_reader, yaml_reader]
+
     if cfile.exists():
         data = read_textfile(cfile)
-        try:
-            out = tomllib.loads(data)
-        except:
-            pass
+        success = False
+        for reader in readers:
+            try:
+                out = reader(data)
+                success = True
+            except Exception:
+                pass
+            if success:
+                break
     return out
 
-def save_config(conffile, config):
-    """write yaml config file in the users larch dir
+def save_config(conffile, config, form='yaml'):
+    """write toml/yaml config file in the users larch dir
     compare read_confif(conffile) which will read this value
 
     """
     cfile = Path(user_larchdir, conffile).absolute()
-    dat = tomli_w.dumps(config).encode('utf-8')
+    if form == 'toml' and HAS_TOMLI_W:
+        dat = tomli_w.dumps(config)
+    else:
+        dat = yaml.dump(config, default_flow_style=None,
+                        indent=5, sort_keys=False))
     with open(cfile, 'wb') as fh:
-        fh.write(dat)
-    #except:
-    #    print(f"Could not save configuration file '{conffile:s}'")
+        fh.write(dat.encode('utf-8'))
 
 def parse_group_args(arg0, members=None, group=None, defaults=None,
                      fcn_name=None, check_outputs=True):
