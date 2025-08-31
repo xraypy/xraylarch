@@ -126,7 +126,6 @@ if HAS_WXPYTHON:
                          SavedParameterDialog, GridPanel, RowPanel,
                          make_steps, set_float, FloatCtrl,
                          EditableListBox,
-                         # FileCheckList,
                          FileDropTarget, NumericCombo, FloatSpin,
                          FileOpen, FileSave, SelectWorkdir,
                          FloatSpinWithPin, flatnotebook,
