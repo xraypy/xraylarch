@@ -437,7 +437,7 @@ def read_config(conffile):
     cfile = Path(user_larchdir, conffile).absolute()
     out = None
     readers = [yaml_reader, toml_reader]
-    if cfile.name.endswith('.tomml')
+    if cfile.name.endswith('.toml')
         readers = [toml_reader, yaml_reader]
 
     if cfile.exists():
@@ -463,7 +463,7 @@ def save_config(conffile, config, form='yaml'):
         dat = tomli_w.dumps(config)
     else:
         dat = yaml.dump(config, default_flow_style=None,
-                        indent=5, sort_keys=False))
+                        indent=5, sort_keys=False)
     with open(cfile, 'wb') as fh:
         fh.write(dat.encode('utf-8'))
 
