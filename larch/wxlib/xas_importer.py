@@ -529,10 +529,9 @@ class XasImporter(wx.Frame):
         self.nb = fnb.FlatNotebook(rightpanel, -1, agwStyle=FNB_STYLE)
 
         self.plotpanel = PlotPanel(rightpanel, messenger=self.plot_messages)
-        from .plotter import set_panel_plot_config
-        set_panel_plot_config(self.plotpanel)
-
-        self.plotpanel.SetMinSize((300, 250))
+        from .plotter import get_plot_config
+        self.plotpanel.set_config(**get_plot_config())
+        self.plotpanel.SetMinSize((250, 250))
 
         shead = wx.Panel(rightpanel)
         self.scaninfo = wx.TextCtrl(

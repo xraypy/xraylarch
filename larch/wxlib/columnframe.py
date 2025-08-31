@@ -860,13 +860,10 @@ class ColumnDataFileFrame(wx.Frame) :
         pack(panel, sizer)
 
         self.nb = flatnotebook(self, {}, style=FNB_STYLE)
-
         self.plotpanel = PlotPanel(self, messenger=self.set_message)
-        from .plotter import set_panel_plot_config
-        set_panel_plot_config(self.plotpanel)
-
-
-        self.plotpanel.SetMinSize((200, 200))
+        from .plotter import get_plot_config
+        self.plotpanel.set_config(**get_plot_config())
+        self.plotpanel.SetMinSize((250, 250))
         textpanel = wx.Panel(self)
         ftext = wx.TextCtrl(textpanel, style=wx.TE_MULTILINE|wx.TE_READONLY,
                                size=(370, 275))

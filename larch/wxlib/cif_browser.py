@@ -295,9 +295,8 @@ class CIFFrame(wx.Frame):
             pass
 
         self.plotpanel = PlotPanel(rightpanel, messenger=_swallow_plot_messages)
-        from .plotter import set_panel_plot_config
-        set_panel_plot_config(sef.plotpanel)
-
+        from .plotter import get_plot_config
+        self.plotpanel.set_config(**get_plot_config())
         self.plotpanel.SetMinSize((250, 250))
         self.plotpanel.SetMaxSize((675, 400))
         self.plotpanel.onPanelExposed = self.showXRD1D
