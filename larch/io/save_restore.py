@@ -159,7 +159,7 @@ def save_session(fname=None, symbols=None, histbuff=None,
     if verbose:
         print(f"#save_session {isotime()}:  will save {nsyms} symbols")
 
-    _xasgroups = getattr(symbols, '_xasgroups', None)
+    _xasgroups = getattr(symtab, '_xasgroups', None)
     if _xasgroups is None and auto_xasgroups:
         nsyms +=1
         _xasgroups = {}
@@ -175,6 +175,7 @@ def save_session(fname=None, symbols=None, histbuff=None,
     if _xasgroups is not None:
         buff.append('<:_xasgroups:>')
         buff.append(json.dumps(encode4js(_xasgroups)))
+
     if verbose:
         print(f"#save_session {isotime()}:  _xasgroups saved")
     for attr in symbols:
