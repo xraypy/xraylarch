@@ -19,7 +19,7 @@ from .paths import bindir, unixpath, path_split
 from .strutils import (fixName, isValidName, isNumber, bytes2str, str2bytes,
                        strip_quotes, isLiteralStr, strip_comments, asfloat,
                        find_delims, version_ge, unique_name, get_sessionid,
-                       strict_ascii, file2groupname)
+                       get_session_info, strict_ascii, file2groupname)
 
 from .shellutils import (_more, _parent, ls, cd, cwd, mkdir)
 

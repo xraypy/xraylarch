@@ -215,18 +215,19 @@ def b64hash(s):
     _hash.update(str2bytes(s))
     return bytes2str(b64encode(_hash.digest()))
 
-def get_sessionid(with_time=False, extra=None):
-    """get 8 character string encoding machine name and process id"""
-    _hash = hashlib.sha256()
-    val = f"{uuid.getnode():d} {os.getpid():d}"
-    if with_time:
-        val = val + f" {time.time_ns():d}"
-    if extra is not None:
-        val = val + f" {extra}"
-    _hash.update(val.encode('ASCII'))
-    out = b64encode(_hash.digest()).decode('ASCII')[3:11]
-    return out.replace('/', '-').replace('+', '=')
+def get_session_info():
+    "retun uuid.getnode and os.getpid"
+    return ' '.join([str(uuid.getnode()), str(os.getpid())])
 
+def get_sessionid(with_time=False, extra=None, len=8):
+    """get 8 character string encoding machine name and process id"""
+    dat = get_session_info()
+    if with_time:
+        dat = f"{dat} {time.time_ns():d}"
+    if extra is not None:
+        dat = f"{dat} {extra}"
+    hash = b64hash(dat.encode('ASCII'))[3:3+len]
+    return hash.replace('/', '-').replace('+', '=')
 
 def random_varname(n, rng_seed=None):
     L = 'abcdefghijklmnopqrstuvwxyz0123456789'
