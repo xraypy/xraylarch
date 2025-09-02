@@ -23,7 +23,7 @@ from numpy import ndarray, diff, where, arange, argmin
 from matplotlib.ticker import FuncFormatter
 
 from larch import Group
-from larch.math import index_of
+from larch.math import index_of, index_nearest, interp1d
 from larch.xafs import cauchy_wavelet, etok
 
 try:
@@ -343,7 +343,7 @@ def plot_mu(dgroup, show_norm=False, show_flat=False,
                           label='__nolegend__',color=plotlabels.e0color,
                           _larch=_larch)
         else:
-            ie0 = index_of(dgroup.energy, dgroup.e0)
+            ie0 = index_nearest(dgroup.energy, dgroup.e0)
             axes.plot([dgroup.e0-en_offset], [mu[ie0]+offset], **marker_popts)
 
     if marker_energies is None:
@@ -355,8 +355,9 @@ def plot_mu(dgroup, show_norm=False, show_flat=False,
                           label='__nolegend__',color=plotlabels.e0color,
                           _larch=_larch)
         else:
-            ix = index_of(dgroup.energy, ex)
-            axes.plot([ex-en_offset], [mu[ix]+offset], **marker_popts)
+            ix = int(min(len(dgroup.energy)-2, max(0, index_of(dgroup.energy, ex))))
+            mx = interp1d(dgroup.energy[ix:ix+2], mu[ix:ix+2], ex)
+            axes.plot([ex-en_offset], [mx+offset], **marker_popts)
     redraw(win=win, xmin=emin, xmax=emax, _larch=_larch)
 
 def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, show_ek0=False,
@@ -428,7 +429,7 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, show_ek0=Fa
         e0val = dgroup.ek0
 
     if e0val is not None:
-        ie0 = index_of(dgroup.energy, e0val)
+        ie0 = index_nearest(dgroup.energy, e0val)
         ee0 = dgroup.energy[ie0] - en_offset
         me0 = mu[ie0] + offset
         conf = disp.get_config()
@@ -1055,7 +1056,7 @@ def extend_plotrange(x, y, xmin=None, xmax=None, extend=0.10):
     xmax = min(max(x), xmax+5)
 
     i0 = index_of(x, xmin + xeps)
-    i1 = index_of(x, xmax + xeps) + 1
+    i1 = index_nearest(x, xmax + xeps) + 1
 
     xspan = x[i0:i1]
     xrange = max(xspan) - min(xspan)
@@ -1118,7 +1119,7 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
     if show_peakrange:
         for x in (ppeak.elo, ppeak.ehi):
             _plot_axvline(x, color='#DDDDDD', **popts)
-            y = yplot[index_of(xplot, x)]
+            y = yplot[index_nearest(xplot, x)]
             _plot_marker(x, y, color='#DDDDDD', marker='o', size=5, **popts)
 
     redraw(win=win, xmin=px0, xmax=px1, ymin=py0, ymax=py1,
