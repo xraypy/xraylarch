@@ -16,7 +16,8 @@ from larch.wxlib import (GridPanel, FloatCtrl, FloatSpin,
                          FloatSpinWithPin, SimpleText, Choice, SetTip,
                          Button, HLine, LEFT, pack,
                          plotlabels, get_font, FRAMESTYLE, get_zorders,
-                         get_panel_plot_config, set_panel_plot_config)
+                         get_panel_plot_config, set_panel_plot_config,
+                         get_markercolors)
 
 from larch.xafs import etok, ktoe, find_energy_step
 from larch.utils.physical_constants import ATOM_SYMS
@@ -518,12 +519,12 @@ class EnergyCalibrateFrame(wx.Frame):
             yold = np.gradient(yold)/np.gradient(xold)
 
         ppanel.plot(xold, yold,  marker='o', markersize=3,
-                     label='original', color='#1f77b4',
+                     label='original',
                      title=f'Energy Calibration:\n {fname}', **opts)
         zorders = get_zorders(panel=ppanel)
         znext = zorders[0] + 2
         ppanel.oplot(xnew, ynew, zorder=znext, marker='+', markersize=3,
-                     label='shifted', color='#d62728', **opts)
+                     label='shifted', **opts)
 
         if wids['reflist'].GetStringSelection() != 'None':
             refgroup = self.controller.get_group(wids['reflist'].GetStringSelection())
@@ -531,7 +532,7 @@ class EnergyCalibrateFrame(wx.Frame):
             if use_deriv:
                 yref = np.gradient(yref)/np.gradient(xref)
 
-            ppanel.oplot(xref, yref, style='solid', zorder=znext-5, color='#2ca02c',
+            ppanel.oplot(xref, yref, style='solid', zorder=znext-5,
                          marker=None, label=refgroup.filename, **opts)
         if use_zoom:
             set_view_limits(ppanel, xlim, ylim)
@@ -1398,8 +1399,13 @@ class DeglitchFrame(wx.Frame):
             xwork, ywork = self.data
             zorders = get_zorders(panel=ppanel)
             znext = zorders[0] - 2
-            opts = dict(marker='o', markersize=6, zorder=znext, label='_nolegend_',
-                        markerfacecolor='#66000022', markeredgecolor='#440000')
+            pconf = get_panel_plot_config(self.plotpanel)
+            col_edge, col_face = get_markercolors(trace=2,
+                                                  linecolors=pconf['linecolors'],
+                                                  facecolor=pconf['facecolor'])
+
+            opts = dict(marker='o', markersize=6, zorder=znext, label='bad points',
+                        markerfacecolor=col_face, markeredgecolor=col_edge)
             if self.plot_markers == 'xlast':
                 bad = index_nearest(xwork, self.wids['xlast'].GetValue())
                 ppanel.axes.plot([xwork[bad]], [ywork[bad]], **opts)

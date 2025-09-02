@@ -16,7 +16,8 @@ from larch.xafs.xafsutils import guess_energy_units
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, get_icon,
                          SimpleText, pack, Button, HLine, Choice, Check,
                          GridPanel, CEN, RIGHT, LEFT, plotlabels,
-                         get_zoomlimits, set_zoomlimits, get_plot_config)
+                         get_zoomlimits, set_zoomlimits,
+                         get_panel_plot_config, get_markercolors)
 
 from larch.utils.physical_constants import ATOM_NAMES
 from larch.wxlib.plotter import last_cursor_pos
@@ -257,8 +258,6 @@ class XYDataPanel(TaskPanel):
         newplot = True
         ppanel = self.controller.get_display(stacked=False).panel
 
-        plotopts = get_panel_plot_config(ppanel)
-
         for ix, checked in enumerate(group_ids):
             groupname = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(groupname)
@@ -277,15 +276,6 @@ class XYDataPanel(TaskPanel):
             newplot = False
 
         zoom_limits = get_zoomlimits(ppanel, dgroup)
-
-#         nplot_traces = len(ppanel.conf.traces)
-#         nplot_request = len(plot_traces)
-#         if nplot_request > nplot_traces:
-#             linecolors = ppanel.conf.linecolors
-#             ncols = len(linecolors)
-#             for i in range(nplot_traces, nplot_request+5):
-#                 ppanel.conf.init_trace(i,  linecolors[i%ncols], 'dashed')
-
 
         ppanel.plot_many(plot_traces, xlabel=plotlabels.xplot, ylabel=ylabel,
                          zoom_limits=zoom_limits, show_legend=True)
@@ -565,10 +555,15 @@ class XYDataPanel(TaskPanel):
             axes = ppanel.axes
             for etype, x, y, opts in plot_extras:
                 if etype == 'marker':
-                    xpopts = {'marker': 'o', 'markersize': 5,
+                    col_edge, col_face = get_markercolors(trace=len(plot_yarrays),
+                                                linecolors=popts['linecolors'],
+                                                facecolor=popts['facecolor'])
+
+                    xpopts = {'marker': 'o',
+                             'markersize': popts['markersize'],
                               'label': '_nolegend_',
-                              'markerfacecolor': 'red',
-                              'markeredgecolor': '#884444'}
+                              'markerfacecolor': col_face,
+                              'markeredgecolor': col_edge}
                     xpopts.update(opts)
                     axes.plot([x], [y], **xpopts)
                 elif etype == 'vline':

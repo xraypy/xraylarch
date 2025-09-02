@@ -16,7 +16,8 @@ from larch import Group, Journal, Entry
 from larch.larchlib import read_config, save_config
 from larch.utils import (group2dict, unique_name,
                          asfloat, get_sessionid, mkdir, unixpath)
-from larch.wxlib.plotter import last_cursor_pos
+from larch.wxlib.plotter import (last_cursor_pos,
+                                 get_panel_plot_config, get_markercolors)
 from larch.wxlib import ExceptionPopup
 from larch.io import save_session
 from larch.site_config import home_dir, user_larchdir
@@ -508,7 +509,8 @@ class XASController():
         if plot_yarrays is None and hasattr(dgroup, 'plot_yarrays'):
             plot_yarrays = dgroup.plot_yarrays
 
-        popts = kws
+        popts = get_panel_plot_confing(ppanel)
+        popts = popts.update(kws)
         fname = Path(dgroup.filename).name
         if not 'label' in popts:
             popts['label'] = dgroup.plot_ylabel
@@ -541,16 +543,21 @@ class XASController():
             axes = ppanel.axes
             for etype, x, y, opts in plot_extras:
                 if etype == 'marker':
-                    popts = {'marker': 'o', 'markersize': 4,
+                    col_edge, col_face = get_markercolors(trace=len(plot_yarrays),
+                                                linecolors=popts['linecolors'],
+                                                facecolor=popts['facecolor'])
+                    popts = {'marker': 'o',
+                             'markersize': popts['markersize'],
                              'label': '_nolegend_',
-                             'markerfacecolor': 'red',
-                             'markeredgecolor': '#884444'}
+                             'markerfacecolor': col_face,
+                             'markeredgecolor': col_edge}
                     popts.update(opts)
                     axes.plot([x], [y], **popts)
                 elif etype == 'vline':
                     popts = {'ymin': 0, 'ymax': 1.0,
                              'color': '#888888'}
                     popts.update(opts)
+
                     axes.axvline(x, **popts)
         ppanel.canvas.draw()
         self.set_focus()
