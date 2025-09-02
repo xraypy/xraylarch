@@ -93,6 +93,8 @@ class XASController():
         self.config = self.larch.symtable._sys.larix_config = config
 
         self.session_id = get_sessionid(extra=id(self))
+        self.session_title = f"Larix [{self.session_id}]"
+        self.larch.symtable._sys.session_title = self.session_title
         self.session_lockfile = f"{SESSION_LOCK}_{self.session_id}.dat"
         with open(Path(self.larix_folder, self.session_lockfile), 'w') as fh:
             fh.write(f"{get_session_info()}\n")
@@ -327,7 +329,8 @@ class XASController():
             curf = savefile.replace('.larix', '_1.larix' )
             shutil.move(savefile, curf)
         self.sync_xasgroups()
-        self.saver_thread = Thread(target=save_session, args=(savefile,), kwargs={'_larch': self.larch})
+        self.saver_thread = Thread(target=save_session, args=(savefile,),
+                                    kwargs={'_larch': self.larch})
         self.saver_thread.start()
         time.sleep(0.25)
 

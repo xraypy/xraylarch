@@ -486,6 +486,10 @@ def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
         title   = 'Fit Plot Window %i' % win
         symname = '%s.fitplot%i' % (_larch_name, win)
 
+    sess_title = getattr(_larch.symtable._sys, 'session_title', None)
+    if sess_title is not None:
+        title = f"{sess_title}: {title}"
+
     if wintitle is not None:
         title = wintitle
 
