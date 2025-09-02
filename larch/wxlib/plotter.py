@@ -20,6 +20,7 @@ from pathlib import Path
 from copy import deepcopy
 from wxmplot import PlotFrame, ImageFrame, StackedPlotFrame
 from wxmplot.interactive import get_wxapp
+from wxmplot.colors import rgb2hex, hex2rgb
 import larch
 from ..utils import mkdir
 from ..xrf import isLarchMCAGroup
@@ -220,7 +221,28 @@ def get_zorders(display=None, panel=None):
         zorders.append(0)
     return zorders
 
+def get_markercolors(trace=1, linecolors=None, facecolor=None):
+    """get marker face and edge colors for an integer trace and a plotconf
+    dictionary.
+    returns markeredge, markerface colors
 
+    This sets the markeredge to the linecolor of the trace+1 (so, skipping over
+    one to the 3rd line trace).
+
+    The markerface is set to average of the edge color and the plot 'facecolor'
+    with alpha set to 80
+    """
+    if linecolors is None:
+        linecolors = PLOTOPTS['linecolors']
+    if facecolor is None:
+        facecolor = PLOTOPTS['facecolor']
+    ncol = len(linecolors)
+    edgecolor = linecolors[(trace+1) % ncol]
+
+    ergb = hex2rgb(edgecolor[:7])
+    frgb = hex2rgb(facecolor[:7])
+    frgb = ( (ergb[0]+frgb[0])//2, (ergb[1]+frgb[1])//2, (ergb[2]+frgb[2])//2)
+    return edgecolor, rgb2hex(frgb) + '80'
 
 
 class XRFDisplay(XRFDisplayFrame):
