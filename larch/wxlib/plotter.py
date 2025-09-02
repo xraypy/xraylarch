@@ -120,6 +120,7 @@ def get_plot_config(**kws):
     for key in conf:
         if key in saved_conf:
             conf[key] = saved_conf[key]
+    conf.update(**kws)
 
     # check for theme of "<auto>"
     if conf.get('theme', '<auto>').lower().startswith('<auto>'):
@@ -138,8 +139,6 @@ def get_plot_config(**kws):
     for attr in ('alpha', 'drawstyle', 'fill', 'marker'):
         cname = f'line_{attr}'
         conf[cname] = t0.get(attr, conf[cname])
-
-    conf.update(**kws)
 
     # build traces from default trace properties, overwrite with saved trace properties
     conf['traces'] = []
@@ -193,8 +192,9 @@ def get_panel_plot_config(panel):
     try:
         conf = panel.get_config()
     except Exception:
-        conf = get_plot_config()
-    return conf
+        conf = {}
+    return get_plot_config(**conf)
+
 
 def set_panel_plot_config(panel, **kws):
     """set plot configuration for current plot)"""
@@ -226,23 +226,22 @@ def get_markercolors(trace=1, linecolors=None, facecolor=None):
     dictionary.
     returns markeredge, markerface colors
 
-    This sets the markeredge to the linecolor of the trace+1 (so, skipping over
-    one to the 3rd line trace).
+    This sets the markeredge to the linecolor of the trace+2 (so, skipping over 1)
 
     The markerface is set to average of the edge color and the plot 'facecolor'
-    with alpha set to 80
+    with alpha set to C0
     """
     if linecolors is None:
         linecolors = PLOTOPTS['linecolors']
     if facecolor is None:
         facecolor = PLOTOPTS['facecolor']
     ncol = len(linecolors)
-    edgecolor = linecolors[(trace+1) % ncol]
+    edgecolor = linecolors[(2+trace) % ncol]
 
     ergb = hex2rgb(edgecolor[:7])
     frgb = hex2rgb(facecolor[:7])
     frgb = ( (ergb[0]+frgb[0])//2, (ergb[1]+frgb[1])//2, (ergb[2]+frgb[2])//2)
-    return edgecolor, rgb2hex(frgb) + '80'
+    return edgecolor, rgb2hex(frgb) + 'C0'
 
 
 class XRFDisplay(XRFDisplayFrame):
@@ -392,6 +391,10 @@ class StackedPlotDisplay(StackedPlotFrame):
         if len(self.cursor_hist) > hmax:
             self.cursor_hist = self.cursor_hist[:hmax]
         symtable.set_symbol('%s_cursor_hist' % self.symname, self.cursor_hist)
+
+    def get_config(self):
+        return get_panel_plot_config(self.panel)
+
 
 class ImageDisplay(ImageFrame):
     def __init__(self, wxparent=None, window=1, _larch=None, size=None, **kws):
