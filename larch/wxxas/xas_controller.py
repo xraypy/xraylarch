@@ -15,14 +15,15 @@ import larch
 from larch import Group, Journal, Entry
 from larch.larchlib import read_config, save_config
 from larch.utils import (group2dict, unique_name,
-                         asfloat, get_sessionid, mkdir, unixpath)
+                         get_sessionid, get_session_info,
+                         asfloat, mkdir, unixpath)
 from larch.wxlib.plotter import (last_cursor_pos,
                                  get_panel_plot_config, get_markercolors)
 from larch.wxlib import ExceptionPopup
 from larch.io import save_session
 from larch.site_config import home_dir, user_larchdir
 
-from .config import XASCONF, CONF_FILE,  OLDCONF_FILE
+from .config import XASCONF, CONF_FILE,  OLDCONF_FILE, SESSION_LOCK
 
 
 class XASController():
@@ -43,9 +44,6 @@ class XASController():
         self.larch = _larch
         if _larch is None:
             self.larch = larch.Interpreter()
-        self.session_id = get_sessionid(extra=id(self))
-        self.larix_folder = Path(user_larchdir, 'larix').as_posix()
-        self.config_file = Path(self.larix_folder, CONF_FILE).as_posix()
         self.init_larch_session()
         self.init_workdir()
 
@@ -55,26 +53,32 @@ class XASController():
 
         config = {}
         config.update(XASCONF)
-        # may migrate old 'xas_viewer' folder to 'larix' folder
-        xasv_folder = Path(user_larchdir, 'xas_viewer')
-        if Path(xasv_folder).exists() and not Path(self.larix_folder).exists():
-            print("Migrating xas_viewer to larix folder")
-            shutil.move(xasv_folder, self.larix_folder)
 
-        if not Path(self.larix_folder).exists():
+        self.larix_folder = Path(user_larchdir, 'larix').absolute()
+
+        # may migrate old 'xas_viewer' folder to 'larix' folder
+        xasv_folder = Path(user_larchdir, 'xas_viewer').absolute()
+
+        if xasv_folder.exists() and not self.larix_folder.exists():
+            print("Migrating xas_viewer to larix folder")
+            shutil.move(xasv_folder.as_posix(), self.larix_folder.as_posix())
+
+        if not self.larix_folder.exists():
             try:
                 mkdir(self.larix_folder)
             except Exception:
                 title = "Cannot create Larix folder"
-                message = [f"Cannot create directory {larix_folder}"]
+                message = [f"Cannot create directory {self.larix_folder}"]
                 ExceptionPopup(self, title, message)
 
         # may migrate old 'xas_viewer.conf' file to 'larix.conf'
-        old_config_file = Path(self.larix_folder, OLDCONF_FILE).as_posix()
-        if Path(old_config_file).exists() and not Path(self.config_file).exists():
-            shutil.move(old_config_file, self.config_file)
+        old_config_file = Path(self.larix_folder, OLDCONF_FILE)
+        if old_config_file.exists() and not self.config_file.exists():
+            shutil.move(old_config_file.as_posix(), self.config_file.as_posix())
 
-        if Path(self.config_file).exists():
+        self.config_file = Path(self.larix_folder, CONF_FILE)
+
+        if self.config_file.exists():
             user_config = read_config(self.config_file)
             if user_config is not None:
                 for sname in config:
@@ -87,7 +91,34 @@ class XASController():
                             config[sname] = val
 
         self.config = self.larch.symtable._sys.larix_config = config
+
+        self.session_id = get_sessionid(extra=id(self))
+        self.session_lockfile = f"{SESSION_LOCK}_{self.session_id}.dat"
+        with open(Path(self.larix_folder, self.session_lockfile), 'w') as fh:
+            fh.write(f"{get_session_info()}\n")
         self.clean_autosave_sessions()
+
+    def delete_lockfile(self):
+        spath = Path(self.larix_folder, self.session_lockfile)
+        if spath.exists():
+            os.unlink(spath)
+
+    def get_otherlockfiles(self):
+        """return lock files not matching the current session"""
+        this_session_info = get_session_info()
+        lock_files = {}
+
+        conf = self.get_config('autosave', {})
+        autosave_fileroot = conf.get('fileroot', 'autosave')
+
+        for fname in os.listdir(self.larix_folder):
+            if fname.startswith(SESSION_LOCK) and self.session_id not in fname:
+                sid = fname.replace(SESSION_LOCK, '').replace('_', '').replace('.dat','')
+                asave = f"{autosave_fileroot:s}_{sid}.larix"
+                asave = Path(self.larix_folder, asave)
+                if asave.exists():
+                    lock_files[fname] = asave
+        return lock_files
 
     def install_group(self, groupname, filename, source=None, journal=None):
         """add groupname / filename to list of available data groups"""
@@ -341,6 +372,21 @@ class XASController():
                 os.unlink(dfile)
             nremove -= 1
 
+        # remove lockfiles without an autosave session file
+        this_session_info = get_session_info()
+        stale_lock_files = []
+        for fname in os.listdir(self.larix_folder):
+            if fname.startswith(SESSION_LOCK) and self.session_id not in fname:
+                sid = fname.replace(SESSION_LOCK, '').replace('_', '').replace('.dat','')
+                asave = f"{fileroot:s}_{sid}.larix"
+                if not Path(self.larix_folder, asave).exists():
+                    stale_lock_files.append(Path(self.larix_folder, fname))
+        print("clean stale lock files ", stale_lock_files)
+        for fname in stale_lock_files:
+            os.unlink(fname)
+
+
+
     def get_recentfiles(self, max=10):
         return sorted(self.recentfiles, key=lambda x: x[0], reverse=True)[:max]
 
@@ -363,9 +409,8 @@ class XASController():
         self.init_larch_session()
 
     def save_exafsplot_config(self, options):
-        self.larix_folder = Path(user_larchdir, 'larix').as_posix()
-        plot_conf = Path(user_larchdir, 'larix', 'larix_exafsplots.conf')
-        save_config(plot_conf, options, form='yaml')
+        exconf_path = Path(user_larchdir, 'larix', 'larix_exafsplots.conf')
+        save_config(exconf_path, options, form='yaml')
 
     def load_exafsplot_config(self):
         plot_conf = Path(user_larchdir, 'larix', 'larix_exafsplots.conf')
