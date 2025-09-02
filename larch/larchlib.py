@@ -434,7 +434,7 @@ def read_config(conffile):
 
     returns dictionary / configuration
     """
-    cfile = Path(user_larchdir, conffile).absolute()
+    cfile = Path(conffile).absolute()
     out = None
     readers = [yaml.safe_load, tomllib.loads]
     if cfile.name.endswith('.toml'):
@@ -456,9 +456,8 @@ def read_config(conffile):
 def save_config(conffile, config, form='yaml'):
     """write toml/yaml config file in the users larch dir
     compare read_confif(conffile) which will read this value
-
     """
-    cfile = Path(user_larchdir, conffile).absolute()
+    cfile = Path(conffile).absolute()
     if form == 'toml':
         if HAS_TOMLI_W:
             dat = tomli_w.dumps(config)
@@ -467,7 +466,7 @@ def save_config(conffile, config, form='yaml'):
     else:
         dat = yaml.dump(config, default_flow_style=None,
                         indent=5, sort_keys=False)
-    with open(cfile, 'wb') as fh:
+    with open(conffile, 'wb') as fh:
         fh.write(dat.encode('utf-8'))
 
 def parse_group_args(arg0, members=None, group=None, defaults=None,
