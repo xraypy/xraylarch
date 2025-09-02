@@ -43,6 +43,7 @@ class XASController():
         self.larch = _larch
         if _larch is None:
             self.larch = larch.Interpreter()
+        self.session_id = get_sessionid(extra=id(self))
         self.larix_folder = Path(user_larchdir, 'larix').as_posix()
         self.config_file = Path(self.larix_folder, CONF_FILE).as_posix()
         self.init_larch_session()
@@ -284,7 +285,7 @@ class XASController():
                 if i > 150:
                     break
 
-        fname =  f"{fileroot:s}_{get_sessionid():s}.larix"
+        fname =  f"{fileroot:s}_{self.session_id}.larix"
         savefile = Path(self.larix_folder, fname).as_posix()
         for i in reversed(range(1, nhistory)):
             curf = savefile.replace('.larix', f'_{i:d}.larix' )

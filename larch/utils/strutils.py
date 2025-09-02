@@ -2,7 +2,7 @@
 """
 utilities for larch
 """
-from __future__ import print_function
+import time
 import re
 import sys
 import os
@@ -215,10 +215,15 @@ def b64hash(s):
     _hash.update(str2bytes(s))
     return bytes2str(b64encode(_hash.digest()))
 
-def get_sessionid():
+def get_sessionid(with_time=False, extra=None):
     """get 8 character string encoding machine name and process id"""
     _hash = hashlib.sha256()
-    _hash.update(f"{uuid.getnode():d} {os.getpid():d}".encode('ASCII'))
+    val = f"{uuid.getnode():d} {os.getpid():d}"
+    if with_time:
+        val = val + f" {time.time_ns():d}"
+    if extra is not None:
+        val = val + f" {extra}"
+    _hash.update(val.encode('ASCII'))
     out = b64encode(_hash.digest()).decode('ASCII')[3:11]
     return out.replace('/', '-').replace('+', '=')
 
