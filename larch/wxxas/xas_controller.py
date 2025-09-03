@@ -305,7 +305,7 @@ class XASController():
         for key in missing:
             self.unregister_group_callback(key)
 
-    def autosave_session(self):
+    def autosave_session(self, use_thread=True):
         conf = self.get_config('autosave', {})
         fileroot = conf.get('fileroot', 'autosave')
         nhistory = max(12, int(conf.get('nhistory', 2)))
@@ -329,9 +329,12 @@ class XASController():
             curf = savefile.replace('.larix', '_1.larix' )
             shutil.move(savefile, curf)
         self.sync_xasgroups()
-        self.saver_thread = Thread(target=save_session, args=(savefile,),
-                                    kwargs={'_larch': self.larch})
-        self.saver_thread.start()
+        if use_thread:
+            self.saver_thread = Thread(target=save_session, args=(savefile,),
+                                       kwargs={'_larch': self.larch})
+            self.saver_thread.start()
+        else:
+            save_session(savefile, _larch=self.larch)
         time.sleep(0.25)
 
         return savefile
@@ -384,7 +387,7 @@ class XASController():
                 asave = f"{fileroot:s}_{sid}.larix"
                 if not Path(self.larix_folder, asave).exists():
                     stale_lock_files.append(Path(self.larix_folder, fname))
-        print("clean stale lock files ", stale_lock_files)
+        # print("clean stale lock files ", stale_lock_files)
         for fname in stale_lock_files:
             os.unlink(fname)
 
