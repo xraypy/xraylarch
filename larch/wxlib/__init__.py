@@ -168,7 +168,7 @@ if HAS_WXPYTHON:
                           get_zoomlimits, set_zoomlimits,
                           save_plot_config, get_plot_config,
                           get_panel_plot_config, set_panel_plot_config,
-                          get_zorders, get_markercolors)
+                          get_zorders, get_markercolors, set_plotwindow_title)
 
     if uname == 'darwin':
         HLine = DarwinHLine
