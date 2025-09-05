@@ -73,8 +73,7 @@ dependencies = ["numpy>=1.23",
     "psutil",
     "fabio",
     "pyfai",
-    "tabulate",
-    "darkdetect"]
+    "tabulate"]
 
 
 [project.scripts]
