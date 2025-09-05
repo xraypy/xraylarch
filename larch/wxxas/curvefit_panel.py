@@ -559,6 +559,7 @@ class CurveFitResultFrame(wx.Frame):
             return self.fit_history[self.nfit]
 
     def onPlot(self, event=None):
+        self.controller.set_datatask_name(self.title)
         show_resid = self.wids['plot_resid'].IsChecked()
         sub_bline = self.wids['plot_bline'].IsChecked()
         win  = int(self.wids['plot_win'].GetStringSelection())
@@ -645,7 +646,7 @@ class CurveFitResultFrame(wx.Frame):
             self.datagroup = datagroup
         if larch_eval is not None:
             self.larch_eval = larch_eval
-
+        self.controller.set_datatask_name(self.title)
         datagroup = self.datagroup
         self.curvefit_history = getattr(self.datagroup.curvefit, 'fit_history', [])
         # cur = self.get_fitresult()
@@ -1416,6 +1417,7 @@ class CurveFitPanel(TaskPanel):
     def onPlot(self, evt=None, baseline_only=False, show_init=False):
         opts = self.read_form()
         dgroup = self.controller.get_group()
+        self.controller.set_datatask_name(self.title)
         opts['group'] = opts['gname']
         self.larch_eval(COMMANDS['curvefit_setup'].format(**opts))
 
