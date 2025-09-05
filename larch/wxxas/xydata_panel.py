@@ -47,7 +47,6 @@ PlotSel_Choices = {'XY Data': 'ydat',
 FSIZE = 120
 FSIZEBIG = 175
 
-
 class XYDataPanel(TaskPanel):
     """XY Data Panel"""
     def __init__(self, parent, controller=None, **kws):
@@ -93,6 +92,13 @@ class XYDataPanel(TaskPanel):
 
         pack(trow, tsizer)
 
+        self.wids['xarr'] = Choice(panel, choices=['xdat', 'ydat'],
+                                   action=self.onXSelect, size=(250, -1))
+        self.wids['yarr'] = Choice(panel, choices=['xdat', 'ydat'],
+                                   action=self.onYSelect, size=(250, -1))
+        self.wids['xarr'].SetSelection(0)
+        self.wids['yarr'].SetSelection(1)
+
         scale = self.add_floatspin('scale', action=self.onSet_Scale,
                                                 digits=6, increment=0.05, value=1.0,
                                                 size=(FSIZEBIG, -1))
@@ -106,6 +112,7 @@ class XYDataPanel(TaskPanel):
 
         use_auto = Button(panel, 'Use Default Settings', size=(200, -1),
                           action=self.onUseDefaults)
+
 
         def CopyBtn(name):
             return Button(panel, 'Copy', size=(60, -1),
@@ -126,6 +133,14 @@ class XYDataPanel(TaskPanel):
         add_text('XY Data:')
         panel.Add(use_auto, dcol=1)
         panel.Add(SimpleText(panel, 'Copy to Selected Groups:'), style=RIGHT, dcol=2)
+
+        add_text('X Array:')
+        panel.Add(self.wids['xarr'], dcol=2)
+        panel.Add(CopyBtn('xarr'), dcol=1, style=RIGHT)
+
+        add_text('Y Array:')
+        panel.Add(self.wids['yarr'], dcol=2)
+        panel.Add(CopyBtn('yarr'), dcol=1, style=RIGHT)
 
         add_text('Scale Factor:')
         panel.Add(scale)
@@ -177,6 +192,49 @@ class XYDataPanel(TaskPanel):
         setattr(dgroup.config, self.configname, conf)
         return conf
 
+    def onXSelect(self, event=None):
+        dgroup = self.controller.get_group()
+        if dgroup is None:
+            return
+        xname = self.wids['xarr'].GetStringSelection()
+        yname = self.wids['yarr'].GetStringSelection()
+
+        xdat = getattr(dgroup, xname, None)
+        if xdat is None:
+            return
+        dgroup.xdat = 1.0  * xdat
+        nx = len(xdat)
+        yarr = [xname]
+        for aname, npts in self.data_arrays.items():
+            if npts == nx and aname != xname:
+                yarr.append(aname)
+
+        self.wids['yarr'].Clear()
+        self.wids['yarr'].AppendItems(yarr)
+        if yname in yarr:
+            self.wids['yarr'].SetStringSelection(yname)
+        elif len(yarr) > 1:
+            self.wids['yarr'].SetSelection(1)
+        else:
+            self.wids['yarr'].SetSelection(0)
+
+        yname = self.wids['yarr'].GetStringSelection()
+        ydat = getattr(dgroup, yname, xdat)
+        dgroup.ydat = 1.0  * ydat
+        wx.CallAfter(self.onReprocess)
+
+    def onYSelect(self, event=None):
+        dgroup = self.controller.get_group()
+
+        if dgroup is None:
+            return
+
+        yname = self.wids['yarr'].GetStringSelection()
+        ydat = getattr(dgroup, yname, None)
+        if ydat is not None:
+            dgroup.ydat = 1.0  * ydat
+        wx.CallAfter(self.onReprocess)
+
     def fill_form(self, dgroup, initial=False):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
@@ -187,10 +245,10 @@ class XYDataPanel(TaskPanel):
 
         self.wids['scale'].SetValue(opts['scale'])
         self.wids['xshift'].SetValue(opts['xshift'])
+        self.set_array_selections(dgroup)
 
         frozen = opts.get('is_frozen', False)
         frozen = getattr(dgroup, 'is_frozen', frozen)
-
         self.wids['is_frozen'].SetValue(frozen)
         self._set_frozen(frozen)
         wx.CallAfter(self.unset_skip_process)
@@ -203,7 +261,65 @@ class XYDataPanel(TaskPanel):
         form_opts = {}
         form_opts['scale'] = self.wids['scale'].GetValue()
         form_opts['xshift'] = self.wids['xshift'].GetValue()
+        form_opts['xarr'] = self.wids['xarr'].GetStringSelection()
+        form_opts['yarr'] = self.wids['yarr'].GetStringSelection()
         return form_opts
+
+    def onPanelExposed(self, **kws):
+        # called when notebook is selected
+        self.set_array_selections()
+
+    def set_array_selections(self, dgroup=None):
+        if dgroup is None:
+            dgroup = self.controller.get_group()
+        if dgroup is None:
+            return
+        xname = self.wids['xarr'].GetStringSelection()
+        yname = self.wids['yarr'].GetStringSelection()
+
+
+        self.data_arrays = {}
+        for attr in dir(dgroup):
+            obj = getattr(dgroup, attr)
+            if isinstance(obj, np.ndarray):
+                if len(obj.shape) == 1 and len(obj) > 2:
+                    self.data_arrays[attr] = len(obj)
+
+        xarr = ['xdat']
+        for name in ('energy', 'k', 'r', 'q'):
+            if name in self.data_arrays:
+                xarr.append(name)
+        for name in self.data_arrays:
+            if name not in xarr:
+                xarr.append(name)
+        if xname not in xarr:
+            xname = 'xdat'
+
+        xdat = getattr(dgroup, xname, dgroup.xdat)
+        if xdat is None:
+            return
+        dgroup.xdat = 1.0  * xdat
+        nx = len(xdat)
+
+        self.wids['xarr'].Clear()
+        self.wids['xarr'].AppendItems(xarr)
+        self.wids['xarr'].SetStringSelection(xname)
+
+        yarr = [xname]
+        for aname, npts in self.data_arrays.items():
+            if npts == nx and aname != xname:
+                yarr.append(aname)
+
+        self.wids['yarr'].Clear()
+        self.wids['yarr'].AppendItems(yarr)
+        if yname in yarr:
+            self.wids['yarr'].SetStringSelection(yname)
+        else:
+            self.wids['yarr'].SetSelection(1)
+        ydat = getattr(dgroup, yname, None)
+        if ydat is not None:
+            dgroup.ydat = 1.0  * ydat
+        wx.CallAfter(self.onReprocess)
 
 
     def _set_frozen(self, frozen):
@@ -286,7 +402,8 @@ class XYDataPanel(TaskPanel):
     def onUseDefaults(self, evt=None):
         self.wids['scale'].SetValue(1.0)
         self.wids['xshift'].SetValue(0.0)
-
+        self.wids['xarr'].SetStringSelection('xdat')
+        self.wids['yarr'].SetStringSelection('ydat')
 
     def onCopyAuto(self, evt=None):
         opts = dict(scale=1)
@@ -400,13 +517,13 @@ class XYDataPanel(TaskPanel):
         """
         if self.skip_process and not force:
             return
+
         if dgroup is None:
             dgroup = self.controller.get_group()
         if dgroup is None:
             return
 
         self.ensure_ydat(dgroup)
-
         self.skip_process = True
         conf = self.get_config(dgroup)
         form = self.read_form()
@@ -425,7 +542,6 @@ class XYDataPanel(TaskPanel):
                 f"{gname:s}.ynorm = {gname:s}.ydat/{scale}",
                 f"{gname:s}.dydx  = gradient({gname:s}.ynorm)/gradient({gname:s}.xplot)",
                 f"{gname:s}.d2ydx = gradient({gname:s}.dydx)/gradient({gname:s}.xplot)"]
-
         self.larch_eval('\n'.join(cmds))
         self.unset_skip_process()
         return
@@ -481,7 +597,7 @@ class XYDataPanel(TaskPanel):
         if self.skip_plotting:
             return
         ppanel = self.controller.get_display(stacked=False).panel
-
+        self.controller.set_datatask_name(self.title)
         plotcmd = ppanel.oplot
         if new:
             plotcmd = ppanel.plot
@@ -503,10 +619,8 @@ class XYDataPanel(TaskPanel):
         if plot_yarrays is None and hasattr(dgroup, 'plot_yarrays'):
             plot_yarrays = dgroup.plot_yarrays
 
-        popts = get_panel_plot_confing(ppanel)
+        popts = get_panel_plot_config(ppanel)
         popts.update(kws)
-        popts['grid'] = popts.pop('show_grid')
-        popts['fullbox'] = popts.pop('show_fullbox')
 
         path, fname = path_split(dgroup.filename)
         if 'label' not in popts:
