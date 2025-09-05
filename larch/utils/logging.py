@@ -7,18 +7,6 @@ Handling loggers
 import sys
 import logging
 
-HAS_IPYTHON = False
-try:
-    from IPython.core.interactiveshell import InteractiveShell
-
-    HAS_IPYTHON = True
-except ImportError:
-    pass
-
-# Enable color output in Jupyter Notebook
-if HAS_IPYTHON:
-    InteractiveShell.ast_node_interactivity = "all"
-
 # set up default logging configureation
 _default_format = "[%(name)-s | %(levelname)-8s] %(message)s"
 _default_format_file = "[%(asctime)s | %(name)-s | %(levelname)-8s] %(message)s"
