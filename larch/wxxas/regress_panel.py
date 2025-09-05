@@ -522,7 +522,7 @@ class RegressionPanel(TaskPanel):
 
         disp = self.controller.get_display(stacked=False, win=1)
         ppanel = disp.panel
-        self.controller.set_datatask_name(self.parent.title)
+        self.controller.set_datatask_name(self.title)
         set_plotwindow_title(disp, self.controller.larch)
 
         viewlims = ppanel.get_viewlimits()
