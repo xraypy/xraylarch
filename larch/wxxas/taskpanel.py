@@ -210,6 +210,9 @@ class TaskPanel(wx.Panel):
         self.larch = controller.larch
         self.title = 'Generic Panel'
         self.configname = panel
+        if panel in LARIX_PANELS:
+            self.title = LARIX_PANELS[panel].title
+            self.desc  = LARIX_PANELS[panel].desc
 
         self.wids = {}
         self.subframes = {}
