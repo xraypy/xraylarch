@@ -722,6 +722,7 @@ class FeffPathPanel(wx.Panel):
 
 
     def onPlotFeffDat(self, event=None):
+        self.feffit_panel.controller.set_datatask_name('Feff.dat')
         cmd = f"plot_feffdat(_feffpaths['{self.title}'], title='Feff data for path {self.title}')"
         self.feffit_panel.larch_eval(cmd)
 
@@ -1172,7 +1173,7 @@ class FeffitPanel(TaskPanel):
     def onPlot(self, evt=None, dataset_name='_feffit_dataset',
                pargroup_name='_feffit_params', title=None, build_fitmodel=True,
                topwin=None, **kws):
-
+        self.controller.set_datatask_name(self.title)
         dataset = getattr(self.larch.symtable, dataset_name, None)
         if dataset is None:
             dgroup = self.controller.get_group()
@@ -1230,6 +1231,7 @@ class FeffitPanel(TaskPanel):
         self.plot_feffit_result(dataset_name, topwin=topwin, ftargs=ftargs, **opts)
 
     def plot_feffit_result(self, dataset_name, topwin=None, ftargs=None, **kws):
+        self.controller.set_datatask_name(self.title)
 
         if isValidName(dataset_name):
             dataset = getattr(self.larch.symtable, dataset_name, None)
@@ -1244,7 +1246,6 @@ class FeffitPanel(TaskPanel):
         model_name = dataset_name + '.model'
         has_data = getattr(dataset, 'has_data', True)
 
-        #print("plot_feffit_result/ dgroup, dataset: ", dataset_name, dgroup, dataset, has_data)
 
         opts = self.process(dgroup)
         opts.update(**kws)
@@ -1546,6 +1547,7 @@ class FeffitPanel(TaskPanel):
 
     def build_fitmodel(self, groupname=None, opts=None):
         """ use fit components to build model"""
+        self.controller.set_datatask_name(self.title)
         paths = []
         cmds = ["### set up feffit "]
         pargroup = self.get_paramgroup()
@@ -1659,6 +1661,7 @@ class FeffitPanel(TaskPanel):
         if dgroup is None:
            dgroup = self.controller.get_group()
         opts = self.build_fitmodel(dgroup)
+        self.controller.set_datatask_name(self.title)
 
         # dgroup = opts['datagroup']
         fopts = dict(groupname=opts['groupname'],
@@ -2159,6 +2162,7 @@ class FeffitResultFrame(wx.Frame):
         dset  = result.datasets[0]
         dgroup = dset.data
 
+        self.feffit_panel.controller.set_datatask_name(self.feffit_panel.title)
         trans  = dset.transform
         dset.prepare_fit(result.params)
         dset._residual(result.params)
