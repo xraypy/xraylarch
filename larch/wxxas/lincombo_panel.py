@@ -435,7 +435,7 @@ class LinComboResultFrame(wx.Frame):
             self.wids['params'].AppendItem(tuple(args))
 
     def onPlotOne(self, evt=None):
-        self.controller.set_datatask_name(self.parent.title)
+        self.parent.controller.set_datatask_name(self.parent.title)
         self.form = self.mainpanel.read_form()
         self.form['show_fitrange'] = self.wids['show_fitrange'].GetValue()
         self.form['win'] = int(self.wids['plot_win'].GetStringSelection())
@@ -446,7 +446,7 @@ class LinComboResultFrame(wx.Frame):
     def onPlotSel(self, evt=None):
         if self.form is None or self.larch_eval is None:
             return
-        self.controller.set_datatask_name(self.parent.title)
+        self.parent.controller.set_datatask_name(self.parent.title)
         self.form['show_fitrange'] = self.wids['show_fitrange'].GetValue()
         self.form['win'] = int(self.wids['plot_win'].GetStringSelection())
         form = self.form
