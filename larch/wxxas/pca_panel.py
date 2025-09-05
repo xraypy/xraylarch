@@ -227,6 +227,7 @@ class PCAPanel(TaskPanel):
     def plot_pca_weights(self, win=2):
         if self.result is None or self.skip_plotting:
             return
+        self.controller.set_datatask_name(self.parent.title)
         self.larch_eval(f"plot_pca_weights(pca_result, win={win:d})")
         self.controller.set_focus()
 
@@ -234,12 +235,14 @@ class PCAPanel(TaskPanel):
     def plot_pca_components(self, win=1):
         if self.result is None or self.skip_plotting:
             return
+        self.controller.set_datatask_name(self.parent.title)
         self.larch_eval(f"plot_pca_components(pca_result, win={win:d})")
         self.controller.set_focus()
 
     def plot_pca_fit(self, win=1):
         if self.result is None or self.skip_plotting:
             return
+        self.controller.set_datatask_name(self.parent.title)
         dgroup = self.controller.get_group()
         if hasattr(dgroup, 'pca_result'):
             self.larch_eval(f"plot_pca_fit({dgroup.groupname:s}, with_components=True, win={win:d})")

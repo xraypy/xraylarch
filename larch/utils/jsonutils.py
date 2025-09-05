@@ -106,17 +106,16 @@ def encode4js(obj):
         return None
     try:
         if isinstance(obj, np.ndarray):
-            out = {'__class__': 'Array', '__shape__': obj.shape}
-            try:
-                out['__dtype__'] = obj.dtype.name
-            except:
-                out['__dtype__'] = 'object'
-            out['value'] = obj.flatten().tolist()
-            if 'complex' in out['__dtype__']:
-                out['value'] = [(obj.real).tolist(), (obj.imag).tolist()]
-            elif out['__dtype__'] == 'object':
-                print("Warn: encoding object ndarray")
-                out['value'] = [encode4js(i) for i in out['value']]
+            out = {'__class__': 'Array',
+                   '__shape__': obj.shape}
+            out['__dtype__'] = sdtype = str(obj.dtype)
+            flat = obj.flatten()
+            if sdtype.startswith('float') or sdtype.startswith('int'):
+                out['value'] = flat.tolist()
+            elif sdtype.startswith('complex'):
+                out['value'] = [(flat.real).tolist(), (flat.imag).tolist()]
+            else:
+                out['value'] = [encode4js(i) for i in flat.tolist()]
             return out
         elif isinstance(obj, (bool, np.bool_)):
             return bool(obj)

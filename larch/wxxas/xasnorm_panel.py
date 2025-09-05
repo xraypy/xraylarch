@@ -938,6 +938,8 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
     def onPlotOne(self, evt=None, dgroup=None, process=True, **kws):
         if self.skip_plotting:
             return
+        self.controller.set_datatask_name(self.title)
+
         self.last_plot_type = 'one'
 
         if dgroup is None:
@@ -996,7 +998,7 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         if len(group_ids) < 1:
             return
         last_id = group_ids[-1]
-
+        self.controller.set_datatask_name(self.title)
         groupname = self.controller.file_groups[str(last_id)]
         dgroup = self.controller.get_group(groupname)
 

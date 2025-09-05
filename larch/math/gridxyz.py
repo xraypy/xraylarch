@@ -18,7 +18,7 @@ _logger = getLogger("gridxyz")
 MODNAME = "_math"
 
 
-def gridxyz(xcol, ycol, zcol, xystep=None, method="linear", lib=None):
+def gridxyz(xcol, ycol, zcol, xystep=None, method="linear"):
     """Grid (X, Y, Z) 1D data on a 2D regular mesh
 
     Parameters
@@ -35,8 +35,6 @@ def gridxyz(xcol, ycol, zcol, xystep=None, method="linear", lib=None):
             - linear
             - cubic
 
-    lib : allowwd but ignored (always uses scipy.interpolate.griddata)
-
     Returns
     -------
         xgrid, ygrid, zz : numpy.ndarray
@@ -50,8 +48,8 @@ def gridxyz(xcol, ycol, zcol, xystep=None, method="linear", lib=None):
     if xystep is None:
         xystep = 0.1
         _logger.warning(
-            "'xystep' not given: using a default value of {0}".format(xystep)
-        )
+            f"'xystep' not given: using a default value of {xystep}")
+
     assert type(xystep) is float, "xystep should be float"
     # create the XY meshgrid and interpolate the Z on the grid
     nxpoints = int((xcol.max() - xcol.min()) / xystep)

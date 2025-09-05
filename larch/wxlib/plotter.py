@@ -254,6 +254,7 @@ class XRFDisplay(XRFDisplayFrame):
         self.Raise()
         self.panel.cursor_callback = self.onCursor
         self.window = int(window)
+        self.title = 'XRF Display'
         self._larch = _larch
         self._xylims = {}
         self.symname = f'{_larch_name}.xrf{self.window}'
@@ -293,6 +294,7 @@ class PlotDisplay(PlotFrame):
         self.panel.cursor_callback = self.onCursor
         self.panel.cursor_mode = 'zoom'
         self.window = int(window)
+        self.title = 'Plot'
         self.get_config()
         self._larch = _larch
         self._xylims = {}
@@ -352,6 +354,7 @@ class StackedPlotDisplay(StackedPlotFrame):
         self.panel.cursor_callback = self.onCursor
         self.panel.cursor_mode = 'zoom'
         self.window = int(window)
+        self.title = 'Fit Plot'
         self._larch = _larch
         self._xylims = {}
         self.cursor_hist = []
@@ -406,6 +409,7 @@ class ImageDisplay(ImageFrame):
         self.panel.cursor_callback = self.onCursor
         self.panel.contour_callback = self.onContour
         self.window = int(window)
+        self.title = 'Image'
         self.symname = '%s.img%i' % (_larch_name, self.window)
         self._larch = _larch
         symtable = ensuremod(self._larch, _larch_name)
@@ -454,7 +458,6 @@ def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
             getattr(_larch.symtable._plotter, 'no_plotting', False)):
             return None
 
-
         global DISPLAY_LIMITS
         if DISPLAY_LIMITS is None:
             displays = [wx.Display(i) for i in range(wx.Display.GetCount())]
@@ -466,32 +469,21 @@ def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
             DISPLAY_LIMITS = [_left, _right, _top, _bot]
 
     win = max(1, min(MAX_WINDOWS, int(abs(win))))
-    title   = 'Plot Window %i' % win
-    symname = '%s.plot%i' % (_larch_name, win)
+    symname = f'{_larch_name}.plot{win}'
     creator = PlotDisplay
     display_dict = PLOT_DISPLAYS
     if image:
         creator = ImageDisplay
         display_dict = IMG_DISPLAYS
-        title   = 'Image Window %i' % win
-        symname = '%s.img%i' % (_larch_name, win)
+        symname = f'{_larch_name}.img{win}'
     elif xrf:
         creator = XRFDisplay
         display_dict = XRF_DISPLAYS
-        title   = 'XRF Display Window %i' % win
-        symname = '%s.xrf%i' % (_larch_name, win)
+        symname = f'{_larch_name}.xrf{win}'
     elif stacked:
         creator = StackedPlotDisplay
         display_dict = FITPLOT_DISPLAYS
-        title   = 'Fit Plot Window %i' % win
-        symname = '%s.fitplot%i' % (_larch_name, win)
-
-    sess_title = getattr(_larch.symtable._sys, 'session_title', None)
-    if sess_title is not None:
-        title = f"{sess_title}: {title}"
-
-    if wintitle is not None:
-        title = wintitle
+        symname = f'{_larch_name}.fitplot{win}'
 
 
     def _get_disp(symname, creator, win, ddict, wxparent,
@@ -562,18 +554,35 @@ def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
             panel.set_config(**plot_conf)
 
     try:
-        display.SetTitle(title)
+        if wintitle is not None:
+            display.SetTitle(wintitle)
+        else:
+            set_plotwindow_title(display, _larch=_larch)
     except:
         display_dict.pop(win)
         display, isnew = _get_disp(symname, creator, win, display_dict, wxparent,
                                    size, position, _larch)
-        display.SetTitle(title)
+        if wintitle is not None:
+            display.SetTitle(wintitle)
+        else:
+            set_plotwindow_title(display, _larch=_larch)
     if  hasattr(_larch, 'symtable'):
         _larch.symtable.set_symbol(symname, display)
     return display
 
 
 _getDisplay = get_display # back compatibility
+
+def set_plotwindow_title(display, _larch=None, default='Plot'):
+    title = getattr(display, 'title', default)
+    win = getattr(display, 'window', 1)
+    wintitle = f"{title}: #{win}"
+    if _larch is not None:
+        sessname = getattr(_larch.symtable._sys, 'session_name', None)
+        datatask = getattr(_larch.symtable._sys, 'datatask_name', '')
+        if sessname is not None:
+            wintitle = f"{title}[{sessname}]: {datatask} #{win}"
+    display.SetTitle(wintitle)
 
 def _xrf_plot(x=None, y=None, mca=None, win=1, new=True, as_mca2=False, _larch=None,
               wxparent=None, size=None, side=None, yaxes=1, force_draw=True,
@@ -602,7 +611,7 @@ def _xrf_plot(x=None, y=None, mca=None, win=1, new=True, as_mca2=False, _larch=N
     plotter = get_display(wxparent=wxparent, win=win, size=size,
                           _larch=_larch, wintitle=wintitle, xrf=True)
     if plotter is None:
-        return
+        returne
     plotter.Raise()
     if x is None:
         return

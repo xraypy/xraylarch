@@ -671,9 +671,9 @@ class EXAFSPanel(TaskPanel):
 
         conf = getattr(self.dgroup.config, self.configname, None)
         if conf is None:
-            conf = self.get_config(dgroup=dgroup)
+            conf = self.get_config(dgroup=self.dgroup)
         if 'ek0' not in conf:
-            conf['ek0']  = conf.get('e0', getattr(dgroup, 'e0', -1))
+            conf['ek0']  = conf.get('e0', getattr(self.dgroup, 'e0', -1))
 
         self.read_form()
         self.process(dgroup=self.dgroup)
@@ -778,6 +778,7 @@ class EXAFSPanel(TaskPanel):
         wx.CallAfter(self.onPlot)
 
     def onPlot(self, event=None, dgroup=None):
+        self.controller.set_datatask_name(self.title)
         plotter = self.onPlotSel if self.last_plot=='selected' else self.onPlotOne
         plotter()
 

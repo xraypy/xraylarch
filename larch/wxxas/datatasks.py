@@ -17,7 +17,7 @@ from larch.wxlib import (GridPanel, FloatCtrl, FloatSpin,
                          Button, HLine, LEFT, pack,
                          plotlabels, get_font, FRAMESTYLE, get_zorders,
                          get_panel_plot_config, set_panel_plot_config,
-                         get_markercolors)
+                         get_markercolors, set_plotwindow_title)
 
 from larch.xafs import etok, ktoe, find_energy_step
 from larch.utils.physical_constants import ATOM_SYMS
@@ -212,8 +212,10 @@ class OverAbsorptionFrame(wx.Frame):
     def plot_results(self, event=None, use_zoom=True):
         if self.no_plot:
             return
-        ppanel = self.controller.get_display(stacked=False).panel
-
+        disp = self.controller.get_display(stacked=False)
+        ppanel = disp.panel
+        self.controller.set_datatask_name('OverAbsorption')
+        set_plotwindow_title(disp, self.controller.larch)
         dgroup = self.dgroup
         xlim, ylim = get_view_limits(ppanel)
         path, fname = path_split(dgroup.filename)
@@ -484,8 +486,11 @@ class EnergyCalibrateFrame(wx.Frame):
     def plot_results(self, event=None, use_zoom=True):
         if self.no_plot:
             return
-        ppanel = self.controller.get_display(stacked=False).panel
-        ppanel.oplot
+        disp = self.controller.get_display(stacked=False)
+        ppanel = disp.panel
+        self.controller.set_datatask_name('EnergyCalib')
+        set_plotwindow_title(disp, self.controller.larch)
+
         xnew, ynew = self.data
         dgroup = self.dgroup
 
@@ -731,7 +736,12 @@ class RebinDataFrame(wx.Frame):
     def plot_results(self, event=None, use_zoom=True):
         if self.no_plot:
             return
-        ppanel = self.controller.get_display(stacked=False).panel
+
+        disp = self.controller.get_display(stacked=False)
+        ppanel = disp.panel
+        self.controller.set_datatask_name('EnergyRebin')
+        set_plotwindow_title(disp, self.controller.larch)
+
         xnew, ynew, yerr, e0 = self.data
         dgroup = self.dgroup
         xlim, ylim = get_view_limits(ppanel)
@@ -927,7 +937,12 @@ class SmoothDataFrame(wx.Frame):
     def plot_results(self, event=None, use_zoom=True):
         if self.no_plot:
             return
-        ppanel = self.controller.get_display(stacked=False).panel
+
+        disp = self.controller.get_display(stacked=False)
+        ppanel = disp.panel
+        self.controller.set_datatask_name('Smoothing')
+        set_plotwindow_title(disp, self.controller.larch)
+
         xnew, ynew = self.data
         dgroup = self.dgroup
         path, fname = path_split(dgroup.filename)
@@ -1071,7 +1086,12 @@ class DeconvolutionFrame(wx.Frame):
     def plot_results(self, event=None, use_zoom=True):
         if self.no_plot:
             return
-        ppanel = self.controller.get_display(stacked=False).panel
+
+        disp = self.controller.get_display(stacked=False)
+        ppanel = disp.panel
+        self.controller.set_datatask_name('Deconvolution')
+        set_plotwindow_title(disp, self.controller.larch)
+
         xnew, ynew = self.data
         dgroup = self.dgroup
         xlim, ylim = get_view_limits(ppanel)
@@ -1213,6 +1233,7 @@ class DeglitchFrame(wx.Frame):
         self.dgroup = self.controller.get_group()
         self.wids['grouplabel'].SetLabel(self.dgroup.filename)
         self.wids['save_as_name'].SetValue(self.dgroup.filename + '_clean')
+        self.reset_data_history()
 
     def onDone(self, event=None):
         self.controller.unregister_group_callback(self.label)
@@ -1344,11 +1365,14 @@ class DeglitchFrame(wx.Frame):
     def plot_results(self, event=None, use_zoom=True):
         if self.no_plot:
             return
-        ppanel = self.plotpanel
+
+        disp = self.controller.get_display(stacked=False)
+        ppanel = disp.panel
+        self.controller.set_datatask_name('Deglitch')
+        set_plotwindow_title(disp, self.controller.larch)
 
         xplot, yplot = self.data
         dgroup = self.dgroup
-
         path, fname = path_split(dgroup.filename)
 
         plotstr = self.wids['plotopts'].GetStringSelection()
@@ -1541,6 +1565,11 @@ class SpectraCalcFrame(wx.Frame):
         xname = 'energy'
         if not hasattr(group_a, xname):
             xname = 'xplot'
+
+        disp = self.controller.get_display(stacked=False)
+        ppanel = disp.panel
+        self.controller.set_datatask_name('Spectra Calc')
+        set_plotwindow_title(disp, self.controller.larch)
 
         cmds = [SPECCALC_SETUP.format(group=group_a.groupname,
                                       xname=xname, yname=self.yname)]

@@ -1,4 +1,5 @@
 import json
+import sys
 import time
 import traceback
 import numpy as np
@@ -187,14 +188,14 @@ def save_session(fname=None, symbols=None, histbuff=None,
                 dat = encode4js(getattr(symtab, attr))
             except (TypeError, ValueError) as exc:
                 print(f"Warning: could not encode data for group {attr}")
-                print(" data group: ", getattr(symtab, attr))
+                print(f" data attribute: {attr}")
                 tblist = [tb for tb in traceback.extract_tb(sys.exc_info()[2])]
                 print(''.join(traceback.format_list(tblist)))
             try:
                 buff.append(json.dumps(dat))
             except TypeError as exc:
                 print(f"Warning: could not write data encoded for {attr}")
-                print(" data :", dat)
+                print(f" data attribute: {attr}")
                 tblist = [tb for tb in traceback.extract_tb(sys.exc_info()[2])]
                 print(''.join(traceback.format_list(tblist)))
 

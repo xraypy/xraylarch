@@ -519,7 +519,12 @@ class RegressionPanel(TaskPanel):
             return
         opts.update(model.form)
 
-        ppanel = self.controller.get_display(win=1).panel
+
+        disp = self.controller.get_display(stacked=False, win=1)
+        ppanel = disp.panel
+        self.controller.set_datatask_name(self.parent.title)
+        set_plotwindow_title(disp, self.controller.larch)
+
         viewlims = ppanel.get_viewlimits()
         plotcmd = ppanel.plot
 
