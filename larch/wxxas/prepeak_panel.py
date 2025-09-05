@@ -31,7 +31,7 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl,
                          RIGHT, LEFT, FRAMESTYLE, Font, FONTSIZE,
                          FONTSIZE_FW, FileSave, FileOpen,
                          flatnotebook, Popup, EditableListBox,
-                         ExceptionPopup)
+                         ExceptionPopup, set_plotwindow_title)
 
 from larch.wxlib.parameter import ParameterWidgets
 from larch.wxlib.plotter import last_cursor_pos
@@ -150,7 +150,6 @@ COMMANDS['dofit'] = """# do fit
 peakresult = prepeaks_fit({group}, peakmodel, peakpars)
 peakresult.user_options = {user_opts:s}
 """
-
 
 def get_model_abbrev(modelname):
     if modelname in ModelAbbrevs:
@@ -718,6 +717,8 @@ class PrePeakFitResultFrame(wx.Frame):
         show_resid = self.wids['plot_resid'].IsChecked()
         sub_bline = self.wids['plot_bline'].IsChecked()
         win = int(self.wids['plot_win'].GetStringSelection())
+
+        self.peakframe.controller.set_datatask_name(self.peakframe.title)
 
         cmd = "plot_prepeaks_fit(%s, nfit=%i, show_residual=%s, subtract_baseline=%s, win=%d)"
         cmd = cmd % (self.datagroup.groupname, self.nfit, show_resid, sub_bline, win)
@@ -1450,6 +1451,8 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         opts = self.read_form()
         dgroup = self.controller.get_group()
         opts['group'] = opts['gname']
+
+        self.controller.set_datatask_name(self.title)
 
         # Run the prepeaks setup first
         self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))
