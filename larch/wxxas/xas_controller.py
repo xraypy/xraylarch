@@ -41,6 +41,9 @@ class XASController():
         self.recentfiles = []
         self.panels = {}
         self.datagroup_callbacks = {}
+        self.session_filename = None
+        self.session_name = None
+
         self.larch = _larch
         if _larch is None:
             self.larch = larch.Interpreter()
@@ -93,12 +96,23 @@ class XASController():
         self.config = self.larch.symtable._sys.larix_config = config
 
         self.session_id = get_sessionid(extra=id(self))
-        self.session_title = f"Larix [{self.session_id}]"
-        self.larch.symtable._sys.session_title = self.session_title
         self.session_lockfile = f"{SESSION_LOCK}_{self.session_id}.dat"
+        self.set_session_name()
+        self.set_datatask_name()
+
         with open(Path(self.larix_folder, self.session_lockfile), 'w') as fh:
             fh.write(f"{get_session_info()}\n")
         self.clean_autosave_sessions()
+
+    def set_session_name(self, name='Session'):
+        if name.endswith('.larix'):
+            name = name.replace('.larix', '')
+        self.session_filename = f'{name}.larix'
+        self.session_name = name
+        self.larch.symtable._sys.session_name = name
+
+    def set_datatask_name(self, name='task'):
+        self.larch.symtable._sys.datatask_name = name
 
     def delete_lockfile(self):
         spath = Path(self.larix_folder, self.session_lockfile)
