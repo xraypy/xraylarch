@@ -17,7 +17,7 @@ include = ["larch", "larch.bin", "larch.bin.darwin64", "larch.bin.win64",
 [project]
 name = "xraylarch"
 dynamic = ["version"]
-requires-python = ">= 3.9"
+requires-python = ">= 3.10"
 description = "Synchrotron X-ray data analysis in python"
 readme = "README.md"
 
@@ -35,7 +35,6 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
