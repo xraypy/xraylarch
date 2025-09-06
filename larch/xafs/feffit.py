@@ -436,13 +436,14 @@ class FeffitDataSet(Group):
     def _set_from_dict(self, data=None, **kws):
         self.set_datagroup(data)
         for attr in ('_bkg', '_chi', '_prepared', 'bkg_spline',
-                     'epsilon_k', 'has_data', 'hashkey', 'model',
+                     'has_data', 'hashkey', 'model',
                      'n_idp', 'pathlist', 'paths', 'transform'):
             if attr in kws:
                 setattr(self, attr, kws[attr])
         if self.hashkey in (None, 'None'):
             self._generate_hashkey()
-        self.set_epsilon_k(self.epsilon_k)
+        if 'epsilon_k' in kws:
+            self.set_epsilon_k(kws['epsilon_k'])
         for path in self.paths.values():
             path.dataset = self.hashkey
 
