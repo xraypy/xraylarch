@@ -15,7 +15,6 @@ import importlib
 import logging
 from warnings import warn
 
-
 from lmfit import Parameter, Parameters
 from lmfit.model import Model, ModelResult
 from lmfit.minimizer import Minimizer, MinimizerResult
@@ -25,7 +24,7 @@ from larch import Group, isgroup
 from larch.utils.logging  import getLogger
 from larch.utils.logging  import _levels as LoggingLevels
 
-sys.setrecursionlimit(2000)
+sys.setrecursionlimit(1000)
 
 HAS_STATE = {}
 LarchGroupTypes = {}
