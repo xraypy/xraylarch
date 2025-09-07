@@ -781,7 +781,7 @@ class FeffitPanel(TaskPanel):
                 self.parent.process_exafs(dgroup)
             self.fill_form(dgroup)
         except:
-            print(" Cannot Fill feffit panel from group ")
+            print("Cannot Fill feffit panel from group ")
 
     def build_display(self):
         self.paths_nb = flatnotebook(self, {}, on_change=self.onPathsNBChanged,
@@ -790,10 +790,8 @@ class FeffitPanel(TaskPanel):
         self.params_panel = FeffitParamsPanel(parent=self.paths_nb,
                                               feffit_panel=self)
         self.paths_nb.AddPage(self.params_panel, ' Parameters ', True)
-        pan = self.panel # = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LEFT)
-
+        pan = self.panel
         self.wids = wids = {}
-
         fsopts = dict(digits=2, increment=0.1, with_pin=True)
 
         fit_kmin = self.add_floatspin('fit_kmin',  value=2, **fsopts)
@@ -976,11 +974,12 @@ class FeffitPanel(TaskPanel):
             return dconf
         if not hasattr(dgroup, 'config'):
             dgroup.config = Group()
-
+        #print(f"Get Config dconf {dconf.keys()}")
         conf = getattr(dgroup.config, self.configname, dconf)
         for k, v in dconf.items():
             if k not in conf:
                 conf[k] = v
+        # print(f"Get Config conf {conf.keys()}")
 
         econf = getattr(dgroup.config, 'exafs', {})
         for key in ('fit_kmin', 'fit_kmax', 'fit_dk',
@@ -1012,11 +1011,13 @@ class FeffitPanel(TaskPanel):
 
 
     def process(self, dgroup=None, **kws):
-        # print("Feffit Panel Process ", dgroup, time.ctime())
+        # # print("Feffit Panel Process ", dgroup, time.ctime())
         if dgroup is None:
             dgroup = self.controller.get_group()
 
         conf = self.get_config(dgroup=dgroup)
+        # print(f"Process Get Config conf {conf.keys()} / {kws=}")
+
         conf.update(kws)
 
         if self.params_need_update:
@@ -1025,6 +1026,7 @@ class FeffitPanel(TaskPanel):
             self.params_need_update = False
 
         opts = self.read_form(dgroup=dgroup)
+        # print(f"feffit process : {opts=}")
         if dgroup is not None:
             self.dgroup = dgroup
             for attr in ('fit_kmin', 'fit_kmax', 'fit_dk', 'fit_rmin',
@@ -1073,6 +1075,7 @@ class FeffitPanel(TaskPanel):
         if dgroup is None:
             dgroup = self.controller.get_group()
         conf = self.get_config(dgroup)
+        # print(f"Fill Form {conf=}")
 
         for attr in ('fit_kmin', 'fit_kmax', 'fit_rmin', 'fit_rmax', 'fit_dk'):
             self.wids[attr].SetValue(conf[attr])
@@ -1117,7 +1120,7 @@ class FeffitPanel(TaskPanel):
             gname = dgroup.groupname
             fname = dgroup.filename
 
-        form_opts = {'datagroup': dgroup, 'groupname': gname, 'filename': fname}
+        form_opts = {'groupname': gname, 'filename': fname}
         wids = self.wids
 
         for attr in ('fit_kmin', 'fit_kmax', 'fit_rmin', 'fit_rmax', 'fit_dk'):
@@ -1663,7 +1666,6 @@ class FeffitPanel(TaskPanel):
         opts = self.build_fitmodel(dgroup)
         self.controller.set_datatask_name(self.title)
 
-        # dgroup = opts['datagroup']
         fopts = dict(groupname=opts['groupname'],
                      refine_bkg=bool(opts['refine_bkg']),
                      trans='_feffit_trans',
@@ -1673,7 +1675,7 @@ class FeffitPanel(TaskPanel):
         groupname = opts['groupname']
         filename = opts['filename']
         if dgroup is None:
-            dgroup = opts['datagroup']
+            dgroup = self.controller.get_group(groupname)
 
         script.append("###\n### DATA \n###\n")
         script.append(COMMANDS['data_source'].format(groupname=groupname, filename=filename))
@@ -1727,7 +1729,6 @@ class FeffitPanel(TaskPanel):
         if not hasattr(dgroup, 'feffit_history'):
             dgroup.feffit_history = []
 
-
         label = now  = time.strftime("%b-%d %H:%M")
         if len(dgroup.feffit_history) > 0:
             dgroup.feffit_history[0].commands = script
@@ -1748,7 +1749,7 @@ class FeffitPanel(TaskPanel):
         self.write_message("wrote feffit script to '%s'" % sname)
 
         self.show_subframe('feffit_result', FeffitResultFrame,
-                           datagroup=opts['datagroup'], feffit_panel=self)
+                           datagroup=dgroup, feffit_panel=self)
         self.subframes['feffit_result'].add_results(dgroup, form=opts)
 
     def onShowResults(self, event=None):
