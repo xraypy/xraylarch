@@ -179,7 +179,7 @@ def save_session(fname=None, symbols=None, histbuff=None,
     buff.append("##<Symbols: count=%d>"  % len(symbols))
     if _xasgroups is not None:
         buff.append('<:_xasgroups:>')
-        buff.append(npson.dumps(encode4js(_xasgroups)))
+        buff.append(npjson.dumps(encode4js(_xasgroups)))
 
     if verbose:
         print(f"#save_session {isotime()}:  _xasgroups saved {len(_xasgroups)}")

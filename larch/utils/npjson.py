@@ -28,8 +28,6 @@ from datetime import datetime
 import numpy as np
 from numpy.lib import format as npformat
 
-from larch import Group, isgroup
-
 def custom_encoder(obj):
     """custom json encoder, supporting
         numpy ndarray
@@ -47,6 +45,9 @@ def custom_encoder(obj):
     See Also:
         custom_decoder
     """
+
+    from larch import Group, isgroup
+
     if isinstance(obj, (np.ndarray, np.generic)):
         data = obj.data if obj.flags["C_CONTIGUOUS"] else obj.tobytes()
         return {'_type_': 'b64ndarray', 'shape': obj.shape,
@@ -103,6 +104,7 @@ def custom_decoder(dct) :
     Returns:
         decoded object or undecoded dict
     """
+    from larch import Group
     tname = obj.pop('_type_', None)
     if tname is None:
         return dct
