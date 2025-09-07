@@ -559,7 +559,7 @@ class CurveFitResultFrame(wx.Frame):
             return self.fit_history[self.nfit]
 
     def onPlot(self, event=None):
-        self.controller.set_datatask_name(self.title)
+        self.fit_frame.controller.set_datatask_name(self.fit_frame.title)
         show_resid = self.wids['plot_resid'].IsChecked()
         sub_bline = self.wids['plot_bline'].IsChecked()
         win  = int(self.wids['plot_win'].GetStringSelection())
@@ -646,7 +646,7 @@ class CurveFitResultFrame(wx.Frame):
             self.datagroup = datagroup
         if larch_eval is not None:
             self.larch_eval = larch_eval
-        self.controller.set_datatask_name(self.title)
+        self.fit_frame.controller.set_datatask_name(self.fit_frame.title)
         datagroup = self.datagroup
         self.curvefit_history = getattr(self.datagroup.curvefit, 'fit_history', [])
         # cur = self.get_fitresult()
@@ -1372,9 +1372,10 @@ class CurveFitPanel(TaskPanel):
             self.wids['curvefit_xmin'].SetValue(dat['xmin'])
             self.wids['curvefit_xmax'].SetValue(dat['xmax'])
 
-
-        self.array_choice.SetStringSelection(dat['array_desc'])
-        self.wids['show_fitrange'].Enable(dat['show_fitrange'])
+        if 'array_desc' in dat:
+            self.array_choice.SetStringSelection(dat['array_desc'])
+        if 'show_fitrange' in dat:
+            self.wids['show_fitrange'].Enable(dat['show_fitrange'])
 
     def read_form(self):
         "read for, returning dict of values"
