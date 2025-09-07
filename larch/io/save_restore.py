@@ -1,11 +1,9 @@
-import json
 import sys
 import time
 import traceback
 import numpy as np
 import uuid, socket, platform
 from collections import namedtuple
-
 from gzip import GzipFile
 
 from lmfit import Parameter, Parameters
@@ -15,6 +13,7 @@ from pyshortcuts import bytes2str, str2bytes, fix_varname, gformat
 from larch import Group, isgroup, __date__, __version__, __release_version__
 from ..utils import read_textfile, unique_name, format_exception, unixpath, isotime
 from ..utils.jsonutils import encode4js, decode4js
+from ..utils import npjson
 
 SessionStore = namedtuple('SessionStore', ('config', 'command_history', 'symbols'))
 
@@ -31,6 +30,7 @@ def get_machineid():
 def is_larch_session_file(fname):
     return read_textfile(fname, size=64).startswith('##LARIX:')
 
+
 def save_groups(fname, grouplist):
     """save a list of groups (and other supported datatypes) to file
 
@@ -40,7 +40,7 @@ def save_groups(fname, grouplist):
     """
     buff = ["##LARCH GROUPLIST"]
     for dat in grouplist:
-        buff.append(json.dumps(encode4js(dat)))
+        buff.append(npjson.dumps(encode4js(dat)))
 
     buff.append("")
 
@@ -63,7 +63,7 @@ def read_groups(fname):
     out = []
     for line in lines:
         if len(line) > 1:
-            out.append(decode4js(json.loads(line)))
+            out.append(decode4js(npjson.loads(line)))
     return out
 
 
@@ -127,13 +127,13 @@ def save_session(fname=None, symbols=None, histbuff=None,
             ]
 
     core_groups = symtab._sys.core_groups
-    buff.append('##Larch Core Groups: %s' % (json.dumps(core_groups)))
+    buff.append('##Larch Core Groups: %s' % (npjson.dumps(core_groups)))
 
     if verbose:
         print(f"#save_session {isotime()}:  core groups encoded")
     config = symtab._sys.config
     for attr in dir(config):
-        buff.append('##Larch %s: %s' % (attr, json.dumps(getattr(config, attr, None))))
+        buff.append('##Larch %s: %s' % (attr, npjson.dumps(getattr(config, attr, None))))
     buff.append("##</CONFIG>")
     if verbose:
         print(f"#save_session {isotime()}:  config encoded")
@@ -144,12 +144,16 @@ def save_session(fname=None, symbols=None, histbuff=None,
         except:
             histbuff = []
 
+    if verbose:
+        print(f"#save_session {isotime()}:  {_larch=}")
+
+
     if histbuff is not None:
         buff.append("##<Session Commands>")
         buff.extend(["%s" % l for l in histbuff])
         buff.append("##</Session Commands>")
     if verbose:
-        print(f"#save_session {isotime()}:  history saved {histbuff}")
+        print(f"#save_session {isotime()}:  history saved {len(histbuff)}")
 
     if symbols is None:
         symbols = []
@@ -175,10 +179,10 @@ def save_session(fname=None, symbols=None, histbuff=None,
     buff.append("##<Symbols: count=%d>"  % len(symbols))
     if _xasgroups is not None:
         buff.append('<:_xasgroups:>')
-        buff.append(json.dumps(encode4js(_xasgroups)))
+        buff.append(npson.dumps(encode4js(_xasgroups)))
 
     if verbose:
-        print(f"#save_session {isotime()}:  _xasgroups saved")
+        print(f"#save_session {isotime()}:  _xasgroups saved {len(_xasgroups)}")
     for attr in symbols:
         if attr not in core_groups and attr != '_xasgroups':
             buff.append(f'<:{attr}:>')
@@ -191,22 +195,42 @@ def save_session(fname=None, symbols=None, histbuff=None,
                 print(f" data attribute: {attr}")
                 tblist = [tb for tb in traceback.extract_tb(sys.exc_info()[2])]
                 print(''.join(traceback.format_list(tblist)))
+            if verbose:
+                print(f"#save_session {isotime()}: encoded {attr}")
+                if isinstance(dat, dict):
+                    print(f"#save_session {isotime()}: keys = {dat.keys()}")
             try:
-                buff.append(json.dumps(dat))
+                sval = npjson.dumps(dat, check_circular=True)
             except TypeError as exc:
                 print(f"Warning: could not write data encoded for {attr}")
                 print(f" data attribute: {attr}")
-                tblist = [tb for tb in traceback.extract_tb(sys.exc_info()[2])]
-                print(''.join(traceback.format_list(tblist)))
+                print(" exception : ",  exc)
+                sval = None
 
-
+            if sval is not None:
+                buff.append(sval)
+            else:
+                if isinstance(dat, dict):
+                    print(f"#save_session {isotime()}: keys = {dat.keys()}")
+                    for dkey, dval in dat.items():
+                        print("Data key ", dkey, dval)
+                        try:
+                            xval = npjosn.dumps(dval, check_circular=True)
+                        except Exception as exc:
+                            print(f"--> error here a attribute: {dkey}")
+                            print("--> exception : ",  exc)
 
     buff.append("##</Symbols>")
     buff.append("")
+    if verbose:
+        print(f"#save_session {isotime()}:  saving to Gzipfile {fname}")
 
     fh = GzipFile(unixpath(fname), "w")
     fh.write(str2bytes("\n".join(buff)))
     fh.close()
+    #if verbose:
+    print(f"#save_session {isotime()}: {fname}")
+
 
 def clear_session(_larch=None):
     """clear user-definded data in a session
@@ -272,7 +296,7 @@ def read_session(fname, clean_xasgroups=True):
                 symname = line.replace('<:', '').replace(':>', '')
             else:
                 try:
-                    symbols[symname] = decode4js(json.loads(line))
+                    symbols[symname] = decode4js(npjson.loads(line))
                 except:
                     print(''.join(format_exception()))
                     print("decode failed:: ", symname, repr(line)[:50])
@@ -284,7 +308,7 @@ def read_session(fname, clean_xasgroups=True):
                 val = val.strip()
                 if '[' in val or '{' in val:
                     try:
-                        val = decode4js(json.loads(val))
+                        val = decode4js(npjson.loads(val))
                     except:
                         print(''.join(format_exception()))
                         print("decode failed @## ", repr(val)[:50])

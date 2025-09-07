@@ -23,6 +23,8 @@ from .strutils import (fixName, isValidName, isNumber, bytes2str, str2bytes,
 
 from .shellutils import (_more, _parent, ls, cd, cwd, mkdir)
 
+from . import npjson
+
 logging.basicConfig(format='%(levelname)s [%(asctime)s]: %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S', level=logging.WARNING)
 
