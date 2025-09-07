@@ -5,6 +5,11 @@
 *.bak
 *.aux
 *.pdf
+*.larix
+*.cif
+*.prj
+*.lar
+*.h5
 larch/_version.py
 conda_constructor/*.sh
 conda_constructor/*.exe
