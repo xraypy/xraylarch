@@ -228,8 +228,8 @@ def save_session(fname=None, symbols=None, histbuff=None,
     fh = GzipFile(unixpath(fname), "w")
     fh.write(str2bytes("\n".join(buff)))
     fh.close()
-    #if verbose:
-    print(f"#save_session {isotime()}: {fname}")
+    if verbose:
+        print(f"#save_session {isotime()}: {fname}")
 
 
 def clear_session(_larch=None):
