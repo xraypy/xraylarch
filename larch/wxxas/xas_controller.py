@@ -104,12 +104,15 @@ class XASController():
             fh.write(f"{get_session_info()}\n")
         self.clean_autosave_sessions()
 
-    def set_session_name(self, name='Session'):
-        if name.endswith('.larix'):
-            name = name.replace('.larix', '')
-        self.session_filename = f'{name}.larix'
-        self.session_name = name
-        self.larch.symtable._sys.session_name = name
+    def set_session_name(self, name=None):
+        if name not in ('', None):
+            name = fix_varname(Path(name).stem)
+            self.session_name = name
+            self.larch.symtable._sys.session_name = name
+            self.wxparent.SetTitle(f"Larix [{name}]")
+            menulab = f"&Save Larch Session [{name}.larix]\tCtrl+S"
+            self.wxparent.save_session_menu.SetItemLabel(menulab)
+
 
     def set_datatask_name(self, name='task'):
         self.larch.symtable._sys.datatask_name = name
