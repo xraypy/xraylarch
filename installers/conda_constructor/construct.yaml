@@ -31,7 +31,7 @@ specs:
     - scipy>=1.15
     - matplotlib>=3.9
     - h5py>=3.9
-    - wxpython>=4.2.1
+    - wxpython>=4.2.2
     - charset-normalizer
     - pillow>=10
     - pyyaml
