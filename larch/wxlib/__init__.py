@@ -28,8 +28,8 @@ except (ImportError, AttributeError):
 _larch_name = '_sys.wx'
 _larch_builtins = {}
 
-FONTSIZE = 9
-FONTSIZE_FW = 9
+FONTSIZE = 8
+FONTSIZE_FW = 8
 if uname == 'win':
     FONTSIZE = 10
     FONTSIZE_FW = 11
@@ -41,7 +41,9 @@ elif uname == 'darwin':
 def fontsize(fixed_width=False):
     """return best default fontsize"""
     font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
-    if fixed_width and uname in ('win', 'darwin'):
+    if uname not in ('win', 'darwin'):
+        font = font.Smaller()
+    elif fixed_width:
         font = font.Larger()
     return int(font.GetFractionalPointSize())
 
