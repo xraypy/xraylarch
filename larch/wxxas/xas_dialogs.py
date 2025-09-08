@@ -322,14 +322,14 @@ class LockedSessionDialog(wx.Dialog):
         self.SetFont(get_font())
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
-        title = 'Auto-saved Session Files from Sessions that did not shut down cleanly'
+        title = 'Auto-saved Files from Earlier Sessions that did not shut down cleanly'
 
         panel.Add(SimpleText(panel, title), dcol=6)
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
 
         col_labels = [' Session Label ', 'Last Modified', 'Session Size (MB)', 'Action']
         sess_opts  = ['Ignore (Session may be in-progress)',
-                     'Import this Session', 'Delete Session Info']
+                     'Import this Session', 'Delete Session Lock file']
 
         self.wids = {}
         for i, t in enumerate(col_labels):
