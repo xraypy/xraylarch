@@ -635,7 +635,7 @@ class LarixFrame(wx.Frame):
             dlg.Destroy()
             if res.ok:
                 for lfile in res.del_list:
-                    lfile = Path(self.controller.larix_folder, life)
+                    lfile = Path(self.controller.larix_folder, lfile)
                     if lfile.exists():
                         os.unlink(lfile)
                 for ifile in res.imp_list:
