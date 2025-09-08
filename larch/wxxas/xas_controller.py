@@ -136,7 +136,10 @@ class XASController():
                 asave = f"{autosave_fileroot:s}_{sid}.larix"
                 asave = Path(self.larix_folder, asave)
                 if asave.exists():
-                    lock_files[fname] = asave
+                    with open(Path(self.larix_folder, fname), 'r') as fh:
+                        textlines = fh.readlines()
+                    macid, pid = textlines[0].split()
+                    lock_files[fname] = (asave, macid, pid)
         return lock_files
 
     def install_group(self, groupname, filename, source=None, journal=None):
