@@ -1,3 +1,4 @@
+import os
 import time
 from collections import namedtuple
 from pathlib import Path
@@ -10,8 +11,10 @@ from larch.wxlib import (GridPanel, FloatCtrl, set_color, SimpleText,
                          Choice, Check, Button, HLine, OkCancel, LEFT,
                          pack, plotlabels, ReportFrame, DictFrame,
                          FileCheckList, get_font, get_plot_config)
-
+from larch.utils import time_ago
 from larch.utils.physical_constants import DEG2RAD, PLANCK_HC
+
+from .config import SESSION_LOCK
 
 SESSION_PLOTS = {'Normalized \u03BC(E)': 'norm',
                  'Raw \u03BC(E)': 'mu',
@@ -310,6 +313,62 @@ class RemoveDialog(wx.Dialog):
             ok = True
         return response(ok, ngroups)
 
+class LockedSessionDialog(wx.Dialog):
+    """dialog for loading Locked / Abandoned Sessions"""
+    def __init__(self, parent, sessionlist,  **kws):
+        title = "Autosaved Larix Sessions"
+
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title, size=(500, 450))
+        self.SetFont(get_font())
+        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
+
+        title = 'Auto-saved Session Files from Sessions that did not shut down cleanly'
+
+        panel.Add(SimpleText(panel, title), dcol=6)
+        panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
+
+        col_labels = [' Session Label ', 'Last Modified', 'Session Size (MB)', 'Action']
+        sess_opts  = ['Ignore (Session may be in-progress)',
+                     'Import this Session', 'Delete Session Info']
+
+        self.wids = {}
+        for i, t in enumerate(col_labels):
+            panel.Add(SimpleText(panel, t), newrow=(i==0))
+
+        self.sessionlist = sessionlist
+        for lockfile, sesspath in sessionlist:
+            stat = os.stat(sesspath)
+            mtime = time_ago(stat.st_mtime)
+            fsize = f"{(stat.st_size/1.e6):.2f}"
+            sess_id = lockfile.replace(SESSION_LOCK, '').replace('.dat', '').replace('_', '')
+
+            panel.Add(SimpleText(panel, sess_id), newrow=True)
+            panel.Add(SimpleText(panel, mtime), newrow=False)
+            panel.Add(SimpleText(panel, fsize), newrow=False)
+            self.wids[lockfile] = Choice(panel, choices=sess_opts, default=0,
+                                             size=(275, -1))
+            panel.Add(self.wids[lockfile], newrow=False)
+
+
+        panel.Add(OkCancel(panel), dcol=2, newrow=True)
+        panel.pack()
+        fit_dialog_window(self, panel)
+
+    def GetResponse(self, ngroups=None):
+        self.Raise()
+        response = namedtuple('LockedSessionResponse', ('ok', 'imp_list','del_list'))
+        ok = False
+        dlist, ilist = [], []
+        sessmap = {lfile: sfile for lfile, sfile in self.sessionlist}
+        if self.ShowModal() == wx.ID_OK:
+            for label, wid in self.wids.items():
+                sel = wid.GetStringSelection().lower()
+                if sel.startswith('dele'):
+                    dlist.append(label)
+                elif sel.startswith('import'):
+                    ilist.append(sessmap[label])
+            ok = True
+        return response(ok, ilist, dlist)
 
 class LoadSessionDialog(wx.Frame):
     """Read, show data from saved larch session"""
