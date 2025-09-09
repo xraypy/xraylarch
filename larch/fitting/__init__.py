@@ -6,9 +6,8 @@ import numpy as np
 from scipy.stats import f
 
 import lmfit
-from lmfit import Parameter
-from lmfit import (Parameters, Minimizer, conf_interval,
-                   ci_report, conf_interval2d)
+from lmfit import (Parameter, Parameters, Minimizer,
+                   conf_interval, ci_report, conf_interval2d)
 
 from lmfit.minimizer import MinimizerResult
 from lmfit.model import (ModelResult, save_model, load_model,
@@ -238,8 +237,12 @@ class ParameterGroup(Group):
                 if nval is not None:
                     val.value = nval
             skip = getattr(val, 'skip', None)
-            self.__params__.add(name, value=val.value, vary=val.vary, min=val.min,
-                              max=val.max, expr=val.expr, brute_step=val.brute_step)
+            self.__params__.add(name, value=val.value, vary=val.vary,
+                                min=val.min, max=val.max)
+            if val.expr is not None:
+                self.__params__[name]._delay_asteval = True
+                self.__params__[name].expr = val.expr
+
             val = self.__params__[name]
 
             val.skip = skip
@@ -253,13 +256,15 @@ class ParameterGroup(Group):
             self.__params__.pop(name)
 
     def __add(self, name, value=None, vary=True, min=-np.inf, max=np.inf,
-              expr=None, stderr=None, correl=None, brute_step=None, skip=None):
+              expr=None, stderr=None, correl=None, skip=None):
         if expr is None and isinstance(value, str):
             expr = value
             value = None
         if self.__params__  is not None:
-            self.__params__.add(name, value=value, vary=vary, min=min, max=max,
-                              expr=expr, brute_step=brute_step)
+            self.__params__.add(name, value=value, vary=vary, min=min, max=max)
+            if expr is not None:
+                self.__params__[name]._delay_asteval = True
+                self.__params__[name].expr = expr
             self.__params__[name].stderr = stderr
             self.__params__[name].correl = correl
             self.__params__[name].skip = skip
@@ -287,7 +292,7 @@ class unnamedParameter(Parameter):
         self.brute_step = brute_step
         self.vary = vary
         self.skip = skip
-        self._expr = expr
+        self._expr = None
         self._expr_ast = None
         self._expr_eval = None
         self._expr_deps = []
@@ -298,9 +303,11 @@ class unnamedParameter(Parameter):
         self._val = value
         self._init_bounds()
         Parameter.__init__(self, name, value=value, vary=vary,
-                           min=min, max=max, expr=expr,
-                           brute_step=brute_step,
-                           user_data=user_data)
+                           min=min, max=max, user_data=user_data)
+        if expr is not None:
+            self._delay_asteval = True
+            self._expr = expr
+
 
 def param(*args, **kws):
     "create a fitting Parameter as a Variable"
@@ -355,6 +362,7 @@ def group2params(paramgroup):
         for key, val in paramgroup.items():
             if isinstance(val, Parameter):
                 params[key] = val
+                params[key]._delay_asteval = False
         return params
 
 
@@ -369,8 +377,8 @@ def group2params(paramgroup):
                 continue
             if isParameter(par):
                 params.add(name, value=par.value, vary=par.vary,
-                           min=par.min, max=par.max,
-                           brute_step=par.brute_step)
+                           min=par.min, max=par.max)
+
             else:
                 params._asteval.symtable[name] = par
 
