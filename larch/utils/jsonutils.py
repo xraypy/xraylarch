@@ -15,6 +15,7 @@ import importlib
 import logging
 from warnings import warn
 
+import uncertainties
 from lmfit import Parameter, Parameters
 from lmfit.model import Model, ModelResult
 from lmfit.minimizer import Minimizer, MinimizerResult
@@ -126,6 +127,8 @@ def encode4js(obj):
             return str(obj)
         elif isinstance(obj, bytes):
             return obj.decode('utf-8')
+        elif isinstance(obj, uncertainties.UFloat):
+            return {'__class__': 'UFloat', 'val': (obj.n, obj.s)}
         elif isinstance(obj, datetime):
             return {'__class__': 'Datetime', 'isotime': obj.isoformat()}
         elif isinstance(obj, (Path, PosixPath)):
@@ -301,6 +304,8 @@ def decode4js(obj):
             out = {}
             for key, val in obj.items():
                 out[key] = decode4js(val)
+        elif classname == 'UFloat':
+            return uncertainties.ufloat(*obj['val'])
         elif classname == 'Datetime':
             obj = datetime.fromisoformat(obj['isotime'])
         elif classname in ('Path', 'PosixPath'):
