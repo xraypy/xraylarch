@@ -40,8 +40,8 @@ def propagate_uncertainties(result, datasets, _larch=None):
     Parameters, including Path Parameters
     """
     covar = getattr(result, 'covar', None)
-    if covar is not None:
-        print("PROPAGATE UNCERTAINTIES")
+    scovar = getattr(result, 'scaled_covar', None)
+    if covar is not None and scovar is None:
         n_idp = 0
         for ds in datasets:
             n_idp += ds.n_idp
@@ -49,7 +49,7 @@ def propagate_uncertainties(result, datasets, _larch=None):
         if isinstance(result.params, dict):
             result.params = dict2params(result.params)
 
-        # We used scale_covar=Fllalse, so we rescale the uncertainties
+        # We used scale_covar=False, so we rescale the uncertainties
         redchi = getattr(result, 'redchi', getattr(result, 'chi2_reduced', 1.0))
         err_scale = redchi*(result.nfree/(n_idp - result.nvarys))
         for name, par in result.params.items():
@@ -58,6 +58,7 @@ def propagate_uncertainties(result, datasets, _larch=None):
 
         # next, propagate uncertainties to constraints and path parameters.
         result.scaled_covar = result.covar * err_scale
+
         vsave, vbest = {}, []
 
         # 1. save current params
@@ -495,6 +496,9 @@ class FeffitDataSet(Group):
         # to use the current Parameters namespace
         if isinstance(params, Group):
             params = group2params(params)
+        for par in params.values():
+            par._delay_asteval = False
+
         for label, path in self.paths.items():
             path.create_path_params(params=params, dataset=self.hashkey)
             if path.spline_coefs is None:
@@ -946,7 +950,7 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
     """
     input_ok = False
     try:
-        params = result.params
+        params = deepcopy(result.params)
         datasets = result.datasets
         input_ok = True
     except:
@@ -1090,7 +1094,6 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
                 path.params = result.params
                 path.store_feffdat()
                 out.append('%s\n' % path.report())
-            propagate_uncertainties(result, datasets, _larch=_larch)
 
     out.append('='*len(topline))
     return '\n'.join(out)
