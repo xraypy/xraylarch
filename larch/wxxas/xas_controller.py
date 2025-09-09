@@ -266,7 +266,7 @@ class XASController():
         rfiles = []
         for tstamp, fname in sorted(self.recentfiles, key=lambda x: x[0], reverse=True)[:10]:
             if fname not in rfiles:
-                buffer.append(f"{tstamp:.1f} {fname:s}")
+                buffer.append(f"{tstamp:.1f} {fname}")
                 rfiles.append(fname)
         buffer.append('')
         buffer = '\n'.join(buffer)
