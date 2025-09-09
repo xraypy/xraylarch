@@ -41,6 +41,7 @@ def propagate_uncertainties(result, datasets, _larch=None):
     """
     covar = getattr(result, 'covar', None)
     if covar is not None:
+        print("PROPAGATE UNCERTAINTIES")
         n_idp = 0
         for ds in datasets:
             n_idp += ds.n_idp
@@ -56,7 +57,7 @@ def propagate_uncertainties(result, datasets, _larch=None):
                 par.stderr *= sqrt(err_scale)
 
         # next, propagate uncertainties to constraints and path parameters.
-        result.covar *= err_scale
+        result.scaled_covar = result.covar * err_scale
         vsave, vbest = {}, []
 
         # 1. save current params
@@ -65,7 +66,7 @@ def propagate_uncertainties(result, datasets, _larch=None):
             vsave[vname] = par
             vbest.append(par.value)
         # 2. get correlated uncertainties, set params accordingly
-        uvars = correlated_values(vbest, result.covar)
+        uvars = correlated_values(vbest, result.scaled_covar)
         # 3. evaluate constrained params, save stderr
         for nam, obj in result.params.items():
             eval_stderr(obj, uvars,  result.var_names, result.params)
@@ -985,7 +986,13 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
     out.append(' ')
     out.append(header % 'Parameters')
 
-    propagate_uncertainties(result, datasets, _larch=_larch)
+    needs_uncertainties = False
+    for name, par in params.items():
+        if par.stderr is None and (par.vary or
+                                   par.expr not in (None, '', 'None')):
+            needs_uncertainties = True
+    if needs_uncertainties:
+        propagate_uncertainties(result, datasets, _larch=_larch)
 
     for name, par in params.items():
         if any([name.endswith('_%s' % phash) for phash in path_hashkeys]):
@@ -1073,18 +1080,8 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
         add_string('epsilon_k', eps_k)
         add_string('epsilon_r', eps_r)
         add_string('n_independent', f"{ds.n_idp:.3f}")
-        #
 
         if with_paths:
-            # make sure all Path Parameters are included, and then
-            # propagate uncertainties to those
-            for label, path in ds.paths.items():
-                if path.dataset is None:
-                    path.dataset = ds.hashkey
-                path.params = result.params
-                path.store_feffdat()
-            propagate_uncertainties(result, datasets, _larch=_larch)
-
             out.append(' ')
             out.append(header % 'Paths')
             for label, path in ds.paths.items():
@@ -1093,5 +1090,7 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
                 path.params = result.params
                 path.store_feffdat()
                 out.append('%s\n' % path.report())
+            propagate_uncertainties(result, datasets, _larch=_larch)
+
     out.append('='*len(topline))
     return '\n'.join(out)
