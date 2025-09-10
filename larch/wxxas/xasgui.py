@@ -461,10 +461,13 @@ class LarixFrame(wx.Frame):
 
         self.Raise()
 
-        self.show_lockfile_sessions()
-
         if self.current_filename is not None:
             wx.CallAfter(self.onRead, self.current_filename)
+        else:
+            lockfiles = self.controller.get_otherlockfiles()
+            if len(lockfiles) > 0:
+                self.show_lockfile_sessions(lockfiles)
+
 
         if check_version:
             version_thread.join()
@@ -513,7 +516,7 @@ class LarixFrame(wx.Frame):
 
         file_actions = [("Show Group Journal\tCtrl+J", self.onGroupJournal, "ctrl+J"),
                         ("--sep--", None, None),
-                        ("Copy Group\tCtrl+C", self.onCopyGroup, "ctrl+C"),
+                        ("Copy Group\tCtrl+Shift+C", self.onCopyGroup, "ctrl+shift+C"),
                         ("Rename Group\tCtrl+N", self.onRenameGroup, "ctrl+N"),
                         ("Remove Group\tCtrl+X", self.onRemoveGroup, "ctrl+X"),
                         ("Remove Selected Groups\tCtrl+Delete", self.onRemoveGroups, "ctrl+delete"),
@@ -616,8 +619,7 @@ class LarixFrame(wx.Frame):
         return current_panels.get(name, None)
 
 
-    def show_lockfile_sessions(self, event=None):
-        lockfiles = self.controller.get_otherlockfiles()
+    def show_lockfile_sessions(self, lockfiles, event=None):
         sessdata = []
         if len(lockfiles) > 0:
             session_info = get_session_info()
@@ -689,6 +691,8 @@ class LarixFrame(wx.Frame):
             s = str(fname)
             if s in self.controller.file_groups:
                 group = self.controller.file_groups.pop(s)
+            if s in self.controller._larch.symtable:
+                self.controller._larch.symtable.del_symbol(s)
             self.controller.sync_xasgroups()
 
     def ShowFile(self, evt=None, groupname=None,
@@ -826,7 +830,7 @@ class LarixFrame(wx.Frame):
         MenuItem(self, pref_menu, 'Edit Preferences\tCtrl+E', 'Customize Preferences',
                  self.onPreferences)
 
-        MenuItem(self, group_menu, "Copy This Group\tCtrl+C",
+        MenuItem(self, group_menu, "Copy This Group\tCtrl+Shift+C",
                  "Copy This Group", self.onCopyGroup)
 
         MenuItem(self, group_menu, "Rename This Group\tCtrl+N",
@@ -1089,6 +1093,7 @@ class LarixFrame(wx.Frame):
         self.controller.sync_xasgroups()
 
         fname = self.controller.session_filename
+        warn_overwrite = self.controller.session_warn_overwrite
         if prompt or fname is None:
             if fname is None:
                 fname = time.strftime('%Y%b%d_%H%M') + '.larix'
@@ -1099,14 +1104,17 @@ class LarixFrame(wx.Frame):
                              default_file=fname, wildcard=wcards)
             if fname is None:
                 return
+            # Note: darwin prompts in FileSave!
+            warn_overwrite = warn_overwrite or (Path(fname).exists() and uname != 'darwin')
 
-            if Path(fname).exists() and uname != 'darwin':  # darwin prompts in FileSave!
-                if wx.ID_YES != Popup(self, "Overwrite existing Project File?",
-                                      "Overwrite existing file?", style=wx.YES_NO):
-                    return
+        if warn_overwrite:
+            if wx.ID_YES != Popup(self, "Overwrite existing Project File?",
+                                 "Overwrite existing file?", style=wx.YES_NO):
+                return
+
         save_session(fname=fname, _larch=self.larch._larch)
         sess_name = Path(fname).name
-        self.controller.set_session_name(sess_name)
+        self.controller.set_session_name(sess_name, warn_overwrite=False)
 
         self.controller.recentfiles.insert(0, (time.time(), fname))
         self.get_recent_session_menu()
