@@ -20,7 +20,7 @@ from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, get_icon,
                          get_panel_plot_config, get_markercolors)
 
 from larch.utils.physical_constants import ATOM_NAMES
-from larch.wxlib.plotter import last_cursor_pos
+from larch.wxlib.plotter import last_cursor_pos, set_plotwindow_title
 from .taskpanel import TaskPanel, autoset_fs_increment, update_confval
 from .config import (make_array_choice, EDGES, ATSYMS,
                      NNORM_CHOICES, NNORM_STRINGS, NORM_METHODS)
@@ -596,8 +596,10 @@ class XYDataPanel(TaskPanel):
 
         if self.skip_plotting:
             return
-        ppanel = self.controller.get_display(stacked=False).panel
+        disp = self.controller.get_display(stacked=False)
+        ppanel = disp.panel
         self.controller.set_datatask_name(self.title)
+        set_plotwindow_title(disp, _larch=self.controller.larch, default='XY Plot')
         plotcmd = ppanel.oplot
         if new:
             plotcmd = ppanel.plot
