@@ -337,8 +337,6 @@ class LockedSessionDialog(wx.Dialog):
 
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
 
-
-
         col_labels = [' Session Label ', 'Last Modified', 'Session Size (MB)', 'Action']
         sess_opts  = ['Ignore (Session may be in-progress)',
                      'Import this Session', 'Delete Session Lock file']
@@ -445,7 +443,7 @@ class LoadSessionDialog(wx.Frame):
             if hasattr(val, 'energy') and hasattr(val, 'mu'):
                 if key in self.allgroups.keys() or key in self.allgroups.values():
                     continue
-                self.allgroups[key] = key
+                # self.allgroups[key] = key
                 self.extra_xasgroups.append(key)
 
 
@@ -472,19 +470,25 @@ class LoadSessionDialog(wx.Frame):
         panel.Add(wids['view_cmds'], dcol=1, newrow=False)
         panel.Add(HLine(panel, size=(450, 2)), dcol=3, newrow=True)
 
-        over_msg = 'Importing these Groups/Data will overwrite values in the current session:'
-        panel.Add(SimpleText(panel, over_msg), dcol=2, newrow=True)
+        other_msg = 'Other groups and data to import'
+        over_msg = 'Importing these may overwrite values in this session:'
+        panel.Add(SimpleText(panel, other_msg), dcol=3, newrow=True)
+        panel.Add(SimpleText(panel, over_msg), dcol=3, newrow=True)
         panel.Add(SimpleText(panel, "Symbol Name"), dcol=1, newrow=True)
-        panel.Add(SimpleText(panel, "Import/Overwrite?"), dcol=1)
+        panel.Add(SimpleText(panel, "In this Session"), dcol=1)
+        panel.Add(SimpleText(panel, "Import?"), dcol=1)
         i = 0
-        self.overwrite_checkboxes = {}
-        for g in self.session.symbols:
-            if g not in group_names and hasattr(symtable, g):
+        self.other_symbols = {}
+        for gname in sorted(self.session.symbols.keys()):
+            show = ((gname in self.extra_xasgroups) or (gname not in group_names))
+            if show:
+                label = getattr(self.session.symbols[gname], 'filename', gname)
                 chbox = Check(panel, default=True)
-                panel.Add(SimpleText(panel, g),  dcol=1, newrow=True)
+                exists = 'Yes' if hasattr(symtable, gname) else 'No'
+                panel.Add(SimpleText(panel, label),  dcol=1, newrow=True)
+                panel.Add(SimpleText(panel, exists),  dcol=1, newrow=False)
                 panel.Add(chbox,  dcol=1)
-                self.overwrite_checkboxes[g] = chbox
-
+                self.other_symbols[gname] = chbox
                 i += 1
 
         panel.Add((5, 5), newrow=True)
@@ -549,7 +553,8 @@ class LoadSessionDialog(wx.Frame):
 
         if len(yplot) > 1:
             self.plotpanel.plot(xplot, yplot, xlabel=xlabel,
-                                ylabel=ylabel, title=fname)
+                                ylabel=ylabel, label='__nolabel__',
+                                title=fname)
 
 
     def onShowConfig(self, event=None):
@@ -572,32 +577,22 @@ class LoadSessionDialog(wx.Frame):
 
     def onImport(self, event=None):
         xas_groups, ignore = [], []
-        for gname, chbox in self.overwrite_checkboxes.items():
-            if not chbox.IsChecked():
-                ignore.append(gname)
 
         checked = self.grouplist.GetCheckedStrings()
         for fname in checked:
             xas_groups.append(fname)
 
-        for fname in self.allgroups:
-            xlist = xas_groups if fname in checked else ignore
-            if fname not in xlist:
-                xlist.append(fname)
-
-        for fname in self.extra_xasgroups:
-            if fname not in xas_groups:
-                xas_groups.append(fname)
-        for fname, gname in self.allgroups.items():
-            if fname not in xas_groups and fname not in ignore:
-                xas_groups.append(fname)
+        other_syms = []
+        for gname, chbox in self.other_symbols.items():
+            if chbox.IsChecked():
+                other_syms.append(gname)
 
         fname = Path(self.filename).as_posix()
         if fname.endswith('/'):
             fname = fname[:-1]
 
         cmds = ["# Loading Larch Session: ",
-                f"load_session('{fname}', xasgroups={repr(xas_groups)})"]
+                f"load_session('{fname}', xasgroups={repr(xas_groups)}, other_syms={repr(other_syms)})"]
         self.controller.larch.eval('\n'.join(cmds))
         last_fname = None
         xasgroups = getattr(self.controller.symtable, self.xasgroups_name, {})
