@@ -42,6 +42,7 @@ class XASController():
         self.panels = {}
         self.datagroup_callbacks = {}
         self.session_filename = None
+        self.session_warn_overwrite = True
         self.session_name = None
 
         self.larch = _larch
@@ -104,9 +105,11 @@ class XASController():
             fh.write(f"{get_session_info()}\n")
         self.clean_autosave_sessions()
 
-    def set_session_name(self, name=None):
+    def set_session_name(self, name=None, warn_overwrite=True):
         if name not in ('', None):
             name = fix_varname(Path(name).stem)
+            self.session_filename = f"{name}.larix"
+            self.session_warn_overwrite = warn_overwrite
             self.session_name = name
             self.larch.symtable._sys.session_name = name
             self.wxparent.SetTitle(f"Larix [{name}]")
