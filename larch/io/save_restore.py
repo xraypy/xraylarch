@@ -427,8 +427,6 @@ def load_session(fname, xasgroups=None, ignore_groups=None, include_xasgroups=No
             setattr(symtab, gname, obj)
             symtab._xasgroups[sym] = gname
 
-    # print("added xasgroups: ", symtab._xasgroups)
-    # print("Load remaining groups: ", sess_symbols.keys())
     for sym, obj in sess_symbols.items():
         setattr(symtab, sym, obj)
 

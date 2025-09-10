@@ -1198,7 +1198,7 @@ class FeffitPanel(TaskPanel):
 
         model_name = dataset_name + '.model'
         paths_name = dataset_name + '.paths'
-        paths = self.larch.eval(paths_name)
+        # paths = self.larch.eval(paths_name)
 
         data_name  = dataset_name + '.data'
         refine_bkg = getattr(dataset, 'refine_bkg',
