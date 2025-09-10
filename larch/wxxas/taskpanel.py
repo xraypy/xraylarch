@@ -329,6 +329,7 @@ class TaskPanel(wx.Panel):
 
     def onPanelExposed(self, **kws):
         # called when notebook is selected: process group
+        self.controller.set_datatask_name(self.title)
         fname = self.controller.filelist.GetStringSelection()
         if fname in self.controller.file_groups:
             gname = self.controller.file_groups[fname]
