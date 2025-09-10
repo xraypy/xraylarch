@@ -322,10 +322,22 @@ class LockedSessionDialog(wx.Dialog):
         self.SetFont(get_font())
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
-        title = 'Auto-saved Files from Earlier Sessions that did not shut down cleanly'
+        title1 = '    Auto-saved Sessions with open Lock Files: '
 
-        panel.Add(SimpleText(panel, title), dcol=6)
+        title2 = ' These are auto-saved files from sessions that may have crashed or shut down abruptly.'
+        title3 = ' Or, they might be currently in use by another Larix Process.'
+        title4 = ' You can Import a Session, Delete the lockfile, or Ignore this message.'
+        title5 = ' You can also import auto-saved sessions from the Read Session Files menu'
+
+        panel.Add(SimpleText(panel, title1), dcol=6)
+        panel.Add(SimpleText(panel, title2), dcol=6, newrow=True)
+        panel.Add(SimpleText(panel, title3), dcol=6, newrow=True)
+        panel.Add(SimpleText(panel, title4), dcol=6, newrow=True)
+        panel.Add(SimpleText(panel, title5), dcol=6, newrow=True)
+
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
+
+
 
         col_labels = [' Session Label ', 'Last Modified', 'Session Size (MB)', 'Action']
         sess_opts  = ['Ignore (Session may be in-progress)',
