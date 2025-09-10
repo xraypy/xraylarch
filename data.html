@@ -6,11 +6,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>11. Reading and Writing Data &#8212; xraylarch 2025.2.2 documentation</title>
+    <title>11. Reading and Writing Data &#8212; xraylarch 2025.3.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
     
-    <script src="_static/documentation_options.js?v=6408075c"></script>
+    <script src="_static/documentation_options.js?v=865d4376"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -862,7 +862,7 @@ analysis session. Instead, it will return a new set of data that you might have 
 unpack or extract the groups and arrays of interest.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.save_session">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">save_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">histbuff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_xasgroups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_larch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.save_session" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">save_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">histbuff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_xasgroups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_larch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.save_session" title="Link to this definition">¶</a></dt>
 <dd><p>save all groups and data into a Larch Save File (.larix)
 A portable compressed json file, that can be loaded with <cite>read_session()</cite></p>
 <dl class="field-list simple">
@@ -929,13 +929,16 @@ A tuple wih entries:</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.load_session">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">load_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_groups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_xasgroups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_larch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.load_session" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">load_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xasgroups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other_syms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_groups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_xasgroups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_larch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.load_session" title="Link to this definition">¶</a></dt>
 <dd><p>load all data from a Larch Session File into current larch session,
 merging into existing groups as appropriate (see Notes below)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – name of session file</p></li>
+<li><p><strong>xasgroups</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><em>strings</em>) – complete list of xas groups to import
+(overrides ignore_groups/include_xasgroups)</p></li>
+<li><p><strong>other_syms</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><em>strings</em>) – list of other groups to import</p></li>
 <li><p><strong>ignore_groups</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><em>strings</em>) – list of symbols to not import</p></li>
 <li><p><strong>include_xasgroups</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><em>strings</em>) – list of symbols to import as XAS spectra,
 even if not expicitly set in <cite>_xasgroups</cite></p></li>
@@ -947,13 +950,26 @@ even if not expicitly set in <cite>_xasgroups</cite></p></li>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<ol class="arabic simple">
+<ol class="arabic">
 <li><p>data in the following groups will be merged into existing session groups:
 <cite>_feffpaths</cite> : dict of “current feff paths”
 <cite>_feffcache</cite> : dict with cached feff paths and feff runs
 <cite>_xasgroups</cite> : dict mapping “File Name” and “Group Name”, used in <cite>Larix</cite></p></li>
 <li><p>to avoid name clashes, group and file names in the <cite>_xasgroups</cite> dictionary
 may be modified on loading</p></li>
+<li><p>on xasgroups, ignore_groups, include_xasgrooups:
+if xasgroups is None, the _xasgroups from the Session will be used,</p>
+<blockquote>
+<div><p>with ignore_groups listing groups to ignore, and include_xasgroups listing
+groups not in _xasgroups, but that should be added.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>if xasgroups is not None, it will be used, ignoring the _xasgroups from the Session,</dt><dd><p>and ignoring ignore_groups and include_xasgroups.</p>
+</dd>
+</dl>
+</li>
+<li><p>if other_syms is not None, those symbols will be imported, but no others.
+If left None, all other symbols will be imported.</p></li>
 </ol>
 </dd></dl>
 
