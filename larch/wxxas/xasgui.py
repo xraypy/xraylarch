@@ -1107,7 +1107,7 @@ class LarixFrame(wx.Frame):
             # Note: darwin prompts in FileSave!
             warn_overwrite = warn_overwrite or (Path(fname).exists() and uname != 'darwin')
 
-        if warn_overwrite:
+        if warn_overwrite and Path(fname).exists():
             if wx.ID_YES != Popup(self, "Overwrite existing Project File?",
                                  "Overwrite existing file?", style=wx.YES_NO):
                 return
@@ -1802,7 +1802,6 @@ before clearing"""
             journal['yerr'] = array_desc['yerr'].format(group=groupname)
 
         self.install_group(groupname, filename, source=path, journal=journal, plot='auto')
-
         dtype = getattr(config, 'datatype', 'xydata')
 
         def install_multichans(config):
