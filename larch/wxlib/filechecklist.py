@@ -48,7 +48,7 @@ class FileCheckList(wx.CheckListBox):
                         (f"Move to Top\t{aname}+Left",       self.move_to_top, f"{alt}+left"),
                         (f"Move to Bottom\t{aname}+Right",    self.move_to_bottom, f"{alt}+right")]
         if with_remove_from_list:
-            core_actions.append((f"Remove from List.. Alt+Delete", self.remove_from_list, f"{alt}+delete"))
+            core_actions.append((f"Remove from List\t{alt}+delete", self.remove_from_list, f"{alt}+delete"))
 
         click_actions =  []
         if pre_actions is not None:
