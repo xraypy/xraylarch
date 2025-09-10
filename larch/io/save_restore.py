@@ -19,6 +19,9 @@ SessionStore = namedtuple('SessionStore', ('config', 'command_history', 'symbols
 
 EMPTY_FEFFCACHE = {'paths': {}, 'runs': {}}
 
+class EmptyValue:
+    pass
+
 def invert_dict(d):
     "invert a dictionary {k: v} -> {v: k}"
     return {v: k for k, v in d.items()}
@@ -324,13 +327,16 @@ def read_session(fname, clean_xasgroups=True):
     return SessionStore(config, cmd_history, symbols)
 
 
-def load_session(fname, xasgroups=None, ignore_groups=None, include_xasgroups=None, _larch=None, verbose=False):
+def load_session(fname, xasgroups=None, other_syms=None, ignore_groups=None,
+                include_xasgroups=None, _larch=None, verbose=False):
     """load all data from a Larch Session File into current larch session,
     merging into existing groups as appropriate (see Notes below)
 
     Arguments:
        fname  (str):  name of session file
-       xasgroups (list of strings): complete list of symbols to import (overrides ignore_groups/include_xasgroups)
+       xasgroups (list of strings): complete list of xas groups to import
+                          (overrides ignore_groups/include_xasgroups)
+       other_syms (list of strings): list of other groups to import
        ignore_groups (list of strings): list of symbols to not import
        include_xasgroups (list of strings): list of symbols to import as XAS spectra,
                            even if not expicitly set in `_xasgroups`
@@ -353,6 +359,8 @@ def load_session(fname, xasgroups=None, ignore_groups=None, include_xasgroups=No
               groups not in _xasgroups, but that should be added.
            if xasgroups is not None, it will be used, ignoring the _xasgroups from the Session,
               and ignoring ignore_groups and include_xasgroups.
+        4. if other_syms is not None, those symbols will be imported, but no others.
+           If left None, all other symbols will be imported.
 
     """
     # groups to merge into existing session: (_feffpaths, _feffcache, _xasgroups) are pop()ed here
@@ -427,8 +435,13 @@ def load_session(fname, xasgroups=None, ignore_groups=None, include_xasgroups=No
             setattr(symtab, gname, obj)
             symtab._xasgroups[sym] = gname
 
-    for sym, obj in sess_symbols.items():
-        setattr(symtab, sym, obj)
+    if other_syms is None:
+        other_syms = sess_symbols.keys()
+
+    for sym in other_syms:
+        obj = getattr(sess_symbols, sym, EmptyValue)
+        if obj is not EmptyValue:
+            setattr(symtab, sym, obj)
 
     symtab._feffpaths.update(sess_feffpaths)
 
