@@ -5,6 +5,91 @@ The GitHub Release Notes will also be useful
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2025.3.0 - 2025-09-10]
+
+### Larix improvements and bugfixes:
+ - the FileList in Larix and many related Windows (to import data,
+   etc), has a richer set of options with Right Mouse Button.  These
+   also have "keyboard shortcuts" or "accelerators" (Ctrl- / Alt-
+   keys) that do most actions to move and select groups. This allows
+   much faster and easier manipulation of the list of datasets.
+
+ - Saving Session Files is now more robust against certain classes of
+   errors.  It will also happen in a background thread to avoid
+   hanging Larix for large projects.
+
+ - Loading Session Files now shows a more complete list of "non XAS
+   Data groups" that can be imported.
+
+ - on startup, Larix defines a "Session ID" (almost random) used for
+   autosaving sessions, but now uses a separate "Session Name" that
+   will be used for an explicitly Saved Session.  This will be set
+   from the name of the first loaded dataset, but can be changed if
+   using "Save Session As".
+
+ - on startup, a Lock File using the Session ID will be created, and
+   removed only when Larix is shutdown cleanly.
+
+ - on startup, any existing Lock Files -- which might signal a Session
+   that crashed or is running in another process -- and their
+   corresponding auto-saved Session will be shown in a Dialog as
+   available for Import or for having the Lock File removed.
+
+ - the "Session Name" above will be shown in the Larix Title Bar.
+ - Plot Windows will have Title Bars that include the Session Name and
+   the Analysis Panel (or the Data Processing Window) that generated
+   the plot.
+
+ - Configuration of plotting options such as linewidths, colors,
+   themes, and so forth is now both easier and more robust. Many of
+   the plotting routines have had "hardcoded" values for such plot
+   attributes removed.  The "plot" tab is "Edit Preferences" now has
+   only a "Save Plot Configuration" to save the configuration of the
+   current Plot Window #1 to ".larch/wxmplot.yaml".  This allows the
+   configuration to be set from the Plot Window Configuration frame.
+   This configuration file (which could be edited) will be loaded on
+   startup and used for all plots.
+
+ - The pre_edge range shown for XAS Normalization is more accurately
+   displayed.
+
+ - Very short pre-edge ranges better sets the backgroud form to
+   "Constant".
+
+ - More fixes so the EXAFS processing is re-done when groups are copied.
+ - The XY Data Analysis Panel now allows settings which X and Y arrays
+   to use for a Group.
+
+ - Some simplifications in CurveFit Layout.
+ - Fix for proper normalization of data in Pre-edge Panel.
+ - Several fixes for showing Feffit Results.
+ - A general attempt to have better and more consistent Fond sizes.
+
+
+### xraylarch library:
+ - better allow out-of-order constraint expressions in feffit Parameters
+ - fixes to propagating uncertainties to Path Parameters
+ - Make sure energy data is monotonically increasing in "rebin_xafs"
+ - Fix reading edge_step in autobk.
+ - many improvements to json-serialization for Session files, and
+   avoiding some recursion errors and problems saving some numpy
+   arrays. Add serialization of uncertainties ufloats.
+ - improvements and simplification of saving session files.
+ - load_session() now obeys the order of groups supplied in xasgroups argument.
+ - many improvements to xafsplots functions to use `wmplot.yaml`
+   theme, and to better use relative z-order values.
+ - plotting chi(E) now better includes the edge-step.
+
+### Other GUIs:
+ - XRF Display: avoid flashing of ROI label
+
+### General development and maintenance:
+ - update minimum version of several required packages.
+ - seveeral updates to dependencies.
+ - support for Python 3.9 is dropped.
+ - remove IPython InteractiveShell calls
+ - allow writing TOML file with tomli_w, but preferring yaml over toml.
+
 ## [2025.2.1 - 2025-07-29]
 
 ### Larix improvements and bugfixes:
