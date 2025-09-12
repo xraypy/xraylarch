@@ -62,6 +62,14 @@ Installing from an Binary Installer
 
 **Table of Larch Installers**
 
+    Installers for Windows, macOSX, and Linux are available at `Larch
+    Installers`_.  These are fairly large (more that 400 Mb files)
+    self-contained files that will install a complete Anaconda Python
+    environment with all of libraries needed by Larch.  This installation will
+    create a folder called `xraylarch` in your home folder -- see
+    platform-specific notes below.
+
+
   +---------------------+------------------------+-----------------------------+
   | Operating System    | Installer File         | Installation Notes          |
   +=====================+========================+=============================+
@@ -72,11 +80,6 @@ Installing from an Binary Installer
   | Linux  (64 bit)     | `Larch for Linux`_     | :ref:`Notes <install-lin>`  |
   +---------------------+------------------------+-----------------------------+
 
-Installers for Windows, macOSX, and Linux are available at `Larch
-Installers`_.  These are fairly large (more that 400 Mb files) self-contained
-files that will install a complete Anaconda Python environment with all of
-libraries needed by Larch.  This installation will create a folder called
-`xraylarch` in your home folder -- see platform-specific notes below.
 
 .. note::
 
@@ -92,14 +95,13 @@ These installers should write to files only to folders owned by the user
 account. Installation should not require administrative privilege and should
 not interfere with any thing else on your system (such as system Python).
 
-These installers will also create a folder called `Larch` on your desktop
-that contains links (or shortcuts or Apps) to many of the Larch GUI
-applications listed in :ref:`Table of Larch Applications and Programs
-<larch_app_table>`.  This includes tools for X-ray Absorption spectroscopy,
-X-ray fluorescence spectroscopy, and working with X-ray diffraction images.
-It will also create a folder called `.larch` in your home folder where some
-configuration files, Feff calculations, and auto-saved sessions will be
-written.
+These installers will also create a folder called `Larch` on your desktop that
+contains links (or shortcuts or Apps) to many of the Larch GUI applications
+listed in :ref:`Table of Larch Applications and Programs <larch_app_table>`.
+This includes tools for X-ray Absorption spectroscopy, X-ray fluorescence
+spectroscopy, and working with X-ray diffraction images.  It will also create a
+folder called `.larch` in your home folder where some configuration files, Feff
+calculations, and auto-saved sessions will be written.
 
 .. _install-win:
 
@@ -285,7 +287,10 @@ other packages from PyPI.  We recommend you follow a similar process.
 
 .. _condapip_table:
 
-**Table of Packages that should be installed from Conda Packages**
+**Table of Packages needed from conda-forge**
+
+    These Python packages are best installed from Conda-forge (or an
+    OS-specific packaging system), and not from Pip.
 
   +-------------------+----------------------+-------------+--------------------+
   | Package name      | Use                  | Source      | Platforms          |
@@ -324,14 +329,15 @@ could install with
 This will also install all of the `wxPython` packages needed
 for the GUIs, as well as the libraries related to Jupyter.
 
-As shown in :ref:`larch_app_table`, the most notable missing binary package
-needed for xraylarch on PyPI is the `wxPython` package on Linux.  That means
-that if `wxPython` is not already installed, `pip` will try to compile it,
-which will almost certainly fail.  This is one of the main reasons we
-recommend using `Anaconda Python` - it provides `wxPython` in a consistent
-manner for all platforms.  Anaconda Python also provides very good versions of
-almost all of the "core scipy ecosystem" libraries and has good support for
-optional Intel Math Kernel libraries that will be used if available.
+As shown in :ref:`Table of Packages needed from conda-forge <condapip_table>`,
+the most notable missing binary package needed for xraylarch on PyPI is the
+`wxPython` package on Linux.  That means that if `wxPython` is not already
+installed, `pip` will try to compile it, which will almost certainly fail.
+This is one of the main reasons we recommend using `Anaconda Python` - it
+provides `wxPython` in a consistent manner for all platforms.  Anaconda Python
+also provides very good versions of almost all of the "core scipy ecosystem"
+libraries and has good support for optional Intel Math Kernel libraries that
+will be used if available.
 
 But, if you are not using Linux, or are using a system-provided Python that
 includes wxPython (and has it installed), it should be possible to install a
