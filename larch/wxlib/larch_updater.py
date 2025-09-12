@@ -15,7 +15,7 @@ class LarchUpdaterDialog(wx.Dialog):
         vinfo = check_larchversion()
         self.update_available = vinfo.update_available
 
-        upgrade_pycmd = f'{sys.executable} -m pip install --upgrade xraylarch'
+        upgrade_pycmd = f'{sys.executable} -m pip install --upgrade "xraylarch[larix]"'
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
         panel.Add((5, 5))
 
@@ -42,7 +42,7 @@ class LarchUpdaterDialog(wx.Dialog):
             else:
                 addline(f' Click OK to update (you will need to restart {caller})')
             panel.Add((5, 5))
-            addline(' You can also update from a Terminal with:')
+            addline(f' You can also update from a Terminal with (after first closing {caller}:')
             addline(f' {upgrade_pycmd}')
             panel.Add(Button(panel, 'Copy Upgrade Command To Clipboard',
                              action=toclipboard), newrow=True)
