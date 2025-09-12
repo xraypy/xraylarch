@@ -7,11 +7,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>14.8. XAFS: Fitting XAFS to Feff Paths &#8212; xraylarch 2025.3.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
     
     <script src="_static/documentation_options.js?v=865d4376"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -45,7 +45,7 @@
    </tr></table>
 </div>
 
-    <div class="related" role="navigation" aria-label="Related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -68,7 +68,7 @@
       </ul>
     </div>
 
-      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <div>
     <h3><a href="index.html">Table of Contents</a></h3>
@@ -755,7 +755,7 @@ commands.</p>
  
 <span class="p">[[</span><span class="n">Paths</span><span class="p">]]</span>
  <span class="o">=</span> <span class="n">Path</span> <span class="s1">&#39;p3tf6mewg&#39;</span> <span class="o">=</span> <span class="n">Cu</span> <span class="n">K</span> <span class="n">Edge</span>
-    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feffcu01</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="kn">from</span><span class="w"> </span><span class="nn">feff</span> <span class="n">run</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feffcu01</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="kn">from</span> <span class="nn">feff</span> <span class="n">run</span> <span class="s1">&#39;&#39;</span>
     <span class="n">geometry</span>  <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>      <span class="n">ipot</span>
               <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">0</span> <span class="p">(</span><span class="n">absorber</span><span class="p">)</span>
               <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">1.8016</span>  <span class="mi">1</span>
@@ -800,7 +800,7 @@ plotting functions into a separate file, <em>doc_macros.lar</em>.  This will loo
 like this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">write_report</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">out</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">write_report</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">out</span><span class="p">):</span>
     <span class="s2">&quot;write report to file&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
@@ -859,7 +859,7 @@ one another.</p>
 <span class="c1"># from larch.wxlib.xafsplots import plot_chifit</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">write_report</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">out</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">write_report</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">out</span><span class="p">):</span>
     <span class="s2">&quot;write report to file&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
@@ -974,7 +974,7 @@ vary independently for each path.</p>
  
 <span class="p">[[</span><span class="n">Paths</span><span class="p">]]</span>
  <span class="o">=</span> <span class="n">Path</span> <span class="s1">&#39;p3tf6mewg&#39;</span> <span class="o">=</span> <span class="n">Cu</span> <span class="n">K</span> <span class="n">Edge</span>
-    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0001</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="kn">from</span><span class="w"> </span><span class="nn">feff</span> <span class="n">run</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0001</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="kn">from</span> <span class="nn">feff</span> <span class="n">run</span> <span class="s1">&#39;&#39;</span>
     <span class="n">geometry</span>  <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>      <span class="n">ipot</span>
               <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">0</span> <span class="p">(</span><span class="n">absorber</span><span class="p">)</span>
               <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">1.8016</span>  <span class="mi">1</span>
@@ -988,7 +988,7 @@ vary independently for each path.</p>
      <span class="n">third</span>  <span class="o">=</span>  <span class="mf">1.4440e-4</span> <span class="o">+/-</span> <span class="mf">8.2197e-5</span>  <span class="o">:=</span> <span class="s1">&#39;c3_1&#39;</span>
 
  <span class="o">=</span> <span class="n">Path</span> <span class="s1">&#39;pj3m4qvfy&#39;</span> <span class="o">=</span> <span class="n">Cu</span> <span class="n">K</span> <span class="n">Edge</span>
-    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0002</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="kn">from</span><span class="w"> </span><span class="nn">feff</span> <span class="n">run</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0002</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="kn">from</span> <span class="nn">feff</span> <span class="n">run</span> <span class="s1">&#39;&#39;</span>
     <span class="n">geometry</span>  <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>      <span class="n">ipot</span>
               <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">0</span> <span class="p">(</span><span class="n">absorber</span><span class="p">)</span>
               <span class="n">Cu</span>      <span class="o">-</span><span class="mf">3.6032</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">1</span>
@@ -1001,7 +1001,7 @@ vary independently for each path.</p>
      <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.0131046</span> <span class="o">+/-</span> <span class="mf">0.0011358</span>  <span class="o">:=</span> <span class="s1">&#39;sig2_2&#39;</span>
 
  <span class="o">=</span> <span class="n">Path</span> <span class="s1">&#39;pibakl7xe&#39;</span> <span class="o">=</span> <span class="n">Cu</span> <span class="n">K</span> <span class="n">Edge</span>
-    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0003</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="kn">from</span><span class="w"> </span><span class="nn">feff</span> <span class="n">run</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0003</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="kn">from</span> <span class="nn">feff</span> <span class="n">run</span> <span class="s1">&#39;&#39;</span>
     <span class="n">geometry</span>  <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>      <span class="n">ipot</span>
               <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">0</span> <span class="p">(</span><span class="n">absorber</span><span class="p">)</span>
               <span class="n">Cu</span>       <span class="mf">1.8016</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">1</span>
@@ -1178,7 +1178,7 @@ of <span class="math notranslate nohighlight">\(R\)</span>. The output for this 
  
 <span class="p">[[</span><span class="n">Paths</span><span class="p">]]</span>
  <span class="o">=</span> <span class="n">Path</span> <span class="s1">&#39;p3tf6mewg&#39;</span> <span class="o">=</span> <span class="n">Cu</span> <span class="n">K</span> <span class="n">Edge</span>
-    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0001</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="kn">from</span><span class="w"> </span><span class="nn">feff</span> <span class="n">run</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0001</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="kn">from</span> <span class="nn">feff</span> <span class="n">run</span> <span class="s1">&#39;&#39;</span>
     <span class="n">geometry</span>  <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>      <span class="n">ipot</span>
               <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">0</span> <span class="p">(</span><span class="n">absorber</span><span class="p">)</span>
               <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">1.8016</span>  <span class="mi">1</span>
@@ -1204,7 +1204,7 @@ of <span class="math notranslate nohighlight">\(R\)</span>. The output for this 
  
 <span class="p">[[</span><span class="n">Paths</span><span class="p">]]</span>
  <span class="o">=</span> <span class="n">Path</span> <span class="s1">&#39;p3tf6mewg&#39;</span> <span class="o">=</span> <span class="n">Cu</span> <span class="n">K</span> <span class="n">Edge</span>
-    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0001</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="kn">from</span><span class="w"> </span><span class="nn">feff</span> <span class="n">run</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0001</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="kn">from</span> <span class="nn">feff</span> <span class="n">run</span> <span class="s1">&#39;&#39;</span>
     <span class="n">geometry</span>  <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>      <span class="n">ipot</span>
               <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">0</span> <span class="p">(</span><span class="n">absorber</span><span class="p">)</span>
               <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">1.8016</span>  <span class="mi">1</span>
@@ -1230,7 +1230,7 @@ of <span class="math notranslate nohighlight">\(R\)</span>. The output for this 
  
 <span class="p">[[</span><span class="n">Paths</span><span class="p">]]</span>
  <span class="o">=</span> <span class="n">Path</span> <span class="s1">&#39;p3tf6mewg&#39;</span> <span class="o">=</span> <span class="n">Cu</span> <span class="n">K</span> <span class="n">Edge</span>
-    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0001</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="kn">from</span><span class="w"> </span><span class="nn">feff</span> <span class="n">run</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0001</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="kn">from</span> <span class="nn">feff</span> <span class="n">run</span> <span class="s1">&#39;&#39;</span>
     <span class="n">geometry</span>  <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>      <span class="n">ipot</span>
               <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">0</span> <span class="p">(</span><span class="n">absorber</span><span class="p">)</span>
               <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">1.8016</span>  <span class="mi">1</span>
@@ -1438,7 +1438,7 @@ used in the fit.</p>
  
 <span class="p">[[</span><span class="n">Paths</span><span class="p">]]</span>
  <span class="o">=</span> <span class="n">Path</span> <span class="s1">&#39;pjuumtmhe&#39;</span> <span class="o">=</span> <span class="n">Fe</span> <span class="n">K</span> <span class="n">Edge</span>
-    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff_feo01</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="kn">from</span><span class="w"> </span><span class="nn">feff</span> <span class="n">run</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff_feo01</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="kn">from</span> <span class="nn">feff</span> <span class="n">run</span> <span class="s1">&#39;&#39;</span>
     <span class="n">geometry</span>  <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>      <span class="n">ipot</span>
               <span class="n">Fe</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">0</span> <span class="p">(</span><span class="n">absorber</span><span class="p">)</span>
                <span class="n">O</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">2.1387</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">1</span>
@@ -1451,7 +1451,7 @@ used in the fit.</p>
      <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.0120204</span> <span class="o">+/-</span> <span class="mf">0.0027069</span>  <span class="o">:=</span> <span class="s1">&#39;sig2_1&#39;</span>
 
  <span class="o">=</span> <span class="n">Path</span> <span class="s1">&#39;p7etnrdqr&#39;</span> <span class="o">=</span> <span class="n">Fe</span> <span class="n">K</span> <span class="n">Edge</span>
-    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff_feo02</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="kn">from</span><span class="w"> </span><span class="nn">feff</span> <span class="n">run</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff_feo02</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="kn">from</span> <span class="nn">feff</span> <span class="n">run</span> <span class="s1">&#39;&#39;</span>
     <span class="n">geometry</span>  <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>      <span class="n">ipot</span>
               <span class="n">Fe</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">0</span> <span class="p">(</span><span class="n">absorber</span><span class="p">)</span>
               <span class="n">Fe</span>       <span class="mf">2.1387</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.1387</span>  <span class="mi">2</span>
@@ -1830,7 +1830,7 @@ correction.  The full script is:</p>
 <span class="c1"># Testing sensitivity to Z of backscatterer, and</span>
 <span class="c1"># how well &quot;phase corrected&quot; Fourier transforms predict distance</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">get_zinc_mu</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy dwelltime i0 i1&#39;</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">get_zinc_mu</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy dwelltime i0 i1&#39;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;read raw data, do background subtraction&quot;&quot;&quot;</span>
     <span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
     <span class="n">dat</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="o">-</span><span class="n">ln</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">i1</span> <span class="o">/</span> <span class="n">dat</span><span class="o">.</span><span class="n">i0</span><span class="p">)</span>
@@ -1838,14 +1838,14 @@ correction.  The full script is:</p>
     <span class="k">return</span> <span class="n">dat</span>
 <span class="c1">#enddef</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">plot_chidata</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">plot_chidata</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="n">kopts</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$k \rm\,(\AA^{-1})$&#39;</span><span class="p">,</span>
                  <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$k^2\chi(k) \rm\,(\AA^{-2})$&#39;</span><span class="p">,</span>
                  <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="n">win</span><span class="p">)</span>
     <span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">chi</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="o">**</span><span class="n">kopts</span><span class="p">)</span>
 <span class="c1">#enddef</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">rplot_fit</span><span class="p">(</span><span class="n">dset</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">rplot_fit</span><span class="p">(</span><span class="n">dset</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="s2">&quot;make R-spae plots of results&quot;</span>
     <span class="n">ropts</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$R \rm\,(\AA)$&#39;</span><span class="p">,</span>
                  <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$|\chi(R)| \rm\,(\AA^{-3})$&#39;</span><span class="p">,</span>
@@ -1867,7 +1867,7 @@ correction.  The full script is:</p>
     <span class="k">return</span>
 <span class="c1">#enddef</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">phase_correct</span><span class="p">(</span><span class="n">dset</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">phase_correct</span><span class="p">(</span><span class="n">dset</span><span class="p">):</span>
    <span class="s2">&quot;calculate phase-corrected FT, find estimate of R&quot;</span>
    <span class="n">nrpts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">r</span><span class="p">)</span>
    <span class="n">path1</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">dset</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">items</span><span class="p">())[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
@@ -2114,7 +2114,7 @@ powerful, and give increased confidence in the refined structure.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="Related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -2138,7 +2138,7 @@ powerful, and give increased confidence in the refined structure.</p>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     </div>
   </body>
 </html>

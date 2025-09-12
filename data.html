@@ -7,11 +7,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>11. Reading and Writing Data &#8212; xraylarch 2025.3.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
     
     <script src="_static/documentation_options.js?v=865d4376"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -45,7 +45,7 @@
    </tr></table>
 </div>
 
-    <div class="related" role="navigation" aria-label="Related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -67,7 +67,7 @@
       </ul>
     </div>
 
-      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <div>
     <h3><a href="index.html">Table of Contents</a></h3>
@@ -91,11 +91,13 @@
 </li>
 <li><a class="reference internal" href="#creating-and-writing-to-athena-project-files">11.3.2. Creating and Writing to Athena Project Files</a><ul>
 <li><a class="reference internal" href="#larch.io.create_athena"><code class="docutils literal notranslate"><span class="pre">create_athena()</span></code></a></li>
-<li><a class="reference internal" href="#larch.io.AthenaProject"><code class="docutils literal notranslate"><span class="pre">AthenaProject</span></code></a></li>
+<li><a class="reference internal" href="#larch.io.AthenaProject"><code class="docutils literal notranslate"><span class="pre">AthenaProject</span></code></a><ul>
 <li><a class="reference internal" href="#larch.io.AthenaProject.add_group"><code class="docutils literal notranslate"><span class="pre">AthenaProject.add_group()</span></code></a></li>
 <li><a class="reference internal" href="#larch.io.AthenaProject.save"><code class="docutils literal notranslate"><span class="pre">AthenaProject.save()</span></code></a></li>
 <li><a class="reference internal" href="#larch.io.AthenaProject.read"><code class="docutils literal notranslate"><span class="pre">AthenaProject.read()</span></code></a></li>
 <li><a class="reference internal" href="#larch.io.AthenaProject.as_group"><code class="docutils literal notranslate"><span class="pre">AthenaProject.as_group()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#converting-athena-project-files-to-hdf5">11.3.3. Converting Athena Project Files to HDF5</a><ul>
@@ -371,7 +373,7 @@ To override these array names, use a string with space or comma
 separating names for the arrays.</p></li>
 </ol>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">larch.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">xdi</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">larch.io</span> <span class="kn">import</span> <span class="n">xdi</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">fe3_data</span> <span class="o">=</span> <span class="n">read_xdi</span><span class="p">(</span><span class="s1">&#39;FeXAFS_Fe2O3.001&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">fe3_data</span><span class="o">.</span><span class="n">array_labels</span><span class="p">)</span>
 <span class="go">[&#39;energy&#39;, &#39;mutrans&#39;, &#39;i0&#39;]</span>
@@ -581,7 +583,7 @@ reading and writing.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="larch.io.AthenaProject">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">AthenaProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.AthenaProject" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">AthenaProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.AthenaProject" title="Link to this definition">¶</a></dt>
 <dd><p>A representation of an Athena Project File</p>
 </dd></dl>
 
@@ -997,7 +999,7 @@ If left None, all other symbols will be imported.</p></li>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="Related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -1020,7 +1022,7 @@ If left None, all other symbols will be imported.</p></li>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     </div>
   </body>
 </html>
