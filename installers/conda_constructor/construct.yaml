@@ -1,5 +1,5 @@
 name:  xraylarch
-version: 2025-02
+version: 2025-03
 
 channels:
     - https://conda.anaconda.org/conda-forge/
@@ -35,7 +35,6 @@ specs:
     - charset-normalizer
     - pillow>=10
     - pyyaml
-    - tomli_w
     - dill
     - pywin32          # [win]
     - patchelf         # [linux]
