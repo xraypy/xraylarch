@@ -101,8 +101,6 @@ def get_feff_pathinfo(folder):
                 elems.append(ipot)
                 r, x, y, z, beta, eta = [float(words[i]) for i in (5, 0, 1, 2, 6, 7)]
                 pgeom.append((atname, ipot, r, x, y, z, beta, eta))
-                if j == nleg:
-                    pgeom.insert(0, (atname, ipot, r, x, y, z, beta, eta))
             if index in paths:
                 paths[index].append(elems)
                 geoms[index] = pgeom
