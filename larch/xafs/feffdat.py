@@ -43,6 +43,8 @@ class FeffDatFile(Group):
     def __init__(self, filename=None,  **kws):
         kwargs = dict(name='feff.dat: %s' % filename)
         kwargs.update(kws)
+        self.__rmass = None
+        self.__geometry = None
         Group.__init__(self,  **kwargs)
         if filename not in ('', None) and Path(filename).exists():
             self._read(filename)
@@ -81,10 +83,46 @@ class FeffDatFile(Group):
         return self.__rmass
 
     @rmass.setter
-    def rmass(self, val):  pass
+    def rmass(self, val):
+        pass
+
+    @property
+    def geometry(self):
+        """path geometry -- more complete than 'geom', closing matching `geometry`
+           from feffutils and get_feff_pathinfo, except without 'eta'
+        """
+        if not hasattr(self, '_geometry'):
+            self.__geometry = None
+        if self.__geometry is None:
+            self.__geometry = []
+            pts, atoms = [], []
+            for atsym, iz, ipot, amass, x, y, z in self.geom:
+                pts.append(np.array([float(x), float(y), float(z)]))
+                atoms.append([atsym, ipot, float(x), float(y), float(z)])
+            pts.append(pts[0])
+            pts.append(pts[1])
+            atoms.append(atoms[0])
+            atoms.append(atoms[1])
+
+        for i in range(1, len(pts)-1):
+            p0 = pts[i-1]
+            p1 = pts[i+0]
+            p2 = pts[i+1]
+            a = p1 - p0
+            b = p2 - p1
+            dist = float(np.linalg.norm(pts[i]-pts[i-1]))
+            beta = float(np.acos(np.dot(a, b) / np.sqrt((np.dot(a, a) * np.dot(b, b))))*180/np.pi)
+            sym, ipot, x, y, z = atoms[i]
+            self.__geometry.append( (sym, ipot, dist, x, y, z, beta, 0.0))
+        return self.__geometry
+
+    @geometry.setter
+    def geometry(self, val):
+        pass
 
     def _set_from_dict(self, **kws):
         self.__rmass = None
+        self.__geometry = None
         for key, val in kws.items():
             if key  == 'rmass':
                 continue
@@ -186,7 +224,7 @@ class FeffDatFile(Group):
                     self.degen, self.__reff__, self.rnorman, self.edge = w
                 elif pcounter > 2:
                     words = line.split()
-                    xyz = ["%7.4f" % float(x) for x in words[:3]]
+                    xyz = ["%8.5f" % float(x) for x in words[:3]]
                     ipot = int(words[3])
                     iz   = int(words[4])
                     if len(words) > 5:
@@ -213,7 +251,7 @@ class FeffDatFile(Group):
         self.pha = data[1] + data[3]
         self.amp = data[2] * data[4]
         self.__rmass = None  # reduced mass of path
-
+        self.__geometry = None  # path geometry list [atom, dist, angle]
 
 class FeffPathGroup(Group):
     def __init__(self, filename=None, label='', feffrun='', s02=None, degen=None,
@@ -341,7 +379,6 @@ class FeffPathGroup(Group):
         newpath.__setstate__(self.__getstate__())
         return newpath
 
-
     @property
     def reff(self): return self._feffdat.reff
 
@@ -360,8 +397,13 @@ class FeffPathGroup(Group):
     @rmass.setter
     def rmass(self, val):  pass
 
+
+    @property
+    def geometry(self):
+        return self._feffdat.geometry
+
     def __repr__(self):
-        return f'<FeffPath Group label={self.label:s}, filename={self.filename:s}, use={self.use}>'
+        return f'<FeffPath Group label={self.label:s}, filename={self.filename}, use={self.use}>'
 
     def create_path_params(self, params=None, dataset=None):
         """
