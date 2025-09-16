@@ -294,9 +294,9 @@ class FeffResultsPanel(wx.Panel):
 
                 for fp in self.feffresult.paths:
                     if fname == fp.filename:
+                        alist = []
                         for i, px in enumerate(fp.geometry):
                             at, ipot, r, x, y, z, beta, eta = px
-                            if i == 0: r = 0
                             t = f'{at:4s}  {ipot:3d}  {x:9.4f} {y:9.4f} {z:9.4f} {beta:9.4f} {eta:9.4f} {r:9.4f}'
                             out.append(t)
         if show:
