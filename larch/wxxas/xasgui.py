@@ -1070,7 +1070,8 @@ class LarixFrame(wx.Frame):
             ExceptionPopup(self, title, message)
             return
 
-        LoadSessionDialog(self, _session, path, self.controller).Show()
+        loader = LoadSessionDialog(self, _session, path, self.controller)
+        loader.Show()
         fpath = Path(path).absolute()
         fname = fpath.name
         self.controller.set_session_name(fname)
@@ -1079,6 +1080,8 @@ class LarixFrame(wx.Frame):
         if self.controller.chdir_on_fileopen() and len(fdir) > 0:
             os.chdir(fdir)
             self.controller.set_workdir()
+        wx.CallAfter(loader.Raise)
+
 
     def onSaveSessionAs(self, evt=None):
         groups = self.controller.filelist.GetItems()
