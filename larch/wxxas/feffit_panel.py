@@ -16,7 +16,7 @@ np.seterr(all='ignore')
 
 import wx
 import wx.lib.scrolledpanel as scrolled
-
+import wx.grid as wxgrid
 import wx.dataview as dv
 
 from pyshortcuts import uname, fix_varname, fix_filename, gformat
@@ -43,7 +43,7 @@ from larch.wxlib import (ReportFrame, CSVFrame, BitmapButton, FloatCtrl, FloatSp
                          CEN, RIGHT, LEFT, FRAMESTYLE, Font, FONTSIZE,
                          GUI_COLORS, set_color, FONTSIZE_FW, FileSave,
                          FileOpen, flatnotebook, EditableListBox, Popup,
-                         ExceptionPopup)
+                         ExceptionPopup, DataTableGrid)
 
 from larch.wxlib.parameter import ParameterWidgets
 from larch.wxlib.plotter import last_cursor_pos
@@ -582,7 +582,7 @@ class FeffitParamsPanel(wx.Panel):
 class FeffPathPanel(wx.Panel):
     """Feff Path """
     def __init__(self, parent, feffit_panel, filename, title, user_label,
-                 geomstr, absorber, shell, reff, nleg, degen,
+                 geomstr, geometry, absorber, shell, reff, nleg, degen,
                  par_amp, par_e0, par_delr, par_sigma2, par_third, par_ei):
 
         self.parent = parent
@@ -593,7 +593,7 @@ class FeffPathPanel(wx.Panel):
 
         wx.Panel.__init__(self, parent, -1, size=(550, 250))
         self.SetFont(Font(FONTSIZE))
-        panel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LEFT)
+        panel = GridPanel(self, pad=2, itemstyle=LEFT)
 
         self.fullpath = filename
         pfile = Path(filename).absolute()
@@ -605,7 +605,6 @@ class FeffPathPanel(wx.Panel):
         self.nleg = nleg
         self.reff = reff
         self.geomstr = geomstr
-        # self.geometry = geometry
 
         def SLabel(label, size=(80, -1), **kws):
             return  SimpleText(panel, label, size=size, style=LEFT, **kws)
@@ -618,9 +617,9 @@ class FeffPathPanel(wx.Panel):
                            ('sigma2', par_sigma2),
                            ('third',  par_third),
                            ('ei',  par_ei)):
-            self.wids[name] = wx.TextCtrl(panel, -1, size=(250, -1),
+            self.wids[name] = wx.TextCtrl(panel, -1, size=(225, -1),
                                           value=expr, style=wx.TE_PROCESS_ENTER)
-            wids[name+'_val'] = SimpleText(panel, '', size=(150, -1), style=LEFT)
+            wids[name+'_val'] = SimpleText(panel, '', size=(125, -1), style=LEFT)
 
         wids['use'] = Check(panel, default=True, label='Use in Fit?', size=(100, -1))
         wids['del'] = Button(panel, 'Remove This Path', size=(150, -1),
@@ -632,11 +631,31 @@ class FeffPathPanel(wx.Panel):
                  5: 'Quadruple'}.get(nleg, f'{nleg-1:d}-atom')
         scatt = scatt + ' Scattering'
 
-
         title1 = f'{dirname:s}: {feffdat_file:s}  {absorber:s} {shell:s} edge'
-        title2 = f'Reff={reff:.4f},  Degen={degen:.1f}, {scatt:s}: {geomstr:s}'
+        title2 = f'Reff={reff:.4f},  Degen={degen:.1f}, {scatt:s}'
 
-        panel.Add(SLabel(title1, size=(375, -1), colour=GUI_COLORS.title_blue),
+        wids['pathgeom'] = DataTableGrid(panel, nrows=len(geometry),  rowlabelsize=30,
+                                   collabels=['length(A)', 'Atom', 'Angle(deg)'],
+                                   datatypes=['str', 'str', 'str'],
+                                   colsizes=[80, 50, 80],
+                                   defaults=['', '', ''], cornerlabel='leg')
+
+
+        gdata = []
+        for sym, ipot, dist, x, y, z, beta, eta in geometry:
+            scat = f'[{sym}]' if  ipot==0 else sym
+            gdata.append([f'{dist:6.4f}', scat, f'{beta:4.0f}'])
+
+        for icol in range(3):
+            attr = wxgrid.GridCellAttr()
+            attr.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
+            wids['pathgeom'].SetColAttr(icol, attr)
+
+        wids['pathgeom'].table.data = gdata
+        wids['pathgeom'].table.View.Refresh()
+        geom_title = f'Path Geometry: ([{absorber}] = absober)'
+
+        panel.Add(SLabel(title1, size=(325, -1), colour=GUI_COLORS.title_blue),
                   dcol=2,  style=wx.ALIGN_LEFT, newrow=True)
         panel.Add(wids['use'])
         panel.Add(wids['del'])
@@ -651,6 +670,8 @@ class FeffPathPanel(wx.Panel):
         panel.AddMany((SLabel('sigma2'),    wids['sigma2'], wids['sigma2_val']),newrow=True)
         panel.AddMany((SLabel('third'),     wids['third'],  wids['third_val']), newrow=True)
         panel.AddMany((SLabel('Eimag'),     wids['ei'],     wids['ei_val']),    newrow=True)
+        panel.Add(SLabel(geom_title, size=(245, -1)), irow=3, icol=3, dcol=1, style=wx.ALIGN_LEFT)
+        panel.Add(wids['pathgeom'], irow=4, icol=3, dcol=3, drow=7)
         panel.pack()
         sizer= wx.BoxSizer(wx.VERTICAL)
         sizer.Add(panel, 1, LEFT|wx.GROW|wx.ALL, 2)
@@ -703,8 +724,8 @@ class FeffPathPanel(wx.Panel):
             try:
                 value = _eval.eval(expr, show_errors=False, raise_errors=False)
                 if value is not None:
-                    value = gformat(value, 11)
-                    self.wids[name + '_val'].SetLabel(f'= {value}')
+                    value = gformat(value, 10)
+                    self.wids[name + '_val'].SetLabel(f'={value}')
             except:
                 result = False
 
@@ -771,7 +792,20 @@ class FeffitPanel(TaskPanel):
         if dgroup is None:
             return
 
-        try:
+        fit_hist = getattr(dgroup, 'feffit_history', None)
+        print("Panel Exposed ", dgroup, fit_hist)
+        params, paths = None, None
+        if isinstance(fit_hist, list):
+            fit_ret = fit_hist[0]
+            try:
+                dset = fit_ret.datasets[0]
+                params = fit_ret.params
+                paths = dset.paths
+            except Exception:
+                pass
+            print('Feffit History: nfit_hist, npaths, nparams = ', len(fit_hist), len(paths), len(params))
+
+        if True: # try:
             pargroup = self.get_paramgroup()
             self.params_panel.update()
             fname = self.controller.filelist.GetStringSelection()
@@ -780,7 +814,7 @@ class FeffitPanel(TaskPanel):
             if not hasattr(dgroup, 'chi'):
                 self.parent.process_exafs(dgroup)
             self.fill_form(dgroup)
-        except:
+        else: # except:
             print("Cannot Fill feffit panel from group ")
 
     def build_display(self):
@@ -942,8 +976,7 @@ class FeffitPanel(TaskPanel):
 
         if rmin < (rbkg-0.025) and not self.rmin_warned:
             self.rmin_warned = True
-            Popup(self,
-                  f"""Rmin={rmin:.3f} Ang is below Rbkg={rbkg:.3f} Ang.
+            Popup(self, f"""Rmin={rmin:.3f} Ang is below Rbkg={rbkg:.3f} Ang.
 
                   This should be done with caution.""",
                   "Warning: Rmin < Rbkg",
@@ -1097,6 +1130,7 @@ class FeffitPanel(TaskPanel):
         except:
             has_fit_hist = getattr(self.larch.symtable, '_feffit_dataset', None) is not None
         self.wids['show_results'].Enable(has_fit_hist)
+
         feffpaths = getattr(self.larch.symtable, '_feffpaths', None)
         if feffpaths is not None:
             self.reset_paths()
@@ -1383,6 +1417,7 @@ class FeffitPanel(TaskPanel):
             raise ValueError("cannot get feff cache ")
 
         geomstre = None
+        # print(f"Add Path {pathinfo=}, {feffpath=}")
         if pathinfo is not None:
             absorber = pathinfo.absorber
             shell = pathinfo.shell
@@ -1452,10 +1487,12 @@ class FeffitPanel(TaskPanel):
         if len(par_sigma2) < 1:
             par_sigma2 = f'sigma2_{ptitle}'
 
-        pathpanel = FeffPathPanel(self.paths_nb, self, filename, title,
-                                  user_label, geomstr, absorber, shell,
-                                  reff, nleg, degen, par_amp, par_e0,
-                                  par_delr, par_sigma2, par_third, par_ei)
+        pathpanel = FeffPathPanel(self.paths_nb, self, filename,
+                                  title, user_label, geomstr,
+                                  feffpath.geometry, absorber, shell, reff,
+                                  nleg, degen, par_amp, par_e0,
+                                  par_delr, par_sigma2, par_third,
+                                  par_ei)
 
         self.paths_nb.AddPage(pathpanel, f' {title:s} ', True)
 
@@ -1472,7 +1509,7 @@ class FeffitPanel(TaskPanel):
             if Path(filename).exists():
                 self.larch_eval(COMMANDS['cache_path'].format(**pdat))
             else:
-                print(f"cannot file Feff data file '{filename}'")
+                print(f"cannot find file Feff data file '{filename}'")
 
         self.larch_eval(COMMANDS['use_path'].format(**pdat))
         if resize:
