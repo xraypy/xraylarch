@@ -170,13 +170,14 @@ class DictFrame(wx.Frame):
 class DataTable(wxgrid.GridTableBase):
     def __init__(self, nrows=NROWS, collabels=['a', 'b'],
                  datatypes=['str', 'float:12,4'],
-                 defaults=[None, None]):
+                 defaults=[None, None], cornerlabel=''):
 
         wxgrid.GridTableBase.__init__(self)
 
         self.ncols = len(collabels)
         self.nrows = nrows
         self.colLabels = collabels
+        self.cornerlabel = cornerlabel
         self.dataTypes = []
         for i, d in enumerate(datatypes):
             if d.lower().startswith('str'):
@@ -214,6 +215,12 @@ class DataTable(wxgrid.GridTableBase):
     def GetRowLabelValue(self, row):
         return " %d" % (row+1)
 
+    def SetCornerLabelValue(self, value):
+        self.cornerlabel = value
+
+    def GetCornerLabelValue(self):
+        return self.cornerlabel
+
     def GetTypeName(self, row, col):
         return self.dataTypes[col]
 
@@ -240,12 +247,13 @@ class DataTableGrid(wxgrid.Grid):
                  collabels=['a', 'b'],
                  datatypes=['str', 'float:12,4'],
                  defaults=['', ''],
-                 colsizes=[200, 100]):
+                 colsizes=[200, 100], cornerlabel=''):
 
         wxgrid.Grid.__init__(self, parent, -1)
 
         self.table = DataTable(nrows=nrows, collabels=collabels,
-                                datatypes=datatypes, defaults=defaults)
+                                datatypes=datatypes, defaults=defaults,
+                                cornerlabel=cornerlabel)
 
         self.SetTable(self.table, True)
         self.SetRowLabelSize(rowlabelsize)
@@ -253,10 +261,12 @@ class DataTableGrid(wxgrid.Grid):
         self.EnableDragRowSize()
         self.EnableDragColSize()
         self.AutoSizeColumns(False)
+        self.SetCornerLabelValue(cornerlabel)
         for i, csize in enumerate(colsizes):
             self.SetColSize(i, csize)
 
         self.Bind(wxgrid.EVT_GRID_CELL_LEFT_DCLICK, self.OnLeftDClick)
+
 
     def OnLeftDClick(self, evt):
         if self.CanEnableCellControl():
