@@ -113,7 +113,7 @@ class FeffDatFile(Group):
             dist = float(np.linalg.norm(pts[i]-pts[i-1]))
             beta = float(np.acos(np.dot(a, b) / np.sqrt((np.dot(a, a) * np.dot(b, b))))*180/np.pi)
             sym, ipot, x, y, z = atoms[i]
-            self.__geometry.append( (sym, ipot, dist, x, y, z, beta, 0.0))
+            self.__geometry.append((sym, ipot, dist, x, y, z, beta, 0.0))
         return self.__geometry
 
     @geometry.setter
@@ -401,6 +401,10 @@ class FeffPathGroup(Group):
     @property
     def geometry(self):
         return self._feffdat.geometry
+
+    @geometry.setter
+    def geometry(self, val):
+        pass
 
     def __repr__(self):
         return f'<FeffPath Group label={self.label:s}, filename={self.filename}, use={self.use}>'
