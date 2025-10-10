@@ -931,9 +931,17 @@ class PrePeakPanel(TaskPanel):
             self.ensure_xas_processed(dgroup)
             self.fill_form(dgroup)
         except:
+            dgroup = None
             pass # print(" Cannot Fill prepeak panel from group ")
+        pkfit = None
+        if dgroup is not None:
+            prepeaks = getattr(dgroup, 'prepeaks', None)
+            if prepeaks is not None:
+                pkfit = getattr(prepeaks, 'fit_history', [None])[0]
 
-        pkfit = getattr(self.larch.symtable, 'peakresult', None)
+        if pkfit is None:
+            pkfit = getattr(self.larch.symtable, 'peakresult', None)
+
         if pkfit is not None:
             self.showresults_btn.Enable()
             self.use_modelresult(pkfit)
