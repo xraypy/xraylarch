@@ -1188,7 +1188,7 @@ before clearing"""
                 selected.remove(self.current_filename)
                 selected.append(res.newname)
 
-            groupname = self.controller.file_filgroups.pop(fname)
+            groupname = self.controller.file_groups.pop(fname)
             self.controller.sync_xasgroups()
             self.controller.file_groups[res.newname] = groupname
             self.controller.filelist.rename_item(self.current_filename, res.newname)
