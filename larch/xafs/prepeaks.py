@@ -351,7 +351,9 @@ def prepeaks_fit(group, peakmodel, params, user_options=None, _larch=None):
 
     pkfit.result = peakmodel.fit(prepeaks.norm, params=params, x=prepeaks.energy,
                                  weights=1.0/norm_std)
-
+    pkfit.ydata = prepeaks.norm
+    pkfit.xdata = prepeaks.energy
+    pkfit.best_fit = pkfit.result.best_fit[:]
     pkfit.ycomps = peakmodel.eval_components(params=pkfit.result.params, x=prepeaks.energy)
     pkfit.label = 'Fit %i' % (1+len(prepeaks.fit_history))
 
