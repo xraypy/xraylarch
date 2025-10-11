@@ -5,11 +5,11 @@
 import sys
 import numpy as np
 from lmfit.model import ModelResult
-from larch.utils  import gformat, getfloat_attr
+from larch.utils import gformat, getfloat_attr
 
 def export_modelresult(result, filename='fitresult.xdi',
                        datafile=None, ydata=None, yerr=None,
-                       **kwargs):
+                       xdata=None, label=None, **kwargs):
     """
     export an lmfit ModelResult to an XDI data file
 
@@ -37,22 +37,24 @@ def export_modelresult(result, filename='fitresult.xdi',
     header = ["XDI/1.1  Lmfit Result File"]
     hadd = header.append
     if datafile is not None:
-        hadd(" Datafile.name:  %s " % datafile)
+        hadd(f" Datafile.name:  {datafile}")
     else:
         hadd(" Datafile.name: <unknnown>")
+    if label is not None:
+        hadd(f" Fit.label:  {label}")
 
     ndata = len(result.best_fit)
     columns = {}
-    for aname in result.model.independent_vars:
-        val = kwargs.get(aname, None)
-        if val is not None and len(val) == ndata:
-            columns[aname] = val
+    if xdata is None:
+        xdata = result.userkws['x']
+    if ydata is None:
+        ydata = result.data
+    if yerr is None:
+        yerr = np.ones(len(ydata), dtype='float64')
 
-    if ydata is not None:
-        columns['ydata'] = ydata
-
-    if yerr is not None:
-        columns['yerr'] = yerr
+    columns['xdata'] = xdata
+    columns['ydata'] = ydata
+    columns['yerr'] = yerr
 
     columns['best_fit'] = result.best_fit
     columns['init_fit'] = result.init_fit
@@ -68,44 +70,32 @@ def export_modelresult(result, filename='fitresult.xdi',
 
     clabel = []
     for i, cname in enumerate(columns):
-        hadd(" Column.%i:  %s" % (i+1, cname))
+        hadd(f" Column.{i+1}:  {cname}")
         clabel.append('%15s ' % cname)
-
-    hadd("Fit.Statistics: Start here")
-    hadd(" Fit.model_name:          %s" % result.model.name)
-    hadd(" Fit.method:              %s" % result.method)
-    hadd(" Fit.n_function_evals:    %s" % getfloat_attr(result, 'nfev'))
-    hadd(" Fit.n_data_points:       %s" % getfloat_attr(result, 'ndata'))
-    hadd(" Fit.n_variables:         %s" % getfloat_attr(result, 'nvarys'))
-    hadd(" Fit.chi_square:          %s" % getfloat_attr(result, 'chisqr', length=11))
-    hadd(" Fit.reduced_chi_square:  %s" % getfloat_attr(result, 'redchi', length=11))
-    hadd(" Fit.akaike_info_crit:    %s" % getfloat_attr(result, 'aic', length=11))
-    hadd(" Fit.bayesian_info_crit:  %s" % getfloat_attr(result, 'bic', length=11))
 
     hadd("Param.Statistics: Start here")
     namelen = max([len(p) for p in result.params])
     for name, par in result.params.items():
         space = ' '*(namelen+1-len(name))
-        nout = "Param.%s:%s" % (name, space)
+        nout = f"Param.{name}:{space}"
         inval = '(init= ?)'
         if par.init_value is not None:
-            inval = '(init=% .7g)' % par.init_value
+            inval = f'(init={par.init_value: .7g})'
 
         try:
             sval = gformat(par.value)
         except (TypeError, ValueError):
             sval = 'Non Numeric Value?'
         if par.stderr is not None:
-            serr = gformat(par.stderr, length=9)
-            sval = '%s +/-%s' % (sval, serr)
+            sval = f"{sval} +/- {gformat(par.stderr, length=9)}"
 
         if par.vary:
-            bounds = "[%s: %s]" % (gformat(par.min), gformat(par.max))
-            hadd(" %s %s %s %s" % (nout, sval, bounds, inval))
+            bounds = f"[{gformat(par.min)}: {gformat(par.max)}]"
+            hadd(f" {nout} {sval} {bounds} {inval}")
         elif par.expr is not None:
-            hadd(" %s %s  == '%s'" % (nout, sval, par.expr))
+            hadd(f" {nout} {sval} == '{par.expr}'")
         else:
-            hadd(" %s % .7g (fixed)" % (nout, par.value))
+            hadd(f" {nout} {par.value: .7g} (fixed)")
 
     hadd("////////  Fit Report ////////")
     for r in result.fit_report().split('\n'):
@@ -113,10 +103,6 @@ def export_modelresult(result, filename='fitresult.xdi',
     hadd("-" * 77)
     hadd("".join(clabel)[1:])
     header[0] = "XDI/1.1  Lmfit Result File  %i header lines" % (len(header))
-    dtable = []
-    for key, dat in columns.items():
-        dtable.append(dat)
-
     dtable = np.array(dtable).transpose()
     datatable = []
     for i in range(ndata):
