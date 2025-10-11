@@ -1092,7 +1092,7 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
     e0 = dgroup.e0
 
     yplot = getattr(dgroup, 'yplot', getattr(dgroup, 'ydat', None))
-    xplot = getattr(dgroup, 'xplot', getattr(dgroup, 'x', None))
+    xplot = getattr(dgroup, 'xplot', getattr(dgroup, 'xdat', None))
     px0, px1, py0, py1 = extend_plotrange(xplot, yplot, e0=e0,
                                           xmin=ppeak.emin, xmax=ppeak.emax)
     title = "pre_edge baseline\n %s" % dgroup.filename
@@ -1156,7 +1156,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     if pkfit is None:
         raise ValueError('Group needs prepeaks.fit_history or init_fit')
 
-    opts = pkfit.user_optionsXF
+    opts = pkfit.user_options
     xplot = 1.0*pkfit.energy
     yplot = 1.0*pkfit.norm
 
@@ -1177,8 +1177,8 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
         for label, ycomp in ycomps.items():
             if label in opts['bkg_components']:
                 baseline += ycomp
-
-    plotopts = dict(title=f'{dgroup.filename}\npre-edge peak: {pkfit.label}',
+    label = getattr(pkfit, 'label', '')
+    plotopts = dict(title=f'{dgroup.filename}\npre-edge peak: {label}',
                     xlabel='Energy (eV)', ylabel=opts['array_desc'],
                     delay_draw=True, show_legend=True, style='solid',
                     marker='no symbol')
