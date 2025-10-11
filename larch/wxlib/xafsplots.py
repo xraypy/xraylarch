@@ -1044,16 +1044,24 @@ def plot_paths_r(dataset, offset=-0.25, rmax=None, show_mag=True,
     redraw(win=win, xmax=rmax,_larch=_larch)
 
 
-def extend_plotrange(x, y, xmin=None, xmax=None, extend=0.10):
+def extend_plotrange(x, y, e0=0, xmin=None, xmax=None, extend=0.10):
     """return plot limits to extend a plot range for x, y pairs"""
     xeps = min(diff(x)) / 5.
     if xmin is None:
         xmin = min(x)
+    else:
+        if xmin < min(x) and e0 > min(x):
+            xmin = xmin + e0
+        if xmin < min(x):
+            xmin = min(x)
     if xmax is None:
         xmax = max(x)
-
-    xmin = max(min(x), xmin-5)
-    xmax = min(max(x), xmax+5)
+    else:
+        if xmax < min(x) and e0 > min(x):
+            xmax = xmax + e0
+        if xmax > max(x):
+            xmax = max(x)
+    xmax = min(max(x), xmax)
 
     i0 = index_of(x, xmin + xeps)
     i1 = index_nearest(x, xmax + xeps) + 1
@@ -1062,7 +1070,6 @@ def extend_plotrange(x, y, xmin=None, xmax=None, extend=0.10):
     xrange = max(xspan) - min(xspan)
     yspan = y[i0:i1]
     yrange = max(yspan) - min(yspan)
-
     return  (min(xspan) - extend * xrange,
              max(xspan) + extend * xrange,
              min(yspan) - extend * yrange,
@@ -1082,13 +1089,12 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
         raise ValueError('Group needs prepeaks')
 
     ppeak = dgroup.prepeaks
+    e0 = dgroup.e0
 
     yplot = getattr(dgroup, 'yplot', getattr(dgroup, 'ydat', None))
     xplot = getattr(dgroup, 'xplot', getattr(dgroup, 'x', None))
-
-    px0, px1, py0, py1 = extend_plotrange(xplot, yplot,
+    px0, px1, py0, py1 = extend_plotrange(xplot, yplot, e0=e0,
                                           xmin=ppeak.emin, xmax=ppeak.emax)
-
     title = "pre_edge baseline\n %s" % dgroup.filename
 
     popts = dict(xmin=px0, xmax=px1, ymin=py0, ymax=py1, title=title,
@@ -1150,7 +1156,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     if pkfit is None:
         raise ValueError('Group needs prepeaks.fit_history or init_fit')
 
-    opts = pkfit.user_options
+    opts = pkfit.user_optionsXF
     xplot = 1.0*pkfit.energy
     yplot = 1.0*pkfit.norm
 
@@ -1172,7 +1178,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
             if label in opts['bkg_components']:
                 baseline += ycomp
 
-    plotopts = dict(title='%s:\npre-edge peak' % dgroup.filename,
+    plotopts = dict(title=f'{dgroup.filename}\npre-edge peak: {pkfit.label}',
                     xlabel='Energy (eV)', ylabel=opts['array_desc'],
                     delay_draw=True, show_legend=True, style='solid',
                     marker='no symbol')
@@ -1184,11 +1190,11 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
         xplot_full = 1.0*xplot
         plotopts['ylabel'] = '%s-baseline' % plotopts['ylabel']
 
-    dx0, dx1, dy0, dy1 = extend_plotrange(xplot_full, yplot_full,
+    dx0, dx1, dy0, dy1 = extend_plotrange(xplot_full, yplot_full, e0=dgroup.e0,
                                           xmin=opts['emin'], xmax=opts['emax'])
-    _1, _2, fy0, fy1 = extend_plotrange(xplot, yfit,
+    _1, _2, fy0, fy1 = extend_plotrange(xplot, yfit, e0=dgroup.e0,
                                           xmin=opts['emin'], xmax=opts['emax'])
-
+    # print("PREPEAKS RANGE ", dx0, dx1, dy0, dy1, fy0, fy1)
     ncolor = 0
     popts = {'win': win, '_larch': _larch}
     plotopts.update(popts)
@@ -1202,7 +1208,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
         dymin -= 0.05 * (dymax - dymin)
     else:
         _plot(xplot_full, yplot_full, new=True, label='data',
-              color=LineColors[0], **plotopts)
+        color=LineColors[0], **plotopts)
         _oplot(xplot, yfit, label=ylabel, color=LineColors[1], **plotopts)
         ncolor = 1
 
@@ -1514,9 +1520,9 @@ def plot_curvefit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
         yfit -= baseline
         plotopts['ylabel'] = '%s-baseline' % plotopts['ylabel']
 
-    dx0, dx1, dy0, dy1 = extend_plotrange(xplot_full, yplot_full,
+    dx0, dx1, dy0, dy1 = extend_plotrange(xplot_full, yplot_full, e0=dgroup.e0,
                                           xmin=opts['xmin'], xmax=opts['xmax'])
-    _1, _2, fy0, fy1 = extend_plotrange(xplot, yfit,
+    _1, _2, fy0, fy1 = extend_plotrange(xplot, yfit, e0=dgroup.e0,
                                           xmin=opts['xmin'], xmax=opts['xmax'])
 
     ncolor = 0
