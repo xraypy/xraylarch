@@ -453,55 +453,73 @@ class PrePeakFitResultFrame(wx.Frame):
                         default_file=deffile, wildcard=wcards)
         if path is None:
             return
+
         if Path(path).exists() and uname != 'darwin':  # darwin prompts in FileSave!
             if wx.ID_YES != Popup(self,
                                   "Overwrite existing Statistics File?",
                                   "Overwrite existing file?", style=wx.YES_NO):
                 return
 
-        ppeaks_tmpl = self.datasets[fnames[0]].prepeaks
-        res0 = ppeaks_tmpl.fit_history[0].result
-        param_names = list(reversed(res0.params.keys()))
-        user_opts = ppeaks_tmpl.user_options
-        model_desc = self.get_model_desc(res0.model).replace('\n', ' ')
+
         out = ['# Pre-edge Peak Fit Report %s' % time.ctime(),
-               '# Fitted Array name: %s' %  user_opts['array_name'],
-               '# Model form: %s' % model_desc,
-               '# Baseline form: %s' % user_opts['baseline_form'],
-               '# Energy fit range: [%f, %f]' % (user_opts['emin'], user_opts['emax']),
+               '# For ful details, each fit must be saved individually',
                '#--------------------']
 
-        labels = [('Data Set' + ' '*25)[:25], 'Group name', 'n_data',
-                 'n_varys', 'chi-square', 'reduced_chi-square',
-                 'akaike_info', 'bayesian_info', 'R^2']
+
+        param_names = []
+        for name, dgroup in self.datasets.items():
+            if not hasattr(dgroup, 'prepeaks'):
+                continue
+            for pkfit in getattr(dgroup.prepeaks, 'fit_history', []):
+                try:
+                    xparams = pkfit.result.params.keys()
+                except Expcetion:
+                    xparams = []
+                for pname in reversed(xparams):
+                    if pname not in param_names:
+                        param_names.append(pname)
+
+        labels = [('Data Set' + ' '*25)[:25], 'Group name', 'Fit Label',
+                 'n_data', 'n_varys', 'chi-square',
+                 'reduced_chi-square', 'akaike_info', 'bayesian_info',
+                 'R^2']
 
         for pname in param_names:
             labels.append(pname)
             labels.append(pname+'_stderr')
         out.append('# %s' % (', '.join(labels)))
         for name, dgroup in self.datasets.items():
+            print(name, dgroup, hasattr(dgroup, 'prepeaks'))
             if not hasattr(dgroup, 'prepeaks'):
                 continue
-            try:
-                pkfit = dgroup.prepeaks.fit_history[0]
-            except:
-                continue
-            result = pkfit.result
-            label = dgroup.filename
-            if len(label) < 25:
-                label = (label + ' '*25)[:25]
-            dat = [label, dgroup.groupname,
-                   '%d' % result.ndata, '%d' % result.nvarys]
-            for attr in ('chisqr', 'redchi', 'aic', 'bic', 'rsquared'):
-                dat.append(gformat(getattr(result, attr), 11))
-            for pname in param_names:
-                val = stderr = 0
-                if pname in result.params:
-                    par = result.params[pname]
-                    dat.append(gformat(par.value, 11))
-                    stderr = gformat(par.stderr, 11) if par.stderr is not None else 'nan'
+            i = 0
+            print(' --- ', getattr(dgroup.prepeaks, 'fit_history', []))
+            for pkfit in getattr(dgroup.prepeaks, 'fit_history', []):
+                i += 1
+                print(i, pkfit)
+                try:
+                    xparams = pkfit.result.params.keys()
+                except Expcetion:
+                    print('   no params')
+                    continue
+
+                result = pkfit.result
+                label = getattr(pkfit, 'label', f'fit #{i}')
+                dat = [dgroup.filename, dgroup.groupname, label,
+                        f'{result.ndata}', f'{result.nvarys}']
+                for attr in ('chisqr', 'redchi', 'aic', 'bic', 'rsquared'):
+                    dat.append(gformat(getattr(result, attr), 11))
+                for pname in param_names:
+                    val = stderr = 'unused'
+                    if pname in result.params:
+                        par = result.params[pname]
+                        val = gformat(par.value, 11)
+                        stderr = 'nan'
+                        if par.stderr is not None:
+                            stderr = gformat(par.stderr, 11)
+                    dat.append(val)
                     dat.append(stderr)
-            out.append(', '.join(dat))
+                out.append(', '.join(dat))
         out.append('')
 
         with open(path, 'w', encoding=sys.getdefaultencoding()) as fh:
