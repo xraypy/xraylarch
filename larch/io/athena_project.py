@@ -827,12 +827,13 @@ class AthenaProject(object):
             this.athena_id = this.athena_params.id
             if use_hashkey:
                 oname = this.athena_params.id
-            is_xmu = bool(int(getattr(this.athena_params, 'is_xmu', 1.0)))
-            is_chi = bool(int(getattr(this.athena_params, 'is_chi', 0.0)))
+            is_xmu = bool(int(getattr(this.athena_params, 'is_xmu', 1)))
+            is_chi = bool(int(getattr(this.athena_params, 'is_chi', 0)))
+
             is_xmu = is_xmu and not is_chi
             for aname in ('is_xmudat', 'is_bkg', 'is_diff',
-                          'is_proj', 'is_pixel', 'is_rsp'):
-                val = bool(int(getattr(this.athena_params, aname, 0.0)))
+                          'is_pixel', 'is_rsp'):
+                val = bool(int(getattr(this.athena_params, aname, 0)))
                 is_xmu = is_xmu and not val
 
             if is_xmu and (do_preedge or do_bkg):
