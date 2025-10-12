@@ -81,7 +81,7 @@ FNB_STYLE |= flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
 LEFT = wx.ALIGN_LEFT
 CEN |=  wx.ALL
-FILE_WILDCARDS = "Data Files|*.0*;*.dat;*.DAT;*.xdi;*.txt;*.TXT;*.prj;*.sp*c;*.h*5;*.larix|All files (*.*)|*.*"
+FILE_WILDCARDS = "Data Files|*.dat;*.DAT;*.xdi;*.txt;*.TXT;*.prj;*.sp*c;*.h*5;*.larix;*.0*;*.1*;*.2*;*.3*;*.4*;*.5*;*.6*;*.7*;*.8*;*.9*|All files (*.*)|*.*"
 
 ICON_FILE = 'onecone.ico'
 LARIX_SIZE = (1050, 850)
@@ -1627,7 +1627,7 @@ before clearing"""
 
     def onReadAthenaProject_OK(self, path, namelist):
         """read groups from a list of groups from an athena project file"""
-        self.larch.eval("_prj = read_athena('{path:s}', do_fft=False, do_bkg=False)".format(path=path))
+        self.larch.eval(f"_prj = read_athena('{path}')")
 
         if self.controller.session_name in ('', None):
             self.controller.set_session_name(Path(path).name)
@@ -1664,7 +1664,6 @@ before clearing"""
             groups_added.append(gid)
 
         for gid in groups_added:
-            rgroup = gid
             dgroup = self.larch.symtable.get_group(gid)
 
             conf_xasnorm = dgroup.config.xasnorm
@@ -1677,7 +1676,10 @@ before clearing"""
             # norm
             for attr in ('e0', 'pre1', 'pre2', 'nnorm'):
                 if hasattr(abkg, attr):
-                    conf_xasnorm[attr] = float(getattr(abkg, attr))
+                    val = float(getattr(abkg, attr))
+                    conf_xasnorm[attr] = val
+                    if attr == 'e0':
+                        dgroup.e0 = val
 
             for attr, alt in (('norm1', 'nor1'), ('norm2', 'nor2'),
                               ('edge_step', 'step')):
@@ -1688,9 +1690,9 @@ before clearing"""
                 conf_xasnorm['auto_step'] = (a < 0.5)
 
             # bkg
-            for attr in ('e0', 'rbkg'):
+            for attr, oattr in (('e0', 'ek0'), ('rbkg', 'rbkg')):
                 if hasattr(abkg, attr):
-                    conf_exafs[attr] = float(getattr(abkg, attr))
+                    conf_exafs[oattr] = float(getattr(abkg, attr))
 
             for attr, alt in (('bkg_kmin', 'spl1'), ('bkg_kmax', 'spl2'),
                               ('bkg_kweight', 'kw'), ('bkg_clamplo', 'clamp1'),
