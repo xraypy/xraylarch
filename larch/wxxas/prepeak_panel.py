@@ -489,14 +489,12 @@ class PrePeakFitResultFrame(wx.Frame):
             labels.append(pname+'_stderr')
         out.append('# %s' % (', '.join(labels)))
         for name, dgroup in self.datasets.items():
-            print(name, dgroup, hasattr(dgroup, 'prepeaks'))
+            # print(name, dgroup, hasattr(dgroup, 'prepeaks'))
             if not hasattr(dgroup, 'prepeaks'):
                 continue
             i = 0
-            print(' --- ', getattr(dgroup.prepeaks, 'fit_history', []))
             for pkfit in getattr(dgroup.prepeaks, 'fit_history', []):
                 i += 1
-                print(i, pkfit)
                 try:
                     xparams = pkfit.result.params.keys()
                 except Expcetion:
