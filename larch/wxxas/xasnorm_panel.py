@@ -142,10 +142,10 @@ class XASNormPanel(TaskPanel):
                                       increment=0.05, value=0, size=(FSIZEBIG, -1),
                                       parent=e0_panel)
 
-        self.wids['auto_e0'] = Check(e0_panel, default=True, label='auto?',
-                                    action=self.onAuto_XASE0)
-        self.wids['show_e0'] = Check(e0_panel, default=True, label='show?',
-                                     action=self.onSet_XASE0)
+        self.wids['auto_e0'] = Check(e0_panel, default=defaults.get('auto_e0', True),
+                                    label='auto?', action=self.onAuto_XASE0)
+        self.wids['show_e0'] = Check(e0_panel, default=defaults.get('show_e0', True),
+                                     label='show?', action=self.onSet_XASE0)
 
         sx = wx.BoxSizer(wx.HORIZONTAL)
         sx.Add(xas_e0, 0, LEFT, 4)
@@ -158,8 +158,8 @@ class XASNormPanel(TaskPanel):
         xas_step = self.add_floatspin('step', action=self.onSet_XASStep, with_pin=False,
                                       min_val=-1000.0, max_val=1e7, digits=4, increment=0.05,
                                       value=0.1, size=(FSIZEBIG, -1), parent=step_panel)
-        self.wids['auto_step'] = Check(step_panel, default=True, label='auto?',
-                                       action=self.onAuto_XASStep)
+        self.wids['auto_step'] = Check(step_panel, default=defaults.get('auto_step', True),
+                                       label='auto?', action=self.onAuto_XASStep)
         sx = wx.BoxSizer(wx.HORIZONTAL)
         sx.Add(xas_step, 0, LEFT, 4)
         sx.Add(self.wids['auto_step'], 0, LEFT, 4)
@@ -168,10 +168,10 @@ class XASNormPanel(TaskPanel):
         # step rows
         nnorm_panel = wx.Panel(panel)
         self.wids['nnorm'] = Choice(nnorm_panel, choices=list(NNORM_CHOICES),
-                                    size=(150, -1), action=self.onNormMethod,
-                                    default=2)
-        self.wids['auto_nnorm'] = Check(nnorm_panel, default=True, label='auto?',
-                                    action=self.onAuto_NNORM)
+                                    size=(150, -1), action=self.onNormMethod)
+        self.wids['nnorm'].SetStringSelection(defaults.get('nnorm', 'linear'))
+        self.wids['auto_nnorm'] = Check(nnorm_panel, default=defaults.get('auto_nnorm', True),
+                                        label='auto?', action=self.onAuto_NNORM)
 
         sx = wx.BoxSizer(wx.HORIZONTAL)
         sx.Add(self.wids['nnorm'], 0, LEFT, 4)
@@ -183,10 +183,10 @@ class XASNormPanel(TaskPanel):
 
         self.wids['nvict'] = Choice(panel, choices=('0', '1', '2', '3'),
                                     size=(150, -1), action=self.onNormMethod,
-                                    default=0)
+                                    default=defaults.get('nvict', 0))
         self.wids['npre'] = Choice(panel, choices=list(PREEDGE_FORMS),
                                           size=(150, -1), action=self.onNormMethod)
-        self.wids['npre'].SetSelection(1)
+        self.wids['npre'].SetSelection(defaults.get('npre', 1))
 
 
         opts = {'size': (FSIZE, -1), 'digits': 2, 'increment': 5.0,
@@ -210,7 +210,7 @@ class XASNormPanel(TaskPanel):
         xas_norm1 = self.add_floatspin('norm1', value=defaults['norm1'], parent=nor_panel, **opts)
         xas_norm2 = self.add_floatspin('norm2', value=defaults['norm2'], parent=nor_panel, **opts)
 
-        self.wids['show_norm'] = Check(nor_panel, default=False, label='show?',
+        self.wids['show_norm'] = Check(nor_panel, default=defaults['show_e0'], label='show?',
                                        action=self.onSet_XASE0)
         sx = wx.BoxSizer(wx.HORIZONTAL)
         sx.Add(xas_norm1, 0, LEFT, 4)
@@ -218,7 +218,6 @@ class XASNormPanel(TaskPanel):
         sx.Add(xas_norm2, 0, LEFT, 4)
         sx.Add(self.wids['show_norm'], 0, LEFT, 4)
         pack(nor_panel, sx)
-
 
         opts = {'digits': 3, 'increment': 0.05, 'value': 0, 'size': (FSIZEBIG, -1)}
 
@@ -373,7 +372,12 @@ class XASNormPanel(TaskPanel):
                 if eref in (val, key):
                     self.wids['energy_ref'].SetStringSelection(key)
 
-            self.wids['e0'].SetValue(opts.get('e0', -1))
+            e0val = opts.get('e0', -1)
+            e0val = getattr(dgroup, 'e0', e0val)
+            if hasattr(dgroup, 'energy'):
+                if e0val < min(dgroup.energy) or e0val > max(dgroup.energy):
+                    e0val = -1
+            self.wids['e0'].SetValue(e0val)
             edge_step = opts.get('edge_step', 1.0)
             if opts['atsym'] == '?' and hasattr(dgroup, 'atsym'):
                 self.set_atom_edge(dgroup.atsym, getattr(dgroup, 'edge', 'K'))
@@ -396,6 +400,8 @@ class XASNormPanel(TaskPanel):
             self.wids['nvict'].SetStringSelection("%d" % opts['nvict'])
             self.wids['npre'].SetSelection(opts['npre'])
             self.wids['show_e0'].SetValue(opts['show_e0'])
+            if e0val > 0:
+                opts['auto_e0'] = False
             self.wids['auto_e0'].SetValue(opts['auto_e0'])
             self.wids['auto_nnorm'].SetValue(opts.get('auto_nnorm', 0))
             self.wids['auto_step'].SetValue(opts['auto_step'])
@@ -489,7 +495,6 @@ class XASNormPanel(TaskPanel):
         if hasattr(dgroup, 'mback_params'):
             dgroup.mback_params.atsym = atsym
             dgroup.mback_params.edge = edge
-        # print("End of Set Atom ", atsym, edge)
 
     def onNormMethod(self, evt=None):
         method = self.wids['norm_method'].GetStringSelection().lower()
@@ -619,6 +624,8 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
             dgroup = self.controller.get_group()
             find_e0(dgroup)
             self.update_config({'e0': dgroup.e0})
+            self.wids['auto_e0'].SetValue(0)
+            self.wids['e0'].SetValue(dgroup.e0)
             self.onReprocess()
 
     def onAuto_XASStep(self, evt=None):
@@ -628,7 +635,6 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         if evt.IsChecked():
             self.process(dgroup=dgroup)
             self.update_config({'edge_step': dgroup.edge_step})
-
 
     def onSet_XASE0(self, evt=None, value=None):
         "handle setting auto e0 / show e0"
@@ -763,7 +769,7 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         dgroup.energy_units = en_units
 
         if not hasattr(dgroup, 'e0'):
-            e0 = find_e0(dgroup)
+            e0 = form['e0'] = find_e0(dgroup)
         if form['atsym'] == '?':
             self.set_atom_edge('?', '?')
 
@@ -794,11 +800,7 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
             self.larch_eval(('\n'.join(cmds)).format(group=gname, eshift=eshift))
 
         e0 = form['e0']
-        edge_step = form['edge_step']
-        copts = [gname]
-        if not form['auto_e0']:
-            if e0 < max(dgroup.energy) and e0 > min(dgroup.energy):
-                copts.append("e0=%.4f" % float(e0))
+        copts = [gname, f'{e0=:.4f}']
 
         if not form['auto_step']:
             copts.append("step=%s" % gformat(float(edge_step)))
@@ -806,6 +808,7 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         xasmode = getattr(dgroup, 'xasmode', 'unknown')
         if xasmode.startswith('calc'):
             copts.append('iscalc=True')
+        #
         for attr in ('pre1', 'pre2', 'nvict', 'npre', 'nnorm', 'norm1', 'norm2'):
             val = form[attr]
             if val is None or val == 'auto':
@@ -851,7 +854,6 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
             self.larch_eval("mback_norm(%s)" % (', '.join(copts)))
 
             if form['auto_step']:
-                # print("AUTO STEP  ..")
                 norm_expr = """{group:s}.norm = 1.0*{group:s}.norm_{normmeth:s}
 {group:s}.edge_step = 1.0*{group:s}.edge_step_{normmeth:s}"""
                 self.larch_eval(norm_expr.format(**form))
