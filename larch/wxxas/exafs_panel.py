@@ -468,7 +468,7 @@ class EXAFSPanel(TaskPanel):
         setattr(dgroup.config, self.configname, conf)
         return conf
 
-    def fill_form(self, dgroup, initial=False):
+    def fill_form(self, dgroup, newgroup=False):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
         self.dgroup = dgroup
