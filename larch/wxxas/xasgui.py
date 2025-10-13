@@ -671,7 +671,6 @@ class LarixFrame(wx.Frame):
         on_hide = getattr(oldpage, 'onPanelHidden', None)
         if callable(on_hide):
             on_hide()
-
         on_expose = getattr(newpage, 'onPanelExposed', None)
         if callable(on_expose):
             on_expose()
@@ -747,8 +746,10 @@ class LarixFrame(wx.Frame):
             pchoose_wid = pagepanel.wids.get('plot_on_choose', None)
             if pchoose_wid is not None:
                 plot = 'yes' if pchoose_wid.IsChecked() else 'no'
+
+        # print(f"ShowFile {dgroup=}, {dgroup.filename=}, {pagepanel=}, {process=}, {plot=}")
         if process or plot == 'yes':
-            pagepanel.fill_form(dgroup, initial=True)
+            pagepanel.fill_form(dgroup, newgroup=True)
             pagepanel.process(dgroup=dgroup)
 
         if plot == 'yes' and hasattr(pagepanel, 'plot'):
@@ -1039,9 +1040,12 @@ class LarixFrame(wx.Frame):
 
         aprj = AthenaProject(filename=filename)
         for label, grp in zip(grouplist, savegroups):
-            aprj.add_group(grp)
+            try:
+                aprj.add_group(grp)
+            except Exception:
+                print(f"Could not save group  {label} to Athena Project {filename}")
         aprj.save(use_gzip=True)
-        self.write_message("Saved project file %s" % (filename))
+        self.write_message(f"Saved project file {filename}")
         self.last_athena_file = filename
 
     def onPreferences(self, evt=None):
