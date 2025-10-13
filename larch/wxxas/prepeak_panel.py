@@ -764,22 +764,9 @@ class PrePeakPanel(TaskPanel):
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
             self.ensure_xas_processed(dgroup)
-            self.fill_form(dgroup)
-        except:
-            dgroup = None
-            pass # print(" Cannot Fill prepeak panel from group ")
-        pkfit = None
-        if dgroup is not None:
-            prepeaks = getattr(dgroup, 'prepeaks', None)
-            if prepeaks is not None:
-                pkfit = getattr(prepeaks, 'fit_history', [None])[0]
-
-        if pkfit is None:
-            pkfit = getattr(self.larch.symtable, 'peakresult', None)
-
-        if pkfit is not None:
-            self.showresults_btn.Enable()
-            self.use_modelresult(pkfit)
+            self.fill_form(dgroup, newgroup=True)
+        except Exception:
+            pass
 
     def onModelPanelExposed(self, event=None, **kws):
         pass
@@ -956,26 +943,41 @@ class PrePeakPanel(TaskPanel):
             conf[attr]  = fopts[attr]
         dgroup.prepeak_config = conf
 
-    def fill_form(self, dat, initial=False):
-        if isinstance(dat, Group):
-            if not hasattr(dat, 'norm'):
-                self.parent.process_normalization(dat)
-            conf = getattr(dat, 'prepeak_config', {})
+    def fill_form(self, dgroup, newgroup=False):
+        if isinstance(dgroup, Group):
+            if not hasattr(dgroup, 'norm'):
+                self.parent.process_normalization(dgroup)
+            conf = getattr(dgroup, 'prepeak_config', {})
             for attr in ('elo', 'ehi', 'emin', 'emax'):
                 if attr in conf:
                     self.wids[f'ppeak_{attr}'].SetValue(conf[attr])
 
-        elif isinstance(dat, dict):
-            self.wids['ppeak_emin'].SetValue(dat['emin'])
-            self.wids['ppeak_emax'].SetValue(dat['emax'])
-            self.wids['ppeak_elo'].SetValue(dat['elo'])
-            self.wids['ppeak_ehi'].SetValue(dat['ehi'])
+        elif isinstance(dgroup, dict):
+            self.wids['ppeak_emin'].SetValue(dgroup['emin'])
+            self.wids['ppeak_emax'].SetValue(dgroup['emax'])
+            self.wids['ppeak_elo'].SetValue(dgroup['elo'])
+            self.wids['ppeak_ehi'].SetValue(dgroup['ehi'])
 
-            self.array_choice.SetStringSelection(dat['array_desc'])
-            self.bline_choice.SetStringSelection(dat['baseline_form'])
+            self.array_choice.SetStringSelection(dgroup['array_desc'])
+            self.bline_choice.SetStringSelection(dgroup['baseline_form'])
 
-            self.show_fitrange.Enable(dat['show_fitrange'])
-            self.show_peakrange.Enable(dat['show_peakrange'])
+            self.show_fitrange.Enable(dgroup['show_fitrange'])
+            self.show_peakrange.Enable(dgroup['show_peakrange'])
+
+        if newgroup and isinstance(dgroup, Group):
+            pkfit = None
+            prepeaks = getattr(dgroup, 'prepeaks', None)
+            if prepeaks is not None:
+                pkfit = getattr(prepeaks, 'fit_history', [None])[0]
+                # print("use pkfit from history ", pkfit)
+            if pkfit is None:
+                pkfit = getattr(self.larch.symtable, 'peakresult', None)
+                # print("use pkfit from peakresult ", pkfit)
+
+            if pkfit is not None:
+                self.showresults_btn.Enable()
+                self.use_modelresult(pkfit)
+
 
     def read_form(self):
         "read for, returning dict of values"
