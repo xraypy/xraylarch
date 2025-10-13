@@ -1160,36 +1160,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             h, w = self.owner.current_file.get_shape()
             highlight = np.zeros((h, w))
             highlight[np.where(area[()])] = 1
-            self.add_highlight_area(imd, highlight, label=label)
-
-    def add_highlight_area(self, panel, mask, label=None, col=0):
-        """will be fixed in wxmplot, but set here Feb 2025"""
-        patch = mask * np.ones(mask.shape) * 0.9
-        cmap = panel.conf.cmap[col]
-        area = panel.axes.contour(patch, cmap=cmap, levels=[0, 1])
-        panel.conf.highlight_areas.append(area)
-        if not hasattr(cmap, '_lut'):
-            try:
-                cmap._init()
-            except:
-                pass
-        if hasattr(cmap, '_lut'):
-            rgb  = [int(i*240)^255 for i in cmap._lut[0][:3]]
-            col  = '#%02x%02x%02x' % (rgb[0], rgb[1], rgb[2])
-        if label is not None:
-            def fmt(*args, **kws): return label
-            panel.axes.clabel(area, fontsize=9, fmt=fmt,
-                             colors=col, rightside_up=True)
-
-        if col is not None:
-            if hasattr(area, 'collections'):
-                for l in area.collections:
-                    l.set_edgecolor(col)
-            area.set_edgecolor(col)
-        panel.canvas.draw()
-
-
-
+            imd.add_highlight_area(highlight, label=label)
 
     def onDone(self, event=None):
         self.Destroy()
@@ -1210,24 +1181,12 @@ class MapAreaPanel(scrolled.ScrolledPanel):
     def onClear(self, event=None):
         if len(self.owner.im_displays) > 0:
             imd = self.owner.im_displays[-1]
-            for area in imd.panel.conf.highlight_areas:
-                if hasattr(area, 'collections'):
-                    for w in area.collections:
-                        w.remove()
-                if hasattr(area, 'labelTexts'):
-                    for w in area.labelTexts:
-                        w.remove()
-
-                area.remove()
-
-            imd.panel.conf.highlight_areas = []
-            imd.panel.redraw()
-
+            imd.panel.clear_highlight_areas()
 
         if len(self.owner.tomo_displays) > 0:
             imd = self.owner.tomo_displays[-1]
             try:
-                imd.clear_highlight_area()
+                imd.clear_highlight_areas()
             except:
                 pass
 
