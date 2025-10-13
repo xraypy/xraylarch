@@ -1357,7 +1357,7 @@ class CurveFitPanel(TaskPanel):
                 except:
                     pass
 
-    def fill_form(self, dat, initial=False):
+    def fill_form(self, dat, newgroup=False):
         if isinstance(dat, Group):
             xmin  = dat.xdat.min()
             xmax  = dat.xdat.max()

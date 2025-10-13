@@ -1049,8 +1049,7 @@ class FeffitPanel(TaskPanel):
             dgroup = self.controller.get_group()
 
         conf = self.get_config(dgroup=dgroup)
-        # print(f"Process Get Config conf {conf.keys()} / {kws=}")
-
+        print(f"Feffit Process Get Config conf {conf.keys()} / {kws=}")
         conf.update(kws)
 
         if self.params_need_update:
@@ -1104,7 +1103,7 @@ class FeffitPanel(TaskPanel):
             self.larch.eval('\n'.join(cmds))
         return opts
 
-    def fill_form(self, dgroup=None, initial=False):
+    def fill_form(self, dgroup=None, newgroup=False):
         if dgroup is None:
             dgroup = self.controller.get_group()
         conf = self.get_config(dgroup)

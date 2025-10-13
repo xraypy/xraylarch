@@ -854,7 +854,7 @@ class LinearComboPanel(TaskPanel):
             self.wids["compval_%2.2d" % n].SetValue(weight)
 
 
-    def fill_form(self, dgroup, initial=False):
+    def fill_form(self, dgroup, newgroup=False):
         """fill in form from a data group"""
         opts = self.get_config(dgroup, with_erange=True)
         self.dgroup = dgroup

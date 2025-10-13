@@ -359,7 +359,7 @@ class XASNormPanel(TaskPanel):
         setattr(dgroup.config, self.configname, conf)
         return conf
 
-    def fill_form(self, dgroup, initial=False):
+    def fill_form(self, dgroup, newgroup=False):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
         self.skip_process = True
@@ -393,7 +393,7 @@ class XASNormPanel(TaskPanel):
             xasmode = getattr(dgroup, 'xasmode', 'unknown')
             if xasmode.startswith('calc'):
                 opts['npre'] = 0
-            elif initial:
+            elif newgroup:
                 opts['npre'] = get_auto_npre(opts['pre1'], opts['pre2'])
 
             self.wids['energy_shift'].SetValue(opts['energy_shift'])
