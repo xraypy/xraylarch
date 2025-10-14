@@ -41,7 +41,7 @@ from pyshortcuts import uname, get_cwd, bytes2str
 import larch
 from larch.larchlib import read_workdir, save_workdir
 from larch.wxlib import (LarchPanel, LarchFrame, EditableListBox, SimpleText,
-                         FloatCtrl, Font, pack, Popup, Button, MenuItem,
+                         FloatCtrl, Font, pack, Popup, Button, MenuItem, get_font,
                          Choice, Check, GridPanel, FileSave, HLine, flatnotebook,
                          HLine, OkCancel, LEFT, LarchUpdaterDialog, LarchWxApp)
 from larch.wxxas.xas_dialogs import fit_dialog_window
@@ -65,9 +65,6 @@ from ..wxxrd.xrd1d_display import XRD1DFrame
 def timestring():
     return datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')
 
-FONTSIZE = 8
-if uname in ('win', 'darwin'):
-    FONTSIZE = 10
 
 CEN = wx.ALIGN_CENTER
 LEFT = wx.ALIGN_LEFT
@@ -784,6 +781,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.info1   = wx.StaticText(pane, -1, '',  size=(275, -1))
         self.info2   = wx.StaticText(pane, -1, '',  size=(275, -1))
         self.onmap   = Button(pane, 'Show on Map',  size=bsize, action=self.onShow)
+        self.onmapall = Button(pane, 'Show All Areas',  size=bsize, action=self.onShowAll)
         self.clear   = Button(pane, 'Clear Map',    size=bsize, action=self.onClear)
         self.bdelete = Button(pane, 'Delete',       size=bsize, action=self.onDelete)
         self.update  = Button(pane, 'Apply',        size=bsize, action=self.onLabel)
@@ -829,7 +827,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         irow += 1
         sizer.Add(txt('Show: '),            (irow, 0), (1, 1), ALL_LEFT, 2)
         sizer.Add(self.onmap,               (irow, 1), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.clear,               (irow, 2), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.onmapall,            (irow, 2), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.clear,               (irow, 3), (1, 1), ALL_LEFT, 2)
 
         irow += 1
         sizer.Add(txt('Save: '),            (irow, 0), (1, 1), ALL_LEFT, 2)
@@ -901,7 +900,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.report.DeleteAllItems()
         self.report_data = []
 
-        def report_info(dname,d):
+        def report_info(dname, d):
             try:
                 hmean, gmean = stats.gmean(d), stats.hmean(d)
                 skew, kurtosis = stats.skew(d), stats.kurtosis(d)
@@ -910,11 +909,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
             smode = '--'
             fmt = '{:,.1f}'.format # use thousands commas, 1 decimal place
-            mode = stats.mode(d)
-            if len(mode) > 0:
-                mode = mode[0]
-                if len(mode) > 0:
-                    smode = fmt(mode[0])
+            smode = f"{float(stats.mode(d).mode):,.1f}"
             dat = (dname, fmt(d.min()), fmt(d.max()), fmt(d.mean()),
                    fmt(d.std()), fmt(np.median(d)), smode)
             self.report_data.append(dat)
@@ -1149,18 +1144,35 @@ class MapAreaPanel(scrolled.ScrolledPanel):
     def onShow(self, event=None):
         aname = self._getarea()
         area  = self.owner.current_file.xrmmap['areas'][aname]
-        label = bytes2str(area.attrs.get('description', aname))
 
         if len(self.owner.tomo_displays) > 0:
             imd = self.owner.tomo_displays[-1]
-            imd.add_highlight_area(area[()], label=label)
+            imd.add_highlight_area(area[()], label=aname)
 
         if len(self.owner.im_displays) > 0:
             imd = self.owner.im_displays[-1].panel
             h, w = self.owner.current_file.get_shape()
-            highlight = np.zeros((h, w))
-            highlight[np.where(area[()])] = 1
-            imd.add_highlight_area(highlight, label=label)
+            mask = np.zeros((h, w))
+            mask[np.where(area[()])] = 1
+            imd.add_highlight_area(mask, label=aname, use_label_index=True)
+            print(f" {len(imd.conf.highlight_areas)}: {aname}")
+
+    def onShowAll(self, event=None):
+        self.onClear()
+        for aname in self.choices:
+            area  = self.owner.current_file.xrmmap['areas'][aname]
+
+            if len(self.owner.tomo_displays) > 0:
+                imd = self.owner.tomo_displays[-1]
+                imd.add_highlight_area(area[()], label=aname)
+
+            if len(self.owner.im_displays) > 0:
+                imd = self.owner.im_displays[-1].panel
+                h, w = self.owner.current_file.get_shape()
+                highlight = np.zeros((h, w))
+                highlight[np.where(area[()])] = 1
+                imd.add_highlight_area(highlight, label=aname, use_label_index=True)
+                print(f" {len(imd.conf.highlight_areas)}: {aname}")
 
     def onDone(self, event=None):
         self.Destroy()
@@ -1357,7 +1369,8 @@ class MapViewerFrame(wx.Frame):
         self.SetTitle(title)
 
         self.createMainPanel()
-        self.SetFont(Font(FONTSIZE))
+        print("FONT ", get_font())
+        self.SetFont(get_font())
 
         self.createMenus()
         self.statusbar = self.CreateStatusBar(2, 0)
