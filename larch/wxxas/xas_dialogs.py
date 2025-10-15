@@ -553,7 +553,7 @@ class LoadSessionDialog(wx.Frame):
 
         if len(yplot) > 1:
             self.plotpanel.plot(xplot, yplot, xlabel=xlabel,
-                                ylabel=ylabel, label='__nolabel__',
+                                ylabel=ylabel, label=fname,
                                 title=fname)
 
 
