@@ -792,10 +792,10 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.xrf2    = Button(pane, 'Show XRF (Back)', size=bsize,
                               action=partial(self.onXRF, as_mca2=True))
 
-        self.onstats  = Button(pane, 'Calculate XRF Stats', size=bsize,
-                               action=self.onShowStats)
-        self.onreport = Button(pane, 'Save XRF Stats', size=bsize,
-                               action=self.onReport)
+        # self.onstats  = Button(pane, 'Calculate XRF Stats', size=bsize,
+        #                        action=self.onShowStats)
+        # self.onreport = Button(pane, 'Save XRF Stats', size=bsize,
+        #                        action=self.onReport)
 
         self.xrd1d_plot  = Button(pane, 'Show 1D XRD', size=bsize,
                                   action=partial(self.onXRD, show=True, xrd1d=True))
@@ -803,7 +803,9 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.xrd2d_plot  = Button(pane, 'Show 2D XRD', size=bsize,
                                   action=partial(self.onXRD, show=True, xrd2d=True))
 
-        legend = wx.StaticText(pane, -1, 'Values in Counts per second', size=(200, -1))
+        # legend = wx.StaticText(pane, -1, 'Values in Counts per second', size=(200, -1))
+
+        legend = wx.StaticText(pane, -1, 'Legend for Areas on Map:', size=(200, -1))
 
         def txt(s):
             return SimpleText(pane, s)
@@ -840,8 +842,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         sizer.Add(txt('XRF: '),             (irow, 0), (1, 1), ALL_LEFT, 2)
         sizer.Add(self.xrf,                 (irow, 1), (1, 1), ALL_LEFT, 2)
         sizer.Add(self.xrf2,                (irow, 2), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.onstats,             (irow, 3), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.onreport,            (irow, 4), (1, 1), ALL_LEFT, 2)
+        # sizer.Add(self.onstats,             (irow, 3), (1, 1), ALL_LEFT, 2)
+        # sizer.Add(self.onreport,            (irow, 4), (1, 1), ALL_LEFT, 2)
 
 
         irow += 1
@@ -865,24 +867,35 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         msizer.Add(wx.StaticLine(self, size=(375, 2), style=wx.LI_HORIZONTAL),
                       0, wx.EXPAND|wx.ALL, 1)
 
-        self.report = None
-        rep = self.report = dv.DataViewListCtrl(self, style=DVSTY)
-        rep.AppendTextColumn('ROI ',     width=150)
-        rep.AppendTextColumn('Min',      width=90)
-        rep.AppendTextColumn('Max',      width=90)
-        rep.AppendTextColumn('Mean ',    width=90)
-        rep.AppendTextColumn('Sigma',    width=90)
-        rep.AppendTextColumn('Median',   width=90)
-        rep.AppendTextColumn('Mode',     width=90)
-        for col in range(7):
-            align = wx.ALIGN_RIGHT
-            if col == 0: align = wx.ALIGN_LEFT
-            rep.Columns[col].Sortable = False
-            rep.Columns[col].Renderer.Alignment = align
-            rep.Columns[col].Alignment = align
+        self.stats_report = None
+        leg = self.area_legend = dv.DataViewListCtrl(self, style=DVSTY)
+        leg.AppendTextColumn('Image Label', width=100)
+        leg.AppendTextColumn('Area Name ',  width=400)
+        for col in range(2):
+            align = wx.ALIGN_LEFT
+            if col == 0: align = wx.ALIGN_RIGHT
+            leg.Columns[col].Sortable = False
+            leg.Columns[col].Renderer.Alignment = align
+            leg.Columns[col].Alignment = align
+        leg.SetMinSize((500, 500))
+        msizer.Add(leg, 1, wx.ALIGN_LEFT|wx.ALL, 1)
 
-        rep.SetMinSize((800, 300))
-        msizer.Add(rep, 1, wx.ALIGN_LEFT|wx.ALL, 1)
+#         rep = self.stats_report = dv.DataViewListCtrl(self, style=DVSTY)
+#         rep.AppendTextColumn('Min',      width=90)
+#         rep.AppendTextColumn('Max',      width=90)
+#         rep.AppendTextColumn('Mean ',    width=90)
+#         rep.AppendTextColumn('Sigma',    width=90)
+#         rep.AppendTextColumn('Median',   width=90)
+#         rep.AppendTextColumn('Mode',     width=90)
+#         for col in range(7):
+#             align = wx.ALIGN_RIGHT
+#             if col == 0: align = wx.ALIGN_LEFT
+#             rep.Columns[col].Sortable = False
+#             rep.Columns[col].Renderer.Alignment = align
+#             rep.Columns[col].Alignment = align
+#
+#         rep.SetMinSize((800, 300))
+#         msizer.Add(rep, 1, wx.ALIGN_LEFT|wx.ALL, 1)
 
         pack(self, msizer)
         self.SetupScrolling()
@@ -894,11 +907,11 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
     def show_stats(self):
         # self.stats = self.xrmfile.get_area_stats(self.areaname)
-        if self.report is None:
+        if self.stats_report is None:
             return
 
-        self.report.DeleteAllItems()
-        self.report_data = []
+        self.stats_report.DeleteAllItems()
+        self.stats_report_data = []
 
         def report_info(dname, d):
             try:
@@ -912,8 +925,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             smode = f"{float(stats.mode(d).mode):,.1f}"
             dat = (dname, fmt(d.min()), fmt(d.max()), fmt(d.mean()),
                    fmt(d.std()), fmt(np.median(d)), smode)
-            self.report_data.append(dat)
-            self.report.AppendItem(dat)
+            self.stats_report_data.append(dat)
+            self.stats_report.AppendItem(dat)
 
         areaname  = self._getarea()
         xrmfile   = self.owner.current_file
@@ -933,8 +946,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         if 'roistats' in area.attrs:
            for dat in json.loads(area.attrs.get('roistats','')):
                dat = tuple(dat)
-               self.report_data.append(dat)
-               self.report.AppendItem(dat)
+               self.stats_report_data.append(dat)
+               self.stats_report.AppendItem(dat)
            self.choice.Enable()
            return
 
@@ -988,16 +1001,18 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 report_info(dname, d/ctime)
 
         if 'roistats' not in area.attrs:
-           area.attrs['roistats'] = json.dumps(self.report_data)
+           area.attrs['roistats'] = json.dumps(self.stats_report_data)
            xrmfile.h5root.flush()
 
     def update_xrmmap(self, xrmfile=None, set_detectors=None):
-        if xrmfile is None: xrmfile = self.owner.current_file
+        if xrmfile is None:
+                xrmfile = self.owner.current_file
         xrmmap = xrmfile.xrmmap
         self.set_area_choices(xrmmap, show_last=True)
         self.set_enabled_btns(xrmfile=xrmfile)
-        self.report.DeleteAllItems()
-        self.report_data = []
+        if self.stats_report is not None:
+            self.stats_report.DeleteAllItems()
+            self.stats_report_data = []
         try:
             self.onSelect()
         except:
@@ -1074,7 +1089,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 '# All other values in counts per second',
                 '#----------------------------------',
                 '#  ROI    Min   Max    Mean     Sigma    Median     Mode']
-        for dat in self.report_data:
+        for dat in self.stats_report_data:
             buff.append('  '.join(dat))
         buff.append('')
         try:
@@ -1121,13 +1136,14 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                                          yvals.min(), yvals.max()))
 
         self.desc.SetValue(area.attrs.get('description', aname))
-        self.report.DeleteAllItems()
-        self.report_data = []
+        if report is not None:
+            self.stats_report.DeleteAllItems()
+        self.stats_report_data = []
         if 'roistats' in area.attrs:
            self.show_stats()
 
     def onShowStats(self, event=None):
-        if self.report is None:
+        if self.stats_report is None:
             return
         self.show_stats()
 
@@ -1155,7 +1171,9 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             mask = np.zeros((h, w))
             mask[np.where(area[()])] = 1
             imd.add_highlight_area(mask, label=aname, use_label_index=True)
-            print(f" {len(imd.conf.highlight_areas)}: {aname}")
+            ind = f"{len(imd.conf.highlight_areas)}"
+            self.area_legend.AppendItem((ind, aname))
+
 
     def onShowAll(self, event=None):
         self.onClear()
@@ -1172,7 +1190,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 highlight = np.zeros((h, w))
                 highlight[np.where(area[()])] = 1
                 imd.add_highlight_area(highlight, label=aname, use_label_index=True)
-                print(f" {len(imd.conf.highlight_areas)}: {aname}")
+                ind = f"{len(imd.conf.highlight_areas)}"
+                self.area_legend.AppendItem((ind, aname))
 
     def onDone(self, event=None):
         self.Destroy()
@@ -1201,6 +1220,9 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 imd.clear_highlight_areas()
             except:
                 pass
+        self.area_legend.DeleteAllItems()
+
+
 
     def onXRF(self, event=None, as_mca2=False):
         aname = self._getarea()
@@ -1625,7 +1647,7 @@ class MapViewerFrame(wx.Frame):
         # show position on map
         imd = self.im_displays[-1].panel
         # self.add_highlight_area(imd, tmask, label=name)
-        imd.add_highlight_area(tmask, label=name)
+        imd.add_highlight_area(tmask, label=None)
 
         # make sure we can save position into database
 
