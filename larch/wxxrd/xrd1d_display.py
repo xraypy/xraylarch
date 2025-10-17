@@ -453,8 +453,9 @@ class XRD1DFrame(wx.Frame):
             except:
                 valid_mask = False
             if valid_mask:
-                self.mask = 0* img
+                self.mask = 0*img
                 self.mask[np.where(img==0)] = 1
+                # print(f"Set Mask {self.mask.sum()} good pixels of {self.mask.size}")
                 self.unset_mask_menu.Enable(True)
                 self.show_mask_menu.Enable(True)
             else:
@@ -496,7 +497,7 @@ class XRD1DFrame(wx.Frame):
                 title = "Could not apply current mask"
                 message = [f"Could not apply current mask [shape={self.mask.shape}]",
                            f"to this XRD image [shape={img.shape}]"]
-                o = ExceptionPopup(self, title, message)
+                o = ExceptionPopup(self, title, message, with_traceback=False)
 
         if (img.max() > MAXVAL_INT16) and (img.max() < MAXVAL_INT16 + 64):
             #probably really 16bit data
@@ -581,13 +582,13 @@ class XRD1DFrame(wx.Frame):
         label = self.current_label
         dset = self.datasets[label]
 
-        xscale = self.wids['xscale'].GetSelection()
-        xlabel = self.wids['xscale'].GetStringSelection()
+        # xscale = self.wids['xscale'].GetSelection()
+        # xlabel = self.wids['xscale'].GetStringSelection()
         xdat = dset.twth
         xlabel = pyFAI.units.TTH_DEG
-        if xscale == 0:
-            xdat = dset.q
-            xlabel = pyFAI.units.Q_A
+        # if xscale == 0:
+        #    xdat = dset.q
+        #    xlabel = pyFAI.units.Q_A
 
         ydat = 1.0*dset.I/dset.scale
         wavelength = PLANCK_HC/(dset.energy*1000.0)
@@ -600,7 +601,7 @@ class XRD1DFrame(wx.Frame):
         buff.append(f"# {xlabel}    Intensity")
 
         for x, y in zip(xdat, ydat):
-            buff.append(f"  {gformat(x, 13)}  {gformat(y, 13)}")
+            buff.append(f"  {gformat(x, 14)}  {gformat(y, 14)}")
         buff.append('')
         with open(sfile, 'w') as fh:
             fh.write('\n'.join(buff))
