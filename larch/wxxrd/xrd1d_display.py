@@ -448,17 +448,19 @@ class XRD1DFrame(wx.Frame):
             valid_mask = False
             try:
                 img =  tifffile.imread(sfile)
-                valid_mask = len(img.shape)==2 and img.max() == 1 and img.min() == 0
+
+                valid_mask = len(img.shape)==2 and img.max() >= 1 and img.min() == 0
             except:
                 valid_mask = False
             if valid_mask:
-                self.mask = (1 - img[::-1, :]).astype(img.dtype)
+                self.mask = 0* img
+                self.mask[np.where(img==0)] = 1
                 self.unset_mask_menu.Enable(True)
                 self.show_mask_menu.Enable(True)
             else:
                 title = "Could not use mask file"
                 message = [f"Could not use {sfile:s} as a mask file"]
-                o = ExceptionPopup(self, title, message)
+                o = ExceptionPopup(self, title, message, with_traceback=False)
 
     def onShowMask(self, event=None):
         if self.mask is not None:
