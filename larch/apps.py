@@ -107,9 +107,8 @@ LarchApps = {
                       description='Basic Command-line interface for Larch'),
     'Larch GUI': LarchApp(name='Larch GUI', script='larch --wxgui', icon='larch',
                       description='Enhanced Command-line interface for Larch'),
-    'Larch Updater': LarchApp(name='Update Larch',
-                              script='_ -m pip install --upgrade xraylarch',
-                              icon='larch',
+    'Larch Updater': LarchApp(name='Update Larch',  icon='larch',
+                      script='_ -m pip install --upgrade xraylarch larixite asteval lmfit asteval wxmplot wxutils',
                               description='Larch Updater', is_wxapp=False),
 
     'Larix': LarchApp(name='Larix', script='larix', icon='onecone',
@@ -121,6 +120,9 @@ LarchApps = {
                            description='X-ray FluorescenceData Viewing and Analysis'),
     'XRD1D Viewer': LarchApp(name='XRD1D Viewer', script='larch_xrd1d', icon='larch',
                              description='X-ray Diffraction Data Viewing'),
+    'Jupyter Lab': LarchApp(name='Jupyter Lab', script='_ -m jupyter lab', icon='jupyter',
+                              description='Jupyter Lab', is_wxapp=False),
+
     }
 
 
