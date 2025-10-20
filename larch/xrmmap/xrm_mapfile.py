@@ -244,7 +244,6 @@ class GSEXRM_MapFile(object):
                  compression=COMPRESSION, compression_opts=COMPRESSION_OPTS,
                  facility='APS', beamline='13-ID-E', run='', proposal='',
                  user='', scandb=None, all_mcas=False, **kws):
-
         self.filename      = filename
         self.folder        = folder
         self.root          = root
@@ -337,6 +336,7 @@ class GSEXRM_MapFile(object):
         # for existing file, read initial settings
         if self.status in (GSEXRM_FileStatus.hasdata,
                            GSEXRM_FileStatus.created):
+            # print(f"Try to open {self.filename=}, {self.root=}")
             self.open(self.filename, root=self.root, check_status=True)
             self.reset_flags()
             return
@@ -413,7 +413,7 @@ class GSEXRM_MapFile(object):
 
         else:
             raise GSEXRM_Exception('GSEXMAP Error: could not locate map file or folder')
-        print("Initialized done ", self.status, self.version, self.root)
+        # print("Initialized done ", self.status, self.version, self.root)
 
     def __repr__(self):
         fname = '' if self.filename is None else self.filename
@@ -507,7 +507,7 @@ class GSEXRM_MapFile(object):
                 raise GSEXRM_Exception(
                     "'%s' is not a valid GSEXRM HDF5 file" % self.filename)
         self.filename = filename
-        # print("OPEN ", filename, self.write_access, self.h5root)
+        # print(f"OPEN {filename=}, {self.write_access=}, {self.h5root=}")
         if self.h5root is None:
             mode = 'a' if self.write_access else 'r'
             try:
@@ -515,7 +515,7 @@ class GSEXRM_MapFile(object):
             except PermissionError:
                 self.write_access = False
                 self.h5root = h5py.File(self.filename, 'r')
-                print("Warning : file opened as read only")
+                # print("Warning : file opened as read only")
         self.xrmmap = self.h5root[root]
         if self.folder is None:
             self.folder = bytes2str(self.xrmmap.attrs.get('Map_Folder',''))
@@ -525,7 +525,7 @@ class GSEXRM_MapFile(object):
             self.dimension = self.xrmmap['config/scan/dimension'][()]
         except:
             pass
-
+        # print(f"{self.dimension=}, {len(self.rowdata)}, {self.folder}")
         if (len(self.rowdata) < 1 or
             (self.dimension is None and isGSEXRM_MapFolder(self.folder))):
             self.read_master()
@@ -1685,10 +1685,12 @@ class GSEXRM_MapFile(object):
                 return roilist
 
         roigrp = ensure_subgroup('roimap', self.xrmmap, dtype='roi maps')
+        # print(f"GOT ROI GROUP {roigrp=}")
         def sort_roi_limits(roidetgrp):
             roi_name, roi_limits = [],[]
             for name in roidetgrp.keys():
                 roi_name.append(name)
+                # print("roi group ", roidetgrp, name)
                 roi_limits.append(roidetgrp[name]['limits'][0])
             return [y for (x,y) in sorted(zip(roi_limits,roi_name))]
 
@@ -1755,6 +1757,7 @@ class GSEXRM_MapFile(object):
         # add any other groups with 'detector' in the `type` attribute:
         for det, grp in xrmmap.items():
             attrs = getattr(grp, 'attrs', {'type': ''})
+            # print("detlist: ", det, grp, attrs)
             if det not in det_list and 'detector' in h5str(attrs.get('type', '')):
                 det_list.append(det)
         self.detector_list = det_list
@@ -2685,9 +2688,15 @@ class GSEXRM_MapFile(object):
 
         '''
         map  = self.xrmmap[dgroup]
-        cal  = map['energy'].attrs
-        _mca = MCA(counts=counts, offset=cal['cal_offset'],
-                   slope=cal['cal_slope'], **kws)
+        energy = map['energy']
+        try:
+            offset = energy.attrs['cal_offset']
+            slope = energy.attrs['cal_slope']
+        except Exception:
+            offset = float(energy[0])
+            slope = float((energy[10]-energy[0])/10.0)
+
+        _mca = MCA(counts=counts, offset=offset, slope=slope, **kws)
         if self.incident_energy is None:
             self.incident_energy = self.get_incident_energy()
 
