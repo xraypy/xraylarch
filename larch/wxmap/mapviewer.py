@@ -51,6 +51,7 @@ from larch.utils.physical_constants import PLANCK_HC
 
 from ..xrd import lambda_from_E, xrd1d, save1D, calculate_xvalues, read_poni
 from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup, DEFAULT_XRAY_ENERGY
+# from ..xrmmap.xrm_mapfile import remove_zigzag
 from ..version import check_larchversion
 from ..epics import pv_fullname
 from ..wxlib.xrfdisplay import XRFDisplayFrame
@@ -1136,7 +1137,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                                          yvals.min(), yvals.max()))
 
         self.desc.SetValue(area.attrs.get('description', aname))
-        if report is not None:
+        if self.stats_report is not None:
             self.stats_report.DeleteAllItems()
         self.stats_report_data = []
         if 'roistats' in area.attrs:
@@ -1160,6 +1161,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
     def onShow(self, event=None):
         aname = self._getarea()
         area  = self.owner.current_file.xrmmap['areas'][aname]
+        # zigzag = self.owner.current_file.zigzag
 
         if len(self.owner.tomo_displays) > 0:
             imd = self.owner.tomo_displays[-1]
@@ -1170,6 +1172,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             h, w = self.owner.current_file.get_shape()
             mask = np.zeros((h, w))
             mask[np.where(area[()])] = 1
+            imdat_shape = imd.conf.data.shape
             imd.add_highlight_area(mask, label=aname, use_label_index=True)
             ind = f"{len(imd.conf.highlight_areas)}"
             self.area_legend.AppendItem((ind, aname))
@@ -1391,7 +1394,6 @@ class MapViewerFrame(wx.Frame):
         self.SetTitle(title)
 
         self.createMainPanel()
-        print("FONT ", get_font())
         self.SetFont(get_font())
 
         self.createMenus()
@@ -1838,17 +1840,16 @@ class MapViewerFrame(wx.Frame):
         self.datagroups = self.larch.symtable
         if ESCAN_CRED is not None:
             self.move_callback = self.onMoveToPixel
-            print("ESCAN ", ESCAN_CRED)
-            if True: # try:
+            try:
                 self.scandb = ScanDB()
                 self.instdb = InstrumentDB(self.scandb)
                 self.inst_name = self.scandb.get_info('samplestage_instrument',
                                                       default='SampleStage')
                 print(" ScanDB: %s, Instrument=%s" % (self.scandb.engine, self.inst_name))
-            # except:
-            #     etype, emsg, tb = sys.exc_info()
-            #     print('Could not connect to ScanDB: %s' % (emsg))
-            #    self.scandb = self.instdb = None
+            except:
+                etype, emsg, tb = sys.exc_info()
+                print('Could not connect to ScanDB: %s' % (emsg))
+                self.scandb = self.instdb = None
 
     def ShowFile(self, evt=None, filename=None,  process_file=True, **kws):
         if filename is None and evt is not None:
@@ -2074,7 +2075,6 @@ class MapViewerFrame(wx.Frame):
         fpath = Path(xrmfile.filename)
         fname = fpath.name
         parent = fpath.parent.as_posix()
-        # print("Add XRM File ", fname)
         # look for group with this name or for next available group
         for i in range(1000):
             gname = 'map%3.3i' % (i+1)
@@ -2401,7 +2401,6 @@ class ROIDialog(wx.Dialog):
     #----------------------------------------------------------------------
     def __init__(self, owner, roi_callback=None, **kws):
         """Constructor"""
-        print("ROI Dialog owner ", owner)
         wx.Dialog.__init__(self, owner, wx.ID_ANY, title='Add and Delete ROIs',
                            size=(450, 350))
 
