@@ -1263,6 +1263,7 @@ class GSEXRM_MapFile(object):
         if self.chunksize is None:
             self.chunksize = (1, min(2048, npts), nchan)
             self.chunksize = (128, 128, 256)
+            self.chunksize = (4, min(256, npts), 512)
 
         if nrows_expected is not None:
             NSTART = max(NINIT, nrows_expected)
