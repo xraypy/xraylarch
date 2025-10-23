@@ -1189,7 +1189,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         title = prefix[:-1]
         mclass_kws = {'prefix': prefix}
         if 'step' in mod_abbrev:
-            form = mod_abbrev.replace('_step', '').strip()
+            form = prefix.split('_')[0]
             for sname, fullname in (('lin', 'linear'), ('atan', 'arctan'),
                                     ('err', 'erf'), ('logi', 'logistic')):
                 if form.startswith(sname):
