@@ -202,7 +202,9 @@ class XASController():
 
         datatype = getattr(thisgroup, 'datatype', 'xydata')
         if datatype == 'xas':
-            cmds.append(f"{groupname:s}.energy_orig = {groupname:s}.energy[:]")
+            en_orig = getattr(thisgroup, 'energy_orig', None)
+            if en_orig is None:
+                cmds.append(f"{groupname:s}.energy_orig = {groupname:s}.energy[:]")
             array_labels = getattr(thisgroup, 'array_labels', [])
             if len(array_labels) > 2  and getattr(thisgroup, 'data', None) is not None:
                 for i0name in ('i0', 'i_0', 'monitor'):
@@ -538,20 +540,26 @@ class XASController():
         ogroup = self.get_group(groupname)
         ngroup = larch.Group(datatype=ogroup.datatype, copied_from=groupname)
 
-        for attr in dir(ogroup):
-            val = getattr(ogroup, attr, None)
-            if isinstance(val, np.ndarray):
-                setattr(ngroup, attr, 1.0*val[:])
-            elif val is not None:
-                setattr(ngroup, attr, deepcopy(val))
-
         if new_filename is None:
-            new_filename = filename + '_1'
+            new_filename = filename
         if new_groupname is None:
-            new_groupname = ogroup.groupname + '_1'
+            new_groupname = ogroup.groupname
+
         ngroup.filename = unique_name(new_filename, self.file_groups.keys())
         ngroup.groupname = unique_name(new_groupname, self.file_groups.values())
+        # print(f"Copy Group {new_filename=}, {new_groupname=}  {ngroup.filename=} {ngroup.groupname=}")
+
+        for attr in dir(ogroup):
+            val = getattr(ogroup, attr, None)
+            if attr in ('filename', 'groupname'):
+                pass
+            elif attr == 'energy_ref':
+                ngroup.energy_ref = ngroup.groupname   # self reference
+            elif isinstance(val, np.ndarray) or val is not None:
+                setattr(ngroup, attr, deepcopy(val))
+
         ngroup.journal.add('source_desc', f"copied from '{filename:s}'")
+
         setattr(self.larch.symtable, ngroup.groupname, ngroup)
         return ngroup
 
