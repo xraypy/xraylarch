@@ -143,9 +143,20 @@ def unique_name(name, nlist, max=1000):
 
     """
     out = name
+    xval = 0
     if name in nlist:
-        for i in range(1, max+1):
-            out = "%s_%i"  % (name, i)
+        if '_' in name:
+            words = name.split('_')
+            try:
+                xval = int(words[-1])
+                words.pop()
+            except Exception:
+                pass
+
+            name = '_'.join(words)
+
+        for i in range(max):
+            out = f"{name}_{xval+i+1}"
             if out not in nlist:
                 break
     return out
