@@ -1342,7 +1342,7 @@ class DeglitchFrame(wx.Frame):
 
         ngroup.energy = ngroup.xplot = xplot[mask]
         ngroup.mu     = ngroup.yplot = yplot[mask]
-        ngroup.energy_orig = 1.0*ngroup.energy
+        ngroup.energy_orig = 1.0*ngroup.energy_orig[mask]
         has_chik = hasattr(ngroup, 'chi')
         has_mback = hasattr(ngroup, 'norm_mback')
         for attr in ('pre_edge', 'norm', 'norm_poly', 'norm_mback',
