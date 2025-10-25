@@ -103,6 +103,9 @@ def export_modelresult(result, filename='fitresult.xdi',
     hadd("-" * 77)
     hadd("".join(clabel)[1:])
     header[0] = "XDI/1.1  Lmfit Result File  %i header lines" % (len(header))
+    dtable = []
+    for dat in columns.values():
+        dtable.append(dat)
     dtable = np.array(dtable).transpose()
     datatable = []
     for i in range(ndata):
