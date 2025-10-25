@@ -552,10 +552,8 @@ class XASController():
         for attr in dir(ogroup):
             val = getattr(ogroup, attr, None)
             if attr in ('filename', 'groupname'):
-                pass
-            elif attr == 'energy_ref':
-                ngroup.energy_ref = ngroup.groupname   # self reference
-            elif isinstance(val, np.ndarray) or val is not None:
+                continue
+            if isinstance(val, np.ndarray) or val is not None:
                 setattr(ngroup, attr, deepcopy(val))
 
         ngroup.journal.add('source_desc', f"copied from '{filename:s}'")
