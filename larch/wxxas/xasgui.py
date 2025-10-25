@@ -690,8 +690,8 @@ class LarixFrame(wx.Frame):
             s = str(fname)
             if s in self.controller.file_groups:
                 group = self.controller.file_groups.pop(s)
-            if s in self.controller._larch.symtable:
-                self.controller._larch.symtable.del_symbol(s)
+            if s in self.controller.larch.symtable:
+                self.controller.larch.symtable.del_symbol(s)
             self.controller.sync_xasgroups()
 
     def ShowFile(self, evt=None, groupname=None,
@@ -1167,8 +1167,8 @@ before clearing"""
         if fname is None:
             fname = self.controller.filelist.GetStringSelection()
         ogroup = self.controller.get_group(fname)
-        ngroup = self.controller.copy_group(fname)
-        self.install_group(ngroup, journal=ogroup.journal)
+        ngroup = self.controller.copy_group(ogroup.filename)
+        self.install_group(ngroup, filename=ngroup.filename, journal=ogroup.journal)
 
     def onGroupJournal(self, event=None):
         dgroup = self.controller.get_group()
@@ -1940,6 +1940,7 @@ before clearing"""
     def install_group(self, groupname, filename=None, source=None, journal=None,
                       process=True, plot='auto'):
         """add groupname / filename to list of available data groups"""
+        # print(f"install_group A {groupname=} / {filename=}")
         if isinstance(groupname, Group):
             dgroup = groupname
             groupname = groupname.groupname
@@ -1958,6 +1959,8 @@ before clearing"""
         startpage = 'xasnorm' if dtype == 'xas' else 'xydata'
         ipage, pagepanel = self.get_nbpage(startpage)
         self.nb.SetSelection(ipage)
+        # print(f"install_group B {groupname=} / {filename=}")
+
         self.ShowFile(groupname=groupname, filename=filename,
                       process=process, plot=plot)
 
