@@ -275,7 +275,7 @@ class BokehFigure:
             opts['y_range_name'] = 'y2'
 
         if marker is not None:
-            trace = self.fig.scatter(x, y, marker=marker, size=marker_size, **opts)
+            trace = self.fig.scatter(x, y, marker=marker, size=marker_size, fill_color=color, **opts)
         else:
             trace = self.fig.line(x, y, **opts)
         self.traces.append((trace, x, y, opts))
@@ -1026,7 +1026,8 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
         raise ValueError('Group needs prepeaks')
     #endif
     ppeak = dgroup.prepeaks
-
+    ydat = dgroup.ydat
+    xdat = dgroup.xdat
     px0, px1, py0, py1 = extend_plotrange(dgroup.xdat, dgroup.ydat,
                                           xmin=ppeak.emin, xmax=ppeak.emax)
 
@@ -1034,13 +1035,11 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
 
     fig = BokehFigure()
 
-    ydat = dgroup.ydat
-    xdat = dgroup.xdat
     if subtract_baseline:
-        fig.add_plot(ppeak.energy, ppeak.baseline, label='baseline subtracted peaks')
+        fig.add_plot(ppeak.energy, ppeak.norm-ppeak.baseline, label='data - baseline')
     else:
         fig.add_plot(ppeak.energy, ppeak.baseline, label='baseline')
-        fig.add_plot(xdat, ydat, label='data')
+        fig.add_plot(ppeak.energy, ppeak.norm, label='data')
 
     if show_fitrange:
         for x in (ppeak.emin, ppeak.emax):
