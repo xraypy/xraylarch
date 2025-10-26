@@ -1024,7 +1024,7 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
     """
     if not hasattr(dgroup, 'prepeaks'):
         raise ValueError('Group needs prepeaks')
-    #endif
+
     ppeak = dgroup.prepeaks
     ydat = dgroup.ydat
     xdat = dgroup.xdat
@@ -1063,7 +1063,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     """
     if not hasattr(dgroup, 'prepeaks'):
         raise ValueError('Group needs prepeaks')
-    #endif
+
     if show_init:
         result = pkfit = dgroup.prepeaks
     else:
@@ -1072,13 +1072,15 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
             nfit = 0
         pkfit = hist[nfit]
         result = pkfit.result
-    #endif
 
     if pkfit is None:
         raise ValueError('Group needs prepeaks.fit_history or init_fit')
-    #endif
+
+    if not hasattr(pkfit, 'user_options'):
+        raise ValueError('Fit needs user_options')
 
     opts = pkfit.user_options
+
     xeps = min(np.diff(dgroup.xdat)) / 5.
     xdat = 1.0*pkfit.energy
     ydat = 1.0*pkfit.norm
@@ -1104,24 +1106,22 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     fig = BokehFigure()
     title ='%s:\npre-edge peak' % dgroup.filename
 
-
+    ncolor = 0
+    popts = {}
+    popts.update(opts)
+    dymin = dymax = None
 
     if subtract_baseline:
         ydat -= baseline
         yfit -= baseline
         ydat_full = 1.0*ydat
         xdat_full = 1.0*xdat
-        plotopts['ylabel'] = '%s-baseline' % plotopts['ylabel']
+        popts['ylabel'] = '%s-baseline' % popts['ylabel']
 
     dx0, dx1, dy0, dy1 = extend_plotrange(xdat_full, ydat_full,
                                           xmin=opts['emin'], xmax=opts['emax'])
     fx0, fx1, fy0, fy1 = extend_plotrange(xdat, yfit,
                                           xmin=opts['emin'], xmax=opts['emax'])
-
-    ncolor = 0
-    popts = {}
-    plotopts.update(popts)
-    dymin = dymax = None
 
     fig.add_plot(xdat, ydat, label='data')
     fig.add_plot(xday, yfit, label='fit')
