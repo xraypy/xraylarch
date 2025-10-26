@@ -244,7 +244,7 @@ class BokehFigure:
         self.traces = []
 
     def add_plot(self, x, y, label=None, color=None, linewidth=3,
-                 style='solid', marker=None, y2label=None, side='left'):
+                 style='solid', marker=None, marker_size=None, y2label=None, side='left'):
         itrace = len(self.traces)
 
         if label is None:
@@ -255,7 +255,7 @@ class BokehFigure:
             style = LineStyles[ int(itrace*1.0 / NCOLORS) % NSTYLES]
 
         opts = {'line_color': color, 'line_width': linewidth,
-                    'legend_label': label}
+                'legend_label': label}
 
         if side == 'right':
             if y2label is None:
@@ -274,7 +274,10 @@ class BokehFigure:
             self.fig.add_layout(self.y2_axes, 'left')
             opts['y_range_name'] = 'y2'
 
-        trace = self.fig.line(x, y, **opts)
+        if marker is not None:
+            trace = self.fig.scatter(x, y, marker=marker, size=marker_size, **opts)
+        else:
+            trace = self.fig.line(x, y, **opts)
         self.traces.append((trace, x, y, opts))
         self.fig.legend.click_policy='hide'
 
