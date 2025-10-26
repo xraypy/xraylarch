@@ -1043,13 +1043,13 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
 
     if show_fitrange:
         for x in (ppeak.emin, ppeak.emax):
-            fig.add_vline(x=x, line_width=2, line_dash="dash", line_color="#DDDDCC")
+            fig.add_vline(x=x, line_width=2, line_dash="dash", line_color="#383836")
             fig.add_vline(x=ppeak.centroid, line_width=2, line_dash="dash", line_color="#EECCCC")
 
     if show_peakrange:
         for x in (ppeak.elo, ppeak.ehi):
             y = ydat[index_of(xdat, x)]
-            fig.add_plot([x], [y], marker='o', marker_size=7)
+            fig.add_vline(x=x, line_width=2, line_dash="dash", line_color="#B8B8A9")
 
     return fig.show(title=title, xlabel=plotlabels.energy, ylabel='mu (normalized)',
                     xmin=px0, xmax=px1, ymin=py0, ymax=py1)
