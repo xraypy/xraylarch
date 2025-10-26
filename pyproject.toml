@@ -85,6 +85,7 @@ larch_xrf = "larch.apps:run_larch_xrf"
 larch_xrd1d = "larch.apps:run_larch_xrd1d"
 gse_mapviewer = "larch.apps:run_gse_mapviewer"
 epics_xrf = "larch.apps:run_epics_xrf"
+larch_jupyterlab = "larch.apps:run_larch_jupyterlab"
 
 [project.urls]
 Homepage = " https://github.com/xraypy/xraylarch"
