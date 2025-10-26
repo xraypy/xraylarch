@@ -1,6 +1,7 @@
 """
 main Larch Applications
 """
+import os
 import sys
 import locale
 import inspect
@@ -87,19 +88,14 @@ class LarchApp(object):
         if self.is_wxapp:
             set_locale()
             use_mpl_wxagg()
-
-
-# #             App Name,       icon,        terminal,  Script / pyshortcuts command, Description
-# MainApps = (('Larch CLI',     'larch',       True,  'larch', 'Basic Command-line interface for Larch'),
-#             ('Larch Updater', 'larch',       True,  '_ -m pip install --upgrade xraylarch', 'Larch Updatar'),
-#             ('Larch GUI',     'larch',       False, 'larch --wxgui', 'Enhanced Command-line interface for Larch'),
-#             ('XAS Viewer',    'onecone',     False, 'larix', 'XANES and EXAFS Analysis GUI for Larch'),
-#             ('Larix',         'onecone',     False, 'larix', 'XANES and EXAFS Analysis GUI for Larch'),
-#             ('GSE MapViewer', 'gse_xrfmap',  False, 'gse_mapviewer', 'XRF Map Viewing and Analysis'),
-#             ('XRF Viewer',    'ptable',      False, 'larch_xrf', 'X-ray FluorescenceData Viewing and Analysis'),
-#             ('XRD1D Viewer',  'larch',       False, 'larch_xrd1d', 'X-ray Diffraction Data Viewing'),
-#             )
-#
+        # put the python executables onto path
+        delim, bindir = ':', 'bin'
+        if uname == 'win':
+            delim, bindir = ';', 'Scripts'
+        pathenv = os.environ['PATH'].split(delim)
+        pathenv.insert(0, Path(sys.prefix).absolute().as_posix())
+        pathenv.insert(0, Path(sys.prefix, bindir).absolute().as_posix())
+        os.environ['PATH'] = delim.join(pathenv)
 
 
 LarchApps = {
@@ -120,13 +116,20 @@ LarchApps = {
                            description='X-ray FluorescenceData Viewing and Analysis'),
     'XRD1D Viewer': LarchApp(name='XRD1D Viewer', script='larch_xrd1d', icon='larch',
                              description='X-ray Diffraction Data Viewing'),
-    'Jupyter Lab': LarchApp(name='Jupyter Lab', script='_ -m jupyter lab', icon='jupyter',
+    'Jupyter Lab': LarchApp(name='Jupyter Lab', script='larch_jupyterlab', icon='jupyter',
                               description='Jupyter Lab', is_wxapp=False),
 
     }
 
 
 # entry points:
+def run_larch_jupyterlab():
+    "run Jupyter Lab within the Larch-installed Python"
+    app = LarchApps['Jupyter Lab']
+    app.prep_cli()
+    from jupyterlab import labapp
+    labapp.main()
+
 def run_gse_mapviewer():
     "XRFMap Viewer"
     app = LarchApps['XRFMap Viewer']
