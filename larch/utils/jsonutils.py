@@ -25,7 +25,11 @@ from larch import Group, isgroup
 from larch.utils.logging  import getLogger
 from larch.utils.logging  import _levels as LoggingLevels
 
+from . import npjson
+
 sys.setrecursionlimit(1000)
+
+USE_NPJSON = True
 
 HAS_STATE = {}
 LarchGroupTypes = {}
@@ -106,16 +110,20 @@ def encode4js(obj):
         return None
     try:
         if isinstance(obj, np.ndarray):
-            out = {'__class__': 'Array',
-                   '__shape__': obj.shape}
-            out['__dtype__'] = sdtype = str(obj.dtype)
-            flat = obj.flatten()
-            if sdtype.startswith('float') or sdtype.startswith('int'):
-                out['value'] = flat.tolist()
-            elif sdtype.startswith('complex'):
-                out['value'] = [(flat.real).tolist(), (flat.imag).tolist()]
+            if USE_NPJSON:
+                out = {'__class__': 'b64ndarray',
+                       '__value__': npjson.dumps(obj)}
             else:
-                out['value'] = [encode4js(i) for i in flat.tolist()]
+                out = {'__class__': 'Array',
+                       '__shape__': obj.shape}
+                out['__dtype__'] = sdtype = str(obj.dtype)
+                flat = obj.flatten()
+                if sdtype.startswith('float') or sdtype.startswith('int'):
+                    out['value'] = flat.tolist()
+                elif sdtype.startswith('complex'):
+                    out['value'] = [(flat.real).tolist(), (flat.imag).tolist()]
+                else:
+                    out['value'] = [encode4js(i) for i in flat.tolist()]
             return out
         elif isinstance(obj, (bool, np.bool_)):
             return bool(obj)
@@ -289,6 +297,9 @@ def decode4js(obj):
                 out = tuple(out)
             elif classname == 'NamedTuple':
                 out = namedtuple(obj['__name__'], obj['_fields'])(*out)
+        elif classname == 'b64ndarray':
+            out = npjson.loads( obj['__value__'])
+
         elif classname == 'Array':
             if obj['__dtype__'].startswith('complex'):
                 re = np.asarray(obj['value'][0], dtype='double')
