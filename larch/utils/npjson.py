@@ -105,13 +105,13 @@ def custom_decoder(dct) :
         decoded object or undecoded dict
     """
     from larch import Group
-    tname = obj.pop('_type_', None)
+    tname = dct.pop('_type_', None)
     if tname is None:
         return dct
 
     if tname == 'b64ndarray':
         obj = np.frombuffer(b64decode(dct['value']),
-                            npformat.descr_to_dtype(dctl['dtype']))
+                            npformat.descr_to_dtype(dct['dtype']))
         return obj.reshape(dct['shape'])
     elif tname == 'complex':
         return complex(*dct['value'])
@@ -157,12 +157,12 @@ def dumps(*args, default=None, **kws):
 
 def load(*args, object_hook=None, **kws):
     """json load, using custom decoder"""
-    if object_hook is not None:
+    if object_hook is None:
         object_hook = custom_decoder
     return json.load(*args, object_hook=object_hook, **kws)
 
 def loads(*args, object_hook=None, **kws):
     """json loads, using custom decoder"""
-    if object_hook is not None:
+    if object_hook is None:
         object_hook = custom_decoder
     return json.loads(*args, object_hook=object_hook, **kws)
