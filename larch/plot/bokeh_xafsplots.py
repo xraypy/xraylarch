@@ -1124,7 +1124,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
                                           xmin=opts['emin'], xmax=opts['emax'])
 
     fig.add_plot(xdat, ydat, label='data')
-    fig.add_plot(xday, yfit, label='fit')
+    fig.add_plot(xdat, yfit, label='fit')
 
     if show_residual:
         dfig = BokehFigure()
@@ -1158,7 +1158,8 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
             fig.add_vlinee(pcen, color='#EECCCC')
 
     fig.show(title=title, xlabel=plotlabels.energy, ylabel=opts['array_desc'])
-    dfig.show(title=tile, ylabel='fit-data', ymin=dymin, ymax=dymax)
+    if show_residual:
+        dfig.show(title=title, ylabel='fit-data', ymin=dymin, ymax=dymax)
     return fig, dfig
 
 
