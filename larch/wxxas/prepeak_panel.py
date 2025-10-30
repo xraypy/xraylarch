@@ -129,6 +129,7 @@ COMMANDS['prepfit'] = """# prepare fit
 {group}.prepeaks.user_options = {user_opts:s}
 {group}.prepeaks.init_fit = peakmodel.eval(peakpars, x={group}.prepeaks.energy)
 {group}.prepeaks.init_ycomps = peakmodel.eval_components(params=peakpars, x={group}.prepeaks.energy)
+{group}.prepeaks.peakmodel = {{'model': deepcopy(peakmodel), 'params': deepcopy(peakpars)}}
 if not hasattr({group}.prepeaks, 'fit_history'): {group}.prepeaks.fit_history = []
 """
 
@@ -558,7 +559,6 @@ class PrePeakFitResultFrame(wx.Frame):
         if len(self.peakfit_history) > 0:
             return self.peakfit_history[self.nfit]
 
-
     def onPlot(self, event=None):
         """Modified onPlot method for PrePeakFitResultFrame with auto-scaling"""
         show_resid = self.wids['plot_resid'].IsChecked()
@@ -625,7 +625,8 @@ class PrePeakFitResultFrame(wx.Frame):
             self.wids['correl'].AppendItem((name1, name2, "% .4f" % corval))
 
     def onLoadModel(self, event=None):
-        self.peakframe.use_modelresult(self.get_fitresult())
+        self.peakframe.use_modelresult(modelresult=self.get_fitresult(),
+                                       dgroup=self.datagroup)
 
     def onCopyParams(self, evt=None):
         result = self.get_fitresult()
@@ -884,7 +885,6 @@ class PrePeakPanel(TaskPanel):
         pan.Add(ts, dcol=4)
         pan.Add(self.plotmodel_btn)
 
-
         pan.Add(SimpleText(pan, 'Fit Model to Current Group : '), dcol=5, newrow=True)
         pan.Add(self.fitmodel_btn)
 
@@ -944,6 +944,7 @@ class PrePeakPanel(TaskPanel):
         dgroup.prepeak_config = conf
 
     def fill_form(self, dgroup, newgroup=False):
+        # print("prepeak.fill_form ", dgroup, type(dgroup))
         if isinstance(dgroup, Group):
             if not hasattr(dgroup, 'norm'):
                 self.parent.process_normalization(dgroup)
@@ -965,18 +966,20 @@ class PrePeakPanel(TaskPanel):
             self.show_peakrange.Enable(dgroup['show_peakrange'])
 
         if newgroup and isinstance(dgroup, Group):
-            pkfit = None
+            modelresult = None
             prepeaks = getattr(dgroup, 'prepeaks', None)
-            if prepeaks is not None:
-                pkfit = getattr(prepeaks, 'fit_history', [None])[0]
-                # print("use pkfit from history ", pkfit)
-            if pkfit is None:
-                pkfit = getattr(self.larch.symtable, 'peakresult', None)
-                # print("use pkfit from peakresult ", pkfit)
+            if prepeaks is None:
+                modelresult = getattr(self.larch.symtable, 'peakresult', None)
+                # print("use result from peakresult ", modelresult)
+            else:
+                modelresult = getattr(prepeaks, 'fit_history', [None])[0]
+                # print("use modelresult from history ", modelresult)
 
-            if pkfit is not None:
+            if modelresult is not None or prepeaks is not None:
                 self.showresults_btn.Enable()
-                self.use_modelresult(pkfit)
+                # print("-> use model_result ", modelresult, prepeaks, dgroup)
+                self.use_modelresult(modelresult=modelresult,
+                                     prepeaks=prepeaks, group=dgroup)
 
 
     def read_form(self):
@@ -1452,33 +1455,48 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             Popup(self, f" '{rfile}' is not a valid Peak Model file",
                   "Invalid file")
 
-        self.use_modelresult(dat[1])
+        self.use_modelresult(modelresult=dat[1])
 
-    def use_modelresult(self, pkfit):
+    def use_modelresult(self, modelresult=None, prepeaks=None, group=None):
         for prefix in list(self.fit_components.keys()):
             self.onDeleteComponent(prefix=prefix)
 
-        result = pkfit.result
-        bkg_comps = pkfit.user_options['bkg_components']
-        for comp in result.model.components:
-            isbkg = comp.prefix in bkg_comps
+        user_opts = None
+        # print("in use_modelresult ", modelresult, prepeaks, group)
+
+        if modelresult is not None:
+            params = modelresult.result.params
+            model = modelresult.result.model
+            user_opts = modelresult.user_options
+        elif prepeaks is not None:
+            model = prepeaks.peakmodel['model']
+            params = prepeaks.peakmodel['params']
+            user_opts = prepeaks.user_options
+
+        bkg_comps = user_opts['bkg_components']
+        for comp in model.components:
             self.addModel(model=comp.func.__name__,
-                          prefix=comp.prefix, isbkg=isbkg,
+                          prefix=comp.prefix, isbkg=(comp.prefix in bkg_comps),
                           opts=comp.opts)
 
-        for comp in result.model.components:
+        for comp in model.components:
             parwids = self.fit_components[comp.prefix].parwids
-            for pname, par in result.params.items():
+            for pname, par in params.items():
                 if pname in parwids:
                     wids = parwids[pname]
-                    wids.value.SetValue(result.init_values.get(pname, par.value))
+                    wids.value.SetValue(par.init_value)
                     varstr = 'vary' if par.vary else 'fix'
-                    if par.expr is not None:   varstr = 'constrain'
-                    if wids.vary is not None:  wids.vary.SetStringSelection(varstr)
-                    if wids.minval is not None: wids.minval.SetValue(par.min)
-                    if wids.maxval is not None: wids.maxval.SetValue(par.max)
+                    if par.expr is not None:
+                        varstr = 'constrain'
+                    if wids.vary is not None:
+                        wids.vary.SetStringSelection(varstr)
+                    if wids.minval is not None:
+                        wids.minval.SetValue(par.min)
+                    if wids.maxval is not None:
+                        wids.maxval.SetValue(par.max)
 
-        self.fill_form(pkfit.user_options)
+        # print("use modelresult -- > fill form ", user_opts)
+        self.fill_form(user_opts)
 
 
     def get_xranges(self, x):
@@ -1493,6 +1511,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
     def build_fitmodel(self, groupname=None):
         """ use fit components to build model"""
         # self.summary = {'components': [], 'options': {}}
+        # print(f"Build Fit Model {groupname=}")
         peaks = []
         cmds = ["## set up pre-edge peak parameters", "peakpars = Parameters()"]
         modcmds = ["## define pre-edge peak model"]
@@ -1510,7 +1529,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                            emax=opts['emax'])
         dgroup.journal.add_ifnew('prepeaks_setup', ppeaks_opts)
 
-
+        bkg_comps = []
         for comp in self.fit_components.values():
             _cen, _amp = None, None
             if comp.usebox is not None and comp.usebox.IsChecked():
@@ -1535,6 +1554,8 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                                                         ', '.join(compargs)))
 
                 modop = "+="
+                if comp.bkgbox.IsChecked():
+                    bkg_comps.append(comp.mclass_kws.get('prefix', ''))
                 if not comp.bkgbox.IsChecked() and _cen is not None and _amp is not None:
                     peaks.append((_amp, _cen))
 
@@ -1546,7 +1567,6 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         cmds.extend(modcmds)
         cmds.append(COMMANDS['prepfit'].format(group=dgroup.groupname,
                                                user_opts=repr(opts)))
-
         self.larch_eval("\n".join(cmds))
 
     def onFitSelected(self, event=None):
