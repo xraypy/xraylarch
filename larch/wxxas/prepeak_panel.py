@@ -8,6 +8,7 @@ from functools import partial
 import json
 import time
 import traceback
+from copy import deepcopy
 
 import wx
 import wx.lib.scrolledpanel as scrolled
@@ -342,10 +343,13 @@ class PrePeakFitResultFrame(wx.Frame):
                            colour=GUI_COLORS.title, style=LEFT)
         sizer.Add(title, (irow, 0), (1, 1), LEFT)
 
-        self.wids['copy_params'] = Button(panel, 'Update Model with these values',
+        self.wids['use_model'] = Button(panel, 'Use Model in Pre-Edge Peaks',
+                                          size=(250, -1), action=self.onCopyModel)
+        self.wids['copy_params'] = Button(panel, 'Update Model with best-fit values',
                                           size=(250, -1), action=self.onCopyParams)
 
-        sizer.Add(self.wids['copy_params'], (irow, 1), (1, 3), LEFT)
+        sizer.Add(self.wids['use_model'], (irow, 1), (1, 2), LEFT)
+        sizer.Add(self.wids['copy_params'], (irow, 3), (1, 2), LEFT)
 
         pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         pview.SetFont(self.font_fixedwidth)
@@ -357,7 +361,7 @@ class PrePeakFitResultFrame(wx.Frame):
         pview.AppendTextColumn('Parameter',  width=xw[0])
         pview.AppendTextColumn('Best Value', width=xw[1])
         pview.AppendTextColumn('1-\u03c3 Uncertainty', width=xw[2])
-        pview.AppendTextColumn('Info ',     width=xw[3])
+        pview.AppendTextColumn('Initial value or constraint expression',     width=xw[3])
 
         for col in range(4):
             this = pview.Columns[col]
@@ -626,7 +630,13 @@ class PrePeakFitResultFrame(wx.Frame):
 
     def onLoadModel(self, event=None):
         self.peakframe.use_modelresult(modelresult=self.get_fitresult(),
-                                       dgroup=self.datagroup)
+                                       ddgroup=self.datagroup)
+
+    def onCopyModel(self, evt=None):
+        dataset = evt.GetString()
+        group = self.datasets.get(evt.GetString(), None)
+        result = self.get_fitresult()
+        self.peakframe.use_modelresult(modelresult=result, dgroup=group)
 
     def onCopyParams(self, evt=None):
         result = self.get_fitresult()
@@ -724,19 +734,19 @@ class PrePeakFitResultFrame(wx.Frame):
             for param in reversed(result.result.params.values()):
                 pname = param.name
                 try:
-                    val = gformat(param.value, 10)
+                    val = gformat(param.value, 9)
                 except (TypeError, ValueError):
                     val = ' ??? '
                 serr = ' N/A '
                 if param.stderr is not None:
-                    serr = gformat(param.stderr, 10)
+                    serr = gformat(param.stderr, 8)
                 extra = ' '
                 if param.expr is not None:
                     extra = '= %s ' % param.expr
                 elif not param.vary:
-                    extra = '(fixed)'
+                    extra = f'(fixed to {gformat(param.init_value, 9)}'
                 elif param.init_value is not None:
-                    extra = '(init=%s)' % gformat(param.init_value, 10)
+                    extra = gformat(param.init_value, 9)
 
                 wids['params'].AppendItem((pname, val, serr, extra))
                 wids['paramsdata'].append(pname)
@@ -970,16 +980,19 @@ class PrePeakPanel(TaskPanel):
             prepeaks = getattr(dgroup, 'prepeaks', None)
             if prepeaks is None:
                 modelresult = getattr(self.larch.symtable, 'peakresult', None)
-                # print("use result from peakresult ", modelresult)
+                # print("use result from global peakresult ", modelresult)
             else:
-                modelresult = getattr(prepeaks, 'fit_history', [None])[0]
-                # print("use modelresult from history ", modelresult)
+                peakmodel = getattr(prepeaks, 'peakmodel', None)
+                user_opts = getattr(prepeaks, 'user_options', None)
+                if peakmodel is None:
+                    modelresult = getattr(prepeaks, 'fit_history', [None])[0]
+                    # print("use modelresult from history ", modelresult)
 
-            if modelresult is not None or prepeaks is not None:
+            if modelresult is not None or peakmodel is not None:
                 self.showresults_btn.Enable()
-                # print("-> use model_result ", modelresult, prepeaks, dgroup)
-                self.use_modelresult(modelresult=modelresult,
-                                     prepeaks=prepeaks, group=dgroup)
+                # print("-> use model_result ", modelresult, peakmodel, dgroup)
+                self.use_modelresult(modelresult=modelresult, dgroup=dgroup,
+                                    peakmodel=peakmodel, user_opts=user_opts)
 
 
     def read_form(self):
@@ -1457,21 +1470,25 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
 
         self.use_modelresult(modelresult=dat[1])
 
-    def use_modelresult(self, modelresult=None, prepeaks=None, group=None):
+    def use_modelresult(self, modelresult=None, peakmodel=None, user_opts=None, dgroup=None):
         for prefix in list(self.fit_components.keys()):
             self.onDeleteComponent(prefix=prefix)
-
-        user_opts = None
-        # print("in use_modelresult ", modelresult, prepeaks, group)
 
         if modelresult is not None:
             params = modelresult.result.params
             model = modelresult.result.model
             user_opts = modelresult.user_options
-        elif prepeaks is not None:
-            model = prepeaks.peakmodel['model']
-            params = prepeaks.peakmodel['params']
-            user_opts = prepeaks.user_options
+        elif peakmodel is not None and user_opts is not None:
+            model = peakmodel['model']
+            params = peakmodel['params']
+
+        if dgroup is None:
+            dgroup = self.controller.get_group()
+        if not hasattr(dgroup, 'prepeaks'):
+            dgroup.prepeaks = Group()
+
+        dgroup.prepeaks.user_options = {k: v for k, v in user_opts.items()}
+        dgroup.prepeaks.peakmodel = {'model': deepcopy(model), 'params': deepcopy(params)}
 
         bkg_comps = user_opts['bkg_components']
         for comp in model.components:
