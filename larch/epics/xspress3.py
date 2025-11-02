@@ -124,7 +124,7 @@ class Xspress3(Device, ADFileMixin, Xspress3BaseMixin):
             imca = i+1
             dprefix = f"{prefix}det1:"
             rprefix = f"{prefix}MCA{imca}ROI"
-            data_pv = f"{prefix}MCAPimca}:ArrayData"
+            data_pv = f"{prefix}MCA{imca}:ArrayData"
             mca = ADMCA(dprefix, data_pv=data_pv, roi_prefix=rprefix)
             self.mcas.append(mca)
 
