@@ -127,6 +127,8 @@ def run_larch_jupyterlab():
     "run Jupyter Lab within the Larch-installed Python"
     app = LarchApps['Jupyter Lab']
     app.prep_cli()
+    os.environ['JUPYTER_APP_LAUNCHER_PATH'] =  Path(sys.prefix, 'share', 'jupyter',
+                                                   'labextensions', 'jupyter_app_launcher').as_posix()
     from jupyterlab import labapp
     labapp.main()
 
