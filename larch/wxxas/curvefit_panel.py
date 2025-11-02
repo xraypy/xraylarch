@@ -6,7 +6,7 @@ np.seterr(all='ignore')
 
 from functools import partial
 import json
-
+from copy import deepcopy
 import wx
 import wx.lib.scrolledpanel as scrolled
 
@@ -48,6 +48,7 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl,
                          flatnotebook, Popup, EditableListBox,
                          ExceptionPopup)
 
+from larch.wxlib.xafsplots import extend_plotrange
 from larch.wxlib.parameter import ParameterWidgets
 from larch.wxlib.plotter import last_cursor_pos
 from .taskpanel import TaskPanel
@@ -143,6 +144,7 @@ if not hasattr(_main, 'curvefit_params'): curvefit_params = Parameters()
 if not hasattr({group}, 'curvefit'): {group}.curvefit = group(__name__='curvefit result')
 if not hasattr({group}.curvefit, 'fit_history'): {group}.curvefit.fit_history = []
 {group}.curvefit.user_options = {user_opts:s}
+{group}.curvefit.fitmodel = {{'model': deepcopy(curvefit_model), 'params': deepcopy(curvefit_params)}}
 {group}.curvefit.init_fit = curvefit_model.eval(curvefit_params, x={group}.curvefit.xdat)
 {group}.curvefit.init_ycomps = curvefit_model.eval_components(params=curvefit_params, x={group}.curvefit.xdat)
 """
@@ -265,8 +267,8 @@ class CurveFitResultFrame(wx.Frame):
 
         pack(ppanel, psizer)
 
-        wids['load_model'] = Button(panel, 'Load this Model for Fitting',
-                                    size=(250, -1), action=self.onLoadModel)
+#         wids['load_model'] = Button(panel, 'Load this Model for Fitting',
+#                                     size=(250, -1), action=self.onLoadModel)
 
         wids['plot_choice'] = Button(panel, 'Plot This Fit',
                                      size=(125, -1), action=self.onPlot)
@@ -285,11 +287,19 @@ class CurveFitResultFrame(wx.Frame):
 
         irow += 1
         wids['model_desc'] = SimpleText(panel, '<Model>', font=Font(FONTSIZE+1),
-                                        size=(750, 50), style=LEFT)
+                                        size=(800, 50), style=LEFT)
         sizer.Add(wids['model_desc'],  (irow, 0), (1, 6), LEFT)
 
+        self.wids['use_model'] = Button(panel, 'Load This Model for Fitting',
+                                       size=(275, -1), action=self.onCopyModel)
+
+        self.wids['copy_params'] = Button(panel, 'Update Model with best-fit values',
+                                          size=(275, -1), action=self.onCopyParams)
+
         irow += 1
-        sizer.Add(wids['load_model'],(irow, 0), (1, 2), LEFT)
+        sizer.Add(self.wids['use_model'], (irow, 0), (1, 2), LEFT)
+        sizer.Add(self.wids['copy_params'], (irow, 2), (1, 3), LEFT)
+
 
         irow += 1
         sizer.Add(wids['plot_choice'],(irow, 0), (1, 1), LEFT)
@@ -350,10 +360,6 @@ class CurveFitResultFrame(wx.Frame):
                            colour=GUI_COLORS.title, style=LEFT)
         sizer.Add(title, (irow, 0), (1, 1), LEFT)
 
-        self.wids['copy_params'] = Button(panel, 'Update Model with these values',
-                                          size=(250, -1), action=self.onCopyParams)
-
-        sizer.Add(self.wids['copy_params'], (irow, 1), (1, 3), LEFT)
 
         pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         pview.SetFont(self.font_fixedwidth)
@@ -365,7 +371,7 @@ class CurveFitResultFrame(wx.Frame):
         pview.AppendTextColumn('Parameter',  width=xw[0])
         pview.AppendTextColumn('Best Value', width=xw[1])
         pview.AppendTextColumn('1-\u03c3 Uncertainty', width=xw[2])
-        pview.AppendTextColumn('Info ',     width=xw[3])
+        pview.AppendTextColumn('Initial value or constraint expression',     width=xw[3])
 
         for col in range(4):
             this = pview.Columns[col]
@@ -465,21 +471,27 @@ class CurveFitResultFrame(wx.Frame):
                                   "Overwrite existing file?", style=wx.YES_NO):
                 return
 
-        curvefit_tmpl = self.datasets[fnames[0]].curvefit
-        res0 = curvefit_tmpl.fit_history[0].result
-        param_names = list(reversed(res0.params.keys()))
-        user_opts = curvefit_tmpl.user_options
-        model_desc = self.get_model_desc(res0.model).replace('\n', ' ')
-        out = ['# Curve Fit Report %s' % time.ctime(),
-               '# Fitted Array name: %s' %  user_opts['array_name'],
-               '# Model form: %s' % model_desc,
-               '# Baseline form: %s' % user_opts.get('baseline_form', 'No baseline'),
-               '# Energy fit range: [%f, %f]' % (user_opts['xmin'], user_opts['xmax']),
+        out = [f'# Curve Fit Report {time.ctime()}',
+               '# For full details, each fit must be saved individually',
                '#--------------------']
 
-        labels = [('Data Set' + ' '*25)[:25], 'Group name', 'n_data',
-                 'n_varys', 'chi-square', 'reduced_chi-square',
-                 'akaike_info', 'bayesian_info', 'R^2']
+        param_names = []
+        for name, dgroup in self.datasets.items():
+            if not hasattr(dgroup, 'curvefit'):
+                continue
+            for cvfit in getattr(dgroup.prepeaks, 'fit_history', []):
+                try:
+                    xparams = cvfit.result.params.keys()
+                except Expcetion:
+                    xparams = []
+                for pname in reversed(xparams):
+                    if pname not in param_names:
+                        param_names.append(pname)
+
+        labels = [('Data Set' + ' '*25)[:25], 'Group name', 'Fit Label',
+                  'n_data', 'n_varys', 'chi-square', 'reduced_chi-square',
+                  'akaike_info', 'bayesian_info', 'R^2']
+
 
         for pname in param_names:
             labels.append(pname)
@@ -488,26 +500,32 @@ class CurveFitResultFrame(wx.Frame):
         for name, dgroup in self.datasets.items():
             if not hasattr(dgroup, 'curvefit'):
                 continue
-            try:
-                cvfit = dgroup.curvefit.fit_history[0]
-            except:
-                continue
-            result = cvfit.result
-            label = dgroup.filename
-            if len(label) < 25:
-                label = (label + ' '*25)[:25]
-            dat = [label, dgroup.groupname,
-                   '%d' % result.ndata, '%d' % result.nvarys]
-            for attr in ('chisqr', 'redchi', 'aic', 'bic', 'rsquared'):
-                dat.append(gformat(getattr(result, attr), 11))
-            for pname in param_names:
-                val = stderr = 0
-                if pname in result.params:
-                    par = result.params[pname]
-                    dat.append(gformat(par.value, 11))
-                    stderr = gformat(par.stderr, 11) if par.stderr is not None else 'nan'
+            i = 0
+            for cvfit in getattr(dgroup.curvefit, 'fit_history', []):
+                i += 1
+                try:
+                    xparams = cvfit.result.params.keys()
+                except Expcetion:
+                    print('   no params')
+                    continue
+
+                result = cvfit.result
+                label = getattr(pkfit, 'label', f'fit #{i}')
+                dat = [dgroup.filename, dgroup.groupname, label,
+                       f'{result.ndata}', f'{result.nvarys}']
+                for attr in ('chisqr', 'redchi', 'aic', 'bic', 'rsquared'):
+                    dat.append(gformat(getattr(result, attr), 11))
+                for pname in param_names:
+                    val = stderr = 'unused'
+                    if pname in result.params:
+                        par = result.params[pname]
+                        val = gformat(par.value, 11)
+                        stderr = 'nan'
+                        if par.stderr is not None:
+                            stderr = gformat(par.stderr, 11)
+                    dat.append(val)
                     dat.append(stderr)
-            out.append(', '.join(dat))
+                out.append(', '.join(dat))
         out.append('')
 
         with open(path, 'w', encoding=sys.getdefaultencoding()) as fh:
@@ -527,25 +545,14 @@ class CurveFitResultFrame(wx.Frame):
 
         outfile = FileSave(self, 'Export Fit Result', default_file=deffile)
 
-        cvfit = self.get_fitresult()
-        result = cvfit.result
         if outfile is not None:
-            i1, i2 = get_xlims(dgroup.xplot,
-                               cvfit.user_options['xmin'],
-                               cvfit.user_options['xmax'])
-            x = dgroup.xplot[i1:i2]
-            y = dgroup.yplot[i1:i2]
-            yerr = None
-            if hasattr(dgroup, 'y_std'):
-                yerr = 1.0*dgroup.yerr
-                if not isinstance(yerr, np.ndarray):
-                    yerr = yerr * np.ones(len(y))
-                else:
-                    yerr = yerr[i1:i2]
-
+            cvfit = self.get_fitresult()
+            result = cvfit.result
             export_modelresult(result, filename=outfile,
-                               datafile=dgroup.filename, ydata=y,
-                               yerr=yerr, x=x)
+                               datafile=dgroup.filename,
+                               xdata=cvfit.xdata,
+                               ydata=cvfit.ydata,
+                               yerr=cvfit.y_sdt)
 
 
     def get_fitresult(self, nfit=None):
@@ -620,8 +627,12 @@ class CurveFitResultFrame(wx.Frame):
             name1, name2 = namepair.split('$$')
             self.wids['correl'].AppendItem((name1, name2, "% .4f" % corval))
 
-    def onLoadModel(self, event=None):
-        self.fit_frame.use_modelresult(self.get_fitresult())
+
+    def onCopyModel(self, evt=None):
+        dataset = evt.GetString()
+        dgroup = self.datasets.get(evt.GetString(), None)
+        result = self.get_fitresult()
+        self.fit_frame.use_modelresult(modelresult=result, dgroup=dgroup)
 
     def onCopyParams(self, evt=None):
         result = self.get_fitresult()
@@ -662,7 +673,7 @@ class CurveFitResultFrame(wx.Frame):
                 elif attr == 'rsquared':
                     val = f"{val:.5f}"
                 else:
-                    val = gformat(val, 10)
+                    val = gformat(val, 9)
                 args.append(val)
             wids['stats'].AppendItem(tuple(args))
         wids['data_title'].SetLabel(self.datagroup.filename)
@@ -715,19 +726,19 @@ class CurveFitResultFrame(wx.Frame):
             for param in reversed(result.result.params.values()):
                 pname = param.name
                 try:
-                    val = gformat(param.value, 10)
+                    val = gformat(param.value, 9)
                 except (TypeError, ValueError):
                     val = ' ??? '
                 serr = ' N/A '
                 if param.stderr is not None:
-                    serr = gformat(param.stderr, 10)
+                    serr = gformat(param.stderr, 9)
                 extra = ' '
                 if param.expr is not None:
                     extra = '= %s ' % param.expr
                 elif not param.vary:
                     extra = '(fixed)'
                 elif param.init_value is not None:
-                    extra = '(init=%s)' % gformat(param.init_value, 10)
+                    extra = '(init=%s)' % gformat(param.init_value, 9)
 
                 wids['params'].AppendItem((pname, val, serr, extra))
                 wids['paramsdata'].append(pname)
@@ -1127,7 +1138,6 @@ class CurveFitParamsPanel(wx.Panel):
 
 
 
-
 class CurveFitPanel(TaskPanel):
     def __init__(self, parent=None, controller=None, **kws):
         self.fit_components = {}
@@ -1151,15 +1161,11 @@ class CurveFitPanel(TaskPanel):
             fname = self.controller.filelist.GetStringSelection()
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
-            self.ensure_xas_processed(dgroup)
-            self.fill_form(dgroup)
+            # self.ensure_xas_processed(dgroup)
+            self.fill_form(dgroup, newgroup=True)
         except:
-            pass # print(" Cannot Fill curvefit panel from group ")
+            pass
 
-        cvfit = getattr(self.larch.symtable, 'curvefit_result', None)
-        if cvfit is not None:
-            self.showresults_btn.Enable()
-            self.use_modelresult(cvfit)
 
     def onModelPanelExposed(self, event=None, **kws):
         if self.mod_nb is None:
@@ -1172,13 +1178,6 @@ class CurveFitPanel(TaskPanel):
         getattr(oldpage, 'onPanelHidden', noop)()
         getattr(newpage, 'onPanelExposed', noop)()
 
-#         if callable(on_hide):
-#             on_hide()
-#
-#         # self.build_fitmodel()
-#
-#         if callable(on_expose):
-#             on_expose()
 
     def build_display(self):
         pan = self.panel # = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LEFT)
@@ -1194,7 +1193,7 @@ class CurveFitPanel(TaskPanel):
 
         self.wids['show_fitrange']  = Check(pan, label='show?', default=True,
                                            size=(50, -1),  action=self.onPlot)
-        self.wids['full_fitrange']  = Button(pan, label='use full range?',
+        self.wids['full_fitrange']  = Button(pan, label='use full X range?',
                                            size=(125, -1),  action=self.onFull_Xrange)
 
         self.wids['yerr_choice'] = Choice(pan, choices=YERR_CHOICES, default=0,
@@ -1205,7 +1204,7 @@ class CurveFitPanel(TaskPanel):
         self.wids['yerr_value'] = FloatCtrl(pan, value=1.0, minval=0,
                                                 precision=5, size=(75, -1))
 
-        self.loadresults_btn = Button(pan, 'Load Fit Result',
+        self.loadresults_btn = Button(pan, 'Load Saved Fit Result',
                                       action=self.onLoadFitResult, size=(175, -1))
         self.showresults_btn = Button(pan, 'Show Fit Results',
                                       action=self.onShowResults, size=(175, -1))
@@ -1238,7 +1237,6 @@ class CurveFitPanel(TaskPanel):
         self.models_other = models_other
         self.message = SimpleText(pan, '')
 
-
         opts = dict(default=False, size=(200, -1), action=self.onPlot)
 
         def add_text(text, dcol=1, newrow=True):
@@ -1246,28 +1244,29 @@ class CurveFitPanel(TaskPanel):
 
         pan.Add(SimpleText(pan, 'Curve-Fitting',
                            size=(350, -1), **self.titleopts), style=LEFT, dcol=5)
-
+        pan.Add(self.loadresults_btn)
         add_text(' Y Array to fit: ')
         pan.Add(self.array_choice, dcol=3)
+        pan.Add((5,5))
+        pan.Add(self.showresults_btn)
 
         add_text(' Y uncertainty: ')
 
         pan.Add(self.wids['yerr_choice'])
         add_text('  Value: ', newrow=False)
         pan.Add(self.wids['yerr_value'])
-        add_text('  Array Name: ', newrow=False)
-        pan.Add(self.wids['yerr_array'], dcol=3)
+        add_text('     Array Name: ', newrow=False)
+        pan.Add(self.wids['yerr_array'], dcol=2)
 
         add_text( ' X min: ')
         pan.Add(curvefit_xmin)
         add_text(' X max: ', newrow=False)
-        pan.Add(curvefit_xmax, dcol=2)
+        pan.Add(curvefit_xmax)
         pan.Add(self.wids['show_fitrange'])
         pan.Add(self.wids['full_fitrange'])
 
         pan.Add((10, 10), newrow=True)
-        pan.Add(self.loadresults_btn, dcol=2)
-        pan.Add(self.showresults_btn, dcol=3)
+
 
         pan.Add(HLine(pan, size=(600, 2)), dcol=6, newrow=True)
 
@@ -1329,7 +1328,7 @@ class CurveFitPanel(TaskPanel):
         yerr_type = self.wids['yerr_choice'].GetSelection() # Constant, Sqrt, Array
         self.wids['yerr_array'].Enable(yerr_type==2)
         self.wids['yerr_value'].Enable(yerr_type==0)
-        print("onYerrChoice ", yerr_type)
+
         if yerr_type == 2:
             dgroup = self.controller.get_group()
             xarr = getattr(dgroup, 'xdat', None)
@@ -1357,25 +1356,44 @@ class CurveFitPanel(TaskPanel):
                 except:
                     pass
 
-    def fill_form(self, dat, newgroup=False):
-        if isinstance(dat, Group):
-            xmin  = dat.xdat.min()
-            xmax  = dat.xdat.max()
+    def fill_form(self, dgroup, newgroup=False):
+        if isinstance(dgroup, Group):
+            xmin  = dgroup.xdat.min()
+            xmax  = dgroup.xdat.max()
 
-            if hasattr(dat, 'curvefit'):
-                xmin = dat.curvefit.xmin
-                xmax = dat.curvefit.xmax
-
+            if hasattr(dgroup, 'curvefit'):
+                xmin = dgroup.curvefit.xmin
+                xmax = dgroup.curvefit.xmax
             self.wids['curvefit_xmin'].SetValue(xmin)
             self.wids['curvefit_xmax'].SetValue(xmax)
-        elif isinstance(dat, dict):
-            self.wids['curvefit_xmin'].SetValue(dat['xmin'])
-            self.wids['curvefit_xmax'].SetValue(dat['xmax'])
 
-        if 'array_desc' in dat:
-            self.array_choice.SetStringSelection(dat['array_desc'])
-        if 'show_fitrange' in dat:
-            self.wids['show_fitrange'].Enable(dat['show_fitrange'])
+        elif isinstance(dgroup, dict):
+            self.wids['curvefit_xmin'].SetValue(dgroup['xmin'])
+            self.wids['curvefit_xmax'].SetValue(dgroup['xmax'])
+
+            if 'array_desc' in dgroup:
+                self.array_choice.SetStringSelection(dgroup['array_desc'])
+            if 'show_fitrange' in dgroup:
+                self.wids['show_fitrange'].Enable(dgroup['show_fitrange'])
+
+        if newgroup and isinstance(dgroup, Group):
+            fitmodel = None
+            modelresult = getattr(self.larch.symtable, 'curvefit_result', None)
+            cvfit = getattr(dgroup, 'curvefit', None)
+            if cvfit is not None:
+                fitmodel = getattr(cvfit, 'fitmodel', None)
+                user_opts = getattr(cvfit, 'user_options', None)
+                if fitmodel is None:
+                    try:
+                        modelresult = getattr(cvfit, 'fit_history', [None])[0]
+                    except Exception:
+                        pass
+
+            if modelresult is not None or fitmodel is not None:
+                self.showresults_btn.Enable()
+                self.use_modelresult(modelresult=modelresult, dgroup=dgroup,
+                                     fitmodel=fitmodel, user_opts=user_opts)
+
 
     def read_form(self):
         "read for, returning dict of values"
@@ -1508,11 +1526,15 @@ class CurveFitPanel(TaskPanel):
         self.pick2msg.SetLabel("done.")
         self.pick2_timer.Stop()
 
+        dgroup = getattr(self.larch.symtable, self.controller.groupname)
+
         # guess param values
         xcur = (curhist[0][0], curhist[1][0])
-        xmin, xmax = min(xcur), max(xcur)
+        try:
+            xmin, xmax = min(xcur), max(xcur)
+        except Exception:
+            xmin, xmax = min(dgroup.xplot), max(dgroup.xplot)
 
-        dgroup = getattr(self.larch.symtable, self.controller.groupname)
         i0 = max(0, index_of(dgroup.xplot, xmin) - 2)
         i1 = min(len(dgroup.xplot), index_of(dgroup.xplot, xmax) + 2)
         x, y = dgroup.xplot[i0:i1+1], dgroup.yplot[i0:i1+1]
@@ -1575,35 +1597,52 @@ class CurveFitPanel(TaskPanel):
             Popup(self, f" '{rfile}' is not a valid Curvefit Model file",
                   "Invalid file")
 
-        self.use_modelresult(dat[1])
+        self.use_modelresult(modelresult=dat[1])
 
-    def use_modelresult(self, cvfit):
+    def use_modelresult(self, modelresult=None, fitmodel=None, user_opts=None, dgroup=None):
         for prefix in list(self.fit_components.keys()):
             self.onDeleteComponent(prefix=prefix)
 
-        result = cvfit.result
-        bkg_comps = cvfit.user_options['bkg_components']
+        if modelresult is not None:
+            params = modelresult.result.params
+            model = modelresult.result.model
+            user_opts = modelresult.user_options
+        elif fitmodel is not None and user_opts is not None:
+            model = fitmodel['model']
+            params = fitmodel['params']
 
-        for comp in result.model.components:
-            isbkg = comp.prefix in bkg_comps
-            # print("USE MODEL ", comp, comp.func, comp.prefix, comp.opts)
+        if dgroup is None:
+            dgroup = self.controller.get_group()
+        if not hasattr(dgroup, 'curvefit'):
+            dgroup.curvefit = Group()
+
+        dgroup.curvefit.user_options = {k: v for k, v in user_opts.items()}
+        dgroup.curvefit.fitmodel = {'model': deepcopy(model), 'params': deepcopy(params)}
+
+        bkg_comps = user_opts['bkg_components']
+
+        for comp in model.components:
             self.addModel(model=comp.func.__name__,
-                          prefix=comp.prefix, isbkg=isbkg,
+                          prefix=comp.prefix, isbkg=(comp.prefix in bkg_comps),
                           opts=comp.opts)
 
-        for comp in result.model.components:
+        for comp in model.components:
             parwids = self.fit_components[comp.prefix].parwids
-            for pname, par in result.params.items():
+            for pname, par in params.items():
                 if pname in parwids:
                     wids = parwids[pname]
-                    wids.value.SetValue(result.init_values.get(pname, par.value))
+                    wids.value.SetValue(par.init_value)
                     varstr = 'vary' if par.vary else 'fix'
-                    if par.expr is not None:   varstr = 'constrain'
-                    if wids.vary is not None:  wids.vary.SetStringSelection(varstr)
-                    if wids.minval is not None: wids.minval.SetValue(par.min)
-                    if wids.maxval is not None: wids.maxval.SetValue(par.max)
+                    if par.expr is not None:
+                        varstr = 'constrain'
+                    if wids.vary is not None:
+                        wids.vary.SetStringSelection(varstr)
+                    if wids.minval is not None:
+                        wids.minval.SetValue(par.min)
+                    if wids.maxval is not None:
+                        wids.maxval.SetValue(par.max)
 
-        self.fill_form(cvfit.user_options)
+        self.fill_form(user_opts)
 
     def get_xranges(self, x):
         opts = self.read_form()
@@ -1785,7 +1824,6 @@ class CurveFitPanel(TaskPanel):
 
     def onShowResults(self, event=None):
         self.show_subframe('curvefit_result', CurveFitResultFrame, fit_frame=self)
-
 
     def update_start_values(self, params):
         """fill parameters with best fit values"""
