@@ -5,6 +5,7 @@ from functools import partial
 try:
     import epics
     from epics.devices.mca import  MultiXMAP
+    from epics.devices.mca import MCA as EpicsMCA
     from epics.devices.struck import Struck
     from epics.wx import EpicsFunction, DelayedEpicsCallback
     HAS_EPICS = True
@@ -176,10 +177,14 @@ class Epics_Xspress3(object):
 
     def get_dtfactor(self, mca=1):
         """return deadtime correction factor"""
+        dval = 1.0
         try:
-            dval = self._xsp3.get("C%iSCA:9:Value_RBV" % (mca))
+            dval = self._xsp3.get("C%i:DTFactor_RBV" % (mca))
         except:
-            dval = 1.0
+            try:
+                dval = self._xsp3.get("C%iSCA:9:Value_RBV" % (mca))
+            except:
+                pass
         return dval
 
     def set_usesum(self, use_sum=True):

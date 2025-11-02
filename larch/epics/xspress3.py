@@ -111,10 +111,10 @@ class Xspress3(Device, ADFileMixin, Xspress3BaseMixin):
     def __init__(self, prefix, nmca=4, filesaver='HDF1:',
                  fileroot='/home/xspress3/cars5/Data'):
         if not prefix.endswith(':'):
-            prefix = "%s:" % prefix
+            prefix = f"{prefix}:"
         self.nmca = nmca
         attrs = []
-        attrs.extend(['%s%s' % (filesaver,p) for p in self.pathattrs])
+        attrs.extend([f'{filesaver}{p}' for p in self.pathattrs])
 
         self.filesaver = filesaver
         self.fileroot = fileroot
@@ -122,20 +122,21 @@ class Xspress3(Device, ADFileMixin, Xspress3BaseMixin):
         self.mcas = []
         for i in range(nmca):
             imca = i+1
-            dprefix = "%sdet1:" % prefix
-            rprefix = "%sMCA%iROI" % (prefix, imca)
-            data_pv = "%sMCA%i:ArrayData" % (prefix, imca)
+            dprefix = f"{prefix}det1:"
+            rprefix = f"{prefix}MCA{imca}ROI"
+            data_pv = f"{prefix}MCAPimca}:ArrayData"
             mca = ADMCA(dprefix, data_pv=data_pv, roi_prefix=rprefix)
             self.mcas.append(mca)
 
         Device.__init__(self, prefix, attrs=attrs, delim='')
         for attr in self.det_attrs:
-            self.add_pv("%sdet1:%s" % (prefix, attr), attr)
+            self.add_pv(f"{prefix}det1:{attr}", attr)
         for i in range(nmca):
             imca = i+1
-            for j in range(10):
+            self.add_pv(f"{prefix}C{imca}:DTFactor_RBV", f"DTFactor{imca}")
+            for j in range(4):
                 isca = j+1
-                attr="C%iSCA%i"% (imca, isca)
+                self.add_pv(f"{prefix}C{imca}SCA{isca}", f"C{imca}SCA{isca}")
 
         time.sleep(0.05)
 
