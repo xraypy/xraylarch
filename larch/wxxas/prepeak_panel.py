@@ -257,8 +257,8 @@ class PrePeakFitResultFrame(wx.Frame):
 
         pack(ppanel, psizer)
 
-        wids['load_model'] = Button(panel, 'Load this Model for Fitting',
-                                    size=(250, -1), action=self.onLoadModel)
+        # wids['load_model'] = Button(panel, 'Load this Model for Fitting',
+        #                             size=(250, -1), action=self.onLoadModel)
 
         wids['plot_choice'] = Button(panel, 'Plot This Fit',
                                      size=(125, -1), action=self.onPlot)
@@ -280,8 +280,15 @@ class PrePeakFitResultFrame(wx.Frame):
                                         size=(750, 50), style=LEFT)
         sizer.Add(wids['model_desc'],  (irow, 0), (1, 6), LEFT)
 
+
+        self.wids['use_model'] = Button(panel, 'Load Model for Fitting',
+                                          size=(275, -1), action=self.onCopyModel)
+        self.wids['copy_params'] = Button(panel, 'Update Model with best-fit values',
+                                          size=(275, -1), action=self.onCopyParams)
+
         irow += 1
-        sizer.Add(wids['load_model'],(irow, 0), (1, 2), LEFT)
+        sizer.Add(self.wids['use_model'], (irow, 0), (0, 2), LEFT)
+        sizer.Add(self.wids['copy_params'], (irow, 2), (1, 2), LEFT)
 
         irow += 1
         sizer.Add(wids['plot_choice'],(irow, 0), (1, 1), LEFT)
@@ -342,14 +349,6 @@ class PrePeakFitResultFrame(wx.Frame):
         title = SimpleText(panel, '[[Variables]]',  font=Font(FONTSIZE+2),
                            colour=GUI_COLORS.title, style=LEFT)
         sizer.Add(title, (irow, 0), (1, 1), LEFT)
-
-        self.wids['use_model'] = Button(panel, 'Use Model in Pre-Edge Peaks',
-                                          size=(250, -1), action=self.onCopyModel)
-        self.wids['copy_params'] = Button(panel, 'Update Model with best-fit values',
-                                          size=(250, -1), action=self.onCopyParams)
-
-        sizer.Add(self.wids['use_model'], (irow, 1), (1, 2), LEFT)
-        sizer.Add(self.wids['copy_params'], (irow, 3), (1, 2), LEFT)
 
         pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         pview.SetFont(self.font_fixedwidth)
@@ -465,11 +464,9 @@ class PrePeakFitResultFrame(wx.Frame):
                                   "Overwrite existing file?", style=wx.YES_NO):
                 return
 
-
         out = ['# Pre-edge Peak Fit Report %s' % time.ctime(),
-               '# For ful details, each fit must be saved individually',
+               '# For full details, each fit must be saved individually',
                '#--------------------']
-
 
         param_names = []
         for name, dgroup in self.datasets.items():
@@ -485,16 +482,14 @@ class PrePeakFitResultFrame(wx.Frame):
                         param_names.append(pname)
 
         labels = [('Data Set' + ' '*25)[:25], 'Group name', 'Fit Label',
-                 'n_data', 'n_varys', 'chi-square',
-                 'reduced_chi-square', 'akaike_info', 'bayesian_info',
-                 'R^2']
+                 'n_data', 'n_varys', 'chi-square', 'reduced_chi-square',
+                 'akaike_info', 'bayesian_info', 'R^2']
 
         for pname in param_names:
             labels.append(pname)
             labels.append(pname+'_stderr')
         out.append('# %s' % (', '.join(labels)))
         for name, dgroup in self.datasets.items():
-            # print(name, dgroup, hasattr(dgroup, 'prepeaks'))
             if not hasattr(dgroup, 'prepeaks'):
                 continue
             i = 0
@@ -628,15 +623,11 @@ class PrePeakFitResultFrame(wx.Frame):
             name1, name2 = namepair.split('$$')
             self.wids['correl'].AppendItem((name1, name2, "% .4f" % corval))
 
-    def onLoadModel(self, event=None):
-        self.peakframe.use_modelresult(modelresult=self.get_fitresult(),
-                                       ddgroup=self.datagroup)
-
     def onCopyModel(self, evt=None):
         dataset = evt.GetString()
-        group = self.datasets.get(evt.GetString(), None)
+        dgroup = self.datasets.get(evt.GetString(), None)
         result = self.get_fitresult()
-        self.peakframe.use_modelresult(modelresult=result, dgroup=group)
+        self.peakframe.use_modelresult(modelresult=result, dgroup=dgroup)
 
     def onCopyParams(self, evt=None):
         result = self.get_fitresult()
@@ -678,7 +669,7 @@ class PrePeakFitResultFrame(wx.Frame):
                 elif attr == 'rsquared':
                     val = f"{val:.5f}"
                 else:
-                    val = gformat(val, 10)
+                    val = gformat(val, 9)
                 args.append(val)
             wids['stats'].AppendItem(tuple(args))
         wids['data_title'].SetLabel(self.datagroup.filename)
@@ -796,10 +787,11 @@ class PrePeakPanel(TaskPanel):
         ppeak_emin = self.add_floatspin('ppeak_emin', value=-20, **fsopts)
         ppeak_emax = self.add_floatspin('ppeak_emax', value=0, **fsopts)
 
-        self.loadresults_btn = Button(pan, 'Load Fit Result',
-                                      action=self.onLoadFitResult, size=(165, -1))
+
+        self.loadresults_btn = Button(pan, 'Load Saved Fit Result',
+                                      action=self.onLoadFitResult, size=(175, -1))
         self.showresults_btn = Button(pan, 'Show Fit Results',
-                                      action=self.onShowResults, size=(165, -1))
+                                      action=self.onShowResults, size=(175, -1))
         self.showresults_btn.Disable()
 
         self.fitbline_btn  = Button(pan,'Fit Baseline', action=self.onFitBaseline,
@@ -859,7 +851,6 @@ class PrePeakPanel(TaskPanel):
         pan.Add(self.array_choice, dcol=3)
         pan.Add((5,5))
         pan.Add(self.showresults_btn)
-
 
         add_text('Fit X/Energy Range: ')
         pan.Add(ppeak_emin)
@@ -954,7 +945,6 @@ class PrePeakPanel(TaskPanel):
         dgroup.prepeak_config = conf
 
     def fill_form(self, dgroup, newgroup=False):
-        # print("prepeak.fill_form ", dgroup, type(dgroup))
         if isinstance(dgroup, Group):
             if not hasattr(dgroup, 'norm'):
                 self.parent.process_normalization(dgroup)
@@ -976,7 +966,7 @@ class PrePeakPanel(TaskPanel):
             self.show_peakrange.Enable(dgroup['show_peakrange'])
 
         if newgroup and isinstance(dgroup, Group):
-            modelresult = None
+            modelresult, peakmodel = None, None
             prepeaks = getattr(dgroup, 'prepeaks', None)
             if prepeaks is None:
                 modelresult = getattr(self.larch.symtable, 'peakresult', None)
@@ -992,7 +982,7 @@ class PrePeakPanel(TaskPanel):
                 self.showresults_btn.Enable()
                 # print("-> use model_result ", modelresult, peakmodel, dgroup)
                 self.use_modelresult(modelresult=modelresult, dgroup=dgroup,
-                                    peakmodel=peakmodel, user_opts=user_opts)
+                                    fitmodel=peakmodel, user_opts=user_opts)
 
 
     def read_form(self):
@@ -1470,7 +1460,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
 
         self.use_modelresult(modelresult=dat[1])
 
-    def use_modelresult(self, modelresult=None, peakmodel=None, user_opts=None, dgroup=None):
+    def use_modelresult(self, modelresult=None, fitmodel=None, user_opts=None, dgroup=None):
         for prefix in list(self.fit_components.keys()):
             self.onDeleteComponent(prefix=prefix)
 
@@ -1478,9 +1468,9 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             params = modelresult.result.params
             model = modelresult.result.model
             user_opts = modelresult.user_options
-        elif peakmodel is not None and user_opts is not None:
-            model = peakmodel['model']
-            params = peakmodel['params']
+        elif fitmodel is not None and user_opts is not None:
+            model = fitmodel['model']
+            params = fitmodel['params']
 
         if dgroup is None:
             dgroup = self.controller.get_group()
@@ -1546,7 +1536,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                            emax=opts['emax'])
         dgroup.journal.add_ifnew('prepeaks_setup', ppeaks_opts)
 
-        bkg_comps = []
+        # bkg_comps = []
         for comp in self.fit_components.values():
             _cen, _amp = None, None
             if comp.usebox is not None and comp.usebox.IsChecked():
@@ -1571,8 +1561,8 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                                                         ', '.join(compargs)))
 
                 modop = "+="
-                if comp.bkgbox.IsChecked():
-                    bkg_comps.append(comp.mclass_kws.get('prefix', ''))
+                # if comp.bkgbox.IsChecked():
+                #     bkg_comps.append(comp.mclass_kws.get('prefix', ''))
                 if not comp.bkgbox.IsChecked() and _cen is not None and _amp is not None:
                     peaks.append((_amp, _cen))
 
