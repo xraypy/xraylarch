@@ -435,10 +435,10 @@ class Epics_MultiXMAP(object):
 
     def set_dwelltime(self, dtime=0):
         if dtime <= 0.1:
-            self._xmap.PresetMode = 0
+            self._xmap.put('PresetMode',  0)
         else:
-            self._xmap.PresetMode = 1
-            self._xmap.PresetReal = dtime
+            self._xmap.put('PresetMode', 2)
+            self._xmap.put('PRTM', dtime)
 
     def start(self):
         return self._xmap.start()
@@ -530,3 +530,188 @@ class Epics_MultiXMAP(object):
 
 
         save_gsemcafile(filename, mcas, rois, environ=environ)
+
+class Epics_KetekMCA(object):
+    """single-element MCA detector using Ketek DPP3
+
+    mcas    list of MCA objects
+
+    connect()
+    set_dwelltime(dtime=0)
+    start()
+    stop()
+    erase()
+    add_roi(roiname, lo, hi)
+    del_roi(roiname)
+    clear_rois()
+    save_ascii(filename)
+    get_energy(mca=1)
+    get_array(mca=1)
+    """
+    def __init__(self, prefix=None, **kws):
+        self.nmca = 1
+        self.prefix = prefix
+        self.energies = []
+        self.mcas = []
+        self.connected = False
+        self.elapsed_real = None
+        self.elapsed_textwidget = None
+        self.needs_refresh = False
+        self.frametime = 1.0
+        self.nframes = 1
+        if self.prefix is not None:
+            self.connect()
+
+    # @EpicsFunction
+    def connect(self):
+        self._mca = EpicsMCA(f'{self.prefix}:mca1')
+        # self._mca.add_pv(f'{self.prefix}:mca1.ERTM', 'ERTM')
+        self._mca.add_pv(f'{self.prefix}:mca1.DTIM', 'DTIM')
+        self._mca.add_pv(f'{self.prefix}:mca1.VAL', '_dat_')
+        for attr in ('InputCounts', 'OutputCounts',
+                     'InputCountRate', 'OutputCountRate', 'PresetMode'):
+            self._mca.add_pv(f'{self.prefix}:DSP1:{attr}', attr)
+        for attr in ('EraseStart', 'Start', 'Stop', 'Erase'):
+            self._mca.add_pv(f'{self.prefix}:mca1{attr}', attr)
+
+        time.sleep(0.001)
+        self._mca._pvs['ERTM'].add_callback(self.onRealTime)
+        self.connected = True
+        self.mcas = [self._mca]
+        self.rois = self._mca.get_rois()
+
+    @EpicsFunction
+    def connect_displays(self, status=None, elapsed=None, deadtime=None):
+        pvs = self._mca._pvs
+        if elapsed is not None:
+            self.elapsed_textwidget = elapsed
+        for wid, attr in ((status, 'ACQG'),(deadtime, 'DTIM')):
+            if wid is not None:
+                pvs[attr].add_callback(partial(self.update_widget, wid=wid))
+
+    @DelayedEpicsCallback
+    def update_widget(self, pvname, char_value=None,  wid=None, **kws):
+        if wid is not None:
+            wid.SetLabel(char_value)
+
+    @DelayedEpicsCallback
+    def onRealTime(self, pvname, value=None, char_value=None, **kws):
+        self.elapsed_real = value
+        self.needs_refresh = True
+        self.frametime = value
+        if self.elapsed_textwidget is not None:
+            self.elapsed_textwidget.SetLabel(" %8.2f" % value)
+
+    def set_usesum(self, usesum=True):
+        pass
+
+    def get_deadtime(self, mca=1):
+        """return deadtime info"""
+        return self._mca.get("DTIM")
+
+    def get_dtfactor(self, mca=1):
+        """return deadtime correction factor"""
+        ocr = self._mca.get("OutputCountRate")
+        icr = self._mca.get("InputCountRate")
+        if icr < 1 or ocr < 1:
+            return 1
+        return icr/ocr
+
+    def set_dwelltime(self, dtime=0):
+        if dtime <= 0.1:
+            self._mca.put('PresetMode', 0)
+            self._mca.put('PRTM', 0)
+        else:
+            self._mca.put('PresetMode', 2)
+            self._mca.put('PRTM', dtime)
+
+    def erasestart(self):
+        return self._mca.put('EraseStart', 1)
+
+    def start(self, erase=True):
+        if erase:
+            self.erase()
+        return self._mca.put('Start', 1)
+
+    def stop(self):
+        return self._mca.put('Stop', 1)
+
+    def erase(self):
+        self._mca.put('Erase', 1)
+
+    def get_array(self, mca=1):
+        out = 1.0*self._mca.get('VAL')
+        out[np.where(out<0.91)]= 0.91
+        return out
+
+    def get_energy(self, mca=1):
+        return self._mca.get_energy()
+
+    def get_mca(self, mca=1, with_rois=True):
+        """return an MCA object """
+        emca = self._mca
+        if with_rois:
+            emca.get_rois()
+        counts = self.get_array(mca=mca)
+        if max(counts) < 1.0:
+            counts    = 0.5*np.ones(len(counts))
+            counts[0] = 2.0
+
+        thismca = MCA(counts=counts, offset=emca.CALO, slope=emca.CALS)
+        thismca.energy = emca.get_energy()
+        thismca.counts = counts
+        thismca.nchans = 1
+        thismca.total_counts = counts.sum()
+        thismca.real_time = emca.ERTM
+        thismca.live_time = emca.ELTM
+        thismca.rois = []
+        if with_rois:
+            for eroi in emca.rois:
+                thismca.rois.append(ROI(name=eroi.NM, address=eroi.address,
+                                        left=eroi.LO, right=eroi.HI))
+        return thismca
+
+    def clear_rois(self):
+        self._mca.clear_rois()
+        self.rois = self._mca.get_rois()
+
+    @EpicsFunction
+    def del_roi(self, roiname):
+        self._mca.del_roi(roiname)
+        self.rois = self._mca.get_rois()
+
+    def add_roi(self, roiname, lo=-1, hi=-1):
+        calib = self._mca.get_calib()
+        self._mca.add_roi(roiname, lo=lo, hi=hi, calib=calib)
+        self.rois = self._mca.get_rois()
+
+    @EpicsFunction
+    def rename_roi(self, i, newname):
+        roi = self._mca.rois[i]
+        roi.NM = newname
+        rootname = roi._prefix
+        epics.caput(rootname+'NM', newname)
+
+    def restore_rois(self, roifile):
+        self._mca.restore_rois(roifile)
+        self.rois = self._mca.get_rois()
+
+    def save_rois(self, roifile):
+        buff = self._mca.roi_calib_info()
+        with open(roifile, 'w') as fout:
+            fout.write("%s\n" % "\n".join(buff))
+
+    def save_mca(self, fname):
+        buff = self._mca
+
+    def save_mcafile(self, filename, environ=None):
+        """write MultiChannel MCA file
+
+        Parameters:
+        -----------
+        * filename: output file name
+        """
+        rois = self._mca.get_rois()
+        mca = self.get_mca(mca=1, with_rois=False)
+
+        save_gsemcafile(filename, [mca], rois, environ=environ)
