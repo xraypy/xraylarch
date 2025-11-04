@@ -35,7 +35,7 @@ from larch.utils import get_cwd
 ROI_WILDCARD = 'Data files (*.dat)|*.dat|ROI files (*.roi)|*.roi|All files (*.*)|*.*'
 try:
     from epics import caget
-    from .xrf_detectors import Epics_MultiXMAP, Epics_Xspress3
+    from .xrf_detectors import Epics_MultiXMAP, Epics_Xspress3, Epics_KetekMCA
 except:
     pass
 
@@ -52,8 +52,8 @@ class DetectorSelectDialog(wx.Dialog):
     Can be either XIA xMAP  or Quantum XSPress3
     """
     msg = '''Select XIA xMAP or Quantum XSPress3 MultiElement MCA detector'''
-    det_types = ('SXD-7', 'ME-7', 'ME-4', 'other')
-    ioc_types = ('Xspress3.1', 'xMAP', 'Xspress3.0')
+    det_types = ('SXD-7', 'ME-7', 'ME-4', 'Ketek', 'MCA', 'other')
+    ioc_types = ('Xspress3.1', 'xMAP', 'Xspress3.0', 'MCA')
     def_prefix = '13QX7:'   # SDD1:'
     def_nelem  =  4
 
@@ -232,6 +232,13 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             time.sleep(0.5)
             self.det.get_mca(mca=1)
             self.needs_newplot=True
+        elif ioc_type.startswith('ketek') or ioc_type.startswith('mca'):
+            self.det = Epics_KetekMCA(prefix=prefix)
+            self.det_type = 'mca'
+            # print("Created KETEK Single MCA Detector ", self.det)
+            # for k, v in self.det.mcas[0]._pvs.items():
+            #     print(k, v)
+            self.needs_newplot=True
         else:
             self.det = Epics_MultiXMAP(prefix=prefix, nmca=nmca)
         time.sleep(0.05)
@@ -337,13 +344,19 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         btns = {}
         sx = 36
         sy = int(sx/2)
+        dtype = self.det_type.lower().replace('-', '').replace(' ', '').replace('_', '')
+        if dtype == 'mca':
+            self.nmca = 1
+            btnsizer.Add((sx, sy),  (0, 0), (2, 2), wx.ALIGN_LEFT, 1)
+            return btnsizer
+
         for i in range(1, self.nmca+1):
             b = Button(btnpanel, f'{i}', size=(sx, sx),
                        action=partial(self.onSelectDet, index=i))
             b.SetFont(Font(9))
             self.wids['det%i' % i] = b
             btns[i] = b
-        dtype = self.det_type.lower().replace('-', '').replace(' ', '').replace('_', '')
+
         if dtype.startswith('sxd7') and self.nmca == 7:
             btnsizer.Add((sx, sy), (0, 0), (1, 2), wx.ALIGN_LEFT, 1)
             btnsizer.Add(btns[6],  (1, 0), (2, 2), wx.ALIGN_LEFT, 1)
@@ -398,8 +411,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.wids['det_status'] = SimpleText(pane, ' ', size=(120, -1), style=style)
         self.wids['deadtime']   = SimpleText(pane, ' ', size=(120, -1), style=style)
 
-        self.wids['bkg_det'] = Choice(pane, size=(100, -1), choices=bkg_choices,
-                                      action=self.onSelectDet)
+        if self.nmca > 1:
+            self.wids['bkg_det'] = Choice(pane, size=(100, -1), choices=bkg_choices,
+                                          action=self.onSelectDet)
 
         self.wids['dwelltime'] = FloatCtrl(pane, value=0.0, precision=1, minval=0,
                                            size=(80, -1), act_on_losefocus=True,
@@ -441,7 +455,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                                                                        dtime=0.0))
 
         sum_lab = SimpleText(pane, 'Accumulate Mode:',   size=(150, -1))
-        bkg_lab = SimpleText(pane, 'Background MCA:',   size=(150, -1))
+        if self.nmca > 1:
+            bkg_lab = SimpleText(pane, 'Background MCA:',   size=(150, -1))
         pre_lab = SimpleText(pane, 'Dwell Time (s):',   size=(125, -1))
         ela_lab = SimpleText(pane, 'Elapsed Time (s):', size=(125, -1))
         sta_lab = SimpleText(pane, 'Status :',          size=(100, -1))
@@ -450,8 +465,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         psizer = wx.GridBagSizer(3, 3)
         psizer.Add(SimpleText(pane, ' MCAs: '),  (0, 0), (1, 1), style, 1)
         psizer.Add(det_btnpanel,           (0, 1), (3, 1), style, 1)
-        psizer.Add(bkg_lab,                (0, 2), (1, 1), style, 1)
-        psizer.Add(self.wids['bkg_det'],   (0, 3), (1, 1), style, 1)
+        if self.nmca > 1:
+            psizer.Add(bkg_lab,                (0, 2), (1, 1), style, 1)
+            psizer.Add(self.wids['bkg_det'],   (0, 3), (1, 1), style, 1)
         psizer.Add(sum_lab,                (1, 2), (1, 1), style, 1)
         psizer.Add(self.wids['mca_sum'],   (1, 3), (1, 1), style, 1)
         psizer.Add(pre_lab,                (0, 4), (1, 1),  style, 1)
@@ -484,11 +500,11 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def UpdateData(self, event=None, force=False):
         self.timer_counter += 1
+        # print("update data ", self.timer_counter, force, self.needs_newplot)
         if self.mca is None or self.needs_newplot:
             self.show_mca()
         # self.elapsed_real = self.det.elapsed_real
         self.mca.real_time = self.det.elapsed_real
-
         if force or self.det.needs_refresh:
             self.det.needs_refresh = False
             if self.det_back > 0:
@@ -559,7 +575,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
     def onSelectDet(self, event=None, index=0, init=False, **kws):
         if index > 0:
             self.det_fore = index
-        self.det_back = self.wids['bkg_det'].GetSelection()
+        self.det_back = 0
+        if self.nmca > 1:
+            self.det_back = self.wids['bkg_det'].GetSelection()
         if self.det_fore  == self.det_back:
             self.det_back = 0
 
@@ -570,8 +588,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             if i == self.det_fore:
                 fcol = (200,  20,  20)
                 bcol = (250, 250, 250)
-            self.wids[dname].SetBackgroundColour(bcol)
-            self.wids[dname].SetForegroundColour(fcol)
+            if dname in self.wids:
+                self.wids[dname].SetBackgroundColour(bcol)
+                self.wids[dname].SetForegroundColour(fcol)
         self.clear_mcas()
         self.show_mca(init=init)
         self.Refresh()
@@ -581,7 +600,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             return
         self.mca, self.mca2 = self.mca2, self.mca
         fore, back = self.det_fore, self.det_back
-        self.wids['bkg_det'].SetSelection(fore)
+        if 'bkg_det' in self.wids:
+            self.wids['bkg_det'].SetSelection(fore)
         self.onSelectDet(index=back)
 
     def onMcaSumChoice(self, event=None):
@@ -590,7 +610,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def onSetDwelltime(self, event=None, **kws):
         if 'dwelltime' in self.wids:
-            self.det.set_dwelltime(dtime=self.wids['dwelltime'].GetValue())
+            dtime = self.wids['dwelltime'].GetValue()
+            self.det.set_dwelltime(dtime=float(dtime))
 
     def clear_mcas(self):
         self.mca = self.mca2 = None
