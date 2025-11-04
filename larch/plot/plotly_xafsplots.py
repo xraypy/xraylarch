@@ -219,7 +219,7 @@ class PlotlyFigure:
         self.traces = []
 
     def add_plot(self, x, y, label=None, color=None, linewidth=3,
-                 style='solid', marker=None, side='left'):
+                 style='solid', marker=None, marker_size=None, y2label=None, side='left'):
         itrace = len(self.traces)
 
         if label is None:
@@ -961,13 +961,13 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
 
     if show_fitrange:
         for x in (ppeak.emin, ppeak.emax):
-            fig.add_vline(x=x, line_width=2, line_dash="dash", line_color="#DDDDCC")
+            fig.add_vline(x=x, line_width=2, line_dash="dash", line_color="#383836")
             fig.add_vline(x=ppeak.centroid, line_width=2, line_dash="dash", line_color="#EECCCC")
 
     if show_peakrange:
         for x in (ppeak.elo, ppeak.ehi):
             y = ydat[index_of(xdat, x)]
-            fig.add_plot([x], [y], marker='o', marker_size=7)
+            fig.add_vline(x=x, line_width=2, line_dash="dash", line_color="#B8B8A9")
 
     return fig.show(title=title, xlabel=plotlabels.energy, ylabel='mu (normalized)',
                     xmin=px0, xmax=px1, ymin=py0, ymax=py1)
@@ -981,7 +981,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     """
     if not hasattr(dgroup, 'prepeaks'):
         raise ValueError('Group needs prepeaks')
-    #endif
+
     if show_init:
         result = pkfit = dgroup.prepeaks
     else:
@@ -990,11 +990,12 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
             nfit = 0
         pkfit = hist[nfit]
         result = pkfit.result
-    #endif
 
     if pkfit is None:
         raise ValueError('Group needs prepeaks.fit_history or init_fit')
-    #endif
+
+    if not hasattr(pkfit, 'user_options'):
+        raise ValueError('Fit needs user_options')
 
     opts = pkfit.user_options
     xeps = min(np.diff(dgroup.xdat)) / 5.
@@ -1022,27 +1023,26 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     fig = PlotlyFigure(two_yaxis=False)
     title ='%s:\npre-edge peak' % dgroup.filename
 
-
+    ncolor = 0
+    popts = {}
+    popts.update(opts)
+    dymin = dymax = None
 
     if subtract_baseline:
         ydat -= baseline
         yfit -= baseline
         ydat_full = 1.0*ydat
         xdat_full = 1.0*xdat
-        plotopts['ylabel'] = '%s-baseline' % plotopts['ylabel']
+        popts['ylabel'] = '%s-baseline' % popts['ylabel']
 
     dx0, dx1, dy0, dy1 = extend_plotrange(xdat_full, ydat_full,
                                           xmin=opts['emin'], xmax=opts['emax'])
     fx0, fx1, fy0, fy1 = extend_plotrange(xdat, yfit,
                                           xmin=opts['emin'], xmax=opts['emax'])
 
-    ncolor = 0
-    popts = {}
-    plotopts.update(popts)
-    dymin = dymax = None
 
     fig.add_plot(xdat, ydat, label='data')
-    fig.add_plot(xday, yfit, label='fit')
+    fig.add_plot(xdat, yfit, label='fit')
 
     if show_residual:
         dfig = PlotlyFigure()
@@ -1076,7 +1076,8 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
             fig.add_vlinee(pcen, color='#EECCCC')
 
     fig.show(title=title, xlabel=plotlabels.energy, ylabel=opts['array_desc'])
-    dfig.show(title=tile, ylabel='fit-data', ymin=dymin, ymax=dymax)
+    if show_residual:
+        dfig.show(title=title, ylabel='fit-data', ymin=dymin, ymax=dymax)
     return fig, dfig
 
 
