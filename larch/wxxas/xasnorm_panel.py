@@ -803,7 +803,7 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         copts = [gname, f'{e0=:.4f}']
 
         if not form['auto_step']:
-            copts.append("step=%s" % gformat(float(edge_step)))
+            copts.append("step=%s" % gformat(float(form['edge_step'])))
 
         xasmode = getattr(dgroup, 'xasmode', 'unknown')
         if xasmode.startswith('calc'):

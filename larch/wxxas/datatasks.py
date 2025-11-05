@@ -588,7 +588,7 @@ class RebinDataFrame(wx.Frame):
         wids['xanes_step'] = FloatCtrl(panel, value=xanes_step,  **opts)
         wids['exafs_step'] = FloatCtrl(panel, value=0.05,  **opts)
 
-        wids['method'] = Choice(panel, choices=('spline', 'boxcar', 'centroid'),
+        wids['method'] = Choice(panel, choices=('boxcar', 'centroid', 'spline'),
                                  size=(80, -1), action=self.on_rebin)
         for wname, wid in wids.items():
             if wname not in ('grouplabel', 'method') and hasattr(wid, 'SetAction'):
