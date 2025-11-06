@@ -20,7 +20,7 @@ from ..xrf import (xrf_calib_fitrois, xrf_calib_init_roi,
 
 # Group used to hold MCA data
 XRFGROUP   = '_xrfdata'
-MAKE_XRFGROUP_CMD = "%s = group(__doc__='MCA/XRF data groups', _mca='', _mca2='')" % XRFGROUP
+MAKE_XRFGROUP_CMD = "%s = group(__doc__='MCA/XRF data groups', mca=None, mca2=None)" % XRFGROUP
 XRFRESULTS_GROUP   = '_xrfresults'
 MAKE_XRFRESULTS_GROUP = "_xrfresults = []"
 
@@ -30,10 +30,10 @@ def mcaname(i):
 def next_mcaname(_larch):
     xrfgroup = _larch.symtable.get_group(XRFGROUP)
     i, exists = 1, True
-    name = "mca{:03d}".format(i)
+    name = f"mca{i:03d}"
     while hasattr(xrfgroup, name):
         i += 1
-        name = "mca{:03d}".format(i)
+        name = f"mca{i:03d}"
     return name
 
 
@@ -50,12 +50,14 @@ class XRFCalibrationFrame(wx.Frame):
         self.calib_updated = False
         panel.AddText("Calibrate MCA Energy (Energies in eV)",
                       colour='#880000', dcol=7)
-        panel.AddText("ROI", newrow=True, style=CEN)
+        panel.AddText("  ", newrow=True, style=CEN)
+        panel.AddText("ROI", style=CEN)
         panel.AddText("Predicted", style=CEN)
         panel.AddText("Peaks with Current Calibration", dcol=3, style=CEN)
         panel.AddText("Peaks with Refined Calibration", dcol=3, style=CEN)
 
-        panel.AddText("Name", newrow=True, style=CEN)
+        panel.AddText("Use? ", newrow=True, style=CEN)
+        panel.AddText("Name", style=CEN)
         panel.AddText("Energy", style=CEN)
         panel.AddText("Center", style=CEN)
         panel.AddText("Difference", style=CEN)
@@ -63,7 +65,6 @@ class XRFCalibrationFrame(wx.Frame):
         panel.AddText("Center", style=CEN)
         panel.AddText("Difference", style=CEN)
         panel.AddText("FWHM", style=CEN)
-        panel.AddText("Use? ", style=CEN)
 
         panel.Add(HLine(panel, size=(700, 3)),  dcol=9, newrow=True)
         self.wids = []
@@ -89,19 +90,19 @@ class XRFCalibrationFrame(wx.Frame):
 
             diff = ecen - eknown
             name = ('   ' + roi.name+' '*10)[:10]
-            opts = {'style': CEN, 'size':(75, -1)}
+            opts = {'style': RIGHT, 'size':(75, -1)}
             w_name = SimpleText(panel, name,   **opts)
-            w_pred = SimpleText(panel, "% .1f" % (1000*eknown), **opts)
-            w_ccen = SimpleText(panel, "% .1f" % (1000*ecen),   **opts)
-            w_cdif = SimpleText(panel, "% .1f" % (1000*diff),   **opts)
-            w_cwid = SimpleText(panel, "% .1f" % (1000*fwhm),   **opts)
+            w_pred = SimpleText(panel, "%8.1f" % (1000*eknown), **opts)
+            w_ccen = SimpleText(panel, "%8.1f" % (1000*ecen),   **opts)
+            w_cdif = SimpleText(panel, "% 8.1f" % (1000*diff),   **opts)
+            w_cwid = SimpleText(panel, "%8.1f" % (1000*fwhm),   **opts)
             w_ncen = SimpleText(panel, "-----",         **opts)
             w_ndif = SimpleText(panel, "-----",         **opts)
             w_nwid = SimpleText(panel, "-----",         **opts)
-            w_use  = Check(panel, label='', size=(40, -1), default=0)
-            panel.Add(w_name, style=LEFT, newrow=True)
-            panel.AddMany((w_pred, w_ccen, w_cdif, w_cwid,
-                           w_ncen, w_ndif, w_nwid, w_use))
+            w_use  = Check(panel, label=' ', size=(50, -1), default=0)
+            panel.Add(w_use, style=CEN, newrow=True)
+            panel.Add(w_name, style=LEFT)
+            panel.AddMany((w_pred, w_ccen, w_cdif, w_cwid, w_ncen, w_ndif, w_nwid))
             self.init_wids[roi.name] = [False, w_pred, w_ccen, w_cdif, w_cwid, w_use]
             self.wids.append((roi.name, eknown, ecen, w_ncen, w_ndif, w_nwid, w_use))
 
@@ -175,11 +176,11 @@ class XRFCalibrationFrame(wx.Frame):
                 eknown, ecen, fwhm, amp, fit = self.mca.init_calib[roiname]
 
                 diff = ecen - eknown
-                opts = {'style': CEN, 'size':(75, -1)}
-                w_pred.SetLabel("% .1f" % (1000*eknown))
-                w_ccen.SetLabel("% .1f" % (1000*ecen))
-                w_cdif.SetLabel("% .1f" % (1000*diff))
-                w_cwid.SetLabel("% .1f" % (1000*fwhm))
+                opts = {'style': RIGHT, 'size':(75, -1)}
+                w_pred.SetLabel("%8.1f" % (1000*eknown))
+                w_ccen.SetLabel("%8.1f" % (1000*ecen))
+                w_cdif.SetLabel("% 8.1f" % (1000*diff))
+                w_cwid.SetLabel("%8.1f" % (1000*fwhm))
                 if fwhm > 0.001 and fwhm < 2.00 and fit is not None:
                     w_use.SetValue(1)
 
@@ -217,9 +218,9 @@ class XRFCalibrationFrame(wx.Frame):
             diff  = ecen - eknown
             for roiname, eknown, ocen, w_ncen, w_ndif, w_nwid, w_use in self.wids:
                 if roiname == roi.name and w_use.IsChecked():
-                    w_ncen.SetLabel("%.1f" % (1000*ecen))
-                    w_ndif.SetLabel("% .1f" % (1000*diff))
-                    w_nwid.SetLabel("%.1f" % (1000*fwhm))
+                    w_ncen.SetLabel("%8.1f" % (1000*ecen))
+                    w_ndif.SetLabel("% 8.1f" % (1000*diff))
+                    w_nwid.SetLabel("%8.1f" % (1000*fwhm))
                     break
 
 
@@ -442,7 +443,33 @@ class XrayLinesFrame(wx.Frame):
     def onDone(self, event=None):
         self.Destroy()
 
-class XRFDisplayConfig:
+
+class XRFLines:
+    K_major = ['Ka1', 'Ka2', 'Kb1']
+    K_minor = ['Kb3', 'Kb2']
+    L_major = ['La1', 'Lb1', 'Lb3', 'Lb4']
+    L_minor = ['Ln', 'Ll', 'Lb2,15', 'Lg2', 'Lg3', 'Lg1', 'La2']
+    M_major = ['Ma', 'Mb', 'Mg', 'Mz']
+    e_min   = 1.00
+    e_max   = 30.0
+
+class XRFDisplayColors_Light:
+    emph_elinecolor  = '#8888BB'
+    major_elinecolor = '#DAD8CA'
+    minor_elinecolor = '#F4DAC0'
+    hold_elinecolor  = '#CAC8DA'
+    marker_color     = '#77BB99'
+    roi_fillcolor    = '#F8F0BA'
+    roi_color        = '#d62728'
+    spectra_color    = '#1f77b4'
+    spectra2_color   = '#2ca02c'
+    bgr_color        = '#ff7f0e'
+    fit_color        = '#d62728'
+    pileup_color     = '#555555'
+    escape_color     = '#F07030'
+
+
+class XRFDisplayColors_Dark:
     emph_elinecolor  = '#444444'
     major_elinecolor = '#DAD8CA'
     minor_elinecolor = '#F4DAC0'
