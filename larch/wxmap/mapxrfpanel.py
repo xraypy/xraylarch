@@ -20,9 +20,8 @@ from ..utils import version_ge
 
 from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
 
-from ..wxlib.xrfdisplay_utils import (XRFGROUP, mcaname,
-                                      XRFRESULTS_GROUP,
-                                      MAKE_XRFRESULTS_GROUP)
+from ..wxlib.xrfdisplay_utils import (XRFGROUP, mcaname, next_mcaname,
+                                      XRFRESULTS_GROUP, MAKE_XRFRESULTS_GROUP)
 
 CEN = wx.ALIGN_CENTER
 LEFT = wx.ALIGN_LEFT
@@ -33,7 +32,6 @@ ALL_LEFT =  wx.ALL|LEFT
 NOFITS_MSG  = "No XRF Fits: Use XRFViewer to fit spectrum."
 HASFITS_MSG = "Select XRF Fit to build elemental maps"
 
-from ..wxlib.xrfdisplay_utils import (XRFGROUP, MAKE_XRFGROUP_CMD, next_mcaname)
 
 class XRFAnalysisPanel(scrolled.ScrolledPanel):
     """Panel of XRF Analysis results"""
