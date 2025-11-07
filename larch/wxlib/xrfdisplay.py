@@ -6,6 +6,7 @@ GUI Frame for XRF display, reading larch MCA group
 import sys
 import time
 import copy
+from collections import namedtuple
 from functools import partial
 from pathlib import Path
 import wx
@@ -26,7 +27,7 @@ from . import (SimpleText, FileCheckList, Font, pack, Popup,
                SetTip, Button, Check, MenuItem, Choice,
                FileOpen, FileSave, HLine, GridPanel,
                CEN, LEFT, RIGHT, PeriodicTablePanel,
-               FONTSIZE, FONTSIZE_FW)
+               FONTSIZE, FONTSIZE_FW, OkCancel)
 
 from ..math import index_of
 from ..io import GSEMCA_File
@@ -70,6 +71,44 @@ def txt(panel, label, size=75, colour=None, font=None, style=None):
 
 def lin(panel, len=30, wid=2, style=wx.LI_HORIZONTAL):
     return wx.StaticLine(panel, size=(len, wid), style=style)
+
+def fit_dialog_window(dialog, panel):
+    sizer = wx.BoxSizer(wx.VERTICAL)
+    sizer.Add(panel, 1, LEFT, 5)
+    pack(dialog, sizer)
+    dialog.Fit()
+    w0, h0 = dialog.GetSize()
+    w1, h1 = dialog.GetBestSize()
+    dialog.SetSize((max(w0, w1)+25, max(h0, h1)+25))
+
+class RenameDialog(wx.Dialog):
+    """dialog for renaming group"""
+    def __init__(self, parent, oldname,  **kws):
+        title = "Rename Group %s" % (oldname)
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
+        self.SetFont(get_font())
+        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
+        self.newname   = wx.TextCtrl(panel, -1, oldname,  size=(250, -1))
+
+        panel.Add(SimpleText(panel, 'Old Name : '), newrow=True)
+        panel.Add(SimpleText(panel, oldname))
+        panel.Add(SimpleText(panel, 'New Name : '), newrow=True)
+        panel.Add(self.newname)
+        panel.Add(OkCancel(panel), dcol=2, newrow=True)
+
+        panel.pack()
+        fit_dialog_window(self, panel)
+
+
+    def GetResponse(self, newname=None):
+        self.Raise()
+        response = namedtuple('RenameResponse', ('ok', 'newname'))
+        ok = False
+        if self.ShowModal() == wx.ID_OK:
+            newname = self.newname.GetValue()
+            ok = True
+        return response(ok, newname)
+
 
 class XRFDataBrowser(wx.Frame):
     """ frame for browsing XRF data in larch buffer
@@ -134,14 +173,15 @@ class XRFDataBrowser(wx.Frame):
         self.Show()
         self.Raise()
 
-    def update_grouplist(self, event=None):
-        xrf_files = self.larch.symtable.get_symbol(XRF_FILES)
-        for key, val in xrf_files.items():
+    def update_grouplist(self, event=None, full=False):
+        if full:
+            self.file_groups = {}
+            self.filelist.Clear()
+        for key, val in self.parent.xrf_files.items():
             if key not in self.file_groups:
                 self.file_groups[key] = val
                 self.filelist.Append(key)
         self.Refresh()
-
 
     def onSelNone(self, event=None):
         self.filelist.select_none()
@@ -167,16 +207,53 @@ class XRFDataBrowser(wx.Frame):
                 self.parent.plotmca(mca, newplot=(ix==0))
 
     def onCopyGroup(self, event=None):
-        print("copy group")
+        fname = self.current_filename
+        if fname is None:
+            fname = self.filelist.GetStringSelection()
+
+        mca = xrf_files[fname]
+        newname = fname + '_copy'
+        self.parent.xrf_files[newname] = deepcopy(mca)
+        self.update_grouplist()
+
 
     def onRenameGroup(self, event=None):
-        print("rename group")
+        fname = self.current_file
+        if fname is None:
+            fname = self.filelist.GetStringSelection()
+
+        dlg = RenameDialog(self, fname)
+        res = dlg.GetResponse()
+        dlg.Destroy()
+
+        if res.ok:
+            mca = self.parent.xrf_files.pop(fname)
+            selected = []
+            for checked in self.filelist.GetCheckedStrings():
+                selected.append(str(checked))
+            if self.current_file in selected:
+                selected.remove(self.current_file)
+                selected.append(res.newname)
+
+            self.parent.xrf_files[res.newname] = mca
+            self.update_grouplist(full=True)
+
 
     def onRemoveGroup(self, event=None):
-        print("remove group")
+        fname = self.current_filename
+        if fname is None:
+            fname = self.filelist.GetStringSelection()
+
+        self.parent.xrf_files.pop(fname)
+        self.update_grouplist(full=True)
 
     def onRemoveGroups(self, event=None):
-        print("remove groups")
+        filenames = self.filelist.GetCheckedStrings()
+
+        for fname in enumerate(filenames):
+            self.parent.xrf_files.pop(fname)
+        self.update_grouplist(full=True)
+
 
 class XRFDisplayFrame(wx.Frame):
     _about = """XRF Spectral Viewer
@@ -202,12 +279,14 @@ class XRFDisplayFrame(wx.Frame):
         self.wids = {}
         if isinstance(_larch, LarchFrame):  # called with existing LarchFrame
             self.larch_buffer = _larch
+            self.larch_owner = False
         elif isinstance(_larch, Interpreter):     # called from shell
             self.larch_buffer = LarchFrame(_larch=_larch,
                    is_standalone=False, with_raise=False)
+            self.larch_owner = False
         else:  # (includes  _larch is None)  called from Python
-            self.larch_buffer = LarchFrame(
-                   is_standalone=False, with_raise=False)
+            self.larch_buffer = LarchFrame(with_raise=False)
+            self.larch_owner = True
 
         self.subframes['larch_buffer'] = self.larch_buffer
         self.larch = self.larch_buffer.larchshell
@@ -601,10 +680,11 @@ class XRFDisplayFrame(wx.Frame):
 
         if not symtab.has_group(XRFGROUP):
             self.larch.eval(MAKE_XRFGROUPS)
+        self.xrf_files = self.larch.symtable.get_symbol(XRF_FILES)
+
 
     def add_mca(self, mca, filename=None, label=None, plot=True):
         self.mca = mca
-        xrf_files = self.larch.symtable.get_symbol(XRF_FILES)
         xrfgroup = self.larch.symtable.get_group(XRFGROUP)
         mcaname = next_mcaname(self.larch)
 
@@ -629,15 +709,13 @@ class XRFDisplayFrame(wx.Frame):
         self.larch.eval(f"{XRFGROUP}.mca = '{mcaname}'")
         self.larch.eval(f"{XRF_FILES}['{label}'] = {XRFGROUP}.{mcaname}")
 
-        xrf_files[label] = self.mca
+        self.xrf_files[label] = self.mca
         if plot:
             self.plotmca(self.mca)
 
         if 'xrf_browser' in self.subframes:
             browser = self.subframes['xrf_browser']
             browser.update_grouplist()
-
-
 
     def _getlims(self):
         emin, emax = self.panel.axes.get_xlim()
@@ -891,19 +969,20 @@ class XRFDisplayFrame(wx.Frame):
         MenuItem(self, fmenu, "&Read MCA Spectra File\tCtrl+O",
                  "Read GSECARS MCA File",  self.onReadMCAFile)
 
+        MenuItem(self, fmenu, 'Show XRF Dataset Browser\tCtrl+B',
+                 'Show List of XRF Spectra ',
+                 self.onShowXRFBrowser)
+
+        MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+M',
+                 'Show Larch Data/Programming Buffer',
+                 self.onShowLarchBuffer)
+        fmenu.AppendSeparator()
+
         MenuItem(self, fmenu, "&Save MCA File\tCtrl+S",
                  "Save GSECARS MCA File",  self.onSaveMCAFile)
         MenuItem(self, fmenu, "&Save ASCII Column File",
                  "Save Column File",  self.onSaveColumnFile)
 
-        fmenu.AppendSeparator()
-        MenuItem(self, fmenu, 'Show XRF Dataset Browser',
-                 'Show List of XRF Spectra ',
-                 self.onShowXRFBrowser)
-
-        MenuItem(self, fmenu, 'Show Larch Buffer',
-                 'Show Larch Programming Buffer',
-                 self.onShowLarchBuffer)
         MenuItem(self, fmenu,  "Save Plot\tCtrl+I",
                  "Save PNG Image of Plot", self.onSavePNG)
         MenuItem(self, fmenu, "&Copy Plot\tCtrl+C",
@@ -1038,7 +1117,9 @@ class XRFDisplayFrame(wx.Frame):
             wx.CallAfter(self.larch.symtable._plotter.close_all_displays)
 
         for name, wid in self.subframes.items():
-            if hasattr(wid, 'Destroy'):
+            if name == 'larch_buffer' and not self.larch_owner:
+                continue
+            elif hasattr(wid, 'Destroy'):
                 wx.CallAfter(wid.Destroy)
         self.Destroy()
 
@@ -1279,8 +1360,6 @@ class XRFDisplayFrame(wx.Frame):
 
     def onLogLinear(self, event=None):
         self.ylog_scale = event.IsChecked()
-        # self.ylog_scale = False
-        # self.ylog_scale = 'log' == event.GetString()
         roiname = None
         if self.selected_roi is not None:
             roiname = self.selected_roi.name
@@ -1289,9 +1368,9 @@ class XRFDisplayFrame(wx.Frame):
             self.onShowLines(elem=self.selected_elem)
         if roiname is not None:
             self.onROI(label=roiname)
-        for g in self.plotted_groups:
-            print('log/lin for group ', g)
-            # self.oplot(self.x2data, self.y2data)
+        for gname in self.plotted_groups[1:]:
+            mca = self.xrf_files[gname]
+            self.oplot(mca.energy, mca.counts, label=mca.label)
 
     def plotmca(self, mca, title=None, set_title=True, newplot=True,
                 fullrange=False,  **kws):
@@ -1363,7 +1442,9 @@ class XRFDisplayFrame(wx.Frame):
         self.ydat = 1.0*y[:]
         self.ydat[np.where(self.ydat<1.e-9)] = 1.e-9
 
+
         kwargs['ymax'] = max(self.ydat)*1.25
+        self.ymax = kwargs['ymax']
         kwargs['ymin'] = 0.9
         kwargs['xmax'] = max(self.xdat)
         kwargs['xmin'] = min(self.xdat)
@@ -1408,16 +1489,14 @@ class XRFDisplayFrame(wx.Frame):
 
     def get_mca(self, name):
         """get MCA from filename in the xrf_files"""
-        xrf_files = self.larch.symtable.get_symbol(XRF_FILES)
-        return xrf_files.get(name, None)
+        return self.xrf_files.get(name, None)
 
     def update_mca(self, counts, mcalabel=None, energy=None,
                    with_rois=True, draw=True):
         """update counts for an mca, and update plot"""
         mca, index = None, 0
         if mcalabel in self.plotted_groups:
-            xrf_files = self.larch.symtable.get_symbol(XRF_FILES)
-            mca = xrf_files.get(mcalabel, None)
+            mca = self.xrf_files.get(mcalabel, None)
             index = self.plotted_groups.index(mcalabel)
 
         elif mcaname is not None:
@@ -1465,17 +1544,17 @@ class XRFDisplayFrame(wx.Frame):
         if draw:
             self.draw()
 
-    def oplot(self, x, y, color='darkgreen', label=None, zorder=5, **kws):
+    def oplot(self, x, y, color=None, label=None, **kws):
         xdat = 1.0*x[:]
         ydat = 1.0*y[:]
         ymax = max(ydat)*1.25
-        if hasattr(self, 'ydat'):
-            ymax = max(max(self.ydat), max(ydat))*1.25
+        if hasattr(self, 'ymax'):
+            self.ymax = max(self.ymax, max(ydat))*1.25
 
-        kws.update({'zorder': zorder, 'label': label,
-                    'ymax' : ymax, 'axes_style': 'bottom',
+        kws.update({'label': label, 'ymax': self.ymax, 'ymin': 0.9,
+                    'axes_style': 'bottom',
                     'ylog_scale': self.ylog_scale})
-        self.panel.oplot(xdat, ydat, color=color, **kws)
+        self.panel.oplot(xdat, ydat, **kws)
 
     def onReadMCAFile(self, event=None):
         dlg = wx.FileDialog(self, message="Open MCA File for reading",
