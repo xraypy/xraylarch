@@ -93,7 +93,7 @@ class XRFDataBrowser(wx.Frame):
 
         sel_none = Btn(top, 'Select None',   125, self.onSelNone)
         sel_all  = Btn(top, 'Select All',    125, self.onSelAll)
-        plot_sel = Btn(panel, 'Plot Selectedd', 250, self.onPlotSelected)
+        plot_sel = Btn(panel, 'Plot Selected', 250, self.onPlotSelected)
 
         file_actions = [("Copy Group\tCtrl+Shift+C", self.onCopyGroup, "ctrl+shift+C"),
                         ("Rename Group\tCtrl+N", self.onRenameGroup, "ctrl+N"),
@@ -134,16 +134,25 @@ class XRFDataBrowser(wx.Frame):
                 self.filelist.Append(key)
 
     def onSelNone(self, event=None):
-        print("select none")
+        self.filelist.select_none()
 
     def onSelAll(self, event=None):
-        print("select all")
+        self.filelist.select_all()
 
     def onPlotOne(self, event=None):
-        print("plot one")
+        filename = str(event.GetString())
+
+        mca = self.parent.get_mca(filename)
+        if mca is not None:
+            self.parent.plotmca(mca, newplot=True)
 
     def onPlotSelected(self, event=None):
-        print("plot sel")
+        filenames = self.filelist.GetCheckedStrings()
+        ix = 0
+        for ix, fname in enumerate(filenames):
+            mca = self.parent.get_mca(fname)
+            if mca is not None:
+                self.parent.plotmca(mca, newplot=(ix==0))
 
     def onCopyGroup(self, event=None):
         print("copy group")
@@ -182,17 +191,15 @@ class XRFDisplayFrame(wx.Frame):
         self.wids = {}
         if isinstance(_larch, LarchFrame):  # called with existing LarchFrame
             self.larch_buffer = _larch
-            self.subframes['larchframe'] = self.larch_buffer
-            self.larch = self.larch_buffer.larchshell
         elif isinstance(_larch, Interpreter):     # called from shell
-            self.larch_buffer = None
-            self.larch = _larch
+            self.larch_buffer = LarchFrame(_larch=_larch,
+                   is_standalone=False, with_raise=False)
         else:  # (includes  _larch is None)  called from Python
             self.larch_buffer = LarchFrame(
                    is_standalone=False, with_raise=False)
-            self.subframes['larchframe'] = self.larch_buffer
-            self.larch = self.larch_buffer.larchshell
 
+        self.subframes['larch_buffer'] = self.larch_buffer
+        self.larch = self.larch_buffer.larchshell
         self.init_larch()
 
         self.exit_callback = exit_callback
@@ -201,11 +208,11 @@ class XRFDisplayFrame(wx.Frame):
         self.roilist_sel  = None
         self.selected_elem = None
         self.mca = None
-        self.mca2 = None
-        self.xdata = np.arange(4096)*0.01
-        self.ydata = np.ones(4096)*0.01
-        self.x2data = None
-        self.y2data = None
+        self.mcabkg = None
+        self.xdat = np.arange(4096)*0.01
+        self.ydat = np.ones(4096)*0.01
+        self.plotted_groups = []
+
         self.rois_shown = False
         self.major_markers = []
         self.minor_markers = []
@@ -227,7 +234,7 @@ class XRFDisplayFrame(wx.Frame):
         self._menus = []
         self.createMainPanel()
         self.createMenus()
-        self.SetFont(wx.Font(9, wx.SWISS, wx.NORMAL, wx.NORMAL))
+        self.SetFont(get_font())
         self.statusbar = self.CreateStatusBar(4)
         self.statusbar.SetStatusWidths([-5, -3, -3, -4])
         statusbar_fields = ["XRF Display", " ", " ", " "]
@@ -244,7 +251,6 @@ class XRFDisplayFrame(wx.Frame):
             if isinstance(filename, Path):
                 filename = Path(filename).absolute().as_posix()
             self.add_mca(GSEMCA_File(filename), filename=filename, plot=True)
-
 
     def on_cursor(self, event=None, side='left'):
         if event is None:
@@ -312,11 +318,6 @@ class XRFDisplayFrame(wx.Frame):
         self.xmarker_right = None
         self.draw()
 
-    def clear_background(self, evt=None):
-        "remove XRF background"
-        self.mca2 = None
-        self.plotmca(self.mca)
-
     def update_status(self):
         fmt = "{:s}:{:}, E={:.3f}, Cts={:,.0f}".format
         if (self.xmarker_left is None and
@@ -345,12 +346,12 @@ class XRFDisplayFrame(wx.Frame):
 
         if self.xmarker_left is not None:
             ix = self.xmarker_left
-            x, y = self.xdata[ix],  self.ydata[ix]
+            x, y = self.xdat[ix],  self.ydat[ix]
             draw_ymarker_range(0, x, y)
             self.write_message(fmt("L", ix, x, y), panel=1)
         if self.xmarker_right is not None:
             ix = self.xmarker_right
-            x, y = self.xdata[ix],  self.ydata[ix]
+            x, y = self.xdat[ix],  self.ydat[ix]
             draw_ymarker_range(1, x, y)
             self.write_message(fmt("R", ix, x, y), panel=2)
 
@@ -369,7 +370,7 @@ class XRFDisplayFrame(wx.Frame):
 
     def createPlotPanel(self):
         """mca plot window"""
-        pan = PlotPanel(self, fontsize=7, axisbg='#FFFFFF',
+        pan = PlotPanel(self, fontsize=9, axisbg='#FFFFFF',
                         with_data_process=False,
                         output_title='test.xrf',
                         messenger=self.write_message)
@@ -388,7 +389,6 @@ class XRFDisplayFrame(wx.Frame):
         """ left button up"""
         if event is None:
             return
-
         x, y  = event.xdata, event.ydata
         if len(self.panel.fig.axes) > 1:
             try:
@@ -591,22 +591,18 @@ class XRFDisplayFrame(wx.Frame):
         if not symtab.has_group(XRFGROUP):
             self.larch.eval(MAKE_XRFGROUPS)
 
-    def add_mca(self, mca, filename=None, label=None, as_mca2=False, plot=True):
-        if as_mca2:
-            self.mca2 = mca
-        else:
-            self.mca2 = self.mca
-            self.mca = mca
-
+    def add_mca(self, mca, filename=None, label=None, plot=True):
+        self.mca = mca
         xrf_files = self.larch.symtable.get_symbol(XRF_FILES)
         xrfgroup = self.larch.symtable.get_group(XRFGROUP)
         mcaname = next_mcaname(self.larch)
+
         if filename is not None:
             if isinstance(filename, Path):
                 filename = Path(filename).absolute().as_posix()
-            self.larch.eval(read_mcafile.format(group=XRFGROUP,
-                                                name=mcaname,
-                                                filename=filename))
+            readcomment = read_mcafile.format(group=XRFGROUP,
+                                              name=mcaname,
+                                              filename=filename)
             if label is None:
                 label = Path(filename).absolute().name
         if label is None and hasattr(mca, 'filename'):
@@ -615,15 +611,16 @@ class XRFDisplayFrame(wx.Frame):
             label = mcaname
 
         self.mca.label = label
-        # push mca to mca2, save id of this mca
-        # setattr(xrfgroup, '_mca2', getattr(xrfgroup, 'mca', None))
-        setattr(xrfgroup, 'mca', mcaname)
         setattr(xrfgroup, mcaname, mca)
-        xrf_files[label] = getattr(xrfgroup, mcaname)
+        setattr(xrfgroup, 'mca', mcaname)
+
+        self.larch.eval(readcomment)
+        self.larch.eval(f"{XRFGROUP}.mca = '{mcaname}'")
+        self.larch.eval(f"{XRF_FILES}['{label}'] = {XRFGROUP}.{mcaname}")
+
+        xrf_files[label] = self.mca
         if plot:
             self.plotmca(self.mca)
-            if as_mca2:
-                self.plotmca(self.mca, as_mca2=True)
 
     def _getlims(self):
         emin, emax = self.panel.axes.get_xlim()
@@ -734,7 +731,7 @@ class XRFDisplayFrame(wx.Frame):
         for roi in self.mca.rois:
             if roi.name.lower()==roiname:
                 selected_roi = roi
-        self.plot(self.xdata, self.ydata)
+        self.plot(self.xdat, self.ydat)
         self.onROI(label=roiname)
         if self.selected_elem is not None:
             self.onShowLines(elem=self.selected_elem)
@@ -788,14 +785,14 @@ class XRFDisplayFrame(wx.Frame):
         except:
             pass
 
-        self.plot(self.xdata, self.ydata)
+        self.plot(self.xdat, self.ydat)
         if self.selected_elem is not None:
             self.onShowLines(elem=self.selected_elem)
 
     def ShowROIStatus(self, left, right, name='', panel=0):
         if left > right:
             return
-        sum = self.ydata[left:right].sum()
+        sum = self.ydat[left:right].sum()
         dt = self.mca.real_time
         nmsg, cmsg, rmsg = '', '', ''
         if len(name) > 0:
@@ -808,9 +805,6 @@ class XRFDisplayFrame(wx.Frame):
     def ShowROIPatch(self, left, right):
         """show colored XRF Patch:
         Note: ROIs larger than half the energy are not colored"""
-        # xnpts = 1.0/len(self.mca.energy)
-        # if xnpts*(right - left) > 0.5:
-        #    return
 
         try:
             self.roi_patch.remove()
@@ -937,15 +931,6 @@ class XRFDisplayFrame(wx.Frame):
                  "Hide selected ROI", self.clear_roihighlight)
         MenuItem(self, omenu, "Hide Markers ",
                  "Hide cursor markers", self.clear_markers)
-        MenuItem(self, omenu, "Hide XRF Background ",
-                 "Hide cursor markers", self.clear_background)
-
-        omenu.AppendSeparator()
-        MenuItem(self, omenu, "Swap MCA 1 and 2",
-                 "Swap Foreground and Background MCAs", self.swap_mcas)
-        MenuItem(self, omenu, "Remove Background MCAs",
-                 "Remove Background MCAs", self.close_bkg_mca)
-
 
         amenu = wx.Menu()
 
@@ -987,7 +972,9 @@ class XRFDisplayFrame(wx.Frame):
             self.subframes[name].Show()
 
     def onShowLarchBuffer(self, evt=None):
+        f2 = get_font(larger=2)
         self.show_subframe('larch_buffer', LarchFrame)
+        self.subframes['larch_buffer'].set_fontsize(f2.GetPointSize())
         self.subframes['larch_buffer'].Raise()
 
     def onShowXRFBrowser(self, evt=None):
@@ -1145,8 +1132,8 @@ class XRFDisplayFrame(wx.Frame):
             majors.extend([line_data[l] for l in lines.M_major])
 
         self.saved_lines = majors[:] + minors[:]
-        erange = [max(lines.e_min, self.xdata.min()),
-                  min(lines.e_max, self.xdata.max())]
+        erange = [max(lines.e_min, self.xdat.min()),
+                  min(lines.e_max, self.xdat.max())]
         self.displayed_lines = {}
         view_mid, view_range, d1, d2 = self._getlims()
         view_emin = view_mid - view_range/2.0
@@ -1278,65 +1265,63 @@ class XRFDisplayFrame(wx.Frame):
         roiname = None
         if self.selected_roi is not None:
             roiname = self.selected_roi.name
-        self.plot(self.xdata, self.ydata)
+        self.plot(self.xdat, self.ydat)
         if self.selected_elem is not None:
             self.onShowLines(elem=self.selected_elem)
         if roiname is not None:
             self.onROI(label=roiname)
-        if self.y2data is not None:
-            self.oplot(self.x2data, self.y2data)
+        for g in self.plotted_groups():
+            print('log/lin for group ', g)
+            # self.oplot(self.x2data, self.y2data)
 
-    def plotmca(self, mca, title=None, set_title=True, as_mca2=False,
-                fullrange=False, init=False, **kws):
-        if as_mca2:
-            self.mca2 = mca
-            kws['new'] = False
-        else:
+    def plotmca(self, mca, title=None, set_title=True, newplot=True,
+                fullrange=False,  **kws):
+        if newplot:
+            kws['new'] = True
             self.mca = mca
-            self.panel.conf.show_grid = False
-        xview_range = self.panel.axes.get_xlim()
-
-        if init or xview_range == (0.0, 1.0):
-            self.xview_range = (min(self.mca.energy), max(self.mca.energy))
+            self.plotted_groups = [mca.label]
         else:
-            self.xview_range = xview_range
+            self.plotted_groups.append(mca.label)
+
+        label = kws.pop('label', None)
+        if label is None:
+            label = getattr(mca, 'label', 'unknkown')
+
+        self.xview_range = self.panel.axes.get_xlim()
+        if self.xview_range == (0.0, 1.0):
+            self.xview_range = (min(mca.energy), max(mca.energy))
+
+
 
         atitles = []
-        if self.mca is not None:
-            if getattr(self.mca, 'title', None) is not None:
-                atitles.append(bytes2str(self.mca.title))
-            if getattr(self.mca, 'filename', None) is not None:
-                atitles.append(" File={:s}".format(self.mca.filename))
-            if getattr(self.mca, 'npixels', None) is not None:
-                atitles.append(" {:.0f} Pixels".format(self.mca.npixels))
-            if getattr(self.mca, 'real_time', None) is not None:
+        if newplot:
+            if getattr(mca, 'title', None) is not None:
+                atitles.append(bytes2str(mca.title))
+            if getattr(mca, 'filename', None) is not None:
+                atitles.append(" File={:s}".format(mca.filename))
+            if getattr(mca, 'npixels', None) is not None:
+                atitles.append(" {:.0f} Pixels".format(mca.npixels))
+            if getattr(mca, 'real_time', None) is not None:
                 try:
-                    rtime_str = " RealTime={:.2f} sec".format(self.mca.real_time)
+                    rtime_str = " RealTime={:.2f} sec".format(mca.real_time)
                 except ValueError:
-                    rtime_str = " RealTime= %s sec".format(str(self.mca.real_time))
+                    rtime_str = " RealTime= %s sec".format(str(mca.real_time))
                 atitles.append(rtime_str)
 
             try:
-                self.plot(self.mca.energy, self.mca.counts,
-                          mca=self.mca, **kws)
+                self.plot(mca.energy, mca.counts, label=label, **kws)
             except ValueError:
                 pass
-        if as_mca2:
-            if getattr(self.mca2, 'title', None) is not None:
-                atitles.append(" BG={:s}".format(self.mca2.title))
-            elif getattr(self.mca2, 'filename', None) is not None:
-                atitles.append(" BG_File={:s}".format(self.mca2.filename))
-            if getattr(self.mca, 'real_time', None) is not None:
-                atitles.append(" BG_RealTime={:.2f} sec".format(self.mca2.real_time))
+        else:
+            try:
+                self.oplot(mca.energy, mca.counts, label=label, **kws)
+            except ValueError:
+                pass
 
-            self.oplot(self.mca2.energy, self.mca2.counts,
-                       mca=self.mca2, **kws)
-        if title is None:
-            title = ' '.join(atitles)
-        if set_title:
-            self.SetTitle(title)
+        if newplot and len(atitles) > 0:
+            self.SetTitle(' '.join(atitles))
 
-    def plot(self, x, y=None, mca=None, init=False, with_rois=True, **kws):
+    def plot(self, x, y=None, mca=None, with_rois=True, label=None, **kws):
         if mca is not None:
             self.mca = mca
         mca = self.mca
@@ -1345,6 +1330,7 @@ class XRFDisplayFrame(wx.Frame):
         panel.yformatter = self._formaty
         panel.axes.get_yaxis().set_visible(False)
         kwargs = {'xmin': 0,
+                  'zorder': 100,
                   'linewidth': 2.5,
                   'delay_draw': True,
                   'grid': panel.conf.show_grid,
@@ -1354,19 +1340,23 @@ class XRFDisplayFrame(wx.Frame):
                   'color': self.colors.spectra_color}
         kwargs.update(kws)
 
-        self.xdata = 1.0*x[:]
-        self.ydata = 1.0*y[:]
-        self.ydata[np.where(self.ydata<1.e-9)] = 1.e-9
-        ydat = self.ydata
-        kwargs['ymax'] = max(ydat)*1.25
+        self.xdat = 1.0*x[:]
+        self.ydat = 1.0*y[:]
+        self.ydat[np.where(self.ydat<1.e-9)] = 1.e-9
+
+        kwargs['ymax'] = max(self.ydat)*1.25
         kwargs['ymin'] = 0.9
-        kwargs['xmax'] = max(self.xdata)
-        kwargs['xmin'] = min(self.xdata)
+        kwargs['xmax'] = max(self.xdat)
+        kwargs['xmin'] = min(self.xdat)
         if self.xview_range is not None:
             kwargs['xmin'] = self.xview_range[0]
             kwargs['xmax'] = self.xview_range[1]
 
-        panel.plot(x, ydat, label='spectrum',  **kwargs)
+        if label is None:
+            label = getattr(self.mca, 'label', 'spectrum')
+        kwargs['label'] = label
+
+        panel.plot(self.xdat, self.ydat, **kwargs)
         if with_rois and mca is not None:
             if not self.rois_shown:
                 self.set_roilist(mca=mca)
@@ -1382,7 +1372,11 @@ class XRFDisplayFrame(wx.Frame):
             xroi[yroi< 0.0] = np.nan
             if yroi.max() > 0:
                 kwargs['color'] = self.colors.roi_color
-                panel.oplot(xroi, yroi, label='rois', **kwargs)
+                kwargs['label'] = 'rois'
+                kwargs['zorder'] = 110
+                panel.oplot(xroi, yroi, **kwargs)
+
+
         yscale = {False:'linear', True:'log'}[self.ylog_scale]
         panel.set_viewlimits()
         panel.set_logscale(yscale=yscale)
@@ -1391,21 +1385,39 @@ class XRFDisplayFrame(wx.Frame):
         self.draw()
         panel.canvas.Refresh()
 
+    def get_mca(self, name):
+        """get MCA from filename in the xrf_files"""
+        xrf_files = self.larch.symtable.get_symbol(XRF_FILES)
+        return xrf_files.get(name, None)
 
-    def update_mca(self, counts, energy=None, with_rois=True,
-                   is_mca2=False, draw=True):
-        """update counts (and optionally energy) for mca, and update plot"""
-        mca = self.mca
-        ix = 0
-        if is_mca2:
-            mca = self.mca2
-            ix = 2
+    def update_mca(self, counts, mcalabel=None, energy=None,
+                   with_rois=True, draw=True):
+        """update counts for an mca, and update plot"""
+        mca, index = None, 0
+        if mcalabel in self.plotted_groups:
+            xrf_files = self.larch.symtable.get_symbol(XRF_FILES)
+            mca = xrf_files.get(mcalabel, None)
+            index = self.plotted_groups.index(mcalabel)
+
+        elif mcaname is not None:
+            xrfgroup = self.larch.symtable.get_group(XRFGROUP)
+            mca = getattr(xrfgroup, xrfgroup.mca, None)
+            mcalabel = xrfgroup.mca
+
+        if mca is None:
+            mca = self.mca
+            index = 0
+
         mca.counts = 1.0*counts[:]
-        if energy is not None:
+        if energy is None:
+            energy = 1.0*mca.energy[:]
+        else:
             mca.energy = 1.0*energy[:]
-        xnpts = 1.0/len(energy)
+
         nrois = len(mca.rois)
-        if not is_mca2 and with_rois and nrois > 0:
+        roi_index_offset = 0
+        if index == 0 and with_rois and nrois > 0:
+            xnpts = 1.0/len(energy)
             yroi = -1*np.ones(len(counts))
             for r in mca.rois:
                 if xnpts*(r.right - r.left) > 0.5:
@@ -1414,57 +1426,35 @@ class XRFDisplayFrame(wx.Frame):
             yroi = np.ma.masked_less(yroi, 0)
             self.panel.update_line(1, mca.energy, yroi, draw=False,
                                    update_limits=False)
-
-        self.panel.update_line(ix, mca.energy, counts,
-                               draw=False, update_limits=False)
-
-        max_counts = max_counts2 = max(self.mca.counts)
-        try:
-            max_counts2 = max(self.mca2.counts)
-        except:
-            pass
-
-        self.panel.axes.set_ylim(0.9, 1.25*max(max_counts, max_counts2))
-        if mca == self.mca:
-            self.ydata = 1.0*counts[:]
-        self.update_status()
-        if draw: self.draw()
-
-    def oplot(self, x, y, color='darkgreen', label='spectrum2',
-              mca=None, zorder=-2, **kws):
-        if mca is not None:
-            self.mca2 = mca
-
-        self.x2data = 1.0*x[:]
-        self.y2data = 1.0*y[:]
-        if hasattr(self, 'ydata'):
-            ymax = max(max(self.ydata), max(y))*1.25
+            roi_index_offset = 1
+        if index > 1 and roi_index_offset > 0:
+            index = index + roi_index_offset
+        self.panel.update_line(index, energy, counts, draw=False,
+                               update_limits=False)
+        if index == 0:
+            self.max_counts = max(counts)
         else:
-            ymax = max(y)*1.25
+            try:
+                self.max_counts = max(self.max_counts, max(counts))
+            except:
+                pass
+
+        self.panel.axes.set_ylim(0.9, 1.25*self.max_counts)
+        self.update_status()
+        if draw:
+            self.draw()
+
+    def oplot(self, x, y, color='darkgreen', label=None, zorder=5, **kws):
+        xdat = 1.0*x[:]
+        ydat = 1.0*y[:]
+        ymax = max(ydat)*1.25
+        if hasattr(self, 'ydat'):
+            ymax = max(max(self.ydat), max(ydat))*1.25
 
         kws.update({'zorder': zorder, 'label': label,
                     'ymax' : ymax, 'axes_style': 'bottom',
                     'ylog_scale': self.ylog_scale})
-        self.panel.oplot(self.x2data, self.y2data, color=color, **kws)
-
-    def swap_mcas(self, event=None):
-        if self.mca2 is None:
-            return
-        self.mca, self.mca2 = self.mca2, self.mca
-        xrfgroup = self.larch.symtable.get_group(XRFGROUP)
-        mca = getattr(xrfgroup, 'mca', None)
-        mca2 = getattr(xrfgroup, 'mca2', None)
-        setattr(xrfgroup, 'mca2', mca)
-        setattr(xrfgroup, 'mca', mca2)
-
-        self.plotmca(self.mca)
-        self.plotmca(self.mca2, as_mca2=True)
-
-    def close_bkg_mca(self, event=None):
-        self.mca2 = None
-        xrfgroup = self.larch.symtable.get_group(XRFGROUP)
-        setattr(xrfgroup, 'mca2', None)
-        self.plotmca(self.mca)
+        self.panel.oplot(xdat, ydat, color=color, **kws)
 
     def onReadMCAFile(self, event=None):
         dlg = wx.FileDialog(self, message="Open MCA File for reading",
@@ -1479,8 +1469,6 @@ class XRFDisplayFrame(wx.Frame):
 
         if filename is None:
             return
-        # if self.mca is not None:
-        #     self.mca2 = copy.deepcopy(self.mca)
 
         self.add_mca(GSEMCA_File(filename), filename=filename)
 
