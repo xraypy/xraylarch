@@ -42,7 +42,7 @@ from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
                          set_color, GUI_COLORS, CEN, LEFT, FRAMESTYLE,
                          flatnotebook, LarchUpdaterDialog, GridPanel, CIFFrame,
                          Structure2FeffFrame, FeffResultsFrame, LarchWxApp,
-                         OkCancel, ExceptionPopup, set_color, get_font)
+                         OkCancel, ExceptionPopup, get_font)
 
 
 from larch.wxlib.plotter import get_display, save_plot_config
