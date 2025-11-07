@@ -1562,8 +1562,8 @@ class MapViewerFrame(wx.Frame):
                 self.sel_mca.npixels = 0
             self.sel_mca.filename = fname
             self.sel_mca.title = aname
-            self.subframes['xrfdisplay'].add_mca(self.sel_mca, label='%s:%s'% (fname, aname),
-                                    plot=True)
+            self.subframes['xrfdisplay'].add_mca(self.sel_mca,
+                                                 label=f'{aname}:{fname}', plot=True)
             self.subframes['xrfdisplay'].roi_callback = self.UpdateROI
             update_xrmmap = getattr(self.nb.GetCurrentPage(), 'update_xrmmap', None)
             if callable(update_xrmmap):
