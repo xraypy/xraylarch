@@ -1582,7 +1582,8 @@ class MapViewerFrame(wx.Frame):
             except:
                 del self.subframes[name]
         if not shown:
-            self.subframes[name] = frameclass(self, **opts)
+            opts['parent'] = self
+            self.subframes[name] = frameclass(**opts)
 
     def show_XRD1D(self, event=None):
         self.show_subframe('xrd1d', XRD1DFrame, _larch=self.larch)
@@ -1592,7 +1593,7 @@ class MapViewerFrame(wx.Frame):
         if xrmfile is None:
             xrmfile = self.current_file
         self.show_subframe('xrfdisplay', XRFDisplayFrame,
-                           parent=self.larch_buffer,
+                           _larch=self.larch,
                            roi_callback=self.UpdateROI)
 
         self.subframes['xrfdisplay'].Show()
