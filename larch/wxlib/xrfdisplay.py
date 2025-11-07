@@ -21,8 +21,9 @@ from matplotlib.ticker import LogFormatter, FuncFormatter
 from pyshortcuts import uname, bytes2str, get_cwd, fix_filename
 
 from wxmplot import PlotPanel
-from . import (SimpleText, EditableListBox, Font, pack, Popup,
-               get_icon, SetTip, Button, Check, MenuItem, Choice,
+from . import (SimpleText, FileCheckList, Font, pack, Popup,
+               set_color, get_icon, get_font,
+               SetTip, Button, Check, MenuItem, Choice,
                FileOpen, FileSave, HLine, GridPanel,
                CEN, LEFT, RIGHT, PeriodicTablePanel,
                FONTSIZE, FONTSIZE_FW)
@@ -42,8 +43,8 @@ from .xrfdisplay_utils import (XRFCalibrationFrame,
                                XRFLines,
                                XRFDisplayColors_Light,
                                XRFDisplayColors_Dark,
-                               XRFGROUP,
-                               MAKE_XRFGROUP_CMD, next_mcaname)
+                               XRFGROUP, XRF_FILES, MAKE_XRFGROUPS,
+                               next_mcaname)
 
 from .xrfdisplay_fitpeaks import FitSpectraFrame
 
@@ -69,6 +70,92 @@ def txt(panel, label, size=75, colour=None, font=None, style=None):
 
 def lin(panel, len=30, wid=2, style=wx.LI_HORIZONTAL):
     return wx.StaticLine(panel, size=(len, wid), style=style)
+
+class XRFDataBrowser(wx.Frame):
+    """ frame for browsing XRF data in larch buffer
+    """
+    def __init__(self, parent, larch, size=(500, 250), **kws):
+        self.parent = parent
+        self.larch = larch
+        if size is None:
+            size = (500, 250)
+
+        wx.Frame.__init__(self, parent=parent, size=size,
+                        title='XRF Datasets', **kws)
+
+        panel = wx.Panel(self)
+        top = wx.Panel(panel)
+
+        def Btn(p, msg, x, act):
+            b = Button(p, msg, size=(x, 30),  action=act)
+            b.SetFont(get_font())
+            return b
+
+        sel_none = Btn(top, 'Select None',   125, self.onSelNone)
+        sel_all  = Btn(top, 'Select All',    125, self.onSelAll)
+        plot_sel = Btn(panel, 'Plot Selectedd', 250, self.onPlotSelected)
+
+        file_actions = [("Copy Group\tCtrl+Shift+C", self.onCopyGroup, "ctrl+shift+C"),
+                        ("Rename Group\tCtrl+N", self.onRenameGroup, "ctrl+N"),
+                        ("Remove Group\tCtrl+X", self.onRemoveGroup, "ctrl+X"),
+                        ("Remove Selected Groups\tCtrl+Delete", self.onRemoveGroups, "ctrl+delete"),
+                        ("--sep--", None, None),
+                        ]
+
+        self.file_groups = {}
+        self.filelist = FileCheckList(panel, main=self,
+                                      pre_actions=file_actions,
+                                      select_action=self.onPlotOne,
+                                      remove_action=self.onRemoveGroup,
+                                      with_remove_from_list=False)
+
+        set_color(self.filelist, 'list_fg', bg='list_bg')
+        wx.CallAfter(self.update_grouplist)
+
+        tsizer = wx.BoxSizer(wx.HORIZONTAL)
+        tsizer.Add(sel_all, 1, LEFT|wx.GROW, 1)
+        tsizer.Add(sel_none, 1, LEFT|wx.GROW, 1)
+        pack(top, tsizer)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(top, 0, LEFT|wx.GROW, 1)
+        sizer.Add(plot_sel, 0, LEFT|wx.GROW|wx.ALL, 1)
+        sizer.Add(self.filelist, 1, LEFT|wx.GROW|wx.ALL, 1)
+        pack(panel, sizer)
+        self.SetSize((500, 250))
+        self.Show()
+        self.Raise()
+
+    def update_grouplist(self, event=None):
+        xrf_files = self.larch.symtable.get_symbol(XRF_FILES)
+        for key, val in xrf_files.items():
+            if key not in self.file_groups:
+                self.file_groups[key] = val
+                self.filelist.Append(key)
+
+    def onSelNone(self, event=None):
+        print("select none")
+
+    def onSelAll(self, event=None):
+        print("select all")
+
+    def onPlotOne(self, event=None):
+        print("plot one")
+
+    def onPlotSelected(self, event=None):
+        print("plot sel")
+
+    def onCopyGroup(self, event=None):
+        print("copy group")
+
+    def onRenameGroup(self, event=None):
+        print("rename group")
+
+    def onRemoveGroup(self, event=None):
+        print("remove group")
+
+    def onRemoveGroups(self, event=None):
+        print("remove groups")
 
 
 class XRFDisplayFrame(wx.Frame):
@@ -100,8 +187,7 @@ class XRFDisplayFrame(wx.Frame):
         elif isinstance(_larch, Interpreter):     # called from shell
             self.larch_buffer = None
             self.larch = _larch
-        else:  # (includes  _larch is None)   called from Python
-            print("create new larch frame")
+        else:  # (includes  _larch is None)  called from Python
             self.larch_buffer = LarchFrame(
                    is_standalone=False, with_raise=False)
             self.subframes['larchframe'] = self.larch_buffer
@@ -157,7 +243,6 @@ class XRFDisplayFrame(wx.Frame):
         if filename is not None:
             if isinstance(filename, Path):
                 filename = Path(filename).absolute().as_posix()
-
             self.add_mca(GSEMCA_File(filename), filename=filename, plot=True)
 
 
@@ -504,8 +589,7 @@ class XRFDisplayFrame(wx.Frame):
             symtab.set_symbol('_sys.wx.parent', self)
 
         if not symtab.has_group(XRFGROUP):
-            self.larch.eval(MAKE_XRFGROUP_CMD)
-
+            self.larch.eval(MAKE_XRFGROUPS)
 
     def add_mca(self, mca, filename=None, label=None, as_mca2=False, plot=True):
         if as_mca2:
@@ -514,6 +598,7 @@ class XRFDisplayFrame(wx.Frame):
             self.mca2 = self.mca
             self.mca = mca
 
+        xrf_files = self.larch.symtable.get_symbol(XRF_FILES)
         xrfgroup = self.larch.symtable.get_group(XRFGROUP)
         mcaname = next_mcaname(self.larch)
         if filename is not None:
@@ -528,14 +613,13 @@ class XRFDisplayFrame(wx.Frame):
             label = Path(mca.filename).absolute().name
         if label is None:
             label = mcaname
-        print(f"Add MCA {as_mca2=}, {filename=}, {label=}")
-        print("Add MCA group : ", xrfgroup, mcaname)
 
         self.mca.label = label
         # push mca to mca2, save id of this mca
         # setattr(xrfgroup, '_mca2', getattr(xrfgroup, 'mca', None))
         setattr(xrfgroup, 'mca', mcaname)
         setattr(xrfgroup, mcaname, mca)
+        xrf_files[label] = getattr(xrfgroup, mcaname)
         if plot:
             self.plotmca(self.mca)
             if as_mca2:
@@ -799,14 +883,11 @@ class XRFDisplayFrame(wx.Frame):
         MenuItem(self, fmenu, "&Save ASCII Column File",
                  "Save Column File",  self.onSaveColumnFile)
 
-        MenuItem(self, fmenu, "&Inspect \tCtrl+J",
-                 " wx inspection tool ",  self.showInspectionTool)
         fmenu.AppendSeparator()
-        # MenuItem(self, fmenu, "Save ROIs to File",
-        #         "Save ROIs to File",  self.onSaveROIs)
-        # MenuItem(self, fmenu, "Restore ROIs File",
-        #         "Read ROIs from File",  self.onRestoreROIs)
-        # fmenu.AppendSeparator()
+        MenuItem(self, fmenu, 'Show XRF Dataset Browser',
+                 'Show List of XRF Spectra ',
+                 self.onShowXRFBrowser)
+
         MenuItem(self, fmenu, 'Show Larch Buffer',
                  'Show Larch Programming Buffer',
                  self.onShowLarchBuffer)
@@ -818,6 +899,9 @@ class XRFDisplayFrame(wx.Frame):
         MenuItem(self, fmenu, 'Page Setup...', 'Printer Setup', self.onPageSetup)
         MenuItem(self, fmenu, 'Print Preview...', 'Print Preview', self.onPrintPreview)
         MenuItem(self, fmenu, "&Print\tCtrl+P", "Print Plot", self.onPrint)
+
+        MenuItem(self, fmenu, "&Inspect \tCtrl+J",
+                 " wx inspection tool ",  self.showInspectionTool)
 
         fmenu.AppendSeparator()
         MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
@@ -889,10 +973,26 @@ class XRFDisplayFrame(wx.Frame):
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE, self.onClose)
 
+
+    def show_subframe(self, name, frameclass, **opts):
+        shown = False
+        if name in self.subframes:
+            try:
+                self.subframes[name].Raise()
+                shown = True
+            except Exception:
+                del self.subframes[name]
+        if not shown:
+            self.subframes[name] = frameclass(**opts)
+            self.subframes[name].Show()
+
     def onShowLarchBuffer(self, evt=None):
-        if self.larch_buffer is not None:
-            self.larch_buffer.Show()
-            self.larch_buffer.Raise()
+        self.show_subframe('larch_buffer', LarchFrame)
+        self.subframes['larch_buffer'].Raise()
+
+    def onShowXRFBrowser(self, evt=None):
+        self.show_subframe('xrf_browswer', XRFDataBrowser,
+                               parent=self, larch=self.larch)
 
     def onSavePNG(self, event=None):
         if self.panel is not None:
@@ -1003,6 +1103,7 @@ class XRFDisplayFrame(wx.Frame):
         newh.set_linewidth(2.0)
         newh.set_zorder(-10)
         self.highlight_xrayline = newh
+        self.energy_for_zoom = en
         if self.panel.conf.show_legend:
             self.panel.toggle_legend()
             self.panel.toggle_legend()
