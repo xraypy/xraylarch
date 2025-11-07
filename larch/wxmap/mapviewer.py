@@ -789,14 +789,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.bexport = Button(pane, 'Export Areas', size=bsize, action=self.onExport)
         self.bimport = Button(pane, 'Import Areas', size=bsize, action=self.onImport)
         self.bcopy   = Button(pane, 'Copy to Other Maps',  size=bsize, action=self.onCopy)
-        self.xrf     = Button(pane, 'Show XRF (Fore)', size=bsize, action=self.onXRF)
-        self.xrf2    = Button(pane, 'Show XRF (Back)', size=bsize,
-                              action=partial(self.onXRF, as_background=True))
-
-        # self.onstats  = Button(pane, 'Calculate XRF Stats', size=bsize,
-        #                        action=self.onShowStats)
-        # self.onreport = Button(pane, 'Save XRF Stats', size=bsize,
-        #                        action=self.onReport)
+        self.xrf     = Button(pane, 'Show XRF',     size=bsize, action=self.onXRF)
 
         self.xrd1d_plot  = Button(pane, 'Show 1D XRD', size=bsize,
                                   action=partial(self.onXRD, show=True, xrd1d=True))
@@ -842,9 +835,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         irow += 1
         sizer.Add(txt('XRF: '),             (irow, 0), (1, 1), ALL_LEFT, 2)
         sizer.Add(self.xrf,                 (irow, 1), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.xrf2,                (irow, 2), (1, 1), ALL_LEFT, 2)
-        # sizer.Add(self.onstats,             (irow, 3), (1, 1), ALL_LEFT, 2)
-        # sizer.Add(self.onreport,            (irow, 4), (1, 1), ALL_LEFT, 2)
 
 
         irow += 1
@@ -852,8 +842,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         sizer.Add(self.xrd1d_plot,          (irow, 1), (1, 1), ALL_LEFT, 2)
         sizer.Add(self.xrd2d_plot,          (irow, 2), (1, 1), ALL_LEFT, 2)
 
-        # sizer.Add(self.xrd1d_save,          (irow, 0), (1, 2), ALL_LEFT, 2)
-        # sizer.Add(self.xrd2d_save,          (irow, 2), (1, 2), ALL_LEFT, 2)
         irow += 1
         sizer.Add(legend,                   (irow, 1), (1, 2), ALL_LEFT, 2)
         pack(pane, sizer)
