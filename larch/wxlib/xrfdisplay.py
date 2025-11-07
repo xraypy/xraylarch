@@ -93,13 +93,20 @@ class XRFDisplayFrame(wx.Frame):
         self.roi_callback = roi_callback
         self.plotframe = None
         self.wids = {}
-        self.larch = _larch
-        if isinstance(self.larch, Interpreter):  # called from shell
-            self.larch_buffer = None
-        elif isinstance(self.larch, LarchFrame):  # called with existing LarchFrame
+        if isinstance(_larch, LarchFrame):  # called with existing LarchFrame
             self.larch_buffer = _larch
             self.subframes['larchframe'] = self.larch_buffer
             self.larch = self.larch_buffer.larchshell
+        elif isinstance(_larch, Interpreter):     # called from shell
+            self.larch_buffer = None
+            self.larch = _larch
+        else:  # (includes  _larch is None)   called from Python
+            print("create new larch frame")
+            self.larch_buffer = LarchFrame(
+                   is_standalone=False, with_raise=False)
+            self.subframes['larchframe'] = self.larch_buffer
+            self.larch = self.larch_buffer.larchshell
+
         self.init_larch()
 
         self.exit_callback = exit_callback
@@ -109,8 +116,8 @@ class XRFDisplayFrame(wx.Frame):
         self.selected_elem = None
         self.mca = None
         self.mca2 = None
-        self.xdata = np.arange(2048)*0.01
-        self.ydata = np.ones(2048)*1.e-4
+        self.xdata = np.arange(4096)*0.01
+        self.ydata = np.ones(4096)*0.01
         self.x2data = None
         self.y2data = None
         self.rois_shown = False
@@ -140,15 +147,19 @@ class XRFDisplayFrame(wx.Frame):
         statusbar_fields = ["XRF Display", " ", " ", " "]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
+
+        try:
+            fico = Path(icondir, ICON_FILE).as_posix()
+            self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
+        except:
+            pass
+
         if filename is not None:
             if isinstance(filename, Path):
                 filename = Path(filename).absolute().as_posix()
 
             self.add_mca(GSEMCA_File(filename), filename=filename, plot=True)
 
-
-    def ignoreEvent(self, event=None):
-        pass
 
     def on_cursor(self, event=None, side='left'):
         if event is None:
@@ -285,14 +296,35 @@ class XRFDisplayFrame(wx.Frame):
         pan.conf.labelfont.set_size(9)
         pan.onRightDown =   partial(self.on_cursor, side='right')
         pan.report_leftdown = partial(self.on_cursor, side='left')
-        # pan.report_rightdown = partial(self.on_cursor, side='right')
-        # pan.zoom_leftdown = self.on_cursor
-        #         pan.add_cursor_mode('zoom',
-        #                             # motion = self.ignoreEvent,
-        #                             # leftup   = self.ignoreEvent,
-        #                             leftdown = self.on_cursor,
-        #                             rightdown = partial(self.on_cursor, side='right'))
+        pan.onLeftUp = self.onLeftUp
         return pan
+
+    def onLeftUp(self, event=None):
+        """ left button up"""
+        if event is None:
+            return
+
+        x, y  = event.xdata, event.ydata
+        if len(self.panel.fig.axes) > 1:
+            try:
+                x, y = self.panel.axes.transData.inverted().transform((event.x, event.y))
+            except:
+                pass
+        ix = x
+        if self.mca is not None:
+            try:
+                ix = index_of(self.mca.energy, x)
+            except TypeError:
+                pass
+        if ix is not None:
+            ezoom = self.mca.energy[ix]
+            self.energy_for_zoom = (ezoom + self.energy_for_zoom)/2.0
+
+        self.panel.cursor_mode_action('leftup', event=event)
+        self.panel.canvas.draw_idle()
+        self.panel.canvas.draw()
+        self.panel.ForwardEvent(event=event.guiEvent)
+
 
     def createControlPanel(self):
         ctrlpanel = wx.Panel(self, name='Ctrl Panel')
@@ -474,11 +506,6 @@ class XRFDisplayFrame(wx.Frame):
         if not symtab.has_group(XRFGROUP):
             self.larch.eval(MAKE_XRFGROUP_CMD)
 
-        fico = Path(icondir, ICON_FILE).as_posix()
-        try:
-            self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
-        except:
-            pass
 
     def add_mca(self, mca, filename=None, label=None, as_mca2=False, plot=True):
         if as_mca2:
@@ -486,7 +513,7 @@ class XRFDisplayFrame(wx.Frame):
         else:
             self.mca2 = self.mca
             self.mca = mca
-        # print("Add MCA ", mca, as_mca2)
+
         xrfgroup = self.larch.symtable.get_group(XRFGROUP)
         mcaname = next_mcaname(self.larch)
         if filename is not None:
@@ -501,12 +528,14 @@ class XRFDisplayFrame(wx.Frame):
             label = Path(mca.filename).absolute().name
         if label is None:
             label = mcaname
+        print(f"Add MCA {as_mca2=}, {filename=}, {label=}")
+        print("Add MCA group : ", xrfgroup, mcaname)
+
         self.mca.label = label
         # push mca to mca2, save id of this mca
-        setattr(xrfgroup, '_mca2', getattr(xrfgroup, 'mca', None))
+        # setattr(xrfgroup, '_mca2', getattr(xrfgroup, 'mca', None))
         setattr(xrfgroup, 'mca', mcaname)
         setattr(xrfgroup, mcaname, mca)
-        # print("Add MCA ", xrfgroup, mcaname)
         if plot:
             self.plotmca(self.mca)
             if as_mca2:
@@ -566,12 +595,8 @@ class XRFDisplayFrame(wx.Frame):
 
     def unzoom_all(self, event=None):
         self.panel.unzoom_all()
-        # emid, erange, dmin, dmax = self._getlims()
-        # self._set_xview(dmin, dmax)
-        # self.xview_range = None
 
     def onShowGrid(self, event=None):
-        # show_grid = event.IsChecked()
         self.panel.conf.enable_grid(event.IsChecked())
 
     def set_roilist(self, mca=None):
@@ -1107,6 +1132,7 @@ class XRFDisplayFrame(wx.Frame):
             self.mca.predict_pileup()
             self.oplot(self.mca.energy, self.mca.pileup,
                        color=self.colors.pileup_color, label='pileup prediction')
+            self.unzoom_all()
         else:
             self.plotmca(self.mca)
 
@@ -1115,6 +1141,7 @@ class XRFDisplayFrame(wx.Frame):
             self.mca.predict_escape()
             self.oplot(self.mca.energy, self.mca.escape,
                        color=self.colors.escape_color, label='escape prediction')
+            self.unzoom_all()
         else:
             self.plotmca(self.mca)
 
@@ -1351,8 +1378,8 @@ class XRFDisplayFrame(wx.Frame):
 
         if filename is None:
             return
-        if self.mca is not None:
-            self.mca2 = copy.deepcopy(self.mca)
+        # if self.mca is not None:
+        #     self.mca2 = copy.deepcopy(self.mca)
 
         self.add_mca(GSEMCA_File(filename), filename=filename)
 

@@ -791,7 +791,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.bcopy   = Button(pane, 'Copy to Other Maps',  size=bsize, action=self.onCopy)
         self.xrf     = Button(pane, 'Show XRF (Fore)', size=bsize, action=self.onXRF)
         self.xrf2    = Button(pane, 'Show XRF (Back)', size=bsize,
-                              action=partial(self.onXRF, as_mca2=True))
+                              action=partial(self.onXRF, as_background=True))
 
         # self.onstats  = Button(pane, 'Calculate XRF Stats', size=bsize,
         #                        action=self.onShowStats)
@@ -1226,13 +1226,13 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.area_legend.DeleteAllItems()
 
 
-
-    def onXRF(self, event=None, as_mca2=False):
+    def onXRF(self, event=None, as_background=False):
         aname = self._getarea()
         xrmfile = self.owner.current_file
         area  = xrmfile.xrmmap['areas/%s' % aname]
 
         label = bytes2str(area.attrs.get('description', aname))
+
         self._mca  = None
         self.owner.message("Getting XRF Spectra for area '%s'..." % aname)
         def _getmca_area(aname):
@@ -1251,9 +1251,10 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self._mca.title = label
         self._mca.npixels = npix
         self.owner.message(f"Plotting XRF Spectra for area '{aname}'...")
-        self.owner.subframes['xrfdisplay'].add_mca(self._mca, label=f"{fname}:{label}",
-                                                   plot=not as_mca2)
-        if as_mca2:
+        self.owner.subframes['xrfdisplay'].add_mca(self._mca,
+                                                   label=f"{label}:{fname}",
+                                                   plot=not as_background)
+        if as_background:
             self.owner.subframes['xrfdisplay'].swap_mcas()
 
     def onXRD(self, event=None, save=False, show=False,
@@ -1593,7 +1594,7 @@ class MapViewerFrame(wx.Frame):
         if xrmfile is None:
             xrmfile = self.current_file
         self.show_subframe('xrfdisplay', XRFDisplayFrame,
-                           _larch=self.larch,
+                           _larch=self.larch_buffer,
                            roi_callback=self.UpdateROI)
 
         self.subframes['xrfdisplay'].Show()
