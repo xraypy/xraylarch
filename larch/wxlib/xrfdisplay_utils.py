@@ -24,7 +24,7 @@ XRFGROUP  = 'xrfdata'
 MAKE_XRFGROUPS = f"""
 # Creating Groups to manage XRF Data
 {XRF_FILES} = {{}}
-{XRFGROUP} = group(__doc__='MCA/XRF ddata groups', mca=None, mca2=None)
+{XRFGROUP} = group(__doc__='MCA/XRF ddata groups', mca=None)
 """
 
 XRFRESULTS_GROUP   = 'xrf_results'
