@@ -85,6 +85,7 @@ class XRFDataBrowser(wx.Frame):
 
         panel = wx.Panel(self)
         top = wx.Panel(panel)
+        mid = wx.Panel(panel)
 
         def Btn(p, msg, x, act):
             b = Button(p, msg, size=(x, 30),  action=act)
@@ -93,7 +94,8 @@ class XRFDataBrowser(wx.Frame):
 
         sel_none = Btn(top, 'Select None',   125, self.onSelNone)
         sel_all  = Btn(top, 'Select All',    125, self.onSelAll)
-        plot_sel = Btn(panel, 'Plot Selected', 250, self.onPlotSelected)
+        plot_one = Btn(mid, 'Plot One',      125, self.onPlotOne)
+        plot_sel = Btn(mid, 'Plot Selected', 250, self.onPlotSelected)
 
         file_actions = [("Copy Group\tCtrl+Shift+C", self.onCopyGroup, "ctrl+shift+C"),
                         ("Rename Group\tCtrl+N", self.onRenameGroup, "ctrl+N"),
@@ -102,10 +104,11 @@ class XRFDataBrowser(wx.Frame):
                         ("--sep--", None, None),
                         ]
 
+        self.current_file = None
         self.file_groups = {}
         self.filelist = FileCheckList(panel, main=self,
                                       pre_actions=file_actions,
-                                      select_action=self.onPlotOne,
+                                      select_action=self.onSelectOne,
                                       remove_action=self.onRemoveGroup,
                                       with_remove_from_list=False)
 
@@ -117,10 +120,15 @@ class XRFDataBrowser(wx.Frame):
         tsizer.Add(sel_none, 1, LEFT|wx.GROW, 1)
         pack(top, tsizer)
 
+        psizer = wx.BoxSizer(wx.HORIZONTAL)
+        psizer.Add(plot_one, 1, LEFT|wx.GROW, 1)
+        psizer.Add(plot_sel, 1, LEFT|wx.GROW, 1)
+        pack(mid, psizer)
+
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(top, 0, LEFT|wx.GROW, 1)
-        sizer.Add(plot_sel, 0, LEFT|wx.GROW|wx.ALL, 1)
-        sizer.Add(self.filelist, 1, LEFT|wx.GROW|wx.ALL, 1)
+        sizer.Add(mid, 0, LEFT|wx.GROW|wx.ALL, 2)
+        sizer.Add(self.filelist, 1, LEFT|wx.GROW|wx.ALL, 2)
         pack(panel, sizer)
         self.SetSize((500, 250))
         self.Show()
@@ -132,6 +140,8 @@ class XRFDataBrowser(wx.Frame):
             if key not in self.file_groups:
                 self.file_groups[key] = val
                 self.filelist.Append(key)
+        self.Refresh()
+
 
     def onSelNone(self, event=None):
         self.filelist.select_none()
@@ -139,12 +149,14 @@ class XRFDataBrowser(wx.Frame):
     def onSelAll(self, event=None):
         self.filelist.select_all()
 
-    def onPlotOne(self, event=None):
-        filename = str(event.GetString())
+    def onSelectOne(self, event=None):
+        self.current_file = str(event.GetString())
 
-        mca = self.parent.get_mca(filename)
-        if mca is not None:
-            self.parent.plotmca(mca, newplot=True)
+    def onPlotOne(self, event=None):
+        if self.current_file is not None:
+            mca = self.parent.get_mca(self.current_file)
+            if mca is not None:
+                self.parent.plotmca(mca, newplot=True)
 
     def onPlotSelected(self, event=None):
         filenames = self.filelist.GetCheckedStrings()
@@ -165,7 +177,6 @@ class XRFDataBrowser(wx.Frame):
 
     def onRemoveGroups(self, event=None):
         print("remove groups")
-
 
 class XRFDisplayFrame(wx.Frame):
     _about = """XRF Spectral Viewer
@@ -209,6 +220,7 @@ class XRFDisplayFrame(wx.Frame):
         self.selected_elem = None
         self.mca = None
         self.mcabkg = None
+        self.show_grid = False
         self.xdat = np.arange(4096)*0.01
         self.ydat = np.ones(4096)*0.01
         self.plotted_groups = []
@@ -376,7 +388,7 @@ class XRFDisplayFrame(wx.Frame):
         pan.SetSize((650, 350))
 
         pan.conf.grid_color='#E5E5C0'
-        pan.conf.show_grid = False
+        pan.conf.show_grid = self.show_grid
         pan.conf.canvas.figure.set_facecolor('#FCFCFE')
         pan.conf.labelfont.set_size(9)
         pan.onRightDown =   partial(self.on_cursor, side='right')
@@ -614,13 +626,18 @@ class XRFDisplayFrame(wx.Frame):
         setattr(xrfgroup, mcaname, mca)
         setattr(xrfgroup, 'mca', mcaname)
 
-
         self.larch.eval(f"{XRFGROUP}.mca = '{mcaname}'")
         self.larch.eval(f"{XRF_FILES}['{label}'] = {XRFGROUP}.{mcaname}")
 
         xrf_files[label] = self.mca
         if plot:
             self.plotmca(self.mca)
+
+        if 'xrf_browser' in self.subframes:
+            browser = self.subframes['xrf_browser']
+            browser.update_grouplist()
+
+
 
     def _getlims(self):
         emin, emax = self.panel.axes.get_xlim()
@@ -678,7 +695,9 @@ class XRFDisplayFrame(wx.Frame):
         self.panel.unzoom_all()
 
     def onShowGrid(self, event=None):
+        self.show_grid = event.IsChecked()
         self.panel.conf.enable_grid(event.IsChecked())
+        self.panel.conf.show_grid = event.IsChecked()
 
     def set_roilist(self, mca=None):
         """ Add Roi names to roilist"""
@@ -978,7 +997,7 @@ class XRFDisplayFrame(wx.Frame):
         self.subframes['larch_buffer'].Raise()
 
     def onShowXRFBrowser(self, evt=None):
-        self.show_subframe('xrf_browswer', XRFDataBrowser,
+        self.show_subframe('xrf_browser', XRFDataBrowser,
                                parent=self, larch=self.larch)
 
     def onSavePNG(self, event=None):
@@ -1270,7 +1289,7 @@ class XRFDisplayFrame(wx.Frame):
             self.onShowLines(elem=self.selected_elem)
         if roiname is not None:
             self.onROI(label=roiname)
-        for g in self.plotted_groups():
+        for g in self.plotted_groups:
             print('log/lin for group ', g)
             # self.oplot(self.x2data, self.y2data)
 
@@ -1330,10 +1349,10 @@ class XRFDisplayFrame(wx.Frame):
         panel.yformatter = self._formaty
         panel.axes.get_yaxis().set_visible(False)
         kwargs = {'xmin': 0,
+                  'show_grid': self.show_grid,
                   'zorder': 100,
                   'linewidth': 2.5,
                   'delay_draw': True,
-                  'grid': panel.conf.show_grid,
                   'ylog_scale': self.ylog_scale,
                   'xlabel': 'E (keV)',
                   'axes_style': 'bottom',
@@ -1379,9 +1398,11 @@ class XRFDisplayFrame(wx.Frame):
 
         yscale = {False:'linear', True:'log'}[self.ylog_scale]
         panel.set_viewlimits()
-        panel.set_logscale(yscale=yscale)
+        panel.set_viewlimits()
         panel.axes.get_yaxis().set_visible(self.show_yaxis)
         panel.cursor_mode = 'zoom'
+        panel.conf.enable_grid(self.show_grid)
+
         self.draw()
         panel.canvas.Refresh()
 
