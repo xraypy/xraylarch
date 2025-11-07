@@ -42,6 +42,12 @@ def makeColorPanel(parent, color):
 def wx_inspect():
     wx.GetApp().ShowInspectionTool()
 
+def set_fontsize(obj, fsize):
+    fn = obj.GetFont()
+    f1, f2 = fn.PixelSize
+    fn.SetPixelSize(wx.Size(int((f1*fsize/f2)), fsize))
+    obj.SetFont(fn)
+
 
 class LarchWxShell(object):
     ps1 = 'Larch>'
@@ -218,7 +224,7 @@ class LarchPanel(wx.Panel):
         self.output.SetBackgroundColour(BACKGROUND_COLOUR)
         self.output.SetForegroundColour(FOREGROUND_COLOUR)
         if font is None:
-            font = get_font(larger=1)
+            font = get_font(larger=2)
 
         self.output.SetFont(font)
         self.objtree.tree.SetFont(font)
@@ -266,9 +272,7 @@ class LarchPanel(wx.Panel):
                                        input  = self.input)
 
         self.objtree.SetRootObject(self.larchshell.symtable)
-
         self.output.SetInsertionPointEnd()
-        # root = self.objtree.tree.GetRootItem()
 
 
     def write_banner(self):
@@ -335,11 +339,10 @@ class LarchFrame(wx.Frame):
         self.historyfile = historyfile
         self.subframes = {}
         self.last_array_sel = {}
-        self.fontsize = FONTSIZE + 2
         wx.Frame.__init__(self, parent, -1, size=(800, 725),
                           style= wx.DEFAULT_FRAME_STYLE)
         self.SetTitle('LarchGUI')
-
+        self.fontsize = FONTSIZE + 2
         self.font = get_font(larger=2)
         self.SetFont(self.font)
         sbar = self.CreateStatusBar(2, wx.CAPTION)
@@ -362,13 +365,18 @@ class LarchFrame(wx.Frame):
 
         self.Bind(wx.EVT_SHOW, self.onShow)
         self.BuildMenus()
-        self.onSelectFont(fsize=self.fontsize)
+
         # larchdir = larch.site_config.larchdir
 
         fico = Path(larch.site_config.icondir, ICON_FILE).absolute()
         if fico.exists():
             self.SetIcon(wx.Icon(fico.as_posix(), wx.BITMAP_TYPE_ICO))
+
+        self.set_fontsize(self.font.GetPointSize())
+
         self.mainpanel.write_banner()
+
+
         if with_raise:
             self.Raise()
 
@@ -443,15 +451,10 @@ class LarchFrame(wx.Frame):
     def onSelectFont(self, event=None, fsize=None):
         if fsize is None:
             fsize = self.fontsizes.get(event.GetId(), self.fontsize)
-        self.fontsize = fsize
+        self.set_fontsize(fsize)
 
-        def set_fontsize(obj, fsize):
-            fn = obj.GetFont()
-            f1, f2 = fn.PixelSize
-            fn.SetPixelSize(wx.Size(int((f1*fsize/f2)), fsize))
-            obj.SetFont(fn)
-
-        self.PointSize = fsize
+    def set_fontsize(self, fsize):
+        self.fontsize = self.PointSize = fsize
         set_fontsize(self, fsize)
         set_fontsize(self.mainpanel.output,  fsize)
         set_fontsize(self.mainpanel.objtree.tree, fsize)
