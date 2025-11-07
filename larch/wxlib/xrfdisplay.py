@@ -212,7 +212,6 @@ class XRFDisplayFrame(wx.Frame):
         self.xdat = np.arange(4096)*0.01
         self.ydat = np.ones(4096)*0.01
         self.plotted_groups = []
-
         self.rois_shown = False
         self.major_markers = []
         self.minor_markers = []
@@ -603,6 +602,7 @@ class XRFDisplayFrame(wx.Frame):
             readcomment = read_mcafile.format(group=XRFGROUP,
                                               name=mcaname,
                                               filename=filename)
+            self.larch.eval(readcomment)
             if label is None:
                 label = Path(filename).absolute().name
         if label is None and hasattr(mca, 'filename'):
@@ -614,7 +614,7 @@ class XRFDisplayFrame(wx.Frame):
         setattr(xrfgroup, mcaname, mca)
         setattr(xrfgroup, 'mca', mcaname)
 
-        self.larch.eval(readcomment)
+
         self.larch.eval(f"{XRFGROUP}.mca = '{mcaname}'")
         self.larch.eval(f"{XRF_FILES}['{label}'] = {XRFGROUP}.{mcaname}")
 
