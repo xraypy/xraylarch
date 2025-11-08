@@ -195,12 +195,14 @@ class XRFDataBrowser(wx.Frame):
     def onPlotOne(self, event=None):
         if self.current_file is not None:
             mca = self.parent.get_mca(self.current_file)
+            self.parent.plotted_groups = []
             if mca is not None:
                 self.parent.plotmca(mca, newplot=True)
 
     def onPlotSelected(self, event=None):
         filenames = self.filelist.GetCheckedStrings()
         ix = 0
+        self.parent.plotted_groups = []
         for ix, fname in enumerate(filenames):
             mca = self.parent.get_mca(fname)
             if mca is not None:
@@ -299,11 +301,15 @@ class XRFDisplayFrame(wx.Frame):
         self.selected_elem = None
         self.mca = None
         self.mcabkg = None
-        self.show_grid = False
         self.xdat = np.arange(4096)*0.01
         self.ydat = np.ones(4096)*0.01
         self.plotted_groups = []
-        self.rois_shown = False
+        self.ymin = 0.9
+        self.show_cps   = False
+        self.show_yaxis = True
+        self.ylog_scale = True
+        self.show_grid = False
+
         self.major_markers = []
         self.minor_markers = []
         self.hold_markers = []
@@ -312,13 +318,11 @@ class XRFDisplayFrame(wx.Frame):
         self.saved_lines = None
         self.energy_for_zoom = None
         self.xview_range = None
-        self.show_yaxis = False
         self.xmarker_left = None
         self.xmarker_right = None
 
         self.highlight_xrayline = None
         self.cursor_markers = [None, None]
-        self.ylog_scale = True
         self.SetTitle("%s: %s " % (self.main_title, title))
 
         self._menus = []
@@ -392,11 +396,6 @@ class XRFDisplayFrame(wx.Frame):
         self.hold_markers = []
         self.draw()
 
-    def draw(self):
-        try:
-            self.panel.canvas.draw()
-        except:
-            pass
 
     def clear_markers(self, evt=None):
         "remove all Cursor Markers"
@@ -407,6 +406,12 @@ class XRFDisplayFrame(wx.Frame):
         self.xmarker_left  = None
         self.xmarker_right = None
         self.draw()
+
+    def draw(self):
+        try:
+            self.panel.canvas.draw()
+        except:
+            pass
 
     def update_status(self):
         fmt = "{:s}:{:}, E={:.3f}, Cts={:,.0f}".format
@@ -424,7 +429,7 @@ class XRFDisplayFrame(wx.Frame):
             if  self.ylog_scale:
                 y1 = (log(y)-log(ymin))/(log(ymax)-log(ymin)+2.e-9)
                 if y1 < 0.0: y1 = 0.0
-            y2 = min(y1+0.25, y1*0.1 + 0.9)
+            y2 = min(y1+0.25, y1*0.1 + 0.001)
             if self.cursor_markers[idx] is not None:
                 try:
                     self.cursor_markers[idx].remove()
@@ -453,27 +458,11 @@ class XRFDisplayFrame(wx.Frame):
             left, right = roi.left, roi.right
             self.ShowROIStatus(left, right, name=roi.name, panel=0)
             self.ShowROIPatch(left, right)
+
         elif (self.xmarker_left is not None and self.xmarker_right is not None):
             self.ShowROIStatus(self.xmarker_left, self.xmarker_right,
                                name='unnamed', panel=3)
 
-
-    def createPlotPanel(self):
-        """mca plot window"""
-        pan = PlotPanel(self, fontsize=9, axisbg='#FFFFFF',
-                        with_data_process=False,
-                        output_title='test.xrf',
-                        messenger=self.write_message)
-        pan.SetSize((650, 350))
-
-        pan.conf.grid_color='#E5E5C0'
-        pan.conf.show_grid = self.show_grid
-        pan.conf.canvas.figure.set_facecolor('#FCFCFE')
-        pan.conf.labelfont.set_size(9)
-        pan.onRightDown =   partial(self.on_cursor, side='right')
-        pan.report_leftdown = partial(self.on_cursor, side='left')
-        pan.onLeftUp = self.onLeftUp
-        return pan
 
     def onLeftUp(self, event=None):
         """ left button up"""
@@ -513,9 +502,9 @@ class XRFDisplayFrame(wx.Frame):
         labstyle = wx.ALIGN_LEFT|wx.EXPAND
         ctrlstyle = wx.ALIGN_LEFT
         txtstyle=wx.ALIGN_LEFT|wx.ST_NO_AUTORESIZE|wx.TE_PROCESS_ENTER
-        Font9  = Font(9)
         Font10 = Font(10)
         Font11 = Font(11)
+        Font12 = Font(12)
         #
         arrowpanel = wx.Panel(ctrlpanel)
         ssizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -531,19 +520,25 @@ class XRFDisplayFrame(wx.Frame):
             ssizer.Add(self.wids[wname],  0, wx.EXPAND|wx.ALL)
 
         self.wids['holdbtn'] = wx.ToggleButton(arrowpanel, -1, 'Hold   ',
-                                               size=(100, -1))
+                                               size=(100, 30))
         self.wids['holdbtn'].Bind(wx.EVT_TOGGLEBUTTON, self.onToggleHold)
 
-        self.wids['zoom_in'] = Button(arrowpanel, 'Zoom In',   size=(90, 30),
+        ssizer.Add(self.wids['holdbtn'],    0, wx.EXPAND|wx.ALL, 2)
+        pack(arrowpanel, ssizer)
+
+        # zoom
+        zpanel = wx.Panel(ctrlpanel)
+        zsizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.wids['zoom_in'] = Button(zpanel, 'Zoom In',   size=(100, 30),
                                         action=self.onZoomIn)
-        self.wids['zoom_out'] = Button(arrowpanel, 'Zoom Out',   size=(90, 30),
+        self.wids['zoom_out'] = Button(zpanel, 'Zoom Out',   size=(100, 30),
                                         action=self.onZoomOut)
 
-        ssizer.Add(self.wids['holdbtn'],    0, wx.EXPAND|wx.ALL, 2)
-        ssizer.Add(self.wids['zoom_in'],    0, wx.EXPAND|wx.ALL, 2)
-        ssizer.Add(self.wids['zoom_out'],    0, wx.EXPAND|wx.ALL, 2)
+        zsizer.Add(self.wids['zoom_in'],    0, wx.EXPAND|wx.ALL, 2)
+        zsizer.Add(self.wids['zoom_out'],    0, wx.EXPAND|wx.ALL, 2)
 
-        pack(arrowpanel, ssizer)
+        pack(zpanel, zsizer)
 
         # Lines selection
         linespanel = wx.Panel(ctrlpanel)
@@ -582,15 +577,15 @@ class XRFDisplayFrame(wx.Frame):
         zsizer.Add(z3,    0, wx.EXPAND|wx.ALL, 0)
         pack(roibtns, zsizer)
 
-        rt1 = txt(roipanel, ' Channels:', size=80, font=Font10)
-        rt2 = txt(roipanel, ' Energy:',   size=80, font=Font10)
-        rt3 = txt(roipanel, ' Cen, Wid:',  size=80, font=Font10)
+        rt1 = txt(roipanel, ' Channels:', size=80, font=Font11)
+        rt2 = txt(roipanel, ' Energy:',   size=80, font=Font11)
+        rt3 = txt(roipanel, ' Cen, Wid:',  size=80, font=Font11)
         m = ''
-        self.wids['roi_msg1'] = txt(roipanel, m, size=135, font=Font10)
-        self.wids['roi_msg2'] = txt(roipanel, m, size=135, font=Font10)
-        self.wids['roi_msg3'] = txt(roipanel, m, size=135, font=Font10)
+        self.wids['roi_msg1'] = txt(roipanel, m, size=135, font=Font11)
+        self.wids['roi_msg2'] = txt(roipanel, m, size=135, font=Font11)
+        self.wids['roi_msg3'] = txt(roipanel, m, size=135, font=Font11)
 
-        rsizer.Add(txt(roipanel, ' Regions of Interest:', size=125, font=Font11),
+        rsizer.Add(txt(roipanel, ' Regions of Interest:', size=125, font=Font12),
                    (0, 0), (1, 3), labstyle)
         rsizer.Add(self.wids['roiname'],    (1, 0), (1, 3), labstyle)
         rsizer.Add(roibtns,                 (2, 0), (1, 3), labstyle)
@@ -641,6 +636,7 @@ class XRFDisplayFrame(wx.Frame):
         sizer.Add(roipanel,            0, labstyle)
         sizer.Add((5, 5),              0, wx.EXPAND|wx.ALL)
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
+        sizer.Add(zpanel,              0, labstyle)
         sizer.Add(ptable,              0, wx.EXPAND|wx.ALL, 4)
         sizer.Add(arrowpanel,          0, labstyle)
         sizer.Add(linespanel,          0, labstyle)
@@ -654,18 +650,64 @@ class XRFDisplayFrame(wx.Frame):
 
     def createMainPanel(self):
         ctrlpanel = self.createControlPanel()
-        plotpanel = self.panel = self.createPlotPanel()
-        plotpanel.yformatter = self._formaty
+
+        rpanel = wx.Panel(self)
+
+        top = wx.Panel(rpanel)
+        tsiz = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.wids['show_cps']   = Check(top, 'Counts/Sec', default=self.show_cps, action=self.onShowCPS)
+        self.wids['show_ylog']   = Check(top, 'Y LogScale', default=self.ylog_scale, action=self.onLogLinear)
+        self.wids['show_yaxis']  = Check(top, 'Y Axis', default=self.show_yaxis, action=self.onYAxis)
+        self.wids['show_grid']   = Check(top, 'Grid ', default=self.show_grid, action=self.onShowGrid)
+        self.wids['show_legend'] = Check(top, 'Legend', default=False, action=self.onShowLegend)
+
+
+        tsiz.Add(SimpleText(top, 'Show: '), 0, wx.EXPAND|wx.ALL, 0)
+        tsiz.Add(self.wids['show_cps'],    0, wx.EXPAND|wx.ALL, 0)
+        tsiz.Add(self.wids['show_ylog'],   0, wx.EXPAND|wx.ALL, 0)
+        tsiz.Add(self.wids['show_yaxis'],  0, wx.EXPAND|wx.ALL, 0)
+        tsiz.Add(self.wids['show_legend'], 0, wx.EXPAND|wx.ALL, 0)
+        tsiz.Add(self.wids['show_grid'],   0, wx.EXPAND|wx.ALL, 0)
+        pack(top, tsiz)
+
+        pan = self.panel = PlotPanel(rpanel, fontsize=9, axisbg='#FFFFFF',
+                                    with_data_process=False,
+                                    output_title='test.xrf',
+                                    messenger=self.write_message)
+
+        rsiz = wx.BoxSizer(wx.VERTICAL)
+        rsiz.Add(top,   0, wx.EXPAND|wx.ALL, 1)
+        rsiz.Add(pan,   1, wx.EXPAND|wx.ALL, 1)
+        pack(rpanel, rsiz)
+
+        pan.SetSize((650, 350))
+
+        pan.conf.grid_color='#E5E5C0'
+        pan.conf.show_grid = self.show_grid
+        pan.yformatter = self._formaty
+
+        pan.axes.yaxis.set_major_formatter(FuncFormatter(self._formaty))
+        pan.axes.yaxis.set_visible(self.show_yaxis)
+        pan.axes.spines['right'].set_visible(False)
+        pan.axes.yaxis.set_ticks_position('left')
+
+        pan.conf.canvas.figure.set_facecolor('#FCFCFE')
+        pan.conf.labelfont.set_size(9)
+        pan.onRightDown =   partial(self.on_cursor, side='right')
+        pan.report_leftdown = partial(self.on_cursor, side='left')
+        pan.onLeftUp = self.onLeftUp
 
         tx, ty = self.wids['ptable'].GetBestVirtualSize()
         cx, cy = ctrlpanel.GetBestVirtualSize()
-        px, py = plotpanel.GetBestVirtualSize() # (650, 350)
+        px, py = self.panel.GetBestVirtualSize()
+
         self.SetSize((max(cx, tx)+px, 25+max(cy, py)))
 
         style = wx.ALIGN_LEFT|wx.EXPAND|wx.ALL
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(ctrlpanel, 0, style, 3)
-        sizer.Add(plotpanel, 1, style, 2)
+        sizer.Add(rpanel, 1, style, 2)
 
         self.SetMinSize((450, 150))
         pack(self, sizer)
@@ -703,6 +745,14 @@ class XRFDisplayFrame(wx.Frame):
             label = mcaname
 
         self.mca.label = label
+        real_time = getattr(self.mca, 'real_time', 1.0)
+        try:
+            real_time = float(real_time)
+        except:
+            real_time = 1.0
+
+        mca.real_time = max(real_time, 1.e-6)
+
         setattr(xrfgroup, mcaname, mca)
         setattr(xrfgroup, 'mca', mcaname)
 
@@ -765,12 +815,22 @@ class XRFDisplayFrame(wx.Frame):
         ymin, ymax = self.panel.axes.get_ylim()
         dmax = float(max(self.mca.counts[i1:i2]) * 1.5)
         dmin = float(min(self.mca.counts[i1:i2]) * 0.5)
+        if self.show_cps:
+            dmax /= self.mca.real_time
+            dmin /= self.mca.real_time
         if dmin < 1: dmin = 1
         self._set_xview(e1, e2)
         self.panel.axes.set_ylim((min(dmin, ymin), max(dmax, ymax)), emit=True)
 
     def unzoom_all(self, event=None):
         self.panel.unzoom_all()
+
+    def onShowCPS(self, event=None):
+        val = event.IsChecked()
+        self.ymin = 0.009 if val else 0.9
+        if val != self.show_cps:
+            self.show_cps = val
+            self.replot()
 
     def onShowGrid(self, event=None):
         self.show_grid = event.IsChecked()
@@ -891,13 +951,11 @@ class XRFDisplayFrame(wx.Frame):
             return
         sum = self.ydat[left:right].sum()
         dt = self.mca.real_time
-        nmsg, cmsg, rmsg = '', '', ''
-        if len(name) > 0:
-            nmsg = " %s" % name
-        cmsg = " Cts={:10,.0f}".format(sum)
-        if dt is not None and dt > 1.e-9:
-            rmsg = " CPS={:10,.1f}".format(sum/dt)
-        self.write_message("%s%s%s" % (nmsg, cmsg, rmsg), panel=panel)
+        if self.show_cps:
+            sum *= self.mca.real_time
+
+        msg = f"[ {name}  |  Counts={sum:10,.0f} | CPS={(sum/dt):10,.2f} Hz ]"
+        self.write_message(msg, panel=panel)
 
     def ShowROIPatch(self, left, right):
         """show colored XRF Patch:
@@ -912,6 +970,9 @@ class XRFDisplayFrame(wx.Frame):
         r = np.ones(right-left+2)
         e[1:-1] = self.mca.energy[left:right]
         r[1:-1] = self.mca.counts[left:right]
+        if self.show_cps:
+            r /= self.mca.real_time
+
         e[0]  = e[1]
         e[-1] = e[-2]
         self.roi_patch = self.panel.axes.fill_between(e, r, zorder=-20,
@@ -999,28 +1060,11 @@ class XRFDisplayFrame(wx.Frame):
         MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
         omenu = wx.Menu()
-        MenuItem(self, omenu, "Show Y Axis\tCtrl+A", "Show Y Axis",
-                 kind=wx.ITEM_CHECK, checked=False,
-                 action=self.onYAxis)
-        MenuItem(self, omenu, "Log Scale for Y Axis\tCtrl+N",
-                 "Use Log Scale for Y Axis", kind=wx.ITEM_CHECK,
-                 checked=True, action=self.onLogLinear)
-        MenuItem(self, omenu, "Show Grid\tCtrl+G",  "Show Plot Grid",
-                 kind=wx.ITEM_CHECK, checked=False,  action=self.onShowGrid)
-        MenuItem(self, omenu, "Show Legend\tCtrl+L",  "Show Plot Legend",
-                 kind=wx.ITEM_CHECK, checked=False,  action=self.onShowLegend)
-
         MenuItem(self, omenu, "Zoom Out\tCtrl+Z",
                  "Zoom out to full data range", self.unzoom_all)
-        omenu.AppendSeparator()
-        MenuItem(self, omenu, "Configure Colors",
-                 "Configure Colors", self.config_colors)
-        # MenuItem(self, omenu, "Configure X-ray Lines",
-        #         "Configure which X-ray Lines are shown", self.config_xraylines)
+
         MenuItem(self, omenu, "Configure Plot\tCtrl+K",
                  "Configure Plot Colors, etc", self.panel.configure)
-
-
 
         omenu.AppendSeparator()
         MenuItem(self, omenu, "Hide X-ray Lines",
@@ -1028,7 +1072,8 @@ class XRFDisplayFrame(wx.Frame):
         MenuItem(self, omenu, "Hide selected ROI ",
                  "Hide selected ROI", self.clear_roihighlight)
         MenuItem(self, omenu, "Hide Markers ",
-                 "Hide cursor markers", self.clear_markers)
+                "Hide cursor markers", self.clear_markers)
+
 
         amenu = wx.Menu()
 
@@ -1073,7 +1118,7 @@ class XRFDisplayFrame(wx.Frame):
         f2 = get_font(larger=2)
         self.show_subframe('larch_buffer', LarchFrame)
         self.subframes['larch_buffer'].set_fontsize(f2.GetPointSize())
-        self.subframes['larch_buffer'].Raise()
+        self.subframes['larch_buffer'].Show()
 
     def onShowXRFBrowser(self, evt=None):
         self.show_subframe('xrf_browser', XRFDataBrowser,
@@ -1333,14 +1378,13 @@ class XRFDisplayFrame(wx.Frame):
         else:
             self.plotmca(self.mca)
 
-
     def onYAxis(self, event=None):
-        self.show_yaxis = False
-        if event.IsChecked():
-            self.show_yaxis = True
+        if event is not None:
+            self.show_yaxis = event.IsChecked()
+
         ax = self.panel.axes
         ax.yaxis.set_major_formatter(FuncFormatter(self._formaty))
-        ax.get_yaxis().set_visible(self.show_yaxis)
+        ax.yaxis.set_visible(self.show_yaxis)
         ax.spines['right'].set_visible(False)
         ax.yaxis.set_ticks_position('left')
         self.draw()
@@ -1351,12 +1395,20 @@ class XRFDisplayFrame(wx.Frame):
         except:
             decade = 0
         scale = 10**decade
-        out = "%.1fe%i" % (val/scale, decade)
-        if abs(decade) < 1.9:
-            out = "%.1f" % val
-        elif abs(decade) < 3.9:
-            out = "%.0f" % val
+        out = outx = f"%.1fe%i" % (val/scale, decade)
+        if decade < -1.5:
+            out = f"{val:.2f}"
+        elif decade < -0.5:
+            out = f"{val:.1f}"
+        elif decade < 0.5:
+            out = f"{val:.0f}"
+        elif abs(decade) < 5:
+            out = f"{val:.0f}"
         return out
+
+    def replot(self, event=None):
+        for ix, gname in enumerate(self.plotted_groups):
+            self.plotmca(self.xrf_files[gname], newplot=(ix==0))
 
     def onLogLinear(self, event=None):
         self.ylog_scale = event.IsChecked()
@@ -1390,29 +1442,32 @@ class XRFDisplayFrame(wx.Frame):
             self.xview_range = (min(mca.energy), max(mca.energy))
 
 
+        yval = mca.counts[:]
+        if self.show_cps:
+            yval = yval/float(mca.real_time)
 
         atitles = []
         if newplot:
             if getattr(mca, 'title', None) is not None:
                 atitles.append(bytes2str(mca.title))
             if getattr(mca, 'filename', None) is not None:
-                atitles.append(" File={:s}".format(mca.filename))
+                atitles.append(f" File={mca.filename}")
             if getattr(mca, 'npixels', None) is not None:
-                atitles.append(" {:.0f} Pixels".format(mca.npixels))
+                atitles.append(f" {mca.npixels} Pixels")
             if getattr(mca, 'real_time', None) is not None:
                 try:
-                    rtime_str = " RealTime={:.2f} sec".format(mca.real_time)
+                    rtime_str = f" RealTime={mca.real_time:.3f} sec"
                 except ValueError:
-                    rtime_str = " RealTime= %s sec".format(str(mca.real_time))
+                    rtime_str = f" RealTime={mca.real_time} sec"
                 atitles.append(rtime_str)
 
             try:
-                self.plot(mca.energy, mca.counts, label=label, **kws)
+                self.plot(mca.energy, yval, label=label, **kws)
             except ValueError:
                 pass
         else:
             try:
-                self.oplot(mca.energy, mca.counts, label=label, **kws)
+                self.oplot(mca.energy, yval, label=label, **kws)
             except ValueError:
                 pass
 
@@ -1425,8 +1480,6 @@ class XRFDisplayFrame(wx.Frame):
         mca = self.mca
         panel = self.panel
 
-        panel.yformatter = self._formaty
-        panel.axes.get_yaxis().set_visible(False)
         kwargs = {'xmin': 0,
                   'show_grid': self.show_grid,
                   'zorder': 100,
@@ -1436,16 +1489,17 @@ class XRFDisplayFrame(wx.Frame):
                   'xlabel': 'E (keV)',
                   'axes_style': 'bottom',
                   'color': self.colors.spectra_color}
+        if self.show_yaxis:
+            kwargs['ylabel'] = 'Counts/sec (Hz)' if self.show_cps else 'Counts'
         kwargs.update(kws)
 
         self.xdat = 1.0*x[:]
         self.ydat = 1.0*y[:]
         self.ydat[np.where(self.ydat<1.e-9)] = 1.e-9
 
-
         kwargs['ymax'] = max(self.ydat)*1.25
         self.ymax = kwargs['ymax']
-        kwargs['ymin'] = 0.9
+        kwargs['ymin'] = self.ymin
         kwargs['xmax'] = max(self.xdat)
         kwargs['xmin'] = min(self.xdat)
         if self.xview_range is not None:
@@ -1455,11 +1509,9 @@ class XRFDisplayFrame(wx.Frame):
         if label is None:
             label = getattr(self.mca, 'label', 'spectrum')
         kwargs['label'] = label
-
         panel.plot(self.xdat, self.ydat, **kwargs)
         if with_rois and mca is not None:
-            if not self.rois_shown:
-                self.set_roilist(mca=mca)
+            self.set_roilist(mca=mca)
             yroi = -1.0*np.ones(len(y))
             max_width = 0.5*len(self.mca.energy) # suppress very large ROIs
             for r in mca.rois:
@@ -1480,12 +1532,12 @@ class XRFDisplayFrame(wx.Frame):
         yscale = {False:'linear', True:'log'}[self.ylog_scale]
         panel.set_viewlimits()
         panel.set_viewlimits()
-        panel.axes.get_yaxis().set_visible(self.show_yaxis)
         panel.cursor_mode = 'zoom'
         panel.conf.enable_grid(self.show_grid)
 
-        self.draw()
-        panel.canvas.Refresh()
+        self.onYAxis()
+
+        # panel.canvas.Refresh()
 
     def get_mca(self, name):
         """get MCA from filename in the xrf_files"""
@@ -1494,6 +1546,7 @@ class XRFDisplayFrame(wx.Frame):
     def update_mca(self, counts, mcalabel=None, energy=None,
                    with_rois=True, draw=True):
         """update counts for an mca, and update plot"""
+        self.show_cps = False
         mca, index = None, 0
         if mcalabel in self.plotted_groups:
             mca = self.xrf_files.get(mcalabel, None)
@@ -1509,6 +1562,7 @@ class XRFDisplayFrame(wx.Frame):
             index = 0
 
         mca.counts = 1.0*counts[:]
+
         if energy is None:
             energy = 1.0*mca.energy[:]
         else:
@@ -1539,7 +1593,7 @@ class XRFDisplayFrame(wx.Frame):
             except:
                 pass
 
-        self.panel.axes.set_ylim(0.9, 1.25*self.max_counts)
+        self.panel.axes.set_ylim(self.ymin, 1.25*self.max_counts)
         self.update_status()
         if draw:
             self.draw()
@@ -1551,8 +1605,8 @@ class XRFDisplayFrame(wx.Frame):
         if hasattr(self, 'ymax'):
             self.ymax = max(self.ymax, max(ydat))*1.25
 
-        kws.update({'label': label, 'ymax': self.ymax, 'ymin': 0.9,
-                    'axes_style': 'bottom',
+        kws.update({'label': label, 'ymax': self.ymax,
+                    'ymin': self.ymin, 'axes_style': 'bottom',
                     'ylog_scale': self.ylog_scale})
         self.panel.oplot(xdat, ydat, **kws)
 
