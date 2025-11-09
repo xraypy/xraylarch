@@ -1165,7 +1165,7 @@ class XRFDisplayFrame(wx.Frame):
             if name == 'larch_buffer' and not self.larch_owner:
                 continue
             elif hasattr(wid, 'Destroy'):
-                wx.CallAfter(wid.Destroy)
+                wid.Destroy()
         self.Destroy()
 
     def config_colors(self, event=None):
