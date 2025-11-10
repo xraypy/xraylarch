@@ -289,7 +289,7 @@ class XRFDisplayFrame(wx.Frame):
         else:  # (includes  _larch is None)  called from Python
             self.larch_buffer = LarchFrame(with_raise=False)
             self.larch_owner = True
-        
+
         self.subframes['larch_buffer'] = self.larch_buffer
         self.larch = self.larch_buffer.larchshell
         self.init_larch()
@@ -657,7 +657,7 @@ class XRFDisplayFrame(wx.Frame):
         tx, ty = self.wids['ptable'].GetBestVirtualSize()
         cx, cy = ctrlpanel.GetBestVirtualSize()
         px, py = self.plotpanel.GetBestVirtualSize()
-        
+
         self.SetSize((max(cx, tx)+px, 25+max(cy, py)))
 
         style = wx.ALIGN_LEFT|wx.EXPAND|wx.ALL
@@ -668,7 +668,7 @@ class XRFDisplayFrame(wx.Frame):
         self.SetMinSize((450, 150))
         pack(self, sizer)
         self.set_roilist(mca=None)
-        
+
     def createPlotPanel(self):
         rpanel = wx.Panel(self)
         top = wx.Panel(rpanel)
@@ -715,8 +715,8 @@ class XRFDisplayFrame(wx.Frame):
         pan.onLeftUp = self.onLeftUp
 
         return rpanel
-    
-    
+
+
     def init_larch(self):
         symtab = self.larch.symtable
         if not symtab.has_symbol('_sys.wx.wxapp'):
@@ -727,7 +727,7 @@ class XRFDisplayFrame(wx.Frame):
         if not symtab.has_group(XRFGROUP):
             self.larch.eval(MAKE_XRFGROUPS)
         self.xrf_files = self.larch.symtable.get_symbol(XRF_FILES)
-        
+
 
     def add_mca(self, mca, filename=None, label=None, plot=True):
         self.mca = mca
@@ -830,14 +830,11 @@ class XRFDisplayFrame(wx.Frame):
         self.plotpanel.unzoom_all()
 
     def onShowCPS(self, event=None):
-        val = event.IsChecked()
-        rtime = self.mca.real_time
-        if rtime < 1.e-5:
-            rtime = 1.e-5
-            
-        self.ymin = 0.009/rtime if val else 0.9
-        if val != self.show_cps:
-            self.show_cps = val
+        use_cps = event.IsChecked()
+        rtime = max(1.e-5, self.mca.real_time)
+        self.ymin = 0.9/rtime if use_cps else 0.9
+        if use_cps != self.show_cps:
+            self.show_cps = use_cps
             self.replot()
 
     def onShowGrid(self, event=None):
