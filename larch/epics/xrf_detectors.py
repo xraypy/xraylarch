@@ -117,18 +117,6 @@ class Epics_Xspress3(object):
         self.nframes = 1
         self.frametime = 1.0
 
-        # determine max frames
-        self.frametime = self.MIN_FRAMETIME
-        self._xsp3._pvs['NumImages'].put(self.MAX_FRAMES, wait=True)
-        time.sleep(0.05)
-        rbv = self._xsp3.NumImages_RBV
-        while rbv != self.MAX_FRAMES:
-            self.MAX_FRAMES = self.MAX_FRAMES - 500.0
-            self._xsp3._pvs['NumImages'].put(self.MAX_FRAMES, wait=True)
-            time.sleep(0.1)
-            rbv = self._xsp3.NumImages_RBV
-            if self.MAX_FRAMES < 4000:
-                break
 
     # @EpicsFunction
     def connect(self):
@@ -138,7 +126,6 @@ class Epics_Xspress3(object):
         self._xsp3 = Creator(self.prefix, nmca=self.nmca)
 
         counterpv = self._xsp3.PV('ArrayCounter_RBV')
-        counterpv.clear_callbacks()
         counterpv.add_callback(self.onRealTime)
         for imca in range(1, self.nmca+1):
             self._xsp3.PV(self.mca_array_name % imca, auto_monitor=False)
