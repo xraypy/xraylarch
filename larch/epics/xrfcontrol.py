@@ -127,24 +127,24 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def __init__(self, parent=None, _larch=None, prefix=None,
                  det_type='ME-4', ioc_type='Xspress3', nmca=4,
-                 size=(725, 580), environ_file=None,
+                 size=(1100, 850), environ_file=None,
                  title='Epics XRF Display', output_title='XRF', **kws):
 
         self.det_type = det_type
         self.ioc_type = ioc_type
         self.nmca = nmca
-        self.det_fore = 1
-        self.det_back = 0
+        self.det_main = 1
+        self.det = None
         self.environ = []
         if environ_file is not None:
             self.read_environfile(environ_file)
-
-        self.onConnectEpics(event=None, prefix=prefix)
 
         self.icon_file = os.path.join(icondir, 'ptable.ico')
 
         XRFDisplayFrame.__init__(self, parent=parent, _larch=_larch,
                                  title=title, size=size, **kws)
+
+        self.onConnectEpics(event=None, prefix=prefix)
 
     def read_environfile(self, filename):
         """read environmnet file"""
@@ -170,9 +170,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.prefix, self.det_type, self.ioc_type, self.nmca = res
         else:
             self.prefix = prefix
-        self.det_fore = 1
-        self.det_back = 0
-        self.clear_mcas()
+        self.det_main = 1
         self.connect_to_detector(prefix=self.prefix, ioc_type=self.ioc_type,
                                  det_type=self.det_type, nmca=self.nmca)
 
@@ -229,46 +227,39 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                 version = 1
             self.det = Epics_Xspress3(prefix=prefix, nmca=nmca, version=version)
             self.det.connect()
-            time.sleep(0.5)
+            time.sleep(0.1)
             self.det.get_mca(mca=1)
             self.needs_newplot=True
         elif ioc_type.startswith('ketek') or ioc_type.startswith('mca'):
             self.det = Epics_KetekMCA(prefix=prefix)
             self.det_type = 'mca'
-            # print("Created KETEK Single MCA Detector ", self.det)
-            # for k, v in self.det.mcas[0]._pvs.items():
-            #     print(k, v)
             self.needs_newplot=True
         else:
             self.det = Epics_MultiXMAP(prefix=prefix, nmca=nmca)
         time.sleep(0.05)
+        if self.det is not None:
+            self.det.connect_displays(status=self.wids['det_status'],
+                                      elapsed=self.wids['elapsed'])
+        
+        for imca in range(1, nmca+1):
+            self.add_mca(self.det.get_mca(mca=imca), label=f'MCA{imca}', plot=False)
 
+        
     def show_mca(self, init=False):
         self.needs_newplot = False
         if self.mca is None or self.needs_newplot:
-            self.mca = self.det.get_mca(mca=self.det_fore)
+            self.mca = self.det.get_mca(mca=self.det_main)
+            self.mca.label = f"MCA{self.det_main}"
 
         self.plotmca(self.mca, set_title=False, init=init)
-        title = "Foreground: MCA{:d}".format(self.det_fore)
-        if self.det_back  > 0:
-            if self.mca2 is None:
-                self.mca2 = self.det.get_mca(mca=self.det_back)
-
-            c2 = self.det.get_array(mca=self.det_back)
-            e2 = self.det.get_energy(mca=self.det_back)
-            title = "{:s}  Background: MCA{:d}".format(title, self.det_back)
-            try:
-                self.oplot(e2, c2)
-            except ValueError:
-                pass
-
+        title = self.mca.label
         roiname = self.get_roiname()
 
         if roiname in self.wids['roilist'].GetStrings():
             i = self.wids['roilist'].GetStrings().index(roiname)
             self.wids['roilist'].EnsureVisible(i)
             self.onROI(label=roiname)
-        dtime = self.det.get_deadtime(mca=self.det_fore)
+        dtime = self.det.get_deadtime(mca=self.det_main)
         if dtime is not None:
             self.wids['deadtime'].SetLabel(f"{dtime:.1f}")
         self.wids['deadtime'].SetForegroundColour(warning_color(dtime, 25, 50))
@@ -310,11 +301,11 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
     def createMainPanel(self):
         epicspanel = self.createEpicsPanel()
         ctrlpanel  = self.createControlPanel()
-        plotpanel  = self.panel = self.createPlotPanel()
-        self.panel.SetName('plotpanel')
+        rpanel = self.createPlotPanel()
+
         tx, ty = self.wids['ptable'].GetBestSize()
         cx, cy = ctrlpanel.GetBestSize()
-        px, py = plotpanel.GetBestSize()
+        px, py = self.plotpanel.GetBestSize()
 
         self.SetSize((950, 625))
         self.SetMinSize((450, 350))
@@ -323,8 +314,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
         bsizer.Add(ctrlpanel, 0, style, 1)
-        bsizer.Add(plotpanel, 1, style, 1)
+        bsizer.Add(rpanel, 1, style, 1)
         hline = wx.StaticLine(self, size=(425, 2), style=wx.LI_HORIZONTAL|style)
+
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(epicspanel, 0, style, 1)
@@ -488,8 +480,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         pack(pane, psizer)
         # pane.SetMinSize((500, 53))
-        self.det.connect_displays(status=self.wids['det_status'],
-                                  elapsed=self.wids['elapsed'])
+        if self.det is not None:
+            self.det.connect_displays(status=self.wids['det_status'],
+                                      elapsed=self.wids['elapsed'])
 
         wx.CallAfter(self.onSelectDet, index=1, init=True)
         self.timer_counter = 0
@@ -500,37 +493,25 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def UpdateData(self, event=None, force=False):
         self.timer_counter += 1
-        # print("update data ", self.timer_counter, force, self.needs_newplot)
         if self.mca is None or self.needs_newplot:
             self.show_mca()
-        # self.elapsed_real = self.det.elapsed_real
-        self.mca.real_time = self.det.elapsed_real
+
         if force or self.det.needs_refresh:
             self.det.needs_refresh = False
-            if self.det_back > 0:
-                if self.mca2 is None:
-                    self.mca2 = self.det.get_mca(mca=self.det_back)
-
-                counts = self.det.get_array(mca=self.det_back)
-                energy = self.det.get_energy(mca=self.det_back)
-                try:
-                    self.update_mca(counts, energy=energy, is_mca2=True, draw=False)
-                except ValueError:
-                    pass
-
             if self.mca is None:
-                self.mca = self.det.get_mca(mca=self.det_fore)
+                self.mca = self.det.get_mca(mca=self.det_main)
 
-            dtime = self.det.get_deadtime(mca=self.det_fore)
+            dtime = self.det.get_deadtime(mca=self.det_main)
             if dtime is not None:
                 self.wids['deadtime'].SetLabel(f"{dtime:.1f}")
             self.wids['deadtime'].SetForegroundColour(warning_color(dtime, 25, 50))
-            counts = self.det.get_array(mca=self.det_fore)*1.0
-            energy = self.det.get_energy(mca=self.det_fore)
+            counts = self.det.get_array(mca=self.det_main)*1.0
+            energy = self.det.get_energy(mca=self.det_main)
+            self.mca.real_time = self.det.elapsed_real            
             if max(counts) < 1.0:
                 counts    = 1e-4*np.ones(len(counts))
                 counts[0] = 2.0
-            self.update_mca(counts, energy=energy)
+            self.update_mca(counts, energy=energy, mcalabel=self.mca.label)
 
     def ShowROIStatus(self, left, right, name='', panel=0):
         if left > right:
@@ -545,7 +526,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         rfmt = "mca{}: {:8,.0f}"
 
-        mca_counts = self.det.mcas[self.det_fore-1].get('VAL')
+        mca_counts = self.det.mcas[self.det_main-1].get('VAL')
         sum =  mca_counts[left:right].sum()
         thissum = 0
         thisrate = 0
@@ -564,7 +545,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
                 self.wids[f'roi{nmca}'].SetLabel(f'{rate:,.0f}')
                 self.wids[f'roi{nmca}'].SetForegroundColour(warning_color(rate, 4.0e5, 8.0e5))
-                if self.det_fore == nmca:
+                if self.det_main == nmca:
                     thissum, thisrate = sum, rate
         mfmt = " {:s}: Cts={:10,.0f} :{:10,.1f} Hz"
         self.write_message(mfmt.format(name, thissum, thisrate), panel=panel)
@@ -574,18 +555,16 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def onSelectDet(self, event=None, index=0, init=False, **kws):
         if index > 0:
-            self.det_fore = index
-        self.det_back = 0
+            self.det_main = index
+
         if self.nmca > 1:
             self.det_back = self.wids['bkg_det'].GetSelection()
-        if self.det_fore  == self.det_back:
-            self.det_back = 0
 
         for i in range(1, self.nmca+1):
             dname = 'det%i' % i
             bcol = (210, 210, 210)
             fcol = (0, 0, 0)
-            if i == self.det_fore:
+            if i == self.det_main:
                 fcol = (200,  20,  20)
                 bcol = (250, 250, 250)
             if dname in self.wids:
@@ -594,15 +573,6 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.clear_mcas()
         self.show_mca(init=init)
         self.Refresh()
-
-    def swap_mcas(self, event=None):
-        if self.mca2 is None:
-            return
-        self.mca, self.mca2 = self.mca2, self.mca
-        fore, back = self.det_fore, self.det_back
-        if 'bkg_det' in self.wids:
-            self.wids['bkg_det'].SetSelection(fore)
-        self.onSelectDet(index=back)
 
     def onMcaSumChoice(self, event=None):
         wid = self.wids['mca_sum']
@@ -614,8 +584,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.det.set_dwelltime(dtime=float(dtime))
 
     def clear_mcas(self):
-        self.mca = self.mca2 = None
-        self.x2data = self.y2data = None
+        self.mca = None
+        # self.x2data = self.y2data = None
         self.needs_newplot = True
 
     def onStart(self, event=None, dtime=None, **kws):
@@ -705,7 +675,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 class EpicsXRFApp(LarchWxApp):
     def __init__(self, _larch=None, prefix=None,
                  det_type='ME-4', ioc_type='Xspress3', nmca=4,
-                 size=(725, 580), environ_file=None,
+                 size=(1100, 800), environ_file=None,
                  title='Epics XRF Display', output_title='XRF', **kws):
         self.prefix = prefix
         self.det_type = det_type
