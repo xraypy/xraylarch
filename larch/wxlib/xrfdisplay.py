@@ -289,7 +289,7 @@ class XRFDisplayFrame(wx.Frame):
         else:  # (includes  _larch is None)  called from Python
             self.larch_buffer = LarchFrame(with_raise=False)
             self.larch_owner = True
-
+        
         self.subframes['larch_buffer'] = self.larch_buffer
         self.larch = self.larch_buffer.larchshell
         self.init_larch()
@@ -352,9 +352,9 @@ class XRFDisplayFrame(wx.Frame):
         if event is None:
             return
         x, y  = event.xdata, event.ydata
-        if len(self.panel.fig.axes) > 1:
+        if len(self.plotpanel.fig.axes) > 1:
             try:
-                x, y = self.panel.axes.transData.inverted().transform((event.x, event.y))
+                x, y = self.plotpanel.axes.transData.inverted().transform((event.x, event.y))
             except:
                 pass
         ix = x
@@ -411,7 +411,7 @@ class XRFDisplayFrame(wx.Frame):
 
     def draw(self):
         try:
-            self.panel.canvas.draw()
+            self.plotpanel.canvas.draw()
         except:
             pass
 
@@ -423,9 +423,9 @@ class XRFDisplayFrame(wx.Frame):
             return
 
         log = np.log10
-        axes= self.panel.axes
+        axes= self.plotpanel.axes
         def draw_ymarker_range(idx, x, y):
-            ymin, ymax = self.panel.axes.get_ylim()
+            ymin, ymax = self.plotpanel.axes.get_ylim()
             y1 = (y-ymin)/(ymax-ymin+0.0002)
             if y < 1.0: y = 1.0
             if  self.ylog_scale:
@@ -471,9 +471,9 @@ class XRFDisplayFrame(wx.Frame):
         if event is None:
             return
         x, y  = event.xdata, event.ydata
-        if len(self.panel.fig.axes) > 1:
+        if len(self.plotpanel.fig.axes) > 1:
             try:
-                x, y = self.panel.axes.transData.inverted().transform((event.x, event.y))
+                x, y = self.plotpanel.axes.transData.inverted().transform((event.x, event.y))
             except:
                 pass
         ix = x
@@ -486,10 +486,10 @@ class XRFDisplayFrame(wx.Frame):
             ezoom = self.mca.energy[ix]
             self.energy_for_zoom = (ezoom + self.energy_for_zoom)/2.0
 
-        self.panel.cursor_mode_action('leftup', event=event)
-        self.panel.canvas.draw_idle()
-        self.panel.canvas.draw()
-        self.panel.ForwardEvent(event=event.guiEvent)
+        self.plotpanel.cursor_mode_action('leftup', event=event)
+        self.plotpanel.canvas.draw_idle()
+        self.plotpanel.canvas.draw()
+        self.plotpanel.ForwardEvent(event=event.guiEvent)
 
 
     def createControlPanel(self):
@@ -652,9 +652,25 @@ class XRFDisplayFrame(wx.Frame):
 
     def createMainPanel(self):
         ctrlpanel = self.createControlPanel()
+        rpanel = self.createPlotPanel()
 
+        tx, ty = self.wids['ptable'].GetBestVirtualSize()
+        cx, cy = ctrlpanel.GetBestVirtualSize()
+        px, py = self.plotpanel.GetBestVirtualSize()
+        
+        self.SetSize((max(cx, tx)+px, 25+max(cy, py)))
+
+        style = wx.ALIGN_LEFT|wx.EXPAND|wx.ALL
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(ctrlpanel, 0, style, 3)
+        sizer.Add(rpanel, 1, style, 2)
+
+        self.SetMinSize((450, 150))
+        pack(self, sizer)
+        self.set_roilist(mca=None)
+        
+    def createPlotPanel(self):
         rpanel = wx.Panel(self)
-
         top = wx.Panel(rpanel)
         tsiz = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -664,7 +680,6 @@ class XRFDisplayFrame(wx.Frame):
         self.wids['show_grid']   = Check(top, 'Grid ', default=self.show_grid, action=self.onShowGrid)
         self.wids['show_legend'] = Check(top, 'Legend', default=False, action=self.onShowLegend)
 
-
         tsiz.Add(SimpleText(top, 'Show: '), 0, wx.EXPAND|wx.ALL, 0)
         tsiz.Add(self.wids['show_cps'],    0, wx.EXPAND|wx.ALL, 0)
         tsiz.Add(self.wids['show_ylog'],   0, wx.EXPAND|wx.ALL, 0)
@@ -673,11 +688,10 @@ class XRFDisplayFrame(wx.Frame):
         tsiz.Add(self.wids['show_grid'],   0, wx.EXPAND|wx.ALL, 0)
         pack(top, tsiz)
 
-        pan = self.panel = PlotPanel(rpanel, fontsize=9, axisbg='#FFFFFF',
-                                    with_data_process=False,
-                                    output_title='test.xrf',
-                                    messenger=self.write_message)
-
+        pan = self.plotpanel = PlotPanel(rpanel, fontsize=9, axisbg='#FFFFFF',
+                                         with_data_process=False,
+                                         output_title='test.xrf',
+                                         messenger=self.write_message)
         rsiz = wx.BoxSizer(wx.VERTICAL)
         rsiz.Add(top,   0, wx.EXPAND|wx.ALL, 1)
         rsiz.Add(pan,   1, wx.EXPAND|wx.ALL, 1)
@@ -700,21 +714,9 @@ class XRFDisplayFrame(wx.Frame):
         pan.report_leftdown = partial(self.on_cursor, side='left')
         pan.onLeftUp = self.onLeftUp
 
-        tx, ty = self.wids['ptable'].GetBestVirtualSize()
-        cx, cy = ctrlpanel.GetBestVirtualSize()
-        px, py = self.panel.GetBestVirtualSize()
-
-        self.SetSize((max(cx, tx)+px, 25+max(cy, py)))
-
-        style = wx.ALIGN_LEFT|wx.EXPAND|wx.ALL
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(ctrlpanel, 0, style, 3)
-        sizer.Add(rpanel, 1, style, 2)
-
-        self.SetMinSize((450, 150))
-        pack(self, sizer)
-        self.set_roilist(mca=None)
-
+        return rpanel
+    
+    
     def init_larch(self):
         symtab = self.larch.symtable
         if not symtab.has_symbol('_sys.wx.wxapp'):
@@ -725,7 +727,7 @@ class XRFDisplayFrame(wx.Frame):
         if not symtab.has_group(XRFGROUP):
             self.larch.eval(MAKE_XRFGROUPS)
         self.xrf_files = self.larch.symtable.get_symbol(XRF_FILES)
-
+        
 
     def add_mca(self, mca, filename=None, label=None, plot=True):
         self.mca = mca
@@ -770,7 +772,7 @@ class XRFDisplayFrame(wx.Frame):
             browser.update_grouplist()
 
     def _getlims(self):
-        emin, emax = self.panel.axes.get_xlim()
+        emin, emax = self.plotpanel.axes.get_xlim()
         erange = emax-emin
         emid   = (emax+emin)/2.0
         if self.energy_for_zoom is not None:
@@ -784,7 +786,7 @@ class XRFDisplayFrame(wx.Frame):
     def _set_xview(self, e1, e2, keep_zoom=False):
         if not keep_zoom:
             self.energy_for_zoom = (e1+e2)/2.0
-        self.panel.axes.set_xlim((e1, e2))
+        self.plotpanel.axes.set_xlim((e1, e2))
         self.xview_range = [e1, e2]
         self.draw()
 
@@ -814,7 +816,7 @@ class XRFDisplayFrame(wx.Frame):
         if i1 > 0 : ii = i1 -1
         i2 = index_of(self.mca.energy, e2) + 1
 
-        ymin, ymax = self.panel.axes.get_ylim()
+        ymin, ymax = self.plotpanel.axes.get_ylim()
         dmax = float(max(self.mca.counts[i1:i2]) * 1.5)
         dmin = float(min(self.mca.counts[i1:i2]) * 0.5)
         if self.show_cps:
@@ -822,22 +824,26 @@ class XRFDisplayFrame(wx.Frame):
             dmin /= self.mca.real_time
         if dmin < 1: dmin = 1
         self._set_xview(e1, e2)
-        self.panel.axes.set_ylim((min(dmin, ymin), max(dmax, ymax)), emit=True)
+        self.plotpanel.axes.set_ylim((min(dmin, ymin), max(dmax, ymax)), emit=True)
 
     def unzoom_all(self, event=None):
-        self.panel.unzoom_all()
+        self.plotpanel.unzoom_all()
 
     def onShowCPS(self, event=None):
         val = event.IsChecked()
-        self.ymin = 0.009 if val else 0.9
+        rtime = self.mca.real_time
+        if rtime < 1.e-5:
+            rtime = 1.e-5
+            
+        self.ymin = 0.009/rtime if val else 0.9
         if val != self.show_cps:
             self.show_cps = val
             self.replot()
 
     def onShowGrid(self, event=None):
         self.show_grid = event.IsChecked()
-        self.panel.conf.enable_grid(event.IsChecked())
-        self.panel.conf.show_grid = event.IsChecked()
+        self.plotpanel.conf.enable_grid(event.IsChecked())
+        self.plotpanel.conf.show_grid = event.IsChecked()
 
     def set_roilist(self, mca=None):
         """ Add Roi names to roilist"""
@@ -977,7 +983,7 @@ class XRFDisplayFrame(wx.Frame):
 
         e[0]  = e[1]
         e[-1] = e[-2]
-        self.roi_patch = self.panel.axes.fill_between(e, r, zorder=-20,
+        self.roi_patch = self.plotpanel.axes.fill_between(e, r, zorder=-20,
                                                     label='',
                                            color=self.colors.roi_fillcolor)
 
@@ -1016,7 +1022,7 @@ class XRFDisplayFrame(wx.Frame):
         self.wids['roi_msg3'].SetLabel(roi_msg3)
 
         self.draw()
-        self.panel.Refresh()
+        self.plotpanel.Refresh()
 
     def onSaveROIs(self, event=None):
         pass
@@ -1066,7 +1072,7 @@ class XRFDisplayFrame(wx.Frame):
                  "Zoom out to full data range", self.unzoom_all)
 
         MenuItem(self, omenu, "Configure Plot\tCtrl+K",
-                 "Configure Plot Colors, etc", self.panel.configure)
+                 "Configure Plot Colors, etc", self.plotpanel.configure)
 
         omenu.AppendSeparator()
         MenuItem(self, omenu, "Hide X-ray Lines",
@@ -1127,24 +1133,24 @@ class XRFDisplayFrame(wx.Frame):
                                parent=self, larch=self.larch)
 
     def onSavePNG(self, event=None):
-        if self.panel is not None:
-            self.panel.save_figure(event=event)
+        if self.plotpanel is not None:
+            self.plotpanel.save_figure(event=event)
 
     def onCopyImage(self, event=None):
-        if self.panel is not None:
-            self.panel.canvas.Copy_to_Clipboard(event=event)
+        if self.plotpanel is not None:
+            self.plotpanel.canvas.Copy_to_Clipboard(event=event)
 
     def onPageSetup(self, event=None):
-        if self.panel is not None:
-            self.panel.PrintSetup(event=event)
+        if self.plotpanel is not None:
+            self.plotpanel.PrintSetup(event=event)
 
     def onPrintPreview(self, event=None):
-        if self.panel is not None:
-            self.panel.PrintPreview(event=event)
+        if self.plotpanel is not None:
+            self.plotpanel.PrintPreview(event=event)
 
     def onPrint(self, event=None):
-        if self.panel is not None:
-            self.panel.Print(event=event)
+        if self.plotpanel is not None:
+            self.plotpanel.Print(event=event)
 
     def onClose(self, event=None):
         try:
@@ -1152,22 +1158,17 @@ class XRFDisplayFrame(wx.Frame):
                 self.exit_callback()
         except:
             pass
-        try:
-            if self.panel is not None:
-                self.panel.win_config.Close(True)
-            if self.panel is not None:
-                self.panel.win_config.Destroy()
-        except:
-            pass
-
-        if hasattr(self.larch.symtable, '_plotter'):
-            wx.CallAfter(self.larch.symtable._plotter.close_all_displays)
 
         for name, wid in self.subframes.items():
             if name == 'larch_buffer' and not self.larch_owner:
                 continue
             elif hasattr(wid, 'Destroy'):
-                wid.Destroy()
+                try:
+                    wid.Destroy()
+                except:
+                    pass
+        if hasattr(self.larch.symtable, '_plotter'):
+            wx.CallAfter(self.larch.symtable._plotter.close_all_displays)
         self.Destroy()
 
     def config_colors(self, event=None):
@@ -1185,8 +1186,8 @@ class XRFDisplayFrame(wx.Frame):
             self.win_config = XrayLinesFrame(parent=self)
 
     def onShowLegend(self, event=None):
-        self.panel.conf.show_legend = event.IsChecked()
-        self.panel.conf.draw_legend()
+        self.plotpanel.conf.show_legend = event.IsChecked()
+        self.plotpanel.conf.draw_legend()
 
     def onKLM(self, event=None):
         """selected K, L, or M Markers"""
@@ -1238,16 +1239,16 @@ class XRFDisplayFrame(wx.Frame):
         newh.set_zorder(-10)
         self.highlight_xrayline = newh
         self.energy_for_zoom = en
-        if self.panel.conf.show_legend:
-            self.panel.toggle_legend()
-            self.panel.toggle_legend()
+        if self.plotpanel.conf.show_legend:
+            self.plotpanel.toggle_legend()
+            self.plotpanel.toggle_legend()
         self.draw()
 
     def onShowLines(self, event=None, elem=None):
         if elem is None:
             elem  = event.GetString()
 
-        vline = self.panel.axes.axvline
+        vline = self.plotpanel.axes.axvline
         elines = self.larch.symtable._xray.xray_lines(elem)
 
         self.selected_elem = elem
@@ -1357,9 +1358,9 @@ class XRFDisplayFrame(wx.Frame):
             out = "%s=%s" %(', '.join(s), ', '.join(v))
         self.wids['ptable'].set_subtitle(out, index=1)
 
-        if self.panel.conf.show_legend:
-            self.panel.toggle_legend()
-            self.panel.toggle_legend()
+        if self.plotpanel.conf.show_legend:
+            self.plotpanel.toggle_legend()
+            self.plotpanel.toggle_legend()
         self.draw()
 
     def onPileupPrediction(self, event=None):
@@ -1378,7 +1379,7 @@ class XRFDisplayFrame(wx.Frame):
         if event is not None:
             self.show_yaxis = event.IsChecked()
 
-        ax = self.panel.axes
+        ax = self.plotpanel.axes
         ax.yaxis.set_major_formatter(FuncFormatter(self._formaty))
         ax.yaxis.set_visible(self.show_yaxis)
         ax.spines['right'].set_visible(False)
@@ -1433,7 +1434,7 @@ class XRFDisplayFrame(wx.Frame):
         if label is None:
             label = getattr(mca, 'label', 'unknkown')
 
-        self.xview_range = self.panel.axes.get_xlim()
+        self.xview_range = self.plotpanel.axes.get_xlim()
         if self.xview_range == (0.0, 1.0):
             self.xview_range = (min(mca.energy), max(mca.energy))
 
@@ -1493,7 +1494,7 @@ class XRFDisplayFrame(wx.Frame):
         if mca is not None:
             self.mca = mca
         mca = self.mca
-        panel = self.panel
+        panel = self.plotpanel
 
         kwargs = {'xmin': 0,
                   'show_grid': self.show_grid,
@@ -1593,12 +1594,12 @@ class XRFDisplayFrame(wx.Frame):
                     continue
                 yroi[r.left:r.right] = counts[r.left:r.right]
             yroi = np.ma.masked_less(yroi, 0)
-            self.panel.update_line(1, mca.energy, yroi, draw=False,
+            self.plotpanel.update_line(1, mca.energy, yroi, draw=False,
                                    update_limits=False)
             roi_index_offset = 1
         if index > 1 and roi_index_offset > 0:
             index = index + roi_index_offset
-        self.panel.update_line(index, energy, counts, draw=False,
+        self.plotpanel.update_line(index, energy, counts, draw=False,
                                update_limits=False)
         if index == 0:
             self.max_counts = max(counts)
@@ -1608,7 +1609,7 @@ class XRFDisplayFrame(wx.Frame):
             except:
                 pass
 
-        self.panel.axes.set_ylim(self.ymin, 1.25*self.max_counts)
+        self.plotpanel.axes.set_ylim(self.ymin, 1.25*self.max_counts)
         self.update_status()
         if draw:
             self.draw()
@@ -1623,7 +1624,7 @@ class XRFDisplayFrame(wx.Frame):
         kws.update({'label': label, 'ymax': self.ymax,
                     'ymin': self.ymin, 'axes_style': 'bottom',
                     'ylog_scale': self.ylog_scale})
-        self.panel.oplot(xdat, ydat, **kws)
+        self.plotpanel.oplot(xdat, ydat, **kws)
 
     def onReadMCAFile(self, event=None):
         dlg = wx.FileDialog(self, message="Open MCA File for reading",
