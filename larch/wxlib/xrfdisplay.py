@@ -305,7 +305,9 @@ class XRFDisplayFrame(wx.Frame):
         self.ydat = np.ones(4096)*0.01
         self.plotted_groups = []
         self.ymin = 0.9
-        self.show_cps   = False
+        self.show_cps = False
+        self.show_pileup = False
+        self.show_escape = False
         self.show_yaxis = True
         self.ylog_scale = True
         self.show_grid = False
@@ -1361,22 +1363,16 @@ class XRFDisplayFrame(wx.Frame):
         self.draw()
 
     def onPileupPrediction(self, event=None):
-        if event.IsChecked():
-            self.mca.predict_pileup()
-            self.oplot(self.mca.energy, self.mca.pileup,
-                       color=self.colors.pileup_color, label='pileup prediction')
-            self.unzoom_all()
-        else:
-            self.plotmca(self.mca)
+        val = event.IsChecked()
+        if val != self.show_pileup:
+            self.show_pileup = val
+            self.replot()
 
     def onEscapePrediction(self, event=None):
-        if event.IsChecked():
-            self.mca.predict_escape()
-            self.oplot(self.mca.energy, self.mca.escape,
-                       color=self.colors.escape_color, label='escape prediction')
-            self.unzoom_all()
-        else:
-            self.plotmca(self.mca)
+        val = event.IsChecked()
+        if val != self.show_escape:
+            self.show_escape = val
+            self.replot()
 
     def onYAxis(self, event=None):
         if event is not None:
@@ -1471,8 +1467,27 @@ class XRFDisplayFrame(wx.Frame):
             except ValueError:
                 pass
 
-        if newplot and len(atitles) > 0:
-            self.SetTitle(' '.join(atitles))
+        if newplot:
+            if len(atitles) > 0:
+                self.SetTitle(' '.join(atitles))
+
+            if self.show_pileup:
+                self.mca.predict_pileup()
+                pileup = self.mca.pileup[:]
+                if self.show_cps:
+                    pileup /= self.mca.real_time
+                self.oplot(self.mca.energy, pileup,
+                        color=self.colors.pileup_color, label='pileup prediction')
+
+            if self.show_escape:
+                self.mca.predict_escape()
+                escape = self.mca.escape[:]
+                if self.show_cps:
+                    escape /= self.mca.real_time
+                self.oplot(self.mca.energy, escape,
+                       color=self.colors.escape_color, label='escape prediction')
+
+
 
     def plot(self, x, y=None, mca=None, with_rois=True, label=None, **kws):
         if mca is not None:
