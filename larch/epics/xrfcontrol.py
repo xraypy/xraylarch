@@ -250,9 +250,39 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         if self.mca is None or self.needs_newplot:
             self.mca = self.det.get_mca(mca=self.det_main)
             self.mca.label = f"MCA{self.det_main}"
-
+            self.mca.real_time = self.det.elapsed_real 
+        
         self.plotmca(self.mca, set_title=False, init=init)
         title = self.mca.label
+        
+        bkg_det = self.wids['bkg_det'].GetStringSelection()
+        if bkg_det == 'All':
+            title = f"{title} with all {self.nmca} detectors"            
+            for imca in range(1, self.nmca+1):
+                label = f"MCA{imca}"
+                if label != self.mca.label:
+                    thismca = self.xrf_files[label]
+                    thismca.counts = self.det.get_array(mca=imca)
+                    thismca.energy = self.det.get_energy(mca=imca)
+                    thismca.real_time = self.det.elapsed_real
+                    c = thismca.counts[:]
+                    if self.show_cps:
+                        c /= thismca.real_time
+                    self.oplot(thismca.energy, c, label=label)
+        elif bkg_det != 'None':
+            label = bkg_det
+            if label != self.mca.label:
+                thismca = self.xrf_files.get(label, None)
+                imca = int(label.replace('MCA', ''))
+                if thismca is not None:
+                    thismca.counts = self.det.get_array(mca=imca)
+                    thismca.energy = self.det.get_energy(mca=imca)
+                    thismca.real_time = self.det.elapsed_real
+                    c = thismca.counts[:]
+                    if self.show_cps:
+                        c /= thismca.real_time
+                    self.oplot(thismca.energy, c, label=label)
+                    title = f"{title} background: {label}"
         roiname = self.get_roiname()
 
         if roiname in self.wids['roilist'].GetStrings():
@@ -398,7 +428,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         det_btnpanel = self.create_detbuttons(pane)
 
-        bkg_choices = ['None'] + ["%d" % (i+1) for i in range(self.nmca)]
+        bkg_choices = ['None', 'All'] + [f"MCA{i+1}" for i in range(self.nmca)]
 
         self.wids['det_status'] = SimpleText(pane, ' ', size=(120, -1), style=style)
         self.wids['deadtime']   = SimpleText(pane, ' ', size=(120, -1), style=style)
@@ -559,7 +589,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         if self.nmca > 1:
             self.det_back = self.wids['bkg_det'].GetSelection()
-
+      
+            
         for i in range(1, self.nmca+1):
             dname = 'det%i' % i
             bcol = (210, 210, 210)
@@ -665,11 +696,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         print('XRFControl Set Energy Calibratione' , offset, slope, mca)
 
     def onClose(self, event=None):
-        self.onStop()
         XRFDisplayFrame.onClose(self)
 
     def onExit(self, event=None):
-        self.onStop()
         XRFDisplayFrame.onExit(self)
 
 class EpicsXRFApp(LarchWxApp):
