@@ -5,6 +5,34 @@ original author: Lucas Hermann Negri <lucashnegri@gmail.com>
 """
 import numpy as np
 
+from scipy.signal import find_peaks as signal_find_peaks
+
+def find_peaks(arr, min_height=0.1, distance=2, width=2, **kws):
+    """find indices in array with peaks
+    Parameters
+    ----------
+    y : 1D ndarray
+        1D array to search for peaks.
+    min_height : float [0.1]
+        Normalized peak threshold, as fraction of peak-to-peak of `y`.
+        Peaks with amplitude higher than the threshold will be detected.
+    distance: int [2]
+        Minimum index distance between detected peaks.
+    width: int [2]
+        Minimum peak width
+    kws: optional
+        other keyword args to send to scipy.signal.find_peaks
+
+    Returns
+    -------
+    tuple, ndarray, dict
+        the ndarray will have indexes of the peaks.
+        the dict will have a value for 'peak_heights' with y values of peaks.
+
+    """
+    return signal_find_peaks(arr, height=min_height*np.ptp(arr), width=width,
+                             distance=distance, **kws)
+
 def peak_indices(y, threshold=0.1, min_dist=1):
     """Peak detection routine.
 
