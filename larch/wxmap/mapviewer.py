@@ -1589,8 +1589,8 @@ class MapViewerFrame(wx.Frame):
         if do_raise:
             self.subframes['xrfdisplay'].Raise()
         if clear:
-            self.subframes['xrfdisplay'].panel.clear()
-            self.subframes['xrfdisplay'].panel.reset_config()
+            self.subframes['xrfdisplay'].plotpanel.clear()
+            self.subframes['xrfdisplay'].plotpanel.reset_config()
 
     def onMoveToPixel(self, xval, yval):
         if not HAS_EPICS:
