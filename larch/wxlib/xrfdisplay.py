@@ -180,7 +180,10 @@ class XRFDataBrowser(wx.Frame):
         for key, val in self.parent.xrf_files.items():
             if key not in self.file_groups:
                 self.file_groups[key] = val
-                self.filelist.Append(key)
+                try:
+                    self.filelist.Append(key)
+                except Exception:
+                    pass
         self.Refresh()
 
     def onSelNone(self, event=None):
