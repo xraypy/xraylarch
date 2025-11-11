@@ -240,24 +240,24 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         if self.det is not None:
             self.det.connect_displays(status=self.wids['det_status'],
                                       elapsed=self.wids['elapsed'])
-        
+
         for imca in range(1, nmca+1):
             self.add_mca(self.det.get_mca(mca=imca), label=f'MCA{imca}', plot=False)
 
-        
+
     def show_mca(self, init=False):
         self.needs_newplot = False
         if self.mca is None or self.needs_newplot:
             self.mca = self.det.get_mca(mca=self.det_main)
             self.mca.label = f"MCA{self.det_main}"
-            self.mca.real_time = self.det.elapsed_real 
-        
+            self.mca.real_time = self.det.elapsed_real
+
         self.plotmca(self.mca, set_title=False, init=init)
         title = self.mca.label
-        
+
         bkg_det = self.wids['bkg_det'].GetStringSelection()
         if bkg_det == 'All':
-            title = f"{title} with all {self.nmca} detectors"            
+            title = f"{title} with all {self.nmca} detectors"
             for imca in range(1, self.nmca+1):
                 label = f"MCA{imca}"
                 if label != self.mca.label:
@@ -535,13 +535,13 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             if dtime is not None:
                 self.wids['deadtime'].SetLabel(f"{dtime:.1f}")
             self.wids['deadtime'].SetForegroundColour(warning_color(dtime, 25, 50))
-            counts = self.det.get_array(mca=self.det_main)*1.0
-            energy = self.det.get_energy(mca=self.det_main)
-            self.mca.real_time = self.det.elapsed_real            
-            if max(counts) < 1.0:
-                counts    = 1e-4*np.ones(len(counts))
-                counts[0] = 2.0
-            self.update_mca(counts, energy=energy, mcalabel=self.mca.label)
+            self.mca.counts = self.det.get_array(mca=self.det_main)*1.0
+            self.mca.energy = self.det.get_energy(mca=self.det_main)
+            self.mca.real_time = self.det.elapsed_real
+            if max(self.mca.counts) < 1.0:
+                self.mca.counts    = 1e-4*np.ones(len(self.mca.energy))
+                self.mca.counts[0] = 2.0
+            self.update_mca(self.mca.counts, energy=self.mca.energy, mcalabel=self.mca.label)
 
     def ShowROIStatus(self, left, right, name='', panel=0):
         if left > right:
@@ -589,8 +589,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         if self.nmca > 1:
             self.det_back = self.wids['bkg_det'].GetSelection()
-      
-            
+
+
         for i in range(1, self.nmca+1):
             dname = 'det%i' % i
             bcol = (210, 210, 210)
