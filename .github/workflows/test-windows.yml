@@ -27,7 +27,7 @@ jobs:
     - name: Install conda dependencies
       run: |
         printenv
-        conda install -y -c conda-forge python=${{ matrix.python-version }} "numpy>=2.0" "scipy>=1.15" "matplotlib>=3.9" "h5py>=3.10" "wxpython>=4.2" scikit-learn jupyter plotly pytest pytest-cov coverage
+        conda install -y -c conda-forge python=${{ matrix.python-version }} "numpy>=2.0" "scipy>=1.15" "matplotlib>=3.9" "h5py>=3.10" "wxpython>=4.2" pymatgen scikit-learn jupyter plotly pytest pytest-cov coverage
     - name: Install xraylarch and other dependencies with pip
       run: |
         printenv
