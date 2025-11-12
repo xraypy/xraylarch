@@ -11,7 +11,8 @@ import numpy as np
 from larch import Group, isgroup
 
 from xraydb import xray_line, xray_edge, material_mu
-from ..math import interp
+from ..math import interp, index_nearest
+from ..math.peaks import find_peaks
 from .deadtime import calc_icr, correction_factor
 from .roi import ROI
 
@@ -179,6 +180,18 @@ class MCA(Group):
         if len(desc) > 0 and len(val) > 0:
             self.environ.append(Environment(desc=desc, val=val, addr=addr))
 
+    def guess_incident_energy(self):
+        en_in = getattr(self, 'incident_energy', None)
+        if en_in is None:
+            ix, dat = find_peaks(self.counts, min_height=0.01,
+                                 width=3, distance=3)
+            epeaks = self.energy[ix]
+            self.incident_energy = max(epeaks)
+        elif en_in > max(self.energy):  # energy uses eV, not keV
+                en_in /= 1000.0
+                self.incident_energy = en_in
+        return self.incident_energy
+
     def predict_pileup(self, scale=None):
         """
         predict pileup for a spectrum, save to 'pileup' attribute
@@ -186,13 +199,14 @@ class MCA(Group):
         en = self.energy
         npts = len(en)
         counts = self.counts.astype(int)*1.0
-        pileup = 1.e-8*np.convolve(counts, counts, 'full')[:npts]
+        pileup = 1.e-6*np.convolve(counts, counts, 'full')[:npts]
         ex = en[0] + np.arange(len(pileup))*(en[1] - en[0])
         if scale is None:
-            npts = len(en)
-            nhalf = int(npts/2) + 1
-            nmost = int(7*npts/8.0) - 1
-            scale = self.counts[nhalf:].sum()/ pileup[nhalf:nmost].sum()
+            en_in = self.guess_incident_energy()
+            nein = int(1.05*index_nearest(en, en_in)) + 1
+            nmost = int(0.98*npts) - 1
+            scale = self.counts[nein:nmost].sum()/ pileup[nein:nmost].sum()
+
         self.pileup = interp(ex, scale*pileup, self.energy, kind='cubic')
         self.pileup_scale = scale
 
