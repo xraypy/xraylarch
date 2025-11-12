@@ -13,7 +13,7 @@ jobs:
       max-parallel: 5
       fail-fast: false
       matrix:
-        python-version: ['3.10', '3.11', '3.12', '3.13']
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python from Miniconda
@@ -27,7 +27,7 @@ jobs:
     - name: Install conda dependencies
       run: |
         printenv
-        conda install -y -c conda-forge python=${{ matrix.python-version }} "numpy>=1.23" "scipy>=1.12" "matplotlib>=3.8" "h5py>=3.5" "wxpython>=4.2" scikit-learn jupyter plotly pytest pytest-cov coverage
+        conda install -y -c conda-forge python=${{ matrix.python-version }} "numpy>=2.0" "scipy>=1.15" "matplotlib>=3.9" "h5py>=3.10" "wxpython>=4.2" scikit-learn jupyter plotly pytest pytest-cov coverage
     - name: Install xraylarch and other dependencies with pip
       run: |
         printenv
