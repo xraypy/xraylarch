@@ -34,10 +34,10 @@ from larch.utils import get_cwd
 
 ROI_WILDCARD = 'Data files (*.dat)|*.dat|ROI files (*.roi)|*.roi|All files (*.*)|*.*'
 try:
-    from epics import caget
+    from epics import caget, get_pv
     from .xrf_detectors import Epics_MultiXMAP, Epics_Xspress3, Epics_KetekMCA
 except:
-    pass
+    caget = get_pv = Epics_MultiXMAP = Epics_Xspress3 = Epics_KetekMCA = None
 
 def warning_color(val, warn, error):
     tcolor = GUI_COLORS.text
@@ -128,6 +128,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
     def __init__(self, parent=None, _larch=None, prefix=None,
                  det_type='ME-4', ioc_type='Xspress3', nmca=4,
                  size=(1100, 850), environ_file=None,
+                 incident_energy_pvname=None, incident_energy_units='eV',
                  title='Epics XRF Display', output_title='XRF', **kws):
 
         self.det_type = det_type
@@ -135,6 +136,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.nmca = nmca
         self.det_main = 1
         self.det = None
+        self.incident_energy_kev = None
+        self.incident_energy_pvname = incident_energy_pvname
+        self.incident_energy_units = incident_energy_units
         self.environ = []
         if environ_file is not None:
             self.read_environfile(environ_file)
@@ -173,6 +177,15 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.det_main = 1
         self.connect_to_detector(prefix=self.prefix, ioc_type=self.ioc_type,
                                  det_type=self.det_type, nmca=self.nmca)
+        if get_pv is not None and self.incident_energy_pvname is not None:
+            self.incident_energy_pv = get_pv(self.incident_energy_pvname,
+                                             callback=self.onIncidentEnergy)
+
+    def onIncidentEnergy(self, pvname, value=None, **kws):
+        self.incident_energy_kev = value
+        if self.incident_energy_units == 'eV':
+            self.incident_energy_kev /= 1000.0
+        self.det.needs_refresh = True
 
     def onSaveMCAFile(self, event=None, **kws):
         tmp = '''
@@ -251,6 +264,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.mca = self.det.get_mca(mca=self.det_main)
             self.mca.label = f"MCA{self.det_main}"
             self.mca.real_time = self.det.elapsed_real
+            if self.incident_energy_kev is not None:
+                self.mca.incident_energy = self.incident_energy_kev
 
         self.plotmca(self.mca, set_title=False, init=init)
         title = self.mca.label
@@ -538,6 +553,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.mca.counts = self.det.get_array(mca=self.det_main)*1.0
             self.mca.energy = self.det.get_energy(mca=self.det_main)
             self.mca.real_time = self.det.elapsed_real
+            self.mca.incident_energy = self.incident_energy_kev
             if max(self.mca.counts) < 1.0:
                 self.mca.counts    = 1e-4*np.ones(len(self.mca.energy))
                 self.mca.counts[0] = 2.0
@@ -546,7 +562,6 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
     def ShowROIStatus(self, left, right, name='', panel=0):
         if left > right:
             return
-
         try:
             ftime, nframes = self.det.get_frametime()
         except:
@@ -705,6 +720,7 @@ class EpicsXRFApp(LarchWxApp):
     def __init__(self, _larch=None, prefix=None,
                  det_type='ME-4', ioc_type='Xspress3', nmca=4,
                  size=(1100, 800), environ_file=None,
+                 incident_energy_pvname=None, incident_energy_units='eV',
                  title='Epics XRF Display', output_title='XRF', **kws):
         self.prefix = prefix
         self.det_type = det_type
@@ -712,6 +728,8 @@ class EpicsXRFApp(LarchWxApp):
         self.nmca = nmca
         self.size = size
         self.environ_file = environ_file
+        self.incident_energy_pvname = incident_energy_pvname
+        self.incident_energy_units = incident_energy_units
         self.title = title
         self.output_title = output_title
         LarchWxApp.__init__(self, _larch=_larch, **kws)
@@ -720,7 +738,10 @@ class EpicsXRFApp(LarchWxApp):
         frame = EpicsXRFDisplayFrame(prefix=self.prefix,
                                      det_type=self.det_type,
                                      ioc_type=self.ioc_type,
-                                     nmca=self.nmca, size=self.size,
+                                     nmca=self.nmca,
+                                     size=self.size,
+                                     incident_energy_pvname=self.incident_energy_pvname,
+                                     incident_energy_units=self.incident_energy_units,
                                      environ_file=self.environ_file,
                                      title=self.title,
                                      output_title=self.output_title,
