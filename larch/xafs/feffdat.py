@@ -568,15 +568,13 @@ class FeffPathGroup(Group):
 
         for atsym, iz, ipot, amass, x, y, z in self.geom:
             s = geomformat % (atsym, x, y, z, ipot)
-            if ipot == 0: s = "%s (absorber)" % s
+            if ipot == 0:
+                s = f"{s}%s (absorber)"
             out.append(s)
 
         stderrs = {}
-        out.append('     {:7s}= {:s}'.format('reff',
-                                              gfmt(self._feffdat.reff)))
-
-        out.append('     {:7s}= {:s}'.format('degen',
-                                              gfmt(self._feffdat.degen)))
+        out.append(f'     reff   = {gfmt(self._feffdat.reff):s}')
+        out.append(f'     degen  = {gfmt(self.degen):s}')
 
         for pname in PATH_PARS_WITH_R:
             val = strval = getattr(self, pname, 0)
