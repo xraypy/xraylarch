@@ -31,8 +31,6 @@ from larch.xafs import cauchy_wavelet, etok
 def nullfunc(*args, **kws):
     pass
 
-get_display = _plot = _oplot = _newplot = _fitplot = _plot_text = nullfunc
-
 HAS_PLOTLY = True
 try:
     import plotly
@@ -43,8 +41,10 @@ if HAS_PLOTLY:
     import plotly.graph_objs as pgo
     from  plotly.subplots import make_subplots
 
-LineColors = ('#1f77b4', '#d62728', '#2ca02c', '#ff7f0e', '#9467bd',
-              '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf')
+from . import (LineColors, get_title, chir_labels, set_label_weight,
+               get_kweight, get_erange, extend_plotrange)
+from . import plotlabels_web as plotlabels
+
 LineStyles = ('solid', 'dashed', 'dotted')
 NCOLORS = len(LineColors)
 NSTYLES = len(LineStyles)
@@ -59,139 +59,6 @@ FIGSTYLE = dict(width=650, height=500,
                 yaxis=dict(showgrid=True, gridcolor='#D8D8D8',
                            color='#004', zerolinecolor='#DDD')
                 )
-
-def set_label_weight(label, w):
-    return label.replace('_w_', '{0:g}'.format(w))
-
-# common XAFS plot labels
-def chirlab(kweight, show_mag=True, show_real=False, show_imag=False):
-    """generate chi(R) label for a kweight
-
-    Arguments
-    ----------
-     kweight      k-weight to use (required)
-     show_mag     bool whether to plot |chi(R)| [True]
-     show_real    bool whether to plot Re[chi(R)] [False]
-     show_imag    bool whether to plot Im[chi(R)] [False]
-    """
-    ylab = []
-    if show_mag:  ylab.append(plotlabels.chirmag)
-    if show_real: ylab.append(plotlabels.chirre)
-    if show_imag: ylab.append(plotlabels.chirim)
-    if len(ylab) > 1:  ylab = [plotlabels.chir]
-    return set_label_weight(ylab[0], kweight+1)
-#enddef
-
-# note:
-#  to make life easier for MathJax/Plotly/IPython
-#  we have just replaced "\AA" with "\unicode{x212B}"
-plotlabels = Group(k       = r'$k \rm\,(\unicode{x212B}^{-1})$',
-                   r       = r'$R \rm\,(\unicode{x212B})$',
-                   energy  = r'$E\rm\,(eV)$',
-                   ewithk  = r'$E\rm\,(eV)$' + '\n' + r'$[k \rm\,(\unicode{x212B}^{-1})]$',
-                   mu      = r'$\mu(E)$',
-                   norm    = r'normalized $\mu(E)$',
-                   flat    = r'flattened $\mu(E)$',
-                   deconv  = r'deconvolved $\mu(E)$',
-                   dmude   = r'$d\mu_{\rm norm}(E)/dE$',
-                   d2mude  = r'$d^2\mu_{\rm norm}(E)/dE^2$',
-                   chie    = r'$\chi(E)$',
-                   chie0   = r'$\chi(E)$',
-                   chie1   = r'$E\chi(E) \rm\, (eV)$',
-                   chiew   = r'$E^{{_w_}\chi(E) \rm\,(eV^{_w_})$',
-                   chikw   = r'$k^{{_w_}}\chi(k) \rm\,(\unicode{x212B}^{{-_w_}})$',
-                   chi0    = r'$\chi(k)$',
-                   chi1    = r'$k\chi(k) \rm\,(\unicode{x212B}^{-1})$',
-                   chi2    = r'$k^2\chi(k) \rm\,(\unicode{x212B}^{-2})$',
-                   chi3    = r'$k^3\chi(k) \rm\,(\unicode{x212B}^{-3})$',
-                   chir    = r'$\chi(R) \rm\,(\unicode{x212B}^{{-_w_}})$',
-                   chirmag = r'$|\chi(R)| \rm\,(\unicode{x212B}^{{-_w_}})$',
-                   chirre  = r'${{\rm Re}}[\chi(R)] \rm\,(\unicode{x212B}^{{-_w_}})$',
-                   chirim  = r'${{\rm Im}}[\chi(R)] \rm\,(\unicode{x212B}^{{-_w_}})$',
-                   chirpha = r'${{\rm Phase}}[\chi(R)] \rm\,(\unicode{x212B}^{{-_w_}})$',
-                   e0color = '#B2B282',
-                   chirlab = chirlab)
-
-
-def safetitle(t):
-    if "'" in t:
-        t = t.replace("'", "\\'")
-    return t
-
-def _get_title(dgroup, title=None):
-    """get best title for group"""
-    if title is not None:
-        return safetitle(title)
-    data_group = getattr(dgroup, 'data', None)
-
-    for attr in ('title', 'plot_title', 'filename', 'name', '__name__'):
-        t = getattr(dgroup, attr, None)
-        if t is not None:
-            if attr == 'filename':
-                folder, file = os.path.split(t)
-                if folder == '':
-                    t = file
-                else:
-                    top, folder = os.path.split(folder)
-                    t = '/'.join((folder, file))
-            return safetitle(t)
-        if data_group is not None:
-            t = getattr(data_group, attr, None)
-            if t is not None:
-                return t
-    return safetitle(repr(dgroup))
-
-
-def _get_kweight(dgroup, kweight=None):
-    if kweight is not None:
-        return kweight
-    callargs = getattr(dgroup, 'callargs', None)
-    ftargs = getattr(callargs, 'xftf', {'kweight':0})
-    return ftargs['kweight']
-
-def _get_erange(dgroup, emin=None, emax=None):
-    """get absolute emin/emax for data range, allowing using
-    values relative to e0.
-    """
-    dat_emin, dat_emax = min(dgroup.energy)-100, max(dgroup.energy)+100
-    e0 = getattr(dgroup, 'e0', 0.0)
-    if emin is not None:
-        if not (emin > dat_emin and emin < dat_emax):
-            if emin+e0 > dat_emin and emin+e0 < dat_emax:
-                emin += e0
-    else:
-        emin = dat_emin
-    if emax is not None:
-        if not (emax > dat_emin and emax < dat_emax):
-            if emax+e0 > dat_emin and emax+e0 < dat_emax:
-                emax += e0
-    else:
-        emax = dat_emax
-    return emin, emax
-
-def extend_plotrange(x, y, xmin=None, xmax=None, extend=0.10):
-    """return plot limits to extend a plot range for x, y pairs"""
-    xeps = min(np.diff(x)) / 5.
-    if xmin is None:
-        xmin = min(x)
-    if xmax is None:
-        xmax = max(x)
-
-    xmin = max(min(x), xmin-5)
-    xmax = min(max(x), xmax+5)
-
-    i0 = index_of(x, xmin + xeps)
-    i1 = index_of(x, xmax + xeps) + 1
-
-    xspan = x[i0:i1]
-    xrange = max(xspan) - min(xspan)
-    yspan = y[i0:i1]
-    yrange = max(yspan) - min(yspan)
-
-    return  (min(xspan) - extend * xrange,
-             max(xspan) + extend * xrange,
-             min(yspan) - extend * yrange,
-             max(yspan) + extend * yrange)
 
 
 def redraw(win=1, xmin=None, xmax=None, ymin=None, ymax=None,
@@ -403,8 +270,8 @@ def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
         ylabel = f"{ylabel} (flat)"
         dlabel = plotlabels.flat
     #endif
-    emin, emax = _get_erange(dgroup, emin, emax)
-    title = _get_title(dgroup, title=title)
+    emin, emax = get_erange(dgroup, emin, emax)
+    title = get_title(dgroup, title=title)
 
     if fig is None:
         fig = PlotlyFigure(two_yaxis=with_deriv)
@@ -461,14 +328,14 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
     if label is None:
         label = 'mu'
 
-    emin, emax = _get_erange(dgroup, emin, emax)
+    emin, emax = get_erange(dgroup, emin, emax)
     if norm:
         mu  = dgroup.norm
         bkg = (dgroup.bkg - dgroup.pre_edge) / dgroup.edge_step
         ylabel = f"{ylabel} (norm)"
         label = f"{ylabel} (norm)"
     #endif
-    title = _get_title(dgroup, title=title)
+    title = get_title(dgroup, title=title)
 
     fig = PlotlyFigure(two_yaxis=False)
     fig.add_plot(dgroup.energy, mu+offset, label=label)
@@ -519,13 +386,13 @@ def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
         ylabel = set_label_weight(plotlabels.chiew, eweight)
     xlabel = plotlabels.energy
 
-    emin, emax = _get_erange(dgroup, emin, emax)
+    emin, emax = get_erange(dgroup, emin, emax)
     if emin is not None:
         emin = emin - e0
     if emax is not None:
         emax = emax - e0
 
-    title = _get_title(dgroup, title=title)
+    title = get_title(dgroup, title=title)
     def ek_formatter(x, pos):
         ex = float(x)
         if ex < 0:
@@ -571,7 +438,7 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
     if label is None:
         label = 'chi'
 
-    title = _get_title(dgroup, title=title)
+    title = get_title(dgroup, title=title)
 
     if fig is None:
         fig = PlotlyFigure(two_yaxis=False)
@@ -617,9 +484,9 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
     """
     kweight = _get_kweight(dgroup, None)
 
-    title = _get_title(dgroup, title=title)
+    title = get_title(dgroup, title=title)
 
-    ylabel = plotlabels.chirlab(kweight, show_mag=show_mag,
+    ylabel = chir_labels(plotlabels, kweight, show_mag=show_mag,
                                 show_real=show_real, show_imag=show_imag)
 
     if not hasattr(dgroup, 'r'):
@@ -681,7 +548,7 @@ def plot_chiq(dgroup, kweight=None, kmin=0, kmax=None, show_chik=False, label=No
     if label is None:
         label = 'chi(q) (filtered)'
 
-    title = _get_title(dgroup, title=title)
+    title = get_title(dgroup, title=title)
     if fig is None:
         fig = PlotlyFigure(two_yaxis=False)
     fig.add_plot(dgroup.k, chiq+offset, label=label)
@@ -734,7 +601,7 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
     if isinstance(kweight, (list, tuple, np.ndarray)):
         kweight=kweight[0]
 
-    title = _get_title(dataset, title=title)
+    title = get_title(dataset, title=title)
 
     mod = dataset.model
     dat = dataset.data
@@ -768,7 +635,8 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
         rfig.add_plot(dat.r, dat.chir_im+offset, label='Im[data]')
         rfig.add_plot(mod.r, mod.chir_im+offset, label='Im[fit]')
 
-    ylabel = chirlab(kweight, show_mag=show_mag, show_real=show_real, show_imag=show_imag)
+    ylabel = chir_labels(plotlabels, kweight, show_mag=show_mag,
+                             show_real=show_real, show_imag=show_imag)
     rfig.show(title=title, xlabel=plotlabels.r, ylabel=ylabel, xmin=0, xmax=rmax)
     return fig, rfig
 
@@ -792,7 +660,7 @@ def plot_path_k(dataset, ipath=0, kmin=0, kmax=None, offset=0, label=None, fig=N
     path = dataset.pathlist[ipath]
     if label is None:
         label = 'path %i' % (1+ipath)
-    title = _get_title(dataset, title=title)
+    title = get_title(dataset, title=title)
 
     chi_kw = offset + path.chi * path.k**kweight
     if fig is None:
@@ -826,10 +694,9 @@ def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
     if label is None:
         label = 'path %i' % (1+ipath)
 
-    title = _get_title(dataset, title=title)
-    kweight =dataset.transform.kweight
-    ylabel = plotlabels.chirlab(kweight, show_mag=show_mag,
-                                show_real=show_real, show_imag=show_imag)
+    title = get_title(dataset, title=title)
+    kweight = dataset.transform.kweight
+    ylabel = chir_labels(plotlabels, kweight)
 
     if fig is None:
         fig = PlotlyFigure(two_yaxis=False)
@@ -842,7 +709,7 @@ def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
     if show_imag:
         fig.add_plot(path.r,  offset+path.chir_im, label=f'Im[{label}|')
 
-    return fig.show(title=title,  xlabel=plotlabels.r, ylabel=chirlab(kweight),
+    return fig.show(title=title,  xlabel=plotlabels.r, ylabel=ylabel,
                     xmax=rmax)
 
 
@@ -867,7 +734,7 @@ def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, title=None, fig=None):
 
     model_chi_kw = model.chi * model.k**kweight
 
-    title = _get_title(dataset, title=title)
+    title = get_title(dataset, title=title)
     if fig is None:
         fig = PlotlyFigure(two_yaxis=False)
     fig.add_plot(model.k, model_chi_kw, label='sum')
@@ -904,7 +771,7 @@ def plot_paths_r(dataset, offset=-0.25, rmax=None, show_mag=True,
     kweight = dataset.transform.kweight
     model = dataset.model
 
-    title = _get_title(dataset, title=title)
+    title = get_title(dataset, title=title)
     if fig is None:
         fig = PlotlyFigure(two_yaxis=False)
 
@@ -929,9 +796,9 @@ def plot_paths_r(dataset, offset=-0.25, rmax=None, show_mag=True,
 
         if show_imag:
             fig.add_plot(path.r, off+path.chir_im, label=f'Im[{label}]')
-
+    ylabel = chir_labels(plotlabels, kweight)
     return fig.show(title=title, xlabel=plotlabels.r,
-                    ylabel=chirlab(kweight), xmax=rmax)
+                    ylabel=ylabel, xmax=rmax)
 
 def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
                            show_peakrange=True):
@@ -1198,8 +1065,8 @@ def plot_diffkk(dgroup, emin=None, emax=None, new=True, label=None,
         raise ValueError("Data group has no array for f2")
     #endif
     ylabel = r'$f \rm\,\, (e^{-})$ '
-    emin, emax = _get_erange(dgroup, emin, emax)
-    title = _get_title(dgroup, title=title)
+    emin, emax = get_erange(dgroup, emin, emax)
+    title = get_title(dgroup, title=title)
 
     labels = {'f2': r"$f_2(E)$", 'fpp': r"$f''(E)$", 'fp': r"$f'(E)$", 'f1': r"$f_1(E)$"}
 
@@ -1279,16 +1146,16 @@ def plot_wavelet(dgroup, show_mag=True, show_real=False, show_imag=False,
     print("Image display not yet available with larch+plotly")
     kweight = _get_kweight(dgroup, kweight)
     cauchy_wavelet(dgroup, kweight=kweight, rmax_out=rmax)
-    title = _get_title(dgroup, title=title)
+    title = get_title(dgroup, title=title)
 
     opts = dict(title=title, x=dgroup.k, y=dgroup.wcauchy_r, xmax=kmax,
                 ymax=rmax, xlabel=plotlabels.k, ylabel=plotlabels.r,
                 show_axis=True)
     if show_mag:
-        _imshow(dgroup.wcauchy_mag, **opts)
+        imshow(dgroup.wcauchy_mag, **opts)
     elif show_real:
-        _imshow(dgroup.wcauchy_real, **opts)
+        imshow(dgroup.wcauchy_real, **opts)
     elif show_imag:
-        _imshow(dgroup.wcauchy_imag, **opts)
+        imshow(dgroup.wcauchy_imag, **opts)
     #endif
 #enddef
