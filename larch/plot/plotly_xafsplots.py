@@ -41,7 +41,7 @@ if HAS_PLOTLY:
     import plotly.graph_objs as pgo
     from  plotly.subplots import make_subplots
 
-from . import (LineColors, get_title, chir_labels, set_label_weight,
+from . import (LineColors, get_title, chir_label, set_label_weight,
                get_kweight, get_erange, extend_plotrange)
 from . import plotlabels_web as plotlabels
 
@@ -486,8 +486,8 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
 
     title = get_title(dgroup, title=title)
 
-    ylabel = chir_labels(plotlabels, kweight, show_mag=show_mag,
-                                show_real=show_real, show_imag=show_imag)
+    ylabel = chir_label(plotlabels, kweight, show_mag=show_mag,
+                       show_real=show_real, show_imag=show_imag)
 
     if not hasattr(dgroup, 'r'):
         print("group does not have chi(R) data")
@@ -635,8 +635,8 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
         rfig.add_plot(dat.r, dat.chir_im+offset, label='Im[data]')
         rfig.add_plot(mod.r, mod.chir_im+offset, label='Im[fit]')
 
-    ylabel = chir_labels(plotlabels, kweight, show_mag=show_mag,
-                             show_real=show_real, show_imag=show_imag)
+    ylabel = chir_label(plotlabels, kweight, show_mag=show_mag,
+                        show_real=show_real, show_imag=show_imag)
     rfig.show(title=title, xlabel=plotlabels.r, ylabel=ylabel, xmin=0, xmax=rmax)
     return fig, rfig
 
@@ -696,7 +696,7 @@ def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
 
     title = get_title(dataset, title=title)
     kweight = dataset.transform.kweight
-    ylabel = chir_labels(plotlabels, kweight)
+    ylabel = chir_label(plotlabels, kweight)
 
     if fig is None:
         fig = PlotlyFigure(two_yaxis=False)
@@ -796,9 +796,8 @@ def plot_paths_r(dataset, offset=-0.25, rmax=None, show_mag=True,
 
         if show_imag:
             fig.add_plot(path.r, off+path.chir_im, label=f'Im[{label}]')
-    ylabel = chir_labels(plotlabels, kweight)
     return fig.show(title=title, xlabel=plotlabels.r,
-                    ylabel=ylabel, xmax=rmax)
+                    ylabel=chir_label(plotlabels, kweight), xmax=rmax)
 
 def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
                            show_peakrange=True):

@@ -49,7 +49,7 @@ if HAS_BOKEH:
     from bokeh.core.properties import field
     from bokeh.models import ColumnDataSource, LinearAxis, Grid, VSpan, Range1d
 
-from . import (LineColors, get_title, chir_labels, set_label_weight,
+from . import (LineColors, get_title, chir_label, set_label_weight,
                get_kweight, get_erange, extend_plotrange)
 from . import plotlabels_web as plotlabels
 
@@ -226,7 +226,7 @@ def plot(xdata, ydata, dy=None, fig=None, label=None, xlabel=None,
                 xmin, xmax = xmin-0.02*xr, xmax+0.02*xr
         except:
             pass
-    if ymin is not None and ymay is not None:
+    if ymin is not None and ymax is not None:
         yr = abs(ymax-ymin)
         try:
             if yr/(ymin+ymax) > 1.e-18:
@@ -568,7 +568,7 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
 
     title = get_title(dgroup, title=title)
 
-    ylabel = plotlabels.chirlab(kweight, show_mag=show_mag,
+    ylabel = chir_label(plotlabels, kweight, show_mag=show_mag,
                                 show_real=show_real, show_imag=show_imag)
 
     if not hasattr(dgroup, 'r'):
@@ -717,7 +717,8 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
         rfig.add_plot(dat.r, dat.chir_im+offset, label='Im[data]')
         rfig.add_plot(mod.r, mod.chir_im+offset, label='Im[fit]')
 
-    ylabel = chirlab(kweight, show_mag=show_mag, show_real=show_real, show_imag=show_imag)
+    ylabel = chir_label(plotlabels, kweight, show_mag=show_mag,
+                            show_real=show_real, show_imag=show_imag)
     rfig.show(title=title, xlabel=plotlabels.r, ylabel=ylabel, xmin=0, xmax=rmax)
     return fig, rfig
 
@@ -777,7 +778,7 @@ def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
 
     title = get_title(dataset, title=title)
     kweight =dataset.transform.kweight
-    ylabel = plotlabels.chirlab(kweight, show_mag=show_mag,
+    ylabel = chir_label(plotlabels, kweight, show_mag=show_mag,
                                 show_real=show_real, show_imag=show_imag)
 
     if fig is None:
@@ -791,7 +792,7 @@ def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
     if show_imag:
         fig.add_plot(path.r,  offset+path.chir_im, label=f'Im[{label}|')
 
-    return fig.show(title=title,  xlabel=plotlabels.r, ylabel=chirlab(kweight),
+    return fig.show(title=title,  xlabel=plotlabels.r, ylabel=ylabel,
                     xmax=rmax)
 
 
@@ -879,8 +880,9 @@ def plot_paths_r(dataset, offset=-0.25, rmax=None, show_mag=True,
         if show_imag:
             fig.add_plot(path.r, off+path.chir_im, label=f'Im[{label}]')
 
+
     return fig.show(title=title, xlabel=plotlabels.r,
-                    ylabel=chirlab(kweight), xmax=rmax)
+                    ylabel=chir_label(plotlabels, kweight), xmax=rmax)
 
 def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
                            show_peakrange=True):

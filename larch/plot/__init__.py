@@ -38,17 +38,17 @@ plotlabels_wx = Group(k    = r'$k \rm\,(\AA^{-1})$',
                    chie    = r'$\chi(E)$',
                    chie0   = r'$\chi(E)$',
                    chie1   = r'$E\chi(E) \rm\, (eV)$',
-                   chiew   = r'$E^{{{0:g}}}\chi(E) \rm\,(eV^{{{0:g}}})$',
-                   chikw   = r'$k^{{{0:g}}}\chi(k) \rm\,(\AA^{{-{0:g}}})$',
+                   chiew   = r'$E^{_w_}\chi(E) \rm\,(eV^{_w_})$',
+                   chikw   = r'$k^{_w_}\chi(k) \rm\,(\AA^{-_w_})$',
                    chi0    = r'$\chi(k)$',
                    chi1    = r'$k\chi(k) \rm\,(\AA^{-1})$',
                    chi2    = r'$k^2\chi(k) \rm\,(\AA^{-2})$',
                    chi3    = r'$k^3\chi(k) \rm\,(\AA^{-3})$',
-                   chir    = r'$\chi(R) \rm\,(\AA^{{-{0:g}}})$',
-                   chirmag = r'$|\chi(R)| \rm\,(\AA^{{-{0:g}}})$',
-                   chirre  = r'${{\rm Re}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$',
-                   chirim  = r'${{\rm Im}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$',
-                   chirpha = r'${{\rm Phase}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$',
+                   chir    = r'$\chi(R) \rm\,(\AA^{-_w_})$',
+                   chirmag = r'$|\chi(R)| \rm\,(\AA^{-_w_})$',
+                   chirre  = r'${{\rm Re}}[\chi(R)] \rm\,(\AA^{-_w_})$',
+                   chirim  = r'${{\rm Im}}[\chi(R)] \rm\,(\AA^{-_w_}})$',
+                   chirpha = r'${{\rm Phase}}[\chi(R)] \rm\,(\AA^{-_w_})$',
                    e0color = '#B2B282',
                    x = r'$x$',
                    y = r'$y$',
@@ -67,6 +67,8 @@ plotlabels_wx = Group(k    = r'$k \rm\,(\AA^{-1})$',
 plotlabels_web = Group(k   = r'$$k \rm\,(\unicode{x212B}^{-1})$$',
                    r       = r'$$R \rm\,(\unicode{x212B})$$',
                    energy  = r'$$E\rm\,(eV)$$',
+                   en_e0   = r'$E-E_{0}\rm\,(eV)$',
+                   en_e0val = r'$E-E_0 \rm\,(eV)\rm\,\,\,  [E_0={0:.2f}]$',
                    ewithk  = r'$$E\rm\,(eV)$$' + '\n' + r'$$[k \rm\,(\unicode{x212B}^{-1})]$$',
                    mu      = r'$$\mu(E)$$',
                    norm    = r'normalized $$\mu(E)$$',
@@ -136,7 +138,7 @@ def get_kweight(dgroup, kweight=None):
     return ftargs['kweight']
 
 def set_label_weight(label, w):
-    return label.replace('_w_', '{0:g}'.format(w))
+    return label.replace('_w_', f'{w:g}')
 
 def chir_label(labels, kweight, show_mag=True, show_real=False, show_imag=False):
     """generate chi(R) label for a kweight
@@ -151,14 +153,14 @@ def chir_label(labels, kweight, show_mag=True, show_real=False, show_imag=False)
     """
     ylab = []
     if show_mag:
-        ylab.append(labels.chirmag)
+        ylab.append(set_label_weight(labels.chirmag, kweight))
     if show_real:
-        ylab.append(labels.chirre)
+        ylab.append(set_label_weight(labels.chirre, kweight))
     if show_imag:
-        ylab.append(labels.chirim)
-    if len(ylab) > 1:
-        ylab = [labels.chir]
-    return ylab[0].format(kweight+1)
+        ylab.append(set_label_weight(labels.chirim, kweight))
+    if len(ylab) > 1:  # if multiple selected, use the generic chi(r)
+        ylab = [set_label_weight(labels.chir, kweight)]
+    return ylab[0]
 
 
 def get_erange(dgroup, emin=None, emax=None, e0=None):
@@ -210,4 +212,4 @@ def extend_plotrange(x, y, e0=0, xmin=None, xmax=None, extend=0.10):
 
 from . import plotly_xafsplots
 from . import bokeh_xafsplots
-from . import wxmplot_xafsplot
+from . import wxmplot_xafsplots
