@@ -48,7 +48,7 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl,
                          flatnotebook, Popup, EditableListBox,
                          ExceptionPopup)
 
-from larch.wxlib.xafsplots import extend_plotrange
+
 from larch.wxlib.parameter import ParameterWidgets
 from larch.wxlib.plotter import last_cursor_pos
 from .taskpanel import TaskPanel

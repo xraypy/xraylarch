@@ -36,7 +36,7 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl,
 
 from larch.wxlib.parameter import ParameterWidgets
 from larch.wxlib.plotter import last_cursor_pos
-from larch.wxlib.xafsplots import extend_plotrange
+
 from .taskpanel import TaskPanel
 from .config import PrePeak_ArrayChoices, PlotWindowChoices
 

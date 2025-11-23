@@ -1,4 +1,3 @@
-import time
 import sys
 import ast
 import shutil
@@ -79,7 +78,7 @@ COMMANDS['feffit_top'] = """##### FEFFIT Commands
 #from larch.io import read_ascii, read_athena, read_xdi, read_specfile
 #
 ####  for interactive plotting from python (but not the Larch shell!) use:
-#from larch.wxlib.xafsplots import plot_chik, plot_chir
+#from larch.plot.wxmplot_xafsplots import plot_chik, plot_chir
 #from wxmplot.interactive import get_wxapp
 #wxapp = get_wxapp()  # <- needed for plotting to work from python command-line
 ####

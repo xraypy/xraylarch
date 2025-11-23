@@ -440,8 +440,8 @@ class XASController():
         self.init_larch_session()
 
     def save_exafsplot_config(self, options):
-        exconf_path = Path(user_larchdir, 'larix', 'larix_exafsplots.conf')
-        save_config(exconf_path, options, form='yaml')
+        plot_conf = Path(user_larchdir, 'larix', 'larix_exafsplots.conf')
+        save_config(plot_conf, options, form='yaml')
 
     def load_exafsplot_config(self):
         plot_conf = Path(user_larchdir, 'larix', 'larix_exafsplots.conf')
