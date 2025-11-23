@@ -201,7 +201,6 @@ if HAS_WXPYTHON:
                                        redraw_plot=redraw_plot)
 
 
-
     def _larch_init(_larch):
         """add ScanFrameViewer to _sys.gui_apps """
         if _larch is None:
@@ -210,8 +209,10 @@ if HAS_WXPYTHON:
         if not hasattr(_sys, 'gui_apps'):
             _sys.gui_apps = {}
         # _sys.gui_apps['xrfviewer'] = ('XRF Spectrum Viewer', XRFDisplayFrame)
+
+        # these symbols are put into the Larch symbol table at larch_init time
+        # so that we avoid circular imports (wmplot_xafsplots imports from .plotter)
         from larch.plot import wxmplot_xafsplots as xafsplots
-        print("INIT WXLIB PLOTTER")
         _larch_builtins['_xafs'] = dict(redraw=xafsplots.redraw,
                                     plotlabels=xafsplots.plotlabels,
                                     plot_mu=xafsplots.plot_mu,
