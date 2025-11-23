@@ -142,7 +142,7 @@ if HAS_WXPYTHON:
 
     from .larchframe import LarchFrame, LarchPanel
     from .columnframe import ColumnDataFileFrame, EditColumnFrame
-    from .hdf5_browser import HDF5DataFileFrame
+    # from .hdf5_browser import HDF5DataFileFrame
     from .athena_importer import AthenaImporter
     from .specfile_importer import SpecfileImporter
     from .xas_importer import XasImporter
