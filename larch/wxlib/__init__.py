@@ -142,6 +142,7 @@ if HAS_WXPYTHON:
 
     from .larchframe import LarchFrame, LarchPanel
     from .columnframe import ColumnDataFileFrame, EditColumnFrame
+    from .hdf5_browser import HDF5DataFileFrame
     from .athena_importer import AthenaImporter
     from .specfile_importer import SpecfileImporter
     from .xas_importer import XasImporter
@@ -160,13 +161,13 @@ if HAS_WXPYTHON:
                                        fileprompt=fileprompt,
                                        wx_update=wx_update)}
 
-    from .plotter import (_plot, _oplot, _newplot, _plot_text, fileplot,
-                          _plot_marker, _plot_arrow, _plot_setlimits,
-                          _plot_axvline, _plot_axhline, _scatterplot,
-                          _hist, _update_trace, _saveplot, _saveimg,
-                          get_display, _closeDisplays, _getcursor,
-                          last_cursor_pos, _imshow, _contour, _xrf_plot,
-                          _xrf_oplot, _fitplot, _redraw_plot,
+    from .plotter import (plot, oplot, newplot, plot_text, fileplot,
+                          plot_marker, plot_arrow, plot_setlimits,
+                          plot_axvline, plot_axhline, scatterplot,
+                          hist, update_trace, save_plot, save_image,
+                          get_display, close_displays, get_cursor,
+                          last_cursor_pos, imshow, contour, xrf_plot,
+                          xrf_oplot, fitplot, redraw_plot,
                           get_zoomlimits, set_zoomlimits,
                           save_plot_config, get_plot_config,
                           get_panel_plot_config, set_panel_plot_config,
@@ -175,29 +176,29 @@ if HAS_WXPYTHON:
     if uname == 'darwin':
         HLine = DarwinHLine
 
-    _larch_builtins['_plotter'] = dict(plot=_plot, oplot=_oplot,
-                                       newplot=_newplot, plot_text=_plot_text,
-                                       plot_marker=_plot_marker,
-                                       plot_arrow=_plot_arrow,
-                                       plot_setlimits=_plot_setlimits,
-                                       plot_axvline=_plot_axvline,
-                                       plot_axhline=_plot_axhline,
-                                       scatterplot=_scatterplot, hist=_hist,
-                                       update_trace=_update_trace,
-                                       save_plot=_saveplot,
-                                       save_image=_saveimg,
+    _larch_builtins['_plotter'] = dict(plot=plot, oplot=oplot,
+                                       newplot=newplot, plot_text=plot_text,
+                                       plot_marker=plot_marker,
+                                       plot_arrow=plot_arrow,
+                                       plot_setlimits=plot_setlimits,
+                                       plot_axvline=plot_axvline,
+                                       plot_axhline=plot_axhline,
+                                       scatterplot=scatterplot, hist=hist,
+                                       update_trace=update_trace,
+                                       save_plot=save_plot,
+                                       save_image=save_image,
                                        save_plot_config=save_plot_config,
                                        get_plot_config=get_plot_config,
                                        get_display=get_display,
-                                       close_all_displays=_closeDisplays,
-                                       get_cursor=_getcursor,
+                                       close_all_displays=close_displays,
+                                       get_cursor=get_cursor,
                                        last_cursor_pos=last_cursor_pos,
-                                       imshow=_imshow, contour=_contour,
-                                       xrf_plot=_xrf_plot,
-                                       xrf_oplot=_xrf_oplot,
-                                       fit_plot=_fitplot,
+                                       imshow=imshow, contour=contour,
+                                       xrf_plot=xrf_plot,
+                                       xrf_oplot=xrf_oplot,
+                                       fit_plot=fitplot,
                                        fileplot=fileplot,
-                                       redraw_plot=_redraw_plot)
+                                       redraw_plot=redraw_plot)
 
     _larch_builtins['_xafs'] = dict(redraw=xafsplots.redraw,
                                     plotlabels=plotlabels,

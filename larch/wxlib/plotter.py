@@ -29,6 +29,13 @@ from ..site_config import user_larchdir
 
 from .xrfdisplay import XRFDisplayFrame
 
+try:
+    from IPython import get_ipython
+    ipython = get_ipython()
+    if ipython is not None:
+        ipython.find_magic('gui')('wx')
+except Exception:
+    ipython = None
 
 mplconfdir = Path(user_larchdir, 'matplotlib').as_posix()
 mkdir(mplconfdir)
@@ -571,7 +578,6 @@ def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
     return display
 
 
-_getDisplay = get_display # back compatibility
 
 def set_plotwindow_title(display, _larch=None, default='Plot'):
     title = getattr(display, 'title', default)
@@ -584,7 +590,7 @@ def set_plotwindow_title(display, _larch=None, default='Plot'):
             wintitle = f"{title}[{sessname}]: {datatask} #{win}"
     display.SetTitle(wintitle)
 
-def _xrf_plot(x=None, y=None, mca=None, win=1, new=True, as_mca2=False, _larch=None,
+def xrf_plot(x=None, y=None, mca=None, win=1, new=True, as_mca2=False, _larch=None,
               wxparent=None, size=None, side=None, yaxes=1, force_draw=True,
               wintitle=None,  **kws):
     """xrf_plot(energy, data[, win=1], options])
@@ -639,7 +645,7 @@ def _xrf_plot(x=None, y=None, mca=None, win=1, new=True, as_mca2=False, _larch=N
         plotter.oplot(x, y, mca=mca, **kws)
 
 
-def _xrf_oplot(x=None, y=None, mca=None, win=1, _larch=None, **kws):
+def xrf_oplot(x=None, y=None, mca=None, win=1, _larch=None, **kws):
     """xrf_oplot(energy, data[, win=1], options])
 
     Overplot a second  XRF trace of energy, data
@@ -656,9 +662,9 @@ def _xrf_oplot(x=None, y=None, mca=None, win=1, _larch=None, **kws):
 
     See Also: xrf_plot
     """
-    _xrf_plot(x=x, y=y, mca=mca, win=win, _larch=_larch, new=False, **kws)
+    xrf_plot(x=x, y=y, mca=mca, win=win, _larch=_larch, new=False, **kws)
 
-def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
+def plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
           xrf=False, stacked=False, force_draw=True, side=None, yaxes=1,
           wintitle=None, **kws):
     """plot(x, y[, win=1], options])
@@ -712,7 +718,7 @@ def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
     if force_draw:
         wx_update(_larch=_larch)
 
-def _redraw_plot(win=1, xrf=False, stacked=False, size=None, wintitle=None,
+def redraw_plot(win=1, xrf=False, stacked=False, size=None, wintitle=None,
                  _larch=None, wxparent=None):
     """redraw_plot(win=1)
 
@@ -726,7 +732,7 @@ def _redraw_plot(win=1, xrf=False, stacked=False, size=None, wintitle=None,
     plotter.panel.unzoom_all()
 
 
-def _update_trace(x, y, trace=1, win=1, _larch=None, wxparent=None,
+def update_trace(x, y, trace=1, win=1, _larch=None, wxparent=None,
                  side=None, yaxes=1, redraw=False, **kws):
     """update a plot trace with new data, avoiding complete redraw"""
     plotter = get_display(wxparent=wxparent, win=win, _larch=_larch)
@@ -745,7 +751,7 @@ def wx_update(_larch=None, **kws):
     except:
         pass
 
-def _plot_setlimits(xmin=None, xmax=None, ymin=None, ymax=None, win=1, wxparent=None,
+def plot_setlimits(xmin=None, xmax=None, ymin=None, ymax=None, win=1, wxparent=None,
                     _larch=None):
     """set plot view limits for plot in window `win`"""
     plotter = get_display(wxparent=wxparent, win=win, _larch=_larch)
@@ -753,7 +759,7 @@ def _plot_setlimits(xmin=None, xmax=None, ymin=None, ymax=None, win=1, wxparent=
         return
     plotter.panel.set_xylims((xmin, xmax, ymin, ymax))
 
-def _oplot(x, y, win=1, _larch=None, wxparent=None, xrf=False, stacked=False,
+def oplot(x, y, win=1, _larch=None, wxparent=None, xrf=False, stacked=False,
            size=None, **kws):
     """oplot(x, y[, win=1[, options]])
 
@@ -766,10 +772,10 @@ def _oplot(x, y, win=1, _larch=None, wxparent=None, xrf=False, stacked=False,
     See Also: plot, newplot
     """
     kws['new'] = False
-    _plot(x, y, win=win, size=size, xrf=xrf, stacked=stacked,
+    plot(x, y, win=win, size=size, xrf=xrf, stacked=stacked,
           wxparent=wxparent, _larch=_larch, **kws)
 
-def _newplot(x, y, win=1, _larch=None, wxparent=None,  size=None, wintitle=None,
+def newplot(x, y, win=1, _larch=None, wxparent=None,  size=None, wintitle=None,
              **kws):
     """newplot(x, y[, win=1[, options]])
 
@@ -784,7 +790,7 @@ def _newplot(x, y, win=1, _larch=None, wxparent=None,  size=None, wintitle=None,
     _plot(x, y, win=win, size=size, new=True, _larch=_larch,
           wxparent=wxparent, wintitle=wintitle, **kws)
 
-def _plot_text(text, x, y, win=1, side=None, yaxes=1, size=None,
+def plot_text(text, x, y, win=1, side=None, yaxes=1, size=None,
                stacked=False, xrf=False, rotation=None, ha='left', va='center',
                _larch=None, wxparent=None,  **kws):
     """plot_text(text, x, y, win=1, options)
@@ -813,7 +819,7 @@ def _plot_text(text, x, y, win=1, side=None, yaxes=1, size=None,
     plotter.add_text(text, x, y, side=side, yaxes=yaxes,
                      rotation=rotation, ha=ha, va=va, **kws)
 
-def _plot_arrow(x1, y1, x2, y2, win=1, side=None, yaxes=1,
+def plot_arrow(x1, y1, x2, y2, win=1, side=None, yaxes=1,
                 shape='full', color='black',
                 width=0.00, head_width=0.05, head_length=0.25,
                _larch=None, wxparent=None, stacked=False, xrf=False,
@@ -849,7 +855,7 @@ def _plot_arrow(x1, y1, x2, y2, win=1, side=None, yaxes=1,
                       color=color, width=width, head_length=head_length,
                       head_width=head_width, **kws)
 
-def _plot_marker(x, y, marker='o', size=4, color='black', label='_nolegend_',
+def plot_marker(x, y, marker='o', size=4, color='black', label='_nolegend_',
                _larch=None, wxparent=None, win=1, xrf=False, stacked=False, **kws):
 
     """plot_marker(x, y, marker='o', size=4, color='black')
@@ -874,7 +880,7 @@ def _plot_marker(x, y, marker='o', size=4, color='black', label='_nolegend_',
     plotter.oplot([x], [y], marker=marker, markersize=size, label=label,
                  color=color, _larch=_larch, wxparent=wxparent,  **kws)
 
-def _plot_axhline(y, xmin=0, xmax=1, win=1, wxparent=None, xrf=False,
+def plot_axhline(y, xmin=0, xmax=1, win=1, wxparent=None, xrf=False,
                   stacked=False, size=None, delay_draw=False, _larch=None, **kws):
     """plot_axhline(y, xmin=None, ymin=None, **kws)
 
@@ -897,7 +903,7 @@ def _plot_axhline(y, xmin=0, xmax=1, win=1, wxparent=None, xrf=False,
     if delay_draw:
         plotter.panel.canvas.draw()
 
-def _plot_axvline(x, ymin=0, ymax=1, win=1, wxparent=None, xrf=False,
+def plot_axvline(x, ymin=0, ymax=1, win=1, wxparent=None, xrf=False,
                   stacked=False, size=None, delay_draw=False, _larch=None, **kws):
     """plot_axvline(y, xmin=None, ymin=None, **kws)
 
@@ -920,7 +926,7 @@ def _plot_axvline(x, ymin=0, ymax=1, win=1, wxparent=None, xrf=False,
     if not delay_draw:
         plotter.panel.canvas.draw()
 
-def _getcursor(win=1, timeout=15, _larch=None, wxparent=None, size=None,
+def get_cursor(win=1, timeout=15, _larch=None, wxparent=None, size=None,
                xrf=False, stacked=False, **kws):
     """get_cursor(win=1, timeout=30)
 
@@ -997,7 +1003,7 @@ def last_cursor_pos(win=None, _larch=None):
     return _x, _y
 
 
-def _scatterplot(x,y, win=1, _larch=None, wxparent=None, size=None,
+def scatterplot(x,y, win=1, _larch=None, wxparent=None, size=None,
           force_draw=True,  **kws):
     """scatterplot(x, y[, win=1], options])
 
@@ -1015,7 +1021,7 @@ def _scatterplot(x,y, win=1, _larch=None, wxparent=None, size=None,
         wx_update(_larch=_larch)
 
 
-def _fitplot(x, y, y2=None, panel='top', label=None, label2=None, win=1,
+def fitplot(x, y, y2=None, panel='top', label=None, label2=None, win=1,
              _larch=None, wxparent=None, size=None, **kws):
     """fit_plot(x, y, y2=None, win=1, options)
 
@@ -1047,7 +1053,7 @@ def _fitplot(x, y, y2=None, panel='top', label=None, label2=None, win=1,
         plotter.panel_bot.unzoom_all()
 
 
-def _hist(x, bins=10, win=1, new=False,
+def hist(x, bins=10, win=1, new=False,
            _larch=None, wxparent=None, size=None, force_draw=True,  *args, **kws):
 
     plotter = get_display(wxparent=wxparent, win=win, size=size, _larch=_larch)
@@ -1064,14 +1070,14 @@ def _hist(x, bins=10, win=1, new=False,
     return out
 
 
-_hist.__doc__ = """
+hist.__doc__ = """
     hist(x, bins, win=1, options)
 
   %s
 """ % (HIST_DOC)
 
 
-def _imshow(map, x=None, y=None, colormap=None, win=1, _larch=None,
+def imshow(map, x=None, y=None, colormap=None, win=1, _larch=None,
             wxparent=None, size=None, **kws):
     """imshow(map[, options])
 
@@ -1083,7 +1089,7 @@ def _imshow(map, x=None, y=None, colormap=None, win=1, _larch=None,
     if img is not None:
         img.display(map, x=x, y=y, colormap=colormap, **kws)
 
-def _contour(map, x=None, y=None, _larch=None, **kws):
+def contour(map, x=None, y=None, _larch=None, **kws):
     """contour(map[, options])
 
     Display an 2-D array of intensities as a contour plot
@@ -1093,7 +1099,7 @@ def _contour(map, x=None, y=None, _larch=None, **kws):
     kws.update(dict(style='contour'))
     _imshow(map, x=x, y=y, _larch=_larch, **kws)
 
-def _saveplot(fname, dpi=300, format=None, win=1, _larch=None, wxparent=None,
+def save_plot(fname, dpi=300, format=None, win=1, _larch=None, wxparent=None,
               size=None, facecolor='w', edgecolor='w', quality=90,
               image=False, **kws):
     """formats: png (default), svg, pdf, jpeg, tiff"""
@@ -1121,12 +1127,12 @@ def _saveplot(fname, dpi=300, format=None, win=1, _larch=None, wxparent=None,
         print('unsupported image format: ', format)
     os.chdir(thisdir)
 
-def _saveimg(fname, _larch=None, **kws):
+def save_image(fname, _larch=None, **kws):
     """save image from image display"""
     kws.update({'image':True})
-    _saveplot(fname, _larch=_larch, **kws)
+    save_plot(fname, _larch=_larch, **kws)
 
-def _closeDisplays(_larch=None, **kws):
+def close_displays(_larch=None, **kws):
     for display in (PLOT_DISPLAYS, IMG_DISPLAYS,
                     FITPLOT_DISPLAYS, XRF_DISPLAYS):
         for win in display.values():
@@ -1217,5 +1223,32 @@ def fileplot(filename, col1=1, col2=2, **kws):
     if 'title' in kws:
         title = kws.pop('title')
 
-    _plot(fdat.data[ix,:], fdat.data[iy,:], xlabel=xlabel, ylabel=ylabel,
+    plot(fdat.data[ix,:], fdat.data[iy,:], xlabel=xlabel, ylabel=ylabel,
           title=title, **kws)
+
+# back compatibility
+_getDisplay = get_display
+_closeDisplays = close_displays
+_getcursor = get_cursor
+_xrf_plot = xrf_plot
+_xrf_oplot = xrf_oplot
+_newplot = newplot
+_plot = plot
+_oplot = oplot
+_hist = hist
+
+
+_scatterplot = scatterplot
+_fitplot = fitplot
+_plot_text = plot_text
+_plot_arrow = plot_arrow
+_plot_marker = plot_marker
+_plot_axvline = plot_axvline
+_plot_axhline = plot_axhline
+_redraw_plot = redraw_plot
+_update_trace = update_trace
+_plot_setlimits = plot_setlimits
+_imshow = imshow
+_contour = contour
+_saveimg = save_image
+_saveplot= save_plot
