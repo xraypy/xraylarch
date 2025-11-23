@@ -213,29 +213,19 @@ if HAS_WXPYTHON:
         # these symbols are put into the Larch symbol table at larch_init time
         # so that we avoid circular imports (wmplot_xafsplots imports from .plotter)
         from larch.plot import wxmplot_xafsplots as xafsplots
-        _larch_builtins['_xafs'] = dict(redraw=xafsplots.redraw,
-                                    plotlabels=xafsplots.plotlabels,
-                                    plot_mu=xafsplots.plot_mu,
-                                    plot_bkg=xafsplots.plot_bkg,
-                                    plot_chie=xafsplots.plot_chie,
-                                    plot_chik=xafsplots.plot_chik,
-                                    plot_chir=xafsplots.plot_chir,
-                                    plot_chiq=xafsplots.plot_chiq,
-                                    plot_wavelet=xafsplots.plot_wavelet,
-                                    plot_chifit=xafsplots.plot_chifit,
-                                    plot_path_k=xafsplots.plot_path_k,
-                                    plot_path_r=xafsplots.plot_path_r,
-                                    plot_paths_k=xafsplots.plot_paths_k,
-                                    plot_paths_r=xafsplots.plot_paths_r,
-                                    plot_feffdat=xafsplots.plot_feffdat,
-                                    plot_diffkk=xafsplots.plot_diffkk,
-                                    plot_prepeaks_fit=xafsplots.plot_prepeaks_fit,
-                                    plot_prepeaks_baseline=xafsplots.plot_prepeaks_baseline,
-                                    plot_pca_components=xafsplots.plot_pca_components,
-                                    plot_pca_weights=xafsplots.plot_pca_weights,
-                                    plot_pca_fit=xafsplots.plot_pca_fit,
-                                    plot_curvefit=xafsplots.plot_curvefit,
-                                    )
+
+        _xafs = _larch.symtable._xafs
+        for fname in ('redraw', 'plotlabels', 'plot_mu', 'plot_bkg',
+            'plot_chie', 'plot_chik', 'plot_chir', 'plot_chiq',
+            'plot_wavelet', 'plot_chifit', 'plot_path_k',
+            'plot_path_r', 'plot_paths_k', 'plot_paths_r',
+            'plot_feffdat', 'plot_diffkk', 'plot_prepeaks_fit',
+            'plot_prepeaks_baseline', 'plot_pca_components',
+            'plot_pca_weights', 'plot_pca_fit', 'plot_curvefit'):
+
+            setattr(_xafs, fname, getattr(xafsplots, fname))
+
+
 
 
     #############################
