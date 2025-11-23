@@ -150,7 +150,7 @@ if HAS_WXPYTHON:
     from .gui_utils import (databrowser, fileprompt, LarchWxApp, wx_update)
     from .larch_updater import LarchUpdaterDialog
     from .parameter import ParameterWidgets, ParameterPanel
-    from .xafsplots import plotlabels
+
 
     from .feff_browser import FeffResultsFrame, FeffResultsPanel
     from .cif_browser import CIFFrame
@@ -200,8 +200,20 @@ if HAS_WXPYTHON:
                                        fileplot=fileplot,
                                        redraw_plot=redraw_plot)
 
-    _larch_builtins['_xafs'] = dict(redraw=xafsplots.redraw,
-                                    plotlabels=plotlabels,
+
+
+    def _larch_init(_larch):
+        """add ScanFrameViewer to _sys.gui_apps """
+        if _larch is None:
+            return
+        _sys = _larch.symtable._sys
+        if not hasattr(_sys, 'gui_apps'):
+            _sys.gui_apps = {}
+        # _sys.gui_apps['xrfviewer'] = ('XRF Spectrum Viewer', XRFDisplayFrame)
+        from larch.plot import wxmplot_xafsplots as xafsplots
+        print("INIT WXLIB PLOTTER")
+        _larch_builtins['_xafs'] = dict(redraw=xafsplots.redraw,
+                                    plotlabels=xafsplots.plotlabels,
                                     plot_mu=xafsplots.plot_mu,
                                     plot_bkg=xafsplots.plot_bkg,
                                     plot_chie=xafsplots.plot_chie,
@@ -224,15 +236,6 @@ if HAS_WXPYTHON:
                                     plot_curvefit=xafsplots.plot_curvefit,
                                     )
 
-
-    def _larch_init(_larch):
-        """add ScanFrameViewer to _sys.gui_apps """
-        if _larch is None:
-            return
-        _sys = _larch.symtable._sys
-        if not hasattr(_sys, 'gui_apps'):
-            _sys.gui_apps = {}
-        # _sys.gui_apps['xrfviewer'] = ('XRF Spectrum Viewer', XRFDisplayFrame)
 
     #############################
     ## Hack System and Startfile on Windows totry to track down
