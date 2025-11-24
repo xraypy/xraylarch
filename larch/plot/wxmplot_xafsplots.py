@@ -19,7 +19,6 @@ Plotting macros for XAFS data sets and fits
 """
 
 from pathlib import Path
-from numpy import ndarray, diff, where, arange, argmin
 from matplotlib.ticker import FuncFormatter
 
 from larch import Group
@@ -952,7 +951,9 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
 
     yplot = getattr(dgroup, 'yplot', getattr(dgroup, 'ydat', None))
     xplot = getattr(dgroup, 'xplot', getattr(dgroup, 'xdat', None))
-    px0, px1, py0, py1 = extend_plotrange(xplot, yplot, e0=e0,
+
+
+    px0, px1, py0, py1 = extend_plotrange(xplot, yplot,
                                           xmin=ppeak.emin, xmax=ppeak.emax)
     title = "pre_edge baseline\n %s" % dgroup.filename
 
@@ -1049,11 +1050,10 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
         xplot_full = 1.0*xplot
         plotopts['ylabel'] = '%s-baseline' % plotopts['ylabel']
 
-    dx0, dx1, dy0, dy1 = extend_plotrange(xplot_full, yplot_full, e0=dgroup.e0,
+    dx0, dx1, dy0, dy1 = extend_plotrange(xplot_full, yplot_full,
                                           xmin=opts['emin'], xmax=opts['emax'])
-    _1, _2, fy0, fy1 = extend_plotrange(xplot, yfit, e0=dgroup.e0,
-                                          xmin=opts['emin'], xmax=opts['emax'])
-    # print("PREPEAKS RANGE ", dx0, dx1, dy0, dy1, fy0, fy1)
+    _1, _2, fy0, fy1 = extend_plotrange(xplot, yfit,
+                                        xmin=opts['emin'], xmax=opts['emax'])
     ncolor = 0
     popts = {'win': win, '_larch': _larch}
     plotopts.update(popts)
@@ -1376,9 +1376,10 @@ def plot_curvefit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
         yfit -= baseline
         plotopts['ylabel'] = '%s-baseline' % plotopts['ylabel']
 
-    dx0, dx1, dy0, dy1 = extend_plotrange(xplot_full, yplot_full, e0=dgroup.e0,
+    dx0, dx1, dy0, dy1 = extend_plotrange(xplot_full, yplot_full,
                                           xmin=opts['xmin'], xmax=opts['xmax'])
-    _1, _2, fy0, fy1 = extend_plotrange(xplot, yfit, e0=dgroup.e0,
+
+    _1, _2, fy0, fy1 = extend_plotrange(xplot, yfit,
                                           xmin=opts['xmin'], xmax=opts['xmax'])
 
     ncolor = 0

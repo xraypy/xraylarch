@@ -14,9 +14,10 @@ Currenly supported plotting libraries include:
      plotly  - this uses the Plotly library, dessigned for drawing in a web browwer.
      bokeh   - this uses the Bokeh library, dessigned for drawing in a web browwer.
 """
-
 from pathlib import Path
+import numpy as np
 from larch import Group
+from larch.math import index_of, index_nearest, interp1d
 
 LineColors = ('#1f77b4', '#d62728', '#2ca02c', '#ff7f0e', '#9467bd',
               '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf')
@@ -177,25 +178,14 @@ def get_erange(dgroup, emin=None, emax=None, e0=None):
         emax = min(emax+e0, dat_emax)
     return emin, emax
 
-def extend_plotrange(x, y, e0=0, xmin=None, xmax=None, extend=0.10):
+def extend_plotrange(x, y, xmin=None, xmax=None, extend=0.10):
     """return plot limits to extend a plot range for x, y pairs"""
-    xeps = min(diff(x)) / 5.
-    if xmin is None:
-        xmin = min(x)
-    else:
-        if xmin < min(x) and e0 > min(x):
-            xmin = xmin + e0
-        if xmin < min(x):
-            xmin = min(x)
-    if xmax is None:
-        xmax = max(x)
-    else:
-        if xmax < min(x) and e0 > min(x):
-            xmax = xmax + e0
-        if xmax > max(x):
-            xmax = max(x)
-    xmax = min(max(x), xmax)
+    xeps = min(np.diff(x)) / 5.
+    if xmin is None:  xmin = min(x)
+    xmin = max(min(x), xmin)
 
+    if xmax is None:  xmax = max(x)
+    xmax = min(max(x), xmax)
     i0 = index_of(x, xmin + xeps)
     i1 = index_nearest(x, xmax + xeps) + 1
 
@@ -207,7 +197,6 @@ def extend_plotrange(x, y, e0=0, xmin=None, xmax=None, extend=0.10):
              max(xspan) + extend * xrange,
              min(yspan) - extend * yrange,
              max(yspan) + extend * yrange)
-
 
 
 from . import plotly_xafsplots
