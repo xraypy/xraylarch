@@ -15,9 +15,11 @@ from larch.xafs.xafsutils import guess_energy_units
 
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, get_icon,
                          SimpleText, pack, Button, HLine, Choice, Check,
-                         GridPanel, CEN, RIGHT, LEFT, plotlabels,
+                         GridPanel, CEN, RIGHT, LEFT,
                          get_zoomlimits, set_zoomlimits,
                          get_panel_plot_config, get_markercolors)
+
+from larch.plot import plotlabels_wx as plotlabels
 
 from larch.utils.physical_constants import ATOM_NAMES
 from larch.wxlib.plotter import last_cursor_pos, set_plotwindow_title

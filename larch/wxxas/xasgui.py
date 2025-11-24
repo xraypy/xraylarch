@@ -11,7 +11,7 @@ from pathlib import Path
 from importlib import import_module
 from threading import Thread
 import numpy as np
-
+import h5py
 from functools import partial
 
 from pyshortcuts import uname, fix_varname, fix_filename, get_cwd
@@ -35,7 +35,9 @@ from larch.utils.strutils import (file2groupname, unique_name,
 from larch.larchlib import read_workdir, save_workdir, read_config, save_config
 
 from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
-                         SpecfileImporter, XasImporter, FileCheckList,
+                         SpecfileImporter, XasImporter,
+                         #HDF5DataFileFrame,
+                         FileCheckList,
                          FloatCtrl, FloatSpin, SetTip, get_icon, SimpleText,
                          TextCtrl, pack, Button, Popup, HLine, FileSave,
                          FileOpen, Choice, Check, MenuItem, HyperText,
@@ -409,6 +411,7 @@ class LarixFrame(wx.Frame):
 
         self.with_wx_inspect = with_wx_inspect
         self.last_col_config = {}
+        self.last_hdf5_config = {'min_length': 4, 'array_shope': '1d'}
         self.last_spec_config = {}
 
         self.last_athena_file = None
@@ -1491,12 +1494,29 @@ before clearing"""
         elif is_larch_session_file(fullpath):
             self.onLoadSession(path=fullpath)
 
-        # default to Column File
+        # check for simple HDF5 (should be improved!!)
+        elif h5py.is_hdf5(fullpath):
+            self.show_subframe('read_hdf5', None, # HDF5DataFileFrame,
+                               filename=fullpath,
+                               config=self.last_hdf5_config,
+                               _larch=self.larch_buffer.larchshell,
+                               read_ok_cb=self.onReadHDF5_OK)
+
+        # default to ASCII Column File
         else:
-            self.show_subframe('readfile', ColumnDataFileFrame, filename=fullpath,
+            self.show_subframe('readfile', ColumnDataFileFrame,
+                               filename=fullpath,
                                config=self.last_col_config,
                                _larch=self.larch_buffer.larchshell,
                                read_ok_cb=self.onRead_OK)
+
+    def onReadHDF5_OK(self, script, path, arraylist, config=None):
+        """read 1d datasets from HDF5 files, with a minimum length of 4 datapoints"""
+        self.larch.eval("_specfile = specfile('{path:s}')".format(path=path))
+        dgroup = None
+        fname = Path(path).name
+        print("Read data from hdf5 file ", path, arraylist, script)
+
 
     def onReadSpecfile_OK(self, script, path, scanlist, config=None):
         """read groups from a list of scans from a specfile"""

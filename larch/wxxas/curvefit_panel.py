@@ -1444,10 +1444,8 @@ class CurveFitPanel(TaskPanel):
                             xmax=opts['xmax'])
         dgroup.journal.add_ifnew('curvefit_setup', curvefit_opts)
 
-        cmd = "plot_curvefit"
-        args = ['{gname}', "show_init=%s" % (show_init)]
-        cmd = "%s(%s)" % (cmd, ', '.join(args))
-        self.larch_eval(cmd.format(**opts))
+        cmd = f"plot_curvefit({opts['gname']}, show_init={show_init})"
+        self.larch_eval(cmd)
         self.controller.set_focus()
 
     def addModel(self, event=None, model=None, prefix=None, isbkg=False, opts=None):

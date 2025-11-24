@@ -14,11 +14,12 @@ from larch.utils import path_split
 
 from larch.wxlib import (GridPanel, FloatCtrl, FloatSpin,
                          FloatSpinWithPin, SimpleText, Choice, SetTip,
-                         Button, HLine, LEFT, pack,
-                         plotlabels, get_font, FRAMESTYLE, get_zorders,
+                         Button, HLine, LEFT, pack, get_font,
+                         FRAMESTYLE, get_zorders,
                          get_panel_plot_config, set_panel_plot_config,
                          get_markercolors, set_plotwindow_title)
 
+from larch.plot import plotlabels_wx as plotlabels, set_label_weight
 from larch.xafs import etok, ktoe, find_energy_step
 from larch.utils.physical_constants import ATOM_SYMS
 from larch.math import smooth
@@ -1390,7 +1391,7 @@ class DeglitchFrame(wx.Frame):
         ylabel =  {'mu': plotlabels.mu,
                    'norm': plotlabels.norm,
                    'chie':  plotlabels.chie,
-                   'chiew': plotlabels.chiew.format(1),
+                   'chiew': set_label_weight(plotlabels.chiew, 1),
                    }.get(plottype, plotlabels.norm)
 
         dgroup.plot_xlabel = xlabel

@@ -16,8 +16,9 @@ from larch.xafs.xafsutils import guess_energy_units
 from larch.xafs.pre_edge import find_e0
 
 from larch.wxlib import (FloatSpin, SimpleText, pack, Button, HLine,
-                         Choice, Check, RIGHT, LEFT, plotlabels)
+                         Choice, Check, RIGHT, LEFT)
 
+from larch.plot import plotlabels_wx as plotlabels
 from .xas_dialogs import EnergyUnitsDialog
 from .taskpanel import TaskPanel, autoset_fs_increment
 from .config import (make_array_choice, EDGES, ATSYMS, PREEDGE_FORMS,

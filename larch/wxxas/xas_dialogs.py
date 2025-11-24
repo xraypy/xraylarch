@@ -9,8 +9,10 @@ from wxmplot import PlotPanel
 
 from larch.wxlib import (GridPanel, FloatCtrl, set_color, SimpleText,
                          Choice, Check, Button, HLine, OkCancel, LEFT,
-                         pack, plotlabels, ReportFrame, DictFrame,
+                         pack, ReportFrame, DictFrame,
                          FileCheckList, get_font, get_plot_config)
+
+from larch.plot import plotlabels_wx as plotlabels, set_label_weight
 from larch.utils import time_ago
 from larch.utils.physical_constants import DEG2RAD, PLANCK_HC
 
@@ -549,7 +551,7 @@ class LoadSessionDialog(wx.Frame):
             xplot = getattr(grp, 'k', xdef)
             yplot = getattr(grp, 'chi', xdef)
             yplot = yplot*xplot*xplot
-            xlabel = plotlabels.chikw.format(2)
+            xlabel = set_label_weight(plotlabels.chikw, 2)
 
         if len(yplot) > 1:
             self.plotpanel.plot(xplot, yplot, xlabel=xlabel,

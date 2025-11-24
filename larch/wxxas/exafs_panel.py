@@ -13,8 +13,7 @@ from functools import partial
 from larch.math import index_of
 from larch.wxlib import (FloatCtrl, FloatSpin, GridPanel,
                          SimpleText, pack, Button, HLine, Choice,
-                         TextCtrl, plotlabels, Check, CEN, RIGHT, LEFT)
-
+                         TextCtrl, Check, CEN, RIGHT, LEFT)
 
 from larch.xafs.xafsutils import etok, ktoe, FT_WINDOWS
 from larch.xafs.pre_edge import find_e0
