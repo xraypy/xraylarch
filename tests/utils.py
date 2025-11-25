@@ -18,6 +18,7 @@ from io import StringIO
 def nullfunction(*args, **kwargs):
     pass
 
+os.environ['XRAYLARCH_NO_PLOT'] = '1'
 
 class LarchSession(object):
     def __init__(self):
@@ -27,8 +28,6 @@ class LarchSession(object):
         self.symtable = self._larch.symtable
         setsym = self.symtable.set_symbol
         setsym('testdir',  os.getcwd())
-        setsym('_plotter.no_plotting', True)
-        setsym('_plotter.get_display',  nullfunction)
         self.set_stdout()
 
     def set_stdout(self, fname='_stdout_'):
