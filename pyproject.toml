@@ -39,6 +39,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     ]
 
 dependencies = ["numpy>=2.0",
@@ -93,10 +94,10 @@ Documentation = "https://xraypy.github.io/xraylarch/"
 Tracker = "https://github.com/xraypy/xraylarch/issues"
 
 [project.optional-dependencies]
-dev = ["build", "twine", "pre-commit", "pytest", "pytest-xvfb", "pytest-cov", "coverage"]
+dev = ["build", "twine", "pre-commit", "pytest", "pytest-xvfb;platform_system=='Linux'", "pytest-cov", "coverage"]
 doc = ["Sphinx", "sphinx-copybutton", "sphinxcontrib-video", "sphinxcontrib-bibtex", "sphinxcontrib-argdoc"]
 
-wxgui = ["wxpython>=4.2.2",  "wxmplot>=2025.1.5", "wxutils>=0.3.6", "darkdetect"]
+wxgui = ["wxpython>=4.2.2",  "wxmplot>=2025.1.6", "wxutils>=0.3.6", "darkdetect"]
 
 qtgui = ["PyQt5", "pyqtwebengine", "pyqtgraph"]
 
