@@ -41,6 +41,8 @@ mplconfdir = Path(user_larchdir, 'matplotlib').as_posix()
 mkdir(mplconfdir)
 os.environ['MPLCONFIGDIR'] = mplconfdir
 
+
+
 from matplotlib.axes import Axes
 HIST_DOC = Axes.hist.__doc__
 
@@ -456,10 +458,11 @@ class ImageDisplay(ImageFrame):
 def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
                 wintitle=None, xrf=False, image=False, stacked=False,
                 theme=None, linewidth=None, markersize=None,
-                show_grid=None, show_fullbox=None, height=None,
-                width=None):
+                show_grid=None, show_fullbox=None, height=None, width=None):
     """make a plotter"""
-    # global PLOT_DISPLAYS, IMG_DISPlAYS
+    if os.environ.get('XRAYLARCH_NO_PLOT', '0').lower() in ('1', 'true', 'yes'):
+        return
+
     if  hasattr(_larch, 'symtable'):
         if (getattr(_larch.symtable._sys.wx, 'wxapp', None) is None or
             getattr(_larch.symtable._plotter, 'no_plotting', False)):
@@ -617,7 +620,7 @@ def xrf_plot(x=None, y=None, mca=None, win=1, new=True, as_mca2=False, _larch=No
     plotter = get_display(wxparent=wxparent, win=win, size=size,
                           _larch=_larch, wintitle=wintitle, xrf=True)
     if plotter is None:
-        returne
+        return
     plotter.Raise()
     if x is None:
         return
@@ -729,7 +732,8 @@ def redraw_plot(win=1, xrf=False, stacked=False, size=None, wintitle=None,
     plotter = get_display(wxparent=wxparent, win=win, size=size,
                           xrf=xrf, stacked=stacked,
                           wintitle=wintitle,  _larch=_larch)
-    plotter.panel.unzoom_all()
+    if plotter is not None:
+        plotter.panel.unzoom_all()
 
 
 def update_trace(x, y, trace=1, win=1, _larch=None, wxparent=None,
@@ -787,7 +791,7 @@ def newplot(x, y, win=1, _larch=None, wxparent=None,  size=None, wintitle=None,
 
     See Also: plot, oplot
     """
-    _plot(x, y, win=win, size=size, new=True, _larch=_larch,
+    plot(x, y, win=win, size=size, new=True, _larch=_larch,
           wxparent=wxparent, wintitle=wintitle, **kws)
 
 def plot_text(text, x, y, win=1, side=None, yaxes=1, size=None,
@@ -1097,7 +1101,7 @@ def contour(map, x=None, y=None, _larch=None, **kws):
     map: 2-dimensional array for map
     """
     kws.update(dict(style='contour'))
-    _imshow(map, x=x, y=y, _larch=_larch, **kws)
+    imshow(map, x=x, y=y, _larch=_larch, **kws)
 
 def save_plot(fname, dpi=300, format=None, win=1, _larch=None, wxparent=None,
               size=None, facecolor='w', edgecolor='w', quality=90,
