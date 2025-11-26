@@ -1,4 +1,4 @@
-name: Test with Ubuntu, Conda Python 3.10 through 3.13
+name: Ubuntu, Conda Python 3.10 through 3.13
 
 on:
   push:

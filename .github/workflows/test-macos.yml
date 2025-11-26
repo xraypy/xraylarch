@@ -1,4 +1,4 @@
-name: Test with MacOS, Conda Python 3.10 through 3.13
+name: MacOS, Conda Python 3.10 through 3.13
 
 on:
   push:
@@ -34,7 +34,6 @@ jobs:
       - name: Install xraylarch and other dependencies with pip
         run: |
           python -m pip install --upgrade pip
-          python -m pip install setuptools setuptools-scm codecov pytest pytest-cov coverage
           pip install ".[all]"
       - name: Run test suite
         run: |
