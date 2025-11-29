@@ -44,9 +44,11 @@ def get_markercolors(trace=1, **kws):
     return '#AA0000', '#99887780'
 
 if HAS_WXPYTHON:
-    from larch.wxlib.plotter import (get_display, plot, oplot,  fitplot,
-                                     plot_marker, plot_axvline, imshow,
-                                     get_zorders,  get_markercolors)
+    from larch.wxlib.plotter import (get_display, plot, oplot,
+                                     fitplot, plot_text, plot_arrow,
+                                     plot_marker, plot_axvline,
+                                     imshow, get_zorders,
+                                     get_markercolors)
 
 def redraw(win=1, xmin=None, xmax=None, ymin=None, ymax=None,
            dymin=None, dymax=None,

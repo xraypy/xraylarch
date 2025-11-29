@@ -279,7 +279,7 @@ def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
 
     if with_deriv:
         fig.add_plot(dgroup.energy, dgroup.dmude+offset, label=f"{ylabel} (deriv)", side='right')
-        fig.fig.update_yaxis(title_text=plotlabels.dmude, secondary_y=True)
+
     else:
         if not show_norm and show_pre:
             fig.add_plot(dgroup.energy, dgroup.pre_edge+offset, label='pre_edge')
