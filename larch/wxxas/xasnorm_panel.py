@@ -619,6 +619,8 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
                     if hasattr(grp, key):
                         setattr(grp, key, val)
                 self.process(grp, force=True)
+        self.process(dgroup, force=True)
+
 
     def onAuto_XASE0(self, evt=None):
         if evt.IsChecked():
@@ -633,6 +635,7 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         dgroup = self.controller.get_group()
         if dgroup is None:
             return
+        self.update_config({'auto_step': evt.IsChecked()})
         if evt.IsChecked():
             self.process(dgroup=dgroup)
             self.update_config({'edge_step': dgroup.edge_step})
