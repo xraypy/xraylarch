@@ -31,6 +31,8 @@ jobs:
           conda list
       - name: Install xraylarch and other dependencies with pip
         run: |
+          pip install wxmplot
+          pip install larixite
           pip install ".[larix]"
       - name: Run test suite
         run: |
