@@ -27,10 +27,11 @@ jobs:
       - name: Install conda dependencies
         run: |
           printenv
-          conda install -y -c conda-forge python=${{ matrix.python-version }} "numpy>=2.0" "scipy>=1.15" "matplotlib>=3.9" "h5py>=3.10" "wxpython>=4.2" scikit-learn jupyter pytest pytest-cov coverage codecov plotly bokeh monty>=2025.1.9 pymatgen>=2025.6.14
+          conda install -y -c conda-forge python=${{ matrix.python-version }} "numpy>=2.0" "scipy>=1.15" "matplotlib>=3.9" "h5py>=3.10" "wxpython>=4.2" scikit-learn jupyter pytest pytest-cov coverage codecov plotly bokeh  pymatgen==2025.6.14  mp-api>=0.45.6   emmet-core>=0.84.9
+          conda list
       - name: Install xraylarch and other dependencies with pip
         run: |
-          pip install ".[all]"
+          pip install ".[larix]"
       - name: Run test suite
         run: |
           cd tests
