@@ -1044,12 +1044,11 @@ class FeffitPanel(TaskPanel):
 
 
     def process(self, dgroup=None, **kws):
-        # # print("Feffit Panel Process ", dgroup, time.ctime())
         if dgroup is None:
             dgroup = self.controller.get_group()
 
         conf = self.get_config(dgroup=dgroup)
-        # print(f"Feffit Process Get Config conf {conf.keys()} / {kws=}")
+        # print(f"Feffit Process Get Config conf {dgroup=} {conf.keys()} / {kws=}")
         conf.update(kws)
 
         if self.params_need_update:
@@ -1222,7 +1221,6 @@ class FeffitPanel(TaskPanel):
                     self.larch.eval(f"{dataset_name}.set_datagroup({dgroup.groupname})")
                     dataset = getattr(self.larch.symtable, dataset_name, None)
                     dgroup = dataset.data
-
         opts = self.process(dgroup)
         opts.update(**kws)
 
@@ -1240,7 +1238,11 @@ class FeffitPanel(TaskPanel):
         if refine_bkg and hasattr(dataset, 'data_rebkg'):
             data_name =  dataset_name + '.data_rebkg'
 
-        exafs_conf = self.parent.get_nbpage('exafs')[1].read_form()
+        try:
+            exafs_conf = self.parent.get_nbpage('exafs')[1].read_form()
+        except:
+            exafs_conf = {'plot_rmax': 10}
+
         opts['plot_rmax'] = exafs_conf['plot_rmax']
         groupname = getattr(dgroup, 'groupname', 'unknown')
         cmds = ["#### plot ",
@@ -1267,6 +1269,7 @@ class FeffitPanel(TaskPanel):
         self.plot_feffit_result(dataset_name, topwin=topwin, ftargs=ftargs, **opts)
 
     def plot_feffit_result(self, dataset_name, topwin=None, ftargs=None, **kws):
+        # print(f' plot_feffit {self.title=}')
         self.controller.set_datatask_name(self.title)
 
         if isValidName(dataset_name):
@@ -1338,10 +1341,12 @@ class FeffitPanel(TaskPanel):
             if dgroup is not None:
                 if has_data:
                     cmds.append(f"{pcmd}({data_name:s}, label='data'{pextra}, title='{title}'{extra})")
-                    extra = overplot
-                if dataset.model is not None:
-                    cmds.append(f"{pcmd}({model_name:s}, label='model'{pextra}{extra})")
-                    extra = overplot
+                    cmds.append(f"{pcmd}({model_name:s}, label='model'{pextra}{overplot})")
+                else:
+                    model_label = 'path sum'
+                    title = 'Sum of Paths'
+                    cmds.append(f"{pcmd}({model_name:s}, label='path_sum'{pextra}, title='{title}'{extra})")
+                extra = overplot
             elif dataset.model is not None:
                 cmds.append(f"{pcmd}({model_name:s}, label='Path sum'{pextra}, title='sum of paths'{extra})")
                 extra = overplot
@@ -1391,16 +1396,15 @@ class FeffitPanel(TaskPanel):
         feffpaths = deepcopy(getattr(self.larch.symtable, '_feffpaths', {}))
         self.paths_data = {}
         for path in feffpaths.values():
-            self.add_path(path.filename, feffpath=path, resize=False)
+            print("RESET PATH ", path)
+            self.add_path(path.filename, fpath=path, resize=False)
 
         self.get_pathpage('parameters').Rebuild()
         self.resetting = False
         self.params_need_update = True
 
-
     def add_path(self, filename, pathinfo=None, feffpath=None, resize=True):
         """ add new path to cache  """
-
         if pathinfo is None and feffpath is None:
             raise ValueError("add_path needs a Feff Path or Path information")
         self.params_need_update = True
@@ -1415,8 +1419,7 @@ class FeffitPanel(TaskPanel):
         if feffcache is None:
             raise ValueError("cannot get feff cache ")
 
-        geomstre = None
-        # print(f"Add Path {pathinfo=}, {feffpath=}")
+        geomstr = None
         if pathinfo is not None:
             absorber = pathinfo.absorber
             shell = pathinfo.shell
@@ -1426,6 +1429,7 @@ class FeffitPanel(TaskPanel):
             if hasattr(pathinfo, 'atoms'):
                 geom = pathinfo.atoms
             geomstr = pathinfo.geom      # '[Fe] > O > [Fe]'
+            geometry = pathinfo.geometry
             par_amp = par_e0 = par_delr = par_sigma2 = par_third = par_ei = ''
 
         if feffpath is not None:
@@ -1442,6 +1446,7 @@ class FeffitPanel(TaskPanel):
                 geomstr.append(w)
             geomstr.append(geomstr[0])
             geomstr = ' > '.join(geomstr)
+            geometry = feffpath.geometry
             par_amp = feffpath.s02
             par_e0 = feffpath.e0
             par_delr = feffpath.deltar
@@ -1488,7 +1493,7 @@ class FeffitPanel(TaskPanel):
 
         pathpanel = FeffPathPanel(self.paths_nb, self, filename,
                                   title, user_label, geomstr,
-                                  feffpath.geometry, absorber, shell, reff,
+                                  geometry, absorber, shell, reff,
                                   nleg, degen, par_amp, par_e0,
                                   par_delr, par_sigma2, par_third,
                                   par_ei)
@@ -2241,7 +2246,11 @@ class FeffitResultFrame(wx.Frame):
         opts['kwindow']  = getattr(trans, 'window')
         opts['topwin'] = self
 
-        exafs_conf = self.feffit_panel.parent.get_nbpage('exafs')[1].read_form()
+        try:
+            exafs_conf = self.feffit_panel.parent.get_nbpage('exafs')[1].read_form()
+        except:
+            exafs_conf = {'plot_rmax': 10}
+
         opts['plot_rmax'] = exafs_conf['plot_rmax']
         self.feffit_panel.plot_feffit_result(f'{result_name}.datasets[0]', **opts)
 
