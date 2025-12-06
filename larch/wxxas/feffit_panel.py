@@ -1,4 +1,5 @@
 import sys
+import time
 import ast
 import shutil
 import string
@@ -652,7 +653,7 @@ class FeffPathPanel(wx.Panel):
 
         wids['pathgeom'].table.data = gdata
         wids['pathgeom'].table.View.Refresh()
-        geom_title = f'Path Geometry: ([{absorber}] = absober)'
+        geom_title = f'Path Geometry: ([{absorber}] = absorber)'
 
         panel.Add(SLabel(title1, size=(325, -1), colour=GUI_COLORS.title_blue),
                   dcol=2,  style=wx.ALIGN_LEFT, newrow=True)
@@ -1048,7 +1049,7 @@ class FeffitPanel(TaskPanel):
             dgroup = self.controller.get_group()
 
         conf = self.get_config(dgroup=dgroup)
-        print(f"Feffit Process Get Config conf {conf.keys()} / {kws=}")
+        # print(f"Feffit Process Get Config conf {conf.keys()} / {kws=}")
         conf.update(kws)
 
         if self.params_need_update:
