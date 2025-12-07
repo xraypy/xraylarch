@@ -1021,17 +1021,20 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
             emin, emax = erange
 
         en_offset = self.get_plot_energy_offset(dgroup)
-
+        plot_voff = self.wids['plot_voff'].GetValue()
         cmds = []
         new = True
-        for gid in group_ids:
+        offset = 0
+        for i, gid in enumerate(group_ids):
             delay_draw = gid !=  last_id
             groupname = self.controller.file_groups[str(gid)]
             dgroup = self.controller.get_group(groupname)
             en_offset = self.get_plot_energy_offset(dgroup)
+            if abs(plot_voff) > 1e-5:
+                offset = 1.e-5*int(1e5*i*plot_voff)
             # print(f"{gid=}, {groupname=}, {delay_draw=}, {en_offset=}")
             cmds.append(f"""plot_mu({groupname}, {show_norm=}, {show_flat=}, {show_deriv=},
-            {title=}, {emin=}, {emax=}, {en_offset=}, {new=}, {delay_draw=}, label='{gid}')""")
+            {title=}, {emin=}, {emax=}, {en_offset=}, {offset=}, {new=}, {delay_draw=}, label='{gid}')""")
             new = False
 
         self.larch.eval( '\n'.join(cmds) )
