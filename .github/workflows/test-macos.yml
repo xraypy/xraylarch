@@ -26,13 +26,15 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install conda dependencies
         run: |
-          conda install -y -c conda-forge python=${{ matrix.python-version }} "numpy>=2.0" "scipy>=1.15" "matplotlib>=3.9" "h5py>=3.10" "wxpython>=4.2" scikit-learn jupyter pytest pytest-cov coverage codecov plotly bokeh  pymatgen==2025.6.14  mp-api>=0.45.6  emmet-core>=0.84.9 setuptools pip
           conda init
-          conda list
           conda activate base
+          conda install -y -c conda-forge python=${{ matrix.python-version }} "numpy>=2.0" "scipy>=1.15" "matplotlib>=3.9" "h5py>=3.10" "wxpython>=4.2" scikit-learn jupyter pytest pytest-cov coverage codecov plotly bokeh  pymatgen==2025.6.14  mp-api>=0.45.6  emmet-core>=0.84.9 setuptools
+          conda list
           which python
       - name: Install xraylarch and other dependencies with pip
         run: |
+          conda activate base
+          which python
           python -m pip install wxmplot
           python -m pip install larixite
           python -m pip install ".[larix]"
