@@ -28,7 +28,7 @@ import lmfit.models as lm_models
 
 from larch import Group, site_config
 from larch.math import index_of
-from larch.fitting import group2params, param
+from larch.fitting import group2params, params2group, param
 from larch.utils.jsonutils import encode4js, decode4js
 from larch.inputText import is_complete
 from larch.utils import mkdir, isValidName
@@ -495,7 +495,14 @@ class FeffitParamsPanel(wx.Panel):
         pargroup = self.feffit_panel.get_paramgroup()
         hashkeys = self.feffit_panel.get_pathkeys()
         params = group2params(pargroup)
-        for pname, par in params.items():
+
+        parnames = self.feffit_panel.get_used_params()
+        for pname in params:
+            if pname not in parnames:
+                parnames.append(pname)
+
+        for pname in parnames:
+            par = params[pname]
             if any([pname.endswith('_%s' % phash) for phash in hashkeys]):
                 continue
             if pname not in self.parwids and not hasattr(par, '_is_pathparam'):
@@ -526,6 +533,7 @@ class FeffitParamsPanel(wx.Panel):
                 pwids.maxval.SetValue(par.max)
             pwids.onVaryChoice()
         self.panel.Update()
+
 
     def onEditParams(self, event=None):
         pargroup = self.feffit_panel.get_paramgroup()
@@ -791,31 +799,7 @@ class FeffitPanel(TaskPanel):
         dgroup = self.controller.get_group()
         if dgroup is None:
             return
-
-        fit_hist = getattr(dgroup, 'feffit_history', None)
-        print("Panel Exposed ", dgroup, fit_hist)
-        params, paths = None, None
-        if isinstance(fit_hist, list):
-            fit_ret = fit_hist[0]
-            try:
-                dset = fit_ret.datasets[0]
-                params = fit_ret.params
-                paths = dset.paths
-            except Exception:
-                pass
-            print('Feffit History: nfit_hist, npaths, nparams = ', len(fit_hist), len(paths), len(params))
-
-        if True: # try:
-            pargroup = self.get_paramgroup()
-            self.params_panel.update()
-            fname = self.controller.filelist.GetStringSelection()
-            gname = self.controller.file_groups[fname]
-            dgroup = self.controller.get_group(gname)
-            if not hasattr(dgroup, 'chi'):
-                self.parent.process_exafs(dgroup)
-            self.fill_form(dgroup)
-        else: # except:
-            print("Cannot Fill feffit panel from group ")
+        self.fill_form(dgroup)
 
     def build_display(self):
         self.paths_nb = flatnotebook(self, {}, on_change=self.onPathsNBChanged,
@@ -1007,12 +991,10 @@ class FeffitPanel(TaskPanel):
             return dconf
         if not hasattr(dgroup, 'config'):
             dgroup.config = Group()
-        #print(f"Get Config dconf {dconf.keys()}")
         conf = getattr(dgroup.config, self.configname, dconf)
         for k, v in dconf.items():
             if k not in conf:
                 conf[k] = v
-        # print(f"Get Config conf {conf.keys()}")
 
         econf = getattr(dgroup.config, 'exafs', {})
         for key in ('fit_kmin', 'fit_kmax', 'fit_dk',
@@ -1057,7 +1039,6 @@ class FeffitPanel(TaskPanel):
             self.params_need_update = False
 
         opts = self.read_form(dgroup=dgroup)
-        # print(f"feffit process : {opts=}")
         if dgroup is not None:
             self.dgroup = dgroup
             for attr in ('fit_kmin', 'fit_kmax', 'fit_dk', 'fit_rmin',
@@ -1105,8 +1086,9 @@ class FeffitPanel(TaskPanel):
     def fill_form(self, dgroup=None, newgroup=False):
         if dgroup is None:
             dgroup = self.controller.get_group()
+        if dgroup is None:
+            return
         conf = self.get_config(dgroup)
-        # print(f"Fill Form {conf=}")
 
         for attr in ('fit_kmin', 'fit_kmax', 'fit_rmin', 'fit_rmax', 'fit_dk'):
             self.wids[attr].SetValue(conf[attr])
@@ -1123,19 +1105,38 @@ class FeffitPanel(TaskPanel):
             if conf['fit_kwstring'] == val:
                 self.wids['fit_kwstring'].SetStringSelection(key)
 
-        try:
-            has_fit_hist = len(dgroup.feffit_history) > 0
-        except:
-            has_fit_hist = getattr(self.larch.symtable, '_feffit_dataset', None) is not None
-        self.wids['show_results'].Enable(has_fit_hist)
+        if not hasattr(dgroup, 'chi'):
+            self.parent.process_exafs(dgroup)
+
+        fit_hist = getattr(dgroup, 'feffit_history', [])
+
+        self.wids['show_results'].Enable(len(fit_hist) > 0)
 
         feffpaths = getattr(self.larch.symtable, '_feffpaths', None)
+
+        if isinstance(fit_hist, list) and len(fit_hist) > 0:
+            last_fit = fit_hist[0]
+
+            dset = last_fit.datasets[0]
+            feffpaths = dset.paths
+            self.get_paramgroup()
+
+            params = deepcopy(last_fit.params)
+            pargroup = deepcopy(last_fit.paramgroup)
+            pargroup.__params__ = params
+            params2group(params, pargroup)
+
+            setattr(self.larch.symtable, '_feffit_params', pargroup)
+            setattr(self.larch.symtable, '_feffpaths', deepcopy(feffpaths))
+            setattr(self.larch.symtable, '_feffit_dataset', deepcopy(dset))
+
         if feffpaths is not None:
             self.reset_paths()
 
         self.params_panel.update()
         self.skip_unused_params()
         self.params_need_update = False
+        self.paths_nb.SetSelection(1)
 
     def read_form(self, dgroup=None):
         "read form, returning dict of values"
@@ -1269,7 +1270,6 @@ class FeffitPanel(TaskPanel):
         self.plot_feffit_result(dataset_name, topwin=topwin, ftargs=ftargs, **opts)
 
     def plot_feffit_result(self, dataset_name, topwin=None, ftargs=None, **kws):
-        # print(f' plot_feffit {self.title=}')
         self.controller.set_datatask_name(self.title)
 
         if isValidName(dataset_name):
@@ -1396,8 +1396,7 @@ class FeffitPanel(TaskPanel):
         feffpaths = deepcopy(getattr(self.larch.symtable, '_feffpaths', {}))
         self.paths_data = {}
         for path in feffpaths.values():
-            print("RESET PATH ", path)
-            self.add_path(path.filename, fpath=path, resize=False)
+            self.add_path(path.filename, feffpath=path, resize=False)
 
         self.get_pathpage('parameters').Rebuild()
         self.resetting = False
@@ -1533,8 +1532,10 @@ class FeffitPanel(TaskPanel):
         if pgroup is None:
             self.larch_eval(COMMANDS['feffit_params_init'])
             pgroup = getattr(self.larch.symtable, '_feffit_params', None)
+
         if not hasattr(self.larch.symtable, '_feffpaths'):
             self.larch_eval(COMMANDS['paths_init'])
+
         return pgroup
 
     def update_params_for_expr(self, expr=None, value=1.e-3,
@@ -1598,7 +1599,6 @@ class FeffitPanel(TaskPanel):
         if self.dgroup is None:
             self.dgroup = self.controller.get_group()
 
-        # self.params_panel.update()
         cmds.extend(self.params_panel.generate_params())
 
         if opts is None:
@@ -1660,21 +1660,21 @@ class FeffitPanel(TaskPanel):
         for i in range(self.paths_nb.GetPageCount()):
             text = self.paths_nb.GetPageText(i).strip()
             path_pages[text] = self.paths_nb.GetPage(i)
-        for title in self.paths_data:
-            if title not in path_pages:
-                continue
-            exprs = path_pages[title].get_expressions()
-            if exprs['use']:
-                for ename, expr in exprs.items():
-                    if ename in ('label', 'use'):
-                        continue
-                    for node in ast.walk(ast.parse(expr)):
-                        if isinstance(node, ast.Name):
-                            sym = node.id
-                            if sym not in used_syms:
-                                used_syms.append(sym)
+        if hasattr(self, 'paths_data'):
+            for title in self.paths_data:
+                if title not in path_pages:
+                    continue
+                exprs = path_pages[title].get_expressions()
+                if exprs['use']:
+                    for ename, expr in exprs.items():
+                        if ename in ('label', 'use'):
+                            continue
+                        for node in ast.walk(ast.parse(expr)):
+                            if isinstance(node, ast.Name):
+                                sym = node.id
+                                if sym not in used_syms:
+                                    used_syms.append(sym)
         return used_syms
-
 
     def skip_unused_params(self):
         # find unused symbols, set to "skip"
@@ -2023,7 +2023,7 @@ class FeffitResultFrame(wx.Frame):
         sizer.Add(sview, (irow, 0), (1, 5), LEFT)
 
         irow += 1
-        title = SimpleText(panel, '[[Variables]]',  font=Font(FONTSIZE+2),
+        title = SimpleText(panel, '[[Parameters]]',  font=Font(FONTSIZE+2),
                            colour=GUI_COLORS.title, style=LEFT)
         sizer.Add(title, (irow, 0), (1, 1), LEFT)
 
