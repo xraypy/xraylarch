@@ -207,9 +207,14 @@ def encode4js(obj):
 
             if classname == 'ParameterGroup':  # save in order of parameter names
                 parnames = dir(obj)
-                for par in obj.__params__.keys():
-                    if par in parnames:
-                        out[par] = encode4js(getattr(obj, par))
+                if hasattr(obj, '__params__'):
+                    for par in obj.__params__.keys():
+                        if par in parnames:
+                            out[par] = encode4js(getattr(obj, par))
+                if hasattr(obj, '_params'):
+                    for par in obj._params.keys():
+                        if par in parnames:
+                            out[par] = encode4js(getattr(obj, par))
             else:
                 for item in dir(obj):
                     try:
