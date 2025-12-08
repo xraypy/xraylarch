@@ -17,6 +17,7 @@ Plotting macros for XAFS data sets and fits
   plot_diffkk()    plots from DIFFKK
  ---------------- -----------------------------------------------------
 """
+import numpy as np
 
 from pathlib import Path
 from matplotlib.ticker import FuncFormatter
@@ -690,7 +691,7 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
     if kweight is None:
         kweight = dataset.transform.kweight
 
-    if isinstance(kweight, (list, tuple, ndarray)):
+    if isinstance(kweight, (list, tuple, np.ndarray)):
         kweight=kweight[0]
 
     title = get_title(dataset, title=title)
