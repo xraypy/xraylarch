@@ -208,7 +208,7 @@ class ParameterGroup(Group):
             self.__name__ = name
         if '_larch' in kws:
             kws.pop('_larch')
-        self.__params__ = Parameters()
+        self._params = Parameters()
         Group.__init__(self)
         self.__exprsave__ = {}
         for key, val in kws.items():
@@ -219,7 +219,7 @@ class ParameterGroup(Group):
             setattr(self, key, val)
 
         for key, val in self.__exprsave__.items():
-            self.__params__[key].expr = val
+            self._params[key].expr = val
 
 
     def __repr__(self):
@@ -237,38 +237,38 @@ class ParameterGroup(Group):
                 if nval is not None:
                     val.value = nval
             skip = getattr(val, 'skip', None)
-            self.__params__.add(name, value=val.value, vary=val.vary,
+            self._params.add(name, value=val.value, vary=val.vary,
                                 min=val.min, max=val.max)
             if val.expr is not None:
-                self.__params__[name]._delay_asteval = True
-                self.__params__[name].expr = val.expr
+                self._params[name]._delay_asteval = True
+                self._params[name].expr = val.expr
 
-            val = self.__params__[name]
+            val = self._params[name]
 
             val.skip = skip
-        elif hasattr(self, '__params__') and not name.startswith('__'):
-            self.__params__._asteval.symtable[name] = val
+        elif hasattr(self, '_params') and not name.startswith('__'):
+            self._params._asteval.symtable[name] = val
         self.__dict__[name] = val
 
     def __delattr__(self, name):
         self.__dict__.pop(name)
-        if name in self.__params__:
-            self.__params__.pop(name)
+        if name in self._params:
+            self._params.pop(name)
 
     def __add(self, name, value=None, vary=True, min=-np.inf, max=np.inf,
               expr=None, stderr=None, correl=None, skip=None):
         if expr is None and isinstance(value, str):
             expr = value
             value = None
-        if self.__params__  is not None:
-            self.__params__.add(name, value=value, vary=vary, min=min, max=max)
+        if self._params  is not None:
+            self._params.add(name, value=value, vary=vary, min=min, max=max)
             if expr is not None:
-                self.__params__[name]._delay_asteval = True
-                self.__params__[name].expr = expr
-            self.__params__[name].stderr = stderr
-            self.__params__[name].correl = correl
-            self.__params__[name].skip = skip
-            self.__dict__[name] = self.__params__[name]
+                self._params[name]._delay_asteval = True
+                self._params[name].expr = expr
+            self._params[name].stderr = stderr
+            self._params[name].correl = correl
+            self._params[name].skip = skip
+            self.__dict__[name] = self._params[name]
 
 
 def param_group(**kws):
@@ -367,11 +367,13 @@ def group2params(paramgroup):
 
 
     if isinstance(paramgroup, ParameterGroup):
-        return paramgroup.__params__
+        return paramgroup._params
 
     params = Parameters()
     if paramgroup is not None:
         for name in dir(paramgroup):
+            if name in ('_params', '__params__'):
+                continue
             par = getattr(paramgroup, name)
             if getattr(par, 'skip', None) not in (False, None):
                 continue
@@ -394,7 +396,7 @@ def params2group(params, paramgroup):
     """fill Parameter objects in paramgroup with
     values from lmfit.Parameters
     """
-    _params = getattr(paramgroup, '__params__', None)
+    _params = getattr(paramgroup, '_params', None)
     for name, param in params.items():
         this = getattr(paramgroup, name, None)
         if isParameter(this):
@@ -417,7 +419,7 @@ def minimize(fcn, paramgroup, method='leastsq', args=None, kws=None,
     wrapper around lmfit minimizer for Larch
     """
     if isinstance(paramgroup, ParameterGroup):
-        params = paramgroup.__params__
+        params = paramgroup._params
     elif isgroup(paramgroup):
         params = group2params(paramgroup)
     elif isinstance(Parameters):
