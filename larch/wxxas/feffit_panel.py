@@ -20,7 +20,7 @@ import wx.grid as wxgrid
 import wx.dataview as dv
 
 from pyshortcuts import uname, fix_varname, fix_filename, gformat
-from lmfit import Parameter
+from lmfit import Parameter, Parameters
 from lmfit.model import (save_modelresult, load_modelresult,
                          save_model, load_model)
 
@@ -33,7 +33,7 @@ from larch.utils.jsonutils import encode4js, decode4js
 from larch.inputText import is_complete
 from larch.utils import mkdir, isValidName
 from larch.io.export_modelresult import export_modelresult
-from larch.xafs import feffit_report, feffpath, propagate_uncertainties
+from larch.xafs import feffit_report, feffpath, feffit_dataset, propagate_uncertainties
 from larch.xafs.feffdat import FEFFDAT_VALUES
 from larch.xafs.xafsutils import FT_WINDOWS
 
@@ -145,6 +145,8 @@ _feffit_dataset = feffit_dataset(data={groupname:s}, transform={trans:s},
                                  refine_bkg={refine_bkg},
                                  paths={paths:s})
 _feffit_dataset.model = ff2chi({paths:s}, paramgroup=_feffit_params)
+# save initial model for this dataset
+{groupname:s}.feffit_model = (deepcopy(_feffpaths), deepcopy(_feffit_params), deepcopy(_feffit_trans))
 """
 
 COMMANDS['ff2chi_nodata']   = """# sum paths using a list of paths and a group of parameters
@@ -728,7 +730,7 @@ class FeffPathPanel(wx.Panel):
         result = self.feffit_panel.update_params_for_expr(expr, **opts)
         if result:
             pargroup = self.feffit_panel.get_paramgroup()
-            _eval = pargroup.__params__._asteval
+            _eval = pargroup._params._asteval
             try:
                 value = _eval.eval(expr, show_errors=False, raise_errors=False)
                 if value is not None:
@@ -770,7 +772,7 @@ class FeffPathPanel(wx.Panel):
 
     def update_values(self):
         pargroup = self.feffit_panel.get_paramgroup()
-        _eval = pargroup.__params__._asteval
+        _eval = pargroup._params._asteval
         for par in ('amp', 'e0', 'delr', 'sigma2', 'third', 'ei'):
             expr = self.wids[par].GetValue().strip()
             if len(expr) > 0:
@@ -1113,22 +1115,32 @@ class FeffitPanel(TaskPanel):
         self.wids['show_results'].Enable(len(fit_hist) > 0)
 
         feffpaths = getattr(self.larch.symtable, '_feffpaths', None)
+        pargroup, dset = None, None
 
-        if isinstance(fit_hist, list) and len(fit_hist) > 0:
+        last_model = getattr(dgroup, 'feffit_model', None)
+        if last_model is not None:
+            # use last model
+            feffpaths, pargroup, trans = dgroup.feffit_model
+            dset = feffit_dataset(data=dgroup, transform=trans,
+                                 refine_bkg=False, paths=list(feffpaths.values()))
+
+        elif isinstance(fit_hist, list) and len(fit_hist) > 0:
             last_fit = fit_hist[0]
-
             dset = last_fit.datasets[0]
-            feffpaths = dset.paths
+            feffpaths = deepcopy(dset.paths)
             self.get_paramgroup()
 
             params = deepcopy(last_fit.params)
             pargroup = deepcopy(last_fit.paramgroup)
-            pargroup.__params__ = params
+            pargroup._params = params
             params2group(params, pargroup)
 
+        if pargroup is not None:
             setattr(self.larch.symtable, '_feffit_params', pargroup)
-            setattr(self.larch.symtable, '_feffpaths', deepcopy(feffpaths))
-            setattr(self.larch.symtable, '_feffit_dataset', deepcopy(dset))
+        if feffpaths is not None:
+            setattr(self.larch.symtable, '_feffpaths', feffpaths)
+        if dset is not None:
+            setattr(self.larch.symtable, '_feffit_dataset', dset)
 
         if feffpaths is not None:
             self.reset_paths()
@@ -1543,7 +1555,14 @@ class FeffitPanel(TaskPanel):
         if expr is None:
             return
         pargroup = self.get_paramgroup()
-        symtable = pargroup.__params__._asteval.symtable
+        if hasattr(pargroup, '__params__'):
+            symtable = pargroup.__params__._asteval.symtable
+        elif hasattr(pargroup, '_params'):
+            symtable = pargroup._params._asteval.symtable
+        else:
+            pargroup._params = Parameters()
+            symtable = pargroup._params._asteval.symtable
+
         extras= ''
         if minval is not None:
             extras = f', min={minval}'
@@ -1649,7 +1668,14 @@ class FeffitPanel(TaskPanel):
                                                   refine_bkg=opts['refine_bkg'])
                         )
         cmds.append('# end of build model')
-        self.larch_eval("\n".join(cmds))
+        cmds = "\n".join(cmds)
+        self.larch_eval(cmds)
+
+        # _paths = self.larch.symtable._feffpaths
+        # _params = self.larch.symtable._feffit_params
+        # _ftrans = self.larch.symtable._feffit_trans
+        # print("Set Feffit Model ", self.dgroup)
+        # self.dgroup.feffit_model = (deepcopy(_paths), deepcopy(_params), deepcopy(_ftrans))
         return opts
 
 
