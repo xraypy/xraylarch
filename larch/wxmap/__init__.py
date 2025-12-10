@@ -1,5 +1,5 @@
 from ..wxlib import (gui_utils, ParameterPanel, PeriodicTablePanel,
-                     _newplot, _plot)
+                     newplot, plot)
 
 from ..wxlib.xrfdisplay import XRFDisplayFrame
 
