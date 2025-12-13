@@ -382,6 +382,7 @@ def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
         chie = (mu - dgroup.bkg)/max(1.e-8, dgroup.edge_step)
 
     ylabel = plotlabels.chie
+    kweight = get_kweight(dgroup, kweight)
     if abs(eweight) > 1.e-2:
         chie *= (dgroup.energy-e0)**(eweight)
         ylabel = set_label_weight(plotlabels.chiew, kweight)
@@ -506,6 +507,8 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
         return
 
     kweight = get_kweight(dgroup, None)
+    if kweight is None:
+        kweight = 2
 
     if new:
         title = get_title(dgroup, title=title)
