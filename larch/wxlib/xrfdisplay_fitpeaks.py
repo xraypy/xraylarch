@@ -116,7 +116,7 @@ xrfmod_fitscript = """
 # run XRF fit, save results
 _xrffitresult = _xrfmodel.fit_spectrum({XRFGROUP}.workmca, energy_min={emin:.2f}, energy_max={emax:.2f},
                                        fit_toler={fit_toler:.6g}, fit_step={fit_step:.6g}, max_nfev={max_nfev:d})
-_xrfresults.insert(0, _xrffitresult)
+{XRFRESULTS}.insert(0, _xrffitresult)
 ########
 """
 
@@ -125,7 +125,7 @@ xrfmod_matrix = "_xrfmodel.set_matrix('{name:s}', {thick:.5f}, density={density:
 xrfmod_pileup = "_xrfmodel.add_pileup(scale={scale:.3f}, vary={vary:s})"
 xrfmod_escape = "_xrfmodel.add_escape(scale={scale:.3f}, vary={vary:s})"
 
-xrfmod_savejs = "_xrfresults[{nfit:d}].save('{filename:s}')"
+xrfmod_savejs = "{XRFRESULTS}[{nfit:d}].save('{filename:s}')"
 
 xrfmod_elems = """
 # add elements
@@ -186,7 +186,7 @@ class FitSpectraFrame(wx.Frame):
 
         self.xrfresults = symtable.get_symbol(XRFRESULTS_GROUP)
         xrfgroup = symtable.get_group(XRFGROUP)
-        mcagroup = getattr(xrfgroup, '_mca')
+        mcagroup = getattr(xrfgroup, 'mca')
         self.mca = getattr(xrfgroup, mcagroup)
         self.mcagroup = f'{XRFGROUP}.{mcagroup}'
 
@@ -1278,13 +1278,14 @@ class FitSpectraFrame(wx.Frame):
 
     def plot_model(self, model_spectrum=None, init=False, with_comps=False,
                    label=None):
-        conf = self.parent.conf
-
+        ppanel = self.parent.plotpanel
+        # print(f"plot_model {ppanel=}")
+        conf = ppanel.conf
+        colors = self.parent.colors
         plotkws = {'linewidth': 2.5, 'delay_draw': True, 'grid': False,
                    'ylog_scale': self.parent.ylog_scale, 'show_legend': False,
                    'fullbox': False}
 
-        ppanel = self.parent.panel
         ppanel.conf.reset_trace_properties()
         self.parent.plot(self.mca.energy, self.mca.counts, mca=self.mca,
                          xlabel='E (keV)', xmin=0, with_rois=False, **plotkws)
@@ -1295,7 +1296,7 @@ class FitSpectraFrame(wx.Frame):
             label = 'model' if init else 'best fit'
 
         self.parent.oplot(self.mca.energy, model_spectrum,
-                          label=label, color=conf.fit_color, **plotkws)
+                          label=label, color=colors.fit_color, **plotkws)
 
         comp_traces = []
         plotkws.update({'fill': True, 'alpha':0.35, 'show_legend': True})
@@ -1348,12 +1349,12 @@ class FitSpectraFrame(wx.Frame):
 
         fit_script = xrfmod_fitscript.format(group=self.mcagroup,
                                              XRFGROUP=XRFGROUP,
+                                             XRFRESULTS=XRFRESULTS_GROUP,
                                              emin=emin, emax=emax,
                                              fit_toler=fit_tol,
                                              fit_step=fit_step,
                                              max_nfev=max_nfev)
-        # print("-- > ", fit_script)
-
+        # print(" Fit Script -> ", fit_script)
         self._larch.eval(fit_script)
         dgroup = self._larch.symtable.get_group(self.mcagroup)
         self.xrfresults = self._larch.symtable.get_symbol(XRFRESULTS_GROUP)
@@ -1387,6 +1388,7 @@ class FitSpectraFrame(wx.Frame):
                          wildcard=ModelWcards)
         if sfile is not None:
             self._larch.eval(xrfmod_savejs.format(group=self.mcagroup,
+                                                  XRFRESULTS=XRFRESULTS_GROUP,
                                                   nfit=self.nfit,
                                                   filename=sfile))
 
