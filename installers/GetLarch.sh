@@ -19,7 +19,6 @@ cforge_pkgs="python>=3.13.5 mamba=2.1.1 numpy>=2.1.0 scipy>=1.14 matplotlib>=3.9
 ## mkl_fft tomopy
 unset CONDA_EXE CONDA_PYTHON_EXE CONDA_PREFIX PROJ_LIB
 
-
 ## get command line options
 for opt ; do
   option=''
@@ -94,13 +93,16 @@ $prefix/bin/pip install "$larchurl" | tee -a $logfile
 echo "## Creating desktop shortcuts"
 $prefix/bin/larch -m
 
+## create desktop shortcuts
+echo "## Set up initial conda environment for your shell
+$prefix/bin/conda init
+
 echo "##############  " | tee -a $logfile
 echo "##  Larch Installation to $prefix done." | tee -a $logfile
 echo "##  Applications can be run from the Larch folder on your Desktop." | tee -a $logfile
 echo "##  "| tee -a $logfile
-echo "##  To use from a terminal, you may want to add:"  | tee -a $logfile
+echo "##  To use from a terminal, check you $SHELL start up scripts.  You may want to add:"  | tee -a $logfile
 echo "        export PATH=$prefix/bin:\$PATH"  | tee -a $logfile
-echo "##  to your $SHELL startup script."  | tee -a $logfile
 echo "##  "| tee -a $logfile
 echo "##  See GetLarch.log for complete log and error messages" | tee -a $logfile
 echo "##############  " | tee -a $logfile
