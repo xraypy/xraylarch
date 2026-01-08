@@ -132,6 +132,7 @@ class XDIFile(object):
         pxdi = pointer(XDIFileStruct())
 
         xdilib = get_xdilib()
+        # print(f"READ XDI {filename=} , {xdilib=}")
         self.status = xdilib.XDI_readfile(filename.encode(), pxdi)
         if self.status < 0:
             msg =  bytes2str(xdilib.XDI_errorstring(self.status))
@@ -141,7 +142,9 @@ class XDIFile(object):
 
         xdi = pxdi.contents
         for attr in dict(xdi._fields_):
-            setattr(self, attr, getattr(xdi, attr))
+            val = getattr(xdi, attr)
+            setattr(self, attr, val)
+            # print(f" set {attr=} : {val=}")
 
         self.array_labels = tostrlist(xdi.array_labels, self.narrays)
 
@@ -149,6 +152,7 @@ class XDIFile(object):
             ulab = self.user_labels.replace(',', ' ')
             ulabs = [l.strip() for l in ulab.split()]
             self.array_labels[:len(ulabs)] = ulabs
+        # print(f" {self.array_labels=}")
 
         arr_units         = tostrlist(xdi.array_units, self.narrays)
         self.array_units  = []
@@ -159,6 +163,7 @@ class XDIFile(object):
                 unit, addr = [x.strip() for x in unit.split('||', 1)]
             self.array_units.append(unit)
             self.array_addrs.append(addr)
+        # print(f" {self.array_units=} {self.array_addrs=}")
 
         mfams = tostrlist(xdi.meta_families, self.nmetadata)
         mkeys = tostrlist(xdi.meta_keywords, self.nmetadata)
@@ -275,6 +280,19 @@ class PyXDIFile(object):
         self.xdi_pyversion =  __version__
         self.comments = []
         self.data = []
+        self.outer_array = array([])
+        self.outer_breakpts = array([])
+        self.edge = ''
+        self.element = ''
+        self.error_line = ''
+        self.error_lineno = 0
+        self.error_message = ' '
+        self.outer_label = ' '
+        self.extra_version = ''
+        self.xdi_libversion = '1.1.0'
+        self.xdi_version = ''
+        self.status = 1
+        self.dspacing = -1.0
         self.attrs = {}
         self.status = None
         self.user_labels = labels
@@ -307,16 +325,18 @@ class PyXDIFile(object):
             msg = [f'Error reading XDIFile {filename}',
                    'invalid XDI version in fist line']
             raise ValueError('\n'.join(msg))
-
-        self.xdi_version = xdi_version
+        xdi_version_words = [a.strip() for a in xdi_version.split()]
+        self.xdi_version = xdi_version_words[0]
+        if len(xdi_version_words) > 1:
+            self.extra_version = ' '.join(xdi_version_words[1:])
         afile = read_ascii(filename)
 
         self.data = afile.data
         self.array_labels = afile.array_labels
         for attr in self.array_labels:
             setattr(self, attr, getattr(afile, attr))
-        self.array_addrs = [' ']*len(self.array_labels)
-        self.array_units = [' ']*len(self.array_labels)
+        self.array_addrs = ['']*len(self.array_labels)
+        self.array_units = ['']*len(self.array_labels)
         attrs = {'column': {}}
         commentline = None
         for iline, hline in enumerate(afile.header):
@@ -327,11 +347,11 @@ class PyXDIFile(object):
                 continue
             elif hline.startswith('Column.'):
                 colnum, value = hline.split(':', 1)
-                attrs['column'][colnum] = value
+                attrs['column'][colnum.replace('Column.', '')] = value.strip()
                 colnum = int(colnum.replace('Column.', '')) - 1
                 if '#' in value:
                     value = value[:value.find('#')]
-                words = value.strip().split()
+                words = [w.strip() for w in value.split()]
                 if len(words) > 1:
                     units = words[1].strip()
                     if '||' in units:
@@ -341,7 +361,7 @@ class PyXDIFile(object):
             elif hline.startswith('///'):
                 commentline = iline
             elif commentline is None:
-                metaname, value = hline.split(':', 1)
+                metaname, value = [x.strip() for x in hline.split(':', 1)]
                 metaname = metaname.lower()
                 if '.' in metaname:
                     family, field = metaname.split('.', 1)
@@ -358,8 +378,8 @@ class PyXDIFile(object):
                     self.edge = value
                 elif 'element' in field:
                     self.element = value
-                elif 'edge' in field:
-                    self.edge = value
+                elif 'edge_en' in field:
+                    self.edge_energy = value
                 elif 'mono' in family and 'dspacing' in field:
                     self.d_spacing = float(value)
                 elif 'mono' in family and 'd_spacing' in field:
@@ -377,6 +397,8 @@ class PyXDIFile(object):
                 comments.append(hline[1:].strip())
         self.comments = '\n'.join(comments)
         self.attrs = attrs
+        self.path = self.filename
+        self.status = 0
         self._assign_arrays()
 
     def _assign_arrays(self):
@@ -388,7 +410,7 @@ class PyXDIFile(object):
         xname = None
         ix = -1
         self.data = array(self.data)
-
+        self.narrays, self.npts = self.data.shape
         for idx, name in enumerate(self.array_labels):
             dat = self.data[idx,:]
             setattr(self, name, dat)
