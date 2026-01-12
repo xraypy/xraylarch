@@ -65,6 +65,14 @@ def guess_beamline(header=None):
     return GenericBeamlineData
 
 
+def clean_label_line(lastline):
+    for cchars in ('#L', '#C', '#', 'C'):
+        if lastline.startswith(cchars):
+            lastline = lastline[len(cchars):]
+    for badchar in '\t,#@%&"\'':
+        lastline = lastline.replace(badchar, ' ')
+    return lastline
+
 class GenericBeamlineData:
     """
     Generic beamline data file - use as last resort
@@ -94,11 +102,7 @@ class GenericBeamlineData:
         lastline = "# "
         if len(self.headerlines) >= 1:
             lastline = self.headerlines[-1].strip()
-        for cchars in ('#L', '#C', '#', 'C'):
-            if lastline.startswith(cchars):
-                lastline = lastline[len(cchars):]
-        for badchar in '\t,#@%&"\'':
-            lastline = lastline.replace(badchar, ' ')
+        lastline = clean_label_line(lastline)
         return self._set_labels(lastline.split(), ncolumns=ncolumns)
 
     def _set_labels(self, inlabels, ncolumns=None):
@@ -415,6 +419,11 @@ class SSRL_BeamlineData(GenericBeamlineData):
                         self.energy_column = len(labels)
             elif mode == 'search' and line == 'Data:':
                 mode = 'found legend'
+        if len(labels) < 1:
+            lastline = "# "
+            if len(self.headerlines) >= 1:
+                lastline = self.headerlines[-1].strip()
+            labels = clean_label_line(lastline).split()
 
         return self._set_labels(labels, ncolumns=ncolumns)
 
