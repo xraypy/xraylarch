@@ -7,6 +7,7 @@ from ctypes import c_long, c_double, c_char_p, c_void_p, pointer, Structure
 
 __version__ = '1.2.0larch'
 
+from pathlib import Path
 from numpy import array, exp, log, sin, arcsin
 
 from .. import Group
@@ -288,7 +289,7 @@ class PyXDIFile(object):
         self.error_lineno = 0
         self.error_message = ' '
         self.outer_label = ' '
-        self.extra_version = ''
+        self.extra_version = ' '
         self.xdi_libversion = '1.1.0'
         self.xdi_version = ''
         self.status = 1
@@ -354,14 +355,21 @@ class PyXDIFile(object):
                 words = [w.strip() for w in value.split()]
                 if len(words) > 1:
                     units = words[1].strip()
-                    if '||' in units:
-                        unit, addr = [x.strip() for x in units.split('||', 1)]
-                        self.array_addrs[colnum] = addr
+                    if '||' in words:
+                        ibar =  words.index('||')
+                        if ibar > 0 and len(words) > ibar+1:
+                            self.array_addrs[colnum] = words[ibar+1].strip()
+
                     self.array_units[colnum] = units
             elif hline.startswith('///'):
                 commentline = iline
             elif commentline is None:
-                metaname, value = [x.strip() for x in hline.split(':', 1)]
+                if ':' in hline:
+                    metaname, value = [x.strip() for x in hline.split(':', 1)]
+                else:
+                    metaname = '_'
+                    value = hline.strip()
+
                 metaname = metaname.lower()
                 if '.' in metaname:
                     family, field = metaname.split('.', 1)
@@ -392,12 +400,13 @@ class PyXDIFile(object):
         comments = []
         if commentline is not None:
             for hline in afile.header[commentline+1:]:
-                if hline.startswith('----'):
+                if hline.startswith('#----'):
                     break
-                comments.append(hline[1:].strip())
+                comments.append(hline[1:])
         self.comments = '\n'.join(comments)
         self.attrs = attrs
         self.path = self.filename
+        self.filename = Path(self.filename).absolute().name
         self.status = 0
         self._assign_arrays()
 
