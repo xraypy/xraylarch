@@ -595,6 +595,9 @@ class RebinDataFrame(wx.Frame):
             if wname not in ('grouplabel', 'method') and hasattr(wid, 'SetAction'):
                 wid.SetAction(partial(self.on_rebin, name=wname))
 
+        # wids['apply'] = Button(panel, 'Re-bin', size=(150, -1),
+        #                         action=self.on_rebin)
+
         wids['save_as'] = Button(panel, 'Save As New Group: ', size=(150, -1),
                                  action=self.on_saveas)
         SetTip(wids['save_as'], 'Save corrected data as new group')
@@ -636,10 +639,10 @@ class RebinDataFrame(wx.Frame):
         panel.Add(wids['exafs_step'])
         add_text('1/\u212B', newrow=False)
 
-        add_text('Smoothing Method: ', dcol=2)
+        add_text('Smoothing Method: ')
         panel.Add(wids['method'])
-
         # panel.Add(wids['apply'], dcol=2, newrow=True)
+
         panel.Add(wids['save_as'],  dcol=2, newrow=True)
         panel.Add(wids['save_as_name'], dcol=3)
         panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
@@ -697,7 +700,6 @@ class RebinDataFrame(wx.Frame):
         exafs2={exafs2:f}, exafs_kstep={exafs_kstep:f}, method='{method}')""".format(**args)
         self.cmd = cmd
         self.controller.larch.eval(cmd)
-        wids['save_as_name'].SetValue(f'{self.dgroup.filename}_rebin_{method[:3]}')
 
         if hasattr(self.dgroup, 'rebinned'):
             xnew = self.dgroup.rebinned.energy
