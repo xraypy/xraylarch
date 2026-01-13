@@ -323,9 +323,9 @@ class PyXDIFile(object):
                 pass
 
         if xdi_version is None:
-            msg = [f'Error reading XDIFile {filename}',
-                   'invalid XDI version in fist line']
-            raise ValueError('\n'.join(msg))
+            raise ValueError(f'''Error reading XDIFile {filename}:
+invalid XDI version in fist line''')
+
         xdi_version_words = [a.strip() for a in xdi_version.split()]
         self.xdi_version = xdi_version_words[0]
         if len(xdi_version_words) > 1:
@@ -476,12 +476,13 @@ class PyXDIFile(object):
                 self.irefer = self.itrans * exp(-self.murefer)
 
 
-def read_xdi(filename, labels=None):
+def read_xdi(filename, labels=None, use_pyxdi=True):
     """read an XDI File into a Group
 
     Arguments:
        filename (str): name of file to read
        labels (str or None):  string to use for setting array names [None]
+       use_pyxdi (bool): whether to use Python XDI reader instead of C library [True]
 
     Returns:
       Group
@@ -512,21 +513,24 @@ def read_xdi(filename, labels=None):
         read_ascii
 
     """
-    xdif = XDIFile(filename, labels=labels)
-    group = Group()
-    for key, val in xdif.__dict__.items():
-        if not key.startswith('_'):
-            if key in string_attrs:
-                val = tostr(val)
-            setattr(group, key, val)
-    group.__name__ ='XDI file %s' % filename
-    doc = ['%i arrays, %i npts' % (xdif.narrays, xdif.npts)]
-    arr_labels = getattr(xdif, 'array_labels', None)
-    if arr_labels is not None:
-        doc.append("Array Labels: %s" % repr(arr_labels))
-    group.__doc__ = '\n'.join(doc)
+    if use_pyxdi:
+        return PyXDIFile(filename)
+    else:
+        xdif = XDIFile(filename, labels=labels)
+        group = Group()
+        for key, val in xdif.__dict__.items():
+            if not key.startswith('_'):
+                if key in string_attrs:
+                    val = tostr(val)
+                setattr(group, key, val)
+        group.__name__ ='XDI file %s' % filename
+        doc = ['%i arrays, %i npts' % (xdif.narrays, xdif.npts)]
+        arr_labels = getattr(xdif, 'array_labels', None)
+        if arr_labels is not None:
+            doc.append("Array Labels: %s" % repr(arr_labels))
+        group.__doc__ = '\n'.join(doc)
 
-    group.path = filename
-    path, fname = os.path.split(filename)
-    group.filename = fname
-    return group
+        group.path = filename
+        path, fname = os.path.split(filename)
+        group.filename = fname
+        return group
