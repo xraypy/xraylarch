@@ -618,12 +618,14 @@ class ColumnDataFileFrame(wx.Frame) :
         en_units = 'eV' if self.workgroup.datatype == 'xas' else 'unknown'
 
         self.read_ok_cb = read_ok_cb
+
+        ncol, npts = self.workgroup.data.shape
         self.config = dict(xarr=None, yarr1=None, yarr2=None, yop='/',
                            ypop='', monod=3.1355316, en_units=en_units,
                            yerr_op='constant', yerr_val=1, yerr_arr=None,
                            yrpop='', yrop='/', yref1='', yref2='',
                            has_yref=False, dtc_config={}, multicol_config={},
-                           datattype=self.workgroup.datatype)
+                           datattype=self.workgroup.datatype, npts=npts)
         if config is not None:
             self.config.update(config)
 
@@ -967,7 +969,6 @@ class ColumnDataFileFrame(wx.Frame) :
         filename = path.name
         path = path.as_posix()
         reader, text = guess_filereader(path, return_text=True)
-
         if reader == 'read_specfile':
             if not is_specfile(path, require_multiple_scans=True):
                 reader = 'read_ascii'
@@ -993,8 +994,8 @@ class ColumnDataFileFrame(wx.Frame) :
         tmpname = '_tmpfile_'
         read_cmd = "%s = %s('%s')" % (tmpname, reader, path)
         self.reader = reader
-        _larch = self._larch
 
+        _larch = self._larch
         if (not isinstance(_larch, Interpreter) and
             hasattr(_larch, '_larch')):
             _larch = _larch._larch
