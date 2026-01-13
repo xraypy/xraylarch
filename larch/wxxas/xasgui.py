@@ -36,7 +36,6 @@ from larch.larchlib import read_workdir, save_workdir, read_config, save_config
 
 from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
                          SpecfileImporter, XasImporter,
-                         #HDF5DataFileFrame,
                          FileCheckList,
                          FloatCtrl, FloatSpin, SetTip, get_icon, SimpleText,
                          TextCtrl, pack, Button, Popup, HLine, FileSave,
@@ -1495,12 +1494,12 @@ before clearing"""
             self.onLoadSession(path=fullpath)
 
         # check for simple HDF5 (should be improved!!)
-        elif h5py.is_hdf5(fullpath):
-            self.show_subframe('read_hdf5', None, # HDF5DataFileFrame,
-                               filename=fullpath,
-                               config=self.last_hdf5_config,
-                               _larch=self.larch_buffer.larchshell,
-                               read_ok_cb=self.onReadHDF5_OK)
+        # elif h5py.is_hdf5(fullpath):
+        #     self.show_subframe('read_hdf5', None, # HDF5DataFileFrame,
+        #                        filename=fullpath,
+        #                        config=self.last_hdf5_config,
+        #                        _larch=self.larch_buffer.larchshell,
+        #                        read_ok_cb=self.onReadHDF5_OK)
 
         # default to ASCII Column File
         else:
@@ -1813,7 +1812,7 @@ before clearing"""
         config['group'] = groupname
         config['path'] = path
         has_yref = config.get('has_yref', False)
-        # print("onRead_OK ", script.format(**config))
+        # print("onRead_OK ", script, config)
         self.larch.eval(script.format(**config))
 
         if config is not None:
@@ -1955,7 +1954,7 @@ before clearing"""
 
         self.write_message("read %s" % (spath))
         if do_rebin:
-            RebinDataDialog(self, self.controller).Show()
+            RebinDataFrame(self, self.controller).Show()
 
     def install_group(self, groupname, filename=None, source=None, journal=None,
                       process=True, plot='auto'):
