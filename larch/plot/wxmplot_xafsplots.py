@@ -650,11 +650,11 @@ def plot_wavelet(dgroup, show_mag=True, show_real=False, show_imag=False,
                 ymax=rmax, xlabel=plotlabels.k, ylabel=plotlabels.r,
                 show_axis=True, _larch=_larch)
     if show_mag:
-        _imshow(dgroup.wcauchy_mag, **opts)
+        imshow(dgroup.wcauchy_mag, **opts)
     elif show_real:
-        _imshow(dgroup.wcauchy_real, **opts)
+        imshow(dgroup.wcauchy_real, **opts)
     elif show_imag:
-        _imshow(dgroup.wcauchy_imag, **opts)
+        imshow(dgroup.wcauchy_imag, **opts)
 
 def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
                 show_mag=True, show_real=False, show_imag=False,
