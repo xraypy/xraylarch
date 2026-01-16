@@ -164,31 +164,35 @@ def chir_label(labels, kweight, show_mag=True, show_real=False, show_imag=False)
     return ylab[0]
 
 
-def get_erange(dgroup, emin=None, emax=None, e0=None):
+def get_erange(dgroup, emin, emax, e0=None, extra=10):
     """get absolute emin/emax for data range, allowing using
     values relative to e0.
     """
-    dat_emin = float(min(dgroup.energy)) - 25
-    dat_emax = float(max(dgroup.energy)) + 25
+    dat_emin = float(min(dgroup.energy)) - extra
+    dat_emax = float(max(dgroup.energy)) + extra
+    if emin is None:
+        emin = dat_emin
+    if emax is None:
+        emax = dat_emax
     if e0 is None or e0 < dat_emin or e0 > dat_emax:
         e0 = getattr(dgroup, 'e0', 0.0)
-    if emin is not None:
+    if emin < dat_emin:
         emin = max(emin+e0, dat_emin)
-    if emax is not None:
+    if emax < dat_emin:
         emax = min(emax+e0, dat_emax)
     return emin, emax
 
 def extend_plotrange(x, y, xmin=None, xmax=None, extend=0.10):
     """return plot limits to extend a plot range for x, y pairs"""
     xeps = min(np.diff(x)) / 5.
-    if xmin is None:  xmin = min(x)
+    if xmin is None:
+        xmin = min(x)
     xmin = max(min(x), xmin)
 
     if xmax is None:  xmax = max(x)
     xmax = min(max(x), xmax)
     i0 = index_of(x, xmin + xeps)
     i1 = index_nearest(x, xmax + xeps) + 1
-
     xspan = x[i0:i1]
     xrange = max(xspan) - min(xspan)
     yspan = y[i0:i1]
