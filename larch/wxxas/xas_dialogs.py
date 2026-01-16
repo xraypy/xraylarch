@@ -324,10 +324,10 @@ class LockedSessionDialog(wx.Dialog):
         self.SetFont(get_font())
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
-        title1 = '    Auto-saved Sessions with open Lock Files: '
+        title1 = ' Auto-saved Sessions with open Lock Files: '
 
-        title2 = ' These are auto-saved files from sessions that may have crashed or shut down abruptly.'
-        title3 = ' Or, they might be currently in use by another Larix Process.'
+        title2 = ' These are auto-saved files from sessions that may have crashed or shut down abruptly,'
+        title3 = ' or may be currently in use by another Larix Process.'
         title4 = ' You can Import a Session, Delete the lockfile, or Ignore this message.'
         title5 = ' You can also import auto-saved sessions from the Read Session Files menu'
 
@@ -361,10 +361,19 @@ class LockedSessionDialog(wx.Dialog):
                                              size=(275, -1))
             panel.Add(self.wids[lockfile], newrow=False)
 
+        del_all = Button(panel, ' Delete All Lock Files ', size=(150, -1), action=self.onDelAll)
 
-        panel.Add(OkCancel(panel), dcol=2, newrow=True)
+        panel.Add(del_all, dcol=3, newrow=True)
+        panel.Add(OkCancel(panel), dcol=3, newrow=True)
         panel.pack()
         fit_dialog_window(self, panel)
+
+    def onDelAll(self, event=None):
+        for w in self.wids.values():
+            try:
+                w.SetSelection(2)
+            except:
+                pass
 
     def GetResponse(self, ngroups=None):
         self.Raise()
