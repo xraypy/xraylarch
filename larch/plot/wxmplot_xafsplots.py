@@ -1350,7 +1350,7 @@ def plot_curvefit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     xplot = xplot*1.0
     yplot = yplot*1.0
 
-    emin, emax = get_erange(dgroup, opts['xmin'], opts['xmax'])
+    xmin, xmax = get_erange(dgroup, opts['xmin'], opts['xmax'])
 
     if show_init:
         yfit   = fit.init_fit
