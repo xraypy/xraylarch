@@ -1617,11 +1617,11 @@ class CurveFitPanel(TaskPanel):
         dgroup.curvefit.user_options = {k: v for k, v in user_opts.items()}
         dgroup.curvefit.fitmodel = {'model': deepcopy(model), 'params': deepcopy(params)}
 
-        bkg_comps = user_opts['bkg_components']
+        bkg_components = user_opts['bkg_components']
 
         for comp in model.components:
             self.addModel(model=comp.func.__name__,
-                          prefix=comp.prefix, isbkg=(comp.prefix in bkg_comps),
+                          prefix=comp.prefix, isbkg=(comp.prefix in bkg_components),
                           opts=comp.opts)
 
         for comp in model.components:
@@ -1747,11 +1747,11 @@ class CurveFitPanel(TaskPanel):
             curvefit = dgroup.curvefit
 
             # add bkg_component to saved user options
-            bkg_comps = []
+            bkg_components = []
             for label, comp in self.fit_components.items():
                 if comp.bkgbox.IsChecked():
-                    bkg_comps.append(label)
-            opts['bkg_components'] = bkg_comps
+                    bkg_components.append(label)
+            opts['bkg_components'] = bkg_components
 
             imin, imax = self.get_xranges(dgroup.xplot)
             cmds = [f"## do curvefit for group {gname} / {dgroup.filename}"]
@@ -1791,11 +1791,11 @@ class CurveFitPanel(TaskPanel):
         curvefit = dgroup.curvefit
 
         # add bkg_component to saved user options
-        bkg_comps = []
+        bkg_components = []
         for label, comp in self.fit_components.items():
             if comp.bkgbox.IsChecked():
-                bkg_comps.append(label)
-        opts['bkg_components'] = bkg_comps
+                bkg_components.append(label)
+        opts['bkg_components'] = bkg_components
 
         imin, imax = self.get_xranges(dgroup.xplot)
         self.set_yerror()
