@@ -498,7 +498,6 @@ class PrePeakFitResultFrame(wx.Frame):
                 try:
                     xparams = pkfit.result.params.keys()
                 except Expcetion:
-                    print('   no params')
                     continue
 
                 result = pkfit.result
@@ -970,17 +969,14 @@ class PrePeakPanel(TaskPanel):
             prepeaks = getattr(dgroup, 'prepeaks', None)
             if prepeaks is None:
                 modelresult = getattr(self.larch.symtable, 'peakresult', None)
-                # print("use result from global peakresult ", modelresult)
             else:
                 peakmodel = getattr(prepeaks, 'peakmodel', None)
                 user_opts = getattr(prepeaks, 'user_options', None)
                 if peakmodel is None:
                     modelresult = getattr(prepeaks, 'fit_history', [None])[0]
-                    # print("use modelresult from history ", modelresult)
 
             if modelresult is not None or peakmodel is not None:
                 self.showresults_btn.Enable()
-                # print("-> use model_result ", modelresult, peakmodel, dgroup)
                 self.use_modelresult(modelresult=modelresult, dgroup=dgroup,
                                     fitmodel=peakmodel, user_opts=user_opts)
 
@@ -1480,10 +1476,10 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         dgroup.prepeaks.user_options = {k: v for k, v in user_opts.items()}
         dgroup.prepeaks.peakmodel = {'model': deepcopy(model), 'params': deepcopy(params)}
 
-        bkg_comps = user_opts['bkg_components']
+        bkg_components = user_opts['bkg_components']
         for comp in model.components:
             self.addModel(model=comp.func.__name__,
-                          prefix=comp.prefix, isbkg=(comp.prefix in bkg_comps),
+                          prefix=comp.prefix, isbkg=(comp.prefix in bkg_components),
                           opts=comp.opts)
 
         for comp in model.components:
@@ -1502,7 +1498,6 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                     if wids.maxval is not None:
                         wids.maxval.SetValue(par.max)
 
-        # print("use modelresult -- > fill form ", user_opts)
         self.fill_form(user_opts)
 
 
@@ -1518,7 +1513,6 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
     def build_fitmodel(self, groupname=None):
         """ use fit components to build model"""
         # self.summary = {'components': [], 'options': {}}
-        # print(f"Build Fit Model {groupname=}")
         peaks = []
         cmds = ["## set up pre-edge peak parameters", "peakpars = Parameters()"]
         modcmds = ["## define pre-edge peak model"]
@@ -1536,7 +1530,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                            emax=opts['emax'])
         dgroup.journal.add_ifnew('prepeaks_setup', ppeaks_opts)
 
-        # bkg_comps = []
+        bkg_components = []
         for comp in self.fit_components.values():
             _cen, _amp = None, None
             if comp.usebox is not None and comp.usebox.IsChecked():
@@ -1561,11 +1555,12 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                                                         ', '.join(compargs)))
 
                 modop = "+="
-                # if comp.bkgbox.IsChecked():
-                #     bkg_comps.append(comp.mclass_kws.get('prefix', ''))
+                if comp.bkgbox.IsChecked():
+                    bkg_components.append(comp.mclass_kws.get('prefix', ''))
                 if not comp.bkgbox.IsChecked() and _cen is not None and _amp is not None:
                     peaks.append((_amp, _cen))
 
+        opts['bkg_components'] = bkg_components
         if len(peaks) > 0:
             denom = '+'.join([p[0] for p in peaks])
             numer = '+'.join(["%s*%s "% p for p in peaks])
@@ -1603,13 +1598,13 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             dgroup.journal.add_ifnew('prepeaks_setup', ppeaks_opts)
             ppeaks = dgroup.prepeaks
 
-            # add bkg_component to saved user options
-            bkg_comps = []
+            # add bkg_components to user options
+            bkg_components = []
             for label, comp in self.fit_components.items():
                 if comp.bkgbox.IsChecked():
-                    bkg_comps.append(label)
+                    bkg_components.append(label)
 
-            opts['bkg_components'] = bkg_comps
+            opts['bkg_components'] = bkg_components
             imin, imax = self.get_xranges(dgroup.xplot)
             cmds = ["## do peak fit for group %s / %s " % (gname, dgroup.filename) ]
 
@@ -1664,12 +1659,12 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
 
         ppeaks = dgroup.prepeaks
 
-        # add bkg_component to saved user options
-        bkg_comps = []
+        # add bkg_components to user options
+        bkg_components = []
         for label, comp in self.fit_components.items():
             if comp.bkgbox.IsChecked():
-                bkg_comps.append(label)
-        opts['bkg_components'] = bkg_comps
+                bkg_components.append(label)
+        opts['bkg_components'] = bkg_components
 
         imin, imax = self.get_xranges(dgroup.xplot)
 
