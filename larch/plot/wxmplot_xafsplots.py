@@ -953,14 +953,12 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
         raise ValueError('Group needs prepeaks')
 
     ppeak = dgroup.prepeaks
-    e0 = dgroup.e0
+    emin, emax = get_erange(dgroup, ppeak.emin, ppeak.emax)
 
     yplot = getattr(dgroup, 'yplot', getattr(dgroup, 'ydat', None))
     xplot = getattr(dgroup, 'xplot', getattr(dgroup, 'xdat', None))
 
-
-    px0, px1, py0, py1 = extend_plotrange(xplot, yplot,
-                                          xmin=ppeak.emin, xmax=ppeak.emax)
+    px0, px1, py0, py1 = extend_plotrange(xplot, yplot, xmin=emin, xmax=emax)
     title = "pre_edge baseline\n %s" % dgroup.filename
 
     popts = dict(xmin=px0, xmax=px1, ymin=py0, ymax=py1, title=title,
@@ -970,8 +968,8 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
     popts.update(kws)
 
     if subtract_baseline:
-        xplot = ppeak.energy
-        yplot = ppeak.baseline
+        xplot = 1.0*ppeak.energy
+        yplot = 1.0*ppeak.baseline
         popts['label'] = 'baseline subtracted peaks'
         plot(xplot, yplot, **popts)
     else:
@@ -1029,14 +1027,11 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     xplot_full = 1.0*dgroup.xplot
     yplot_full = 1.0*dgroup.yplot
 
-    if show_init:
-        yfit   = pkfit.init_fit
-        ycomps = None #  pkfit.init_ycomps
-        ylabel = 'model'
-    else:
-        yfit   = 1.0*result.best_fit
-        ycomps = pkfit.ycomps
-        ylabel = 'best fit'
+    emin, emax = get_erange(dgroup, opts['emin'], opts['emax'])
+
+    yfit   = 1.0*result.init_fit if show_init else 1.0*result.best_fit
+    ycomps = None if show_init else pkfit.ycomps
+    ylabel = 'model' if show_init else 'best fit'
 
     baseline = 0.*yplot
     if ycomps is not None:
@@ -1056,10 +1051,9 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
         xplot_full = 1.0*xplot
         plotopts['ylabel'] = '%s-baseline' % plotopts['ylabel']
 
-    dx0, dx1, dy0, dy1 = extend_plotrange(xplot_full, yplot_full,
-                                          xmin=opts['emin'], xmax=opts['emax'])
-    _1, _2, fy0, fy1 = extend_plotrange(xplot, yfit,
-                                        xmin=opts['emin'], xmax=opts['emax'])
+    dx0, dx1, dy0, dy1 = extend_plotrange(xplot_full, yplot_full, xmin=emin, xmax=emax)
+    _1, _2, fy0, fy1 = extend_plotrange(xplot, yfit, xmin=emin, xmax=emax)
+
     ncolor = 0
     popts = {'win': win, '_larch': _larch}
     plotopts.update(popts)
@@ -1355,8 +1349,8 @@ def plot_curvefit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
         raise ValueError('Cannot get x or y data for fit')
     xplot = xplot*1.0
     yplot = yplot*1.0
-    xplot_full = 1.0*xplot
-    yplot_full = 1.0*yplot
+
+    emin, emax = get_erange(dgroup, opts['xmin'], opts['xmax'])
 
     if show_init:
         yfit   = fit.init_fit
@@ -1382,11 +1376,8 @@ def plot_curvefit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
         yfit -= baseline
         plotopts['ylabel'] = '%s-baseline' % plotopts['ylabel']
 
-    dx0, dx1, dy0, dy1 = extend_plotrange(xplot_full, yplot_full,
-                                          xmin=opts['xmin'], xmax=opts['xmax'])
-
-    _1, _2, fy0, fy1 = extend_plotrange(xplot, yfit,
-                                          xmin=opts['xmin'], xmax=opts['xmax'])
+    dx0, dx1, dy0, dy1 = extend_plotrange(xplot, yplot, xmin=xmin, xmax=xmax)
+    _1, _2, fy0, fy1 = extend_plotrange(xplot, yfit, xmin=xmin, xmax=xmax)
 
     ncolor = 0
     popts = {'win': win, '_larch': _larch}
@@ -1400,7 +1391,7 @@ def plot_curvefit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
         dymax += 0.05 * (dymax - dymin)
         dymin -= 0.05 * (dymax - dymin)
     else:
-        plot(xplot_full, yplot_full, new=True, label='data',
+        plot(xplot, yplot, new=True, label='data',
               color=LineColors[0], **plotopts)
         oplot(xplot, yfit, label=ylabel, color=LineColors[1], **plotopts)
         ncolor = 1
