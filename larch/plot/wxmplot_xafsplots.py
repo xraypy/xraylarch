@@ -18,11 +18,8 @@ Plotting macros for XAFS data sets and fits
  ---------------- -----------------------------------------------------
 """
 import numpy as np
-
-from pathlib import Path
 from matplotlib.ticker import FuncFormatter
 
-from larch import Group
 from larch.math import index_of, index_nearest, interp1d
 from larch.xafs import cauchy_wavelet, etok
 
@@ -46,10 +43,9 @@ def get_markercolors(trace=1, **kws):
 
 if HAS_WXPYTHON:
     from larch.wxlib.plotter import (get_display, plot, oplot,
-                                     fitplot, plot_text, plot_arrow,
-                                     plot_marker, plot_axvline,
-                                     imshow, get_zorders,
-                                     get_markercolors)
+                                     fitplot, plot_marker,
+                                     plot_axvline, imshow,
+                                     get_zorders, get_markercolors)
 
 def redraw(win=1, xmin=None, xmax=None, ymin=None, ymax=None,
            dymin=None, dymax=None,
@@ -305,10 +301,7 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, show_ek0=Fa
     opts = dict(win=win, show_legend=True, _larch=_larch)
     plot(dgroup.energy-en_offset, mu+offset, xlabel=plotlabels.energy, ylabel=ylabel,
          title=title, label=label, new=new, xmin=emin, xmax=emax, **opts)
-    ymin, ymax = None, None
 
-    xylims = disp.panel.get_viewlimits()
-    ymin, ymax = xylims[2], xylims[3]
     zorders = get_zorders(disp)
     zbkg = zorders[-1] - 2
     plot(dgroup.energy-en_offset, bkg+offset, zorder=zbkg, label='bkg', **opts)
@@ -382,7 +375,7 @@ def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
         chie = (mu - dgroup.bkg)/max(1.e-8, dgroup.edge_step)
 
     ylabel = plotlabels.chie
-    kweight = get_kweight(dgroup, kweight)
+    kweight = get_kweight(dgroup, 1)
     if abs(eweight) > 1.e-2:
         chie *= (dgroup.energy-e0)**(eweight)
         ylabel = set_label_weight(plotlabels.chiew, kweight)
@@ -1110,9 +1103,9 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
 def _pca_ncomps(result, min_weight=0, ncomps=None):
     if ncomps is None:
         if min_weight > 1.e-12:
-            ncomps = where(result.variances < min_weight)[0][0]
+            ncomps = np.where(result.variances < min_weight)[0][0]
         else:
-            ncomps = argmin(result.ind)
+            ncomps = np.argmin(result.ind)
     return ncomps
 
 
@@ -1160,11 +1153,11 @@ def plot_pca_weights(result, win=1, _larch=None, **kws):
 
     popts.update(kws)
     ncomps = max(1, int(result.nsig))
-    x = 1 + arange(ncomps)
+    x = 1 + np.arange(ncomps)
     y = result.variances[:ncomps]
     plot(x, y, label='significant', **popts)
 
-    xe = 1 + arange(ncomps-1, max_comps)
+    xe = 1 + np.arange(ncomps-1, max_comps)
     ye = result.variances[ncomps-1:ncomps+max_comps]
 
     zorders = get_zorders(disp)
@@ -1174,14 +1167,13 @@ def plot_pca_weights(result, win=1, _larch=None, **kws):
                       color='#B34050', ymin=2e-3*result.variances[ncomps-1]))
     plot(xe, ye, label='not significant', **popts)
 
-    xi = 1 + arange(len(result.ind)-1)
+    xi = 1 + np.arange(len(result.ind)-1)
 
     zorders = get_zorders(disp)
     zind = zorders[-1] + 2
     plot(xi, result.ind[1:], zorder=zind, y2label='Indicator Value',
           label='IND', style='solid', win=win, show_legend=True,
           marker='o', side='right', _larch=_larch)
-
 
 
 def plot_pca_fit(dgroup, win=1, with_components=False, _larch=None, **kws):
@@ -1206,11 +1198,11 @@ def plot_pca_fit(dgroup, win=1, with_components=False, _larch=None, **kws):
     if yplot is None:
         raise ValueError('cannot find y data for PCA plot')
 
-    _fitplot(result.x, yplot, result.yfit,
+    fitplot(result.x, yplot, result.yfit,
              label='data', label2='PCA fit', **popts)
 
     if with_components and disp is not None:
-        disp.panel.oplot(result.x, model.mean, label='mean')
+        disp.panel.oplot(result.x, model.mean, alpha=0.75, label='mean')
         for n in range(len(result.weights)):
             cval = model.components[n]*result.weights[n]
             disp.panel.oplot(result.x, cval, label='Comp #%d' % (n+1))
@@ -1282,7 +1274,7 @@ def plot_feffdat(feffpath, with_phase=True, title=None,
     Arguments
     ----------
      feffpath    feff path as read by feffpath()
-     with_pase   whether to plot phase(k) as well as magnitude [True]
+     with_phase  whether to plot phase(k) as well as magnitude [True]
      title       string for plot title [None, may use filename if available]
      new         bool whether to start a new plot [True]
      delay_draw  bool whether to delay draw until more traces are added [False]
@@ -1385,7 +1377,7 @@ def plot_curvefit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     dymin = dymax = None
     if show_residual:
         popts['stacked'] = True
-        _fitplot(xplot, yplot, yfit, label='data', label2=ylabel, **plotopts)
+        fitplot(xplot, yplot, yfit, label='data', label2=ylabel, **plotopts)
         dy = yfit - yplot
         dymax, dymin = dy.max(), dy.min()
         dymax += 0.05 * (dymax - dymin)
