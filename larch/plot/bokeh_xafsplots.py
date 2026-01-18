@@ -18,15 +18,11 @@ Plotting macros for XAFS data sets and fits
  ---------------- -----------------------------------------------------
 """
 
-import os
 import numpy as np
-import time
 import logging
 from copy import deepcopy
 
-from larch import Group
-from larch.math import index_of
-from larch.xafs import cauchy_wavelet, etok
+from larch.xafs import etok
 
 def nullfunc(*args, **kws):
     pass
@@ -42,12 +38,10 @@ except ImportError:
 
 if HAS_BOKEH:
     from bokeh import plotting as bplot
-    from bokeh.plotting import figure, show
     from bokeh.io import output_notebook, curdoc
     from bokeh.io import show as bokeh_show
 
-    from bokeh.core.properties import field
-    from bokeh.models import ColumnDataSource, LinearAxis, Grid, VSpan, Range1d
+    from bokeh.models import ColumnDataSource, LinearAxis, VSpan, Range1d
 
 from . import (LineColors, get_title, chir_label, set_label_weight,
                get_kweight, get_erange, extend_plotrange)
@@ -256,8 +250,6 @@ def multi_plot(plotsets):
                     dict(xdata=x2, ydata=y2, label='thing2', color='red')])
 
     """
-    for pset in plotsets[:]:
-        side = pset.get('side', None)
     fig = BokehFigure()
     fig.clear()
 
@@ -340,16 +332,13 @@ def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
     if show_deriv:
         mu = dgroup.dmude
         ylabel = f"{ylabel} (deriv)"
-        dlabel = plotlabels.dmude
     elif show_norm:
         mu = dgroup.norm
         ylabel = plotlabels.norm
-        dlabel = plotlabels.norm
     #endif
     elif show_flat:
         mu = dgroup.flat
         ylabel = f"{ylabel} (flat)"
-        dlabel = plotlabels.flat
     #endif
     emin, emax = get_erange(dgroup, emin, emax)
     title = get_title(dgroup, title=title)
@@ -742,7 +731,7 @@ def plot_path_k(dataset, ipath=0, kmin=0, kmax=None, offset=0, label=None, fig=N
     path = dataset.pathlist[ipath]
     if label is None:
         label = 'path %i' % (1+ipath)
-    title = get_title(dataset, title=title)
+    title = get_title(dataset, title=label)
 
     chi_kw = offset + path.chi * path.k**kweight
     if fig is None:
@@ -776,7 +765,7 @@ def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
     if label is None:
         label = 'path %i' % (1+ipath)
 
-    title = get_title(dataset, title=title)
+    title = get_title(dataset, title=label)
     kweight =dataset.transform.kweight
     ylabel = chir_label(plotlabels, kweight, show_mag=show_mag,
                                 show_real=show_real, show_imag=show_imag)
@@ -894,8 +883,6 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
         raise ValueError('Group needs prepeaks')
 
     ppeak = dgroup.prepeaks
-    ydat = dgroup.ydat
-    xdat = dgroup.xdat
     px0, px1, py0, py1 = extend_plotrange(dgroup.xdat, dgroup.ydat,
                                           xmin=ppeak.emin, xmax=ppeak.emax)
 
@@ -916,7 +903,6 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
 
     if show_peakrange:
         for x in (ppeak.elo, ppeak.ehi):
-            y = ydat[index_of(xdat, x)]
             fig.add_vline(x=x, line_width=2, line_dash="dash", line_color="#B8B8A9")
 
     return fig.show(title=title, xlabel=plotlabels.energy, ylabel='mu (normalized)',
@@ -947,9 +933,8 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     if not hasattr(pkfit, 'user_options'):
         raise ValueError('Fit needs user_options')
 
-    opts = pkfit.user_options
+    opts = pkfit.uyser_options
 
-    xeps = min(np.diff(dgroup.xdat)) / 5.
     xdat = 1.0*pkfit.energy
     ydat = 1.0*pkfit.norm
 
@@ -959,11 +944,9 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     if show_init:
         yfit   = pkfit.init_fit
         ycomps = None #  pkfit.init_ycomps
-        ylabel = 'model'
     else:
         yfit   = 1.0*result.best_fit
         ycomps = pkfit.ycomps
-        ylabel = 'best fit'
 
     baseline = 0.*ydat
     if ycomps is not None:
@@ -974,7 +957,6 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     fig = BokehFigure()
     title ='%s:\npre-edge peak' % dgroup.filename
 
-    ncolor = 0
     popts = {}
     popts.update(opts)
     dymin = dymax = None
@@ -1003,7 +985,6 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
         dymin -= 0.05 * (dymax - dymin)
 
     if ycomps is not None:
-        ncomps = len(ycomps)
         if not subtract_baseline:
             fig.add_plot(xdat, baseline, label='baseline')
         for icomp, label in enumerate(ycomps):
@@ -1046,8 +1027,6 @@ def plot_pca_components(result, min_weight=0, ncomps=None, min_variance=1.e-5):
     result must be output of `pca_train`
     """
     title = "PCA components"
-
-    ncomps = int(result.nsig)
     fig = BokehFigure()
     fig.add_plot(result.x, result.mean, label='Mean')
     for i, comp in enumerate(result.components):
@@ -1071,7 +1050,6 @@ def plot_pca_weights(result, min_weight=0, ncomps=None):
     ncomps = max(1, int(result.nsig))
 
     x0, x1, y0, y1 = extend_plotrange(result.variances, result.variances)
-    y0 = max(1.e-6, min(result.variances[:-1]))
     x = 1+np.arange(ncomps)
     y = result.variances[:ncomps]
     fig.add_plot(x, y, label='significant', style='solid', marker='o')
@@ -1174,7 +1152,7 @@ def plot_feffdat(feffpath, with_phase=True, title=None, fig=None):
     Arguments
     ----------
      feffpath    feff path as read by feffpath()
-     with_pase   whether to plot phase(k) as well as magnitude [True]
+     with_phase  whether to plot phase(k) as well as magnitude [True]
      title       string for plot title [None, may use filename if available]
 
     Notes
@@ -1189,19 +1167,12 @@ def plot_feffdat(feffpath, with_phase=True, title=None, fig=None):
 
     if fig is None:
         fig = BokehFigure()
-    fig.add_plot(result.x, result.ydat, label='data')
-
 
     fig.add_plot(fdat.k, fdat.mag_feff, label='magnitude')
-    # xlabel=plotlabels.k,
-    # ylabel='|F(k)|', title=title,
-
     if with_phase:
         fig.add_plot(fdat.k, fdat.pha_feff, label='phase')
-        # fig.fig.update_yaxis(title_text='Phase(k)') #, secondary_y=True)
-    return fig.show(title=title, xlabel=plotlabels.k, ylabel='|F(k)|')
 
-#enddef
+    return fig.show(title=title, xlabel=plotlabels.k, ylabel='|F(k)|')
 
 def plot_wavelet(dgroup, show_mag=True, show_real=False, show_imag=False,
                  rmax=None, kmax=None, kweight=None, title=None):
@@ -1227,18 +1198,16 @@ def plot_wavelet(dgroup, show_mag=True, show_real=False, show_imag=False,
      The wavelet will be performed
     """
     print("Image display not yet available with larch+bokeh")
-    kweight = get_kweight(dgroup, kweight)
-    cauchy_wavelet(dgroup, kweight=kweight, rmax_out=rmax)
-    title = get_title(dgroup, title=title)
-
-    opts = dict(title=title, x=dgroup.k, y=dgroup.wcauchy_r, xmax=kmax,
-                ymax=rmax, xlabel=plotlabels.k, ylabel=plotlabels.r,
-                show_axis=True)
-    if show_mag:
-        _imshow(dgroup.wcauchy_mag, **opts)
-    elif show_real:
-        _imshow(dgroup.wcauchy_real, **opts)
-    elif show_imag:
-        _imshow(dgroup.wcauchy_imag, **opts)
-    #endif
-#enddef
+#     kweight = get_kweight(dgroup, kweight)
+#     cauchy_wavelet(dgroup, kweight=kweight, rmax_out=rmax)
+#     title = get_title(dgroup, title=title)
+#
+#     opts = dict(title=title, x=dgroup.k, y=dgroup.wcauchy_r, xmax=kmax,
+#                 ymax=rmax, xlabel=plotlabels.k, ylabel=plotlabels.r,
+#                 show_axis=True)
+#     if show_mag:
+#         imshow(dgroup.wcauchy_mag, **opts)
+#     elif show_real:
+#         imshow(dgroup.wcauchy_real, **opts)
+#     elif show_imag:
+#         imshow(dgroup.wcauchy_imag, **opts)
