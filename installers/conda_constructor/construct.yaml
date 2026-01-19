@@ -21,17 +21,18 @@ post_install: post_install_posix.sh    # [linux or osx]
 readme_file: readme.rtf # [osx]
 
 specs:
-    - python==3.13.3
+    - python==3.13.9
     - conda
     - openssl
     - setuptools>=61.0
     - pip
     - requests
-    - numpy>=1.25
-    - scipy>=1.15
+    - numpy>=2.1.0
+    - scipy>=1.14
     - matplotlib>=3.9
-    - h5py>=3.9
+    - h5py>=3.10
     - wxpython>=4.2.2
+    - mkl_fft
     - charset-normalizer
     - pillow>=10
     - pyyaml
