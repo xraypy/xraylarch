@@ -504,6 +504,8 @@ class FeffitParamsPanel(wx.Panel):
                 parnames.append(pname)
 
         for pname in parnames:
+            if pname not in params:   # may not be currently available, when importing multipaths
+                continue
             par = params[pname]
             if any([pname.endswith('_%s' % phash) for phash in hashkeys]):
                 continue
