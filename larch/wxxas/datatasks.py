@@ -793,7 +793,7 @@ class SmoothDataFrame(wx.Frame):
 
         wids['grouplabel'] = SimpleText(panel, self.dgroup.filename)
 
-        smooth_ops = ('None', 'Boxcar', 'Savitzky-Golay', 'Convolution')
+        smooth_ops = ('Boxcar',  'Convolution', 'Savitzky-Golay')
         conv_ops  = ('Lorenztian', 'Gaussian')
 
         self.smooth_op = Choice(panel, choices=smooth_ops, size=(150, -1),
