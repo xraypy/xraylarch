@@ -427,13 +427,14 @@ def savitzky_golay(y, window_size, order, deriv=0):
     return np.convolve( m, y, mode='valid')
 
 
-def boxcar(data, nrepeats=1):
-    """boxcar average of an array
+def boxcar(data, npts=2, nrepeats=None):
+    """boxcar average of an array, taking the average of npts above and below,
+       so that it averages 2*npts+1 points (ie, npts=1 is three-point average).
 
     Arguments
     ---------
-       data     nd-array, assumed to be 1d
-       nrepeats integer number of repeats [1]
+       data  nd-array, assumed to be 1d
+       npts  integer number of points to use [2]
 
     Returns
     -------
@@ -441,28 +442,19 @@ def boxcar(data, nrepeats=1):
 
     Notes
     -----
-      This does a 3-point smoothing, that can be repeated
-
-      out = data[:]*1.0
-      for i in range(nrepeats):
-          qdat = out/4.0
-          left  = 1.0*qdat
-          right = 1.0*qdat
-          right[1:] = qdat[:-1]
-          left[:-1] = qdat[1:]
-          out = 2*qdat + left + right
-    return out
+    For each point, the result will be the averge of the point witn
+       npts above and npts below, with endpoints repeated as needed.
 
     """
-    out = data[:]*1.0
-    for i in range(nrepeats):
-        qdat = out/4.0
-        left  = 1.0*qdat
-        right = 1.0*qdat
-        right[1:] = qdat[:-1]
-        left[:-1] = qdat[1:]
-        out = 2*qdat + left + right
-    return out
+    if nrepeats is not None and npts==2:
+        npts = nrepeats
+    ndata = len(data)
+    work = np.concatenate((np.ones(npts)*data[0], data, np.ones(npts)*data[-1]))
+
+    out = work[npts:npts+ndata]
+    for i in range(1, npts+1):
+        out = out + work[npts-i:npts+ndata-i] + work[npts+i:npts+ndata+i]
+    return out/(2*npts+1.0)
 
 def polyfit(x, y, deg=1, reverse=False):
     """
