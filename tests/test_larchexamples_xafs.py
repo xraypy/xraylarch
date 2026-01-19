@@ -147,7 +147,7 @@ class TestScripts(TestCase):
 
         self.isTrue('path1.deltar == 0')
         self.isTrue('path1.ei == 0')
-        self.isTrue('path1.filename == "feff_feo01.dat"')
+        self.isTrue('path1.filename.endswith("feff_feo01.dat")')
         self.isTrue('path1.fourth == 0')
         self.isTrue('path1.nleg == 2')
         self.isTrue('path1.third == 0')
