@@ -6,14 +6,17 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Larch &#8212; xraylarch 2025.3.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <title>Larch &#8212; xraylarch 2026.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     
-    <script src="_static/documentation_options.js?v=865d4376"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/documentation_options.js?v=b916904f"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -44,7 +47,7 @@
    </tr></table>
 </div>
 
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -63,9 +66,9 @@
       </ul>
     </div>
 
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper"><h3> Get Larch</h3>
-<p>Current version: <b>2025.3.0</b></p>
+<p>Current version: <b>2026.1.0</b></p>
 
 &nbsp; &nbsp; <a href="installation.html">Install Latest Version</a>  <br>
 &nbsp; &nbsp; <a href="https://github.com/xraypy/xraylarch"> Development Version</a> <br>
@@ -153,14 +156,13 @@ consideration.  The popular <a class="reference external" href="https://brucerav
 this way, though the <a class="reference internal" href="larix.html#larix-app"><span class="std std-ref">Larix</span></a> now contains almost all of the
 features of <a class="reference external" href="https://bruceravel.github.io/demeter/">Demeter</a> and is much more actively being developed and
 maintained.</p>
-<p>Larch is distribute under an open-source license that is nearly
-identical to the MIT or 2-clause BSD license.  It is under active and
-open development centered at the GeoScoilEnviroCARS sector of Center
-for Advanced Radiation Sources at the University of Chicago.  Support
-has come from the US National Science Foundation Earth Sciences
-Division, currently through <em>SEES: Synchrotron Earth and Environmental
-Science</em> (EAR-222327), and previously from NSF Earth Sciences Division
-(EAR-1128799), and Department of Energy GeoSciences
+<p>Larch is distribute under the open-source MIT license.  Larch is under
+active and open development centered at the GeoScoilEnviroCARS sector
+of Center for Advanced Radiation Sources at the University of Chicago.
+Support has come from the US National Science Foundation Earth
+Sciences Division, currently through <em>SEES: Synchrotron Earth and
+Environmental Science</em> (EAR-222327), and previously from NSF Earth
+Sciences Division (EAR-1128799), and Department of Energy GeoSciences
 (DE-FG02-94ER14466).  Funding specifically for Larch was granted by
 the National Science Foundation - Advanced CyberInfrastructure
 (ACI-1450468).</p>
@@ -188,15 +190,7 @@ license to redistribute.</p>
 <tbody>
 <tr class="row-even"><td><p><a class="reference internal" href="larix.html#larix-app"><span class="std std-ref">Larix</span></a> (was XAS Viewer)</p></td>
 <td><p>GUI</p></td>
-<td><p>XAFS Processing and Analysis: XANES pre-edge peak fitting, linear analysis, PCA/LASSO, EXAFS background subtraction, running Feff, EXAFS Feff-fitting</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="guis.html#larchcli-app"><span class="std std-ref">larch</span></a></p></td>
-<td><p>CLI</p></td>
-<td><p>simple shell command-line interface</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="guis.html#larchgui-app"><span class="std std-ref">Larch GUI</span></a></p></td>
-<td><p>GUI</p></td>
-<td><p>enhanced command-line interface with data browser</p></td>
+<td><p>XAFS  Processing and Analysis: XANES, EXAFS, run Feff, Feff-fitting, more.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="wxmap_viewer.html#mapviewer-app"><span class="std std-ref">GSE Map Viewer</span></a></p></td>
 <td><p>GUI</p></td>
@@ -210,15 +204,27 @@ license to redistribute.</p>
 <td><p>GUI</p></td>
 <td><p>Display and work with 1-D XRD patterns</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="xafs_feffpaths.html#feff6l-app"><span class="std std-ref">feff6l</span></a></p></td>
+<tr class="row-even"><td><p>Jupyter Lab</p></td>
+<td><p>Browser</p></td>
+<td><p>Run Jupyter Lab in a browser using the Python installed with X-ray Larch.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="guis.html#larchcli-app"><span class="std std-ref">larch</span></a></p></td>
+<td><p>CLI</p></td>
+<td><p>simple shell command-line interface</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="guis.html#larchgui-app"><span class="std std-ref">Larch GUI</span></a></p></td>
+<td><p>GUI</p></td>
+<td><p>enhanced command-line interface with data browser</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="xafs_feffpaths.html#feff6l-app"><span class="std std-ref">feff6l</span></a></p></td>
 <td><p>CLI</p></td>
 <td><p>Feff 6 EXAFS calculations</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="xafs_feffpaths.html#feff8l-app"><span class="std std-ref">feff8l</span></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="xafs_feffpaths.html#feff8l-app"><span class="std std-ref">feff8l</span></a></p></td>
 <td><p>CLI</p></td>
 <td><p>Feff 8 EXAFS calculations (no XANES)</p></td>
 </tr>
-<tr class="row-even"><td><p>qtrixs</p></td>
+<tr class="row-odd"><td><p>qtrixs</p></td>
 <td><p>GUI <cite>beta</cite></p></td>
 <td><p>Display RIXS planes, take profiles</p></td>
 </tr>
@@ -229,11 +235,11 @@ license to redistribute.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">1. Downloading and Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-from-an-binary-installer">1.1. Installing from an Binary Installer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-with-binary-installers">1.1. Installing with Binary Installers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#installing-with-the-getlarch-sh-and-getlarch-bat-scripts">1.2. Installing with the <cite>GetLarch.sh</cite> and <cite>GetLarch.bat</cite> scripts</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#installing-into-an-existing-anaconda-python-environment">1.3. Installing into an existing Anaconda Python environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#installing-with-pip-into-an-existing-python-environment">1.4. Installing with <cite>pip</cite> into an existing Python environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation.html#updating-a-previous-installation">1.5. Updating a previous installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#updating-x-ray-larch">1.5. Updating X-ray Larch</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#installing-the-development-version">1.6. Installing the development version</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#making-desktop-shortcuts-to-link-to-the-applications">1.7. Making Desktop shortcuts to Link to the Applications</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#larch-for-developers-source-installation">1.8. Larch for developers (source installation)</a></li>
@@ -369,7 +375,7 @@ license to redistribute.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -389,7 +395,7 @@ license to redistribute.</p>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
     </div>
   </body>
 </html>

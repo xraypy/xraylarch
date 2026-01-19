@@ -6,13 +6,16 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>10.8. Builtin Functions &#8212; xraylarch 2025.3.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <title>10.8. Builtin Functions &#8212; xraylarch 2026.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css?v=dfcb3266" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     
-    <script src="../_static/documentation_options.js?v=865d4376"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/documentation_options.js?v=b916904f"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -44,7 +47,7 @@
    </tr></table>
 </div>
 
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -67,7 +70,7 @@
       </ul>
     </div>
 
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
   <div>
     <h3><a href="../index.html">Table of Contents</a></h3>
@@ -260,7 +263,7 @@ to <code class="docutils literal notranslate"><span class="pre">group(**dict)</s
 
 <dl class="py function">
 <dt class="sig sig-object py" id="group">
-<span class="sig-name descname"><span class="pre">group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key=val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key2=val2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">....</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#group" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">val2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">....</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#group" title="Link to this definition">¶</a></dt>
 <dd><p>create a group, with optional keyword/value pairs.</p>
 </dd></dl>
 
@@ -316,7 +319,7 @@ pattern.  For example:</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="mkdir">
-<span class="sig-name descname"><span class="pre">mkdir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory_name</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">mode=0777</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#mkdir" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">mkdir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory_name</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0777</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#mkdir" title="Link to this definition">¶</a></dt>
 <dd><p>create directory (and any intermediate subdirectories) with the
 specified name.  The <code class="docutils literal notranslate"><span class="pre">mode</span></code> option sets the permission mask to use
 for creating directory (default=0777).</p>
@@ -324,7 +327,7 @@ for creating directory (default=0777).</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="more">
-<span class="sig-name descname"><span class="pre">more</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">pagelenghth=32</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#more" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">more</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">pagelenghth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#more" title="Link to this definition">¶</a></dt>
 <dd><p>list file contents, optionally specifying the number of lines to
 show at a time.  By default, the file is shown 32 lines at a time.:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">more</span><span class="p">(</span><span class="s1">&#39;file.txt&#39;</span><span class="p">)</span>
@@ -347,13 +350,13 @@ show at a time.  By default, the file is shown 32 lines at a time.:</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="run">
-<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">printall=True</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#run" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">printall</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#run" title="Link to this definition">¶</a></dt>
 <dd><p>execute the larch text in a file as larch code.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="show">
-<span class="sig-name descname"><span class="pre">show</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">with_private=False</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#show" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">show</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">with_private</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#show" title="Link to this definition">¶</a></dt>
 <dd><p>display group members. The <code class="docutils literal notranslate"><span class="pre">with_private</span></code> option will show private
 members.</p>
 <p>See Also:  show_tree()</p>
@@ -648,7 +651,7 @@ the items of the sequence (or a list of tuples if more than one sequence).</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="max">
-<span class="sig-name descname"><span class="pre">max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">key=func</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#max" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">func</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#max" title="Link to this definition">¶</a></dt>
 <dd><p>max(a, b, c, …[, key=func]) -&gt; value</p>
 <blockquote>
 <div><p>With a single iterable argument, return its largest item.
@@ -658,7 +661,7 @@ With two or more arguments, return the largest argument.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="min">
-<span class="sig-name descname"><span class="pre">min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">key=func</span></span></em><span class="optional">]</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">value</span></span></span><a class="headerlink" href="#min" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">func</span></span></em><span class="optional">]</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">value</span></span></span><a class="headerlink" href="#min" title="Link to this definition">¶</a></dt>
 <dd><p>min(a, b, c, …[, key=func]) -&gt; value</p>
 <blockquote>
 <div><p>With a single iterable argument, return its smallest item.
@@ -848,7 +851,7 @@ in length to the length of the shortest argument sequence.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -872,7 +875,7 @@ in length to the length of the shortest argument sequence.</p>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
     </div>
   </body>
 </html>

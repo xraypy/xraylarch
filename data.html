@@ -6,14 +6,17 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>11. Reading and Writing Data &#8212; xraylarch 2025.3.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <title>11. Reading and Writing Data &#8212; xraylarch 2026.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     
-    <script src="_static/documentation_options.js?v=865d4376"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/documentation_options.js?v=b916904f"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -45,7 +48,7 @@
    </tr></table>
 </div>
 
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -67,7 +70,7 @@
       </ul>
     </div>
 
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
   <div>
     <h3><a href="index.html">Table of Contents</a></h3>
@@ -91,13 +94,11 @@
 </li>
 <li><a class="reference internal" href="#creating-and-writing-to-athena-project-files">11.3.2. Creating and Writing to Athena Project Files</a><ul>
 <li><a class="reference internal" href="#larch.io.create_athena"><code class="docutils literal notranslate"><span class="pre">create_athena()</span></code></a></li>
-<li><a class="reference internal" href="#larch.io.AthenaProject"><code class="docutils literal notranslate"><span class="pre">AthenaProject</span></code></a><ul>
+<li><a class="reference internal" href="#larch.io.AthenaProject"><code class="docutils literal notranslate"><span class="pre">AthenaProject</span></code></a></li>
 <li><a class="reference internal" href="#larch.io.AthenaProject.add_group"><code class="docutils literal notranslate"><span class="pre">AthenaProject.add_group()</span></code></a></li>
 <li><a class="reference internal" href="#larch.io.AthenaProject.save"><code class="docutils literal notranslate"><span class="pre">AthenaProject.save()</span></code></a></li>
 <li><a class="reference internal" href="#larch.io.AthenaProject.read"><code class="docutils literal notranslate"><span class="pre">AthenaProject.read()</span></code></a></li>
 <li><a class="reference internal" href="#larch.io.AthenaProject.as_group"><code class="docutils literal notranslate"><span class="pre">AthenaProject.as_group()</span></code></a></li>
-</ul>
-</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#converting-athena-project-files-to-hdf5">11.3.3. Converting Athena Project Files to HDF5</a><ul>
@@ -234,11 +235,11 @@ containing the data extracted from the file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – name of file to read</p></li>
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – name of file to read</p></li>
 <li><p><strong>labels</strong> (<em>ist</em><em> or </em><em>None</em>) – list of labels to use for array labels [None]</p></li>
-<li><p><strong>simple_labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – whether to force simple column labels (note 1) [False]</p></li>
-<li><p><strong>sort</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – whether to sort row data (note 2) [False]</p></li>
-<li><p><strong>sort_column</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – column to use for sorting (note 2) [0]</p></li>
+<li><p><strong>simple_labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – whether to force simple column labels (note 1) [False]</p></li>
+<li><p><strong>sort</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – whether to sort row data (note 2) [False]</p></li>
+<li><p><strong>sort_column</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – column to use for sorting (note 2) [0]</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -306,10 +307,10 @@ by giving the column index (starting from 0).</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>args</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><em>groups</em>) – list of groups to write.</p></li>
-<li><p><strong>commentchar</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – character for comment (‘#’)</p></li>
+<li><p><strong>args</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>groups</em>) – list of groups to write.</p></li>
+<li><p><strong>commentchar</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – character for comment (‘#’)</p></li>
 <li><p><strong>label</strong> (<em>str on None</em>) – array label line (autogenerated)</p></li>
-<li><p><strong>header</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><em>strings</em>) – array of strings for header</p></li>
+<li><p><strong>header</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>strings</em>) – array of strings for header</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -348,13 +349,14 @@ dictionary</a>.  The most important components read from an XDI file are give in
 <a class="reference internal" href="#xdi-attr-table"><span class="std std-ref">Table of XDI Attributes</span></a> below.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.read_xdi">
-<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_xdi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_xdi" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_xdi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_pyxdi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_xdi" title="Link to this definition">¶</a></dt>
 <dd><p>read an XDI File into a Group</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – name of file to read</p></li>
-<li><p><strong>labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> or </em><em>None</em>) – string to use for setting array names [None]</p></li>
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – name of file to read</p></li>
+<li><p><strong>labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><em>None</em>) – string to use for setting array names [None]</p></li>
+<li><p><strong>use_pyxdi</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – whether to use Python XDI reader instead of C library [True]</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -373,7 +375,7 @@ To override these array names, use a string with space or comma
 separating names for the arrays.</p></li>
 </ol>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">larch.io</span> <span class="kn">import</span> <span class="n">xdi</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">larch.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">xdi</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">fe3_data</span> <span class="o">=</span> <span class="n">read_xdi</span><span class="p">(</span><span class="s1">&#39;FeXAFS_Fe2O3.001&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">fe3_data</span><span class="o">.</span><span class="n">array_labels</span><span class="p">)</span>
 <span class="go">[&#39;energy&#39;, &#39;mutrans&#39;, &#39;i0&#39;]</span>
@@ -583,7 +585,7 @@ reading and writing.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="larch.io.AthenaProject">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">AthenaProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.AthenaProject" title="Link to this definition">¶</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">AthenaProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.AthenaProject" title="Link to this definition">¶</a></dt>
 <dd><p>A representation of an Athena Project File</p>
 </dd></dl>
 
@@ -870,8 +872,8 @@ A portable compressed json file, that can be loaded with <cite>read_session()</c
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – name of output save file.</p></li>
-<li><p><strong>None</strong><strong>]</strong> (<em>histbuff</em><em> [</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><em>str or</em>) – names of symbols to save. [None]
+<li><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – name of output save file.</p></li>
+<li><p><strong>None</strong><strong>]</strong> (<em>histbuff</em><em> [</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>str or</em>) – names of symbols to save. [None]
 saving all non-core (user-generated) objects.</p></li>
 <li><p><strong>None</strong><strong>]</strong> – command history, [None]
 saving the full history of the current session.</p></li>
@@ -908,7 +910,7 @@ supplied or available symbols: every Group with a “groupname” and
 current session</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – name of save file</p>
+<dd class="field-odd"><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – name of save file</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><p>Tuple
@@ -937,14 +939,14 @@ merging into existing groups as appropriate (see Notes below)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – name of session file</p></li>
-<li><p><strong>xasgroups</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><em>strings</em>) – complete list of xas groups to import
+<li><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – name of session file</p></li>
+<li><p><strong>xasgroups</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>strings</em>) – complete list of xas groups to import
 (overrides ignore_groups/include_xasgroups)</p></li>
-<li><p><strong>other_syms</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><em>strings</em>) – list of other groups to import</p></li>
-<li><p><strong>ignore_groups</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><em>strings</em>) – list of symbols to not import</p></li>
-<li><p><strong>include_xasgroups</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><em>strings</em>) – list of symbols to import as XAS spectra,
+<li><p><strong>other_syms</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>strings</em>) – list of other groups to import</p></li>
+<li><p><strong>ignore_groups</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>strings</em>) – list of symbols to not import</p></li>
+<li><p><strong>include_xasgroups</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>strings</em>) – list of symbols to import as XAS spectra,
 even if not expicitly set in <cite>_xasgroups</cite></p></li>
-<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – whether to print warnings for overwrites [False]</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – whether to print warnings for overwrites [False]</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -999,7 +1001,7 @@ If left None, all other symbols will be imported.</p></li>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -1022,7 +1024,7 @@ If left None, all other symbols will be imported.</p></li>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
     </div>
   </body>
 </html>

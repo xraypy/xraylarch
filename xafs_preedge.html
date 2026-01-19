@@ -6,14 +6,17 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>14.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment &#8212; xraylarch 2025.3.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <title>14.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment &#8212; xraylarch 2026.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     
-    <script src="_static/documentation_options.js?v=865d4376"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/documentation_options.js?v=b916904f"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -45,7 +48,7 @@
    </tr></table>
 </div>
 
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -68,7 +71,7 @@
       </ul>
     </div>
 
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
   <div>
     <h3><a href="index.html">Table of Contents</a></h3>
@@ -178,7 +181,7 @@ called <em>self-absorption</em>) and for spectral convolution and de-convolution
 <dd class="field-even"><p>Value of e0. If a group is provided, group.e0 will also be set.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a></p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
@@ -320,9 +323,9 @@ subtracts that curve from it.</p>
 </pre></div>
 </div>
 <p>or in plain Python:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">larch.io</span> <span class="kn">import</span> <span class="n">read_ascii</span>
-<span class="kn">from</span> <span class="nn">larch.xafs</span> <span class="kn">import</span> <span class="n">pre_edge</span>
-<span class="kn">from</span> <span class="nn">wxmplot.interactive</span> <span class="kn">import</span> <span class="n">plot</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">larch.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_ascii</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.xafs</span><span class="w"> </span><span class="kn">import</span> <span class="n">pre_edge</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wxmplot.interactive</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot</span>
 
 <span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;fe2o3_rt1.xmu&#39;</span>
 <span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy mu i0&#39;</span><span class="p">)</span>
@@ -379,7 +382,7 @@ the total number of data points.</p>
 <p>If this is used in publication, a citation should be given to Weng <span id="id3">[<a class="reference internal" href="bibliography.html#id30" title="Tsu-Chien Weng, Geoffrey S. Waldo, and James E. Penner-Hahn. A method for normalization of X-ray absorption spectra. Journal of Synchrotron Radiation, 12(4):506–510, Jul 2005. doi:10.1107/S0909049504034193.">Weng, Waldo, and Penner-Hahn (2005)</a>]</span>.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="mback">
-<span class="sig-name descname"><span class="pre">mback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mback" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">mback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mback" title="Link to this definition">¶</a></dt>
 <dd><p>Match measured <span class="math notranslate nohighlight">\(\mu(E)\)</span> data to tabulated cross-section data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -459,9 +462,9 @@ and 6.</p></li>
 <p>Here is an example of processing XANES data measured over an extended
 data range.  This example is the K edge of copper foil, with the
 result shown in <a class="reference internal" href="#fig-mback-copper"><span class="std std-numref">Figure 14.2.4.1</span></a>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">larch.io</span> <span class="kn">import</span> <span class="n">read_ascii</span>
-<span class="kn">from</span> <span class="nn">larch.xafs</span> <span class="kn">import</span> <span class="n">mback</span>
-<span class="kn">from</span> <span class="nn">wxmplot.interactive</span> <span class="kn">import</span> <span class="n">plot</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">larch.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_ascii</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.xafs</span><span class="w"> </span><span class="kn">import</span> <span class="n">mback</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wxmplot.interactive</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot</span>
 
 <span class="n">data</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/cu_10k.xmu&#39;</span><span class="p">)</span>
 <span class="n">mback</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">29</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
@@ -500,7 +503,7 @@ large features near the edge.</p>
 </figure>
 <dl class="py function">
 <dt class="sig sig-object py" id="mback_norm">
-<span class="sig-name descname"><span class="pre">mback_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mback_norm" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">mback_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mback_norm" title="Link to this definition">¶</a></dt>
 <dd><p>A simplified version of <a class="reference internal" href="#mback" title="mback"><code class="xref py py-func docutils literal notranslate"><span class="pre">mback()</span></code></a> to normalize <span class="math notranslate nohighlight">\(\mu(E)\)</span> data
 to tabulated cross-section data for <span class="math notranslate nohighlight">\(f''(E)\)</span>.</p>
 <dl class="simple">
@@ -587,8 +590,8 @@ and that the spectra has decent pre-edge subtraction and normalization.</p>
 <li><p><strong>norm</strong> (<em>ndarray</em><em> or </em><em>None</em>) – array of normalized mu(E) to be fit (deprecated, see note 2)</p></li>
 <li><p><strong>arrayname</strong> (<em>string</em><em> or </em><em>None</em>) – name of array to use as data (see note 2)</p></li>
 <li><p><strong>group</strong> (<em>group</em><em> or </em><em>None</em>) – output group</p></li>
-<li><p><strong>emax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em>) – max energy (eV) to use for baesline fit [e0-5]</p></li>
-<li><p><strong>emin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em>) – min energy (eV) to use for baesline fit [e0-40]</p></li>
+<li><p><strong>emax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>None</em>) – max energy (eV) to use for baesline fit [e0-5]</p></li>
+<li><p><strong>emin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>None</em>) – min energy (eV) to use for baesline fit [e0-40]</p></li>
 <li><p><strong>elo</strong> – (float or None)       low energy of pre-edge peak region to not fit baseline [e0-20]</p></li>
 <li><p><strong>ehi</strong> – (float or None)       high energy of pre-edge peak region ot not fit baseline [e0-10]</p></li>
 <li><p><strong>_larch</strong> (<em>larch instance</em><em> or </em><em>None</em>) – current larch session.</p></li>
@@ -636,10 +639,10 @@ and that the spectra has decent pre-edge subtraction and normalization.</p>
 <li><p><strong>energy</strong> (<em>ndarray</em><em> or </em><em>group</em>) – array of x-ray energies, in eV, or group (see note 1)</p></li>
 <li><p><strong>norm</strong> (<em>ndarray</em><em> or </em><em>group</em>) – array of normalized mu(E)</p></li>
 <li><p><strong>group</strong> (<em>group</em><em> or </em><em>None</em>) – output group</p></li>
-<li><p><strong>elo</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em>) – low energy of pre-edge peak region to not fit baseline [e0-20]</p></li>
-<li><p><strong>ehi</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em>) – high energy of pre-edge peak region ot not fit baseline [e0-10]</p></li>
-<li><p><strong>emax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em>) – max energy (eV) to use for baesline fit [e0-5]</p></li>
-<li><p><strong>emin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em>) – min energy (eV) to use for baesline fit [e0-40]</p></li>
+<li><p><strong>elo</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>None</em>) – low energy of pre-edge peak region to not fit baseline [e0-20]</p></li>
+<li><p><strong>ehi</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>None</em>) – high energy of pre-edge peak region ot not fit baseline [e0-10]</p></li>
+<li><p><strong>emax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>None</em>) – max energy (eV) to use for baesline fit [e0-5]</p></li>
+<li><p><strong>emin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>None</em>) – min energy (eV) to use for baesline fit [e0-40]</p></li>
 <li><p><strong>form</strong> (<em>string</em>) – form used for baseline (see description)  [‘linear+lorentzian’]</p></li>
 <li><p><strong>_larch</strong> (<em>larch instance</em><em> or </em><em>None</em>) – current larch session.</p></li>
 </ul>
@@ -1014,7 +1017,7 @@ data and the spectrum deconvolved by the energy of its core level.</span></p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -1038,7 +1041,7 @@ data and the spectrum deconvolved by the energy of its core level.</span></p>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
     </div>
   </body>
 </html>

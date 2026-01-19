@@ -6,14 +6,17 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>13.7. Simplified Peak Fitting with fit_peak() &#8212; xraylarch 2025.3.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <title>13.7. Simplified Peak Fitting with fit_peak() &#8212; xraylarch 2026.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     
-    <script src="_static/documentation_options.js?v=865d4376"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/documentation_options.js?v=b916904f"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -45,7 +48,7 @@
    </tr></table>
 </div>
 
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -68,7 +71,7 @@
       </ul>
     </div>
 
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
   <div>
     <h3><a href="index.html">Table of Contents</a></h3>
@@ -333,7 +336,7 @@ with a single line of code.</p>
 The fit is to a function that takes a step up and a step down.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/fitting/doc_example_fitpeak2.lar</span>
 <span class="c1"># create mock rectangular data</span>
-<span class="k">def</span> <span class="nf">make_rect_data</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">noise_scale</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_rect_data</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">noise_scale</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
     <span class="n">noise</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="n">noise_scale</span><span class="p">)</span>
     <span class="n">y</span> <span class="o">=</span> <span class="mf">6.0</span> <span class="o">-</span> <span class="n">x</span><span class="o">*</span><span class="mf">0.001</span> <span class="o">+</span> <span class="n">noise</span>
     <span class="n">x0</span> <span class="o">=</span> <span class="mi">30</span>
@@ -408,13 +411,13 @@ treating the results of such an automated approach as a final and best
 analysis of any data.</p>
 </section>
 <section id="using-lmfit-model">
-<h2><span class="section-number">13.7.3. </span>Using <a class="reference external" href="https://lmfit.github.io/lmfit-py/model.html">lmfit.Model</a><a class="headerlink" href="#using-lmfit-model" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">13.7.3. </span>Using <a class="extlink-lmfitx reference external" href="https://lmfit.github.io/lmfit-py/model.html">lmfit.Model</a><a class="headerlink" href="#using-lmfit-model" title="Link to this heading">¶</a></h2>
 <p>Note that the <a class="reference internal" href="#math.fit_peak" title="_math.fit_peak"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a> function gives a simple wrapping of
-<a class="reference external" href="https://lmfit.github.io/lmfit-py/model.html">lmfit.Model</a>.  For a wider selection of builtin
+<a class="extlink-lmfitx reference external" href="https://lmfit.github.io/lmfit-py/model.html">lmfit.Model</a>.  For a wider selection of builtin
 Models and more sophisticated model building including adding bounds and
-constraints between parameters one can import and use <a class="reference external" href="https://lmfit.github.io/lmfit-py/model.html">lmfit.Model</a> directly with larch.  As an example, the above fit can be
+constraints between parameters one can import and use <a class="extlink-lmfitx reference external" href="https://lmfit.github.io/lmfit-py/model.html">lmfit.Model</a> directly with larch.  As an example, the above fit can be
 replicated with:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="kn">from</span> <span class="nn">lmfit.models</span> <span class="kn">import</span> <span class="n">RectangleModel</span><span class="p">,</span> <span class="n">ConstantModel</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">lmfit.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">RectangleModel</span><span class="p">,</span> <span class="n">ConstantModel</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">model</span> <span class="o">=</span> <span class="n">RectangleModel</span><span class="p">(</span><span class="n">form</span><span class="o">=</span><span class="s1">&#39;erf&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">ConstantModel</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;bkg_&#39;</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">params</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">make_params</span><span class="p">(</span><span class="n">bkg_c</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sigma1</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">sigma2</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
                                   <span class="n">center1</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">center20</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
@@ -423,11 +426,11 @@ replicated with:</p>
 </pre></div>
 </div>
 <p>Here, a model is built as the sum of two components: a rectangle and a
-constant background. <a class="reference external" href="https://lmfit.github.io/lmfit-py/parameters.html">lmfit.Parameters</a> are made
+constant background. <a class="extlink-lmfitx reference external" href="https://lmfit.github.io/lmfit-py/parameters.html">lmfit.Parameters</a> are made
 from this composite model and the parameter names, giving initial values
 for each parameter.  The model can then be used to fit the data <code class="docutils literal notranslate"><span class="pre">y</span></code> with
 the parameters <code class="docutils literal notranslate"><span class="pre">params</span></code>, and the independent variable <code class="docutils literal notranslate"><span class="pre">x</span></code>.  While
-directly using <a class="reference external" href="https://lmfit.github.io/lmfit-py/model.html">lmfit.Model</a> does require providing
+directly using <a class="extlink-lmfitx reference external" href="https://lmfit.github.io/lmfit-py/model.html">lmfit.Model</a> does require providing
 initial values for all parameters, it also gives complete access to the
 parameters, and allows building more complex models.</p>
 </section>
@@ -440,7 +443,7 @@ parameters, and allows building more complex models.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -464,7 +467,7 @@ parameters, and allows building more complex models.</p>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
     </div>
   </body>
 </html>
