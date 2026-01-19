@@ -95,7 +95,7 @@ Tracker = "https://github.com/xraypy/xraylarch/issues"
 
 [project.optional-dependencies]
 dev = ["build", "twine", "pre-commit", "pytest", "pytest-xvfb;platform_system=='Linux'", "pytest-cov", "coverage"]
-doc = ["Sphinx", "sphinx-copybutton", "sphinxcontrib-video", "sphinxcontrib-bibtex", "sphinxcontrib-argdoc"]
+doc = ["Sphinx", "numpydoc", "sphinx-copybutton", "sphinxcontrib-video", "sphinxcontrib-bibtex", "sphinxcontrib-argdoc"]
 
 wxgui = ["wxpython>=4.2.2",  "wxmplot>=2025.1.6", "wxutils>=0.3.6", "darkdetect"]
 

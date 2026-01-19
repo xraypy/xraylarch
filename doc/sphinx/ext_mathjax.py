@@ -6,4 +6,5 @@ extensions = ['sphinx.ext.mathjax',
               'sphinx.ext.intersphinx',
               'sphinx.ext.ifconfig',
               'sphinxcontrib.bibtex',
-              'subfig']
+              'subfig',
+              'sphinx_copybutton', 'numpydoc']

@@ -18,10 +18,10 @@ Downloading and Installation
 .. _GetLarch.bat:                  https://raw.githubusercontent.com/xraypy/xraylarch/master/installers/GetLarch.bat
 .. _Larch Installers:              https://millenia.cars.aps.anl.gov/xraylarch/downloads
 .. _source code:                   https://github.com/xraypy/xraylarch/releases/latest
-.. _Larch for Windows:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2025-03-Windows-x86_64.exe
-.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2025-03-MacOSX-x86_64.pkg
-.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2025-03-Linux-x86_64.sh
-.. _Docs and Examples:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2025-03_docs-examples.zip
+.. _Larch for Windows:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-01-Windows-x86_64.exe
+.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-01-MacOSX-x86_64.pkg
+.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-01-Linux-x86_64.sh
+.. _Docs and Examples:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-01_docs-examples.zip
 
 .. _Ifeffit Mailing List: https://millenia.cars.aps.anl.gov/mailman3/lists/ifeffit.millenia.cars.aps.anl.gov/
 
@@ -63,22 +63,25 @@ Installing from an Binary Installer
 **Table of Larch Installers**
 
     Installers for Windows, macOSX, and Linux are available at `Larch
-    Installers`_.  These are fairly large (more that 400 Mb files)
-    self-contained files that will install a complete Anaconda Python
-    environment with all of libraries needed by Larch.  This installation will
-    create a folder called `xraylarch` in your home folder -- see
-    platform-specific notes below.
+    Installers`_.  The binary installers are fairly large (more than
+    400 MB), while the shell installers are small text files, that
+    will download the necessary packages. Both binary and shell
+    installers will also download and install more libraries from
+    Python packaging web resources.  For all options, the installation
+    will create a folder called `xraylarch` in your home folder (see
+    platform-specific notes below) with a complete Anaconda Python
+    environment and all of libraries needed by Larch.
 
 
-  +---------------------+------------------------+-----------------------------+
-  | Operating System    | Installer File         | Installation Notes          |
-  +=====================+========================+=============================+
-  | Windows (64 bit)    | `Larch for Windows`_   | :ref:`Notes <install-win>`  |
-  +---------------------+------------------------+-----------------------------+
-  | macOSX  (64 bit)    | `Larch for MacOSX`_    | :ref:`Notes <install-mac>`  |
-  +---------------------+------------------------+-----------------------------+
-  | Linux  (64 bit)     | `Larch for Linux`_     | :ref:`Notes <install-lin>`  |
-  +---------------------+------------------------+-----------------------------+
+  +---------------------+------------------------+-----------------+-----------------------------+
+  | Operating System    | Binary Installer File  | Shell Installer |  Installation Notes         |
+  +=====================+========================+=================+=============================+
+  | Windows (64 bit)    | `Larch for Windows`_   | `GetLarch.bat`_ | :ref:`Notes <install-win>`  |
+  +---------------------+------------------------+-----------------+-----------------------------+
+  | macOSX  (64 bit)    | `Larch for MacOSX`_    | `GetLarch.sh`_  | :ref:`Notes <install-mac>`  |
+  +---------------------+------------------------+-----------------+-----------------------------+
+  | Linux  (64 bit)     | `Larch for Linux`_     | `GetLarch.sh`_  | :ref:`Notes <install-lin>`  |
+  +---------------------+------------------------+-----------------+-----------------------------+
 
 
 .. note::
@@ -91,17 +94,22 @@ Installing from an Binary Installer
    people.
 
 
-These installers should write to files only to folders owned by the user
-account. Installation should not require administrative privilege and should
-not interfere with any thing else on your system (such as system Python).
+These installers should write only to folders owned by the
+un-privileged user account. Installation should not require
+administrative privilege and should not interfere with any thing else
+on your system such as the system-installed Python, or a Windows registry.
 
-These installers will also create a folder called `Larch` on your desktop that
-contains links (or shortcuts or Apps) to many of the Larch GUI applications
-listed in :ref:`Table of Larch Applications and Programs <larch_app_table>`.
-This includes tools for X-ray Absorption spectroscopy, X-ray fluorescence
-spectroscopy, and working with X-ray diffraction images.  It will also create a
-folder called `.larch` in your home folder where some configuration files, Feff
-calculations, and auto-saved sessions will be written.
+These installers will create a folder called `xraylarch` with the
+Anaconda Python environment, a folder called `larch` or `.larch` in
+the users home folder for configuration files and files generated by
+larch.  In addiont, a folder called `Larch` will be created on your
+desktop that contains links (or shortcuts or Apps) to many of the
+Larch GUI applications listed in :ref:`Table of Larch Applications and
+Programs <larch_app_table>`.  This includes tools for X-ray Absorption
+spectroscopy, X-ray fluorescence spectroscopy, and working with X-ray
+diffraction images.  It will also create a folder called `.larch` in
+your home folder where some configuration files, Feff calculations,
+and auto-saved sessions will be written.
 
 .. _install-win:
 
@@ -253,7 +261,7 @@ ecosystem" infrastructure and then install xraylarch with pip:
 
 .. code:: bash
 
-   conda create -y --name xraylarch python>=3.13.5
+   conda create -y --name xraylarch python>=3.13.9
    conda activate xraylarch
    conda install -y -c conda-forge numpy scipy matplotlib h5py>=3.10 wxpython>=4.2.2 mkl_fft
    pip install "xraylarch[larix]"
@@ -374,43 +382,52 @@ to add tools needed to use the Epics controls system, or
 to install all these (and a few more packages)
 
 
-Updating a previous installation
-==================================
+Updating X-ray Larch
+=======================================
 
-As new versions of X-ray Larch are released, they will be announced and pushed
+As new versions of X-ray Larch are released, they will be announced
+and pushed to `PyPI`_.  Larix and some other Larch Applications will
+notify you about available updates.
 
-to `PyPI`_.  This will allow updating can be done with
+Updating can be done by running
 
 .. code:: bash
 
     pip install --upgrade "xraylarch[larix]"
 
+in the appropriate shell or Windows command environment.
 
-Larix and some other Larch Applications will notify you about
-available updates.  To update, you an click on the "Larch Updater"
-desktop shortcut called, which will open a Shell and run the update
-`pip` command above.
+.. versionchanged:: 2026.1.0
+
+Beginning with version `2026.1.0`, the Jupyter Lab browser-based interface to
+Python is installed with Larch, and a shortcut is includeed in the
+`Larch` folder on your desktop.  Running Jupyter Lab includes a
+"Terminal", that runs in your browser.  This should be shown under the
+"Other" category on the main Launcher, or can be invoked from the
+File->Terminal menu.
+
+This Terminal conveniently runs with the same environment settings as
+Larch, so knows which `pip` and `python` command to use, whereas the
+shell or Windows command environment may not.
+
+That is, we highly recommend using the Terminal with Jupyter Lab to
+upgrade your Larch installation.
 
 
 Installing the development version
 =========================================
 
-For the brave, a nightly build of the latest development version can be downloaded and installed with
+For the brave, a nightly build of the latest development version can
+be downloaded and installed with
 
 .. code:: bash
 
    larch -n
 
-or by visiting https://millenia.cars.aps.anl.gov/xraylarch/downloads,
-downloading the latest `xraylarch*.whl` file, and installing that as
-with
+We try to keep this development version working, but as this is an
+automated snapshot it might catch the development in the middle of
+trying to fix something tricky.
 
-.. code:: bash
-
-   python -m pip intall  xraylarch-2025.2.1.post.....whl
-
-We try to keep this working, but as this is an automated snapshot it might
-catch the development in the middle of trying to fix something tricky.
 
 Making Desktop shortcuts to Link to the Applications
 =======================================================
@@ -466,12 +483,13 @@ permissions as from `sudo` to install Larch to a system folder.
 Installing Optional Python Packages with Larch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-While most of the packages required for Larch will be installed automatically
-(and are listed in the `requirements.txt` file in the source tree), there are
-a few packages that are useful for some functionality but somewhat less easy
-to have as a hard dependency (usually because they are not readily available
-on `PyPI`_ for all platforms).  These optional packages are listed in the
-table below.  Note that most of these will be installed with Larch whether you
+While most of the packages required for Larch will be installed
+automatically (and are listed in the `pyproject.toml` file in the
+source tree), there are a few packages that are useful for some
+functionality but somewhat less easy to have as a hard dependency
+(usually because they are not readily available on `PyPI`_ for all
+platforms).  These optional packages are listed in the table below.
+Note that most of these will be installed with Larch whether you
 install from a binary installer with `pip install xraylarch`.
 
 
@@ -581,6 +599,6 @@ License
 
 Except where explicitly noted in the individual files, the code,
 documentation, and all material associated with Larch are distributed under
-the BSD License:
+the MIT License:
 
 .. literalinclude:: ../LICENSE
