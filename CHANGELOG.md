@@ -5,6 +5,79 @@ The GitHub Release Notes will also be useful
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2026.1.0 - 2026-01-19]
+
+### xralyarch library:
+ - move wxmplot plotting tools to larch/plot module, to make more consistent with boken and plotly plotting options
+ - many fixes and use of common utilities to plotting functions for all of wxmplot, bokeh, plotly
+ - better detection if wxmplot is running with a Jupyter environment for more interactive plots there.
+ - `read_xdi()` now uses a pure-Python XDI reader.  This allows detecting the encoding before the file is read,
+       which avoids some oddities for various encodings. It allows is slightly more tolerant of non-XAS data, and
+       preseveres more commment lines.
+ - some updates to beamline reader code to better guess array labels.
+ - slowly but progressing on remove many leading underscores for function names,
+ - better handling of param_group with Feffit in Python.
+ - fix Feff Paths to use and report the full path of the filename, and use that in the Path geometry label,
+      to allow identical paths to be used as separate paths.
+ - fix reported path degeneracy in Feff Path report (thanks Chris Joseph)
+ - add better numpy-json encoder using b64 encoding, and use by default (still supporting older versions!).
+ - add `geometry`, with angles, to feffpath object.
+ - fix boxcar averaging to be simpler
+
+### Larix:
+ - in all of Feffit, Pre-edge Peak Fitting, and General Curve Fitting, the "current fit" is now properly
+      recognized for each group, so that switching groups may completely replace the model shown in the main panels
+ - normalization: fix use of vertical offset in normalization plots.
+ - normalization: fix remembering explicit setting of edge_step when changing groups
+ - normalization: copying a group retains energy reference by default.
+ - normalization: even better "copy parameters" behavior.
+ - normalization: fix auto_step and also copy_parameter not always resetting parameters for current group
+ - normalization: better inheritig of e0 and 'auto_e0' from Athena group
+ - pre-edge peaks: fix recognizing 'background components' when loading pre-edge peak from saved session
+ - pre-edge peaks: fix exporting fit result
+ - pre-edge peaks: fix exporting table of components (thanks, Christion Dewey).
+ - pre-edge peaks: fix seting 'form' when reloading fit using step function (thanks, Christion Dewey).
+ - curvefit: improve consistency with prepeaks_panel
+ - curvefit: fix adding model component not always working.
+ - feffit: fix reading and plotting Feff calculations without data.
+ - feffit: each Feff Path shows a small table of geometry data, including leg lenghths and angles.
+ - rebin dialog: fix to setting name of output group and set "boxcar" as default method.
+ - deglitch dialog: fixes to masking data
+ - smoothing dialog: set boxcar smoothing to default.
+ - when startig up with locked session files, allow marking all session lock files as 'delete'
+
+### Other GUIs
+ - Viewer/Controller overhauled to change from "foreground/background" MCA to support unlimited multiple spectra,
+     and have a "spectra browser" to choose which one or many to show, with familiar ListBrowser selector.  Also,
+     several of the options for how to display data are not active check-boxes above the plot.
+ - Mapviewer updated to use this new XRF display, with each XRF Map per session having a list of spectra that
+     can be displayed with the spectra browser.
+ - Mapviewer replace unused "area stats" to showing legend of positions drawn on map, with simple numerical
+     labels shown on map.
+ - fixes to better support single-element MCA XRF detector, including supporting energy calibration from ndarray.
+ - many small fixes for XRF fitting GUI with new XRFDisplay
+ - improve pileup auto-scaling, relying on incident energy being known or guessable
+ - better peak_finder function
+ - add PV for incident energy (and units) so that the MCA can have incident energy set
+ - make sure epics mca is fully updated (for better roi drawing)
+ - support XRD masks with values > 1
+ - in XRD 1D Viewer: XRD files are exported to XY with X being 2theta in degrees.
+
+### development and maintainence:
+ - add shortcut/app to run Jupyter Notebook in the Python environment installed with xraylarch
+ - add conda init to GetLarch shell installer
+ - attempted but abondoned trying to get macos miniconda environment to work in gh actions.
+ - allow using XRAYLARCH_NO_PLOT environment variable to effectively disable plotting for testing
+ - install pytest-xvfb only on linux
+ - add pymatgen as a conda dependency for testing
+ - update minimal versions for many dependencies
+ - update constructor config and GetLarch scripts
+
+### docs ocs and examples:
+ - converted many examples from 'larch scripts' to  Python scripts
+ - add many examples using Jupyter, including with using wxmplot plotting.
+
+
 ## [2025.3.0 - 2025-09-10]
 
 ### Larix improvements and bugfixes:

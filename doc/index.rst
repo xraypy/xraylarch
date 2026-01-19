@@ -57,14 +57,13 @@ this way, though the :ref:`Larix <larix_app>` now contains almost all of the
 features of `Demeter`_ and is much more actively being developed and
 maintained.
 
-Larch is distribute under an open-source license that is nearly
-identical to the MIT or 2-clause BSD license.  It is under active and
-open development centered at the GeoScoilEnviroCARS sector of Center
-for Advanced Radiation Sources at the University of Chicago.  Support
-has come from the US National Science Foundation Earth Sciences
-Division, currently through *SEES: Synchrotron Earth and Environmental
-Science* (EAR-222327), and previously from NSF Earth Sciences Division
-(EAR-1128799), and Department of Energy GeoSciences
+Larch is distribute under the open-source MIT license.  Larch is under
+active and open development centered at the GeoScoilEnviroCARS sector
+of Center for Advanced Radiation Sources at the University of Chicago.
+Support has come from the US National Science Foundation Earth
+Sciences Division, currently through *SEES: Synchrotron Earth and
+Environmental Science* (EAR-222327), and previously from NSF Earth
+Sciences Division (EAR-1128799), and Department of Energy GeoSciences
 (DE-FG02-94ER14466).  Funding specifically for Larch was granted by
 the National Science Foundation - Advanced CyberInfrastructure
 (ACI-1450468).
@@ -87,11 +86,11 @@ the National Science Foundation - Advanced CyberInfrastructure
 
     Application Name                           | GUI/CLI    | Description
     :ref:`Larix <larix_app>` (was XAS Viewer)  | GUI        | XAFS Processing and Analysis: XANES pre-edge peak fitting, linear analysis, PCA/LASSO, EXAFS background subtraction, running Feff, EXAFS Feff-fitting
-    :ref:`larch <larchcli_app>`                | CLI        | simple shell command-line interface
-    :ref:`Larch GUI <larchgui_app>`            | GUI        | enhanced command-line interface with data browser
     :ref:`GSE Map Viewer <mapviewer_app>`      | GUI        | XRF Map Viewer for GSECARS X-ray microprobe data.
     :ref:`Larch_XRF <larchxrf_app>`            | GUI        | Display and Analyze XRF Spectra.
     :ref:`Larch_XRD1D <larchxrd1d_app>`        | GUI        | Display and work with 1-D XRD patterns
+    :ref:`larch <larchcli_app>`                | CLI        | simple shell command-line interface
+    :ref:`Larch GUI <larchgui_app>`            | GUI        | enhanced command-line interface with data browser
     :ref:`feff6l <feff6l_app>`                 | CLI        | Feff 6 EXAFS calculations
     :ref:`feff8l <feff8l_app>`                 | CLI        | Feff 8 EXAFS calculations (no XANES)
     qtrixs                                     | GUI `beta` | Display RIXS planes, take profiles
