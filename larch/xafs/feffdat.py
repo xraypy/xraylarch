@@ -280,6 +280,9 @@ class FeffPathGroup(Group):
 
         if filename not in ('', None) and Path(filename).exists():
             self._feffdat = FeffDatFile(filename=filename)
+            xpath = Path(filename).absolute()
+            self.filename = xpath.as_posix()
+            self.feffrun = xpath.parent.as_posix()
 
         if self._feffdat is not None:
             self.create_spline_coefs()
@@ -292,11 +295,6 @@ class FeffPathGroup(Group):
             if self.label in ('', None):
                 self.label = self.hashkey
 
-            if feffrun in ('',  None):
-                try:
-                    self.feffrun = Path(filename).parent.name
-                except:
-                    pass
 
         self.init_path_params(degen=degen, s02=s02, e0=e0, ei=ei,
                               deltar=deltar, sigma2=sigma2, third=third,
@@ -341,6 +339,7 @@ class FeffPathGroup(Group):
 
         self._feffdat = FeffDatFile()
         self._feffdat.__setstate__(_feffdat_state)
+        self.filename = Path(self.filename).absolute().as_posix()
 
         self.create_spline_coefs()
 
@@ -355,8 +354,8 @@ class FeffPathGroup(Group):
 
 
     def __geom2label(self):
-        """generate label by hashing path geometry"""
-        rep = [self._feffdat.degen, self._feffdat.shell, self.feffrun]
+        """generate label by hashing full filename and path geometry"""
+        rep = [self._feffdat.degen, self._feffdat.shell, self.filename]
         for atom in self.geom:
             rep.extend(atom)
         rep.append("%7.4f" % self._feffdat.reff)
@@ -561,7 +560,7 @@ class FeffPathGroup(Group):
                                    self.params[parname].stderr)
 
         out = [f" = Path '{self.label}' {self.absorber} {self.shell} Edge",
-               f"    feffdat file = {self.filename}, from feff run '{self.feffrun}'"]
+               f"    feffdat file = {self.filename}"]
         geomlabel  = '    geometry  atom      x        y        z      ipot'
         geomformat = '            %4s      %s, %s, %s  %d'
         out.append(geomlabel)
@@ -791,8 +790,8 @@ def feffpath(filename='', label='', feffrun='', s02=None, degen=None,
       third:     c_3      value or parameter [0.0]
       fourth:    c_4      value or parameter [0.0]
       ei:        E_i      value or parameter [0.0]
-      feffrun:   label for Feff run          [parent folder of Feff.dat file]
       use :      use in sum of paths         [True]
+      feffrun:   ignored
 
     For all the options described as **value or parameter** either a
     numerical value or a Parameter (as created by param()) can be given.
