@@ -93,7 +93,7 @@ echo "## Creating desktop shortcuts"
 $prefix/bin/larch -m
 
 ## create desktop shortcuts
-echo "## Set up initial conda environment for your shell
+echo "## Set up initial conda environment for your shell"
 $prefix/bin/conda init
 
 echo "##############  " | tee -a $logfile
