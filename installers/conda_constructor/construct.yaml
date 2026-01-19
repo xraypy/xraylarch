@@ -1,5 +1,5 @@
 name:  xraylarch
-version: 2025-03
+version: 2026-01
 
 channels:
     - https://conda.anaconda.org/conda-forge/
