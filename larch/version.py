@@ -163,7 +163,7 @@ def upgrade_nightly_build():
         print("Downloading wheel for nightly build: {fname}")
         check_call([sys.executable, '-m', 'pip', 'install', f'{NIGHTLY_URL}{fname}'])
 
-def upgrade_from_pypi():
+def upgrade_from_pypi(with_larix=True):
     "pip installl/upgrade larch from PyPI"
     target = 'xraylarch[larix]' if with_larix else 'xraylarch'
     check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', target])
