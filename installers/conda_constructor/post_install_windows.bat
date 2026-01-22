@@ -1,16 +1,17 @@
 
 
+echo "Larch Installation for Windows" 
 
-REM # use pip to install some known-safe-for-pip packages
-echo "Windows Post Install"
+set PATH=%PATH%;%PREFIX%;%PREFIX%\bin;%PREFIX%\mingw-w64\bin;%PREFIX%\condabin;%PREFIX%\Scripts;
+set PATH=%PATH%;%PREFIX%\Library\bin;%PREFIX%\Library\usr\bin
 
 call "%PREFIX%\Scripts\activate.bat"
 
 %PREFIX%\python -m pip install "xraylarch[larix]"
 
-REM # make desktop icons
+echo "Making Desktop Icons"
 %PREFIX%\Scripts\larch.exe -m
 
-echo '# Larch post install done!'
+echo 'Larch post installation done'
 timeout /t 10
 
