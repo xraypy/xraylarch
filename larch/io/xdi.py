@@ -514,23 +514,24 @@ def read_xdi(filename, labels=None, use_pyxdi=True):
 
     """
     if use_pyxdi:
-        return PyXDIFile(filename)
+        xdif = PyXDIFile(filename)
     else:
         xdif = XDIFile(filename, labels=labels)
-        group = Group()
-        for key, val in xdif.__dict__.items():
-            if not key.startswith('_'):
-                if key in string_attrs:
-                    val = tostr(val)
-                setattr(group, key, val)
-        group.__name__ ='XDI file %s' % filename
-        doc = ['%i arrays, %i npts' % (xdif.narrays, xdif.npts)]
-        arr_labels = getattr(xdif, 'array_labels', None)
-        if arr_labels is not None:
-            doc.append("Array Labels: %s" % repr(arr_labels))
-        group.__doc__ = '\n'.join(doc)
 
-        group.path = filename
-        path, fname = os.path.split(filename)
-        group.filename = fname
-        return group
+    group = Group()
+    for key, val in xdif.__dict__.items():
+        if not key.startswith('_'):
+            if key in string_attrs:
+                val = tostr(val)
+            setattr(group, key, val)
+    group.__name__ ='XDI file %s' % filename
+    doc = ['%i arrays, %i npts' % (xdif.narrays, xdif.npts)]
+    arr_labels = getattr(xdif, 'array_labels', None)
+    if arr_labels is not None:
+        doc.append("Array Labels: %s" % repr(arr_labels))
+    group.__doc__ = '\n'.join(doc)
+
+    group.path = filename
+    path, fname = os.path.split(filename)
+    group.filename = fname
+    return group
