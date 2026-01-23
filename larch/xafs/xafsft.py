@@ -78,12 +78,16 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
         raise RuntimeError("invalid window name %s" % window)
 
     dx1 = dx
-    if dx2 is None:  dx2 = dx1
+    if dx2 is None:
+        dx2 = dx1
     if xmin is None: xmin = min(x)
     if xmax is None: xmax = max(x)
 
     xstep = (x[-1] - x[0]) / (len(x)-1)
+    if xstep < 0 or np.isnan(xstep):
+        xstep = 1.e-3
     xeps  = 1.e-4 * xstep
+
     x1 = max(min(x), xmin - dx1/2.0)
     x2 = xmin + dx1/2.0  + xeps
     x3 = xmax - dx2/2.0  - xeps
@@ -97,7 +101,9 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
     elif nam == 'gau':
         dx1 = max(dx1, xeps)
 
-    def asint(val): return int((val+xeps)/xstep)
+    def asint(val):
+        return int((val+xeps)/xstep)
+
     i1, i2, i3, i4 = asint(x1), asint(x2), asint(x3), asint(x4)
     i1, i2 = max(0, i1), max(0, i2)
     i3, i4 = min(len(x)-1, i3), min(len(x)-1, i4)
