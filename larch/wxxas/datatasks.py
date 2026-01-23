@@ -558,7 +558,6 @@ class RebinDataFrame(wx.Frame):
         self.plot_conf = get_panel_plot_config(self.plotpanel)
         self.no_plot = False
 
-
         xmin = min(self.dgroup.energy)
         xmax = max(self.dgroup.energy)
         e0val = getattr(self.dgroup, 'e0', xmin)
@@ -595,13 +594,9 @@ class RebinDataFrame(wx.Frame):
             if wname not in ('grouplabel', 'method') and hasattr(wid, 'SetAction'):
                 wid.SetAction(partial(self.on_rebin, name=wname))
 
-        # wids['apply'] = Button(panel, 'Re-bin', size=(150, -1),
-        #                         action=self.on_rebin)
-
         wids['save_as'] = Button(panel, 'Save As New Group: ', size=(150, -1),
                                  action=self.on_saveas)
         SetTip(wids['save_as'], 'Save corrected data as new group')
-
         wids['save_as_name'] = wx.TextCtrl(panel, -1, self.dgroup.filename + '_rebin',
                                            size=(250, -1))
 
