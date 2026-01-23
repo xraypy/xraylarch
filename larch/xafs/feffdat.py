@@ -14,6 +14,7 @@ creates a group that contains the chi(k) for the sum of paths.
 """
 from pathlib import Path
 import numpy as np
+import re
 from copy import deepcopy
 from scipy.interpolate import UnivariateSpline
 from lmfit import Parameters, Parameter
@@ -193,24 +194,23 @@ class FeffDatFile(Group):
                 mode = 'path'
                 continue
             #
-            if (mode == 'header' and
-                line.startswith('Abs') or line.startswith('Pot')):
+            if mode == 'header' and (re.match(r'^Abs\b', line) or re.match(r'^Pot\s+\d+\b', line)) and re.search(r'\bZ\s*=', line):
                 words = line.replace('=', ' ').split()
                 ipot, z, rmt, rnm = (0, 0, 0, 0)
                 words.pop(0)
-                if line.startswith('Pot'):
+                if re.match(r'^Pot\s+\d+\b', line):
                     ipot = int(words.pop(0))
                 iz = int(words[1])
                 rmt = float(words[3])
                 rnm = float(words[5])
-                if line.startswith('Abs'):
+                if re.match(r'^Abs\b', line):
                     self.shell = words[6]
                 self.potentials.append((ipot, iz, rmt, rnm))
-            elif mode == 'header' and line.startswith('Gam_ch'):
+            elif mode == 'header' and re.match(r'^Gam_ch\s*=', line):
                 words  = line.replace('=', ' ').split(None, 2)
                 self.gam_ch = float(words[1])
                 self.exch   = words[2]
-            elif mode == 'header' and line.startswith('Mu='):
+            elif mode == 'header' and re.match(r'^Mu\s*=', line):
                 words  = line.replace('=', ' ').replace('eV', ' ').split()
                 self.vmu = float(words[1])
                 self.vfermi = ktoe(float(words[3]))
