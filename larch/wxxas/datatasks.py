@@ -602,7 +602,7 @@ class RebinDataFrame(wx.Frame):
                                  action=self.on_saveas)
         SetTip(wids['save_as'], 'Save corrected data as new group')
 
-        wids['save_as_name'] = wx.TextCtrl(panel, -1, self.dgroup.filename + '_rebin_s',
+        wids['save_as_name'] = wx.TextCtrl(panel, -1, self.dgroup.filename + '_rebin',
                                            size=(250, -1))
 
         def add_text(text, dcol=1, newrow=True):
