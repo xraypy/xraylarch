@@ -210,7 +210,7 @@ class FeffDatFile(Group):
                 words  = line.replace('=', ' ').split(None, 2)
                 self.gam_ch = float(words[1])
                 self.exch   = words[2]
-            elif mode == 'header' and line.startswith('Mu'):
+            elif mode == 'header' and line.startswith('Mu='):
                 words  = line.replace('=', ' ').replace('eV', ' ').split()
                 self.vmu = float(words[1])
                 self.vfermi = ktoe(float(words[3]))
