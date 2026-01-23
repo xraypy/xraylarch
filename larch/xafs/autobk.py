@@ -142,7 +142,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=None,
     # and ftwin (*k-weighting) for FT in residual
     enpe = energy[iek0:] - ek0
     kraw = np.sign(enpe)*np.sqrt(ETOK*abs(enpe))
-    if kmax is None:
+    if kmax is None or kmax < 0:
         kmax = max(kraw)
     else:
         kmax = max(0, min(max(kraw), kmax))
