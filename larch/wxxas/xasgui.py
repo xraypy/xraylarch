@@ -696,8 +696,8 @@ class LarixFrame(wx.Frame):
                 self.controller.larch.symtable.del_symbol(s)
             self.controller.sync_xasgroups()
 
-    def ShowFile(self, evt=None, groupname=None,
-                 filename=None, process=True, plot='auto', **kws):
+    def ShowFile(self, evt=None, groupname=None, filename=None, process=True,
+                 plot='auto', new_install=False, **kws):
         if filename is None and evt is not None:
             filename = str(evt.GetString())
 
@@ -751,7 +751,7 @@ class LarixFrame(wx.Frame):
 
         # print(f"ShowFile {dgroup=}, {dgroup.filename=}, {pagepanel=}, {process=}, {plot=}")
         if process or plot == 'yes':
-            pagepanel.fill_form(dgroup, newgroup=True)
+            pagepanel.fill_form(dgroup, newgroup=new_install)
             pagepanel.process(dgroup=dgroup)
 
         if plot == 'yes' and hasattr(pagepanel, 'plot'):
@@ -1981,7 +1981,7 @@ before clearing"""
         # print(f"install_group B {groupname=} / {filename=}")
 
         self.ShowFile(groupname=groupname, filename=filename,
-                      process=process, plot=plot)
+                      process=process, plot=plot, new_install=True)
 
     def get_recent_session_menu(self):
         """ get recent sessions files for Menu list"""
