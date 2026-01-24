@@ -353,6 +353,7 @@ invalid XDI version in fist line''')
                 if '#' in value:
                     value = value[:value.find('#')]
                 words = [w.strip() for w in value.split()]
+                self.array_labels[colnum] = words[0]
                 if len(words) > 1:
                     units = words[1].strip()
                     if '||' in words:
