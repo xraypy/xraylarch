@@ -591,7 +591,6 @@ class ColumnDataFileFrame(wx.Frame) :
         self.path = filename
 
         group = self.read_column_file(self.path)
-        # print("COLUMN FILE Read ", self.path, getattr(group, 'datatype', 'unknown'))
         self.subframes = {}
         self.workgroup  = Group(raw=group)
         for attr in ('path', 'filename', 'groupname', 'datatype',
@@ -604,12 +603,13 @@ class ColumnDataFileFrame(wx.Frame) :
         en_units = 'unknown'
         for arrlab in self.array_labels[:5]:
             arrlab  = arrlab.lower()
-            if arrlab.startswith('en') or 'ener' in arrlab:
+            if arrlab == 'e' or arrlab.startswith('en') or 'energ' in arrlab:
                 en_units = 'eV'
                 has_energy = True
 
         if self.workgroup.datatype in (None, 'unknown'):
             self.workgroup.datatype = 'xas' if has_energy else 'xydata'
+
 
         datatype = config.pop('datatype', None)
         if datatype is not None:
