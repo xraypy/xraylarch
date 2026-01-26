@@ -5,6 +5,7 @@ import shutil
 import string
 import json
 import math
+from collections import namedtuple
 from copy import deepcopy
 from sys import exc_info
 from string import printable
@@ -39,15 +40,16 @@ from larch.xafs.xafsutils import FT_WINDOWS
 
 from larch.wxlib import (ReportFrame, CSVFrame, BitmapButton, FloatCtrl, FloatSpin,
                          SetTip, GridPanel, get_icon, SimpleText, pack,
-                         Button, HLine, Choice, Check, MenuItem,
+                         Button, HLine, Choice, Check, MenuItem, OkCancel,
                          CEN, RIGHT, LEFT, FRAMESTYLE, Font, FONTSIZE,
-                         GUI_COLORS, set_color, FONTSIZE_FW, FileSave,
+                         get_color, FONTSIZE_FW, FileSave,
                          FileOpen, flatnotebook, EditableListBox, Popup,
                          ExceptionPopup, DataTableGrid)
 
 from larch.wxlib.parameter import ParameterWidgets
 from larch.wxlib.plotter import last_cursor_pos
 from .taskpanel import TaskPanel
+from .xas_dialogs import fit_dialog_window
 
 from .config import (Feffit_KWChoices, Feffit_SpaceChoices,
                      Feffit_PlotChoices, make_array_choice,
@@ -266,13 +268,13 @@ class ParametersModel(dv.DataViewIndexListModel):
         """set row/col attributes (color, etc)"""
         ptype = self.data[row][2]
         if ptype == 'vary':
-            attr.SetColour(GUI_COLORS.text)
+            attr.SetColour(get_color('text'))
         elif ptype == 'fixed':
-            attr.SetColour(GUI_COLORS.title_blue)
+            attr.SetColour(get_color('title_blue'))
         elif ptype == 'skip':
-            attr.SetColour(GUI_COLORS.text_unused)
+            attr.SetColour(get_color('text_unused'))
         else:
-            attr.SetColour(GUI_COLORS.title_red)
+            attr.SetColour(get_color('title_red'))
         return True
 
 class EditParamsFrame(wx.Frame):
@@ -288,7 +290,7 @@ class EditParamsFrame(wx.Frame):
         self.paramgroup = paramgroup
 
         spanel = scrolled.ScrolledPanel(self, size=(500, 275))
-        spanel.SetBackgroundColour(GUI_COLORS.text_bg)
+        spanel.SetBackgroundColour(get_color('text_bg'))
 
         self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
 
@@ -454,7 +456,7 @@ class FeffitParamsPanel(wx.Panel):
         def SLabel(label, size=(80, -1), **kws):
             return  SimpleText(panel, label, size=size, style=wx.ALIGN_LEFT, **kws)
 
-        panel.Add(SLabel("Feffit Parameters ", colour=GUI_COLORS.title_blue, size=(200, -1)), dcol=2)
+        panel.Add(SLabel("Feffit Parameters ", colour=get_color('title_blue'), size=(200, -1)), dcol=2)
         panel.Add(Button(panel, 'Edit Parameters', action=self.onEditParams),  dcol=2)
         panel.Add(Button(panel, 'Force Refresh', action=self.Rebuild),         dcol=3)
 
@@ -591,6 +593,64 @@ class FeffitParamsPanel(wx.Panel):
         return s
 
 
+class CopyParamExpressionDialog(wx.Dialog):
+    """dialog for copying path parameter expression to other paths"""
+
+    def __init__(self, pname, pathdata, **kws):
+
+        ptitle, pdesc, pvalue = pathdata[0]
+        wintitle = f"Copy Paramter Expression for {pname}"
+        wx.Dialog.__init__(self, None, wx.ID_ANY, title=wintitle)
+        panel = GridPanel(self, pad=2, itemstyle=LEFT)
+
+        sel_all = Button(panel, 'Select All', size=(150, -1), action=self.onSelectAll)
+        sel_none = Button(panel, 'Select None', size=(150, -1), action=self.onSelectNone)
+
+
+        panel.Add(SimpleText(panel, f" Copy expression for '{pname}'='{pvalue}' from Path '{ptitle}'"),
+                      dcol=3)
+        panel.Add(sel_all, newrow=True, dcol=2)
+        panel.Add(sel_none)
+
+        panel.Add(SimpleText(panel, " Copy? ", size=(50, -1)), style=RIGHT, newrow=True)
+        panel.Add(SimpleText(panel, " Title ", size=(125, -1)), style=RIGHT)
+        panel.Add(SimpleText(panel, " Path Info ", size=(350, -1)))
+        panel.Add(HLine(panel, size=(550, 3)), dcol=3, newrow=True)
+
+        self.wids = {}
+        for i, pdat in enumerate(pathdata[1:]):
+            title, desc, curval = pdat
+            self.wids[title] = Check(panel, default=False)
+            panel.Add(self.wids[title], style=RIGHT, newrow=True)
+            panel.Add(SimpleText(panel, title), style=RIGHT)
+            panel.Add(SimpleText(panel, desc))
+
+
+        panel.Add(HLine(panel, size=(550, 3)), dcol=3, newrow=True)
+        panel.Add(OkCancel(panel), dcol=2, newrow=True)
+        panel.pack()
+        fit_dialog_window(self, panel)
+
+    def onSelectAll(self, event=None):
+        for key, cbox in self.wids.items():
+            cbox.SetValue(1)
+
+    def onSelectNone(self, event=None):
+        for key, cbox in self.wids.items():
+            cbox.SetValue(0)
+
+    def GetResponse(self, master=None, gname=None, ynorm=True):
+        self.Raise()
+        response = namedtuple('CopyParamsResponse', ('ok', 'paths'))
+        ok = False
+        paths = []
+        if self.ShowModal() == wx.ID_OK:
+            ok = True
+            for name, cbox in self.wids.items():
+                if cbox.IsChecked():
+                    paths.append(name)
+        return response(ok, paths)
+
 class FeffPathPanel(wx.Panel):
     """Feff Path """
     def __init__(self, parent, feffit_panel, filename, title, user_label,
@@ -599,7 +659,6 @@ class FeffPathPanel(wx.Panel):
 
         self.parent = parent
         self.title = title
-        self.user_label = fix_varname(f'{title:s}')
         self.feffit_panel = feffit_panel
         self.editing_enabled = False
 
@@ -629,9 +688,14 @@ class FeffPathPanel(wx.Panel):
                            ('sigma2', par_sigma2),
                            ('third',  par_third),
                            ('ei',  par_ei)):
-            self.wids[name] = wx.TextCtrl(panel, -1, size=(225, -1),
+
+            self.wids[name] = wx.TextCtrl(panel, -1, size=(200, -1),
                                           value=expr, style=wx.TE_PROCESS_ENTER)
-            wids[name+'_val'] = SimpleText(panel, '', size=(125, -1), style=LEFT)
+            self.wids[name+'_val'] = SimpleText(panel, '', size=(100, -1), style=LEFT)
+            if name != 'label':
+                self.wids[name+'_copy'] = Button(panel, 'Copy', size=(55, -1), style=LEFT,
+                                                 action=partial(self.onCopy, name=name))
+
 
         wids['use'] = Check(panel, default=True, label='Use in Fit?', size=(100, -1))
         wids['del'] = Button(panel, 'Remove This Path', size=(150, -1),
@@ -644,7 +708,8 @@ class FeffPathPanel(wx.Panel):
         scatt = scatt + ' Scattering'
 
         title1 = f'{dirname:s}: {feffdat_file:s}  {absorber:s} {shell:s} edge'
-        title2 = f'Reff={reff:.4f},  Degen={degen:.1f}, {scatt:s}'
+        title2 = f'reff={reff:.4f}, {scatt:s}'
+        self.desc = f'{title1}, {title2}'
 
         wids['pathgeom'] = DataTableGrid(panel, nrows=len(geometry),  rowlabelsize=30,
                                    collabels=['length(A)', 'Atom', 'Angle(deg)'],
@@ -667,23 +732,26 @@ class FeffPathPanel(wx.Panel):
         wids['pathgeom'].table.View.Refresh()
         geom_title = f'Path Geometry: ([{absorber}] = absorber)'
 
-        panel.Add(SLabel(title1, size=(325, -1), colour=GUI_COLORS.title_blue),
-                  dcol=2,  style=wx.ALIGN_LEFT, newrow=True)
+        panel.Add(SLabel(title1, size=(325, -1), colour=get_color('title_blue')),
+                  dcol=3,  style=wx.ALIGN_LEFT, newrow=True)
         panel.Add(wids['use'])
         panel.Add(wids['del'])
         panel.Add(SLabel(title2, size=(425, -1)),
-                  dcol=3, style=wx.ALIGN_LEFT, newrow=True)
+                  dcol=4, style=wx.ALIGN_LEFT, newrow=True)
         panel.Add(wids['plot_feffdat'])
 
-        panel.AddMany((SLabel('Label'),     wids['label'],  wids['label_val']), newrow=True)
-        panel.AddMany((SLabel('Amplitude'), wids['amp'],    wids['amp_val']),   newrow=True)
-        panel.AddMany((SLabel('E0 '),       wids['e0'],     wids['e0_val']),    newrow=True)
-        panel.AddMany((SLabel('Delta R'),   wids['delr'],   wids['delr_val']),  newrow=True)
-        panel.AddMany((SLabel('sigma2'),    wids['sigma2'], wids['sigma2_val']),newrow=True)
-        panel.AddMany((SLabel('third'),     wids['third'],  wids['third_val']), newrow=True)
-        panel.AddMany((SLabel('Eimag'),     wids['ei'],     wids['ei_val']),    newrow=True)
-        panel.Add(SLabel(geom_title, size=(245, -1)), irow=3, icol=3, dcol=1, style=wx.ALIGN_LEFT)
-        panel.Add(wids['pathgeom'], irow=4, icol=3, dcol=3, drow=7)
+        for label, name in (('Label', 'label'), ('Amplitude', 'amp'),
+                            ('E0', 'e0'), ('Delta R', 'delr'),
+                            ('sigma2', 'sigma2'), ('third', 'third'),
+                            ('Eimag', 'ei')):
+            wcopy = (5, 5)
+            if name != 'label':
+                wcopy = wids[f'{name}_copy']
+            panel.AddMany((SLabel(label),  wids[f'{name}_val'], wids[name], wcopy),
+                          newrow=True)
+
+        panel.Add(SLabel(geom_title, size=(245, -1)), irow=3, icol=4, dcol=1, style=wx.ALIGN_LEFT)
+        panel.Add(wids['pathgeom'], irow=4, icol=4, dcol=3, drow=7)
         panel.pack()
         sizer= wx.BoxSizer(wx.VERTICAL)
         sizer.Add(panel, 1, LEFT|wx.GROW|wx.ALL, 2)
@@ -707,6 +775,30 @@ class FeffPathPanel(wx.Panel):
             if len(val) == 0: val = '0'
             out[key] = val
         return out
+
+    def onCopy(self, event=None, name=None):
+        curval = self.wids[name].GetValue()
+        paths_nb = self.feffit_panel.paths_nb
+        pathdata = [(self.title, self.desc, curval)]
+        pages = {}
+        for i in range(paths_nb.GetPageCount()):
+            nbpage = paths_nb.GetPage(i)
+            if isinstance(nbpage, FeffPathPanel):
+                if nbpage is not self:
+                    pages[nbpage.title] = nbpage
+                    pathdata.append((nbpage.title, nbpage.desc,
+                                     nbpage.wids[name].GetValue()))
+
+        if len(pathdata) > 1:
+            dlg = CopyParamExpressionDialog(name, pathdata)
+            res = dlg.GetResponse()
+            dlg.Destroy()
+            if res.ok:
+                for pathname in res.paths:
+                    nbpage = pages.get(pathname, None)
+                    if nbpage is not None:
+                        nbpage.wids[name].SetValue(curval)
+
 
     def onExpression(self, event=None, name=None):
         if name is None:
@@ -742,11 +834,11 @@ class FeffPathPanel(wx.Panel):
                 result = False
 
         if result:
-            fgcol = GUI_COLORS.text
-            bgcol = GUI_COLORS.text_bg
+            fgcol = get_color('text')
+            bgcol = get_color('text_bg')
         else:
-            fgcol = GUI_COLORS.text_invalid
-            bgcol = GUI_COLORS.text_invalid_bg
+            fgcol = get_color('text_invalid')
+            bgcol = get_color('text_invalid_bg')
         self.wids[name].SetForegroundColour(fgcol)
         self.wids[name].SetBackgroundColour(bgcol)
         self.wids[name].SetOwnBackgroundColour(bgcol)
@@ -1396,7 +1488,6 @@ class FeffitPanel(TaskPanel):
             return allpages
 
         allpages = get_pagenames()
-        t0 = time.time()
 
         while 'FeffPathPanel' in allpages:
             for i in range(self.paths_nb.GetPageCount()):
@@ -1906,7 +1997,6 @@ class FeffitResultFrame(wx.Frame):
 
         self.filelist = EditableListBox(splitter, self.ShowDataSet,
                                         size=(250, -1))
-        set_color(self.filelist, 'list_fg', bg='list_bg')
 
         self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
 
@@ -1918,11 +2008,11 @@ class FeffitResultFrame(wx.Frame):
         # title row
         self.wids = wids = {}
         title = SimpleText(panel, 'Feffit Results', font=Font(FONTSIZE+2),
-                           colour=GUI_COLORS.title, style=LEFT)
+                           colour=get_color('title'), style=LEFT)
 
         wids['data_title'] = SimpleText(panel, '< > ', font=Font(FONTSIZE+2),
                                         minsize=(350, -1),
-                                        colour=GUI_COLORS.title, style=LEFT)
+                                        colour=get_color('title'), style=LEFT)
 
         wids['plot1_op'] = Choice(panel, choices=list(Plot1_Choices.keys()),
                                     action=self.onPlot, size=(125, -1))
@@ -2015,7 +2105,7 @@ class FeffitResultFrame(wx.Frame):
 
         irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(FONTSIZE+2),
-                           colour=GUI_COLORS.title, style=LEFT)
+                           colour=get_color('title'), style=LEFT)
         subtitle = SimpleText(panel, ' (most recent fit is at the top)',
                               font=Font(FONTSIZE+1),  style=LEFT)
 
@@ -2052,7 +2142,7 @@ class FeffitResultFrame(wx.Frame):
 
         irow += 1
         title = SimpleText(panel, '[[Parameters]]',  font=Font(FONTSIZE+2),
-                           colour=GUI_COLORS.title, style=LEFT)
+                           colour=get_color('title'), style=LEFT)
         sizer.Add(title, (irow, 0), (1, 1), LEFT)
 
         self.wids['copy_params'] = Button(panel, 'Update Model with these values',
@@ -2086,7 +2176,7 @@ class FeffitResultFrame(wx.Frame):
 
         irow += 1
         title = SimpleText(panel, '[[Correlations]]',  font=Font(FONTSIZE+2),
-                           colour=GUI_COLORS.title, style=LEFT)
+                           colour=get_color('title'), style=LEFT)
 
         ppanel = wx.Panel(panel)
         ppanel.SetMinSize((450, 20))
