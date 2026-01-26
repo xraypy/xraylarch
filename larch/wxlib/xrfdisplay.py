@@ -151,7 +151,7 @@ class XRFDataBrowser(wx.Frame):
                                       remove_action=self.onRemoveGroup,
                                       with_remove_from_list=False)
 
-        set_color(self.filelist, 'list_fg', bg='list_bg')
+        # set_color(self.filelist, 'list_fg', bg='list_bg')
         wx.CallAfter(self.update_grouplist)
 
         tsizer = wx.BoxSizer(wx.HORIZONTAL)

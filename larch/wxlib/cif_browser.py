@@ -128,7 +128,7 @@ class CIFFrame(wx.Frame):
 
         leftpanel = wx.Panel(splitter, size=(375, -1))
         self.ciflist = EditableListBox(leftpanel, self.onShowCIF, size=(375, -1))
-        set_color(self.ciflist, 'list_fg', bg='list_bg')
+        # set_color(self.ciflist, 'list_fg', bg='list_bg')
         self.cif_selections = {}
 
         sizer = wx.BoxSizer(wx.VERTICAL)
