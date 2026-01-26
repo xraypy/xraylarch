@@ -4,12 +4,8 @@ wx colors, copied (2025-March) from wxutils and wxmplot
 Eventually, these will be reconciled, but for now copies will be used.
 """
 import wx
-DARK_THEME = False
-try:
-    import darkdetect
-    DARK_THEME = darkdetect.isDark()
-except ImportError:
-    pass
+import darkdetect
+DARK_THEME = darkdetect.isDark()
 
 
 COLORS_LIGHT = {'text': wx.Colour(0, 0, 0),
@@ -67,6 +63,11 @@ COLORS_DARK = {'text': wx.Colour(255, 255, 255),
     }
 
 COLORS = COLORS_DARK if DARK_THEME else COLORS_LIGHT
+
+def get_color(name, defname='text'):
+    colors = COLORS_DARK if darkdetect.isDark() else COLORS
+    return colors.get(name, colors[defname])
+
 
 X11_COLORS = {'aliceblue': (240,248,255), 'antiquewhite': (250,235,215),
               'antiquewhite1': (255,239,219), 'antiquewhite2': (238,223,204),

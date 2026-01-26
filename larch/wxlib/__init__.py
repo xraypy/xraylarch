@@ -135,7 +135,7 @@ if HAS_WXPYTHON:
                          show_wxsizes, panel_pack)
 
     from .filechecklist import FileCheckList
-    from .wxcolors import COLORS, GUIColors, GUI_COLORS, set_color
+    from .wxcolors import COLORS, GUIColors, GUI_COLORS, set_color, get_color
     from . import larchframe
     from . import larchfilling
     from . import readlinetextctrl
