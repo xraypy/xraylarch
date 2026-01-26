@@ -424,7 +424,7 @@ class LoadSessionDialog(wx.Frame):
 
         self.select_imported = sel_imp
         self.grouplist = FileCheckList(leftpanel, select_action=self.onShowGroup)
-        set_color(self.grouplist, 'list_fg', bg='list_bg')
+        # set_color(self.grouplist, 'list_fg', bg='list_bg')
 
         tsizer = wx.GridBagSizer(2, 2)
         tsizer.Add(sel_all, (0, 0), (1, 1), LEFT, 0)

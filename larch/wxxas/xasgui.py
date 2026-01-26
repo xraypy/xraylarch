@@ -534,7 +534,7 @@ class LarixFrame(wx.Frame):
                                                  remove_action=self.RemoveFile,
                                                  with_remove_from_list=False)
 
-        set_color(self.controller.filelist, 'list_fg', bg='list_bg')
+        # set_color(self.controller.filelist, 'list_fg', bg='list_bg')
 
         tsizer = wx.BoxSizer(wx.HORIZONTAL)
         tsizer.Add(sel_all, 1, LEFT|wx.GROW, 1)
