@@ -37,12 +37,9 @@ specs:
     - wxpython>=4.2.2
     - charset-normalizer
     - pillow>=10
-    - pyyaml
+    - pyyaml>=6.0.3
     - dill
-    - pywin32          # [win]    
+    - pywin32          # [win]
     - patchelf         # [linux]
     - pango            # [linux]
     - fontconfig       # [linux or osx]
-
-    
-
