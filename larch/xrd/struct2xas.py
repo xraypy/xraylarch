@@ -38,7 +38,7 @@ except ImportError:
 
 __author__ = ["Beatriz G. Foschiani", "Mauro Rovezzi"]
 __email__ = ["beatrizgfoschiani@gmail.com", "mauro.rovezzi@esrf.fr"]
-__credits__ = ["Jade Chongsathapornpong", "Marius Retegan"]
+__credits__ = ["Jade Chongsathapornpong", "Marius Retegan", "Helen Engelhardt"]
 __version__ = "2024.1.0"
 
 
@@ -999,6 +999,7 @@ class Struct2XAS:
         edge: str = "K",
         sig2: Union[float, None] = None,
         debye: Union[List[float], None] = None,
+        feff_print: Union[List[int], None] = None,
         **kwargs,
     ):
         """
@@ -1026,6 +1027,11 @@ class Struct2XAS:
                     temperature at which the Debye-Waller factors are calculated [Kelvin].
                 debye_temperature : float
                     Debye Temperature of the material [Kelvin].
+        feff_print : list of six ints or None, [None]
+            PRINT card values controlling output verbosity for each FEFF module:
+            [pot, xsph, fms, paths, genfmt, ff2chi]
+            Values: 0=minimal, 1=standard, 2+=verbose
+            If None, defaults to [1, 0, 0, 0, 0, 3] (matches structure2feff.py)
 
         ..note:: refer to [FEFF documentation](https://feff.phys.washington.edu/feffproject-feff-documentation.html)
 
@@ -1093,6 +1099,10 @@ class Struct2XAS:
         else:
             use_debye = ""
             temperature, debye_temperature = debye[0], debye[1]
+
+        # Default PRINT values match structure2feff.py behavior
+        if feff_print is None:
+            feff_print = [1, 0, 0, 0, 0, 3]
 
         feff_comment = f"{feff_comment}"
         edge = f"{edge}"
@@ -1203,6 +1213,12 @@ class Struct2XAS:
         replacements["potentials"] = potentials
         replacements["atoms"] = atoms
         replacements["title"] = title
+        replacements["print_pot"] = feff_print[0]
+        replacements["print_xsph"] = feff_print[1]
+        replacements["print_fms"] = feff_print[2]
+        replacements["print_paths"] = feff_print[3]
+        replacements["print_genfmt"] = feff_print[4]
+        replacements["print_ff2chi"] = feff_print[5]
         # replacements[""] =
 
         try:
