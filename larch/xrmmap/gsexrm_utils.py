@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import time
-
+from pathlib import Path
 import larch
 from pyshortcuts import fix_varname
 
@@ -18,12 +18,12 @@ def fix_xrd1d_filename(xrd_file):
     """
     # first append '.npy'
     xrd1d_file = xrd_file  + '.npy'
-    if os.path.exists(xrd1d_file):
+    if Path(xrd1d_file).exists():
         return xrd1d_file
 
     # second, eiger .h5 -> .npy
     xrd1d_file = xrd_file.replace('.h5', '.npy').replace('_master', '')
-    if os.path.exists(xrd1d_file):
+    if Path(xrd1d_file).exists():
         return xrd1d_file
 
     return None
@@ -154,7 +154,6 @@ class GSEXRM_Area(object):
         elo, ehi = self.det.rois[iroi].left, self.det.rois[iroi].right
         counts = self.det.counts[self.yslice, self.xslice, elo:ehi]
 
-
 class GSEXRM_MapRow:
     '''
     read one row worth of data:
@@ -218,29 +217,47 @@ class GSEXRM_MapRow:
             else:
                 xrd_reader = read_xrd_netcdf
 
-            # print( "xrd_reader ", xrd_reader, xrdtype, xrdfile, ' cal :%s: ' % xrdcal)
+        # print( "xrd_reader ", xrd_reader, xrdtype, xrdfile, ' cal :%s: ' % xrdcal)
+
         # reading can fail with IOError, generally meaning the file isn't
         # ready for read.  Try again for up to 5 seconds
-        t0 = time.time()
-        sis_ok, xps_ok = False, False
 
+        # and...
+        # from windows, missing files may mean that the networked filesystem has
+        # not synced with the files written to the mount by the collection procees.
+        # toggling a small file in this folder will force a refresh of the
+        # directory listing, which may help
+        if os.name == 'nt':
+            tmpfile = Path(folder, '_wintmp_.txt')
+            if tmpfile.exists():
+                tmpfile.unlink()
+            else:
+                with open(tmpfile, 'w') as fh:
+                    fh.write('_tmp\n')
+            time.sleep(0.1)
+
+        sis_ok, xps_ok = False, False
         gdata, sdata = [], []
+        t0 = time.time()
         while not (sis_ok and xps_ok):
-            try:
-                ghead, gdata = readASCII(os.path.join(folder, xpsfile))
-                xps_ok = len(gdata) > 1
-            except IOError:
-                if (time.time() - t0) > 5.0:
-                    break
-                time.sleep(0.25)
-            try:
-                shead, sdata = readASCII(os.path.join(folder, sisfile))
-                sdata = sdata[offslice]
-                sis_ok = len(sdata) > 1
-            except IOError:
-                if (time.time() - t0) > 5.0:
-                    break
-                time.sleep(0.25)
+            folder_filelist = os.listdir(folder)
+            if xpsfile in folder_filelist and (not xps_ok):
+                try:
+                    ghead, gdata = readASCII(Path(folder, xpsfile).as_posix())
+                    xps_ok = len(gdata) > 1
+                except IOError:
+                    pass
+
+            if sisfile in folder_filelist and (not sis_ok):
+                try:
+                    shead, sdata = readASCII(Path(folder, sisfile).as_posix())
+                    sdata = sdata[offslice]
+                    sis_ok = len(sdata) > 1
+                except IOError:
+                    pass
+            if (sis_ok and xps_ok) or (time.time() > t0 + 5.0):
+                break
+            time.sleep(1.0)
 
         if not(sis_ok and xps_ok):
             print('Failed to read ASCII data for SIS: %s (%i), XPS: %s (%i)' %
@@ -285,7 +302,7 @@ class GSEXRM_MapRow:
 
             except (IOError, IndexError):
                 time.sleep(0.025)
-                
+
         if atime < 0 or xrf_dat is None:
             print( 'Failed to read data.')
             return
