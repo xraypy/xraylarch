@@ -202,7 +202,8 @@ class GSEXRM_MapRow:
         if has_xrf:
             if xrftype is None:
                 xrftype = 'netcdf'
-                if xrffile.startswith('xsp3'):
+                if (xrffile.startswith('xsp3') or xrffile.startswith('xspress') or
+                    xrffile.endswith('.h5') or xrffile.endsswith('hdf5')):
                     xrftype = 'hdf5'
             if xrftype == 'netcdf':
                 xrf_reader = read_xrf_netcdf
