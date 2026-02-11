@@ -201,8 +201,9 @@ class GSEXRM_MapRow:
         if has_xrf:
             if xrftype is None:
                 xrftype = 'netcdf'
-                if (xrffile.startswith('xsp3') or xrffile.startswith('xspress') or
-                    xrffile.endswith('.h5') or xrffile.endsswith('hdf5')):
+                if (xrffile.startswith('xsp') or
+                    xrffile.endswith('h5') or
+                    xrffile.endswith('hdf5')):
                     xrftype = 'hdf5'
             if xrftype == 'netcdf':
                 xrf_reader = read_xrf_netcdf
@@ -218,7 +219,6 @@ class GSEXRM_MapRow:
                 xrd_reader = read_xrd_netcdf
 
         # print( "xrd_reader ", xrd_reader, xrdtype, xrdfile, ' cal :%s: ' % xrdcal)
-
         # reading can fail with IOError, generally meaning the file isn't
         # ready for read.  Try again for up to 5 seconds
 
