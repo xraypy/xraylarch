@@ -12,6 +12,22 @@ from .asciifiles import (readASCII, readMasterFile, readROIFile,
 
 from ..xrd import integrate_xrd_row
 
+def toggle_winfile(folder, fname='_tmp.lock', sleep_time=0.05):
+    """
+    toggle a small lock file in a folder on Windows to force an
+    update of the windows directory.  For network-shared folders,
+    as when collecting data, this can be useful to force file lists
+    to be up to date.
+    """
+    if os.name == 'nt':
+        tmpfile = Path(folder, fname)
+        if tmpfile.exists():
+            tmpfile.unlink()
+        else:
+            with open(tmpfile, 'w') as fh:
+                fh.write('_tmp\n')
+        time.sleep(sleep_time)
+
 def fix_xrd1d_filename(xrd_file):
     """check for 1D XRD file from Eiger or other detector --
     avoids having to read hdf5 file at all
@@ -194,6 +210,7 @@ class GSEXRM_MapRow:
         self.xrdq_wdg  = None
         self.xrd1d_wdg = None
         if masterfile is not None:
+            toggle_winfile(folder, fname='_tmp.lock')
             header, rows = readMasterFile(masterfile)
             for row in header:
                 if row.startswith('#XRF.filetype'): xrftype = row.split()[-1]
@@ -227,14 +244,7 @@ class GSEXRM_MapRow:
         # not synced with the files written to the mount by the collection procees.
         # toggling a small file in this folder will force a refresh of the
         # directory listing, which may help
-        if os.name == 'nt':
-            tmpfile = Path(folder, '_wintmp_.txt')
-            if tmpfile.exists():
-                tmpfile.unlink()
-            else:
-                with open(tmpfile, 'w') as fh:
-                    fh.write('_tmp\n')
-            time.sleep(0.1)
+        toggle_winfile(folder)
 
         sis_ok, xps_ok = False, False
         gdata, sdata = [], []
