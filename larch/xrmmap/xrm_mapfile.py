@@ -29,7 +29,7 @@ from .asciifiles import (readASCII, readMasterFile, readROIFile,
                          readEnvironFile, parseEnviron)
 
 from .gsexrm_utils import (GSEXRM_MCADetector, GSEXRM_Area, GSEXRM_Exception,
-                           GSEXRM_MapRow, GSEXRM_FileStatus)
+                           GSEXRM_MapRow, GSEXRM_FileStatus, toggle_winfile)
 
 
 DEFAULT_XRAY_ENERGY = 39987.0  # probably means x-ray energy was not found in meta data
@@ -2359,6 +2359,7 @@ class GSEXRM_MapFile(object):
             # if file the master file is not new, the current row data is OK:
 
         try:
+            toggle_winfile(self.folder)
             header, rows = readMasterFile(self.masterfile)
         except IOError:
             raise GSEXRM_Exception("cannot read Master file from '%s'" %
