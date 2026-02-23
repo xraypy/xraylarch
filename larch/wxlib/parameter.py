@@ -11,9 +11,9 @@ import ast
 import wx
 from wx.lib.embeddedimage import PyEmbeddedImage
 
-from wxutils import (GridPanel, Choice, FloatCtrl,
-                     LEFT, pack, HLine, SetTip, Font)
-from .wxcolors import GUI_COLORS
+from wxutils import (GridPanel, Choice, FloatCtrl, get_color,
+                     LEFT, pack, HLine, SetTip, Font, register_darkdetect)
+
 from . import FONTSIZE
 from lmfit import Parameter
 from larch import Group
@@ -158,14 +158,14 @@ class ParameterWidgets(object):
             if param.expr not in (None, 'None', ''):
                 try:
                     ast.parse(param.expr)
-                    fgcol = GUI_COLORS.text
-                    bgcol = GUI_COLORS.text_bg
+                    fgcol = get_color('text')
+                    bgcol = get_color('text_bg')
                 except SyntaxError:
-                    fgcol = GUI_COLORS.text_invalid
-                    bgcol = GUI_COLORS.text_invalid_bg
+                    fgcol = get_color('text_invalid')
+                    bgcol = get_color('text_invalid_bg')
                 self.expr.SetForegroundColour(fgcol)
                 self.expr.SetBackgroundColour(bgcol)
-
+            register_darkdetect(self.onDarkTheme)
 
         if 'stderr' in widgets:
             stderr = param.stderr
@@ -196,6 +196,22 @@ class ParameterWidgets(object):
 
             self.bounds.SetStringSelection(bounds_choice)
 
+
+    def onDarkTheme(self, is_dark=None):
+        expr_wid = getattr(self, 'expr', None)
+        if self.param.expr in (None, 'None', '') or expr_wid is None:
+            return
+        try:
+            ast.parse(self.param.expr)
+            fgcol, bgcol = 'text', 'text_bg'
+        except SyntaxError:
+            fgcol, bgcol = 'text_invalid', 'text_invalid_bg'
+
+        self.expr.SetForegroundColour(get_color(fgcol, dark=is_dark))
+        self.expr.SetBackgroundColour(get_color(bgcol, dark=is_dark))
+        wx.CallAfter(self.Refresh)
+
+
     def onBOUNDSChoice(self, evt=None):
         bounds = str(self.bounds.GetStringSelection().lower())
         if bounds == BOUNDS_custom:
@@ -220,16 +236,14 @@ class ParameterWidgets(object):
     def onExpr(self, evt=None, value=None):
         if value is None:
             value = self.expr.GetValue()
-            # if hasattr(evt, 'GetString'):
-            #     value = evt.GetString()
         try:
             ast.parse(value)
             self.param.expr = value
-            fgcol = GUI_COLORS.text
-            bgcol = GUI_COLORS.text_bg
+            fgcol = get_color('text')
+            bgcol = get_color('text_bg')
         except SyntaxError:
-            fgcol = GUI_COLORS.text_invalid
-            bgcol = GUI_COLORS.text_invalid_bg
+            fgcol = get_color('text_invalid')
+            bgcol = get_color('text_invalid_bg')
 
         self.expr.SetForegroundColour(fgcol)
         self.expr.SetBackgroundColour(bgcol)
