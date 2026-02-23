@@ -21,6 +21,8 @@ import wx.grid as wxgrid
 import wx.dataview as dv
 
 from pyshortcuts import uname, fix_varname, fix_filename, gformat
+from wxutils import get_color, register_darkdetect
+
 from lmfit import Parameter, Parameters
 from lmfit.model import (save_modelresult, load_modelresult,
                          save_model, load_model)
@@ -38,12 +40,13 @@ from larch.xafs import feffit_report, feffpath, feffit_dataset, propagate_uncert
 from larch.xafs.feffdat import FEFFDAT_VALUES
 from larch.xafs.xafsutils import FT_WINDOWS
 
-from larch.wxlib import (ReportFrame, CSVFrame, BitmapButton, FloatCtrl, FloatSpin,
-                         SetTip, GridPanel, get_icon, SimpleText, pack,
-                         Button, HLine, Choice, Check, MenuItem, OkCancel,
-                         CEN, RIGHT, LEFT, FRAMESTYLE, Font, FONTSIZE,
-                         get_color, FONTSIZE_FW, FileSave,
-                         FileOpen, flatnotebook, EditableListBox, Popup,
+from larch.wxlib import (ReportFrame, CSVFrame, BitmapButton,
+                         FloatCtrl, FloatSpin, SetTip, GridPanel,
+                         get_icon, SimpleText, pack, Button, HLine,
+                         Choice, Check, MenuItem, OkCancel, CEN,
+                         RIGHT, LEFT, FRAMESTYLE, Font, FONTSIZE,
+                         FONTSIZE_FW, FileSave, FileOpen,
+                         flatnotebook, EditableListBox, Popup,
                          ExceptionPopup, DataTableGrid)
 
 from larch.wxlib.parameter import ParameterWidgets
@@ -756,6 +759,7 @@ class FeffPathPanel(wx.Panel):
         sizer= wx.BoxSizer(wx.VERTICAL)
         sizer.Add(panel, 1, LEFT|wx.GROW|wx.ALL, 2)
         pack(self, sizer)
+        register_darkdetect(self.onDarkTheme)
 
 
     def enable_editing(self):
@@ -833,17 +837,28 @@ class FeffPathPanel(wx.Panel):
             except:
                 result = False
 
+        fgcol, bgcol = 'text_invalid', 'text_invalid_bg'
         if result:
-            fgcol = get_color('text')
-            bgcol = get_color('text_bg')
-        else:
-            fgcol = get_color('text_invalid')
-            bgcol = get_color('text_invalid_bg')
-        self.wids[name].SetForegroundColour(fgcol)
-        self.wids[name].SetBackgroundColour(bgcol)
+            fgcol, bgcol = 'text', 'text_bg'
+
+        self.wids[name].SetForegroundColour(get_color(fgcol))
+        self.wids[name].SetBackgroundColour(get_color(bgcol))
         self.wids[name].SetOwnBackgroundColour(bgcol)
         if event is not None:
             event.Skip()
+
+    def onDarkTheme(self, is_dark=None):
+        for name in ('label', 'amp', 'e0', 'delr', 'sigma2', 'third', 'ei'):
+            wid = self.wids[name]
+            expr = wid.GetValue().strip()
+            if len(expr) > 1:
+                valid = self.feffit_panel.update_params_for_expr(expr)
+                fgcol, bgcol = 'text_invalid', 'text_invalid_bg'
+                if valid:
+                    fgcol, bgcol = 'text', 'text_bg'
+                wid.SetForegroundColour(get_color(fgcol, dark=is_dark))
+                wid.SetBackgroundColour(get_color(bgcol, dark=is_dark))
+        wx.CallAfter(self.Refresh)
 
 
     def onPlotFeffDat(self, event=None):
