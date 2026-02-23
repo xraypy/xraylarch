@@ -132,10 +132,11 @@ if HAS_WXPYTHON:
                          FileOpen, FileSave, SelectWorkdir,
                          FloatSpinWithPin, flatnotebook,
                          PeriodicTablePanel, gcd, ExceptionPopup,
-                         show_wxsizes, panel_pack)
+                         show_wxsizes, panel_pack,
+                         COLORS, GUIColors, GUI_COLORS, set_color, get_color)
 
     from .filechecklist import FileCheckList
-    from .wxcolors import COLORS, GUIColors, GUI_COLORS, set_color, get_color
+
     from . import larchframe
     from . import larchfilling
     from . import readlinetextctrl

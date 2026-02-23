@@ -12,13 +12,14 @@ import larch
 from larch import Group
 from larch.io import read_athena
 
+from wxutils import get_color
+from wxmplot import PlotPanel
+
 from . import (SimpleText, Button, Choice, FileCheckList,
                FileDropTarget, pack, Check, MenuItem, SetTip, Popup,
                CEN, LEFT, FRAMESTYLE, Font)
 
-from .wxcolors import GUI_COLORS
 
-from wxmplot import PlotPanel
 
 CEN |=  wx.ALL
 
@@ -62,7 +63,7 @@ class AthenaImporter(wx.Frame) :
 
         self.SetTitle("Reading Athena Project '%s'" % self.filename)
         self.title = SimpleText(rightpanel, self.filename, font=Font(13),
-                                colour=GUI_COLORS.title, style=LEFT)
+                                colour=get_color('title'), style=LEFT)
 
         self.plotpanel = PlotPanel(rightpanel, messenger=self.plot_messages)
         from .plotter import get_plot_config

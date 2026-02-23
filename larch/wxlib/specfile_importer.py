@@ -141,7 +141,7 @@ class SpecfileImporter(wx.Frame) :
         # title row
         self.title = SimpleText(panel,
                                 "  %s, scan %s" % (self.path, self.curscan.scan_name),
-                                font=Font(11), colour=self.colors.title, style=LEFT)
+                                font=Font(11), colour=get_color('title'), style=LEFT)
 
         self.wid_scantitle = SimpleText(panel, " %s" % self.curscan.title,
                                        font=Font(11), style=LEFT)
@@ -180,7 +180,7 @@ class SpecfileImporter(wx.Frame) :
 
         self.ysuf = SimpleText(panel, '')
         self.message = SimpleText(panel, '-', font=Font(11),
-                           colour=self.colors.title, style=LEFT)
+                           colour=get_color('title'), style=LEFT)
 
         self.ypop.SetStringSelection(self.config['ypop'])
         self.yop.SetStringSelection(self.config['yop'])

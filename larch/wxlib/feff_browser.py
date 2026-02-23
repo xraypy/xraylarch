@@ -10,15 +10,17 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.dataview as dv
 
+from wxutils import get_color
+
 import larch
 from larch.site_config import user_larchdir
 from larch.utils import unixpath, mkdir, read_textfile
-from larch.wxlib import (GridPanel, GUIColors, Button, pack, SimpleText,
+
+from larch.wxlib import (GridPanel, Button, pack, SimpleText,
                          Font, LEFT, FRAMESTYLE,
                          FONTSIZE, MenuItem, EditableListBox, OkCancel,
                          FileCheckList, Choice, HLine, ReportFrame, Popup,
                          LarchWxApp)
-from .wxcolors import GUI_COLORS
 
 from larch.xafs import get_feff_pathinfo
 from larch.utils.physical_constants import ATOM_SYMS
@@ -105,19 +107,19 @@ class FeffPathsModel(dv.DataViewIndexListModel):
         nleg = self.data[row][2]
         cname = self.data[row][0]
         if nleg == '2':
-            attr.SetColour(GUI_COLORS.text)
+            attr.SetColour(get_color('text'))
             attr.SetBold(False)
             return True
         elif nleg == '3':
-            attr.SetColour(GUI_COLORS.title_red)
+            attr.SetColour(get_color('title_red'))
             attr.SetBold(False)
             return True
         elif nleg == '4':
-            attr.SetColour(GUI_COLORS.title_blue)
+            attr.SetColour(get_color('title_blue'))
             attr.SetBold(False)
             return True
         else:
-            attr.SetColour(GUI_COLORS.title_green)
+            attr.SetColour(get_color('title_green'))
             attr.SetBold(False)
             return True
         return False
@@ -162,7 +164,6 @@ class FeffResultsPanel(wx.Panel):
         self.dvc.AssociateModel(self.model)
 
         panel = wx.Panel(self)
-        # panel.SetBackgroundColour(GUIColors.bg)
 
         sizer = wx.GridBagSizer(1, 1)
 

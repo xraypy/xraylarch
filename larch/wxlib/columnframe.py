@@ -15,7 +15,7 @@ import wx.lib.scrolledpanel as scrolled
 import wx.lib.agw.flatnotebook as fnb
 from wxmplot import PlotPanel
 
-from wxutils import (SimpleText, FloatCtrl, FloatSpin, Button,
+from wxutils import (SimpleText, FloatCtrl, FloatSpin, Button, get_color,
                      Choice, TextCtrl, pack, Popup, Check, MenuItem, CEN,
                      RIGHT, LEFT, FRAMESTYLE, flatnotebook, HLine, Font)
 from pyshortcuts import fix_filename, fix_varname, gformat
@@ -27,7 +27,7 @@ from larch.utils.strutils import file2groupname
 from larch.io import look_for_nans, guess_filereader, is_specfile, sum_fluor_channels
 from larch.utils.physical_constants import PLANCK_HC, DEG2RAD
 from larch.math import safe_log
-from .wxcolors import GUI_COLORS
+
 from . import FONTSIZE
 
 CEN |=  wx.ALL
@@ -651,9 +651,9 @@ class ColumnDataFileFrame(wx.Frame) :
 
         # use_trans = self.config.get('xasmode', 'unknown') == 'transmission' or 'log' in self.config['ypop']
 
-        message = "Data Columns for %s" % group.filename
+        message = f"Data Columns (blue) for {group.filename}"
         wx.Frame.__init__(self, None, -1,
-                          'Build Arrays from Data Columns for %s' % group.filename,
+                          f'Build Arrays from Data Columns for {group.filename}',
                           style=FRAMESTYLE)
 
         x0, y0 = parent.GetPosition()
@@ -663,12 +663,11 @@ class ColumnDataFileFrame(wx.Frame) :
         panel = wx.Panel(self)
         self.SetMinSize((725, 700))
 
-        def subtitle(s, fontsize=12, colour=GUI_COLORS.title_blue):
-            return SimpleText(panel, s, font=Font(fontsize),
-                           colour=colour, style=LEFT)
+        def subtitle(s, fontsize=12, colorname='title_blue'):
+            return SimpleText(panel, s, font=Font(fontsize),  colour=colorname, style=LEFT)
 
         # title row
-        title = subtitle(message, colour=GUI_COLORS.title)
+        title = subtitle(message, colorname='title_blue')
 
         yarr_labels = self.yarr_labels = self.array_labels + ['1.0', '']
         xarr_labels = self.xarr_labels = self.array_labels + ['_index']
