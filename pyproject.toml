@@ -97,7 +97,8 @@ Tracker = "https://github.com/xraypy/xraylarch/issues"
 dev = ["build", "twine", "pre-commit", "pytest", "pytest-xvfb;platform_system=='Linux'", "pytest-cov", "coverage"]
 doc = ["Sphinx", "numpydoc", "sphinx-copybutton", "sphinxcontrib-video", "sphinxcontrib-bibtex", "sphinxcontrib-argdoc"]
 
-wxgui = ["wxpython>=4.2.2",  "wxmplot>=2025.1.6", "wxutils>=0.3.6", "darkdetect"]
+wxgui = ["wxpython>=4.2.2",  "wxmplot>=2025.1.6", "wxutils>=2026.1.0",
+         "darkdetect",  "pyobjc-framework-Cocoa; platform_system == 'Darwin'"]
 
 qtgui = ["PyQt5", "pyqtwebengine", "pyqtgraph"]
 
