@@ -17,7 +17,7 @@ NROWS = 25
 # from larch.wxlib import (BitmapButton, SetTip, GridPanel, FloatCtrl,
 #                          FloatSpin, FloatSpinWithPin, get_icon, SimpleText,
 #                          pack, Button, HLine, Choice, Check, MenuItem,
-#                          GUIColors, CEN, LEFT, FRAMESTYLE, Font, FileSave,
+#                          CEN, LEFT, FRAMESTYLE, Font, FileSave,
 #                          FileOpen, FONTSIZE)
 
 class ReportFrame(wx.Frame):
