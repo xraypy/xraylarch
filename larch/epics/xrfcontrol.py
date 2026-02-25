@@ -27,7 +27,7 @@ from wxutils import (SimpleText, EditableListBox, Font, FloatCtrl,
 
 import larch
 from larch.site_config import icondir
-from larch.wxlib import PeriodicTablePanel, LarchWxApp, GUI_COLORS
+from larch.wxlib import PeriodicTablePanel, LarchWxApp, get_color
 from larch.wxlib.xrfdisplay import (XRFDisplayFrame, XRFCalibrationFrame,
                                     FILE_WILDCARDS)
 from larch.utils import get_cwd
@@ -40,11 +40,11 @@ except:
     caget = get_pv = Epics_MultiXMAP = Epics_Xspress3 = Epics_KetekMCA = None
 
 def warning_color(val, warn, error):
-    tcolor = GUI_COLORS.text
+    tcolor = wx.Colour(get_color('text'))
     if val > warn:
-        tcolor = GUI_COLORS.orangered4
+        tcolor = wx.Colour(140, 60, 10, 255)
     if val > error:
-        tcolor = GUI_COLORS.text_invalid
+        tcolor = wx.Colour(get_color('text_invalid'))
     return tcolor
 
 class DetectorSelectDialog(wx.Dialog):
