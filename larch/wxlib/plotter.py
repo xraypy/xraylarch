@@ -53,7 +53,7 @@ XRF_DISPLAYS = {}
 DISPLAY_LIMITS = None
 _larch_name = '_plotter'
 
-PLOTOPTS = {'theme': '<auto>',
+PLOTOPTS = {'theme': 'auto',
             'window_size': [650, 600],
             'auto_margins': True,
             'axes_style': 'box',
@@ -132,9 +132,9 @@ def get_plot_config(**kws):
     conf.update(**kws)
 
     # check for theme of "<auto>"
-    if conf.get('theme', '<auto>').lower().startswith('<auto>'):
-        isdark = wx.SystemSettings.GetAppearance().IsDark()
-        conf['theme'] = 'dark' if isdark else 'light'
+    if conf.get('theme', 'auto').lower().startswith('<auto>'):
+        conf['theme'] = 'auto'
+
 
     # if the saved configuration has 'traces',
     # use the first for default trace properties
@@ -209,7 +209,6 @@ def set_panel_plot_config(panel, **kws):
     """set plot configuration for current plot)"""
     cnf = get_panel_plot_config(panel)
     cnf.update(**kws)
-    # print("Set Panel Plot Config", cnf)
     panel.set_config(**cnf)
 
 def get_zorders(display=None, panel=None):
@@ -348,11 +347,7 @@ class PlotDisplay(PlotFrame):
     def set_config(self,  **kws):
         cnf = get_plot_config()
         cnf.update(**kws)
-        try:
-            self.panel.set_config(**cnf)
-        except:
-            print("could not set plot config")
-
+        self.panel.set_config(**cnf)
 
 class StackedPlotDisplay(StackedPlotFrame):
     def __init__(self, wxparent=None, window=1, _larch=None,  size=None, **kws):
@@ -562,6 +557,7 @@ def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
             panels.append(display.panel_bot)
         for panel in panels:
             panel.set_config(**plot_conf)
+            # panel.conf.set_theme(plot_conf.get('theme', 'auto'))
 
     try:
         if wintitle is not None:
