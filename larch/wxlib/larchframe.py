@@ -16,7 +16,7 @@ from larch.interpreter import Interpreter
 from pyshortcuts import uname, get_cwd, fix_varname
 
 from wxutils import (MenuItem, Font, Button, Choice, panel_pack,
-                         get_color, register_darkdetect)
+                     TextCtrl, get_color, register_darkdetect)
 
 from .gui_utils import LarchWxApp
 from .readlinetextctrl import ReadlineTextCtrl
@@ -42,6 +42,11 @@ def set_fontsize(obj, fsize):
     fn.SetPixelSize(wx.Size(int((f1*fsize/f2)), fsize))
     obj.SetFont(fn)
 
+DISPLAY_COLORS = {'text': 'text',
+                 'bg': 'text_bg',
+                 'text2':  'title_blue',
+                 'comment': 'title_green',
+                 'error': 'title_red'}
 
 class LarchWxShell(object):
     ps1 = 'Larch>'
@@ -66,8 +71,8 @@ class LarchWxShell(object):
         self.objtree = wxparent.objtree
 
         self.set_textstyle(mode='text')
-        self._larch(f"_sys.display.colors['text2'] = {{'color': '{get_color('text')}'}}",
-                    add_history=False)
+        self._larch(f"_sys.display.colors = {DISPLAY_COLORS}",
+                     add_history=False)
 
         self.symtable.set_symbol('_builtin.force_wxupdate', False)
         self.symtable.set_symbol('_sys.wx.inputhook',   inputhook)
@@ -93,10 +98,22 @@ class LarchWxShell(object):
         register_darkdetect(self.onDarkMode)
 
     def onDarkMode(self, is_dark=None):
-        display_colors = self.symtable._sys.display.colors
-        print(f"LarchWxShell dark mode {is_dark=}  // {display_colors=}")
         self.prompt.SetForegroundColour(get_color('title_blue', dark=is_dark))
 
+        fgcol = get_color('text', dark=is_dark)
+        bgcol = get_color('text_bg', dark=is_dark)
+
+        self.input.SetForegroundColour(fgcol)
+        self.input.SetBackgroundColour(bgcol)
+
+        sfont = self.output.GetFont()
+        self.textstyle = wx.TextAttr(fgcol, bgcol, sfont)
+        here = self.output.GetLastPosition()
+        self.output.SetStyle(0, here, self.textstyle)
+
+        self.output.SetForegroundColour(fgcol)
+        self.output.SetBackgroundColour(bgcol)
+        wx.CallAfter(self.Refresh)
 
     def onUpdate(self, event=None):
         symtable = self.symtable
@@ -123,18 +140,13 @@ class LarchWxShell(object):
         if self.output is None:
             return
 
-        display_colors = self.symtable._sys.display.colors
-
-        textattrs = display_colors.get(mode, {'color':'black'})
-        color = textattrs['color']
-
         style = self.output.GetDefaultStyle()
-        fgcol = get_color('text')
+        fgcol = get_color(DISPLAY_COLORS.get(mode, 'text'))
         bgcol = get_color('text_bg')
         sfont = self.output.GetFont()
         style.SetFont(sfont)
         self.output.SetDefaultStyle(style)
-        self.textstyle = wx.TextAttr(color, bgcol, sfont)
+        self.textstyle = wx.TextAttr(fgcol, bgcol, sfont)
 
     def write_sys(self, text):
         sys.stdout.write(text)
@@ -241,10 +253,11 @@ class LarchPanel(wx.Panel):
         self.prompt = wx.StaticText(ipanel, label='Larch>', size=(75,-1),
                                     style=wx.ALIGN_CENTER|wx.ALIGN_RIGHT)
 
-        self.input = wx.TextCtrl(ipanel, value='', size=(525,-1),
-                                 style=wx.TE_LEFT|wx.TE_PROCESS_ENTER)
+        self.input = TextCtrl(ipanel, value='', size=(525,-1),
+                              colour='text', bgcolour='text_bg',
+                              style=wx.TE_LEFT|wx.TE_PROCESS_ENTER,
+                              action=self.onText)
 
-        self.input.Bind(wx.EVT_TEXT_ENTER, self.onText)
         if uname == 'darwin':
             self.input.Bind(wx.EVT_KEY_UP,  self.onChar)
         else:
@@ -301,8 +314,7 @@ class LarchPanel(wx.Panel):
     def update(self):
         self.objtree.onRefresh()
 
-    def onText(self, event=None):
-        text =  event.GetString()
+    def onText(self, text=None, event=None):
         self.input.Clear()
         if text.lower() in ('quit', 'exit', 'quit()', 'exit()'):
             if self.parent.exit_on_close:

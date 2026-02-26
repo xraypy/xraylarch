@@ -24,7 +24,8 @@ from functools import partial
 from wx.py import introspect
 from larch.symboltable import SymbolTable, Group
 from larch.larchlib import Procedure
-from wxutils  import Button, pack
+from wxutils  import Button, pack, get_color, register_darkdetect
+
 from . import get_font
 
 VERSION = '0.9.5(Larch)'
@@ -109,6 +110,8 @@ class FillingTree(wx.TreeCtrl):
         self.item = None
         self.root = None
         self.setRootObject(rootObject)
+        print("Filling Tree ", self)
+        print(dir(self))
 
     def setRootObject(self, rootObject=None):
         self.rootObject = rootObject
@@ -431,6 +434,8 @@ class Filling(wx.SplitterWindow):
                                 rootLabel=rootLabel,
                                 rootIsNamespace=rootIsNamespace)
         self.text = FillingText(parent=self)
+        fgcol = get_color('text')
+        bgcol = get_color('text_bg')
         self.tree.SetBackgroundColour(bgcol)
         self.tree.SetForegroundColour(fgcol)
         self.text.SetBackgroundColour(bgcol)
@@ -438,7 +443,7 @@ class Filling(wx.SplitterWindow):
 
         self.SplitVertically(self.tree, self.text, 200)
         self.SetMinimumPaneSize(100)
-
+        register_darkdetect(self.onDarkMode)
         # Override the filling so that descriptions go to FillingText.
         self.tree.setText = self.text.SetText
 
@@ -446,6 +451,16 @@ class Filling(wx.SplitterWindow):
         if self.tree.root is not None:
             self.tree.SelectItem(self.tree.root)
             self.tree.display()
+
+    def onDarkMode(self, is_dark=None):
+        fgcol = get_color('text', dark=is_dark)
+        bgcol = get_color('text_bg', dark=is_dark)
+        self.tree.SetBackgroundColour(bgcol)
+        self.tree.SetForegroundColour(fgcol)
+        self.text.SetBackgroundColour(bgcol)
+        self.text.SetForegroundColour(fgcol)
+        wx.CallAfter(self.Refresh)
+
 
     def SetRootObject(self, rootObject=None):
         self.tree.setRootObject(rootObject)
