@@ -15,7 +15,8 @@ import larch
 from larch.interpreter import Interpreter
 from pyshortcuts import uname, get_cwd, fix_varname
 
-from wxutils import (MenuItem, Font, Button, Choice, panel_pack)
+from wxutils import (MenuItem, Font, Button, Choice, panel_pack,
+                         get_color, register_darkdetect)
 
 from .gui_utils import LarchWxApp
 from .readlinetextctrl import ReadlineTextCtrl
@@ -31,13 +32,6 @@ from larch.version import make_banner, version_data
 FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (*.*)|*.*"
 
 ICON_FILE = 'larch.ico'
-BACKGROUND_COLOUR = '#FCFCFA'
-FOREGROUND_COLOUR = '#050520'
-
-def makeColorPanel(parent, color):
-    p = wx.Panel(parent, -1)
-    p.SetBackgroundColour(color)
-    return p
 
 def wx_inspect():
     wx.GetApp().ShowInspectionTool()
@@ -72,7 +66,7 @@ class LarchWxShell(object):
         self.objtree = wxparent.objtree
 
         self.set_textstyle(mode='text')
-        self._larch("_sys.display.colors['text2'] = {'color': 'blue'}",
+        self._larch(f"_sys.display.colors['text2'] = {{'color': '{get_color('text')}'}}",
                     add_history=False)
 
         self.symtable.set_symbol('_builtin.force_wxupdate', False)
@@ -96,6 +90,13 @@ class LarchWxShell(object):
             self.textstyle = wx.TextAttr('black', bgcol, sfont)
 
         self.SetPrompt(True)
+        register_darkdetect(self.onDarkMode)
+
+    def onDarkMode(self, is_dark=None):
+        display_colors = self.symtable._sys.display.colors
+        print(f"LarchWxShell dark mode {is_dark=}  // {display_colors=}")
+        self.prompt.SetForegroundColour(get_color('title_blue', dark=is_dark))
+
 
     def onUpdate(self, event=None):
         symtable = self.symtable
@@ -111,11 +112,11 @@ class LarchWxShell(object):
     def SetPrompt(self, complete):
         if self.prompt is None:
             return
-        sprompt, scolor = self.ps1, '#000075'
+        sprompt, scolor = self.ps1, 'title_blue'
         if not complete:
-            sprompt, scolor = self.ps2, '#E00075'
+            sprompt, scolor = self.ps2, 'title_red'
         self.prompt.SetLabel(sprompt)
-        self.prompt.SetForegroundColour(scolor)
+        self.prompt.SetForegroundColour(get_color(scolor))
         self.prompt.Refresh()
 
     def set_textstyle(self, mode='text'):
@@ -128,7 +129,8 @@ class LarchWxShell(object):
         color = textattrs['color']
 
         style = self.output.GetDefaultStyle()
-        bgcol = BACKGROUND_COLOUR
+        fgcol = get_color('text')
+        bgcol = get_color('text_bg')
         sfont = self.output.GetFont()
         style.SetFont(sfont)
         self.output.SetDefaultStyle(style)
@@ -216,13 +218,13 @@ class LarchPanel(wx.Panel):
         splitter.SetMinimumPaneSize(150)
 
         self.objtree = Filling(splitter,  rootLabel='_main',
-                               fgcol=FOREGROUND_COLOUR, bgcol=BACKGROUND_COLOUR)
+                               fgcol=get_color('text'), bgcol=get_color('text_bg'))
 
         self.output = wx.TextCtrl(splitter, -1,  '',
                                   style=wx.TE_MULTILINE|wx.TE_RICH|wx.TE_READONLY)
 
-        self.output.SetBackgroundColour(BACKGROUND_COLOUR)
-        self.output.SetForegroundColour(FOREGROUND_COLOUR)
+        self.output.SetForegroundColour(get_color('text'))
+        self.output.SetBackgroundColour(get_color('text_bg'))
         if font is None:
             font = get_font(larger=2)
 
@@ -273,6 +275,20 @@ class LarchPanel(wx.Panel):
 
         self.objtree.SetRootObject(self.larchshell.symtable)
         self.output.SetInsertionPointEnd()
+
+        register_darkdetect(self.onDarkMode)
+
+    def onDarkMode(self, is_dark=None):
+        print(f"LarchPanel dark mode {is_dark=}  // ")
+
+        fgcol = get_color('text', dark=is_dark)
+        bgcol = get_color('text_bg', dark=is_dark)
+
+        self.objtree.SetForegroundColour(fgcol)
+        self.objtree.SetBackgroundColour(fgcol)
+        self.output.SetForegroundColour(fgcol)
+        self.output.SetBackgroundColour(bgcol)
+        wx.CallAfter(self.Refresh)
 
 
     def write_banner(self):
