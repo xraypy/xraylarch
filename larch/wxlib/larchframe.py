@@ -292,8 +292,6 @@ class LarchPanel(wx.Panel):
         register_darkdetect(self.onDarkMode)
 
     def onDarkMode(self, is_dark=None):
-        print(f"LarchPanel dark mode {is_dark=}  // ")
-
         fgcol = get_color('text', dark=is_dark)
         bgcol = get_color('text_bg', dark=is_dark)
 
