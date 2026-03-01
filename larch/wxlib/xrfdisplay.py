@@ -21,6 +21,8 @@ from matplotlib.ticker import LogFormatter, FuncFormatter
 
 from pyshortcuts import uname, bytes2str, get_cwd, fix_filename
 
+from wxutils import register_darkdetect, DARK_THEME
+
 from wxmplot import PlotPanel
 from . import (SimpleText, FileCheckList, Font, pack, Popup,
                set_color, get_icon, get_font,
@@ -275,7 +277,10 @@ class XRFDisplayFrame(wx.Frame):
             size = (725, 450)
         wx.Frame.__init__(self, parent=parent,
                           title=title, size=size,  **kws)
-        self.colors = XRFDisplayColors_Light()
+        self.colors = (XRFDisplayColors_Dark() if DARK_THEME
+                           else XRFDisplayColors_Light())
+        register_darkdetect(self.onDarkMode)
+
         self.subframes = {}
         self.data = None
         self.title = title
@@ -350,6 +355,11 @@ class XRFDisplayFrame(wx.Frame):
             if isinstance(filename, Path):
                 filename = Path(filename).absolute().as_posix()
             self.add_mca(GSEMCA_File(filename), filename=filename, plot=True)
+
+    def onDarkMode(self, is_dark=None):
+        self.colors = (XRFDisplayColors_Dark() if is_dark
+                           else XRFDisplayColors_Light())
+        wx.CallAfter(self.Refresh)
 
     def on_cursor(self, event=None, side='left'):
         if event is None:
@@ -691,7 +701,7 @@ class XRFDisplayFrame(wx.Frame):
         tsiz.Add(self.wids['show_grid'],   0, wx.EXPAND|wx.ALL, 0)
         pack(top, tsiz)
 
-        pan = self.plotpanel = PlotPanel(rpanel, fontsize=9, axisbg='#FFFFFF',
+        pan = self.plotpanel = PlotPanel(rpanel, fontsize=9, theme='auto',
                                          with_data_process=False,
                                          output_title='test.xrf',
                                          messenger=self.write_message)
@@ -702,7 +712,6 @@ class XRFDisplayFrame(wx.Frame):
 
         pan.SetSize((650, 350))
 
-        pan.conf.grid_color='#E5E5C0'
         pan.conf.show_grid = self.show_grid
         pan.yformatter = self._formaty
 
@@ -711,7 +720,6 @@ class XRFDisplayFrame(wx.Frame):
         pan.axes.spines['right'].set_visible(False)
         pan.axes.yaxis.set_ticks_position('left')
 
-        pan.conf.canvas.figure.set_facecolor('#FCFCFE')
         pan.conf.labelfont.set_size(9)
         pan.onRightDown =   partial(self.on_cursor, side='right')
         pan.report_leftdown = partial(self.on_cursor, side='left')
@@ -1235,8 +1243,8 @@ class XRFDisplayFrame(wx.Frame):
             h.set_linewidth(1.5)
             h.set_zorder(-5)
         newh.set_color(self.colors.emph_elinecolor)
-        newh.set_linewidth(2.0)
-        newh.set_zorder(-10)
+        newh.set_linewidth(3.0)
+        newh.set_zorder(-25)
         self.highlight_xrayline = newh
         self.energy_for_zoom = en
         if self.plotpanel.conf.show_legend:

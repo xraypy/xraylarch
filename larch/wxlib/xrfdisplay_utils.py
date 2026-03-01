@@ -460,13 +460,13 @@ class XRFLines:
     e_max   = 30.0
 
 class XRFDisplayColors_Light:
-    emph_elinecolor  = '#8888BB'
+    emph_elinecolor  = '#E59553'
     major_elinecolor = '#DAD8CA'
     minor_elinecolor = '#F4DAC0'
     hold_elinecolor  = '#CAC8DA'
     marker_color     = '#77BB99'
     roi_fillcolor    = '#F8F0BA'
-    roi_color        = '#d62728'
+    roi_color        = '#D62728'
     spectra_color    = '#1f77b4'
     spectra2_color   = '#2ca02c'
     bgr_color        = '#ff7f0e'
@@ -476,13 +476,13 @@ class XRFDisplayColors_Light:
 
 
 class XRFDisplayColors_Dark:
-    emph_elinecolor  = '#444444'
-    major_elinecolor = '#DAD8CA'
-    minor_elinecolor = '#F4DAC0'
-    hold_elinecolor  = '#CAC8DA'
+    emph_elinecolor  = '#E59393'
+    major_elinecolor = '#BAB8AA'
+    minor_elinecolor = '#948A70'
+    hold_elinecolor  = '#AAA8BA'
     marker_color     = '#77BB99'
-    roi_fillcolor    = '#F8F0BA'
-    roi_color        = '#d62728'
+    roi_fillcolor    = '#A8A03A'
+    roi_color        = '#C62728'
     spectra_color    = '#1f77b4'
     spectra2_color   = '#2ca02c'
     bgr_color        = '#ff7f0e'
