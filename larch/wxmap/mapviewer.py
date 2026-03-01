@@ -1461,8 +1461,6 @@ class MapViewerFrame(wx.Frame):
     def createNBPanels(self, parent):
         self.title    = SimpleText(parent, ' ', size=(680, -1))
 
-        self.SetBackgroundColour('#F0F0E8')
-
         nbpanels = {}
         for panel in (MapPanel, MapInfoPanel, MapAreaPanel, MapMathPanel,
                       TomographyPanel, XRFAnalysisPanel):
