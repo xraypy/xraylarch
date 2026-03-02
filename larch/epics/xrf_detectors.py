@@ -91,8 +91,8 @@ class Epics_Xspress3(object):
     multi-element MCA detector using Quantum Xspress3 electronics
     and Epics IOC based on AreaDetector2 IOC (3.2?)
     """
-    MIN_FRAMETIME = 0.25
-    MAX_FRAMES    = 12000
+    MIN_FRAMETIME = 0.10
+    MAX_FRAMES    = 12500
     def __init__(self, prefix=None, nmca=4, version=2, use_sum=True, **kws):
         self.nmca = nmca
         self.prefix = prefix
@@ -182,22 +182,14 @@ class Epics_Xspress3(object):
     def set_dwelltime(self, dtime=1.0, nframes=None, **kws):
         self._xsp3.useInternalTrigger()
         self._xsp3.FileCaptureOff()
-
-        if nframes is None:
+        if dtime < self.MIN_FRAMETIME:
             # count forever, or close to it
-            frametime = self.MIN_FRAMETIME
-            if dtime < self.MIN_FRAMETIME:
-                nframes = self.MAX_FRAMES
-            elif dtime > self.MAX_FRAMES*self.MIN_FRAMETIME:
-                nframes   = self.MAX_FRAMES
-                frametime = 1.0*dtime/nframes
-            else:
-                nframes   = int((dtime+frametime*0.1)/frametime)
-        else:
-            frametime = dtime
+            dtime = self.MIN_FRAMETIME
+            nframes = self.MAX_FRAMES
 
-        self._xsp3.NumImages   = self.nframes   = nframes
-        self._xsp3.AcquireTime = self.frametime = frametime
+        if nframes is not None:
+            self._xsp3.NumImages  = self.nframes  = nframes
+        self._xsp3.AcquireTime = self.frametime = dtime
 
     def get_frametime(self):
         self.nframes = self._xsp3.NumImages

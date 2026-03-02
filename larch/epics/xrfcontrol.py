@@ -34,13 +34,18 @@ from larch.utils import get_cwd
 
 ROI_WILDCARD = 'Data files (*.dat)|*.dat|ROI files (*.roi)|*.roi|All files (*.*)|*.*'
 try:
-    from epics import caget, get_pv
+    from epics import caget, caput, get_pv
+    from epics.wx import EpicsFunction
     from .xrf_detectors import Epics_MultiXMAP, Epics_Xspress3, Epics_KetekMCA
 except:
     caget = get_pv = Epics_MultiXMAP = Epics_Xspress3 = Epics_KetekMCA = None
 
+if caget is not None:  # is pyepics imported?
+    from epics.wx import (PVText, PVTextCtrl, PVFloatCtrl,
+                          PVEnumButtons, PVEnumChoice)
+
 def warning_color(val, warn, error):
-    tcolor = wx.Colour(get_color('text'))
+    tcolor = wx.Colour(get_color('texP'))
     if val > warn:
         tcolor = wx.Colour(140, 60, 10, 255)
     if val > error:
@@ -67,7 +72,7 @@ class DetectorSelectDialog(wx.Dialog):
 
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
 
-        self.SetBackgroundColour((240, 240, 230))
+        self.SetBackgroundColour(get_color('info_bg'))
         self.SetFont(Font(9))
         if parent is not None:
             self.SetFont(parent.GetFont())
@@ -117,6 +122,128 @@ class DetectorSelectDialog(wx.Dialog):
         self.SetSizer(sizer)
         sizer.Fit(self)
 
+class Xspress3ControlFrame(wx.Frame):
+    def __init__(self, parent=None, prefix='No IOC', nmca=4, size=(600, 550)):
+
+        title=f"Xspress3 Epics Control: '{prefix}', {nmca} elements"
+        self.parent = parent
+        self.prefix = prefix
+        self.nmca = nmca
+
+        wx.Frame.__init__(self, parent=parent, size=size, title=title)
+
+        pan = self.panel = GridPanel(self)
+
+        pan.Add(SimpleText(pan, title, size=(450, -1),style=LEFT), dcol=4, style=LEFT)
+
+        bpan = wx.Panel(pan)
+        bsizer = wx.BoxSizer(wx.HORIZONTAL)
+        for label, action in (('Start', self.onStart),
+                              ('Stop', self.parent.onStop),
+                              ('Erase', self.parent.onErase),
+                              ('Continuous', partial(self.onStart,
+                                                     dtime=0.25, nframes=16000))):
+            bsizer.Add(Button(bpan, label, size=(100, -1), action=action))
+        pack(bpan, bsizer)
+
+        pan.Add(bpan, newrow=True, dcol=4, style=LEFT)
+
+        for label, name, newrow in (('Connection Status: ', 'det1:CONNECTED', True),
+                                    ('Status Message: ',  'det1:StatusMessage_RBV', True),
+                                   ('Detector State: ', 'det1:DetectorState_RBV', False)):
+            ctrl = PVText(pan, f'{prefix}{name}', size=(125, -1))
+            pan.Add(SimpleText(pan, label, style=LEFT), dcol=1,  style=LEFT, newrow=newrow)
+            pan.Add(ctrl, dcol=1, style=LEFT)
+
+        for label, ctrl, rbv, label2, spv in (('# Frames: ', 'det1:NumImages', 'det1:NumImages',
+                                               'Array Counter: ',  'det1:ArrayCounter_RBV'),
+                                              ('Dwell Time:',  'det1:AcquireTime', 'det1:AcquireTime_RBV',
+                                               'Frame Rate (Hz): ', 'det1:ArrayRate_RBV')):
+            wctrl = PVFloatCtrl(pan, f'{prefix}{ctrl}', size=(100, -1))
+            wrbv  = PVText(pan, f'{prefix}{rbv}', size=(100, -1))
+            wspv  = PVText(pan, f'{prefix}{spv}', size=(100, -1))
+            pan.Add(SimpleText(pan, label, style=LEFT), dcol=1,  style=LEFT, newrow=True)
+            pan.Add(wctrl, dcol=1, style=LEFT)
+            pan.Add(wrbv,  dcol=1, style=LEFT)
+            pan.Add(SimpleText(pan, label2, style=LEFT), dcol=1,  style=LEFT)
+            pan.Add(wspv,  dcol=1, style=LEFT)
+
+        for label, ctrl, rbv in (('Trigger Mode: ', 'det1:TriggerMode', 'det1:TriggerMode_RBV'),
+                                        ):
+            wctrl = PVEnumChoice(pan, f'{prefix}{ctrl}', size=(175, -1))
+            wrbv  = PVText(pan, f'{prefix}{rbv}', size=(100, -1))
+            pan.Add(SimpleText(pan, label, style=LEFT), dcol=1,  style=LEFT, newrow=True)
+            pan.Add(wctrl, dcol=2, style=LEFT)
+            pan.Add(wrbv,  dcol=1, style=LEFT)
+
+        for label, ctrl in (('Erase on Start? ', 'det1:EraseOnStart'),):
+            pvname = f'{prefix}{ctrl}'
+            wctrl = PVEnumButtons(pan, get_pv(pvname), size=(175, -1))
+            pan.Add(SimpleText(pan, label, style=LEFT), dcol=1,  style=LEFT, newrow=True)
+            pan.Add(wctrl, dcol=2, style=LEFT)
+
+        pan.Add((5, 5),  newrow=True)
+        pan.Add(HLine(pan, size=(400, -1)), dcol=4, newrow=True)
+        pan.Add((5, 5),  newrow=True)
+
+        pan.Add(SimpleText(pan, 'HDF5 FileSaver:',  size=(350, -1),style=LEFT),
+                dcol=4, style=LEFT, newrow=True)
+
+        bpan = wx.Panel(pan)
+        bsizer = wx.BoxSizer(wx.HORIZONTAL)
+        for label, action in (('Start Capture ', self.onStartCapture),
+                              ('Stop Capture ', self.onStopCapture)):
+            bsizer.Add(Button(bpan, label, size=(150, -1), action=action))
+        pack(bpan, bsizer)
+        pan.Add(bpan, newrow=True, dcol=3, style=LEFT)
+        pan.Add(PVText(pan, f'{prefix}HDF1:Capture_RBV', size=(125, -1)), dcol=2, style=LEFT)
+
+        for label, name, wid, newrow, form in (('File Path: ',   'HDF1:FilePath', 425, True, 'textctrl'),
+                                               ('File Prefix: ', 'HDF1:FileName', 425, True, 'textctrl'),
+                                               ('File Template: ', 'HDF1:FileTemplate', 150, True, 'textctrl'),
+                                               ('File Number: ',  'HDF1:FileNumber', 100, False, 'textctrl'),
+                                               ('Compression: ',  'HDF1:Compression', 150, True, 'choice'),
+                                               ('Zlib Level: ',  'HDF1:ZLevel', 100, False, 'textctrl'),
+                                               ('Last File: ',  'HDF1:FullFileName_RBV', 675, True, 'statictext'),
+                                               ):
+
+            if form == 'choice':
+                ctrl = PVEnumChoice(pan, f'{prefix}{name}', size=(wid, -1))
+            elif form == 'statictext':
+                ctrl = PVText(pan, f'{prefix}{name}', size=(wid, -1))
+            else:
+                ctrl = PVTextCtrl(pan, f'{prefix}{name}', size=(wid, -1))
+            pan.Add(SimpleText(pan, label, size=(125, -1), style=LEFT), dcol=1,  style=LEFT, newrow=newrow)
+            dcol = 1
+            if wid > 350:
+                dcol = 4
+            elif wid > 150:
+                dcol = 2
+            pan.Add(ctrl, dcol=dcol, style=LEFT)
+
+
+        self.panel.pack()
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.panel, 1, wx.LEFT|wx.CENTER, 3)
+        pack(self, sizer)
+        self.Show()
+        self.Raise()
+
+    def onStart(self, event=None, dtime=None, nframes=None, **kws):
+        if dtime is not None:
+            self.parent.det.set_dwelltime(dtime=dtime, nframes=nframes)
+        self.parent.det.start()
+
+    @EpicsFunction
+    def onStartCapture(self, event=None):
+        caput(f'{self.prefix}HDF1:Capture', 1)
+
+    @EpicsFunction
+    def onStopCapture(self, event=None):
+        caput(f'{self.prefix}HDF1:Capture', 0)
+
+
+
 
 class EpicsXRFDisplayFrame(XRFDisplayFrame):
     _about = """Epics XRF Spectra Display
@@ -133,9 +260,11 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         self.det_type = det_type
         self.ioc_type = ioc_type
+        self.prefix = prefix
         self.nmca = nmca
         self.det_main = 1
         self.det = None
+        self.win_xps3 = None
         self.incident_energy_kev = None
         self.incident_energy_pvname = incident_energy_pvname
         self.incident_energy_units = incident_energy_units
@@ -166,6 +295,19 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                 desc = desc.strip()
                 self.environ.append((pvname, desc))
 
+
+    def onXspress3Control(self, event=None):
+        if self.ioc_type != 'Xspress3' or caget is None:
+            return
+        try:
+            self.win_xsp3.Raise()
+        except:
+            self.win_xsp3 = Xspress3ControlFrame(parent=self,
+                                                 prefix=self.prefix,
+                                                 nmca=self.nmca)
+
+
+
     def onConnectEpics(self, event=None, prefix=None, **kws):
         if prefix is None:
             res  = self.prompt_for_detector(prefix=prefix,
@@ -193,7 +335,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         deffile = ''
         if hasattr(self.mca, 'sourcefile'):
             deffile = "%s%s" % (deffile, getattr(self.mca, 'sourcefile'))
-        if hasattr(self.mca, 'areaname'):
+        if hasattr(self.mca, 'areanae'):
             deffile = "%s%s" % (deffile, getattr(self.mca, 'areaname'))
         if deffile == '':
             deffile ='test'
@@ -340,6 +482,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         MenuItem(self, menu, "Connect to Detector\tCtrl+D",
                  "Connect to MCA or XSPress3 Detector",
                  self.onConnectEpics)
+        MenuItem(self, menu, "Xspress3 Control",
+                 "more Xspress3 Detector",
+                 self.onXspress3Control)
         menu.AppendSeparator()
         self._menus.insert(1, (menu, 'Detector'))
 
@@ -449,7 +594,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.wids['deadtime']   = SimpleText(pane, ' ', size=(120, -1), style=style)
 
         if self.nmca > 1:
-            self.wids['bkg_det'] = Choice(pane, size=(100, -1), choices=bkg_choices,
+            self.wids['bkg_det'] = Choice(pane, size=(125, -1), choices=bkg_choices,
                                           action=self.onSelectDet)
 
         self.wids['dwelltime'] = FloatCtrl(pane, value=0.0, precision=1, minval=0,
@@ -457,7 +602,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                                            action=self.onSetDwelltime)
         self.wids['elapsed'] = SimpleText(pane, ' ', size=(80, -1),  style=style)
 
-        self.wids['mca_sum'] = Choice(pane, size=(100, -1),
+        self.wids['mca_sum'] = Choice(pane, size=(125, -1),
                                       choices=['Single', 'Accumulate'],
                                       action=self.onMcaSumChoice,
                                       default=1 )
@@ -477,8 +622,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             l = SimpleText(roipanel, f'MCA {i}', **opts)
             self.wids[f'ocr{i}'] = o = SimpleText(roipanel, ' ', **opts)
             self.wids[f'roi{i}'] = r = SimpleText(roipanel, ' ', **opts)
-            o.SetBackgroundColour((220,220,220))
-            r.SetBackgroundColour((220,220,220))
+            o.SetBackgroundColour(get_color('info_bg'))
+            r.SetBackgroundColour(get_color('info_bg'))
 
             roisizer.Add(l,  (0, i), (1, 1), style, 1)
             roisizer.Add(o,  (1, i), (1, 1), style, 1)
@@ -489,7 +634,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         b2 =  Button(pane, 'Stop',       size=(90, -1), action=self.onStop)
         b3 =  Button(pane, 'Erase',      size=(90, -1), action=self.onErase)
         b4 =  Button(pane, 'Continuous', size=(90, -1), action=partial(self.onStart,
-                                                                       dtime=0.0))
+                                                    dtime=0.25, nframes=16000))
 
         sum_lab = SimpleText(pane, 'Accumulate Mode:',   size=(150, -1))
         if self.nmca > 1:
@@ -608,14 +753,12 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         for i in range(1, self.nmca+1):
             dname = 'det%i' % i
-            bcol = (210, 210, 210)
-            fcol = (0, 0, 0)
+            fcol, bcol = 'text', 'info_bg'
             if i == self.det_main:
-                fcol = (200,  20,  20)
-                bcol = (250, 250, 250)
+                fcol, bcol = 'title_blue', 'text_bg'
             if dname in self.wids:
-                self.wids[dname].SetBackgroundColour(bcol)
-                self.wids[dname].SetForegroundColour(fcol)
+                self.wids[dname].SetBackgroundColour(get_color(bcol))
+                self.wids[dname].SetForegroundColour(get_color(fcol))
         self.clear_mcas()
         self.show_mca(init=init)
         self.Refresh()
@@ -634,12 +777,13 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         # self.x2data = self.y2data = None
         self.needs_newplot = True
 
-    def onStart(self, event=None, dtime=None, **kws):
+    def onStart(self, event=None, dtime=None, nframes=None, **kws):
         if dtime is not None:
             self.wids['dwelltime'].SetValue("%.1f" % dtime)
-            self.det.set_dwelltime(dtime=dtime)
+            self.det.set_dwelltime(dtime=dtime, nframes=nframes)
         else:
-            self.det.set_dwelltime(dtime=self.wids['dwelltime'].GetValue())
+            self.det.set_dwelltime(dtime=self.wids['dwelltime'].GetValue(),
+                                   nframes=nframes)
         self.det.start()
 
     def onStop(self, event=None, **kws):
