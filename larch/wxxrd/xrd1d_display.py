@@ -43,7 +43,7 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          set_color, CEN, RIGHT, LEFT, FRAMESTYLE, Font,
                          FONTSIZE, FONTSIZE_FW, FileSave, FileOpen,
                          flatnotebook, Popup, FileCheckList, OkCancel,
-                         EditableListBox, ExceptionPopup, CIFFrame,
+                         ExceptionPopup, CIFFrame,
                          LarchFrame, LarchWxApp)
 
 MAXVAL = 2**32 - 2**15
@@ -636,7 +636,7 @@ class XRD1DFrame(wx.Frame):
         self.filelist = FileCheckList(lpanel, main=self,
                                       select_action=self.show_dataset,
                                       remove_action=self.remove_dataset)
-        set_color(self.filelist, 'list_fg', bg='list_bg')
+        # set_color(self.filelist, 'list_fg', bg='list_bg')
 
         tsizer = wx.BoxSizer(wx.HORIZONTAL)
         tsizer.Add(sel_all, 1, LEFT|wx.GROW, 1)
@@ -688,12 +688,12 @@ class XRD1DFrame(wx.Frame):
         wids['energy_ev'] = SimpleText(panel, label="%.1f" % (PLANCK_HC/self.wavelength), size=(100, -1))
 
         wids['bkg_qwid'] = FloatSpin(panel, value=0.1, size=(90, -1), digits=2,
-                                     increment=0.01,
-                                     min_val=0.001, max_val=5, action=self.on_bkg)
-        wids['bkg_nsmooth'] = FloatSpin(panel, value=30, size=(90, -1),
+                                     increment=0.005,
+                                     min_val=0.0005, max_val=5, action=self.on_bkg)
+        wids['bkg_nsmooth'] = FloatSpin(panel, value=5, size=(90, -1),
                                         digits=0, min_val=2, max_val=100, action=self.on_bkg)
-        wids['bkg_porder'] = FloatSpin(panel, value=40, size=(90, -1),
-                                        digits=0, min_val=2, max_val=100, action=self.on_bkg)
+        wids['bkg_porder'] = FloatSpin(panel, value=25, size=(90, -1),
+                                        digits=0, min_val=2, max_val=50, action=self.on_bkg)
 
         def CopyBtn(name):
             return Button(panel, 'Copy to Seleceted', size=(150, -1),
@@ -796,7 +796,6 @@ class XRD1DFrame(wx.Frame):
             except:
                 self.pyfai_integrator = None
 
-
     def set_wavelength(self, value):
         self.wavelength = value
         self.wids['wavelength'].SetLabel("%.6f" % value)
@@ -867,9 +866,9 @@ class XRD1DFrame(wx.Frame):
             dset.scale = dset.I.max()
             dset.scale_method = 'raw_max'
             dset.auto_scale = True
-            dset.bkg_qwid = 0.1
-            dset.bkg_nsmooth = 30
-            dset.bkg_porder = 40
+            dset.bkg_qwid = 0.05
+            dset.bkg_nsmooth = 5
+            dset.bkg_porder = 25
 
         bkgd = getattr(dset, 'bkgd', None)
         if (bkgd is None
