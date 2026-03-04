@@ -101,6 +101,7 @@ wxgui = ["wxpython>=4.2.2",  "wxmplot>=2025.1.6", "wxutils>=2026.1.0",
          "darkdetect",  "pyobjc-framework-Cocoa; platform_system == 'Darwin'"]
 
 qtgui = ["PyQt5", "pyqtwebengine", "pyqtgraph"]
+dioptas = ["dioptas"]
 
 epics = ["pyepics>=3.5.7", "psycopg2-binary"]
 
@@ -108,4 +109,4 @@ jupyter = ["jupyter_core>=5.0", "jupyter_client", "jupyter_server", "notebook", 
         "ipywidgets", "plotly", "bokeh", "py3dmol"]
 
 larix = ["xraylarch[wxgui, jupyter]"]
-all = ["xraylarch[dev, doc, wxgui, jupyter, qtgui, epics]"]
+all = ["xraylarch[dev, doc, wxgui, jupyter, qtgui, dioptas, epics]"]
