@@ -29,12 +29,13 @@ specs:
     - setuptools>=61.0
     - pip
     - requests
-    - numpy>=2.2.0
+    - numpy>=2.3.0
     - mkl_fft
-    - scipy>=1.15
+    - scipy>=1.16
     - matplotlib>=3.10
-    - h5py>=3.10
-    - wxpython>=4.2.2
+    - h5py>=3.12
+    - wxpython>=4.2.3
+    - spglib>=2.7.0
     - charset-normalizer
     - pillow>=10
     - pyyaml>=6.0.3
