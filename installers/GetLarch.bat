@@ -19,7 +19,7 @@ echo ## basic conda installed, running updates
 set PATH=%prefix%;%prefix%\bin;%prefix%\condabin;%prefix%\Scripts;%PATH%
 
 echo ## Installing basic python scipy packages
-call %prefix%\Scripts\conda install -yc conda-forge python==3.13.10 numpy>=2.2.0 scipy>=1.15 matplotlib>=3.10 h5py>=3.10 wxpython>=4.2.2 mkl_fft
+call %prefix%\Scripts\conda install -yc conda-forge python==3.13.10 numpy=>2.3.0 scipy=>1.16 matplotlib=>3.10 h5py=>3.12 wxpython=>4.2.2 mkl_fft spglib=>2.7.0 pymatgen
 
 echo ## Installing xraylarch and dependencies from PyPI
 call %prefix%\Scripts\pip install xraylarch[larix]

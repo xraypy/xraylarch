@@ -15,7 +15,7 @@ condafile="Miniforge3-$uname-x86_64.sh"
 logfile=GetLarch.log
 
 ## set list of conda packages to install from conda-forge
-cforge_pkgs="python==3.13.10 numpy>=2.2.0 scipy>=1.15 matplotlib>=3.10 h5py>=3.10 wxpython>=4.2.2 mkl_fft"
+cforge_pkgs="python==3.13.10 numpy=>2.3.0 scipy=>1.16 matplotlib=>3.10 h5py=>3.12 wxpython=>4.2.3 mkl_fft spglib=>2.7.0 pymatgen"
 unset CONDA_EXE CONDA_PYTHON_EXE CONDA_PREFIX PROJ_LIB
 
 ## get command line options
