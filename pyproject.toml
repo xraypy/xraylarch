@@ -109,4 +109,4 @@ jupyter = ["jupyter_core>=5.0", "jupyter_client", "jupyter_server", "notebook", 
         "ipywidgets", "plotly", "bokeh", "py3dmol"]
 
 larix = ["xraylarch[wxgui, jupyter]"]
-all = ["xraylarch[dev, doc, wxgui, jupyter, qtgui, dioptas, epics]"]
+all = ["xraylarch[dev, doc, wxgui, jupyter, qtgui, epics]"]
