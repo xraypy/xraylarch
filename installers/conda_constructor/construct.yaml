@@ -36,6 +36,7 @@ specs:
     - h5py>=3.12
     - wxpython>=4.2.3
     - spglib>=2.7.0
+    - pymatgen
     - charset-normalizer
     - pillow>=10
     - pyyaml>=6.0.3
