@@ -836,7 +836,7 @@ class FeffPathPanel(wx.Panel):
                     self.wids[name + '_val'].SetLabel(f'={value}')
             except:
                 result = False
-
+        self.feffit_panel.model_needs_rebuild = True
         fgcol, bgcol = 'text_invalid', 'text_invalid_bg'
         if result:
             fgcol, bgcol = 'text', 'text_bg'
@@ -911,6 +911,7 @@ class FeffitPanel(TaskPanel):
         if dgroup is None:
             return
         self.fill_form(dgroup)
+
 
     def build_display(self):
         self.paths_nb = flatnotebook(self, {}, on_change=self.onPathsNBChanged,
@@ -1077,7 +1078,6 @@ class FeffitPanel(TaskPanel):
                   "Warning: Rmin < Rbkg",
                   style=wx.ICON_WARNING|wx.OK_DEFAULT)
 
-
     def onPathsNBChanged(self, event=None):
         updater = getattr(self.paths_nb.GetCurrentPage(), 'update_values', None)
         if self.params_need_update and not self.resetting:
@@ -1199,6 +1199,16 @@ class FeffitPanel(TaskPanel):
             dgroup = self.controller.get_group()
         if dgroup is None:
             return
+
+        # if there is a current data group, with an "unbuilt" feffit model (ie, some param changed)
+        # then make sure it is built and remembered before switching to the new group
+        print(" fill form ", self.dgroup, dgroup, self.model_needs_rebuild)
+        if self.dgroup is not None and self.dgroup != dgroup and self.model_needs_rebuild:
+            print("REBUILD")
+            opts = self.process(self.dgroup)
+            self.build_fitmodel(self.dgroup, opts=opts)
+
+        self.dgroup = dgroup
         conf = self.get_config(dgroup)
 
         for attr in ('fit_kmin', 'fit_kmax', 'fit_rmin', 'fit_rmax', 'fit_dk'):
@@ -1689,6 +1699,7 @@ class FeffitPanel(TaskPanel):
             result = False
 
         self.params_need_update = True
+        # self.build_fitmodel()
         return result
 
     def onLoadFitResult(self, event=None):
