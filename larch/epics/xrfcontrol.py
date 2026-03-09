@@ -597,7 +597,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.wids['bkg_det'] = Choice(pane, size=(125, -1), choices=bkg_choices,
                                           action=self.onSelectDet)
 
-        self.wids['dwelltime'] = FloatCtrl(pane, value=0.0, precision=1, minval=0,
+        self.wids['dwelltime'] = FloatCtrl(pane, value=0.0, precision=3, minval=0,
                                            size=(80, -1), act_on_losefocus=True,
                                            action=self.onSetDwelltime)
         self.wids['elapsed'] = SimpleText(pane, ' ', size=(80, -1),  style=style)
