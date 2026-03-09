@@ -42,11 +42,11 @@ def set_fontsize(obj, fsize):
     fn.SetPixelSize(wx.Size(int((f1*fsize/f2)), fsize))
     obj.SetFont(fn)
 
-DISPLAY_COLORS = {'text': 'text',
-                 'bg': 'text_bg',
-                 'text2':  'title_blue',
-                 'comment': 'title_green',
-                 'error': 'title_red'}
+DISPLAY_COLORS = {'text':  {'color': 'text'},
+                 'bg': {'color': 'text_bg'},
+                 'text2':  {'color': 'title_blue'},
+                 'comment': {'color': 'title_green'},
+                 'error': {'color': 'title_red'}}
 
 class LarchWxShell(object):
     ps1 = 'Larch>'
@@ -71,8 +71,10 @@ class LarchWxShell(object):
         self.objtree = wxparent.objtree
 
         self.set_textstyle(mode='text')
+        # self._larch(f"_sys.display.colors['text2'] = {{'color': '{get_color('text')}'}}",
+        #             add_history=False)
         self._larch(f"_sys.display.colors = {DISPLAY_COLORS}",
-                     add_history=False)
+                    add_history=False)
 
         self.symtable.set_symbol('_builtin.force_wxupdate', False)
         self.symtable.set_symbol('_sys.wx.inputhook',   inputhook)
@@ -139,9 +141,10 @@ class LarchWxShell(object):
     def set_textstyle(self, mode='text'):
         if self.output is None:
             return
+        dcol = DISPLAY_COLORS.get(mode, {'color': 'text'})['color']
 
         style = self.output.GetDefaultStyle()
-        fgcol = get_color(DISPLAY_COLORS.get(mode, 'text'))
+        fgcol = get_color(dcol)
         bgcol = get_color('text_bg')
         sfont = self.output.GetFont()
         style.SetFont(sfont)
@@ -253,10 +256,10 @@ class LarchPanel(wx.Panel):
         self.prompt = wx.StaticText(ipanel, label='Larch>', size=(75,-1),
                                     style=wx.ALIGN_CENTER|wx.ALIGN_RIGHT)
 
-        self.input = TextCtrl(ipanel, value='', size=(525,-1),
-                              colour='text', bgcolour='text_bg',
-                              style=wx.TE_LEFT|wx.TE_PROCESS_ENTER,
-                              action=self.onText)
+
+        self.input = wx.TextCtrl(ipanel, value='', size=(525,-1),
+                                style=wx.TE_LEFT|wx.TE_PROCESS_ENTER)
+        self.input.Bind(wx.EVT_TEXT_ENTER, self.onText)
 
         if uname == 'darwin':
             self.input.Bind(wx.EVT_KEY_UP,  self.onChar)
@@ -312,7 +315,8 @@ class LarchPanel(wx.Panel):
     def update(self):
         self.objtree.onRefresh()
 
-    def onText(self, text=None, event=None):
+    def onText(self, event=None):
+        text =  event.GetString()
         self.input.Clear()
         if text.lower() in ('quit', 'exit', 'quit()', 'exit()'):
             if self.parent.exit_on_close:

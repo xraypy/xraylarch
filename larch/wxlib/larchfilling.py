@@ -110,8 +110,6 @@ class FillingTree(wx.TreeCtrl):
         self.item = None
         self.root = None
         self.setRootObject(rootObject)
-        # print("Filling Tree ", self)
-        # print(dir(self))
 
     def setRootObject(self, rootObject=None):
         self.rootObject = rootObject
