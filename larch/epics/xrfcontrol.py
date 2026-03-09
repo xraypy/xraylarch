@@ -135,7 +135,6 @@ class Xspress3ControlFrame(wx.Frame):
         wx.Frame.__init__(self, parent=parent, size=size, title=title)
 
         pan = self.panel = GridPanel(self)
-
         pan.Add(SimpleText(pan, title, size=(450, -1),style=LEFT), dcol=4, style=LEFT)
 
         bpan = wx.Panel(pan)
@@ -429,7 +428,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         time.sleep(0.05)
         if self.det is not None:
             self.det.connect_displays(status=self.wids['det_status'],
-                                      elapsed=self.wids['elapsed'])
+                                      elapsed=self.wids['elapsed'],
+                                      dwelltime=self.wids['dwelltime'])
+
 
         for imca in range(1, nmca+1):
             self.add_mca(self.det.get_mca(mca=imca), label=f'MCA{imca}', plot=False)
@@ -632,7 +633,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.wids['bkg_det'] = Choice(pane, size=(125, -1), choices=bkg_choices,
                                           action=self.onSelectDet)
 
-        self.wids['dwelltime'] = FloatCtrl(pane, value=0.0, precision=3, minval=0,
+        self.wids['dwelltime'] = FloatCtrl(pane, value=0.100, precision=3, minval=0,
                                            size=(80, -1), act_on_losefocus=True,
                                            action=self.onSetDwelltime)
         self.wids['elapsed'] = SimpleText(pane, ' ', size=(80, -1),  style=style)
@@ -707,7 +708,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         # pane.SetMinSize((500, 53))
         if self.det is not None:
             self.det.connect_displays(status=self.wids['det_status'],
-                                      elapsed=self.wids['elapsed'])
+                                      elapsed=self.wids['elapsed'],
+                                      dwelltime=self.wids['dwelltime'])
 
         wx.CallAfter(self.onSelectDet, index=1, init=True)
         self.timer_counter = 0
@@ -809,12 +811,11 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def clear_mcas(self):
         self.mca = None
-        # self.x2data = self.y2data = None
         self.needs_newplot = True
 
     def onStart(self, event=None, dtime=None, nframes=None, **kws):
         if dtime is not None:
-            self.wids['dwelltime'].SetValue("%.1f" % dtime)
+            self.wids['dwelltime'].SetValue(f"{value:.3f}")
             self.det.set_dwelltime(dtime=dtime, nframes=nframes)
         else:
             self.det.set_dwelltime(dtime=self.wids['dwelltime'].GetValue(),

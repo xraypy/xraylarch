@@ -91,8 +91,8 @@ class Epics_Xspress3(object):
     multi-element MCA detector using Quantum Xspress3 electronics
     and Epics IOC based on AreaDetector2 IOC (3.2?)
     """
-    MIN_FRAMETIME = 0.10
-    MAX_FRAMES    = 12500
+    MIN_FRAMETIME = 0.001
+    MAX_FRAMES    = 15000
     def __init__(self, prefix=None, nmca=4, version=2, use_sum=True, **kws):
         self.nmca = nmca
         self.prefix = prefix
@@ -109,6 +109,7 @@ class Epics_Xspress3(object):
         self.connected = False
         self.elapsed_real = None
         self.elapsed_textwidget = None
+        self.dwelltime_ctrl = None
         self.needs_refresh = False
         self._xsp3 = None
         if self.prefix is not None:
@@ -127,6 +128,7 @@ class Epics_Xspress3(object):
 
         counterpv = self._xsp3.PV('ArrayCounter_RBV')
         counterpv.add_callback(self.onRealTime)
+        # self._xps3.PV('AcquireTime').add_callback(self.onAcquireTime)
         for imca in range(1, self.nmca+1):
             self._xsp3.PV(self.mca_array_name % imca, auto_monitor=False)
         time.sleep(0.001)
@@ -134,9 +136,13 @@ class Epics_Xspress3(object):
         self.mcas = self._xsp3.mcas
 
     @EpicsFunction
-    def connect_displays(self, status=None, elapsed=None, deadtime=None):
+    def connect_displays(self, status=None, elapsed=None, dwelltime=None, deadtime=None):
         if elapsed is not None:
             self.elapsed_textwidget = elapsed
+        if dwelltime is not None:
+            self.dwelltime_ctrl = dwelltime
+            xpv = self._xsp3.PV('AcquireTime')
+            xpv.add_callback(self.onAcquireTime)
         if status is not None:
             pvs = self._xsp3._pvs
             attr = 'StatusMessage_RBV'
@@ -153,6 +159,12 @@ class Epics_Xspress3(object):
         self.needs_refresh = True
         if self.elapsed_textwidget is not None:
             self.elapsed_textwidget.SetLabel("  %8.2f" % self.elapsed_real)
+
+    @DelayedEpicsCallback
+    def onAcquireTime(self, pvname, value=None, char_value=None, **kws):
+        if self.dwelltime_ctrl is not None:
+            self.dwelltime_ctrl.SetValue(value)
+
 
     def get_deadtime(self, mca=1):
         """return % deadtime"""
@@ -358,6 +370,7 @@ class Epics_MultiXMAP(object):
         self.connected = False
         self.elapsed_real = None
         self.elapsed_textwidget = None
+        self.dwelltime_ctrl = None
         self.needs_refresh = False
         self.frametime = 1.0
         self.nframes = 1
@@ -368,6 +381,7 @@ class Epics_MultiXMAP(object):
     def connect(self):
         self._xmap = MultiXMAP(self.prefix, nmca=self.nmca)
         self._xmap.PV('ElapsedReal', callback=self.onRealTime)
+        self._xmap.PV('AcquireTime', callback=self.onAcquireTime)
         self._xmap.PV('DeadTime')
         time.sleep(0.001)
         self.mcas = self._xmap.mcas
@@ -376,10 +390,12 @@ class Epics_MultiXMAP(object):
         self.rois = self._xmap.mcas[0].get_rois()
 
     @EpicsFunction
-    def connect_displays(self, status=None, elapsed=None, deadtime=None):
+    def connect_displays(self, status=None, elapsed=None, dwelltime=None, deadtime=None):
         pvs = self._xmap._pvs
         if elapsed is not None:
             self.elapsed_textwidget = elapsed
+        if dwelltime is not None:
+            self.dwelltime_ctrl = dwelltime
         for wid, attr in ((status, 'Acquiring'),(deadtime, 'DeadTime')):
             if wid is not None:
                 pvs[attr].add_callback(partial(self.update_widget, wid=wid))
@@ -396,6 +412,11 @@ class Epics_MultiXMAP(object):
         self.frametime = value
         if self.elapsed_textwidget is not None:
             self.elapsed_textwidget.SetLabel(" %8.2f" % value)
+
+    @DelayedEpicsCallback
+    def onAcquireTime(self, pvname, value=None, char_value=None, **kws):
+        if self.dwelltime_ctrl is not None:
+            self.dwelltime_ctrl.SetValue(value)
 
     def set_usesum(self, usesum=True):
         pass
@@ -535,6 +556,7 @@ class Epics_KetekMCA(object):
         self.connected = False
         self.elapsed_real = None
         self.elapsed_textwidget = None
+        self.dwelltime_ctrl = None
         self.needs_refresh = False
         self.frametime = 1.0
         self.nframes = 1
@@ -560,10 +582,12 @@ class Epics_KetekMCA(object):
         self.rois = self._mca.get_rois()
 
     @EpicsFunction
-    def connect_displays(self, status=None, elapsed=None, deadtime=None):
+    def connect_displays(self, status=None, elapsed=None, dwelltime=None, deadtime=None):
         pvs = self._mca._pvs
         if elapsed is not None:
             self.elapsed_textwidget = elapsed
+        if dwelltime is not None:
+            self.dwelltime_ctrl = dwelltime
         for wid, attr in ((status, 'ACQG'),(deadtime, 'DTIM')):
             if wid is not None:
                 pvs[attr].add_callback(partial(self.update_widget, wid=wid))
@@ -580,6 +604,11 @@ class Epics_KetekMCA(object):
         self.frametime = value
         if self.elapsed_textwidget is not None:
             self.elapsed_textwidget.SetLabel(" %8.2f" % value)
+
+    @DelayedEpicsCallback
+    def onAcquireTime(self, pvname, value=None, char_value=None, **kws):
+        if self.dwelltime_ctrl is not None:
+            print("would set value for ",  self.dwelltime_ctrl, value)
 
     def set_usesum(self, usesum=True):
         pass
