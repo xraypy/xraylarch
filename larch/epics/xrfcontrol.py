@@ -13,6 +13,7 @@ from functools import partial
 import wx
 import wx.lib.mixins.inspection
 import wx.lib.scrolledpanel as scrolled
+import wx.lib.agw.flatnotebook as flat_nb
 import wx.dataview as dv
 
 import numpy as np
@@ -22,7 +23,7 @@ from pyshortcuts import fix_filename
 from wxmplot import PlotPanel
 from wxutils import (SimpleText, EditableListBox, Font, FloatCtrl,
                      pack, Popup, Button, get_icon, Check, MenuItem,
-                     Choice, FileOpen, FileSave, HLine,
+                     Choice, FileOpen, FileSave, HLine, flatnotebook,
                      GridPanel, CEN, LEFT, RIGHT)
 
 import larch
@@ -31,6 +32,7 @@ from larch.wxlib import PeriodicTablePanel, LarchWxApp, get_color
 from larch.wxlib.xrfdisplay import (XRFDisplayFrame, XRFCalibrationFrame,
                                     FILE_WILDCARDS)
 from larch.utils import get_cwd
+
 
 ROI_WILDCARD = 'Data files (*.dat)|*.dat|ROI files (*.roi)|*.roi|All files (*.*)|*.*'
 try:
@@ -123,7 +125,7 @@ class DetectorSelectDialog(wx.Dialog):
         sizer.Fit(self)
 
 class Xspress3ControlFrame(wx.Frame):
-    def __init__(self, parent=None, prefix='No IOC', nmca=4, size=(600, 550)):
+    def __init__(self, parent=None, prefix='No IOC', nmca=4, size=(750, 550)):
 
         title=f"Xspress3 Epics Control: '{prefix}', {nmca} elements"
         self.parent = parent
@@ -182,12 +184,25 @@ class Xspress3ControlFrame(wx.Frame):
             pan.Add(SimpleText(pan, label, style=LEFT), dcol=1,  style=LEFT, newrow=True)
             pan.Add(wctrl, dcol=2, style=LEFT)
 
-        pan.Add((5, 5),  newrow=True)
-        pan.Add(HLine(pan, size=(400, -1)), dcol=4, newrow=True)
-        pan.Add((5, 5),  newrow=True)
+        pan.Add((25, 25),  newrow=True)
 
-        pan.Add(SimpleText(pan, 'HDF5 FileSaver:',  size=(350, -1),style=LEFT),
-                dcol=4, style=LEFT, newrow=True)
+        self.nb = flatnotebook(pan, {'HDF5 FileSaver': self.hdf5_panel,
+                                     'SCA Values': self.sca_panel},
+                               size=(750, 550))
+
+        self.nb.SetFont(self.GetFont())
+        pan.Add(self.nb, dcol=7, newrow=True)
+        self.panel.pack()
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.panel, 1, wx.LEFT|wx.CENTER, 3)
+        pack(self, sizer)
+        self.Show()
+        self.Raise()
+
+    def hdf5_panel(self, parent):
+        "HDF5 File Saver panel"
+        pan = GridPanel(self)
+        prefix = self.prefix
 
         bpan = wx.Panel(pan)
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -198,13 +213,13 @@ class Xspress3ControlFrame(wx.Frame):
         pan.Add(bpan, newrow=True, dcol=3, style=LEFT)
         pan.Add(PVText(pan, f'{prefix}HDF1:Capture_RBV', size=(125, -1)), dcol=2, style=LEFT)
 
-        for label, name, wid, newrow, form in (('File Path: ',   'HDF1:FilePath', 425, True, 'textctrl'),
-                                               ('File Prefix: ', 'HDF1:FileName', 425, True, 'textctrl'),
-                                               ('File Template: ', 'HDF1:FileTemplate', 150, True, 'textctrl'),
-                                               ('File Number: ',  'HDF1:FileNumber', 100, False, 'textctrl'),
-                                               ('Compression: ',  'HDF1:Compression', 150, True, 'choice'),
+        for label, name, wid, newrow, form in (('File Path: ',   'HDF1:FilePath', 475, True, 'textctrl'),
+                                               ('File Name: ', 'HDF1:FileName', 475, True, 'textctrl'),
+                                               ('Template: ', 'HDF1:FileTemplate', 175, True, 'textctrl'),
+                                               ('Number: ',  'HDF1:FileNumber', 100, False, 'textctrl'),
+                                               ('Compression: ',  'HDF1:Compression', 175, True, 'choice'),
                                                ('Zlib Level: ',  'HDF1:ZLevel', 100, False, 'textctrl'),
-                                               ('Last File: ',  'HDF1:FullFileName_RBV', 675, True, 'statictext'),
+                                               ('Last File: ',  'HDF1:FullFileName_RBV', 800, True, 'statictext'),
                                                ):
 
             if form == 'choice':
@@ -217,17 +232,37 @@ class Xspress3ControlFrame(wx.Frame):
             dcol = 1
             if wid > 350:
                 dcol = 4
-            elif wid > 150:
+            elif wid > 200:
                 dcol = 2
             pan.Add(ctrl, dcol=dcol, style=LEFT)
+        pan.pack()
+        return pan
 
+    def sca_panel(self, parent):
+        "SCA panel"
+        pan = GridPanel(self)
+        prefix = self.prefix
+        nmca = self.nmca
+        cols = {'Clock Ticks': 'SCA:0:Value_RBV',
+                'Reset Ticks': 'SCA:1:Value_RBV',
+                'All Events':  'SCA:3:Value_RBV',
+                'DT Factor':   'SCA:9:Value_RBV',
+                '%Deadtime':  'SCA:10:Value_RBV'}
 
-        self.panel.pack()
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.panel, 1, wx.LEFT|wx.CENTER, 3)
-        pack(self, sizer)
-        self.Show()
-        self.Raise()
+        pan.Add(SimpleText(pan, 'Channel', size=(100, -1), style=LEFT), dcol=1, style=LEFT)
+        for cname in cols:
+            pan.Add(SimpleText(pan, cname, size=(130, -1), style=LEFT), dcol=1, style=LEFT)
+
+        pan.Add(HLine(pan, size=(750, -1)), dcol=6, newrow=True)
+
+        for i in range(1, self.nmca+1):
+            pan.Add(SimpleText(pan, f'MCA {i}', size=(100, -1), style=LEFT), dcol=1, style=LEFT, newrow=True)
+            for label, pvname in cols.items():
+                pan.Add(PVText(pan, f'{prefix}C{i}{pvname}', size=(130, -1), style=LEFT),  dcol=1, style=LEFT)
+
+        pan.pack()
+        return pan
+
 
     def onStart(self, event=None, dtime=None, nframes=None, **kws):
         if dtime is not None:
