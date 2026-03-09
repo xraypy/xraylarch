@@ -1161,9 +1161,12 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             mask = np.zeros((h, w))
             mask[np.where(area[()])] = 1
             imdat_shape = imd.conf.data.shape
-            imd.add_highlight_area(mask, label=aname, use_label_index=True)
-            ind = f"{len(imd.conf.highlight_areas)}"
-            self.area_legend.AppendItem((ind, aname))
+            try:
+                imd.add_highlight_area(mask, label=aname, use_label_index=True)
+                ind = f"{len(imd.conf.highlight_areas)}"
+                self.area_legend.AppendItem((ind, aname))
+            except:
+                pass
 
 
     def onShowAll(self, event=None):
@@ -1634,10 +1637,6 @@ class MapViewerFrame(wx.Frame):
         if callable(update_xrmmap):
             update_xrmmap(xrmfile=xrmfile)
 
-        # show position on map
-        imd = self.im_displays[-1].panel
-        # self.add_highlight_area(imd, tmask, label=name)
-        imd.add_highlight_area(tmask, label=None)
 
         # make sure we can save position into database
 
@@ -1678,7 +1677,16 @@ class MapViewerFrame(wx.Frame):
         self.instdb.save_position(self.inst_name, name, position,
                                   notes=json.dumps(notes))
 
+        # show position on map
+        imd = self.im_displays[-1].panel
+        # self.add_highlight_area(imd, tmask, label=name)
+        try:
+            imd.add_highlight_area(tmask, label=None)
+        except:
+            print("could not show highlighted area")
+            
 
+        
     def add_tomodisplay(self, title, det=None, _lassocallback=True):
 
         if _lassocallback:
