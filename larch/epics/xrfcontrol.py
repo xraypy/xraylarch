@@ -127,7 +127,7 @@ class DetectorSelectDialog(wx.Dialog):
 class Xspress3ControlFrame(wx.Frame):
     def __init__(self, parent=None, prefix='No IOC', nmca=4, size=(750, 550)):
 
-        title=f"Xspress3 Epics Control: '{prefix}', {nmca} elements"
+        title=f" Xspress3 Epics Control: '{prefix}', {nmca} elements"
         self.parent = parent
         self.prefix = prefix
         self.nmca = nmca
@@ -150,17 +150,17 @@ class Xspress3ControlFrame(wx.Frame):
 
         pan.Add(bpan, newrow=True, dcol=4, style=LEFT)
 
-        for label, name, newrow in (('Connection Status: ', 'det1:CONNECTED', True),
-                                    ('Status Message: ',  'det1:StatusMessage_RBV', True),
-                                   ('Detector State: ', 'det1:DetectorState_RBV', False)):
+        for label, name, newrow in ((' Connection Status: ', 'det1:CONNECTED', True),
+                                    (' Status Message: ',  'det1:StatusMessage_RBV', True),
+                                   (' Detector State: ', 'det1:DetectorState_RBV', False)):
             ctrl = PVText(pan, f'{prefix}{name}', size=(125, -1))
             pan.Add(SimpleText(pan, label, style=LEFT), dcol=1,  style=LEFT, newrow=newrow)
             pan.Add(ctrl, dcol=1, style=LEFT)
 
-        for label, ctrl, rbv, label2, spv in (('# Frames: ', 'det1:NumImages', 'det1:NumImages',
-                                               'Array Counter: ',  'det1:ArrayCounter_RBV'),
-                                              ('Dwell Time:',  'det1:AcquireTime', 'det1:AcquireTime_RBV',
-                                               'Frame Rate (Hz): ', 'det1:ArrayRate_RBV')):
+        for label, ctrl, rbv, label2, spv in ((' # Frames: ', 'det1:NumImages', 'det1:NumImages',
+                                               ' Array Counter: ',  'det1:ArrayCounter_RBV'),
+                                              (' Dwell Time:',  'det1:AcquireTime', 'det1:AcquireTime_RBV',
+                                               ' Frame Rate (Hz): ', 'det1:ArrayRate_RBV')):
             wctrl = PVFloatCtrl(pan, f'{prefix}{ctrl}', size=(100, -1))
             wrbv  = PVText(pan, f'{prefix}{rbv}', size=(100, -1))
             wspv  = PVText(pan, f'{prefix}{spv}', size=(100, -1))
@@ -170,7 +170,7 @@ class Xspress3ControlFrame(wx.Frame):
             pan.Add(SimpleText(pan, label2, style=LEFT), dcol=1,  style=LEFT)
             pan.Add(wspv,  dcol=1, style=LEFT)
 
-        for label, ctrl, rbv in (('Trigger Mode: ', 'det1:TriggerMode', 'det1:TriggerMode_RBV'),
+        for label, ctrl, rbv in ((' Trigger Mode: ', 'det1:TriggerMode', 'det1:TriggerMode_RBV'),
                                         ):
             wctrl = PVEnumChoice(pan, f'{prefix}{ctrl}', size=(175, -1))
             wrbv  = PVText(pan, f'{prefix}{rbv}', size=(100, -1))
@@ -178,7 +178,7 @@ class Xspress3ControlFrame(wx.Frame):
             pan.Add(wctrl, dcol=2, style=LEFT)
             pan.Add(wrbv,  dcol=1, style=LEFT)
 
-        for label, ctrl in (('Erase on Start? ', 'det1:EraseOnStart'),):
+        for label, ctrl in ((' Erase on Start? ', 'det1:EraseOnStart'),):
             pvname = f'{prefix}{ctrl}'
             wctrl = PVEnumButtons(pan, get_pv(pvname), size=(175, -1))
             pan.Add(SimpleText(pan, label, style=LEFT), dcol=1,  style=LEFT, newrow=True)
@@ -194,7 +194,7 @@ class Xspress3ControlFrame(wx.Frame):
         pan.Add(self.nb, dcol=7, newrow=True)
         self.panel.pack()
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.panel, 1, wx.LEFT|wx.CENTER, 3)
+        sizer.Add(self.panel, 1, wx.LEFT|wx.CENTER|wx.GROW)
         pack(self, sizer)
         self.Show()
         self.Raise()
@@ -228,7 +228,7 @@ class Xspress3ControlFrame(wx.Frame):
                 ctrl = PVText(pan, f'{prefix}{name}', size=(wid, -1))
             else:
                 ctrl = PVTextCtrl(pan, f'{prefix}{name}', size=(wid, -1))
-            pan.Add(SimpleText(pan, label, size=(125, -1), style=LEFT), dcol=1,  style=LEFT, newrow=newrow)
+            pan.Add(SimpleText(pan, f' {label}', size=(125, -1), style=LEFT), dcol=1,  style=LEFT, newrow=newrow)
             dcol = 1
             if wid > 350:
                 dcol = 4
@@ -249,14 +249,14 @@ class Xspress3ControlFrame(wx.Frame):
                 'DT Factor':   'SCA:9:Value_RBV',
                 '%Deadtime':  'SCA:10:Value_RBV'}
 
-        pan.Add(SimpleText(pan, 'Channel', size=(100, -1), style=LEFT), dcol=1, style=LEFT)
+        pan.Add(SimpleText(pan, ' Channel', size=(100, -1), style=LEFT), dcol=1, style=LEFT)
         for cname in cols:
             pan.Add(SimpleText(pan, cname, size=(130, -1), style=LEFT), dcol=1, style=LEFT)
 
         pan.Add(HLine(pan, size=(750, -1)), dcol=6, newrow=True)
 
         for i in range(1, self.nmca+1):
-            pan.Add(SimpleText(pan, f'MCA {i}', size=(100, -1), style=LEFT), dcol=1, style=LEFT, newrow=True)
+            pan.Add(SimpleText(pan, f' MCA {i}', size=(100, -1), style=LEFT), dcol=1, style=LEFT, newrow=True)
             for label, pvname in cols.items():
                 pan.Add(PVText(pan, f'{prefix}C{i}{pvname}', size=(130, -1), style=LEFT),  dcol=1, style=LEFT)
 
