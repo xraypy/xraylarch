@@ -34,7 +34,7 @@ def h5file(fname, mode='r'):
     """
     return h5py.File(fname, mode)
 
-def h5group(fname, mode='r+'):
+def h5group(fname, mode='r+', encoding='utf-8'):
     """open an HDF5 file, and map to larch groups
     g = h5group('myfile.h5')
 
@@ -66,11 +66,11 @@ def h5group(fname, mode='r+'):
         else:
             dat = fh.get(key)
             try:
-                if dat.dtype.type == numpy.string_:
+                if dat.dtype.type == numpy.bytes_:
                     if len(dat) == 1:
-                        dat = dat[()]
+                        dat = dat[()].decode(encoding)
                     else:
-                        dat = list(dat)
+                        dat = [d.decode(encoding) for d in dat]
             except (ValueError, TypeError):
                 pass
             setattr(top, current, dat)
