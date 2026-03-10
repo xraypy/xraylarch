@@ -113,14 +113,14 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
                                          defaults=(mu,), group=group,
                                         fcn_name='rebin_xafs')
 
-    emin = min(energy) - e0
-    emax = max(energy) - e0
-
     if e0 is None:
         e0 = getattr(group, 'e0', None)
 
     if e0 is None:
         raise ValueError("need e0")
+
+    emin = min(energy) - e0
+    emax = max(energy) - e0
 
     if pre1 is None:
         pre1 = pre_step*int(emin/pre_step)
