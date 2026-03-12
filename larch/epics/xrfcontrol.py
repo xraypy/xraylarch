@@ -60,13 +60,14 @@ class DetectorSelectDialog(wx.Dialog):
     """
     msg = '''Select XIA xMAP or Quantum XSPress3 MultiElement MCA detector'''
     det_types = ('SXD-7', 'ME-7', 'ME-4', 'Ketek', 'MCA', 'other')
-    ioc_types = ('Xspress3.1', 'xMAP', 'Xspress3.0', 'MCA')
+    ioc_types = ('xspress3', 'xmxap', 'mca')
     def_prefix = '13QX7:'   # SDD1:'
     def_nelem  =  4
 
     def __init__(self, parent=None, prefix=None, det_type='ME-4',
-                 ioc_type='Xspress3', nmca=4,
+                 ioc_type='xspress3', nmca=4,
                  title='Select Epics MCA Detector'):
+
         if prefix is None:
             prefix = self.def_prefix
         if det_type not in self.det_types:
@@ -287,13 +288,13 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
     main_title = 'Epics XRF Control'
 
     def __init__(self, parent=None, _larch=None, prefix=None,
-                 det_type='ME-4', ioc_type='Xspress3', nmca=4,
+                 det_type='ME-4', ioc_type='xspress3', nmca=4,
                  size=(1100, 850), environ_file=None,
                  incident_energy_pvname=None, incident_energy_units='eV',
                  title='Epics XRF Display', output_title='XRF', **kws):
 
         self.det_type = det_type
-        self.ioc_type = ioc_type
+        self.ioc_type = ioc_type.lower()
         self.prefix = prefix
         self.nmca = nmca
         self.det_main = 1
@@ -308,10 +309,10 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         self.icon_file = os.path.join(icondir, 'ptable.ico')
 
+        self.onConnectEpics(event=None, prefix=prefix)
+
         XRFDisplayFrame.__init__(self, parent=parent, _larch=_larch,
                                  title=title, size=size, **kws)
-
-        self.onConnectEpics(event=None, prefix=prefix)
 
     def read_environfile(self, filename):
         """read environmnet file"""
@@ -331,7 +332,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
 
     def onXspress3Control(self, event=None):
-        if self.ioc_type != 'Xspress3' or caget is None:
+        if self.ioc_type.lower() != 'xspress3' or caget is None:
             return
         try:
             self.win_xsp3.Raise()
@@ -395,7 +396,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         print( '  EPICS-XRFDisplay onSaveColumnFile not yet implemented  ')
         pass
 
-    def prompt_for_detector(self, prefix=None, ioc_type='Xspress3',  nmca=4):
+    def prompt_for_detector(self, prefix=None, ioc_type='xspress3',  nmca=4):
         dlg = DetectorSelectDialog(prefix=prefix, ioc_type=ioc_type, nmca=nmca)
         dlg.Raise()
         if dlg.ShowModal() == wx.ID_OK:
@@ -404,9 +405,11 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             dtype = dlg.dettype.GetStringSelection()
             nmca = dlg.nelem.GetValue()
             dlg.Destroy()
+
+        print(' Prompt Dialog ', dpref, dtype, atype, nmca)
         return dpref, dtype, atype, nmca
 
-    def connect_to_detector(self, prefix=None, ioc_type='Xspress3',
+    def connect_to_detector(self, prefix=None, ioc_type='xspress3',
                             det_type=None, nmca=4):
         self.det = None
         ioc_type = ioc_type.lower()
@@ -898,13 +901,13 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
 class EpicsXRFApp(LarchWxApp):
     def __init__(self, _larch=None, prefix=None,
-                 det_type='ME-4', ioc_type='Xspress3', nmca=4,
+                 det_type='ME-4', ioc_type='xspress3', nmca=4,
                  size=(1100, 800), environ_file=None,
                  incident_energy_pvname=None, incident_energy_units='eV',
                  title='Epics XRF Display', output_title='XRF', **kws):
         self.prefix = prefix
         self.det_type = det_type
-        self.ioc_type = ioc_type
+        self.ioc_type = ioc_type.lower()
         self.nmca = nmca
         self.size = size
         self.environ_file = environ_file
@@ -930,6 +933,18 @@ class EpicsXRFApp(LarchWxApp):
         frame.Raise()
         self.SetTopWindow(frame)
         return True
+
+def run_xrfcontrol_app(prefix, nmca=4, det_type='ME-4', ioc_type='xspress3',
+                       environ_file=None):
+  app = EpicsXRFApp(prefix=prefix, nmca=nmca, det_type=det_type,
+                    ioc_type=ioc_type, environ_file=environ_file)
+  app.MainLoop()
+
+# def make_xrfcontrol_shortcut(prefix, nmca=4, det_type='ME-4', ioc_type='xspress3',
+#                        environ_file=None):
+#     from larch.apps imprt LarchApp
+#     lapp = LarchApp(name='Epics XRF Control {prefix}', script='larch_xrf', icon='ptable',
+#                            description='X-ray FluorescenceData Viewing and Analysis'),
 
 if __name__ == "__main__":
     EpicsXRFApp().MainLoop()
