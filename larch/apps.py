@@ -131,8 +131,10 @@ def run_larch_jupyterlab():
     "run Jupyter Lab within the Larch-installed Python"
     app = LarchApps['Jupyter Lab']
     app.prep_cli()
-    os.environ['JUPYTER_APP_LAUNCHER_PATH'] =  Path(sys.prefix, 'share', 'jupyter',
-                                                   'labextensions', 'jupyter_app_launcher').as_posix()
+    launcher = Path(sys.prefix, 'share', 'jupyter',
+                    'labextensions', 'jupyter_app_launcher').as_posix()
+    os.environ['JUPYTER_APP_LAUNCHER_PATH'] = launcher
+
     from jupyterlab import labapp
     labapp.main()
 
@@ -164,13 +166,50 @@ def run_larch_xrf():
 
 def run_epics_xrf():
     """XRF Viewing and Control for Epics XRF Detectors"""
-    app = LarchApps['XRF Viewer']
-    app.prep_cli()
     try:
         from .epics import EpicsXRFApp
-        EpicsXRFApp().MainLoop()
     except ImportError:
         print('cannot import EpicsXRFApp: try `pip install "xraylarch[epics]"`')
+
+    parser = ArgumentParser(description='Epics XRF Control')
+    parser.add_argument('prefix', nargs='?',  help="Epics Detector Prefix (ie, 'XSP3_QX7:')")
+    parser.add_argument('-n', '--nmca', dest='nmca', default='4',
+                        help='number of detector channels')
+    parser.add_argument('-d', '--det', dest='det',
+                       default='ME-4', help="detector type ('ME-4', 'ME-7', 'SXD-7', 'Other')")
+    parser.add_argument('-i', '--ioc', dest='ioc',
+                         default='xspress3', help="IOC type ('xspress3', 'xmap', 'mca')")
+    parser.add_argument('-e', '--env', dest='envfile',
+                         default=None, help="path to environ file")
+    parser.add_argument('-m', '--makeicon', action='store_true', default=False,
+                            help="make desktop shortcut")
+    args = parser.parse_args()
+
+    if args.makeicon:
+        bindir = 'Scripts' if uname == 'win' else 'bin'
+        bindir = Path(sys.prefix, bindir).absolute()
+        script = f'epics_xrf {args.prefix} -n {args.nmca} -i {args.ioc} -d {args.det}'
+        if args.envfile is not None:
+            script = f'{script} -e {args.envfile}'
+        script = Path(bindir, script).absolute().as_posix()
+
+        for ext in ico_ext:
+            ticon = Path(icondir, f"ptable.{ext:s}").absolute()
+            if ticon.exists():
+                icon = ticon
+        make_shortcut(script, name='XRF Coontrol', folder=None,
+                      icon=icon.as_posix(),
+                      description='Epics XRF Control',
+                      terminal=False)
+
+
+    else:
+        app = EpicsXRFApp(prefix=args.prefix,
+                         nmca=int(args.nmca),
+                         det_type=args.det,
+                         ioc_type=args.ioc,
+                         environ_file=args.envfile).MainLoop()
+        app.MainLoop()
 
 def run_larch_xrd1d():
     """X-ray Diffraction Data Display"""
