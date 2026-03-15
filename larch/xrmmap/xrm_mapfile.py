@@ -3259,7 +3259,7 @@ class GSEXRM_MapFile(object):
                                         maxshape=(None, ncol), **self.compress_args)
                 lmtgrp = rgrp.create_dataset('limits', data=[0., 0.], **self.compress_args)
                 lmtgrp.attrs['type'] = 'energy'
-                lamtgrp.attrs['units'] = 'keV'
+                lmtgrp.attrs['units'] = 'keV'
 
                 out = np.zeros([1, ncol])
             # print("found roi data ", out.shape, nrow, ncol)
