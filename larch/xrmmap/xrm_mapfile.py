@@ -3234,15 +3234,15 @@ class GSEXRM_MapFile(object):
             ext = 'cor'
 
 
-        # print("GetROIMAP roiname=%s|roi=%s|det=%s" % (roiname, roi, det))
-        # print("detaddr=%s|ext=%s|version=%s" % (detaddr, ext, self.version))
+        # print(f"GetROIMAP {roiname=}, {roi},{det=}")
+        # print(f"{detaddr=}, {ext=}, {self.version=}")
         if version_ge(self.version, '2.0.0'):
             if detaddr.startswith('roimap'):
                 roi_ext = '%s/' + ext
             else:
                 roi_ext = '%s_' + ext if ext == 'raw' else '%s'
             roiaddr =  roi_ext % roi
-            # print("looking for detattr, roiaddr ", detaddr, roiaddr)
+            # print(f"looking for {detaddr=}, {roiaddr=} ")
             try:
                 out = self.xrmmap[detaddr][roiaddr][:]
             except (KeyError, OSError):
@@ -3259,16 +3259,17 @@ class GSEXRM_MapFile(object):
                                         maxshape=(None, ncol), **self.compress_args)
                 lmtgrp = rgrp.create_dataset('limits', data=[0., 0.], **self.compress_args)
                 lmtgrp.attrs['type'] = 'energy'
-                lmtgrp.attrs['units'] = 'keV'
+                lamtgrp.attrs['units'] = 'keV'
 
                 out = np.zeros([1, ncol])
             # print("found roi data ", out.shape, nrow, ncol)
             if version_ge(self.version, '2.1.0') and out.shape != (nrow, ncol):
                 _roi, _detaddr = self.check_roi(roiname, det, version='1.0.0')
-                detname = '%s%s' % (_detaddr, ext)
+                detname = f'{_detaddr}{ext}'
                 out = self.xrmmap[detname][:, :, _roi]
-                # print("from v1, got roi map ", _roi, detname, out.shape)
+                # print(f"from v1, got roi map {_roi=}, {detname=}, {out.shape=}")
                 if self.write_access:
+                    # print(f"  .. save as {detaddr=}/{roiaddr=}")
                     self.xrmmap[detaddr][roiaddr].resize((nrow, ncol))
                     self.xrmmap[detaddr][roiaddr][:, :] = out
 
