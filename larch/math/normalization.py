@@ -16,7 +16,7 @@ def norm1D(y, norm=None, logger=None, **kws):
     norm : string, available options
            "max"     -> y / np.max(y)
            "max-min" -> (y - np.min(y)) / (np.max(y) - np.min(y))
-           "area"    -> (y - np.min(y)) / np.trapz(y, x=kws.get('x'))
+           "area"    -> (y - np.min(y)) / np.trapezoid(y, x=kws.get('x'))
            "sum"     ->  (y - np.min(y)) / np.sum(y)
            "larch"   -> TODO!!!
 
@@ -32,9 +32,9 @@ def norm1D(y, norm=None, logger=None, **kws):
         return (y - np.min(y)) / (np.max(y) - np.min(y))
     elif norm == "area":
         try:
-            return (y - np.min(y)) / np.trapz(y, x=kws.get("x"))
+            return (y - np.min(y)) / np.trapezoid(y, x=kws.get("x"))
         except Exception:
-            return (y - np.min(y)) / np.trapz(y)
+            return (y - np.min(y)) / np.trapezoid(y)
     elif norm == "sum":
         return (y - np.min(y)) / np.sum(y)
     elif norm == "larch":
