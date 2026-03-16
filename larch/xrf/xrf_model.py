@@ -376,14 +376,17 @@ class XRF_Model:
         gamma = pars['peak_gamma']
 
         # escape: calc only if needed
-        if ((not self.fit_in_progress) or
-            self.params['det_thickness'].vary or
-            self.params['escape_amp'].vary):
-            if self.escape_scale is None:
-                self.calc_escape_scale(energy, thickness=pars['det_thickness'])
-            self.escape_amp = pars.get('escape_amp', 0.0) * self.escape_scale
-            if not self.use_escape:
-                self.escape_amp = 0
+        escape_amp = self.params.get('escape_amp', None)
+        if escape_amp is None:
+            self.escape_amp = 0.0
+        else:
+            if ((not self.fit_in_progress) or
+                self.params['det_thickness'].vary or escape_amp.vary):
+                if self.escape_scale is None:
+                    self.calc_escape_scale(energy, thickness=pars['det_thickness'])
+                self.escape_amp = pars.get('escape_amp', 0.0) * self.escape_scale
+                if not self.use_escape:
+                    self.escape_amp = 0
         # detector attenuation: calc only if needed
         if (not self.fit_in_progress) or self.params['det_thickness'].vary:
             self.det_atten = self.detector.absorbance(energy, thickness=pars['det_thickness'])
