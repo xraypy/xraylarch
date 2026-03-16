@@ -285,7 +285,6 @@ class XRFDisplayFrame(wx.Frame):
         self.data = None
         self.title = title
         self.roi_callback = roi_callback
-        self.plotframe = None
         self.wids = {}
         if isinstance(_larch, LarchFrame):  # called with existing LarchFrame
             self.larch_buffer = _larch
@@ -436,7 +435,7 @@ class XRFDisplayFrame(wx.Frame):
             return
 
         log = np.log10
-        axes= self.plotpanel.axes
+        axes = self.plotpanel.axes
         def draw_ymarker_range(idx, x, y):
             ymin, ymax = self.plotpanel.axes.get_ylim()
             y1 = (y-ymin)/(ymax-ymin+0.0002)

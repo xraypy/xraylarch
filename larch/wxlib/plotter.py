@@ -260,7 +260,7 @@ class XRFDisplay(XRFDisplayFrame):
                                  exit_callback=self.onExit, **kws)
         self.Show()
         self.Raise()
-        self.panel.cursor_callback = self.onCursor
+        self.plotpanel.cursor_callback = self.onCursor
         self.window = int(window)
         self.title = 'XRF Display'
         self._larch = _larch
