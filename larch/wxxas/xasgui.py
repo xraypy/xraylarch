@@ -2057,13 +2057,16 @@ before clearing"""
 
     def onPinTimerComplete(self, reason=None, **kws):
         self.timers['pin'].Stop()
+        xval = 'unknown'
         if reason != "bad":
-            msg = 'Selected Point at %.1f' % self.cursor_dat['xsel']
+            xval = self.cursor_dat['xsel']
+            if isinstance(xval, float):
+                xval = f"{xval:.2f}"
+            msg = f'Selected Point at {xval}'
             if reason == 'timeout':
                 msg = msg + '(timed-out)'
             self.write_message(msg)
-            if (self.cursor_dat['xsel'] is not None and
-                callable(self.cursor_dat['callback'])):
+            if (xval is not None and callable(self.cursor_dat['callback'])):
                 self.cursor_dat['callback'](**self.cursor_dat)
                 time.sleep(0.05)
         else:
@@ -2088,7 +2091,7 @@ before clearing"""
         self.write_message(msg)
 
         now = time.time()
-        curhist_name = 'plot%d_cursor_hist' % win
+        curhist_name = f'plot{win}_cursor_hist'
         cursor_hist = getattr(self.larch.symtable._plotter, curhist_name, [])
 
         self.cursor_dat = dict(relative_e0=relative_e0, opt=opt,
