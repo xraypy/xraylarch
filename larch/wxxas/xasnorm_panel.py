@@ -169,7 +169,7 @@ class XASNormPanel(TaskPanel):
         # step rows
         nnorm_panel = wx.Panel(panel)
         self.wids['nnorm'] = Choice(nnorm_panel, choices=list(NNORM_CHOICES),
-                                    size=(150, -1), action=self.onNormMethod)
+                                    size=(150, -1), action=self.onNNorm)
         self.wids['nnorm'].SetStringSelection(defaults.get('nnorm', 'linear'))
         self.wids['auto_nnorm'] = Check(nnorm_panel, default=defaults.get('auto_nnorm', True),
                                         label='auto?', action=self.onAuto_NNORM)
@@ -206,6 +206,8 @@ class XASNormPanel(TaskPanel):
         sx.Add(xas_pre2, 0, LEFT, 4)
         sx.Add(self.wids['show_pre'], 0, LEFT, 4)
         pack(pre_panel, sx)
+
+        opts['action'] = self.onSet_NormRange
 
         nor_panel = wx.Panel(panel)
         xas_norm1 = self.add_floatspin('norm1', value=defaults['norm1'], parent=nor_panel, **opts)
@@ -389,7 +391,6 @@ class XASNormPanel(TaskPanel):
                 val = opts.get(attr, None)
                 if val is not None:
                     self.wids[attr].SetValue(val)
-            self.set_nnorm_widget(opts.get('nnorm'))
 
             xasmode = getattr(dgroup, 'xasmode', 'unknown')
             if xasmode.startswith('calc'):
@@ -419,6 +420,9 @@ class XASNormPanel(TaskPanel):
             self.wids['show_pre'].SetValue(opts['show_pre'])
             self.wids['show_norm'].SetValue(opts['show_norm'])
 
+            self.set_nnorm_widget(opts.get('nnorm'), auto=opts.get('auto_nnorm', 1))
+
+
         frozen = opts.get('is_frozen', False)
         frozen = getattr(dgroup, 'is_frozen', frozen)
 
@@ -426,7 +430,7 @@ class XASNormPanel(TaskPanel):
         self._set_frozen(frozen)
         self.skip_process = False
 
-    def set_nnorm_widget(self, nnorm=None):
+    def set_nnorm_widget(self, nnorm=None, auto=None):
         conf = self.get_config()
         nnorm_default = get_auto_nnorm(conf['norm1'], conf['norm2'])
         if nnorm in (None, 'auto'):
@@ -437,8 +441,10 @@ class XASNormPanel(TaskPanel):
         if nnorm_str is None:
             nnorm_str = NNORM_STRINGS.get(nnorm_default, '1')
         self.wids['nnorm'].SetStringSelection(nnorm_str)
-        self.wids['auto_nnorm'].SetValue(0)
-        self.update_config({'nnorm': nnorm})
+        opts = {'nnorm': nnorm}
+        if auto is not None:
+            opts['auto_nnorm'] = 1 if auto else 0
+        self.update_config(opts)
 
     def unset_skip_process(self):
         self.skip_process = False
@@ -497,11 +503,20 @@ class XASNormPanel(TaskPanel):
             dgroup.mback_params.atsym = atsym
             dgroup.mback_params.edge = edge
 
+
+    def onNNorm(self, evt=None):
+        self.wids['auto_nnorm'].SetValue(0)
+        self.onNormMethod()
+
     def onNormMethod(self, evt=None):
+        print("onNormMethod ", evt)
+
         method = self.wids['norm_method'].GetStringSelection().lower()
         dgroup = self.controller.get_group()
+        auto_nnorm = self.wids['auto_nnorm'].GetValue()
         nnorm  = NNORM_CHOICES.get(self.wids['nnorm'].GetStringSelection(), 1)
         if nnorm is None:
+            auto_nnorm = 1
             nnorm = get_auto_nnorm(self.wids['norm1'].GetValue(),
                                    self.wids['norm2'].GetValue())
 
@@ -509,6 +524,7 @@ class XASNormPanel(TaskPanel):
         npre = 0 if npre_sel.lower().startswith('con') else 1
         nvict = int(self.wids['nvict'].GetStringSelection())
         self.update_config({'norm_method': method, 'nnorm': nnorm,
+                            'auto_nnorm': auto_nnorm,
                             'nvict': nvict, 'npre': npre},
                             dgroup=dgroup)
         if method.startswith('mback'):
@@ -544,8 +560,7 @@ class XASNormPanel(TaskPanel):
         if evt.IsChecked():
             nnorm = get_auto_nnorm(self.wids['norm1'].GetValue(),
                                    self.wids['norm2'].GetValue())
-            self.set_nnorm_widget(nnorm)
-            self.wids['auto_nnorm'].SetValue(0)
+            self.set_nnorm_widget(nnorm, auto=True)
             time.sleep(0.001)
             self.onReprocess()
 
@@ -594,7 +609,7 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
             copy_attrs('e0', 'show_e0', 'auto_e0', 'edge_step',
                        'auto_step', 'energy_shift', 'pre1', 'pre2',
                        'nvict', 'atsym', 'edge', 'norm_method', 'nnorm',
-                       'norm1', 'norm2', 'energy_ref')
+                       'norm1', 'norm2', 'energy_ref', 'show_pre', 'show_norm')
         elif name == 'xas_e0':
             copy_attrs('e0', 'show_e0', 'auto_e0')
         elif name == 'xas_step':
@@ -606,7 +621,7 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         elif name == 'atsym':
             copy_attrs('atsym', 'edge')
         elif name == 'xas_norm':
-            copy_attrs('norm_method', 'nnorm', 'norm1', 'norm2', 'show_norm')
+            copy_attrs('norm_method', 'nnorm', 'norm1', 'norm2', 'auto_nnorm', 'show_norm')
         elif name == 'energy_ref':
             copy_attrs('energy_ref')
 
@@ -643,7 +658,11 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
     def onSet_XASE0(self, evt=None, value=None):
         "handle setting auto e0 / show e0"
         self.update_config({'e0': self.wids['e0'].GetValue(),
-                           'auto_e0':self.wids['auto_e0'].GetValue()})
+                           'auto_e0':self.wids['auto_e0'].GetValue(),
+                           'show_e0': self.wids['show_e0'].GetValue(),
+                           'show_pre': self.wids['show_pre'].GetValue(),
+                           'show_norm': self.wids['show_norm'].GetValue()
+                           })
         self.onReprocess()
 
     def onSet_XASE0Val(self, evt=None, value=None):
@@ -694,6 +713,17 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         self.update_config(conf)
         self.onReprocess()
 
+    def onSet_NormRange(self, evt=None, **kws):
+        conf = {}
+        for attr in ('norm1', 'norm2'):
+            conf[attr] = self.wids[attr].GetValue()
+        self.update_config(conf)
+
+        if self.wids['auto_nnorm'].GetValue():
+            self.set_nnorm_widget()
+
+        self.onReprocess()
+
     def pin_callback(self, opt='__', xsel=None, relative_e0=True, **kws):
         """
         get last selected point from a specified plot window
@@ -725,6 +755,8 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
             return
         if not hasattr(dgroup.config, self.configname):
             return
+        # print("onReprocess ", dgroup)
+
         self.process(dgroup=dgroup)
         if self.stale_groups is not None:
             for g in self.stale_groups:
