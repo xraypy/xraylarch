@@ -41,8 +41,6 @@ mplconfdir = Path(user_larchdir, 'matplotlib').as_posix()
 mkdir(mplconfdir)
 os.environ['MPLCONFIGDIR'] = mplconfdir
 
-
-
 from matplotlib.axes import Axes
 HIST_DOC = Axes.hist.__doc__
 
@@ -289,8 +287,8 @@ class XRFDisplay(XRFDisplayFrame):
         symtable = ensuremod(self._larch, _larch_name)
         if symtable is None:
             return
-        symtable.set_symbol(f'{self.symname}_xrf_x', x)
-        symtable.set_symbol(f'{self.symname}_xrf_y', y)
+        symtable.set_symbol(f'{self.symname}_xrf_x', float(x))
+        symtable.set_symbol(f'{self.symname}_xrf_y', float(y))
 
 class PlotDisplay(PlotFrame):
     def __init__(self, wxparent=None, window=1, _larch=None, size=None, **kws):
@@ -333,13 +331,14 @@ class PlotDisplay(PlotFrame):
         symtable = ensuremod(self._larch, _larch_name)
         if symtable is None:
             return
-        hmax = getattr(symtable, '%s.cursor_maxhistory' % _larch_name, MAX_CURSHIST)
-        symtable.set_symbol('%s_x'  % self.symname, x)
-        symtable.set_symbol('%s_y'  % self.symname, y)
-        self.cursor_hist.insert(0, (x, y, time.time()))
+        hmax = getattr(symtable, f'{_larch_name}.cursor_maxhistory', MAX_CURSHIST)
+        sname = self.symname
+        symtable.set_symbol(f'{sname}_x', float(x))
+        symtable.set_symbol(f'{sname}_y', float(y))
+        self.cursor_hist.insert(0, (float(x), float(y), time.time()))
         if len(self.cursor_hist) > hmax:
             self.cursor_hist = self.cursor_hist[:hmax]
-        symtable.set_symbol('%s_cursor_hist' % self.symname, self.cursor_hist)
+        symtable.set_symbol(f'{sname}_cursor_hist', self.cursor_hist)
 
     def get_config(self):
         return get_panel_plot_config(self.panel)
@@ -362,15 +361,16 @@ class StackedPlotDisplay(StackedPlotFrame):
         self._larch = _larch
         self._xylims = {}
         self.cursor_hist = []
-        self.symname = '%s.fitplot%i' % (_larch_name, self.window)
+        self.symname = f'{_larch_name}.fitplot{self.window}'
         symtable = ensuremod(self._larch, _larch_name)
         self.panel.canvas.figure.set_facecolor('#FDFDFB')
         self.panel_bot.canvas.figure.set_facecolor('#FDFDFB')
 
         if symtable is not None:
             symtable.set_symbol(self.symname, self)
-            if not hasattr(symtable, '%s.cursor_maxhistory' % _larch_name):
-                symtable.set_symbol('%s.cursor_maxhistory' % _larch_name, MAX_CURSHIST)
+            sname = f'{_larch_name}.cursor_maxhistory'
+            if not hasattr(symtable, sname):
+                symtable.set_symbol(sname, MAX_CURSHIST)
 
         if window not in FITPLOT_DISPLAYS:
             FITPLOT_DISPLAYS[window] = self
@@ -391,13 +391,14 @@ class StackedPlotDisplay(StackedPlotFrame):
         symtable = ensuremod(self._larch, _larch_name)
         if symtable is None:
             return
-        hmax = getattr(symtable, '%s.cursor_maxhistory' % _larch_name, MAX_CURSHIST)
-        symtable.set_symbol('%s_x'  % self.symname, x)
-        symtable.set_symbol('%s_y'  % self.symname, y)
-        self.cursor_hist.insert(0, (x, y, time.time()))
+        hmax = getattr(symtable, f'{_larch_name}.cursor_maxhistory', MAX_CURSHIST)
+        sname = self.symname
+        symtable.set_symbol(f'{sname}_x', float(x))
+        symtable.set_symbol(f'{sname}_y', float(y))
+        self.cursor_hist.insert(0, (float(x), float(y), time.time()))
         if len(self.cursor_hist) > hmax:
             self.cursor_hist = self.cursor_hist[:hmax]
-        symtable.set_symbol('%s_cursor_hist' % self.symname, self.cursor_hist)
+        symtable.set_symbol(f'{sname}_cursor_hist', self.cursor_hist)
 
     def get_config(self):
         return get_panel_plot_config(self.panel)
@@ -414,7 +415,7 @@ class ImageDisplay(ImageFrame):
         self.panel.contour_callback = self.onContour
         self.window = int(window)
         self.title = 'Image'
-        self.symname = '%s.img%i' % (_larch_name, self.window)
+        self.symname = f'{_larch_name}.img{self.window}'
         self._larch = _larch
         symtable = ensuremod(self._larch, _larch_name)
         if symtable is not None:
@@ -425,7 +426,7 @@ class ImageDisplay(ImageFrame):
     def onContour(self, levels=None, **kws):
         symtable = ensuremod(self._larch, _larch_name)
         if symtable is not None and levels is not None:
-            symtable.set_symbol('%s_contour_levels'  % self.symname, levels)
+            symtable.set_symbol(f'{self.symname}_contour_levels', levels)
 
     def onExit(self, o, **kw):
         try:
@@ -444,11 +445,17 @@ class ImageDisplay(ImageFrame):
         if symtable is None:
             return
         set = symtable.set_symbol
-        if x is not None:   set('%s_x' % self.symname, x)
-        if y is not None:   set('%s_y' % self.symname, y)
-        if ix is not None:  set('%s_ix' % self.symname, ix)
-        if iy is not None:  set('%s_iy' % self.symname, iy)
-        if val is not None: set('%s_val' % self.symname, val)
+        sn = self.symname
+        if x is not None:
+            set(f'{sn}_x', x)
+        if y is not None:
+            set(f'{sn}_y', y)
+        if ix is not None:
+            set(f'{sn}_ix', ix)
+        if iy is not None:
+            set(f'{sn}_iy', iy)
+        if val is not None:
+            set(f'{sn}_val', val)
 
 def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
                 wintitle=None, xrf=False, image=False, stacked=False,
@@ -946,8 +953,8 @@ def get_cursor(win=1, timeout=15, _larch=None, wxparent=None, size=None,
     if plotter is None:
         return
     symtable = ensuremod(_larch, _larch_name)
-    xsym = '%s.plot%i_x' % (_larch_name, win)
-    ysym = '%s.plot%i_y' % (_larch_name, win)
+    xsym = f'{_larch_name}.plot{win}_x'
+    ysym = f'{_larch_name}.plot{win}_y'
 
     xval = symtable.get_symbol(xsym, create=True)
     yval = symtable.get_symbol(ysym, create=True)
@@ -992,7 +999,7 @@ def last_cursor_pos(win=None, _larch=None):
     if win is not None:
         tmp = []
         for attr in histories:
-            if attr.startswith('plot%d_' % win):
+            if attr.startswith(f'plot{win}_'):
                 tmp.append(attr)
         histories = tmp
     _x, _y, _t = None, None, 0
