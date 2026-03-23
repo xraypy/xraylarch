@@ -8,6 +8,8 @@ import time
 import os
 import locale
 
+from wxutils.colors import use_darkdetect
+
 from ..larchlib import ensuremod
 from .larchfilling import Filling
 from ..utils import get_cwd, format_exception
@@ -43,6 +45,7 @@ class LarchWxApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         self.version_info = version_info
         self.with_inspect = with_inspect
         self.with_c_locale = with_c_locale
+        use_darkdetect()
         wx.App.__init__(self, **kws)
 
     def OnInit(self):
