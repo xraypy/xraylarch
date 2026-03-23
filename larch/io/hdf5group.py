@@ -67,11 +67,14 @@ def h5group(fname, mode='r+', encoding='utf-8'):
             dat = fh.get(key)
             try:
                 if dat.dtype.type == numpy.bytes_:
-                    if len(dat) == 1:
-                        dat = dat[()].decode(encoding)
+                    if dat.size == 1:
+                        # If size is 1 (i.e. scalar bytes or array with one entry)
+                        # then provide an index of 0 for every dimension and return
+                        # just the decoded bytes without an enclosing array
+                        dat = dat[(0,) * dat.ndim].decode(encoding)
                     else:
                         dat = [d.decode(encoding) for d in dat]
-            except (ValueError, TypeError):
+            except (ValueError, TypeError, AttributeError):
                 pass
             setattr(top, current, dat)
             if len(val.attrs) > 0:
