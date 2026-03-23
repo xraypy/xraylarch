@@ -250,6 +250,14 @@ def get_markercolors(trace=1, linecolors=None, facecolor=None):
     return edgecolor, rgb2hex(frgb) + 'C0'
 
 
+def floatish(val):
+    if val is None:
+        return None
+    try:
+        return float(val)
+    except ValueError:
+        return None
+
 class XRFDisplay(XRFDisplayFrame):
     def __init__(self, wxparent=None, window=1, _larch=None,
                  size=(725, 425), **kws):
@@ -287,8 +295,8 @@ class XRFDisplay(XRFDisplayFrame):
         symtable = ensuremod(self._larch, _larch_name)
         if symtable is None:
             return
-        symtable.set_symbol(f'{self.symname}_xrf_x', float(x))
-        symtable.set_symbol(f'{self.symname}_xrf_y', float(y))
+        symtable.set_symbol(f'{self.symname}_xrf_x', floatish(x))
+        symtable.set_symbol(f'{self.symname}_xrf_y', floatish(y))
 
 class PlotDisplay(PlotFrame):
     def __init__(self, wxparent=None, window=1, _larch=None, size=None, **kws):
@@ -333,9 +341,9 @@ class PlotDisplay(PlotFrame):
             return
         hmax = getattr(symtable, f'{_larch_name}.cursor_maxhistory', MAX_CURSHIST)
         sname = self.symname
-        symtable.set_symbol(f'{sname}_x', float(x))
-        symtable.set_symbol(f'{sname}_y', float(y))
-        self.cursor_hist.insert(0, (float(x), float(y), time.time()))
+        symtable.set_symbol(f'{sname}_x', floatish(x))
+        symtable.set_symbol(f'{sname}_y', floatish(y))
+        self.cursor_hist.insert(0, (floatish(x), floatish(y), time.time()))
         if len(self.cursor_hist) > hmax:
             self.cursor_hist = self.cursor_hist[:hmax]
         symtable.set_symbol(f'{sname}_cursor_hist', self.cursor_hist)
@@ -393,9 +401,9 @@ class StackedPlotDisplay(StackedPlotFrame):
             return
         hmax = getattr(symtable, f'{_larch_name}.cursor_maxhistory', MAX_CURSHIST)
         sname = self.symname
-        symtable.set_symbol(f'{sname}_x', float(x))
-        symtable.set_symbol(f'{sname}_y', float(y))
-        self.cursor_hist.insert(0, (float(x), float(y), time.time()))
+        symtable.set_symbol(f'{sname}_x', floatish(x))
+        symtable.set_symbol(f'{sname}_y', floatish(y))
+        self.cursor_hist.insert(0, (floatish(x), floatish(y), time.time()))
         if len(self.cursor_hist) > hmax:
             self.cursor_hist = self.cursor_hist[:hmax]
         symtable.set_symbol(f'{sname}_cursor_hist', self.cursor_hist)
