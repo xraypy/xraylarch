@@ -568,7 +568,7 @@ class FeffPathGroup(Group):
         for atsym, iz, ipot, amass, x, y, z in self.geom:
             s = geomformat % (atsym, x, y, z, ipot)
             if ipot == 0:
-                s = f"{s}%s (absorber)"
+                s = f"{s} (absorber)"
             out.append(s)
 
         stderrs = {}
