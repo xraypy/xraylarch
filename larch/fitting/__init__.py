@@ -361,8 +361,8 @@ def group2params(paramgroup):
         params = Parameters()
         for key, val in paramgroup.items():
             if isinstance(val, Parameter):
-                params[key] = val
                 params[key]._delay_asteval = False
+                params[key] = val
         return params
 
 
