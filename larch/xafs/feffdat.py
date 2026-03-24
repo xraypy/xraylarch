@@ -583,11 +583,19 @@ class FeffPathGroup(Group):
                 parname = self.pathpar_name('deltar')
                 par = self.params.get(parname, None)
                 val = par.value + self._feffdat.reff
-                strval = 'reff + ' + getattr(self, 'deltar', 0)
+                delr_ = getattr(self, 'deltar', '0')
+                if isParameter(delr_):
+                    if delr_.expr not in (None, ''):
+                        delr_ = delr_.expr
+                    else:
+                        delr_ = str(delr_.value)
+
+                strval = 'reff + ' + delr_
                 std = par.stderr
             else:
                 if pname in pathpars:
                     val, std = pathpars[pname]
+                    # print("from pathpars ", pname, val, std)
                 else:
                     par = self.params.get(parname, None)
                     if par is not None:
@@ -602,7 +610,10 @@ class FeffPathGroup(Group):
                 pname = 'n*s02'
 
             svalue = "     {:7s}= {:s}".format(pname, svalue)
-            if isinstance(strval, str):
+            if isinstance(strval, Parameter):
+                if strval.expr not in (None, ''):
+                    svalue = "{:s}  := '{:s}'".format(svalue, strval.expr)
+            elif isinstance(strval, str):
                 svalue = "{:s}  := '{:s}'".format(svalue, strval)
 
             if val == 0 and pname in ('third', 'fourth', 'ei'):
