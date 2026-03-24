@@ -1,11 +1,11 @@
 # read data
-
+from pathlib import Path
 from larch.io import read_ascii
 from larch.fitting import param, guess, param_group
 from larch.xafs import autobk, feffpath, feffit_transform, feffit_dataset, feffit, feffit_report
 from larch.wxlib.xafsplots import plot_chifit
 
-cu_data  = read_ascii('cu_150k.xmu', labels='energy mutrans')
+cu_data  = read_ascii(Path('..', 'xafsdata', 'cu_150k.xmu'), labels='energy mutrans')
 
 autobk(cu_data.energy, cu_data.mutrans, group=cu_data, rbkg=1.1, kw=2, clamp_hi=50)
 
@@ -16,10 +16,9 @@ pars = param_group(s02      = guess(1),
                    sig2_p1  = guess(0.002),
                    sig2_p2  = guess(0.002),
                    sig2_p3  = guess(0.002),
-
                    sig2_p6  = guess(0.002),
                    sig2_p4  = param(expr='sig2_p3'),
-                   sig2_p5  = param(expr='sig2_p3'),
+                   sig2_p5  = param(expr='sig2_p4'),
                 )
 
 path1 = feffpath('Feff_Cu/feff0001.dat',   s02='s02', e0='e01',
@@ -28,11 +27,11 @@ path1 = feffpath('Feff_Cu/feff0001.dat',   s02='s02', e0='e01',
 
 path2 = feffpath('Feff_Cu/feff0002.dat',   s02='s02', e0='e0',
                  sigma2 = 'sig2_p2',
-                 deltar = 'alpha*reff')
+                 deltar = param('reff*alpha'))
 
 path3 = feffpath('Feff_Cu/feff0003.dat',   s02='s02', e0='e0',
                  sigma2 = 'sig2_p3',
-                 deltar = 'alpha*reff')
+                 deltar = param(expr='reff*alpha'))
 
 path4 = feffpath('Feff_Cu/feff0004.dat',   s02='s02', e0='e0',
                  sigma2 = 'sig2_p4',
@@ -53,7 +52,7 @@ path7 = feffpath('Feff_Cu/feff0007.dat',   s02='s02', e0='e0',
 path8 = feffpath('Feff_Cu/feff0008.dat',   s02='s02', e0='e0',
                  sigma2 = 'sig2_p5',
                  deltar = 'alpha*reff')
-
+#
 path9 = feffpath('Feff_Cu/feff0009.dat',   s02='s02', e0='e0',
                  sigma2 = 'sig2_p5',
                  deltar = 'alpha*reff')
@@ -87,7 +86,8 @@ dset = feffit_dataset(data=cu_data, transform=trans,
 # perform fit!
 out = feffit(pars, dset)
 
-print(feffit_report(out, with_paths=True, min_correl=0.3))
+report = feffit_report(out, with_paths=True, min_correl=0.3)
+print(report)
 
 plot_chifit(dset, kmin=0, kmax=None, kweight=None, rmax=8,
             show_mag=True, show_imag=True,
