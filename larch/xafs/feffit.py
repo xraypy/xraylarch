@@ -30,10 +30,11 @@ from ..math import index_of, realimag, complex_phase, remove_nans
 from ..fitting import (correlated_values, eval_stderr, ParameterGroup,
                        dict2params, group2params, params2group, isParameter)
 
+from .sigma2_models import add_sigma2funcs
 from .xafsutils import set_xafsGroup, gfmt
 from .xafsft import xftf_fast, xftr_fast, ftwindow
 from .autobk import autobk_delta_chi
-from .feffdat import FeffPathGroup, ff2chi, PATH_PARS
+from .feffdat import FeffPathGroup, ff2chi, PATH_PARS, FEFFDAT_VALUES
 
 def propagate_uncertainties(result, datasets, _larch=None):
     """propagate uncertainties from fitting Parameters to all constrained
@@ -820,14 +821,29 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True,
 
     fit_kws.update(kws)
 
-    work_paramgroup = deepcopy(paramgroup)
-    for pname in dir(paramgroup):  # explicitly copy 'skip'!
-        wpar = getattr(work_paramgroup, pname)
-        opar = getattr(paramgroup, pname)
-        if isinstance(wpar, Parameter):
-            setattr(wpar, 'skip', getattr(opar, 'skip', False))
+    work_paramgroup = ParameterGroup()
+    __params = paramgroup._params
+    for pname in paramgroup:
+        if pname == '_params':
+            continue
+        par = __params[pname]
+        par._delay_asteval = True
+        setattr(work_paramgroup, pname, par)
 
-    params = group2params(work_paramgroup)
+    # prepare working parameter group
+    params = Parameters()
+    add_sigma2funcs(params)
+    for attr in FEFFDAT_VALUES:
+        params._asteval.symtable[attr] = 1.0
+
+    for pname, par in paramgroup._params.items():
+        par._delay_asteval = True
+        params.add(par)
+
+    for pname, parval in paramgroup.items(): # explicitly copy 'skip'!
+        if pname == '_params':
+            continue
+        params[pname].skip = getattr(parval, 'skip', False)
 
     if isNamedClass(datasets, FeffitDataSet):
         datasets = [datasets]
@@ -1078,12 +1094,15 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
         if tr.dk2 is not None:
             kwin += f", {tr.dk2:.3f}"
         add_string('k window, dk', kwin)
-        pathfiles = repr([p.filename for p in ds.paths.values()])
-        add_string('paths used in fit', pathfiles)
         add_string('k-weight', kweigh)
         add_string('epsilon_k', eps_k)
         add_string('epsilon_r', eps_r)
         add_string('n_independent', f"{ds.n_idp:.3f}")
+        plabel = 'paths used in fit'
+        for path in ds.paths.values():
+            add_string(plabel, f"'{path.filename}'")
+            plabel = ' '
+
 
         if with_paths:
             out.append(' ')
