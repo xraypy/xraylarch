@@ -822,21 +822,27 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True,
     fit_kws.update(kws)
 
     work_paramgroup = ParameterGroup()
-    __params = paramgroup._params
-    for pname in paramgroup:
-        if pname == '_params':
-            continue
-        par = __params[pname]
-        par._delay_asteval = True
-        setattr(work_paramgroup, pname, par)
 
-    # prepare working parameter group
+    if isinstance(paramgroup, ParameterGroup):
+        __params = paramgroup._params
+        for pname in paramgroup:
+            if pname == '_params':
+                continue
+            par = __params[pname]
+            par._delay_asteval = True
+            setattr(work_paramgroup, pname, par)
+    elif isinstance(paramgroup, Group):
+        for pname, par in paramgroup.items():
+            par._delay_asteval = True
+            setattr(work_paramgroup, pname, par)
+
+    # prepare working Parameters
     params = Parameters()
     add_sigma2funcs(params)
     for attr in FEFFDAT_VALUES:
         params._asteval.symtable[attr] = 1.0
 
-    for pname, par in paramgroup._params.items():
+    for pname, par in work_paramgroup._params.items():
         par._delay_asteval = True
         params.add(par)
 
