@@ -828,9 +828,10 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True,
         for pname in paramgroup:
             if pname == '_params':
                 continue
-            par = __params[pname]
-            par._delay_asteval = True
-            setattr(work_paramgroup, pname, par)
+            if pname in __params:
+                par = __params[pname]
+                par._delay_asteval = True
+                setattr(work_paramgroup, pname, par)
     elif isinstance(paramgroup, Group):
         for pname, par in paramgroup.items():
             par._delay_asteval = True
@@ -849,7 +850,8 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True,
     for pname, parval in paramgroup.items(): # explicitly copy 'skip'!
         if pname == '_params':
             continue
-        params[pname].skip = getattr(parval, 'skip', False)
+        if pname in params and isinstance(params[pname], Parameter):
+            params[pname].skip = getattr(parval, 'skip', False)
 
     if isNamedClass(datasets, FeffitDataSet):
         datasets = [datasets]
