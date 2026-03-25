@@ -104,8 +104,9 @@ xftr({groupname:s}, rmin={rmin:.3f}, rmax={rmax:.3f}, dr={dr:.3f}, window='{rwin
 """
 
 COMMANDS['feffit_params_init'] = """# create feffit Parameter Group to hold fit parameters
-_feffit_params = param_group(reff=-1.0)
+_feffit_params = param_group(reff=-1.0, nleg=-1.0, degen=1.0, rmass=-1.0, vint=0.0, vmu=0.0, vfermi=0.0)
 """
+
 
 COMMANDS['feffit_trans'] = """# define Fourier transform and fitting space
 _feffit_trans = feffit_transform(kmin={fit_kmin:.3f}, kmax={fit_kmax:.3f}, dk={fit_dk:.4f}, kw={fit_kwstring:s},
@@ -815,16 +816,16 @@ class FeffPathPanel(wx.Panel):
         expr = self.wids[name].GetValue().strip()
         if len(expr) < 1:
             return
-        opts= dict(value=1.e-3, minval=None, maxval=None)
+        opts= dict(value=1.e-2, minval=None, maxval=None)
         if name == 'sigma2':
-            opts['minval'] = 0
-            opts['maxval'] = 1
-            opts['value'] = np.sqrt(self.reff)/200.0
+            opts['minval'] = -0.001
+            opts['maxval'] = 0.5
+            opts['value'] = (self.reff**2)/1000.0
         elif name == 'delr':
             opts['minval'] = -0.75
             opts['maxval'] =  0.75
         elif name == 'amp':
-            opts['value'] = 1
+            opts['value'] = 1.0
         result = self.feffit_panel.update_params_for_expr(expr, **opts)
         if result:
             pargroup = self.feffit_panel.get_paramgroup()
@@ -1202,9 +1203,9 @@ class FeffitPanel(TaskPanel):
 
         # if there is a current data group, with an "unbuilt" feffit model (ie, some param changed)
         # then make sure it is built and remembered before switching to the new group
-        print(" fill form ", self.dgroup, dgroup, self.model_needs_rebuild)
+        # print(" fill form ", self.dgroup, dgroup, self.model_needs_rebuild)
         if self.dgroup is not None and self.dgroup != dgroup and self.model_needs_rebuild:
-            print("REBUILD")
+            #    print("REBUILD")
             opts = self.process(self.dgroup)
             self.build_fitmodel(self.dgroup, opts=opts)
 
