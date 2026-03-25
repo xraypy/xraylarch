@@ -361,10 +361,9 @@ def group2params(paramgroup):
         params = Parameters()
         for key, val in paramgroup.items():
             if isinstance(val, Parameter):
-                params[key]._delay_asteval = False
+                params[key]._delay_asteval = True
                 params[key] = val
         return params
-
 
     if isinstance(paramgroup, ParameterGroup):
         return paramgroup._params
@@ -400,8 +399,7 @@ def params2group(params, paramgroup):
     for name, param in params.items():
         this = getattr(paramgroup, name, None)
         if isParameter(this):
-            if _params is not None:
-                _params[name] = this
+            this._delay_asteval = True
             for attr in ('value', 'vary', 'stderr', 'min', 'max', 'expr',
                          'name', 'correl', 'brute_step', 'user_data'):
                 setattr(this, attr, getattr(param, attr, None))
@@ -410,6 +408,8 @@ def params2group(params, paramgroup):
                     this.uvalue = ufloat(this.value, this.stderr)
                 except:
                     pass
+            if _params is not None:
+                _params[name] = this
 
 
 def minimize(fcn, paramgroup, method='leastsq', args=None, kws=None,

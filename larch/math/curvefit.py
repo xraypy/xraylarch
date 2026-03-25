@@ -90,6 +90,8 @@ def curvefit_run(group, model, params, user_options=None):
     if not isinstance(params, Parameters):
         raise ValueError("params must be an lmfit.Parameters")
 
+    for par in params.values():
+        par._delay_asteval = False
     if not hasattr(curvefit, 'fit_history'):
         curvefit.fit_history = []
 
