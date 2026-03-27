@@ -842,10 +842,9 @@ class XRFDisplayFrame(wx.Frame):
     def onShowCPS(self, event=None):
         use_cps = event.IsChecked()
         rtime = max(1.e-5, self.mca.real_time)
-        self.ymin = 0.9/rtime if use_cps else 0.9
-        if use_cps != self.show_cps:
-            self.show_cps = use_cps
-            self.replot()
+        self.ymin = 0.5/rtime if use_cps else 0.5
+        self.show_cps = use_cps
+        self.replot()
 
     def onShowGrid(self, event=None):
         self.show_grid = event.IsChecked()
@@ -1449,7 +1448,7 @@ class XRFDisplayFrame(wx.Frame):
         yval = mca.counts[:]
         if self.show_cps:
             yval = yval/float(mca.real_time)
-
+        self.yval = yval
         atitles = []
         if newplot:
             if getattr(mca, 'title', None) is not None:
