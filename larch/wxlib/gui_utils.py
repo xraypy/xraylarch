@@ -45,8 +45,8 @@ class LarchWxApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         self.version_info = version_info
         self.with_inspect = with_inspect
         self.with_c_locale = with_c_locale
-        use_darkdetect()
         wx.App.__init__(self, **kws)
+        wx.CallAfter(use_darkdetect)
 
     def OnInit(self):
         self.createApp()
