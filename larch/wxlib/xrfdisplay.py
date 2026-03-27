@@ -842,7 +842,7 @@ class XRFDisplayFrame(wx.Frame):
     def onShowCPS(self, event=None):
         use_cps = event.IsChecked()
         rtime = max(1.e-5, self.mca.real_time)
-        self.ymin = 0.5/rtime if use_cps else 0.5
+        self.ymin = 0.25 if use_cps else 0.9
         self.show_cps = use_cps
         self.replot()
 
@@ -1445,10 +1445,11 @@ class XRFDisplayFrame(wx.Frame):
             self.xview_range = (min(mca.energy), max(mca.energy))
 
 
-        yval = mca.counts[:]
+        ydat = mca.counts[:]
         if self.show_cps:
-            yval = yval/float(mca.real_time)
-        self.yval = yval
+            ydat = ydat/float(mca.real_time)
+        self.ydat = ydat
+        
         atitles = []
         if newplot:
             if getattr(mca, 'title', None) is not None:
@@ -1465,12 +1466,12 @@ class XRFDisplayFrame(wx.Frame):
                 atitles.append(rtime_str)
 
             try:
-                self.plot(mca.energy, yval, label=label, **kws)
+                self.plot(mca.energy, ydat, label=label, **kws)
             except ValueError:
                 pass
         else:
             try:
-                self.oplot(mca.energy, yval, label=label, **kws)
+                self.oplot(mca.energy, ydat, label=label, **kws)
             except ValueError:
                 pass
 
