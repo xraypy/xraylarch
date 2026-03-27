@@ -309,10 +309,10 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         self.icon_file = os.path.join(icondir, 'ptable.ico')
 
-        self.onConnectEpics(event=None, prefix=prefix)
 
         XRFDisplayFrame.__init__(self, parent=parent, _larch=_larch,
                                  title=title, size=size, **kws)
+        self.onConnectEpics(event=None, prefix=prefix)
 
     def read_environfile(self, filename):
         """read environmnet file"""
@@ -433,7 +433,6 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.det.connect_displays(status=self.wids['det_status'],
                                       elapsed=self.wids['elapsed'],
                                       dwelltime=self.wids['dwelltime'])
-
 
         for imca in range(1, nmca+1):
             self.add_mca(self.det.get_mca(mca=imca), label=f'MCA{imca}', plot=False)
@@ -818,7 +817,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def onStart(self, event=None, dtime=None, nframes=None, **kws):
         if dtime is not None:
-            self.wids['dwelltime'].SetValue(f"{value:.3f}")
+            self.wids['dwelltime'].SetValue(f"{dtime:.3f}")
             self.det.set_dwelltime(dtime=dtime, nframes=nframes)
         else:
             self.det.set_dwelltime(dtime=self.wids['dwelltime'].GetValue(),
