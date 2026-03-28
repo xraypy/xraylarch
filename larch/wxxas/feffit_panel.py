@@ -818,14 +818,22 @@ class FeffPathPanel(wx.Panel):
             return
         opts= dict(value=1.e-2, minval=None, maxval=None)
         if name == 'sigma2':
+            opts['value'] = (self.reff**2)/1000.0
             opts['minval'] = -0.001
             opts['maxval'] = 0.5
-            opts['value'] = (self.reff**2)/1000.0
         elif name == 'delr':
-            opts['minval'] = -0.75
-            opts['maxval'] =  0.75
+            opts['value'] = 0.001
+            opts['minval'] = -0.5
+            opts['maxval'] =  0.5
         elif name == 'amp':
             opts['value'] = 1.0
+            opts['maxval'] = 1000.0
+            opts['minval'] = -1000.0
+        elif name == 'e0':
+            opts['value'] = 0.05
+            opts['maxval'] = 25.0
+            opts['minval'] = -25.0
+
         result = self.feffit_panel.update_params_for_expr(expr, **opts)
         if result:
             pargroup = self.feffit_panel.get_paramgroup()
