@@ -450,6 +450,17 @@ class XASController():
             conf = read_config(plot_conf)
         return conf
 
+    def save_xasnorm_config(self, options):
+        xasnorm_conf = Path(user_larchdir, 'larix', 'larix_xasnorm.conf')
+        save_config(xasnorm_conf, options, form='yaml')
+
+    def load_xasnorm_config(self):
+        xasnorm_conf = Path(user_larchdir, 'larix', 'larix_xasnorm.conf')
+        conf = {}
+        if xasnorm_conf.exists():
+            conf = read_config(plot_conf)
+        return conf
+
     def write_message(self, msg, panel=0):
         """write a message to the Status Bar"""
         self.wxparent.statusbar.SetStatusText(msg, panel)
