@@ -148,7 +148,8 @@ if HAS_WXPYTHON:
     from .specfile_importer import SpecfileImporter
     from .xas_importer import XasImporter
     from .reportframe import ReportFrame, DictFrame, DataTableGrid, CSVFrame
-    from .gui_utils import (databrowser, fileprompt, LarchWxApp, wx_update)
+    from .gui_utils import (databrowser, fileprompt, LarchWxApp, wx_update,
+                            get_widget_value, set_widget_value)  # eventually from wxutils
     from .larch_updater import LarchUpdaterDialog
     from .parameter import ParameterWidgets, ParameterPanel
 

@@ -231,3 +231,49 @@ def fileprompt(mode='open', multi=True, message = None,
     dlg.Destroy()
     timer.Destroy()
     return path
+
+
+def set_widget_value(widget, value):
+    """generic method to set value for wx widget based on widget type/class
+       class                 method
+       ------                -------
+       wx.StaticText         SetLabel
+       wx.Choice             SetSelection if int, SetStringSelection if str
+       wx.CheckBox           SetValue(True / False)
+       wx.TextCtrl           SetValue
+       FloatSpin             SetValue
+       FloatCtrl             SetValue
+    """
+    setter = getattr(widget, 'SetValue', None)
+    if isinstance(widget, wx.StaticText):
+        setter = widget.SetLabel
+    elif isinstance(widget, wx.CheckBox):
+        setter = widget.SetValue
+        value = bool(value)
+    elif isinstance(widget, wx.Choice):
+        setter = widget.SetSelection
+        if isinstance(value, str):
+            setter = widget.SetStringSelection
+    if setter is None:
+        print(f"Warning: no method for setting value for {widget=}")
+    else:
+        setter(value)
+
+def get_widget_value(widget):
+    """generic method to get value for wx widget based on widget type/class
+       class                 method
+       ------                -------
+       wx.StaticText         GetLabel
+       wx.Choice             GetStringSelection
+       wx.CheckBox           GetValue
+       wx.TextCtrl           GetValue
+    """
+    getter = getattr(widget, 'GetValue', None)
+    if isinstance(widget, wx.StaticText):
+        getter = widget.GetLabel
+    elif isinstance(widget, wx.Choice):
+        getter = widget.GetStringSelection
+    if getter is None:
+        print(f"Warning: no method for getting value for {widget=}")
+    else:
+        return getter()
