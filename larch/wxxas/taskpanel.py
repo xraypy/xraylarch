@@ -12,15 +12,18 @@ import wx.grid as wxgrid
 import wx.lib.scrolledpanel as scrolled
 
 from larch import Group
-from larch.wxlib import (BitmapButton, SetTip, GridPanel, FloatCtrl,
+from larch.wxlib import (BitmapButton, SetTip, GridPanel, Button,
+                         TextCtrl, FloatCtrl,
                          FloatSpin, FloatSpinWithPin, get_icon, SimpleText,
                          pack, Button, HLine, Choice, Check, MenuItem, Popup,
                          CEN, LEFT, FRAMESTYLE, FileSave,
-                         FileOpen, DataTableGrid, get_font, get_color)
+                         FileOpen, DataTableGrid, get_font, get_color,
+                         get_widget_value)
 
 from larch.xafs import etok, ktoe
 from larch.utils import group2dict
 from larch.utils.strutils import break_longstring
+from . import config as larix_config
 from .config import LARIX_PANELS
 
 LEFT = wx.ALIGN_LEFT
@@ -68,8 +71,8 @@ class GroupJournalFrame(wx.Frame):
                             action=self.export)
 
         add_btn = Button(panel, 'Add Entry', size=(200, -1), action=self.add_entry)
-        self.label_wid = wx.TextCtrl(panel, -1, value='user comment', size=(200, -1))
-        self.value_wid = wx.TextCtrl(panel, -1, value='',             size=(600, -1))
+        self.label_wid = TextCtrl(panel, value='user comment', size=(200, -1))
+        self.value_wid = TextCtrl(panel, value='',             size=(600, -1))
 
         panel.Add(self.label, dcol=3, style=LEFT)
 
@@ -204,7 +207,7 @@ class TaskSaveConfigFrame(wx.Frame):
     For a taskpanel, show a dialog-ish Frame to save a configuration
     with form values.
     """
-    def __init__(self, taskpanel, parent=None, callback=None,
+    def __init__(self, parent, taskpanel, callback=None,
                   config_opts=None, default_off=None, **kws):
         self.parent = parent
         self.taskpanel = taskpanel
@@ -215,7 +218,8 @@ class TaskSaveConfigFrame(wx.Frame):
             default_off = []
 
         wx.Frame.__init__(self, parent, -1, size=(550, 500), style=FRAMESTYLE)
-        self.SetTitle(f'Save Configuration for {taskpanel.title}')
+        title = f'Save Configuration for {taskpanel.title}'
+        self.SetTitle(title)
         self.SetFont(get_font())
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
         self.wids = wids = {}
@@ -229,7 +233,7 @@ class TaskSaveConfigFrame(wx.Frame):
 
         opt_names = []
         cdata = {}
-        for row in getattr(larix_config, configname):
+        for row in getattr(larix_config, self.configname):
             cdata[row.name] = (row.desc, row.value, row.dtype, row.choices)
             opt_names.append(row.name)
 
