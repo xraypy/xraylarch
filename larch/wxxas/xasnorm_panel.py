@@ -6,7 +6,7 @@ import time
 import wx
 from copy import deepcopy
 import numpy as np
-
+from pathlib import Path
 from functools import partial
 from xraydb import guess_edge, atomic_number, xray_edge
 from pyshortcuts import gformat
@@ -16,11 +16,15 @@ from larch.xafs.xafsutils import guess_energy_units
 from larch.xafs.pre_edge import find_e0
 
 from larch.wxlib import (FloatSpin, SimpleText, pack, Button, HLine,
-                         Choice, Check, RIGHT, LEFT)
+                        GridPanel, TextCtrl, Choice, Check, RIGHT, LEFT,
+                        FRAMESTYLE, get_font,
+                        get_widget_value, set_widget_value)
 
 from larch.plot import plotlabels_wx as plotlabels
+from larch.site_config import user_larchdir
 from .xas_dialogs import EnergyUnitsDialog
-from .taskpanel import TaskPanel, autoset_fs_increment
+from .taskpanel import TaskPanel, TaskSaveConfigFrame, autoset_fs_increment
+from . import config as larix_config
 from .config import (make_array_choice, EDGES, ATSYMS, PREEDGE_FORMS,
                      NNORM_CHOICES, NNORM_STRINGS, NORM_METHODS,
                      Plot_EnergyRanges)
@@ -43,6 +47,29 @@ Plot_EnergyOffsets = ['0 (absolute energy)',
 FSIZE = 120
 FSIZEBIG = 175
 
+
+NAMED_CONFIGS = {'default': {'auto_e0': True,
+                             'auto_nnorm': True,
+                             'auto_step': True,
+                             'npre': 1,
+                             'pre1': -200,
+                             'pre2': -25,
+                             'norm1': 150,
+                             'norm2': -1,
+                             'nnorm': 'linear',
+                             'norm_method': 'polynomial'}
+                              }
+
+s_cnf = deepcopy(NAMED_CONFIGS['default'])
+s_cnf.update({'auto_e0': False, 'auto_nnorm': False,
+              'e0': 2480.50, 'pre1': -20, 'pre2':-12,
+              'norm1': 30, 'norm2': 90, 'nnorm': 'constant'})
+NAMED_CONFIGS['S K-edge'] = s_cnf
+
+t_cnf = deepcopy(NAMED_CONFIGS['default'])
+t_cnf.update({'npre': 0, 'pre1': -20, 'pre2': -19})
+NAMED_CONFIGS['Theory Calculation'] = t_cnf
+
 def get_auto_nnorm(norm1, norm2):
     "autoamatically set nnorm from range"
     nrange = abs(norm2 - norm1)
@@ -58,13 +85,24 @@ def get_auto_npre(pre1, pre2):
     nrange = abs(pre2 - pre1)
     return 0 if nrange < 5.0 else 1
 
+
 class XASNormPanel(TaskPanel):
     """XAS normalization Panel"""
     def __init__(self, parent, controller=None, **kws):
+
+        self.norm_opts = {}
+        for key, value in NAMED_CONFIGS.items():
+            self.norm_opts[key] = value
+        if controller is not None:
+            self.norm_opts.update(controller.load_xasnorm_config())
         TaskPanel.__init__(self, parent, controller, panel='xasnorm', **kws)
 
     def build_display(self):
-        defaults = self.get_defaultconfig()
+        defconf = self.get_defaultconfig() # from Preferences
+        defaults = self.norm_opts.get('default', NAMED_CONFIGS['default'])
+        defaults.update(defconf)
+        self.norm_opts['default'] = defaults
+
         panel = self.panel
         self.wids = wids = {}
         self.last_plot_type = 'one'
@@ -238,6 +276,15 @@ class XASNormPanel(TaskPanel):
         self.wids['is_frozen'] = Check(panel, default=False, label='Freeze Group',
                                        action=self.onFreezeGroup)
 
+        self.wids['norm_opt']  = Choice(panel,  choices=list(self.norm_opts),
+                                   size=(160, -1), action=self.onNormOptSel)
+
+        self.wids['norm_opt'].SetToolTip('Use Saved Normaliation Configuration')
+
+        self.wids['norm_opt_save'] = Button(panel, 'Save Current Configuration', size=(225, -1),
+                                            action=self.onNormOptSave)
+        self.wids['norm_opt_save'].SetToolTip('Save Current Configuration for later use')
+
         compare_norms = Button(panel, 'Compare Normalization Methods', size=(225, -1),
                           action=self.onCompareNorm)
 
@@ -280,6 +327,10 @@ class XASNormPanel(TaskPanel):
         panel.Add(CopyBtn('xas_step'), dcol=1, style=RIGHT)
 
         panel.Add((5, 5), newrow=True)
+        add_text('Use Saved Options: ', newrow=True)
+        panel.Add(self.wids['norm_opt'])
+        panel.Add(self.wids['norm_opt_save'], dcol=2)
+
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=4, newrow=True)
 
         add_text('Pre-edge range: ')
@@ -303,7 +354,6 @@ class XASNormPanel(TaskPanel):
         panel.Add(nor_panel, dcol=2)
         add_text('Polynomial Type:')
         panel.Add(nnorm_panel, dcol=2)
-
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=4, newrow=True)
         panel.Add(self.wids['is_frozen'], newrow=True)
         panel.Add(copy_all, dcol=3, style=RIGHT)
@@ -315,6 +365,34 @@ class XASNormPanel(TaskPanel):
         sizer.Add(panel, 0, LEFT, 3)
         sizer.Add((5, 5), 0, LEFT, 3)
         pack(self, sizer)
+
+    def onNormOptSel(self, evt=None):
+        name = self.wids['norm_opt'].GetStringSelection()
+        opts = self.norm_opts.get(name, {})
+        for key, val in opts.items():
+            if key in ('auto_e0', 'auto_nnorm', 'auto_step'):
+                continue
+            if key in self.wids:
+                set_widget_value(self.wids[key], val)
+
+        for key in ('auto_e0', 'auto_nnorm', 'auto_step'):
+            if key in opts:
+                set_widget_value(self.wids[key], opts[key])
+
+        self.onReprocess()
+
+    def onNormOptSave(self, evt=None):
+        self.parent.show_subframe('xasnorm_conf', TaskSaveConfigFrame,
+                                  taskpanel=self,
+                                  callback=self.onNormOptSaved,
+                                  config_opts=self.norm_opts,
+                                  default_off=['e0', 'edge', 'energy_shift'])
+
+    def onNormOptSaved(self):
+        self.wids['norm_opt'].SetChoices(list(self.norm_opts))
+        self.controllerd.save_xasnorm_config(self.norm_opts)
+        spath = Path(site_config.user_larchdir, 'larix', 'larix_xasnorm.conf').as_posix()
+        self.write_message(f"Saved normalization options {spath}")
 
     def get_config(self, dgroup=None):
         """custom get_config to possibly inherit from Athena settings"""
@@ -452,29 +530,36 @@ class XASNormPanel(TaskPanel):
     def read_form(self):
         "read form, return dict of values"
         form_opts = {}
-        form_opts['e0'] = self.wids['e0'].GetValue()
-        form_opts['edge_step'] = self.wids['step'].GetValue()
+
+        for attr in ('e0', 'step', 'pre1', 'pre2', 'norm1', 'norm2',
+                     'nnorm', 'nvict', 'npre' 'energy_shift',
+                     'plot_choice1', 'plot_choice2', 'plot_voff',
+                     'show_e0', 'show_pre', 'show_norm', 'auto_e0',
+                     'auto_step', 'auto_nnorm', 'energy_ref', 'atsym',
+                     'edge', 'norm_method'):
+            form_opts[attr] = get_widget_value(self.wids[attr])
+
         for attr in ('pre1', 'pre2', 'norm1', 'norm2'):
-            val = self.wids[attr].GetValue()
-            if val == 0:
-                val = None
-            form_opts[attr] = val
-        form_opts['energy_shift'] = self.wids['energy_shift'].GetValue()
+            if form_opts[attr] == 0:
+                form_opts[attr] = None
 
-        form_opts['nnorm'] = NNORM_CHOICES.get(self.wids['nnorm'].GetStringSelection(), 1)
-        form_opts['nvict'] = int(self.wids['nvict'].GetStringSelection())
-        form_opts['npre']  = PREEDGE_FORMS.get(self.wids['npre'].GetStringSelection(), 1)
-        form_opts['plot_choice1'] = self.wids['plot_choice1'].GetStringSelection()
-        form_opts['plot_choice2'] = self.wids['plot_choice2'].GetStringSelection()
-        form_opts['plot_voff'] = self.wids['plot_voff'].GetValue()
-        for ch in ('show_e0', 'show_pre', 'show_norm', 'auto_e0',
-                   'auto_step', 'auto_nnorm'):
-            form_opts[ch] = self.wids[ch].IsChecked()
+        form_opts['nnorm'] = NNORM_CHOICES.get(form_opts['nnorm'], 1)
+        form_opts['npre']  = PREEDGE_FORMS.get(form_opts['npre'], 1)
+        form_opts['nvict'] = int(form_opts['nvict'])
+        form_opts['norm_method'] = form_opts['norm_method'].lower()
 
-        form_opts['norm_method'] = self.wids['norm_method'].GetStringSelection().lower()
-        form_opts['edge'] = self.wids['edge'].GetStringSelection().title()
-        form_opts['atsym'] = self.wids['atsym'].GetStringSelection().title()
-        form_opts['energy_ref'] = self.wids['energy_ref'].GetStringSelection()
+        # form_opts['e0'] = self.wids['e0'].GetValue()
+        # form_opts['edge_step'] = self.wids['step'].GetValue()
+        # form_opts['energy_shift'] = self.wids['energy_shift'].GetValue()
+        # form_opts['plot_choice1'] = self.wids['plot_choice1'].GetStringSelection()
+        # form_opts['plot_choice2'] = self.wids['plot_choice2'].GetStringSelection()
+        # form_opts['plot_voff'] = self.wids['plot_voff'].GetValue()
+        # for ch in ('show_e0', 'show_pre', 'show_norm', 'auto_e0',
+        #            'auto_step', 'auto_nnorm'):
+        #     form_opts[ch] = self.wids[ch].IsChecked()
+        # form_opts['energy_ref'] = self.wids['energy_ref'].GetStringSelection()
+        # form_opts['edge'] = self.wids['edge'].GetStringSelection().title()
+        # form_opts['atsym'] = self.wids['atsym'].GetStringSelection().title()
         return form_opts
 
     def onAtSymEdge(self, event=None):
