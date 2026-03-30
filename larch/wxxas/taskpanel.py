@@ -199,6 +199,83 @@ class GroupJournalFrame(wx.Frame):
 
         self.datagrid.Refresh()
 
+class TaskSaveConfigFrame(wx.Frame):
+    """
+    For a taskpanel, show a dialog-ish Frame to save a configuration
+    with form values.
+    """
+    def __init__(self, taskpanel, parent=None, callback=None,
+                  config_opts=None, default_off=None, **kws):
+        self.parent = parent
+        self.taskpanel = taskpanel
+        self.callback = callback
+        self.configname = taskpanel.configname
+        self.config_opts = config_opts
+        if default_off is None:
+            default_off = []
+
+        wx.Frame.__init__(self, parent, -1, size=(550, 500), style=FRAMESTYLE)
+        self.SetTitle(f'Save Configuration for {taskpanel.title}')
+        self.SetFont(get_font())
+        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
+        self.wids = wids = {}
+
+        n = len(config_opts)
+        default = config_opts.get('default', {})
+
+        wids['conf_name'] = TextCtrl(panel, f'Config {n+1}', size=(175, -1))
+        wids['save_btn'] = Button(panel, 'Save',
+                                  size=(125, -1), action=self.onSave)
+
+        opt_names = []
+        cdata = {}
+        for row in getattr(larix_config, configname):
+            cdata[row.name] = (row.desc, row.value, row.dtype, row.choices)
+            opt_names.append(row.name)
+
+        for cdat in config_opts.values():
+            for key in cdat:
+                if key not in opt_names:
+                    opt_names.append(key)
+
+        panel.Add(SimpleText(panel, title, size=(550, -1), **self.taskpanel.titleopts),
+                      style=LEFT, dcol=5)
+        panel.Add(SimpleText(panel, ' Name:', size=(150, -1)), dcol=1, newrow=True)
+        panel.Add(wids['conf_name'], dcol=1)
+        panel.Add(wids['save_btn'], dcol=1)
+
+        panel.Add(HLine(panel, size=(500, 3)), dcol=4, newrow=True)
+        panel.Add(SimpleText(panel, ' Setting ', size=(150, -1)), dcol=1, newrow=True)
+        panel.Add(SimpleText(panel, ' Current Value'), dcol=1, newrow=False)
+        panel.Add(SimpleText(panel, ' Include in Saved Configuration?'), dcol=1, newrow=False)
+
+        self.data = {}
+        self.includes = {}
+        for wname in sorted(opt_names):
+            if wname in taskpanel.wids:
+                self.data[wname] = get_widget_value(taskpanel.wids[wname])
+                self.includes[wname] = Check(panel, ' ', default=(wname not in default_off))
+                label =  SimpleText(panel, f'  {wname}')
+                if wname in cdata:
+                    label.SetToolTip(cdata[wname][0])
+                panel.Add(label, dcol=1, newrow=True)
+                panel.Add(SimpleText(panel, str(self.data[wname])))
+                panel.Add(self.includes[wname])
+        panel.Add(HLine(panel, size=(500, 3)), dcol=4, newrow=True)
+        panel.pack()
+
+    def onSave(self, event=None):
+        name = get_widget_value(self.wids['conf_name'])
+        conf = {}
+        for key, val in self.data.items():
+            inc = self.includes.get(key, None)
+            if inc is not None:
+                if inc.IsChecked():
+                    conf[key] = val
+        self.config_opts[name] = conf
+        if callable(self.callback):
+            self.callback()
+
 
 class TaskPanel(wx.Panel):
     """generic panel for main tasks.   meant to be subclassed
