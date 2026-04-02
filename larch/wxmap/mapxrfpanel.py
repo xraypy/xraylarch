@@ -91,12 +91,15 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
     def onSaveArrays(self, evt=None):
         self.current_fit = cfit = self.fit_choice.GetSelection()
         try:
-            thisfit = self.owner.larch.symtable._xrfresults[cfit]
+            xrfresults = getattr(self.owner.larch.symtable, XRFRESULTS_GROUP)
+        except:
+            xrfresults = None
+        try:
+            thisfit = xrfresults[cfit]
         except:
             thisfit = None
         if thisfit is None:
-            print("Unknown fit? " , cfit,
-                  self.owner.larch.symtable._xrfresults)
+            print("Unknown fit? " , cfit, xrfresults)
             return
 
         scale = self.scale.GetValue()
@@ -109,7 +112,7 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
                         f"overwrite group '{workname:s}'?", style=wx.YES_NO)
             if ret != wx.ID_YES: return
 
-        cmd = """weights = _xrfresults[{cfit:d}].decompose_map({groupname:s}.xrmmap['mcasum/counts'],
+        cmd = """weights = xrf_results[{cfit:d}].decompose_map({groupname:s}.xrmmap['mcasum/counts'],
         scale={scale:.6f}, pixel_time={ptime:.5f},method='{method:s}')
 {groupname:s}.add_work_arrays(weights, parent='{workname:s}')
         """
@@ -141,7 +144,7 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
                 _larch.eval(MAKE_XRFRESULTS_GROUP)
             _larch.eval("tmp = xrf_fitresult('{:s}')".format(path))
             _larch.eval("tmp.filename = '{:s}'".format(fname))
-            _larch.eval("_xrfresults.insert(0, tmp)")
+            _larch.eval(f"{XRFRESULTS_GROUP}.insert(0, tmp)")
             _larch.eval("del tmp")
             self.current_fit = 0
             self.update_xrmmap()
@@ -151,9 +154,8 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
             xrmfile = self.owner.current_file
         self.cfile = xrmfile
         symtab = self.owner.larch.symtable
-        xrfresults = getattr(symtab, '_xrfresults', [])
+        xrfresults = getattr(symtab, XRFRESULTS_GROUP, [])
         fit_names = ["%s: %s" % (a.label, a.mcalabel) for a in xrfresults]
-
         if len(fit_names) > 0:
             self.fit_status.SetLabel(HASFITS_MSG)
             self.fit_choice.Clear()
