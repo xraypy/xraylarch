@@ -722,4 +722,4 @@ class Epics_KetekMCA(object):
         rois = self._mca.get_rois()
         mca = self.get_mca(mca=1, with_rois=False)
 
-        save_gsemcafile(filename, [mca], rois, environ=environ)
+        save_gsemcafile(filename, [mca], [rois], environ=environ)
