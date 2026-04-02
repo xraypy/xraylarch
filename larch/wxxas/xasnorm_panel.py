@@ -90,18 +90,18 @@ class XASNormPanel(TaskPanel):
     """XAS normalization Panel"""
     def __init__(self, parent, controller=None, **kws):
 
-        self.norm_opts = {}
+        self.norm_configs = {}
         for key, value in NAMED_CONFIGS.items():
-            self.norm_opts[key] = value
+            self.norm_configs[key] = value
         if controller is not None:
-            self.norm_opts.update(controller.load_xasnorm_config())
+            self.norm_configs.update(controller.load_xasnorm_config())
         TaskPanel.__init__(self, parent, controller, panel='xasnorm', **kws)
 
     def build_display(self):
         defconf = self.get_defaultconfig() # from Preferences
-        defaults = self.norm_opts.get('default', NAMED_CONFIGS['default'])
+        defaults = self.norm_configs.get('default', NAMED_CONFIGS['default'])
         defaults.update(defconf)
-        self.norm_opts['default'] = defaults
+        self.norm_configs['default'] = defaults
 
         panel = self.panel
         self.wids = wids = {}
@@ -204,6 +204,22 @@ class XASNormPanel(TaskPanel):
         sx.Add(self.wids['auto_step'], 0, LEFT, 4)
         pack(step_panel, sx)
 
+        # save config panel
+        saveconf_panel = wx.Panel(panel)
+        self.wids['norm_conf_choice']  = Choice(saveconf_panel,  choices=list(self.norm_configs),
+                                              size=(160, -1), action=self.onNormConfigSelect)
+        self.wids['norm_conf_choice'].SetToolTip('Use Saved Normaliation Configuration')
+
+        self.wids['norm_conf_save'] = Button(saveconf_panel, 'Save Current Configuration', size=(225, -1),
+                                            action=self.onNormConfigSave)
+        self.wids['norm_conf_save'].SetToolTip('Save Current Configuration for later use')
+
+        sx = wx.BoxSizer(wx.HORIZONTAL)
+        sx.Add(SimpleText(saveconf_panel, 'Use Saved Configuration'), 0, LEFT, 3)
+        sx.Add(self.wids['norm_conf_choice'], 0, LEFT, 3)
+        sx.Add(self.wids['norm_conf_save'], 0, LEFT, 3)
+        pack(saveconf_panel, sx)
+
         # step rows
         nnorm_panel = wx.Panel(panel)
         self.wids['nnorm'] = Choice(nnorm_panel, choices=list(NNORM_CHOICES),
@@ -276,14 +292,6 @@ class XASNormPanel(TaskPanel):
         self.wids['is_frozen'] = Check(panel, default=False, label='Freeze Group',
                                        action=self.onFreezeGroup)
 
-        self.wids['norm_opt']  = Choice(panel,  choices=list(self.norm_opts),
-                                   size=(160, -1), action=self.onNormOptSel)
-
-        self.wids['norm_opt'].SetToolTip('Use Saved Normaliation Configuration')
-
-        self.wids['norm_opt_save'] = Button(panel, 'Save Current Configuration', size=(225, -1),
-                                            action=self.onNormOptSave)
-        self.wids['norm_opt_save'].SetToolTip('Save Current Configuration for later use')
 
         compare_norms = Button(panel, 'Compare Normalization Methods', size=(225, -1),
                           action=self.onCompareNorm)
@@ -302,9 +310,14 @@ class XASNormPanel(TaskPanel):
         panel.Add(trow, dcol=5, newrow=True)
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=4, newrow=True)
+
+        panel.Add(saveconf_panel, dcol=5, newrow=True)
+
         add_text('XAS Data:')
         # panel.Add(use_auto, dcol=1)
         panel.Add(SimpleText(panel, 'Copy to Selected Groups:'), style=RIGHT, dcol=3)
+
+\
 
         add_text('Element and Edge: ', newrow=True)
         panel.Add(atpanel, dcol=2)
@@ -327,9 +340,6 @@ class XASNormPanel(TaskPanel):
         panel.Add(CopyBtn('xas_step'), dcol=1, style=RIGHT)
 
         panel.Add((5, 5), newrow=True)
-        add_text('Use Saved Options: ', newrow=True)
-        panel.Add(self.wids['norm_opt'])
-        panel.Add(self.wids['norm_opt_save'], dcol=2)
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=4, newrow=True)
 
@@ -366,9 +376,9 @@ class XASNormPanel(TaskPanel):
         sizer.Add((5, 5), 0, LEFT, 3)
         pack(self, sizer)
 
-    def onNormOptSel(self, evt=None):
-        name = self.wids['norm_opt'].GetStringSelection()
-        opts = self.norm_opts.get(name, {})
+    def onNormConfigSelect(self, evt=None):
+        name = self.wids['norm_conf_choice'].GetStringSelection()
+        opts = self.norm_configs.get(name, {})
         for key, val in opts.items():
             if key in ('auto_e0', 'auto_nnorm', 'auto_step'):
                 continue
@@ -378,19 +388,18 @@ class XASNormPanel(TaskPanel):
         for key in ('auto_e0', 'auto_nnorm', 'auto_step'):
             if key in opts:
                 set_widget_value(self.wids[key], opts[key])
-
         self.onReprocess()
 
-    def onNormOptSave(self, evt=None):
+    def onNormConfigSave(self, evt=None):
         self.parent.show_subframe('xasnorm_conf', TaskSaveConfigFrame,
                                   taskpanel=self,
-                                  callback=self.onNormOptSaved,
-                                  config_opts=self.norm_opts,
+                                  callback=self.onNormConfigSaved,
+                                  config_opts=self.norm_configs,
                                   default_off=['e0', 'edge', 'energy_shift'])
 
-    def onNormOptSaved(self):
-        self.wids['norm_opt'].SetChoices(list(self.norm_opts))
-        self.controllerd.save_xasnorm_config(self.norm_opts)
+    def onNormConfigSaved(self):
+        self.wids['norm_conf_choice'].SetChoices(list(self.norm_configs))
+        self.controllerd.save_xasnorm_config(self.norm_configs)
         spath = Path(site_config.user_larchdir, 'larix', 'larix_xasnorm.conf').as_posix()
         self.write_message(f"Saved normalization options {spath}")
 
