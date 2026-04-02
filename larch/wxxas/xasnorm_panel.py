@@ -194,7 +194,7 @@ class XASNormPanel(TaskPanel):
 
         # step row
         step_panel = wx.Panel(panel)
-        xas_step = self.add_floatspin('step', action=self.onSet_XASStep, with_pin=False,
+        xas_step = self.add_floatspin('edge_step', action=self.onSet_XASStep, with_pin=False,
                                       min_val=-1000.0, max_val=1e7, digits=4, increment=0.05,
                                       value=0.1, size=(FSIZEBIG, -1), parent=step_panel)
         self.wids['auto_step'] = Check(step_panel, default=defaults.get('auto_step', True),
@@ -472,8 +472,8 @@ class XASNormPanel(TaskPanel):
             if opts['atsym'] == '?' and hasattr(dgroup, 'atsym'):
                 self.set_atom_edge(dgroup.atsym, getattr(dgroup, 'edge', 'K'))
 
-            self.wids['step'].SetValue(edge_step)
-            autoset_fs_increment(self.wids['step'], edge_step)
+            self.wids['edge_step'].SetValue(edge_step)
+            autoset_fs_increment(self.wids['edge_step'], edge_step)
             for attr in ('pre1', 'pre2', 'norm1', 'norm2'):
                 val = opts.get(attr, None)
                 if val is not None:
@@ -502,7 +502,7 @@ class XASNormPanel(TaskPanel):
 
             self.wids['norm_method'].SetStringSelection(opts['norm_method'].lower())
             for attr in ('pre1', 'pre2', 'norm1', 'norm2', 'nnorm', 'edge',
-                         'atsym', 'step', 'norm_method'):
+                         'atsym', 'edge_step', 'norm_method'):
                 self.wids[attr].Enable()
             self.wids['show_pre'].SetValue(opts['show_pre'])
             self.wids['show_norm'].SetValue(opts['show_norm'])
@@ -540,12 +540,12 @@ class XASNormPanel(TaskPanel):
         "read form, return dict of values"
         form_opts = {}
 
-        for attr in ('e0', 'step', 'pre1', 'pre2', 'norm1', 'norm2',
-                     'nnorm', 'nvict', 'npre' 'energy_shift',
+        for attr in ('e0', 'edge_step', 'pre1', 'pre2', 'norm1', 'norm2',
+                     'nnorm', 'nvict', 'npre', 'energy_shift',
                      'plot_choice1', 'plot_choice2', 'plot_voff',
                      'show_e0', 'show_pre', 'show_norm', 'auto_e0',
-                     'auto_step', 'auto_nnorm', 'energy_ref', 'atsym',
-                     'edge', 'norm_method'):
+                     'auto_step', 'auto_nnorm', 'energy_ref',
+                      'atsym', 'edge', 'norm_method'):
             form_opts[attr] = get_widget_value(self.wids[attr])
 
         for attr in ('pre1', 'pre2', 'norm1', 'norm2'):
@@ -558,7 +558,7 @@ class XASNormPanel(TaskPanel):
         form_opts['norm_method'] = form_opts['norm_method'].lower()
 
         # form_opts['e0'] = self.wids['e0'].GetValue()
-        # form_opts['edge_step'] = self.wids['step'].GetValue()
+        # form_opts['edge_step'] = self.wids['edge_step'].GetValue()
         # form_opts['energy_shift'] = self.wids['energy_shift'].GetValue()
         # form_opts['plot_choice1'] = self.wids['plot_choice1'].GetStringSelection()
         # form_opts['plot_choice2'] = self.wids['plot_choice2'].GetStringSelection()
@@ -603,8 +603,6 @@ class XASNormPanel(TaskPanel):
         self.onNormMethod()
 
     def onNormMethod(self, evt=None):
-        print("onNormMethod ", evt)
-
         method = self.wids['norm_method'].GetStringSelection().lower()
         dgroup = self.controller.get_group()
         auto_nnorm = self.wids['auto_nnorm'].GetValue()
@@ -636,7 +634,7 @@ class XASNormPanel(TaskPanel):
         except:
             pass
 
-        for wattr in ('e0', 'step', 'pre1', 'pre2', 'norm1', 'norm2', 'nvict',
+        for wattr in ('e0', 'edge_step', 'pre1', 'pre2', 'norm1', 'norm2', 'nvict',
                       'nnorm', 'show_e0', 'auto_e0', 'auto_step', 'auto_nnorm',
                       'norm_method', 'edge', 'atsym', 'show_pre', 'show_norm'):
             self.wids[wattr].Enable(not frozen)
@@ -668,7 +666,6 @@ class XASNormPanel(TaskPanel):
         defaults = self.get_defaultconfig()
 
         self.wids['auto_step'].SetValue(1)
-        self.wids['auto_e0'].SetValue(1)
         self.wids['auto_e0'].SetValue(1)
         self.wids['nvict'].SetSelection(0)
         self.wids['npre'].SetSelection(1)
@@ -736,7 +733,6 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
             dgroup = self.controller.get_group()
             find_e0(dgroup)
             self.update_config({'e0': dgroup.e0})
-            self.wids['auto_e0'].SetValue(0)
             self.wids['e0'].SetValue(dgroup.e0)
             self.onReprocess()
 
@@ -785,15 +781,15 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
 
     def onSet_XASStep(self, evt=None, value=None):
         "handle setting edge step"
-        edge_step = self.wids['step'].GetValue()
+        edge_step = self.wids['edge_step'].GetValue()
         if edge_step < 0:
-            self.wids['step'].SetValue(abs(edge_step))
+            self.wids['edge_step'].SetValue(abs(edge_step))
         self.wids['auto_step'].SetValue(0)
         self.onReprocess()
         time.sleep(0.01)
 
         self.update_config({'edge_step': abs(edge_step), 'auto_step': False})
-        autoset_fs_increment(self.wids['step'], abs(edge_step))
+        autoset_fs_increment(self.wids['edge_step'], abs(edge_step))
 
 
     def onSet_Ranges(self, evt=None, **kws):
@@ -854,13 +850,14 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         self.process(dgroup=dgroup)
         if self.stale_groups is not None:
             for g in self.stale_groups:
+                print("onReprocess stale group ", g, g.filename)
                 self.process(dgroup=g, force=True)
             self.stale_groups = None
         self.onPlotEither(process=False)
 
     # def process(self, dgroup=None, force_mback=False, force=False, use_form=True, **kws):
     def process(self, dgroup=None, force_mback=False, force=False):
-        """ handle process (pre-edge/normalize) of XAS data from XAS form
+        """ handle process (pre-edge/normalize) of XASS data from XAS form
         """
         if self.skip_process and not force:
             return
@@ -936,6 +933,7 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
             copts.append("step=%s" % gformat(float(form['edge_step'])))
 
         xasmode = getattr(dgroup, 'xasmode', 'unknown')
+        # print(f"process {xasmode=} {dgroup.filename=}")
         if xasmode.startswith('calc'):
             copts.append('iscalc=True')
         #
@@ -1003,8 +1001,8 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         if form['auto_e0'] and hasattr(dgroup, 'e0'):
             self.wids['e0'].SetValue(dgroup.e0)
         if form['auto_step'] and hasattr(dgroup, 'edge_step'):
-            self.wids['step'].SetValue(dgroup.edge_step)
-            autoset_fs_increment(self.wids['step'], dgroup.edge_step)
+            self.wids['edge_step'].SetValue(dgroup.edge_step)
+            autoset_fs_increment(self.wids['edge_step'], dgroup.edge_step)
 
         if hasattr(dgroup, 'e0') and (conf.get('atsym', '?') == '?'):
             atsym, edge = guess_edge(dgroup.e0)
