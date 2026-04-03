@@ -34,45 +34,46 @@ def save_gsemcafile(filename, mcas, rois, environ=None):
     npts  = len(mcas[0].counts)
     nrois = len(rois[0])
 
-    s_rtime = " ".join(["%.4f" % m.real_time for m in mcas])
-    s_off   = " ".join(["%.6f" % m.offset    for m in mcas])
-    s_quad  = " ".join(["%.6f" % m.quad      for m in mcas])
-    s_slope = " ".join(["%.6f" % m.slope     for m in mcas])
-    s_rois  = " ".join(["%i"   % nrois       for m in mcas])
+    s_rtime = " ".join([f"{m.real_time:.4f}" for m in mcas])
+    s_ltime = " ".join([f"{m.live_time:.4f}" for m in mcas])
+    s_off   = " ".join([f"{m.offset:.6f}"    for m in mcas])
+    s_slope = " ".join([f"{m.slope:.6f}"     for m in mcas])
+    s_quad  = " ".join([f"{m.quad:.6f}"      for m in mcas])
+    s_rois  = " ".join([f"{nrois}"           for m in mcas])
 
     buff = []
     buff.append('VERSION:    3.1')
-    buff.append('ELEMENTS:   %i' % nelem)
-    buff.append('DATE:       %s' % time.ctime())
-    buff.append('CHANNELS:   %i' % npts)
-    buff.append('REAL_TIME:  %s' % s_rtime)
-    buff.append('LIVE_TIME:  %s' % s_rtime)
-    buff.append('CAL_OFFSET: %s' % s_off)
-    buff.append('CAL_SLOPE:  %s' % s_slope)
-    buff.append('CAL_QUAD:   %s' % s_quad)
+    buff.append(f'ELEMENTS:   {nelem}')
+    buff.append(f'DATE:       {time.ctime()}')
+    buff.append(f'CHANNELS:   {npts}')
+    buff.append(f'REAL_TIME:  {s_rtime}')
+    buff.append(f'LIVE_TIME:  {s_ltime}')
+    buff.append(f'CAL_OFFSET: {s_off}')
+    buff.append(f'CAL_SLOPE:  {s_slope}')
+    buff.append(f'CAL_QUAD:   {s_quad}')
 
     # Write ROIS  in channel units
-    buff.append('ROIS:       %s' % s_rois)
+    buff.append(f'ROIS:       {s_rois}')
     for iroi, roi in enumerate(rois[0]):
         name = [roi.name]
-        left = ['%i' % roi.left]
-        right = ['%i' % roi.right]
+        left = [f'{roi.left}']
+        right = [f'{roi.right}']
         for other in rois[1:]:
             name.append(other[iroi].name)
-            left.append('%i' % other[iroi].left)
-            right.append('%i' % other[iroi].right)
+            left.append(f'{other[iroi].left}')
+            right.append(f'{other[iroi].right}')
         name = '& '.join(name)
         left = '& '.join(left)
         right = '& '.join(right)
-        buff.append('ROI_%i_LEFT:  %s' % (iroi, left))
-        buff.append('ROI_%i_RIGHT: %s' % (iroi, right))
-        buff.append('ROI_%i_LABEL: %s' % (iroi, name))
+        buff.append(f'ROI_{iroi}_LEFT:  {left}')
+        buff.append(f'ROI_{iroi}_RIGHT: {right}')
+        buff.append(f'ROI_{iroi}_LABEL: {name}')
 
     # environment
     if environ is None:
         environ = []
     for addr, val, desc in environ:
-        buff.append('ENVIRONMENT: %s="%s" (%s)' % (addr, val, desc))
+        buff.append(f'ENVIRONMENT: {addr}="{val}" ({desc})')
 
     # data
     buff.append('DATA: ')
@@ -82,9 +83,9 @@ def save_gsemcafile(filename, mcas, rois, environ=None):
 
     # write file
     buff.append('')
-    fp = open(filename, 'w')
-    fp.write("\n".join(buff))
-    fp.close()
+    with open(filename, 'w') as fh:
+        fh.write("\n".join(buff))
+
 
 class Epics_Xspress3(object):
     """
@@ -433,7 +434,7 @@ class Epics_MultiXMAP(object):
             return 1
         return icr/ocr
 
-    def set_dwelltime(self, dtime=0):
+    def set_dwelltime(self, dtime=0, nframes=None):
         if dtime <= 0.1:
             self._xmap.put('PresetMode',  0)
         else:
@@ -625,7 +626,7 @@ class Epics_KetekMCA(object):
             return 1
         return icr/ocr
 
-    def set_dwelltime(self, dtime=0):
+    def set_dwelltime(self, dtime=0, nframes=None):
         if dtime <= 0.1:
             self._mca.put('PresetMode', 0)
             self._mca.put('PRTM', 0)
@@ -654,6 +655,11 @@ class Epics_KetekMCA(object):
 
     def get_energy(self, mca=1):
         return self._mca.get_energy()
+
+    def get_rois(self):
+        print("Get ROI ", self._mca)
+        time.sleep(0.25)
+        return self._mca.get_rois()
 
     def get_mca(self, mca=1, with_rois=True):
         """return an MCA object """
