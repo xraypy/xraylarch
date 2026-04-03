@@ -208,7 +208,7 @@ def run_epics_xrf():
                          nmca=int(args.nmca),
                          det_type=args.det,
                          ioc_type=args.ioc,
-                         environ_file=args.envfile).MainLoop()
+                         environ_file=args.envfile)
         app.MainLoop()
 
 def run_larch_xrd1d():
