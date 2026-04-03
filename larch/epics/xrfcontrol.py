@@ -293,7 +293,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                  incident_energy_pvname=None, incident_energy_units='eV',
                  title='Epics XRF Display', output_title='XRF', **kws):
 
-        print(f"XRFControl {prefix=}, {det_type=}, {ioc_type=},  {nmca=}")
+        # print(f"XRFControl {prefix=}, {det_type=}, {ioc_type=},  {nmca=}")
         self.det_type = det_type
         self.ioc_type = ioc_type.lower()
         self.prefix = prefix
@@ -923,11 +923,14 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.win_calib.Raise()
         except:
             self.win_calib = XRFCalibrationFrame(self, mca=self.mca,
-                                              larch=self.larch,
-                                              callback=self.onSetCalib)
+                                                 # larch=self._larch,
+                                                 callback=self.onSetCalib)
 
-    def onSetCalib(self, offset, slope, mca=None):
-        print('XRFControl Set Energy Calibration' , offset, slope, mca)
+    def onSetCalib(self,  mca=None, **kws):
+        if self.det_type == 'mca':
+            self.det._mca.CALO = mca.offset
+            self.det._mca.CALS = mca.slope
+            self.det._mca.CALQ = mca.quad
 
     def onClose(self, event=None):
         XRFDisplayFrame.onClose(self)
