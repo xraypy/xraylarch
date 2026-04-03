@@ -1449,7 +1449,7 @@ class XRFDisplayFrame(wx.Frame):
         if self.show_cps:
             ydat = ydat/float(mca.real_time)
         self.ydat = ydat
-        
+
         atitles = []
         if newplot:
             if getattr(mca, 'title', None) is not None:
@@ -1566,22 +1566,22 @@ class XRFDisplayFrame(wx.Frame):
         """get MCA from filename in the xrf_files"""
         return self.xrf_files.get(name, None)
 
-    def update_mca(self, counts, mcalabel=None, energy=None,
+    def update_mca(self, counts, mcalabel=None, energy=None, mca=None,
                    with_rois=True, draw=True):
         """update counts for an mca, and update plot"""
         self.show_cps = False
-        mca, index = None, 0
+        index = 0
         if mcalabel in self.plotted_groups:
             mca = self.xrf_files.get(mcalabel, None)
             index = self.plotted_groups.index(mcalabel)
 
-        elif mcaname is not None:
+        elif mcalabel is None:
             xrfgroup = self.larch.symtable.get_group(XRFGROUP)
             mca = getattr(xrfgroup, xrfgroup.mca, None)
             mcalabel = xrfgroup.mca
 
-        if mca is None:
-            mca = self.mca
+        if mca is not None:
+            self.mca = mca
             index = 0
 
         mca.counts = 1.0*counts[:]
