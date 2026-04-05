@@ -458,7 +458,7 @@ class XASController():
         xasnorm_conf = Path(user_larchdir, 'larix', 'larix_xasnorm.conf')
         conf = {}
         if xasnorm_conf.exists():
-            conf = read_config(plot_conf)
+            conf = read_config(xasnorm_conf)
         return conf
 
     def write_message(self, msg, panel=0):
