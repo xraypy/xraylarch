@@ -10,10 +10,10 @@ np.seterr(all='ignore')
 import wx
 import wx.grid as wxgrid
 import wx.lib.scrolledpanel as scrolled
-
+import wx.lib.agw.flatnotebook as flat_nb
 from larch import Group
 from larch.wxlib import (BitmapButton, SetTip, GridPanel, Button,
-                         TextCtrl, FloatCtrl,
+                         TextCtrl, FloatCtrl, flatnotebook,
                          FloatSpin, FloatSpinWithPin, get_icon, SimpleText,
                          pack, Button, HLine, Choice, Check, MenuItem, Popup,
                          CEN, LEFT, FRAMESTYLE, FileSave,
@@ -28,6 +28,8 @@ from .config import LARIX_PANELS
 
 LEFT = wx.ALIGN_LEFT
 CEN |=  wx.ALL
+
+FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
 def autoset_fs_increment(wid, value):
     """set increment for floatspin to be
@@ -202,10 +204,10 @@ class GroupJournalFrame(wx.Frame):
 
         self.datagrid.Refresh()
 
-class TaskSaveConfigFrame(wx.Frame):
+class TaskConfigFrame(wx.Frame):
     """
     For a taskpanel, show a dialog-ish Frame to save a configuration
-    with form values.
+    with form values and/or delete existing configurations
     """
     def __init__(self, parent, taskpanel, callback=None,
                   config_opts=None, default_off=None, **kws):
@@ -218,55 +220,99 @@ class TaskSaveConfigFrame(wx.Frame):
             default_off = []
 
         wx.Frame.__init__(self, parent, -1, size=(550, 500), style=FRAMESTYLE)
-        title = f'Save Configuration for {taskpanel.title}'
+        title = f'  Configurations for {taskpanel.title} '
         self.SetTitle(title)
         self.SetFont(get_font())
-        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
+
+
+        confnames = []
+        attr_names = []
+        cdata = {}
+        for row in getattr(larix_config, self.configname):
+            cdata[row.name] = (row.desc, row.value, row.dtype, row.choices)
+            attr_names.append(row.name)
+
+        for cname, cdat in config_opts.items():
+            confnames.append(cname)
+
+            for key in cdat:
+                if key not in attr_names:
+                    attr_names.append(key)
+
         self.wids = wids = {}
+
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        mainpanel = wx.Panel(self)
+
+        self.nb = flatnotebook(mainpanel, {}, style=FNB_STYLE, size=(550, 450))
+        maintitle = SimpleText(mainpanel, title, size=(450, -1), **self.taskpanel.titleopts)
+
+
+        savepanel = GridPanel(self.nb, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
 
         n = len(config_opts)
         default = config_opts.get('default', {})
 
-        wids['conf_name'] = TextCtrl(panel, f'Config {n+1}', size=(175, -1))
-        wids['save_btn'] = Button(panel, 'Save',
-                                  size=(125, -1), action=self.onSave)
+        wids['conf_name'] = TextCtrl(savepanel, f'Config {n+1}', size=(175, -1))
+        wids['save_btn'] = Button(savepanel, 'Save', size=(125, -1), action=self.onSave)
 
-        opt_names = []
-        cdata = {}
-        for row in getattr(larix_config, self.configname):
-            cdata[row.name] = (row.desc, row.value, row.dtype, row.choices)
-            opt_names.append(row.name)
-
-        for cdat in config_opts.values():
-            for key in cdat:
-                if key not in opt_names:
-                    opt_names.append(key)
-
-        panel.Add(SimpleText(panel, title, size=(550, -1), **self.taskpanel.titleopts),
-                      style=LEFT, dcol=5)
-        panel.Add(SimpleText(panel, ' Name:', size=(150, -1)), dcol=1, newrow=True)
-        panel.Add(wids['conf_name'], dcol=1)
-        panel.Add(wids['save_btn'], dcol=1)
-
-        panel.Add(HLine(panel, size=(500, 3)), dcol=4, newrow=True)
-        panel.Add(SimpleText(panel, ' Setting ', size=(150, -1)), dcol=1, newrow=True)
-        panel.Add(SimpleText(panel, ' Current Value'), dcol=1, newrow=False)
-        panel.Add(SimpleText(panel, ' Include in Saved Configuration?'), dcol=1, newrow=False)
+        savepanel.Add(SimpleText(savepanel, ' Save Current Configuration ', size=(250, -1)), dcol=3)
+        savepanel.Add(HLine(savepanel, size=(500, 3)), dcol=4, newrow=True)
+        savepanel.Add(SimpleText(savepanel, ' Setting ', size=(150, -1)), dcol=1, newrow=True)
+        savepanel.Add(SimpleText(savepanel, ' Current Value'), dcol=1, newrow=False)
+        savepanel.Add(SimpleText(savepanel, ' Include in Saved Configuration?'), dcol=1, newrow=False)
 
         self.data = {}
         self.includes = {}
-        for wname in sorted(opt_names):
+        for wname in sorted(attr_names):
             if wname in taskpanel.wids:
                 self.data[wname] = get_widget_value(taskpanel.wids[wname])
-                self.includes[wname] = Check(panel, ' ', default=(wname not in default_off))
-                label =  SimpleText(panel, f'  {wname}')
+                self.includes[wname] = Check(savepanel, ' ', default=(wname not in default_off))
+                label =  SimpleText(savepanel, f'  {wname}')
                 if wname in cdata:
                     label.SetToolTip(cdata[wname][0])
-                panel.Add(label, dcol=1, newrow=True)
-                panel.Add(SimpleText(panel, str(self.data[wname])))
-                panel.Add(self.includes[wname])
-        panel.Add(HLine(panel, size=(500, 3)), dcol=4, newrow=True)
-        panel.pack()
+                savepanel.Add(label, dcol=1, newrow=True)
+                savepanel.Add(SimpleText(savepanel, str(self.data[wname])))
+                savepanel.Add(self.includes[wname])
+        savepanel.Add(HLine(savepanel, size=(500, 3)), dcol=4, newrow=True)
+        savepanel.Add(SimpleText(savepanel, ' Configuration Name:', size=(150, -1)), dcol=1, newrow=True)
+        savepanel.Add(wids['conf_name'], dcol=1)
+        savepanel.Add(wids['save_btn'], dcol=1)
+        savepanel.pack()
+
+        confpanel = GridPanel(self.nb, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
+        confpanel.Add(SimpleText(confpanel, ' Erase Selected Configurations ', size=(250, -1)), dcol=3)
+        confpanel.Add(HLine(confpanel, size=(500, 3)), dcol=4, newrow=True)
+        confpanel.Add(SimpleText(confpanel, ' Configureation Name: ', size=(200, -1)), dcol=1, newrow=True)
+        confpanel.Add(SimpleText(confpanel, ' Erase?'), dcol=1, newrow=False)
+        self.delete_confs = {}
+        wids['delete_btn'] = Button(confpanel, ' Deleted Selected ', size=(175, -1), action=self.onDelete)
+
+        for wname in sorted(confnames):
+            if wname.lower() != 'default':  # cannot delete 'default'
+                self.delete_confs[wname] = Check(confpanel, ' ', default=False)
+                confpanel.Add(SimpleText(confpanel, f'  {wname}'), dcol=1, newrow=True)
+                confpanel.Add(self.delete_confs[wname])
+        confpanel.Add(HLine(confpanel, size=(500, 3)), dcol=4, newrow=True)
+        confpanel.Add(wids['delete_btn'], dcol=1, newrow=True)
+        confpanel.pack()
+
+        self.nb.AddPage(savepanel, ' Save Current Configuration ', True)
+        self.nb.AddPage(confpanel, ' Manage Existing Configurations ', True)
+        self.nb.SetSelection(0)
+
+
+        mainsizer.Add(maintitle, 0, LEFT|wx.EXPAND, 2)
+        mainsizer.Add(self.nb, 1, LEFT|wx.EXPAND, 2)
+        pack(mainpanel, mainsizer)
+
+    def onDelete(self, event=None):
+        o = []
+        for key, wid in self.delete_confs.items():
+            if wid.IsChecked():
+                self.config_opts.pop(key)
+        if callable(self.callback):
+            self.callback()
 
     def onSave(self, event=None):
         name = get_widget_value(self.wids['conf_name'])
