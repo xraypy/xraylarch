@@ -197,11 +197,10 @@ def run_epics_xrf():
             ticon = Path(icondir, f"ptable.{ext:s}").absolute()
             if ticon.exists():
                 icon = ticon
-        make_shortcut(script, name='XRF Coontrol', folder=None,
+        make_shortcut(script, name='XRF Control', folder=None,
                       icon=icon.as_posix(),
                       description='Epics XRF Control',
                       terminal=False)
-
 
     else:
         app = EpicsXRFApp(prefix=args.prefix,
