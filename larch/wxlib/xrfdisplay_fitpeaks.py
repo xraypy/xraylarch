@@ -224,16 +224,20 @@ class FitSpectraFrame(wx.Frame):
         self.mca_label = self.mca.label
 
         self.wids['mca_name'] = SimpleText(pan, self.mca_label, size=(550, -1), style=LEFT)
-        self.wids['btn_calc'] = Button(pan, 'Calculate Model', size=(150, -1),
+        self.wids['btn_calc'] = Button(pan, 'Initial Model', size=(150, -1),
                                        action=self.onShowModel)
-        self.wids['btn_fit'] = Button(pan, 'Fit Model', size=(150, -1),
-                                       action=self.onFitModel)
+        self.wids['btn_fit'] = Button(pan, 'Rough Fit Model', size=(150, -1),
+                                       action=partial(self.onFitModel, tolerance='rough'))
+        self.wids['btn_refine'] = Button(pan, 'Refine Model', size=(150, -1),
+                                       action=partial(self.onFitModel, tolerance='refine'))
+        self.wids['btn_refine'].Disable()
         self.wids['fit_message'] = SimpleText(pan, ' ', size=(300, -1), style=LEFT)
 
         pan.AddText("  XRF Spectrum: ", colour='#880000')
         pan.Add(self.wids['mca_name'], dcol=3)
         pan.Add(self.wids['btn_calc'], newrow=True)
         pan.Add(self.wids['btn_fit'])
+        pan.Add(self.wids['btn_refine'])
         pan.Add(self.wids['fit_message'])
         self.panels = {}
         self.panels['Beam & Detector']  = self.beamdet_page
@@ -447,11 +451,11 @@ class FitSpectraFrame(wx.Frame):
             wids[notyet].Disable()
 
         wids['fit_toler'] = Choice(pdet, choices=FitTols, size=(125, -1))
-        wids['fit_toler'].SetStringSelection('1.e-4')
+        wids['fit_toler'].SetStringSelection('1.e-5')
         wids['fit_step'] = Choice(pdet, choices=FitSteps, size=(125, -1))
-        wids['fit_step'].SetStringSelection('1.e-4')
+        wids['fit_step'].SetStringSelection('1.e-5')
         wids['fit_maxnfev'] = Choice(pdet, choices=FitMaxNFevs, size=(125, -1))
-        wids['fit_maxnfev'].SetStringSelection('1000')
+        wids['fit_maxnfev'].SetStringSelection('1500')
 
         pdet.AddText(' Beam Energy, Fit Range :', colour='#880000', dcol=2)
         pdet.AddText('   X-ray Energy (keV): ', newrow=True)
@@ -1279,7 +1283,7 @@ class FitSpectraFrame(wx.Frame):
     def plot_model(self, model_spectrum=None, init=False, with_comps=False,
                    label=None):
         ppanel = self.parent.plotpanel
-        # print(f"plot_model {ppanel=}")
+        print(f"plot_model {ppanel=}")
         conf = ppanel.conf
         colors = self.parent.colors
         plotkws = {'linewidth': 2.5, 'delay_draw': True, 'grid': False,
@@ -1287,8 +1291,10 @@ class FitSpectraFrame(wx.Frame):
                    'fullbox': False}
 
         ppanel.conf.reset_trace_properties()
+        # print("-data plot ", plotkws)
         self.parent.plot(self.mca.energy, self.mca.counts, mca=self.mca,
-                         xlabel='E (keV)', xmin=0, with_rois=False, **plotkws)
+                         xlabel='E (keV)', xmin=0, with_rois=False,
+                         label='data', **plotkws)
 
         if model_spectrum is None:
             model_spectrum = self.xrfmod.current_model if init else self.xrfmod.best_fit
@@ -1336,7 +1342,7 @@ class FitSpectraFrame(wx.Frame):
         # pass
 
 
-    def onFitModel(self, event=None):
+    def onFitModel(self, event=None, tolerance='rough'):
         self.build_model()
         xrfmod = self._larch.symtable.get_symbol('_xrfmodel')
         xrfmod.iter_callback = self.onFitIteration
@@ -1344,6 +1350,11 @@ class FitSpectraFrame(wx.Frame):
         fit_tol = float(self.wids['fit_toler'].GetStringSelection())
         fit_step = float(self.wids['fit_step'].GetStringSelection())
         max_nfev = int(self.wids['fit_maxnfev'].GetStringSelection())
+
+        if tolerance == 'rough':
+            fit_tol = 30*fit_tol
+            fit_step = 30*fit_step
+
         emin = float(self.wids['en_min'].GetValue())
         emax = float(self.wids['en_max'].GetValue())
 
@@ -1354,7 +1365,7 @@ class FitSpectraFrame(wx.Frame):
                                              fit_toler=fit_tol,
                                              fit_step=fit_step,
                                              max_nfev=max_nfev)
-        # print(" Fit Script -> ", fit_script)
+        # print(" Fit Script -> ", tolerance, fit_script)
         self._larch.eval(fit_script)
         dgroup = self._larch.symtable.get_group(self.mcagroup)
         self.xrfresults = self._larch.symtable.get_symbol(XRFRESULTS_GROUP)
@@ -1373,6 +1384,7 @@ class FitSpectraFrame(wx.Frame):
             if self.nb.GetPageText(i).strip().startswith('Fit R'):
                 self.nb.SetSelection(i)
         time.sleep(0.002)
+        self.wids['btn_refine'].Enable()
         self.show_results()
 
     def onClose(self, event=None):
