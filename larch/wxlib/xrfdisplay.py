@@ -29,7 +29,7 @@ from . import (SimpleText, FileCheckList, Font, pack, Popup,
                SetTip, Button, Check, MenuItem, Choice,
                FileOpen, FileSave, HLine, GridPanel,
                CEN, LEFT, RIGHT, PeriodicTablePanel,
-               FONTSIZE, FONTSIZE_FW, OkCancel)
+               OkCancel)
 
 from ..math import index_of
 from ..io import GSEMCA_File
@@ -511,7 +511,7 @@ class XRFDisplayFrame(wx.Frame):
                                     tooltip_msg='Select Element for KLM Lines',
                                     fontsize=ptable_fontsize, size=(360, 180))
         self.wids['ptable'] = ptable
-        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.NORMAL)
+        self.font_fixedwidth = get_font(fixed_width=True)
 
         labstyle = wx.ALIGN_LEFT|wx.EXPAND
         ctrlstyle = wx.ALIGN_LEFT
