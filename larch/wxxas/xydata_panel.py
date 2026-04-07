@@ -319,7 +319,7 @@ class XYDataPanel(TaskPanel):
         else:
             self.wids['yarr'].SetSelection(1)
         ydat = getattr(dgroup, yname, None)
-        if ydat is not None:
+        if ydat is not (None, []):
             dgroup.ydat = 1.0  * ydat
         wx.CallAfter(self.onReprocess)
 
