@@ -23,8 +23,7 @@ from . import (SimpleText, FloatCtrl, FloatSpin, Choice, Font, pack,
                Button, Check, HLine, GridPanel, RowPanel, CEN, LEFT,
                RIGHT, FileSave, GUIColors, FRAMESTYLE, BitmapButton,
                SetTip, GridPanel, Popup, FloatSpinWithPin, get_icon,
-               flatnotebook, PeriodicTablePanel,
-               FONTSIZE, FONTSIZE_FW)
+               get_font, flatnotebook, PeriodicTablePanel)
 
 from xraydb import (material_mu, xray_edge, materials, add_material,
                     atomic_number, atomic_symbol, xray_line)
@@ -212,10 +211,8 @@ class FitSpectraFrame(wx.Frame):
         wx.Frame.__init__(self, parent, -1, 'Fit XRF Spectra',
                           size=size, style=wx.DEFAULT_FRAME_STYLE)
 
-        mainfont = wx.Font(FONTSIZE_FW-1, wx.SWISS, wx.NORMAL, wx.NORMAL)
-        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL,
-                                       wx.NORMAL)
-        self.SetFont(mainfont)
+        self.SetFont(get_font())
+        self.font_fixedwidth = get_font(fixed_width=True)
 
         self.wids = {}
         self.owids = {}
@@ -639,10 +636,10 @@ class FitSpectraFrame(wx.Frame):
         panel = scrolled.ScrolledPanel(self)
         # title row
         wids = self.owids
-        title = SimpleText(panel, 'Fit Results', font=Font(FONTSIZE+1),
+        title = SimpleText(panel, 'Fit Results', font=get_font(larger=1),
                            colour=self.colors.title, style=LEFT)
 
-        wids['data_title'] = SimpleText(panel, '< > ', font=Font(FONTSIZE+1),
+        wids['data_title'] = SimpleText(panel, '< > ', font=get_font(larger=1),
                                              colour=self.colors.title, style=LEFT)
 
         wids['fitlabel_lab'] = SimpleText(panel, 'Fit Label:')
@@ -683,7 +680,7 @@ class FitSpectraFrame(wx.Frame):
         sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
 
         irow += 1
-        title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(FONTSIZE+1),
+        title = SimpleText(panel, '[[Fit Statistics]]',  font=get_font(larger=1),
                            colour=self.colors.title, style=LEFT)
         sizer.Add(title, (irow, 0), (1, 4), LEFT)
 
@@ -713,7 +710,7 @@ class FitSpectraFrame(wx.Frame):
         sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
 
         irow += 1
-        title = SimpleText(panel, '[[Variables]]',  font=Font(FONTSIZE+1),
+        title = SimpleText(panel, '[[Variables]]',  font=get_font(larger=1),
                            colour=self.colors.title, style=LEFT)
         sizer.Add(title, (irow, 0), (1, 1), LEFT)
 
@@ -744,7 +741,7 @@ class FitSpectraFrame(wx.Frame):
         sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
 
         irow += 1
-        title = SimpleText(panel, '[[Correlations]]',  font=Font(FONTSIZE+1),
+        title = SimpleText(panel, '[[Correlations]]',  font=get_font(larger=1),
                            colour=self.colors.title, style=LEFT)
 
         wids['all_correl'] = Button(panel, 'Show All',
@@ -786,9 +783,9 @@ class FitSpectraFrame(wx.Frame):
         sizer = wx.GridBagSizer(3, 3)
         panel = scrolled.ScrolledPanel(self)
         wids = self.owids
-        title = SimpleText(panel, 'Composition Results', font=Font(FONTSIZE+1),
+        title = SimpleText(panel, 'Composition Results', font=get_font(larger=1),
                            colour=self.colors.title, style=LEFT)
-        wids['data_title2'] = SimpleText(panel, '< > ', font=Font(FONTSIZE+1),
+        wids['data_title2'] = SimpleText(panel, '< > ', font=get_font(larger=1),
                                              colour=self.colors.title, style=LEFT)
 
         cview = wids['composition'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
