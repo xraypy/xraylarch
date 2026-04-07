@@ -690,12 +690,12 @@ class FitSpectraFrame(wx.Frame):
         sview = wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.SetFont(self.font_fixedwidth)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
-        sview.AppendTextColumn('Fit Label', width=120)
-        sview.AppendTextColumn('N_vary', width=80)
-        sview.AppendTextColumn('N_eval', width=80)
-        sview.AppendTextColumn('\u03c7\u00B2', width=130)
-        sview.AppendTextColumn('\u03c7\u00B2_reduced', width=130)
-        sview.AppendTextColumn('Akaike Info', width=130)
+        sview.AppendTextColumn('Fit Label', width=125)
+        sview.AppendTextColumn('N_vary', width=60)
+        sview.AppendTextColumn('N_eval', width=60)
+        sview.AppendTextColumn('\u03c7\u00B2', width=125)
+        sview.AppendTextColumn('\u03c7\u00B2_reduced', width=135)
+        sview.AppendTextColumn('Akaike Info', width=135)
 
         for col in range(sview.ColumnCount):
             this = sview.Columns[col]
@@ -1154,7 +1154,7 @@ class FitSpectraFrame(wx.Frame):
             if varwid is not None:
                 varwid.Enable(value)
 
-    def build_model(self, match_amplitudes=True):
+    def build_model(self, match_amplitudes=True, refine=False):
         """build xrf_model from form settings"""
         vars = {'Vary':'True', 'Fix': 'False', 'True':True, 'False': False}
         opts = {}
@@ -1186,25 +1186,25 @@ class FitSpectraFrame(wx.Frame):
             t = peakname.lower()
             if opts['%s_use'% t]:
                 d = {'peakname': t}
-                d['_cen']  = opts['%s_cen'%t]
-                d['vcen']  = opts['%s_cen_vary'%t]
-                d['_step'] = opts['%s_step'%t]
-                d['vstep'] = opts['%s_step_vary'%t]
-                d['_tail'] = opts['%s_tail'%t]
-                d['vtail'] = opts['%s_tail_vary'%t]
-                d['_beta'] = opts['%s_beta'%t]
-                d['vbeta'] = opts['%s_beta_vary'%t]
-                d['_sigma'] = opts['%s_sigma'%t]
-                d['vsigma'] = opts['%s_sigma_vary'%t]
+                d['_cen']  = opts[f'{t}_cen']
+                d['vcen']  = opts[f'{t}_cen_vary']
+                d['_step'] = opts[f'{t}_step']
+                d['vstep'] = opts[f'{t}_step_vary']
+                d['_tail'] = opts[f'{t}_tail']
+                d['vtail'] = opts[f'{t}_tail_vary']
+                d['_beta'] = opts[f'{t}_beta']
+                d['vbeta'] = opts[f'{t}_beta_vary']
+                d['_sigma'] = opts[f'{t}_sigma']
+                d['vsigma'] = opts[f'{t}_sigma_vary']
                 script.append(xrfmod_scattpeak.format(**d))
 
         for i in range(NFILTERS):
-            t = 'filter%d' % (i+1)
-            f_mat = opts['%s_mat'%t]
-            if f_mat not in (None, 'None') and int(1e6*opts['%s_thk'%t]) > 1:
+            t = f'filter{i+1}'
+            f_mat = opts[f'{t}_mat']
+            if f_mat not in (None, 'None') and int(1e6*opts[f'{t}_thk']) > 1:
                 script.append(xrfmod_filter.format(name=f_mat,
-                                                   thick=opts['%s_thk'%t],
-                                                   vary=opts['%s_var'%t]))
+                                                   thick=opts[f'{t}_thk'],
+                                                   vary=opts[f'{t}_var']))
 
         m_mat = opts['matrix_mat'].strip()
         if len(m_mat) > 0 and int(1e6*opts['matrix_thk']) > 1:
@@ -1240,13 +1240,13 @@ class FitSpectraFrame(wx.Frame):
         script.append("{XRFGROUP}.workmca.xrf_init = _xrfmodel.calc_spectrum({XRFGROUP}.workmca.energy)")
         script = '\n'.join(script)
         self.model_script = script.format(group=self.mcagroup, XRFGROUP=XRFGROUP)
-
+        self._larch.eval("###=======\###====")
         self._larch.eval(self.model_script)
 
         cmds = []
-        self._larch.symtable.get_symbol('_xrfmodel')
         self.xrfmod = self._larch.symtable.get_symbol('_xrfmodel')
         floor = 1.e-12*max(self.mca.counts)
+
 
         if match_amplitudes:
             total = 0.0 * self.mca.counts
@@ -1277,13 +1277,28 @@ class FitSpectraFrame(wx.Frame):
             self._larch.eval(script)
             self.model_script = f"{self.model_script}\n{script}"
 
+        if refine:
+            cmds = ['# refining best=fit values from last fit:']
+            try:
+                results = self._larch.symtable.get_symbol(XRFRESULTS_GROUP)
+                if len(results) > 0:
+                    for parname, param in results[0].params.items():
+                        if param.vary:
+                            cmds.append(f"_xrfmodel.params['{parname}'].value = {param.value:.5f}")
+                script = '\n'.join(cmds)
+                self._larch.eval(script)
+                self.model_script = f"{self.model_script}\n{script}"
+
+            except:
+                print("could not update values for refining params")
+
+
         s = f"{XRFGROUP}.workmca.xrf_init = _xrfmodel.calc_spectrum({XRFGROUP}.workmca.energy)"
         self._larch.eval(s)
 
-    def plot_model(self, model_spectrum=None, init=False, with_comps=False,
-                   label=None):
+    def plot_model(self, model_spectrum=None, init=False, with_comps=False, label=None):
         ppanel = self.parent.plotpanel
-        print(f"plot_model {ppanel=}")
+
         conf = ppanel.conf
         colors = self.parent.colors
         plotkws = {'linewidth': 2.5, 'delay_draw': True, 'grid': False,
@@ -1291,7 +1306,6 @@ class FitSpectraFrame(wx.Frame):
                    'fullbox': False}
 
         ppanel.conf.reset_trace_properties()
-        # print("-data plot ", plotkws)
         self.parent.plot(self.mca.energy, self.mca.counts, mca=self.mca,
                          xlabel='E (keV)', xmin=0, with_rois=False,
                          label='data', **plotkws)
@@ -1343,7 +1357,7 @@ class FitSpectraFrame(wx.Frame):
 
 
     def onFitModel(self, event=None, tolerance='rough'):
-        self.build_model()
+        self.build_model(refine=(tolerance=='refine'))
         xrfmod = self._larch.symtable.get_symbol('_xrfmodel')
         xrfmod.iter_callback = self.onFitIteration
 
