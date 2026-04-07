@@ -220,11 +220,11 @@ class FitSpectraFrame(wx.Frame):
         self.mca_label = self.mca.label
 
         self.wids['mca_name'] = SimpleText(pan, self.mca_label, size=(550, -1), style=LEFT)
-        self.wids['btn_calc'] = Button(pan, 'Initial Model', size=(150, -1),
+        self.wids['btn_calc'] = Button(pan, 'Show Initial Model', size=(150, -1),
                                        action=self.onShowModel)
-        self.wids['btn_fit'] = Button(pan, 'Rough Fit Model', size=(150, -1),
+        self.wids['btn_fit'] = Button(pan, 'Do Rough Fit', size=(150, -1),
                                        action=partial(self.onFitModel, tolerance='rough'))
-        self.wids['btn_refine'] = Button(pan, 'Refine Model', size=(150, -1),
+        self.wids['btn_refine'] = Button(pan, 'Refine Fit', size=(150, -1),
                                        action=partial(self.onFitModel, tolerance='refine'))
         self.wids['btn_refine'].Disable()
         self.wids['fit_message'] = SimpleText(pan, ' ', size=(300, -1), style=LEFT)
@@ -1276,18 +1276,19 @@ class FitSpectraFrame(wx.Frame):
         if refine:
             cmds = ['# refining best=fit values from last fit:']
             try:
-                results = self._larch.symtable.get_symbol(XRFRESULTS_GROUP)
-                if len(results) > 0:
-                    for parname, param in results[0].params.items():
-                        if param.vary:
-                            cmds.append(f"_xrfmodel.params['{parname}'].value = {param.value:.5f}")
-                script = '\n'.join(cmds)
-                self._larch.eval(script)
-                self.model_script = f"{self.model_script}\n{script}"
-
+                last_result = self._larch.symtable.get_symbol(XRFRESULTS_GROUP)[0]
             except:
-                print("could not update values for refining params")
-
+                last_result = None
+                cmds.append('# failed to get last result')
+            if last_result is not None:
+                cur_params = self.xrfmod.params
+                fixed = Parameter(1.0, vary=False)
+                for name, par in last_result.params.items():
+                    if cur_params.get(name, fixed).vary:
+                        cmds.append(f"_xrfmodel.params['{name}'].value = {par.value:.5f}")
+            cmds = '\n'.join(cmds)
+            self._larch.eval(cmds)
+            self.model_script = f"{self.model_script}\n{cmds}"
 
         s = f"{XRFGROUP}.workmca.xrf_init = _xrfmodel.calc_spectrum({XRFGROUP}.workmca.energy)"
         self._larch.eval(s)
@@ -1315,11 +1316,11 @@ class FitSpectraFrame(wx.Frame):
                           label=label, color=colors.fit_color, **plotkws)
 
         comp_traces = []
-        plotkws.update({'fill': True, 'alpha':0.35, 'show_legend': True})
+        plotkws.update({'fill': True, 'alpha':0.5, 'show_legend': True})
         for label, arr in self.xrfmod.comps.items():
             ppanel.oplot(self.mca.energy, arr, label=label, **plotkws)
-            comp_traces.append(ppanel.conf.ntrace - 1)
-
+            ntrace = ppanel.conf.ntrace-1
+            comp_traces.append(ntrace)
 
         yscale = {False:'linear', True:'log'}[self.parent.ylog_scale]
         ppanel.set_logscale(yscale=yscale)
@@ -1349,8 +1350,6 @@ class FitSpectraFrame(wx.Frame):
         if iter % 10 == 0:
             nvar = len([p for p in pars.values() if p.vary])
             print(f"XRF Fit iteration {iter}, {nvar} variables")
-        # pass
-
 
     def onFitModel(self, event=None, tolerance='rough'):
         self.build_model(refine=(tolerance=='refine'))
@@ -1389,13 +1388,16 @@ class FitSpectraFrame(wx.Frame):
 
         xrfresult.script = "%s\n%s" % (self.model_script, fit_script)
         xrfresult.label = "fit %d" % (len(self.xrfresults))
-        self.plot_model(init=True, with_comps=False)
-        for i in range(len(self.nb.pagelist)):
-            if self.nb.GetPageText(i).strip().startswith('Fit R'):
-                self.nb.SetSelection(i)
         time.sleep(0.002)
         self.wids['btn_refine'].Enable()
         self.show_results()
+        for i in range(len(self.nb.pagelist)):
+            if self.nb.GetPageText(i).strip().startswith('Fit R'):
+                self.nb.SetSelection(i)
+
+        self.Refresh()
+        # self.plot_model(init=False, with_comps=False)
+        wx.CallAfter(self.plot_model)
 
     def onClose(self, event=None):
         self.Destroy()
