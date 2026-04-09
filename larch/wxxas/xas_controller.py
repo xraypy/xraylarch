@@ -450,6 +450,17 @@ class XASController():
             conf = read_config(plot_conf)
         return conf
 
+    def save_exafs_config(self, options):
+        xconf = Path(user_larchdir, 'larix', 'larix_exafs.conf')
+        save_config(xconf, options, form='yaml')
+
+    def load_exafs_config(self):
+        xconf = Path(user_larchdir, 'larix', 'larix_exafs.conf')
+        conf = {}
+        if xconf.exists():
+            conf = read_config(xconf)
+        return conf
+
     def save_xasnorm_config(self, options):
         xasnorm_conf = Path(user_larchdir, 'larix', 'larix_xasnorm.conf')
         save_config(xasnorm_conf, options, form='yaml')
