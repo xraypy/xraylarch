@@ -11,6 +11,8 @@ import wx
 import wx.grid as wxgrid
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.agw.flatnotebook as flat_nb
+from pyshortcuts.utils import isotime
+
 from larch import Group
 from larch.wxlib import (BitmapButton, SetTip, GridPanel, Button,
                          TextCtrl, FloatCtrl, flatnotebook,
@@ -253,6 +255,7 @@ class TaskConfigFrame(wx.Frame):
         n = len(config_opts)
         default = config_opts.get('default', {})
 
+        wids['save_message'] = SimpleText(savepanel, '', size=(400, -1))
         wids['conf_name'] = TextCtrl(savepanel, f'Config {n+1}', size=(175, -1))
         wids['save_btn'] = Button(savepanel, 'Save', size=(125, -1), action=self.onSave)
 
@@ -278,6 +281,8 @@ class TaskConfigFrame(wx.Frame):
         savepanel.Add(SimpleText(savepanel, ' Configuration Name:', size=(150, -1)), dcol=1, newrow=True)
         savepanel.Add(wids['conf_name'], dcol=1)
         savepanel.Add(wids['save_btn'], dcol=1)
+        savepanel.Add(wids['save_message'], dcol=4, newrow=True)
+
         savepanel.pack()
 
         confpanel = GridPanel(self.nb, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
@@ -288,6 +293,8 @@ class TaskConfigFrame(wx.Frame):
         self.delete_confs = {}
         wids['delete_btn'] = Button(confpanel, ' Deleted Selected ', size=(175, -1), action=self.onDelete)
 
+        wids['del_message'] = SimpleText(confpanel, '', size=(400, -1))
+
         for wname in sorted(confnames):
             if wname.lower() != 'default':  # cannot delete 'default'
                 self.delete_confs[wname] = Check(confpanel, ' ', default=False)
@@ -295,6 +302,7 @@ class TaskConfigFrame(wx.Frame):
                 confpanel.Add(self.delete_confs[wname])
         confpanel.Add(HLine(confpanel, size=(500, 3)), dcol=4, newrow=True)
         confpanel.Add(wids['delete_btn'], dcol=1, newrow=True)
+        confpanel.Add(wids['del_message'], dcol=4, newrow=True)
         confpanel.pack()
 
         self.nb.AddPage(savepanel, ' Save Current Configuration ', True)
@@ -311,8 +319,11 @@ class TaskConfigFrame(wx.Frame):
         for key, wid in self.delete_confs.items():
             if wid.IsChecked():
                 self.config_opts.pop(key)
+                o.append(key)
+        keylist = ', '.join(o)
         if callable(self.callback):
             self.callback()
+        self.wids['del_message'].SetLabel(f"deleted {keylist} at {isotime()}")
 
     def onSave(self, event=None):
         name = get_widget_value(self.wids['conf_name'])
@@ -325,6 +336,7 @@ class TaskConfigFrame(wx.Frame):
         self.config_opts[name] = conf
         if callable(self.callback):
             self.callback()
+        self.wids['save_message'].SetLabel(f"Saved '{name}' at {isotime()}")
 
 
 class TaskPanel(wx.Panel):
