@@ -686,10 +686,10 @@ class FitSpectraFrame(wx.Frame):
         sview = wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.SetFont(self.font_fixedwidth)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
-        sview.AppendTextColumn('Fit Label', width=125)
-        sview.AppendTextColumn('N_vary', width=60)
-        sview.AppendTextColumn('N_eval', width=60)
-        sview.AppendTextColumn('\u03c7\u00B2', width=125)
+        sview.AppendTextColumn('Fit Label', width=130)
+        sview.AppendTextColumn('N_vary', width=55)
+        sview.AppendTextColumn('N_eval', width=55)
+        sview.AppendTextColumn('\u03c7\u00B2', width=120)
         sview.AppendTextColumn('\u03c7\u00B2_reduced', width=135)
         sview.AppendTextColumn('Akaike Info', width=135)
 
@@ -1387,7 +1387,7 @@ class FitSpectraFrame(wx.Frame):
             return
 
         xrfresult.script = "%s\n%s" % (self.model_script, fit_script)
-        xrfresult.label = "fit %d" % (len(self.xrfresults))
+        xrfresult.label = time.strftime("%b-%d %H:%M")
         time.sleep(0.002)
         self.wids['btn_refine'].Enable()
         self.show_results()
