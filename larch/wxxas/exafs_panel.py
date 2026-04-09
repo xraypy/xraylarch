@@ -9,17 +9,18 @@ import wx
 import numpy as np
 
 from functools import partial
-
+from pathlib import Path
 from larch.math import index_of
 from larch.wxlib import (FloatCtrl, FloatSpin, GridPanel,
                          SimpleText, pack, Button, HLine, Choice,
+                         get_widget_value, set_widget_value,
                          TextCtrl, Check, CEN, RIGHT, LEFT)
 
 from larch.xafs.xafsutils import etok, ktoe, FT_WINDOWS
 from larch.xafs.pre_edge import find_e0
-
+from larch.site_config import user_larchdir
 from .xas_dialogs import EnergyUnitsDialog
-from .taskpanel import TaskPanel, update_confval
+from .taskpanel import TaskPanel, TaskConfigFrame, update_confval
 from .config import ATHENA_CLAMPNAMES, Plot_EnergyRanges
 
 np.seterr(all='ignore')
@@ -62,10 +63,10 @@ CLAMPLIST = ('0', '1', '2', '5', '10', '20', '50', '100', '200', '500', '1000',
 
 autobk_cmd = """autobk({group:s}, rbkg={rbkg: .3f}, ek0={ek0: .4f},
       kmin={bkg_kmin: .3f}, kmax={bkg_kmax: .3f}, kweight={bkg_kweight: .1f},
-      clamp_lo={bkg_clamplo: .1f}, clamp_hi={bkg_clamphi: .1f})"""
+      clamp_lo={bkg_clamplo:.0f}, clamp_hi={bkg_clamphi:.0f})"""
 
 xftf_cmd = """xftf({group:s}, kmin={fft_kmin: .3f}, kmax={fft_kmax: .3f}, dk={fft_dk: .3f},
-      kweight={fft_kweight: .3f}, window='{fft_kwindow:s}', rmax_out={fft_rmaxout:.3f})"""
+      kweight={fft_kweight: .3f}, window='{fft_kwindow:s}', rmax_out={fft_rmaxout:.1f})"""
 
 xftr_cmd = """xftr({group:s}, rmin={fft_rmin: .3f}, rmax={fft_rmax: .3f},
       dr={fft_dr: .3f}, window='{fft_rwindow:s}')"""
@@ -102,13 +103,19 @@ NAMED_PLOTOPTS['E and R space'] = _cnf
 
 class EXAFSPanel(TaskPanel):
     """EXAFS Panel"""
-    def __init__(self, parent, controller, **kws):
+    def __init__(self, parent, controller=None, **kws):
 
         self.plot_conf = {}
         self.plot_opts = {}
         for key, value in NAMED_PLOTOPTS.items():
             self.plot_opts[key] = value
         self.plot_opts.update(controller.load_exafsplot_config())
+        self.controller = controller
+        self.exafs_configs = {}
+        if controller is not None:
+            defconf = self.controller.get_config('exafs')
+            self.exafs_configs = {'default': defconf}
+            self.exafs_configs.update(controller.load_exafs_config())
 
         TaskPanel.__init__(self, parent, controller, panel='exafs', **kws)
 
@@ -122,7 +129,8 @@ class EXAFSPanel(TaskPanel):
     def build_display(self):
         wids = self.wids
         self.skip_process = True
-        defaults = self.get_defaultconfig()
+        defaults = self.exafs_configs['default']
+
         ppanel = GridPanel(self, ncols=7, nrows=10, pad=2, itemstyle=LEFT)
         wids['plot_one'] = Button(ppanel, 'Plot Current Group', size=(175, -1),
                               action=self.onPlotOne)
@@ -189,6 +197,7 @@ class EXAFSPanel(TaskPanel):
 
         wids['plot_on_choose'] = Check(ppanel, default=defaults.get('auto_plot', True),
                                 label='Auto-Plot when choosing Current Group?')
+
 
 
         def padd_text(text, dcol=1, newrow=True):
@@ -294,6 +303,22 @@ class EXAFSPanel(TaskPanel):
         wids['fft_rwindow'].SetStringSelection('Hanning')
         self.wids['is_frozen'] = Check(panel, default=False, label='Freeze Group',
                                        action=self.onFreezeGroup)
+        # save config panel
+        saveconf_panel = wx.Panel(panel)
+        self.wids['exafs_conf_choice']  = Choice(saveconf_panel,  choices=list(self.exafs_configs),
+                                              size=(200, -1), action=self.onEXAFSConfigSelect)
+        self.wids['exafs_conf_choice'].SetToolTip('Use Saved Configuration')
+
+        self.wids['exafs_conf_save'] = Button(saveconf_panel, 'Save Current Configuration', size=(200, -1),
+                                            action=self.onEXAFSConfigSave)
+
+        self.wids['exafs_conf_save'].SetToolTip('Save Current Configuration for later use')
+        sx = wx.BoxSizer(wx.HORIZONTAL)
+        sx.Add(SimpleText(saveconf_panel, '  Use Saved Configuration: '), 0, LEFT, 2)
+        sx.Add(self.wids['exafs_conf_choice'], 1, LEFT, 5)
+        sx.Add(self.wids['exafs_conf_save'], 1, LEFT, 3)
+        pack(saveconf_panel, sx)
+
 
         def CopyBtn(name):
             return Button(panel, 'Copy', size=(60, -1),
@@ -301,8 +326,7 @@ class EXAFSPanel(TaskPanel):
         copy_all = Button(panel, 'Copy All Parameters', size=(175, -1),
                           action=partial(self.onCopyParam, 'all'))
 
-        panel.Add((10, 10))
-        panel.Add(HLine(panel, size=(600, 3)), dcol=8, newrow=True)
+        panel.Add(HLine(panel, size=(600, 3)), dcol=8)
 
         panel.Add(SimpleText(panel, ' Background subtraction', size=(200, -1),
                              **self.titleopts), dcol=2, style=LEFT, newrow=True)
@@ -349,10 +373,6 @@ class EXAFSPanel(TaskPanel):
         panel.Add(fft_kmax)
         panel.Add(CopyBtn('fft_krange'), style=RIGHT)
 
-        panel.Add(SimpleText(panel, 'k weight : '), newrow=True)
-        panel.Add(wids['fft_kweight'])
-        panel.Add((10, 10), dcol=2)
-        panel.Add(CopyBtn('fft_kweight'), style=RIGHT)
 
         panel.Add(SimpleText(panel, 'k window : '), newrow=True)
         panel.Add(wids['fft_kwindow'])
@@ -360,10 +380,11 @@ class EXAFSPanel(TaskPanel):
         panel.Add(wids['fft_dk'])
         panel.Add(CopyBtn('fft_kwindow'), style=RIGHT)
 
-        panel.Add(SimpleText(panel, 'R max output: '), newrow=True)
+        panel.Add(SimpleText(panel, 'k weight : '), newrow=True)
+        panel.Add(wids['fft_kweight'])
+        panel.Add(SimpleText(panel, 'Rmax out:'))
         panel.Add(wids['fft_rmaxout'])
-        panel.Add((10, 10), dcol=2)
-        panel.Add(CopyBtn('fft_rmaxout'), style=RIGHT)
+        panel.Add(CopyBtn('fft_kweight'), style=RIGHT)
 
         panel.Add(HLine(panel, size=(600, 3)), dcol=8, newrow=True)
 
@@ -384,18 +405,51 @@ class EXAFSPanel(TaskPanel):
         panel.Add(wids['fft_dr'])
 
         panel.Add(CopyBtn('fft_rwindow'), style=RIGHT)
-        panel.Add((10, 10), newrow=True)
+        panel.Add(HLine(panel, size=(600, 3)), dcol=4, newrow=True)
+        panel.Add(saveconf_panel, dcol=5, newrow=True)
         panel.Add(self.wids['is_frozen'], dcol=1, newrow=True)
         panel.Add(copy_all, dcol=5, style=RIGHT)
 
         panel.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add((5, 5), 0, LEFT, 1)
         sizer.Add(ppanel, 0, LEFT, 1)
         sizer.Add(panel, 0, LEFT, 1)
         pack(self, sizer)
         self.skip_process = False
+
+    def onEXAFSConfigSelect(self, evt=None):
+        name = self.wids['exafs_conf_choice'].GetStringSelection()
+        if name.lower() == 'default':
+            self.exafs_configs[name].update(self.get_defaultconfig()) # from Preferences
+
+        opts = self.exafs_configs.get(name, {})
+        for key, val in opts.items():
+            if key in self.wids:
+                if key in ('bkg_clamplo', 'bkg_clamphi'):
+                    val = str(int(val))
+
+                try:
+                    set_widget_value(self.wids[key], val)
+                except:
+                    print("could not set widget value")
+                    print(f"Conf select {key=}, {val=}, {self.wids[key]=}")
+        self.onProcess(self)
+
+
+    def onEXAFSConfigSave(self, evt=None):
+        self.parent.show_subframe('exafs_conf', TaskConfigFrame,
+                                  taskpanel=self,
+                                  callback=self.onEXAFSConfigSaved,
+                                  config_opts=self.exafs_configs,
+                                  default_off=['plot_rmax'])
+
+    def onEXAFSConfigSaved(self):
+        self.wids['exafs_conf_choice'].SetChoices(list(self.exafs_configs))
+        self.controller.save_exafs_config(self.exafs_configs)
+        spath = Path(user_larchdir, 'larix', 'larix_exafs.conf').as_posix()
+        self.write_message(f"Saved EXAFS options {spath}")
+
 
     def onRadButton(self, event=None, space='unknown'):
         label = event.GetEventObject().GetLabel()
@@ -509,10 +563,10 @@ class EXAFSPanel(TaskPanel):
         for attr in ('bkg_clamplo', 'bkg_clamphi'):
             val = opts.get(attr, 0)
             try:
-                val = float(val)
+                val = int(val)
             except:
                 if isinstance(val, str):
-                    val = ATHENA_CLAMPNAMES.get(val.lower(), 0)
+                    val = int(ATHENA_CLAMPNAMES.get(val.lower(), 0))
             try:
                 wids[attr].SetStringSelection("%d" % int(val))
             except:
@@ -603,7 +657,7 @@ class EXAFSPanel(TaskPanel):
             set_ek0 = True
             set_rbkg = True
 
-        elif name in ('ek0', 'rbkg', 'bkg_kweight', 'fft_kweight'):
+        elif name in ('ek0', 'rbkg', 'bkg_kweight'):
             opts = copy_attrs(name)
             if name == 'ek0':
                 set_ek0 = True
@@ -619,8 +673,8 @@ class EXAFSPanel(TaskPanel):
             opts = copy_attrs('fft_kwindow', 'fft_dk')
         elif name == 'fft_rrange':
             opts = copy_attrs('fft_rmin', 'fft_rmax')
-        elif name == 'fft_rmaxout':
-            opts = copy_attrs('fft_rmaxout',)
+        elif name == 'fft_kweight':
+            opts = copy_attrs('fft_kweight', 'fft_rmaxout')
         elif name == 'fft_rwindow':
             opts = copy_attrs('fft_rwindow', 'fft_dr')
 
@@ -701,7 +755,7 @@ class EXAFSPanel(TaskPanel):
                      'bkg_kweight', 'bkg_clamplo', 'bkg_clamphi'):
             val = opts.get(attr, 0.0)
             if val is None:
-                val = -1.0
+                val = -1
             bkgpars.append(f"{val}:.4f")
         bkgpars = ':'.join(bkgpars)
         lastpars = self.last_process_bkg.get(gname, '')

@@ -363,7 +363,6 @@ class XASNormPanel(TaskPanel):
         panel.Add(nnorm_panel, dcol=2)
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=4, newrow=True)
         panel.Add(saveconf_panel, dcol=5, newrow=True)
-        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=4, newrow=True)
         panel.Add(self.wids['is_frozen'], newrow=True)
         panel.Add(copy_all, dcol=3, style=RIGHT)
 
