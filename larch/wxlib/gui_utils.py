@@ -251,9 +251,18 @@ def set_widget_value(widget, value):
         setter = widget.SetValue
         value = bool(value)
     elif isinstance(widget, wx.Choice):
-        setter = widget.SetSelection
-        if isinstance(value, str):
+        if isinstance(value, int):
+            setter = widget.SetSelection
+        elif isinstance(value, float):
+            if str(value) in widget.GetStringSelections:
+                setter = widget.SetStringSelection
+                value = str(value)
+            else:
+                value = int(value)
+                setter = widget.SetSelection
+        else:
             setter = widget.SetStringSelection
+            value = str(value)
     if setter is None:
         print(f"Warning: no method for setting value for {widget=}")
     else:
