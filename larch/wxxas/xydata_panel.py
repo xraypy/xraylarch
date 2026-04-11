@@ -320,6 +320,8 @@ class XYDataPanel(TaskPanel):
             self.wids['yarr'].SetSelection(1)
         ydat = getattr(dgroup, yname, None)
         if ydat is not (None, []):
+            if isinstance(ydat, (tuple, list)):
+                ydat = np.array(ydat)
             dgroup.ydat = 1.0  * ydat
         wx.CallAfter(self.onReprocess)
 

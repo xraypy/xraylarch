@@ -79,8 +79,8 @@ class EscanData:
         self.roi_llim   = []
         self.roi_hlim  = []
 
-        self.x = numpy.array(0)
-        self.y = numpy.array(0)
+        self.xdat = numpy.array(0)
+        self.ydat = numpy.array(0)
         if self.bad_channels is None:
             self.bad_channels = []
 
@@ -344,9 +344,9 @@ class EscanData:
             self.correct_deadtime = True
 
         if self.dimension == 2:
-            ny = len(self.y)
+            ny = len(self.ydat)
             nx = int(len(tmp_dat)/ny)
-            print( '2D ', len(self.y), nx, len(tmp_dat))
+            print( '2D ', len(self.ydat), nx, len(tmp_dat))
 
             self.det.shape  = (self.det.shape[0],  ny, nx)
             self.pos.shape  = (self.pos.shape[0],  ny, nx)
@@ -354,11 +354,11 @@ class EscanData:
             if self.dt_factor is not None:
                 self.dt_factor.shape = (self.dt_factor.shape[0], ny, nx)
 
-            self.x = self.pos[0,0,:]
+            self.xdat = self.pos[0,0,:]
         else:
-            self.x = self.pos[0]
-            nx = len(self.x)
-            self.y = []
+            self.xdat = self.pos[0]
+            nx = len(self.xdat)
+            self.ydat = []
 
         self.data = numpy.vstack((self.pos, self.sums))
         tnsums = [len(i) for i in self.sums_list]
@@ -518,7 +518,7 @@ class EscanData:
                     tmp_y   = tmp_y[:nrows]
                     tmp_dat = tmp_dat[:npts_total]
             #
-        self.y = numpy.array(tmp_y)
+        self.ydat = numpy.array(tmp_y)
         # done reading file
         self._make_arrays(tmp_dat,col_legend,col_details)
         tmp_dat = None
@@ -531,7 +531,7 @@ class EscanData:
 
         self.has_fullxrf = False
         if os.path.exists("%s.fullxrf" %fname):
-            self.read_fullxrf("%s.fullxrf" %fname, len(self.x), len(self.y))
+            self.read_fullxrf("%s.fullxrf" %fname, len(self.xdat), len(self.ydat))
 
     def read_fullxrf(self,xrfname, n_xin, n_yin):
         inpf = open(xrfname,'r')
@@ -761,14 +761,14 @@ TWO_THETA:   10.0000000 10.0000000 10.0000000 10.0000000"""
 
 
         if self.dimension ==1:
-            for i,x in enumerate(self.x):
+            for i,x in enumerate(self.xdat):
                 o = ["%10.5f" % x]
                 o.extend(["%12g" % s for s in sums[:,i]])
                 fout.write(" %s\n" % " ".join(o) )
 
         else:
-            for i,x in enumerate(self.x):
-                for j,y in enumerate(self.y):
+            for i,x in enumerate(self.xdat):
+                for j,y in enumerate(self.ydat):
                     o = [" %10.5f" % x, " %10.5f" % y]
                     o.extend(["%12g" % s for s in sums[:,j,i]])
                     fout.write(" %s\n" % " ".join(o))
