@@ -709,7 +709,7 @@ class FitSpectraFrame(wx.Frame):
         sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
 
         irow += 1
-        title = SimpleText(panel, '[[Variables]]',  font=get_font(larger=1),
+        title = SimpleText(panel, '[[Parameters]]',  font=get_font(larger=1),
                            colour=get_color('title'), style=LEFT)
         sizer.Add(title, (irow, 0), (1, 1), LEFT)
 
@@ -789,11 +789,11 @@ class FitSpectraFrame(wx.Frame):
 
         cview = wids['composition'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         cview.SetFont(self.font_fixedwidth)
-        cview.AppendTextColumn(' Z ', width=50)
-        cview.AppendTextColumn(' Element ', width=100)
-        cview.AppendTextColumn(' Amplitude', width=170)
-        cview.AppendTextColumn(' Concentration',  width=170)
-        cview.AppendTextColumn(' Uncertainty',  width=180)
+        cview.AppendTextColumn(' Z ', width=40)
+        cview.AppendTextColumn(' Element ', width=75)
+        cview.AppendTextColumn(' Amplitude', width=125)
+        cview.AppendTextColumn(' Concentration',  width=125)
+        cview.AppendTextColumn(' Conc. Uncertainty',  width=250)
 
         for col in range(5):
             this = cview.Columns[col]
@@ -813,7 +813,8 @@ class FitSpectraFrame(wx.Frame):
         wids['comp_elemscale'] = FloatSpin(panel, value=1.0, digits=5, min_val=0,
                                            increment=0.01,
                                            action=self.onCompSetElemAbundance)
-        wids['comp_units'] = Choice(panel, choices=CompositionUnits, size=(125, -1))
+        wids['comp_units'] = Choice(panel, choices=CompositionUnits, size=(125, -1),
+                                           action=self.onCompSetScale)
         wids['comp_scale'] = FloatCtrl(panel, value=0, size=(200, -1), precision=5,
                                        minval=0, action=self.onCompSetScale)
 
@@ -874,13 +875,13 @@ class FitSpectraFrame(wx.Frame):
         result.concentration_scale = scale
 
         for elem, dat in conc_vals.items():
-            zat = "%d" % atomic_number(elem)
+            zat = f"{atomic_number(elem)}"
             val, serr = dat
-            rval = "%15.4f" % val
-            sval = "%15.4f" % (val*scale)
-            uval = "%15.4f" % (serr*scale)
+            rval = f"{val:.3f}"
+            sval = f"{(val*scale):.3f}"
+            uval = f"{(serr*scale):.3f}"
             try:
-                uval = uval + ' ({:.2%})'.format(abs(serr/val))
+                uval = uval + f' ({abs(serr/val):.1f})'
             except ZeroDivisionError:
                 pass
             owids['composition'].AppendItem((zat, elem, rval, sval, uval))
@@ -1573,7 +1574,7 @@ class FitSpectraFrame(wx.Frame):
             if param.stderr is not None:
                 serr = gformat(param.stderr, 10)
                 try:
-                    perr = '{:.3f}'.format(100.0*abs(param.stderr/param.value))
+                    perr = '{:.1f}'.format(100.0*abs(param.stderr/param.value))
                 except ZeroDivisionError:
                     perr = '?'
             extra = ' '
