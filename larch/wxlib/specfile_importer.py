@@ -17,6 +17,7 @@ from wxmplot import PlotPanel
 from wxutils import (SimpleText, FloatCtrl, GUIColors, Button, Choice,
                      FileCheckList, pack, Popup, Check, MenuItem, CEN,
                      RIGHT, LEFT, FRAMESTYLE, HLine, Font)
+from wxutils.colors import get_color
 
 from pyshortcuts import fix_varname
 from larch import Group
