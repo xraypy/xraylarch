@@ -47,7 +47,7 @@ def index_of(array, value):
     """
     if value < min(array):
         return 0
-    return max(np.where(array<=value)[0])
+    return int(max(np.where(array<=value)[0]))
 
 def index_nearest(array, value):
     """
@@ -65,7 +65,7 @@ def index_nearest(array, value):
     integer for index in array nearest value
 
     """
-    return np.abs(array-value).argmin()
+    return int(np.abs(array-value).argmin())
 
 def deriv(arr):
     return np.gradient(as_ndarray(arr))
