@@ -2,7 +2,7 @@ import copy
 from functools import partial
 # from pathlib import Path
 import numpy as np
-from lmfit import Parameters, minimize
+from lmfit import Parameters, minimize, report_fit
 from matplotlib.ticker import FuncFormatter
 
 import wx
@@ -22,7 +22,7 @@ from larch.wxlib import (GridPanel, FloatCtrl, FloatSpin,
 from larch.plot import plotlabels_wx as plotlabels, set_label_weight
 from larch.xafs import etok, ktoe, find_energy_step
 from larch.utils.physical_constants import ATOM_SYMS
-from larch.math import smooth
+from larch.math import smooth, boxcar
 
 Plot_Choices = {'Normalized': 'norm', 'Derivative': 'dmude'}
 
@@ -282,15 +282,19 @@ class EnergyCalibrateFrame(wx.Frame):
         wids['eshift'] = FloatSpin(panel, value=0, **opts)
 
         self.plottype = Choice(panel, choices=list(Plot_Choices.keys()),
-                                   size=(275, -1), action=self.plot_results)
+                                   size=(275, -1), action=self.on_plot_type)
         wids['do_align'] = Button(panel, 'Auto Align', size=(100, -1),
                                   action=self.on_align)
+
+        wids['do_align_marked'] = Button(panel, 'Auto Align all Marked Groups',
+                                        size=(200, -1),
+                                        action=self.on_align_marked)
 
         wids['apply_one'] = Button(panel, 'Apply to Current Group', size=(200, -1),
                                    action=self.on_apply_one)
 
         wids['apply_sel'] = Button(panel, 'Apply to Selected Groups',
-                                   size=(250, -1),  action=self.on_apply_sel)
+                                   size=(275, -1),  action=self.on_apply_sel)
         SetTip(wids['apply_sel'], 'Apply the Energy Shift to all Selected Groups')
 
         wids['save_as'] = Button(panel, 'Save As New Group ', size=(200, -1),
@@ -301,9 +305,9 @@ class EnergyCalibrateFrame(wx.Frame):
                                            self.dgroup.filename + '_recalib',
                                            size=(275, -1))
 
-        wids['sharedref_msg'] = wx.StaticText(panel, label="1 groups share this energy reference")
-        wids['select_sharedref'] = Button(panel, 'Select Groups with shared reference',
-                                          size=(300, -1),  action=self.on_select_sharedrefs)
+        wids['sharedref_msg'] = wx.StaticText(panel, label=" 1 group has this reference")
+        wids['select_sharedref'] = Button(panel, 'Select Groups with this reference',
+                                          size=(275, -1),  action=self.on_select_sharedrefs)
 
         def add_text(text, dcol=1, newrow=True):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
@@ -320,10 +324,12 @@ class EnergyCalibrateFrame(wx.Frame):
         add_text(' Energy Shift (eV): ')
         panel.Add(wids['eshift'], dcol=1)
         panel.Add(wids['do_align'], dcol=1)
+        panel.Add((5, 5), newrow=True)
+        panel.Add(wids['do_align_marked'], dcol=3)
         panel.Add(HLine(panel, size=(500, 3)), dcol=4, newrow=True)
 
-        panel.Add(wids['sharedref_msg'], dcol=2, newrow=True)
-        panel.Add(wids['select_sharedref'], dcol=2)
+        panel.Add(wids['sharedref_msg'], dcol=1, newrow=True)
+        panel.Add(wids['select_sharedref'], dcol=3)
         panel.Add(wids['apply_one'], dcol=1, newrow=True)
         panel.Add(wids['apply_sel'], dcol=2)
 
@@ -339,6 +345,9 @@ class EnergyCalibrateFrame(wx.Frame):
         self.plot_results(use_zoom=False)
         wx.CallAfter(self.get_groups_shared_energyrefs)
         self.Show()
+
+    def on_plot_type(self, event=None):
+        self.plot_results(use_zoom=False)
 
     def on_select(self, event=None, opt=None):
         _x, _y = self.controller.get_cursor()
@@ -365,10 +374,13 @@ class EnergyCalibrateFrame(wx.Frame):
                 geref = g.config.xasnorm.get('energy_ref', None)
             except:
                 geref = None
-            # print(key, val, geref, geref == ref_filename)
             if geref == eref or geref == dgroup.filename:
                 sharedrefs.append(key)
-        self.wids['sharedref_msg'].SetLabel(f" {len(sharedrefs):d} groups share this energy reference")
+        nshare = len(sharedrefs)
+        if nshare == 1:
+            self.wids['sharedref_msg'].SetLabel(f"1 group has this reference")
+        else:
+            self.wids['sharedref_msg'].SetLabel(f"{nshare} groups share this reference")
         return sharedrefs
 
     def on_select_sharedrefs(self, event=None):
@@ -387,46 +399,66 @@ class EnergyCalibrateFrame(wx.Frame):
         self.wids['save_as_name'].SetValue(self.dgroup.filename + '_recalib')
         self.on_align(use_zoom=False)
 
-    def on_align(self, event=None, name=None, value=None, use_zoom=True):
+    def fit_eshift(self, datagroup):
+        """auto-fit for one datagroup to current reference"""
         ref = self.controller.get_group(self.wids['reflist'].GetStringSelection())
-        dat = self.dgroup
-        ensure_en_orig(dat)
-        ensure_en_orig(ref)
 
+        ensure_en_orig(datagroup)
+        dat = datagroup
         dat.xplot = dat.energy_orig[:]
         ref.xplot = ref.energy_orig[:]
         estep = find_energy_step(dat.xplot)
-        i1 = index_of(ref.energy_orig, ref.e0-20)
-        i2 = index_of(ref.energy_orig, ref.e0+20)
+
+        pars = Parameters()
+        ex0 = dat.e0 - ref.e0
+        emax = abs(ex0) + 50.0
+        if abs(ex0) > 20:
+            ex0 = ex0/10.0
+        elif abs(ex0) > 5:
+            ex0 = ex0/3.0
+
+        i1 = index_of(ref.xplot, ref.e0-emax)
+        i2 = index_of(ref.xplot, ref.e0+emax)
 
         def resid(pars, ref, dat, i1, i2):
             "fit residual"
             newx = dat.xplot + pars['eshift'].value
             scale = pars['scale'].value
             y = interp(newx, dat.dmude, ref.xplot, kind='cubic')
-            return smooth(ref.xplot, y*scale-ref.dmude, xstep=estep, sigma=0.50)[i1:i2]
+            return boxcar((y*scale - ref.dmude)[i1:i2], npts=1)
 
-        params = Parameters()
-        ex0 = ref.e0-dat.e0
-        emax = 50.0
-        if abs(ex0) > 75:
-            ex0 = 0.00
-            emax = (abs(ex0) + 75.0)
-        elif abs(ex0) > 10:
-            emax = (abs(ex0) + 75.0)
-        params.add('eshift', value=ex0, min=-emax, max=emax)
-        params.add('scale', value=1, min=1.e-8, max=50)
-        # print("Fit params ", params)
-        result = minimize(resid, params, args=(ref, dat, i1, i2),
-                          max_nfev=1000)
-        # print(fit_report(result))
-        eshift = result.params['eshift'].value
+        pars.add('eshift', value=ex0, min=-emax, max=emax)
+        pars.add('scale', value=1.0, min=1.e-6, max=1e6)
+        result = minimize(resid, pars, args=(ref, dat, i1, i2),
+                              max_nfev=1000)
+        return result.params['eshift'].value
+
+
+    def on_align(self, event=None, name=None, value=None, use_zoom=True):
+        ref = self.controller.get_group(self.wids['reflist'].GetStringSelection())
+        ensure_en_orig(ref)
+        eshift = self.fit_eshift(self.dgroup)
         self.wids['eshift'].SetValue(eshift)
 
-        ensure_en_orig(self.dgroup)
         xnew = self.dgroup.energy_orig + eshift
         self.data = xnew, self.dgroup.norm[:]
         self.plot_results(use_zoom=use_zoom)
+
+    def on_align_marked(self, event=None, name=None, value=None, use_zoom=True):
+        ref = self.controller.get_group(self.wids['reflist'].GetStringSelection())
+        ensure_en_orig(ref)
+
+        idx, norm_page = self.parent.get_nbpage('xasnorm')
+        for checked in self.controller.filelist.GetCheckedStrings():
+            fname  = self.controller.file_groups[str(checked)]
+            dgroup = self.controller.get_group(fname)
+            ensure_en_orig(dgroup)
+
+            eshift = self.fit_eshift(dgroup)
+            dgroup.energy_shift = eshift
+            dgroup.xplot = dgroup.energy = eshift + dgroup.energy_orig[:]
+            dgroup.journal.add('energy_shift ', eshift)
+            self.parent.process_normalization(dgroup)
 
     def on_calib(self, event=None, name=None, use_zoom=True):
         wids = self.wids
