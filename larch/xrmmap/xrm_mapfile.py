@@ -59,13 +59,14 @@ H5ATTRS = {'Type': 'XRM 2D Map',
            'Compression': ''}
 
 def h5str(obj):
-    '''strings stored in an HDF5 from Python2 may look like
-     "b'xxx'", that is containg "b".  strip these out here
-    '''
-    out = str(obj)
-    if out.startswith("b'") and out.endswith("'"):
-        out = out[2:-1]
-    return out
+    '''strings stored in an HDF5 from Python3 use bytes, encoded with utf-8'''
+    if isinstance(obj, bytes):
+        return obj.decode('utf-8')
+    else:  # out-dated?
+        out = str(obj)
+        if out.startswith("b'") and out.endswith("'"):
+            out = out[2:-1]
+        return out
 
 def get_machineid():
     "machine id / MAC address, independent of hostname"
@@ -311,7 +312,7 @@ class GSEXRM_MapFile(object):
         # initialize from filename or folder
         if self.filename is not None:
             self.getFileStatus(root=root)
-            # print("Get File Status ", root, self.status)
+            # # print("Get File Status ", root, self.status)
             if self.status == GSEXRM_FileStatus.empty:
                 ftmp = open(self.filename, 'r')
                 self.folder = ftmp.readlines()[0][:-1].strip()
@@ -611,6 +612,7 @@ class GSEXRM_MapFile(object):
         '''add configuration from Map Folder to HDF5 file
         ROI, DXP Settings, and Config data
         '''
+        # print("Add Map Config" , config)
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
         if not self.write_access:
@@ -643,7 +645,7 @@ class GSEXRM_MapFile(object):
         if os.path.exists(roifile):
             roidat, calib, extra = readROIFile(roifile)
             self.xrmmap.attrs['N_Detectors'] = self.nmca = len(calib['slope'])
-            # print("CALIB ", calib)
+            # print("read CALIB ", calib)
             roi_desc, roi_addr, roi_lim = [], [], []
             roi_slices = []
 
@@ -816,7 +818,6 @@ class GSEXRM_MapFile(object):
             roi_slice = lims[0]
             # dt.add('get slice')
             sumraw = roigrp['mcasum'][roiname]['raw'][rows,]
-            # dt.add('get sum raw')
             sumcor = roigrp['mcasum'][roiname]['cor'][rows,]
             # dt.add('get sum cor')
 
@@ -854,7 +855,7 @@ class GSEXRM_MapFile(object):
             self.calc_pixeltime()
         return self._pixeltime
 
-    def read_rowdata(self, irow, offset=None):
+    def read_rowdata(self, irow, offset=None, auto_reverse=True):
         '''read a row worth of raw data from the Map Folder
         returns arrays of data
         '''
@@ -908,7 +909,6 @@ class GSEXRM_MapFile(object):
         if '_unused_' in xrff:
             self.has_xrf = False
 
-        reverse = True
         ioffset = 0
         if scan_version > 1.35:
             ioffset = 1
@@ -921,7 +921,7 @@ class GSEXRM_MapFile(object):
                              irow=irow, nrows_expected=self.nrows_expected,
                              ixaddr=0, dimension=self.dimension,
                              npts=self.npts,
-                             reverse=reverse,
+                             auto_reverse=auto_reverse,
                              ioffset=ioffset,
                              force_no_dtc=self.force_no_dtc,
                              masterfile=self.masterfile, flip=self.flip,
@@ -1736,7 +1736,9 @@ class GSEXRM_MapFile(object):
             return self.detector_list
         def build_dlist(group):
             detlist, sumslist = [], []
+            # print("Build Dlist ")
             for key, grp in group.items():
+                # print(key, grp,  bytes2str(grp.attrs.get('type', '')))
                 if ('det' in bytes2str(grp.attrs.get('type', '')) or
                     'mca' in bytes2str(grp.attrs.get('type', ''))):
                     if 'sum' in key.lower():
@@ -1758,7 +1760,7 @@ class GSEXRM_MapFile(object):
         # add any other groups with 'detector' in the `type` attribute:
         for det, grp in xrmmap.items():
             attrs = getattr(grp, 'attrs', {'type': ''})
-            # print("detlist: ", det, grp, attrs)
+            # print("detlist: ", det, grp, attrs.get('type', ''), h5str(attrs.get('type', '')))
             if det not in det_list and 'detector' in h5str(attrs.get('type', '')):
                 det_list.append(det)
         self.detector_list = det_list
@@ -2457,7 +2459,6 @@ class GSEXRM_MapFile(object):
 
     def get_detname(self, det=None):
         "return XRMMAP group for a detector"
-
         mcastr = 'mca' if version_ge(self.version, '2.0.0') else 'det'
         detname =  '%ssum' % mcastr
 
@@ -2468,7 +2469,6 @@ class GSEXRM_MapFile(object):
         elif isinstance(det, int):
             if det in range(1, self.nmca+1):
                 detname = '%s%i' % (mcastr, det)
-
         return detname
 
     def get_detgroup(self, det=None):
@@ -3269,7 +3269,7 @@ class GSEXRM_MapFile(object):
                 out = self.xrmmap[detname][:, :, _roi]
                 # print(f"from v1, got roi map {_roi=}, {detname=}, {out.shape=}")
                 if self.write_access:
-                    # print(f"  .. save as {detaddr=}/{roiaddr=}")
+                    print(f"  .. save as {detaddr=}/{roiaddr=}")
                     self.xrmmap[detaddr][roiaddr].resize((nrow, ncol))
                     self.xrmmap[detaddr][roiaddr][:, :] = out
 
