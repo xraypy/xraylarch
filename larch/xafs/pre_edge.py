@@ -59,7 +59,7 @@ def find_e0(energy, mu=None, group=None, _larch=None):
     if group is not None:
         group = set_xafsGroup(group, _larch=_larch)
         group.e0 = e0
-    return e0
+    return float(e0)
 
 @Make_CallArgs(["energy","mu"])
 def find_e0_calc(energy, mu=None, group=None, **kws):
@@ -88,7 +88,7 @@ def find_e0_calc(energy, mu=None, group=None, **kws):
     # first find e0 without smoothing, then refine with smoothing
     dmude = np.gradient(mu)/np.gradient(energy)
     imax = np.where(dmude > 0.99*dmude.max())[0]
-    return energy[imax]
+    return float(energy[imax])
 
 
 def find_energy_step(energy, frac_ignore=0.01, nave=10):
@@ -99,7 +99,7 @@ def find_energy_step(energy, frac_ignore=0.01, nave=10):
     nskip = int(frac_ignore*len(energy))
     e_ordered = np.where(np.diff(np.argsort(energy))==1)[0]  # where energy step are in order
     ediff = np.diff(energy[e_ordered][nskip:-nskip])
-    return ediff[np.argsort(ediff)][nskip:nskip+nave].mean()
+    return float(ediff[np.argsort(ediff)][nskip:nskip+nave].mean())
 
 
 def _finde0(energy, mu_input, estep=None, use_smooth=True):
