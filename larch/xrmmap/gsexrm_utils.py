@@ -175,7 +175,7 @@ class GSEXRM_MapRow:
     read one row worth of data:
     '''
     def __init__(self, yvalue, xrffile, xrdfile, xpsfile, sisfile, folder,
-                 reverse=False, ixaddr=0, dimension=2, ioffset=0,
+                 auto_reverse=True, ixaddr=0, dimension=2, ioffset=0,
                  npts=None,  irow=None, dtime=None, nrows_expected=None,
                  masterfile=None, xrftype=None, xrdtype=None,
                  xrdcal=None, xrd2dmask=None, xrd2dbkgd=None,
@@ -460,14 +460,8 @@ class GSEXRM_MapRow:
                 gvarmax = gvar
                 ixaddr = ig
 
-        if reverse:
-            do_reverse = gdata[0, ixaddr] < gdata[-1, ixaddr]
-        else:
-            do_reverse = gdata[0, ixaddr] > gdata[-1, ixaddr]
-
-        do_reverse = (irow % 2) == 1
-        self.reversed = do_reverse
-        if do_reverse:
+        self.reversed = auto_reverse and ((irow % 2) == 1)
+        if self.reversed:
             points.reverse()
             self.sisdata  = self.sisdata[::-1]
             if has_xrf:
