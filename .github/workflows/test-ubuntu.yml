@@ -36,11 +36,11 @@ jobs:
           printenv
           conda install -y -c conda-forge python=${{ matrix.python-version }} "numpy>=2.0" "scipy>=1.15" "matplotlib>=3.9" "h5py>=3.10" "wxpython>=4.2" pymatgen scikit-learn jupyter plotly pytest pytest-cov coverage setuptools
           conda list
-          conda activate base
+          conda info
       - name: Install xraylarch and other dependencies with pip
         run: |
-          conda activate base
-          conda list
+          conda activate anaconda-client-env
+          conda info
           python -V
           which python
           python -m pip install ".[all]"
