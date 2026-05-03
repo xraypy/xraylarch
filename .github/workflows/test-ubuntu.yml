@@ -42,11 +42,9 @@ jobs:
       - name: Install xraylarch and other dependencies with pip
         run: |
           conda activate anaconda-client-env
-          conda info
-          python -V
-          which python
           python -m pip install ".[all]"
       - name: Run test suite
         run: |
+          conda activate anaconda-client-env
           cd tests
           sh run_tests.sh
