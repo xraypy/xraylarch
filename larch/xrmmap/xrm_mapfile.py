@@ -576,17 +576,17 @@ class GSEXRM_MapFile(object):
                 self.bkgd_xrd1d = read_xrd_data(self.xrd1dbkgdfile)*self.bkgdscale
 
         if xrd2dbkgdfile is not None:
-            self.xrd2dbkgdfile= xrd2dbkgdfile
-        if os.path.exists(str(self.xrd2dbkgdfile)):
-            print('2DXRD background file loaded: %s' % self.xrd2dbkgdfile)
-            xrd1dgrp.attrs['2Dbkgdfile'] = '%s' % (self.xrd2dbkgdfile)
+            self.xrd2dbkgdfile = xrd2dbkgdfile
+        if Path(self.xrd2dbkgdfile).exists():
+            print(f'2DXRD background file loaded: {self.xrd2dbkgdfile}')
+            xrd1dgrp.attrs['2Dbkgdfile'] = self.xrd2dbkgdfile
             self.bkgd_xrd2d = read_xrd_data(self.xrd2dbkgdfile)*self.bkgdscale
 
         if xrd2dmaskfile is not None:
             self.xrd2dmaskfile= xrd2dmaskfile
-        if os.path.exists(str(self.xrd2dmaskfile)):
-            print('Mask file loaded: %s' % self.xrd2dmaskfile)
-            xrd1dgrp.attrs['maskfile'] = '%s' % (self.xrd2dmaskfile)
+        if Path(self.xrd2dmaskfile).exists():
+            print(f'Mask file loaded: {self.xrd2dmaskfile}')
+            xrd1dgrp.attrs['maskfile'] = self.xrd2dmaskfile
             self.mask_xrd2d = read_xrd_data(self.xrd2dmaskfile)
 
         self.h5root.flush()
@@ -628,8 +628,8 @@ class GSEXRM_MapFile(object):
                     del group[name][key]
                 group[name].create_dataset(key, data=val)
 
-        scanfile = os.path.join(self.folder, self.ScanFile)
-        if os.path.exists(scanfile):
+        scanfile = Path(self.folder, self.ScanFile)
+        if scanfile.exists():
             scantext = open(scanfile, 'r').read()
         else:
             scantext = ''
@@ -637,12 +637,12 @@ class GSEXRM_MapFile(object):
             del group['scan']['text']
         group['scan'].create_dataset('text', data=scantext)
 
-        roifile = os.path.join(self.folder, self.ROIFile)
         self.nmca = 0
         if nmca is not None:
             self.nmca = nmca
 
-        if os.path.exists(roifile):
+        roifile = Path(self.folder, self.ROIFile)
+        if roifile.exists():
             roidat, calib, extra = readROIFile(roifile)
             self.xrmmap.attrs['N_Detectors'] = self.nmca = len(calib['slope'])
             # print("read CALIB ", calib)
@@ -688,8 +688,8 @@ class GSEXRM_MapFile(object):
             self.add_data(group['mca_calib'], 'quad',   [0.00]*nmca)
 
         # add env data
-        envfile = os.path.join(self.folder, self.EnvFile)
-        if os.path.exists(envfile):
+        envfile = Path(self.folder, self.EnvFile)
+        if envfile.exists():
             envdat = readEnvironFile(envfile)
         else:
             envdat = ['Facility.Ring_Current (UnknownPV) = 0']
@@ -868,8 +868,8 @@ class GSEXRM_MapFile(object):
         if self.has_xrd1d and self.xrdcalfile is None:
             self.xrdcalfile = bytes2str(self.xrmmap['xrd1d'].attrs.get('calfile',''))
         if self.xrdcalfile in (None, ''):
-            calfile = os.path.join(unixpath(self.folder), self.XRDCALFile)
-            if os.path.exists(calfile):
+            calfile = Path(self.folder, self.XRDCALFile)
+            if calfile.exists():
                 self.xrdcalfile = calfile
 
         scan_version = getattr(self, 'scan_version', 1.00)
@@ -1610,8 +1610,8 @@ class GSEXRM_MapFile(object):
     def add_xrd1d(self, qstps=None):
         xrd1dgrp = ensure_subgroup('xrd1d',self.xrmmap)
         xrdcalfile = bytes2str(xrd1dgrp.attrs.get('calfile', ''))
-        if os.path.exists(xrdcalfile):
-            print('Using calibration file : %s' % xrdcalfile)
+        if Path(xrdcalfile).exists():
+            print(f'Using calibration file : {xrdcalfile}')
             try:
                 nrows, npts , xpixx, xpixy = self.xrmmap['xrd2d/counts'].shape
             except:
