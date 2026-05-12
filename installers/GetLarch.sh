@@ -10,7 +10,7 @@ larchurl='xraylarch[larix]'
 uname=`uname`
 condaurl="https://github.com/conda-forge/miniforge/releases/latest/download"
 
-condafile="Miniforge3-$uname-x86_64.sh"
+condafile="Miniforge3-$uname-$(uname -m).sh"
 
 logfile=GetLarch.log
 
