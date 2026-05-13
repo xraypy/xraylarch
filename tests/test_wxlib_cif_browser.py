@@ -9,7 +9,7 @@ import wx
 from larch.wxlib.cif_browser import CIFViewer
 
 toppath = Path(__file__).parent.parent
-structpath = toppath / "examples" / "structuredata" / "struct2xas"
+structpath = toppath / "examples" / "structuredata"
 
 @pytest.mark.skipif(os.name == "nt" and sys.version_info < (3,10), reason="fails for windows and python3.9")
 def test_cif2feff():

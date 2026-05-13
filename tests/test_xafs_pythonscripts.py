@@ -4,7 +4,7 @@
 import os
 from pathlib import Path
 from asteval import Interpreter
-from pyshortcuts.utils import read_textfile
+from larch.utils import read_textfile
 
 basedir = Path(__file__).parent.parent.resolve()
 
