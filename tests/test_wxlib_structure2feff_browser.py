@@ -7,7 +7,7 @@ import wx
 from larch.wxlib.structure2feff_browser import Structure2FeffViewer
 
 toppath = Path(__file__).parent.parent
-structpath = toppath / "examples" / "structuredata" / "struct2xas"
+structpath = toppath / "examples" / "structuredata"
 
 
 def test_structure2feff():

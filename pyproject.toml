@@ -49,8 +49,8 @@ dependencies = ["numpy>=2.0",
     "uncertainties>=3.2.1",
     "pyshortcuts>=1.9.5",
     "xraydb>=4.5.7",
-    "larixite>=2025.5.1",
-    "silx>=0.15.2",
+    "larixite>=2025.5.0",
+    "silx>=3.0",
     "matplotlib>=3.10",
     "sqlalchemy>=2.0",
     "sqlalchemy_utils",
@@ -96,17 +96,12 @@ Tracker = "https://github.com/xraypy/xraylarch/issues"
 [project.optional-dependencies]
 dev = ["build", "twine", "pre-commit", "pytest", "pytest-xvfb;platform_system=='Linux'", "pytest-cov", "coverage"]
 doc = ["Sphinx", "numpydoc", "sphinx-copybutton", "sphinxcontrib-video", "sphinxcontrib-bibtex", "sphinxcontrib-argdoc"]
-
 wxgui = ["wxpython>=4.2.2",  "wxmplot>=2026.1.0", "wxutils>=2026.1.0",
          "darkdetect",  "pyobjc-framework-Cocoa; platform_system == 'Darwin'"]
-
-qtgui = ["PyQt5", "pyqtwebengine", "pyqtgraph"]
+qtgui = ["silx[full]", "pyqtwebengine", "pyqtgraph"]
 dioptas = ["dioptas"]
-
 epics = ["pyepics>=3.5.7", "psycopg2-binary"]
-
 jupyter = ["jupyter_core>=5.0", "jupyter_client", "jupyter_server", "notebook", "nbformat",
         "ipywidgets", "plotly", "bokeh", "py3dmol"]
-
 larix = ["xraylarch[wxgui, jupyter]"]
 all = ["xraylarch[dev, doc, wxgui, jupyter, qtgui, epics]"]

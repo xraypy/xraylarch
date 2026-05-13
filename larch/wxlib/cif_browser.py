@@ -409,7 +409,7 @@ class CIFFrame(wx.Frame):
                              excludes_elements=excludes_elements,
                              strict_contains=strict_contains,
                              full_occupancy=full_occupancy)
-        if len(all_cifs) == 0:
+        if len(all_cifs) == 0 and mineral_name is not None:
             all_cifs = find_cifs(mineral_name=mineral_name + '*',
                                  journal_name=journal_name,
                                  author_name=author_name,

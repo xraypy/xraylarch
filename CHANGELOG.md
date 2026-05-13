@@ -5,6 +5,11 @@ The GitHub Release Notes will also be useful
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2026.2.0 - not released yet]
+
+ - move everything related to `larch.xrd.struct2xas` to `larixite` (in view of future separate development)
+
+
 ## [2026.1.0 - 2026-01-19]
 
 ### xralyarch library:
