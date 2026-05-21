@@ -83,9 +83,11 @@ class BokehFigure:
             self.in_ipython = False
         if self.in_ipython:
             output_notebook()
-        style = self.style = deepcopy(FIGSTYLE)
+        self.style = deepcopy(FIGSTYLE)
         if style is not None:
             self.style.update(style)
+
+        style = self.style
 
 
         self.fig = bplot.figure(width=style['width'], height=style['height'],
@@ -235,7 +237,7 @@ def plot(xdata, ydata, dy=None, fig=None, label=None, xlabel=None,
                     xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, show=show)
 
 
-def multi_plot(plotsets):
+def multi_plot(plotsets, style=None):
     """plot multiple traces with an array of dictionaries emulating
     multiplot calls to plot:
 
@@ -254,6 +256,9 @@ def multi_plot(plotsets):
     fig.clear()
 
     sopts = dict(title=None, xlabel=None, ylabel=None)
+    if style is not None:
+        sopts.update(style)
+
     ropts = dict(xmin=None, xmax=None, ymin=None, ymax=None)
 
     for pset in plotsets[:]:
