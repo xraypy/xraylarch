@@ -1,5 +1,5 @@
 name:  xraylarch
-version: 2026-01
+version: 2026-02
 
 channels:
     - https://conda.anaconda.org/conda-forge/
@@ -30,17 +30,17 @@ specs:
     - pip
     - requests
     - numpy>=2.3.0
-    - mkl_fft
     - scipy>=1.16
     - matplotlib>=3.10
-    - h5py>=3.12
-    - wxpython>=4.2.3
+    - h5py>=3.13
+    - wxpython>=4.2.4
     - spglib>=2.7.0
     - pymatgen
     - charset-normalizer
     - pillow>=10
     - pyyaml>=6.0.3
     - dill
+    - mkl_fft          # [win or linux]
     - pywin32          # [win]
     - patchelf         # [linux]
     - pango            # [linux]

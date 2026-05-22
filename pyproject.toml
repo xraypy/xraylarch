@@ -42,13 +42,13 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
     ]
 
-dependencies = ["numpy>=2.0",
-    "scipy>=1.15",
+dependencies = ["numpy>=2.3.0",
+    "scipy>=1.16",
     "lmfit>=1.3.1",
-    "asteval>=1.0.7",
+    "asteval>=1.0.8",
     "uncertainties>=3.2.1",
-    "pyshortcuts>=1.9.5",
-    "xraydb>=4.5.7",
+    "pyshortcuts>=1.9.8",
+    "xraydb>=4.5.8",
     "larixite>=2026.1.0",
     "silx>=3.0",
     "matplotlib>=3.10",
@@ -96,11 +96,11 @@ Tracker = "https://github.com/xraypy/xraylarch/issues"
 [project.optional-dependencies]
 dev = ["build", "twine", "pre-commit", "pytest", "pytest-xvfb;platform_system=='Linux'", "pytest-cov", "coverage"]
 doc = ["Sphinx", "numpydoc", "sphinx-copybutton", "sphinxcontrib-video", "sphinxcontrib-bibtex", "sphinxcontrib-argdoc"]
-wxgui = ["wxpython>=4.2.2",  "wxmplot>=2026.1.0", "wxutils>=2026.2.0",
+wxgui = ["wxpython>=4.2.4",  "wxmplot>=2026.1.0", "wxutils>=2026.2.1",
          "darkdetect",  "pyobjc-framework-Cocoa; platform_system == 'Darwin'"]
 qtgui = ["silx[full]", "pyqtwebengine", "pyqtgraph"]
 dioptas = ["dioptas"]
-epics = ["pyepics>=3.5.7", "psycopg2-binary"]
+epics = ["pyepics>=3.5.10", "psycopg2-binary"]
 jupyter = ["jupyter_core>=5.0", "jupyter_client", "jupyter_server", "notebook", "nbformat",
         "ipywidgets", "plotly", "bokeh", "py3dmol"]
 larix = ["xraylarch[wxgui, jupyter]"]
