@@ -1,6 +1,8 @@
-from time import time
+from time import perf_counter
+from tabulate import tabulate
 import numpy as np
 fft_numpy =  np.fft.fft
+
 
 fft_mkln = fft_mkls = fft_ws = fft_wp = fft_wn = None
 
@@ -64,29 +66,39 @@ results = {}
 for key in METHODS:
     results[key] = None
 
-out = {}
+dat = {}
 for key in METHODS:
-    out[key] = []
+    dat[key] = []
 
 #warm up
 for name, meth in METHODS.items():
     for i in range(5):
-        t0 = time()
         chir = rscale * meth(cchi)
         results[name] = chir.real
 
 for name, meth in METHODS.items():
     for i in range(50):
-        t0 = time()
-        for j in range(25):
+        t0 = perf_counter()
+        for j in range(100):
             chir = rscale * meth(cchi)
-        out[name].append(1e4*(time() -t0))
+        dat[name].append(1e3*(perf_counter() -t0))
 
+print("# Times in millseconds, averaging 50 runs of 100 FFTs")
 
 k,m,s,x = 'Method', 'Mean', 'Std', 'Max'
-print(f"{k:10s} :  {m:8s}   {s:8s} {x:8s}")
-for k, v in out.items():
-    vn = np.array(v)
-    print(f"{k:10s} :  {vn.mean():8.3f}   {vn.std():8.3f} {vn.max():8.3f}")
+results = []
+for key, val in dat.items():
+    val = np.array(val)
+    results.append({'method': key,
+               'mean': float(val.mean()),
+               'std': float(val.std()),
+               'max': float(val.max())})
+
+
+print(tabulate(results, headers='keys', floatfmt='.3f',
+               tablefmt='plain-outline'))
+#
+#     print(f"{k:10s} :  {vn.mean():8.3f}   {vn.std():8.3f} {vn.max():8.3f}")
+# print(f"{k:10s} :  {m:8s}   {s:8s} {x:8s}")
 
 print("done")
