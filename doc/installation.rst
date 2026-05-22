@@ -18,10 +18,10 @@ Downloading and Installation
 .. _GetLarch.bat:                  https://raw.githubusercontent.com/xraypy/xraylarch/master/installers/GetLarch.bat
 .. _Larch Installers:              https://millenia.cars.aps.anl.gov/xraylarch/downloads
 .. _source code:                   https://github.com/xraypy/xraylarch/releases/latest
-.. _Larch for Windows:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-01-Windows-x86_64.exe
-.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-01-MacOSX-x86_64.pkg
-.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-01-Linux-x86_64.sh
-.. _Docs and Examples:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-01_docs-examples.zip
+.. _Larch for Windows:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-02-Windows-x86_64.exe
+.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-02-MacOSX-x86_64.pkg
+.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-02-Linux-x86_64.sh
+.. _Docs and Examples:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-02_docs-examples.zip
 
 .. _Ifeffit Mailing List: https://millenia.cars.aps.anl.gov/mailman3/lists/ifeffit.millenia.cars.aps.anl.gov/
 
@@ -176,7 +176,7 @@ MacOS Notes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For MacOS, download the `Larch for MacOSX`_ package installer above and click
-it to install Larch.  There are two important notes:
+it to install Larch.  There are a few important notes:
 
 .. note::
 
@@ -206,6 +206,12 @@ permissions or administrative privileges or "unauthorized application" with
 the package installer, running this installer script actually avoids all of
 those issues since your user account will simply be running the commands to
 write files to your home directory.
+
+.. versionchanged:: 2026.2.0
+
+These installers now build specifically for the arm6 processor, not
+using compatibility with X86_64.  If you are using and older Mac that
+is using an X86_64 processor, let us know and we can try to help.
 
 
 .. _install-lin:
@@ -299,7 +305,7 @@ other packages from PyPI.  We recommend you follow a similar process.
   +===================+======================+=============+====================+
   | wxPython          | All Plotting, Larix  | conda-forge | Linux Only         |
   +-------------------+----------------------+-------------+--------------------+
-  | mkl_fft           | math, FFTs           | conda-forge | All                |
+  | mkl_fft           | math, FFTs           | conda-forge | Linux, Windows     |
   +-------------------+----------------------+-------------+--------------------+
   | tomopy            | XRF tomography       | conda-forge | All                |
   +-------------------+----------------------+-------------+--------------------+
