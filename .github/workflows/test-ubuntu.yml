@@ -35,7 +35,7 @@ jobs:
         run: |
           printenv
           conda activate anaconda-client-env
-          conda install -y -c conda-forge python=${{ matrix.python-version }} "numpy>=2.0" "scipy>=1.15" "matplotlib>=3.9" "h5py>=3.10" "wxpython>=4.2" pymatgen scikit-learn jupyter plotly
+          conda install -y -c conda-forge python=${{ matrix.python-version }} "numpy>=2.2" "scipy>=1.15" "matplotlib>=3.10" "h5py>=3.12" "wxpython>=4.2.4" pymatgen scikit-learn jupyter plotly
           conda install -y -c conda-forge pytest pytest-cov coverage setuptools pip
           conda list
           conda info
