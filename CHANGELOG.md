@@ -5,9 +5,114 @@ The GitHub Release Notes will also be useful
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [2026.2.0 - not released yet]
+## [2026.2.0 - 2026-05-22]
 
- - move everything related to `larch.xrd.struct2xas` to `larixite` (in view of future separate development)
+#### xraylarch library
+
+ - move everything related to `larch.xrd.struct2xas` to `larixite` (in
+   view of future separate development)
+ - some refactoring to better force numpy scalars to plain python
+   numeric types
+ - feffit: update defaut feffit param bounds
+ - feffit: add more per-path 'magic values' (nleg, degen, vfermi, etc)
+   in addtion to reff in the code setup, tweak start param values
+ - feffit: more checks for saving/copying feffit fit parameters
+ - feffit: delay of asteval-expression evaluation for constraints
+ - feffit: fix feffit 13-path example to have more robust handling for
+   how parameters and constrainte are defined
+ - hdf5 handling: better decoding of scalar-like byte data.
+ - fix use of `numpy.trapezoid` for numpy 2.
+ - fix passing style in bokeh plots, and add style option for
+   its multi_plot
+
+### Larix
+
+ - xasnorm: add user-named settings for configurations of XAS
+   Normalization Paramters. That is, the user can save and reload (in
+   later sessions) chosen parameters for differ data categories, with
+   examples for 'S XANES' and 'Theoretical Calculations'.
+ - xasnorm: energy_calib can now auto_align a set of selected groups,
+   better handling of large-ish differences in e0 values
+ - xasnorm: some improvements in auto_nnorm and copying the 'show_*'
+   options
+ - exafs: add user-named settings for configurations of EXAFS
+   Parameters, as for XAS Normalization.
+ - io: fix import bug in specfile_writer.py
+ - io: fix exporting CSV files.
+ - exafs: add save/load of users EXAFS parameters to named config
+ - exafs: default bkgclamp values as ints, not floats
+ - xydata: cleanup for reading and using xydata
+ - feffit: better creation of Parameters for feffit, including earlier
+   loading of builtin Path values (reff, etc) and function (sigma2_*,
+   etc)
+
+ - using latest wxutils dark-mode detection: good on macOS, "forcing
+   to Light mode for now" on Windows, poor on Linux.
+ - better handling of out-of-bounds Plot cursor values.
+
+### XRF Fitting
+
+ - fitting GUI tweaks
+ - fitting: better checking for setting values for Choice boxes
+ - fitting: use timestamp as fit label for XRF fits
+ - fitting: Font/Color simplification
+
+### Other GUIs
+ - gsemap viewer: use auto_reverse, cleanups
+ - gsemap_viewer: fix for importing and using XRF fit result.
+ - xrf epics control: command-line arguments improved, with
+ - xrf epics control: many cleanups, improved support for single MCAs,
+   and enable set calibration for single MCA/Ketek.
+
+### Exampes/Docs:
+
+ - update Feff_ZnSe ipython examples
+ - update CIF/Feff Jupyter example #1
+ - add Jupyter example of using amcsd database to extract CIFs and run
+   Feff
+
+### Distribution/Install/General:
+  - update dependencies (larixite, silx, wxutils)
+  - use machine architecture in GetLarch.sh, now defaulting to arm64
+    for most macOS machines
+  - update github actions to properly activate conda environment
+
+
+## [2026.1.2 - 2026-03-10]
+
+### xraylarch library:
+ - fix reading bytes/string values from hdf5 files in h5group (#608, patrick-austin)
+ - many fixes to common wx widgets (including Larch Buffer) for dark mode.
+ - many fixes for using updated wxutils, especially with darkmode detection, and new model for widget colors.
+
+### Larix:
+
+ - calculate emin, emax after initialising e0 in rebin_xafs (#610, patrick-austin)
+ - make sure un-built feffit model is built (and so restored) before replacing the displayed model, as for a new group (George Sterbinsky)
+ - Structur2XAS: add configurable PRINT card values to Struct2XAS.make_input_feff (#606, Helen Engelhardt)
+ - update FEFF header parsing to avoid false matches in author and title lines (#604, liqunkang)
+ - feffit panel: add copy-parameer-expression buttons, with dialog to copy Feffit Path Parameters from one path to others (Shelly Kelly)
+ - better informing analysis panels to fill_form() with a newly installed group
+ - prefer column names from Column label over label line when reading column files.
+ - better test for energy in array label to identify xas data
+ - many small fixes for better support of Dark Mode and switching Dark/Light modea
+
+
+### Other GUIS:
+ - XRF_Map: put adding of highlights to maps in try/except clauses
+ - XRF Maps: better fix for ways to identify xspress3 hdf5 file
+ - XRF Epics Control: many additions to show more controls for Xspress3 Epics interface
+ - XRF Display: many fixes for dark mode
+ - XRD1D: tweaks to layout, background subtraction, color modes
+
+### Distribution/Install/General:
+ - add pymatgen from conda-forge to constructor script
+ - update wxmplot and wxutils versions, for beter dark mode
+ - add dioptas as optional install package
+ - build matplotlib font cache on  (build icons) to reduce startup time for first exe launch
+ - update versions and formatting for GetLarch scripts, add explicit spglib from conda-forge
+ - update constructor package list
+
 
 
 ## [2026.1.0 - 2026-01-19]
