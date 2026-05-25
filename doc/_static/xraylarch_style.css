@@ -16,10 +16,9 @@ body {
     background-color: white;
     color: black;
     padding: 0;
-    border-right: 1px solid #c5daba;
-    border-left: 1px solid #c5daba;
-
-    margin: 0px 30px 0px 30px;
+    border-right: 5px solid #c5daba;
+    border-left: 5px solid #c5daba;
+    margin: 0px 6px 0px 6px;
 }
 
 div.document {
@@ -31,23 +30,10 @@ div.document {
     -webkit-box-shadow: 2px 2px 5px #000;
 }
 
-div.documentwrapper {
-    float: left;
-    width: 100%;
-}
-
-div.bodywrapper {
-    margin: 0 0 0 240px;
-    border-left: 1px solid #ccc;
-}
-
-div.body {
-    margin: 0;
-    padding: 0.5em 20px 20px 20px;
-}
-div.bodywrapper {
-    margin: 0 0 0 calc(210px + 30px);
-}
+div.documentwrapper {float: left; width: 100%;}
+div.bodywrapper { margin: 0 0 0 230px; border-left: 1px solid #ccc;}
+div.body { margin: 0;  padding: 0.5em 5px 10px 10px;}
+div.bodywrapper {margin: 0 0 0 230px;}
 
 div.related {
     font-size: 1em;
@@ -57,7 +43,7 @@ div.related {
 }
 
 div.related ul {
-    background-color: #c5daba;
+    background-color: #c5daba30;
     height: 100%;
     overflow: hidden;
     border-top: 1px solid #ddd;
@@ -329,6 +315,7 @@ div.admonition pre, div.warning pre {
 
 div.highlight {
     margin: 0.4em 1em;
+    background-color: #c5daba30;
 }
 
 div.admonition p.admonition-title {
