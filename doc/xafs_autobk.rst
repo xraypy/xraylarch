@@ -17,7 +17,6 @@ The :func:`autobk` function
 =============================
 
 
-
 ..  function:: autobk(energy, mu=None, group=None, rbkg=1.0, ...)
 
     Determine the post-edge background function, :math:`\mu_0(E)`, and
@@ -307,31 +306,20 @@ using all the default inputs would be:
 
 with the resulting outputs looking like this:
 
-.. subfigstart::
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig_xafs2
 
-.. _fig_xafs2a:
+   .. image::  _images/xafs_autobk1a.png
+      :width: 100%
 
-.. figure::  _images/xafs_autobk1a.png
-    :target: _images/xafs_autobk1a.png
-    :width: 100%
-    :align: center
+   .. image::  _images/xafs_autobk1b.png
+      :width: 100%
 
-    :math:`\mu(E)` and background :math:`\mu_0(E)`
-
-.. _fig_xafs2b:
-
-.. figure::  _images/xafs_autobk1b.png
-    :target: _images/xafs_autobk1b.png
-    :width: 100%
-    :align: center
-
-    resulting :math:`k\chi(k)`
-
-.. subfigend::
-    :width: 0.45
-    :label: fig-xafs2
-
-    Example of simple usage of :func:`autobk` for Cu metal.
+   Example of simple usage of :func:`autobk` for Cu metal. Left:
+   :math:`\mu(E)` and background :math:`\mu_0(E)`, Right: resulting
+   :math:`k\chi(k)`
 
 
 Thus demonstrating that we can process data on Cu metal.
@@ -348,25 +336,18 @@ here to demonstrate the method for passing arguments to :func:`pre_edge`.
 
 The resulting outputs looks OK:
 
-.. subfigstart::
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig_xafs3
 
-.. _fig-xafs3a:
+   .. image::  _images/xafs_autobk2a.png
+      :width: 100%
 
-.. figure::  _images/xafs_autobk2a.png
-    :target: _images/xafs_autobk2a.png
-    :width: 100%
+   .. image::  _images/xafs_autobk2b.png
+      :width: 100%
 
-.. _fig-xafs3b:
-
-.. figure::  _images/xafs_autobk2b.png
-    :target: _images/xafs_autobk2b.png
-    :width: 100%
-
-.. subfigend::
-    :width: 0.45
-    :label: fig-xafs3
-
-    Example usage of :func:`autobk` for :math:`\rm FeAsO4 \cdot (nH_2O)`.
+   Example usage of :func:`autobk` for :math:`\rm FeAsO4 \cdot (nH_2O)`.
 
 
 A close examimation of :math:`k^2\chi(k)` suggests we might be able to do
