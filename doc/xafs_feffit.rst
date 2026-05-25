@@ -472,29 +472,21 @@ running this example prints out the following report:
 
 and generates the plots shown below
 
-.. subfigstart::
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig_feffit1
 
-.. _fig-feffit1a:
+   .. image::  _images/feffit_example1.png
+       :width: 100%
+       :alt: k space
 
-.. figure::  _images/feffit_example1.png
-    :target: _images/feffit_example1.png
-    :width: 100%
+   .. image::  _images/feffit_example2.png
+      :alt: R space
 
-    Results for Feffit for a simple 1-shell fit to a spectrum from Cu
-    metal.  Data and Fit in :math:`k` space
-
-.. _fig-feffit1b:
-
-.. figure::  _images/feffit_example2.png
-    :target: _images/feffit_example2.png
-    :width: 100%
-
-.. subfigend::
-    :width: .45
-    :label: fig-feffit1
-
-    Results for Feffit for a simple 1-shell fit to a spectrum from Cu
-    metal.    Data and Fit in :math:`R` space
+   Results for Feffit for a simple 1-shell fit to a spectrum from Cu
+   metal. Left: Data and Fit in :math:`k` space.  Right: Data and Fit in
+   :math:`R` space
 
 
 This is a pretty good fit to the first shell of Cu metal, and shows the
@@ -568,26 +560,16 @@ The output for this fit is a bit longer, being:
 
 With plots of data and fits as shown below.
 
-.. subfigstart::
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig_feffit2
 
-.. _fig-feffit2a:
+   .. image::  _images/feffit_example3.png
+   .. image::  _images/feffit_example4.png
 
-.. figure::  _images/feffit_example3.png
-    :target: _images/feffit_example3.png
-    :width: 100%
-
-.. _fig-feffit2b:
-
-.. figure::  _images/feffit_example4.png
-    :target: _images/feffit_example4.png
-    :width: 100%
-
-.. subfigend::
-    :width: .45
-    :label: fig-feffit2
-
-    Results for Feffit for a 3-shell fit to a spectrum from Cu metal,
-    constraining all path distances to expand with a single variable.
+   Results for Feffit for a 3-shell fit to a spectrum from Cu metal,
+   constraining all path distances to expand with a single variable.
 
 Here, we show both the magnitude and real part of :math:`\chi(R)`.  The fit
 to the real part shows excellent agreement over the fit :math:`R` range of
@@ -600,25 +582,15 @@ straightforward, as we can just do::
 
 to generate the following plots of the contributions of the different paths:
 
-.. subfigstart::
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig_feffit3
 
-.. _fig-feffit3a:
+   .. image::  _images/feffit_example5.png
+   .. image::  _images/feffit_example6.png
 
-.. figure::  _images/feffit_example5.png
-    :target: _images/feffit_example5.png
-    :width: 100%
-
-.. _fig-feffit3b:
-
-.. figure::  _images/feffit_example6.png
-    :target: _images/feffit_example6.png
-    :width: 100%
-
-.. subfigend::
-    :width: .45
-    :label: fig-feffit3
-
-    Path contributions to full mode for the 3-shell fit to Cu spectrum.
+   Path contributions to full mode for the 3-shell fit to Cu spectrum.
 
 Example 3: Fit 3 datasets with 1 Path each
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -686,62 +658,32 @@ correlation significantly reduces the estimated uncertainty.
 
 The output plots for the fits to the three datasets are given below.
 
-.. subfigstart::
+.. subfigure:: AB|CD|EF
+   :gap: 8px
+   :subcaptions: below
+   :name: fig_feffit3temps
 
-.. _fig-feffit3temp10k:
+   .. image::  _images/feffit_3temp1.png
+      :width: 100%
+      :alt: 10 K, k-space
 
-.. figure::  _images/feffit_3temp1.png
-    :target: _images/feffit_3temp1.png
-    :width: 100%
+   .. image::  _images/feffit_3temp2.png
+      :alt: 10 K, R-space
 
-    Fit to Cu :math:`\chi(k)` at 10 K
+   .. image::  _images/feffit_3temp3.png
+      :alt: 50 K, k-space
 
-.. _fig-feffit3temp50k:
+   .. image::  _images/feffit_3temp4.png
+      :alt: 50 K, R-space
 
-.. figure::  _images/feffit_3temp3.png
-    :target: _images/feffit_3temp3.png
-    :width: 100%
+   .. image::  _images/feffit_3temp5.png
+      :alt: 150 K, k-space
 
-    Fit to Cu :math:`\chi(k)` at 50 K
+   .. image::  _images/feffit_3temp6.png
+      :alt: 150 K, R-space
 
-.. _fig-feffit3temp150k:
-
-.. figure::  _images/feffit_3temp5.png
-    :target: _images/feffit_3temp5.png
-    :width: 100%
-
-    Fit to Cu :math:`\chi(k)` at 150 K
-
-.. _fig-feffit3temp10r:
-
-.. figure::  _images/feffit_3temp2.png
-    :target: _images/feffit_3temp2.png
-    :width: 100%
-
-    Fit to Cu :math:`\chi(R)` at 10 K
-
-.. _fig-feffit3temp50r:
-
-.. figure::  _images/feffit_3temp4.png
-    :target: _images/feffit_3temp4.png
-    :width: 100%
-
-    Fit to Cu :math:`\chi(R)` at 50 K
-
-.. _fig-feffit3temp150r:
-
-.. figure::  _images/feffit_3temp6.png
-    :target: _images/feffit_3temp6.png
-    :width: 100%
-
-    Fit to Cu :math:`\chi(R)` at 150 K
-
-.. subfigend::
-    :width: .32
-    :label: fig-feffit3temps
-
-    Fit to Cu metal at 10 K, 50 K, and 150 K, from simultaneous fit to all
-    3 datasets with 5 variables used.
+   Fit to Cu metal at 10 K, 50 K, and 150 K, from simultaneous fit to all 3
+   datasets with 5 variables used.
 
 Again, in the interest of brevity and consistency through this chapter,
 these example are deliberately simple and meant to be illustrative of the
@@ -786,27 +728,20 @@ The resulting output is
 
 with plots:
 
-.. subfigstart::
 
-.. _fig-feffit-feo-a:
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig_feffit_feo
 
-.. figure::  _images/feffit_feo_k.png
-    :target: _images/feffit_feo_k.png
-    :width: 100%
+   .. image::  _images/feffit_feo_k.png
+      :alt: k-space
 
-    Fits to 2-path fit to FeO EXAFS, :math:`k` space
+   .. image::  _images/feffit_feo_r.png
+      :alt: R-space
 
-.. _fig-feffit-feo-b:
+   Fits to 2-path fit to FeO EXAFS
 
-.. figure::  _images/feffit_feo_r.png
-    :target: _images/feffit_feo_r.png
-    :width: 100%
-
-    Fits to 2-path fit to FeO EXAFS, :math:`R` space
-
-.. subfigend::
-    :width: .45
-    :label: fig-feffit-feo
 
 Example 5: Comparing Fits in different Fit Spaces
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1008,53 +943,32 @@ changing ``vary=True`` to ``vary=False``) and re-run the fits, :math:`S_0^2`
 has a slight negative dependence on :math:`Z`.
 
 
-.. subfigstart::
+.. subfigure:: ABC|DE.
+   :gap: 8px
+   :subcaptions: below
+   :name: fig_feffit_znse
 
-.. _fig_znse_fit-zn:
+   .. image::  _images/Feffit_ZnSe_Zn.png
+     :width: 100%
+     :alt: Zn
 
-.. figure::  _images/Feffit_ZnSe_Zn.png
-    :target: _images/Feffit_ZnSe_Zn.png
-    :width: 100%
+   .. image::  _images/Feffit_ZnSe_Ge.png
+      :width: 100%
+      :alt: Ge
 
-    Fit to ZnSe with Zn back-scatterer
+   .. image::  _images/Feffit_ZnSe_Se.png
+      :width: 100%
+      :alt: Se
 
-.. _fig_znse_fit-ge:
+   .. image::  _images/Feffit_ZnSe_Br.png
+      :width: 100%
+      :alt: Br
 
-.. figure::  _images/Feffit_ZnSe_Ge.png
-    :target: _images/Feffit_ZnSe_Ge.png
-    :width: 100%
+   .. image::  _images/Feffit_ZnSe_Rb.png
+      :width: 100%
+      :alt: Rb
 
-    Fit to ZnSe with Ge back-scatterer
-
-.. _fig_znse_fit-se:
-
-.. figure::  _images/Feffit_ZnSe_Se.png
-    :target: _images/Feffit_ZnSe_Se.png
-    :width: 100%
-
-    Fit to ZnSe with Se back-scatterer
-
-
-.. _fig_znse_fit-br:
-
-.. figure::  _images/Feffit_ZnSe_Br.png
-    :target: _images/Feffit_ZnSe_Br.png
-    :width: 100%
-
-    Fit to ZnSe with Br back-scatterer
-
-.. _fig_znse_fit-rb:
-
-.. figure::  _images/Feffit_ZnSe_Rb.png
-    :target: _images/Feffit_ZnSe_Rb.png
-    :width: 100%
-
-    Fit to ZnSe with Rb back-scatterer
-
-.. subfigend::
-    :width: .32
-    :label: fig-feffit-znse2
-
+   Fits to Zn K-edge of ZnSe with various atoms as the back-scatterer.
 
 .. index:: Phase-corrected Fourier transforms
 
