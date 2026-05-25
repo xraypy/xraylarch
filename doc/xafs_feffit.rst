@@ -478,10 +478,11 @@ and generates the plots shown below
    :name: fig_feffit1
 
    .. image::  _images/feffit_example1.png
-       :width: 100%
-       :alt: k space
+      :width: 100%
+      :alt: k space
 
    .. image::  _images/feffit_example2.png
+      :width: 100%
       :alt: R space
 
    Results for Feffit for a simple 1-shell fit to a spectrum from Cu
@@ -566,7 +567,10 @@ With plots of data and fits as shown below.
    :name: fig_feffit2
 
    .. image::  _images/feffit_example3.png
+      :width: 100%
+
    .. image::  _images/feffit_example4.png
+      :width: 100%
 
    Results for Feffit for a 3-shell fit to a spectrum from Cu metal,
    constraining all path distances to expand with a single variable.
@@ -588,7 +592,10 @@ to generate the following plots of the contributions of the different paths:
    :name: fig_feffit3
 
    .. image::  _images/feffit_example5.png
+      :width: 100%
+
    .. image::  _images/feffit_example6.png
+      :width: 100%
 
    Path contributions to full mode for the 3-shell fit to Cu spectrum.
 
@@ -668,18 +675,23 @@ The output plots for the fits to the three datasets are given below.
       :alt: 10 K, k-space
 
    .. image::  _images/feffit_3temp2.png
+      :width: 100%
       :alt: 10 K, R-space
 
    .. image::  _images/feffit_3temp3.png
+      :width: 100%
       :alt: 50 K, k-space
 
    .. image::  _images/feffit_3temp4.png
+      :width: 100%
       :alt: 50 K, R-space
 
    .. image::  _images/feffit_3temp5.png
+      :width: 100%
       :alt: 150 K, k-space
 
    .. image::  _images/feffit_3temp6.png
+      :width: 100%
       :alt: 150 K, R-space
 
    Fit to Cu metal at 10 K, 50 K, and 150 K, from simultaneous fit to all 3
@@ -735,9 +747,11 @@ with plots:
    :name: fig_feffit_feo
 
    .. image::  _images/feffit_feo_k.png
+      :width: 100%
       :alt: k-space
 
    .. image::  _images/feffit_feo_r.png
+      :width: 100%
       :alt: R-space
 
    Fits to 2-path fit to FeO EXAFS
@@ -982,15 +996,15 @@ complex math, we use the :func:`xftf_fast` function to the complex Fourier
 transform and build the magnitude of the transform explicitly.
 
 The phase corrected transforms are shown in black in
-:numref:`fig_znse_fit-zn` through :numref:`fig_znse_fit-rb`, and show the
-key benefit of these transforms -- the peak in the phase corrected
-:math:`\chi(R)` peaks much closer to an :math:`R` that is the bond distance
-(for Zn-Se, around 2.45 :math:`\rm\AA`), whereas the normal XAFS Fourier
-transform peaks much lower.  This suggests a further test on whether the
-bond distance and :math:`Z` of the scattering atom are correct.  That is,
-in order for the phase-correction to give the correct interatomic distance,
-the total phase-shift has to be correct, which means that the :math:`Z` for
-the scatterer has to be correct (see the EXAFS Equation in Section
+:numref:`fig_feffit_znse`, and show the key benefit of these transforms --
+the peak in the phase corrected :math:`\chi(R)` peaks much closer to an
+:math:`R` that is the bond distance (for Zn-Se, around 2.45
+:math:`\rm\AA`), whereas the normal XAFS Fourier transform peaks much
+lower.  This suggests a further test on whether the bond distance and
+:math:`Z` of the scattering atom are correct.  That is, in order for the
+phase-correction to give the correct interatomic distance, the total
+phase-shift has to be correct, which means that the :math:`Z` for the
+scatterer has to be correct (see the EXAFS Equation in Section
 :ref:`xafs-exafsequation_sec`).  So, we can compare the refined distance
 with the peak in the phase-corrected transform -- if they agree, it gives
 good confidence that the scatterer is correct.
@@ -998,9 +1012,9 @@ good confidence that the scatterer is correct.
 Since the spacing of points in :math:`R` is :math:`\sim 0.03\rm\AA`, using
 the peak position may not be accurate enough.  Instead, we can use the
 value where :math:`\rm Im[\chi(R)_{\rm{ph cor}}]` passes through zero (see
-dashed lines in :numref:`fig_znse_fit-zn` through
-:numref:`fig_znse_fit-rb`).  These values are reported in the :ref:`Table
-of ZnSe Results <xafs-feffit_znse_results>` as :math:`R_{\rm{phcor}}`.
+dashed lines in :numref:`fig_feffit_znse` These values are reported in the
+:ref:`Table of ZnSe Results <xafs-feffit_znse_results>` as
+:math:`R_{\rm{phcor}}`.
 
 We see an interesting trend that while the refined distance *decreases* with
 :math:`Z`, the value for :math:`R_{\rm{phcor}}` increases slightly.  The two

@@ -554,35 +554,22 @@ data.  This can be done with:
 
 with results shown below:
 
-.. subfigstart::
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig_xafs_deconv2
 
-.. _fig_xafs_deconv2a:
+   .. image::  _images/xafs_deconv2a.png
+      :width: 100%
 
-.. figure::  _images/xafs_deconv2a.png
-    :target: _images/xafs_deconv2a.png
-    :width: 100%
-    :align: center
+   .. image::  _images/xafs_deconv2b.png
+      :width: 100%
 
-    XAS for Cu metal normalized :math:`\mu(E)` and spectrum
-    deconvolved by the energy of its core level.
-
-.. _fig_xafs_deconv2b:
-
-.. figure::  _images/xafs_deconv2b.png
-    :target: _images/xafs_deconv2b.png
-    :width: 100%
-    :align: center
-
-    Comparison of original and re-convolved XAS spectrum for Cu metal.
-    The difference shown in red is multiplied by 100.
-
-.. subfigend::
-    :width: 0.45
-    :label: fig_xafs_deconv
-
-    Example of simple usage of :func:`xas_deconvolve` and
-    :func:`xas_convolve` for Cu metal.
-
+   Example of simple usage of :func:`xas_deconvolve` and
+   :func:`xas_convolve` for Cu metal.  Left: normalized :math:`\mu(E)`
+   and spectrum deconvolved by the energy of its core level.  Right:
+   Comparison of original and re-convolved XAS spectrum.  The
+   difference shown in red is multiplied by 100.
 
 Finally, de-convolution of :math:`L_{\rm III}` XAFS data can be
 particularly dramatic and useful.  As with the copper spectrum above, we'll
@@ -594,27 +581,19 @@ noticeable improvement in amplitude of the XAFS.
 
 with results shown below:
 
-.. subfigstart::
 
-.. _fig_xafs_deconv3a:
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig_xafs_deconv3
 
-.. figure::  _images/xafs_deconv3a.png
-    :target: _images/xafs_deconv3a.png
-    :width: 100%
-    :align: center
+   .. image::  _images/xafs_deconv3a.png
+      :width: 100%
+   .. image::  _images/xafs_deconv3b.png
+      :width: 100%
 
-.. _fig_xafs_deconv3b:
-
-.. figure::  _images/xafs_deconv3b.png
-    :target: _images/xafs_deconv3b.png
-    :width: 100%
-    :align: center
-
-.. subfigend::
-    :width: 0.45
-    :label: fig_xafs_deconv3
-
-    Example of simple usage of :func:`xas_deconvolve` and
-    :func:`xas_convolve` for :math:`L_{\rm III}` XAFS of Pt metal.
-    :math:`L_{\rm III}` XAFS of Pt metal, normalized :math:`\mu(E)` for raw
-    data and the spectrum deconvolved by the energy of its core level.
+   Example of simple usage of :func:`xas_deconvolve` and
+   :func:`xas_convolve` for :math:`L_{\rm III}` XAFS of Pt metal.
+   :math:`L_{\rm III}` XAFS of Pt metal, normalized :math:`\mu(E)` for
+   raw data and the spectrum deconvolved by the energy of its core
+   level.

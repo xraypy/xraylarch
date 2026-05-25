@@ -122,47 +122,33 @@ in a relatively unambiguous determination of :math:`f'(E)`.  The
 situation for L edge data is a bit more complicated.
 
 Consider the CeO\ :sub:`2`\ L edge data shown on the right on
-:numref:`fig-CeO2-diffkk`.  For these data, the matching algorithm is
+:numref:`fig_ceo2_diffkk`.  For these data, the matching algorithm is
 quite a bit more challenging, in part due to the very large spectral
 weight underneath the white lines and in part because the step size
 ratios in real data may not match the step size ratios in the
 tabulated :math:`f'(E)`.
 
+.. subfigure:: ABC
+   :gap: 8px
+   :subcaptions: below
+   :name: fig_ceo2_diffkk
 
-.. subfigstart::
+   .. image::  _images/diffkk_ceo2_xafs.png
+      :width: 100%
+      :alt: L-edge data
 
-.. _fig-ceo2-xafs:
+   .. image::  _images/diffkk_ceo2_notok.png
+      :width: 100%
+      :alt: poor diffKK result
 
-.. figure::  _images/diffkk_ceo2_xafs.png
-    :target: _images/diffkk_ceo2_xafs.png
-    :width: 90%
+   .. image::  _images/diffkk_ceo2_ok.png
+      :width: 100%
+      :alt: better diffKK result
 
-    L edge data measured on CeO\ :sub:`2`
-
-.. _fig-ceo2-notok:
-
-.. figure::  _images/diffkk_ceo2_notok.png
-    :target: _images/diffkk_ceo2_notok.png
-    :width: 90%
-
-    A poor stab at diffKK analysis of CeO\ :sub:`2`
-
-.. _fig-ceo2-diffkk:
-
-.. figure::  _images/diffkk_ceo2_ok.png
-    :target: _images/diffkk_ceo2_ok.png
-    :width: 90%
-
-    A better stab at diffKK analysis of CeO\ :sub:`2`
-
-.. subfigend::
-    :width: .32
-    :label: fig-ceo2-diffkkcomp
-
-     DiffKK analysis of CeO\ :sub:`2`\  L edge data
+   DiffKK analysis of CeO\ :sub:`2`\  L edge data
 
 
-These larch command created the plot in :numref:`fig-ceo2-notok`.
+These larch command created the center plot in :numref:`fig_ceo2_diffkk`.
 
 .. code:: python
 
@@ -184,7 +170,7 @@ The situation is improved somewhat by a simple trick.
   dkk=diffkk(data.e, data.xmu, z=58, edge='L3', mback_kws={'e0':5723, 'order':2, 'whiteline':20})
   dkk.kk()
 
-The result is shown in :numref:`fig-ceo2-xafs`.  A margin is placed around
+The result is shown in :numref:`fig_ceo2_diffkk`.  A margin is placed around
 the L\ :sub:`3`\ and L\ :sub:`2`\ white lines.  The data from the white
 line energies to 20 eV above are excluded when determining the matching
 parameters.  This does a somewhat nicer job of forcing the flat parts of
@@ -198,4 +184,3 @@ Another possibility is measurement of data over much longer data
 ranges so that the matching algorithm can be made to do a good job far
 away from the absorption edges.  Or perhaps a non-differential
 algorithm would be more appropriate for L edge data.
-
