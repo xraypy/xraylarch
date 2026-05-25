@@ -239,42 +239,31 @@ Next, we're ready to train the PCA model with the collection of standard
 spectra, so we make a list of groups `standards` and create a training
 model that we store in `au_pcamodel`.
 
-With this PCA model, we can investigate the components and their weights.
-To be clear, the PCA process first calculates and removes the mean of all
-the components and then focuses on the variations in the spectra.  This is
-especially helpful for XANES spectra as the mean normalized :math:`mu(E)`
-is almost always larger than the variations.  We can then plot the mean and
-the principal components themselves (in :numref:`fig_xanes_pca1a`), and the
-weight of each component (in :numref:`fig_xanes_pca1b`) to explain the
-variations in the training set (note that this does not include the mean,
-and is on a log scale).
+With this PCA model, we can investigate the components and their
+weights.  To be clear, the PCA process first calculates and removes
+the mean of all the components and then focuses on the variations in
+the spectra.  This is especially helpful for XANES spectra as the mean
+normalized :math:`mu(E)` is almost always larger than the variations.
+We can then plot the mean and the principal components themselves and
+the weight of each component to explain the variations in the training
+set (note that this does not include the mean, and is on a log scale).
 
-.. subfigstart::
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig_xanes_pca
 
-.. _fig_xanes_pca1a:
+   .. image::  _images/PCA_model_components.png
+      :width: 100%
+      :alt: training
+   .. image::  _images/PCA_model_weights.png
+      :width: 100%
+      :alt: results
 
-.. figure::  _images/PCA_model_components.png
-    :target: _images/PCA_model_components.png
-    :width: 100%
-    :align: center
-
-    Results for the PCA training set of  6 Au :math:`L_{III}` XANES spectra.
-    Mean and 4 most important components.
-
-.. _fig_xanes_pca1b:
-
-.. figure::  _images/PCA_model_weights.png
-    :target: _images/PCA_model_weights.png
-    :width: 100%
-    :align: center
-
-    Results for the PCA training set of  6 Au :math:`L_{III}` XANES spectra.
-    Fractional weights or variances for the 4 most important components of
-    the Au XANES spectra -- not including the mean spectrum.
-
-.. subfigend::
-    :width: .45
-    :label: fig-xanes-pca
+   Left: The mean value and 4 most important components for the set of
+   6 Au :math:`L_{III}` XANES spectra.  Right: Fractional weights or
+   variances for the 4 most important components of the Au XANES
+   spectra -- not including the mean spectrum.
 
 
 We also print out the weights of the components which will give::
@@ -287,7 +276,7 @@ We also print out the weights of the components which will give::
     5    |  0.00058  |  1.00000
     6    |  0.00000  |  1.00000
 
-which shows the values for the weights plotted in :numref:`fig_xanes_pca1b`
+which shows the values for the weights plotted in :numref:`fig_xanes_pca`
 for the principal components.  This shows that the first 2 components
 explain 95% of the variation, and that using 4 components will explain
 99.9% of the variation in the data.
