@@ -43,7 +43,7 @@ div.related {
 }
 
 div.related ul {
-    background-color: #c5daba30;
+    background-color: #c5daba20;
     height: 100%;
     overflow: hidden;
     border-top: 1px solid #ddd;
@@ -315,7 +315,7 @@ div.admonition pre, div.warning pre {
 
 div.highlight {
     margin: 0.4em 1em;
-    background-color: #c5daba30;
+    background-color: #c5daba20;
 }
 
 div.admonition p.admonition-title {
