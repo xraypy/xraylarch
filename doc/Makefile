@@ -15,11 +15,9 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(SPHINXOPTS) .
 .PHONY: all install
 
 html:
-	cp sphinx/ext_mathjax.py extensions.py
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 
 epub:
-	cp sphinx/ext_imgmath.py extensions.py
 	$(SPHINXBUILD) -b epub $(ALLSPHINXOPTS) $(BUILDDIR)/epub
 
 
@@ -27,7 +25,6 @@ tarball: html
 	cd $(BUILDDIR)/html && tar cvzf ../../../larch_doc.tgz .
 
 pdf: latex
-	cp sphinx/ext_imgmath.py extensions.py
 	cd $(BUILDDIR)/latex && pdflatex xraylarch.tex
 	cd $(BUILDDIR)/latex && makeindex -s python.ist xraylarch.idx
 	cd $(BUILDDIR)/latex && pdflatex xraylarch.tex
@@ -84,7 +81,6 @@ htmlhelp:
 	      ".hhp project file in $(BUILDDIR)/htmlhelp."
 
 latex:
-	cp sphinx/ext_imgmath.py extensions.py
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
 	@echo
 	@echo "Build finished; the LaTeX files are in $(BUILDDIR)/latex."
