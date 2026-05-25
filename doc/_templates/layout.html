@@ -1,0 +1,41 @@
+{% extends "!layout.html" %}
+
+
+{%- block extrahead %}
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+{% endblock %}
+
+
+{% block rootrellink %}
+   <li>[<a href="{{ pathto('index') }}"> Larch</a>|</li>
+   <li><a href="{{ pathto('getting_started') }}"> Getting Started</a>|</li>
+   <li><a href="{{ pathto('xafs') }}">XAFS Analysis</a>|</li>
+   <li><a href="{{ pathto('xray') }}">X-ray Databases</a>|</li>
+   <li><a href="{{ pathto('xrf') }}">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
+{% endblock %}
+
+
+{% block relbar1 %}
+<div style=" background-color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<table border=0>
+  <tr>
+    <td width=20%>
+        <a href="{{pathto('index')}}">
+         <img src="{{pathto("_static/larchcones.png", 1)}}" height=50px alt="larchcones"/></a>
+    </td>
+    <td width=75% padding=0>
+      <font size=+2>
+        <a href="{{ pathto('index') }}" style="color:#335">
+          Larch: Data Analysis Tools for X-ray Spectroscopy
+        </a>
+      </font>
+    </td>
+   </tr></table>
+</div>
+{{ super() }}
+{% endblock %}
