@@ -8,8 +8,9 @@
 
     <title>14.1. XAFS Functions: Overview and Naming Conventions &#8212; xraylarch 2026.2.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
+    <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/xraylarch_style.css?v=f3581a04" />
     
     <script src="_static/documentation_options.js?v=2b694ea4"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
@@ -17,32 +18,30 @@
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
-    
+    <script src="_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="14.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment" href="xafs_preedge.html" />
     <link rel="prev" title="14. XAFS Analysis" href="xafs.html" />
-
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
 <script type="text/x-mathjax-config">
    MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
 </script>
 
-
   </head><body>
-<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<div style=" background-color: #c5daba;  text-align: left; height:60px; padding: 0px">
 <table border=0>
   <tr>
     <td width=20%>
-	<a href="index.html">
-	 <img src="_static/larchcones.png" height=50px alt="larchcones"/></a>
+        <a href="index.html">
+         <img src="_static/larchcones.png" height=55px alt="larchcones"/></a>
     </td>
     <td width=75% padding=0>
       <font size=+2>
-	<a href="index.html" style="color:#772211">
-	  Larch: Data Analysis Tools for X-ray Spectroscopy
-	</a>
+        <a href="index.html" style="color:#335">
+          Larch: Data Analysis Tools for X-ray Spectroscopy
+        </a>
       </font>
     </td>
    </tr></table>
@@ -55,6 +54,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="xafs_preedge.html" title="14.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -65,104 +67,13 @@
    <li><a href="xafs.html">XAFS Analysis</a>|</li>
    <li><a href="xray.html">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
 
           <li class="nav-item nav-item-1"><a href="xafs.html" accesskey="U"><span class="section-number">14. </span>XAFS Analysis</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><span class="section-number">14.1. </span>XAFS Functions: Overview and Naming Conventions</a></li> 
       </ul>
     </div>
-
-      <div class="sphinxsidebar" role="navigation" aria-label="Main">
-        <div class="sphinxsidebarwrapper">
-  <div>
-    <h3><a href="index.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">14.1. XAFS Functions: Overview and Naming Conventions</a><ul>
-<li><a class="reference internal" href="#naming-conventions-for-xafs-arrays">14.1.1. Naming conventions for XAFS arrays</a><ul>
-<li><a class="reference internal" href="#group-argument-and-sys-xafsgroup">14.1.1.1. <cite>group</cite> argument and <code class="docutils literal notranslate"><span class="pre">_sys.xafsGroup</span></code></a></li>
-<li><a class="reference internal" href="#first-argument-group-convention">14.1.1.2. First Argument Group convention</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#plotting-macros-for-xafs">14.1.2. Plotting Macros for XAFS</a><ul>
-<li><a class="reference internal" href="#plot-mu">14.1.2.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_mu()</span></code></a><ul>
-<li><a class="reference internal" href="#plot_mu"><code class="docutils literal notranslate"><span class="pre">plot_mu()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#plot-bkg">14.1.2.2. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_bkg()</span></code></a><ul>
-<li><a class="reference internal" href="#plot_bkg"><code class="docutils literal notranslate"><span class="pre">plot_bkg()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#plot-chik">14.1.2.3. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_chik()</span></code></a><ul>
-<li><a class="reference internal" href="#plot_chik"><code class="docutils literal notranslate"><span class="pre">plot_chik()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#plot-chir">14.1.2.4. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_chir()</span></code></a><ul>
-<li><a class="reference internal" href="#plot_chir"><code class="docutils literal notranslate"><span class="pre">plot_chir()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#plot-chifit">14.1.2.5. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_chifit()</span></code></a><ul>
-<li><a class="reference internal" href="#plot_chifit"><code class="docutils literal notranslate"><span class="pre">plot_chifit()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#plot-path-k">14.1.2.6. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_path_k()</span></code></a><ul>
-<li><a class="reference internal" href="#plot_path_k"><code class="docutils literal notranslate"><span class="pre">plot_path_k()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#plot-path-r">14.1.2.7. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_path_r()</span></code></a><ul>
-<li><a class="reference internal" href="#plot_path_r"><code class="docutils literal notranslate"><span class="pre">plot_path_r()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#plot-paths-k">14.1.2.8. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_paths_k()</span></code></a></li>
-<li><a class="reference internal" href="#plot-paths-r">14.1.2.9. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_paths_r()</span></code></a></li>
-<li><a class="reference internal" href="#plot-prepeaks-baseline">14.1.2.10. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_prepeaks_baseline()</span></code></a></li>
-<li><a class="reference internal" href="#plot-prepeaks-fit">14.1.2.11. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_prepeaks_fit()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#utility-functions-for-xafs">14.1.3. Utility Functions for XAFS</a><ul>
-<li><a class="reference internal" href="#ktoe-and-etok">14.1.3.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">ktoe()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">etok()</span></code></a><ul>
-<li><a class="reference internal" href="#etok"><code class="docutils literal notranslate"><span class="pre">etok()</span></code></a></li>
-<li><a class="reference internal" href="#ktoe"><code class="docutils literal notranslate"><span class="pre">ktoe()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#estimate-noise">14.1.3.2. <code class="xref py py-func docutils literal notranslate"><span class="pre">estimate_noise()</span></code></a><ul>
-<li><a class="reference internal" href="#estimate_noise"><code class="docutils literal notranslate"><span class="pre">estimate_noise()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="xafs.html"
-                          title="previous chapter"><span class="section-number">14. </span>XAFS Analysis</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="xafs_preedge.html"
-                          title="next chapter"><span class="section-number">14.2. </span>XAFS: Pre-edge Subtraction, Normalization, and data treatment</a></p>
-  </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/xafs_utilities.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<search id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</search>
-<script>document.getElementById('searchbox').style.display = "block"</script>
-        </div>
-      </div>
+  
 
     <div class="document">
       <div class="documentwrapper">
@@ -820,6 +731,98 @@ small, the estimate may not be that bad.</p>
           </div>
         </div>
       </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">14.1. XAFS Functions: Overview and Naming Conventions</a><ul>
+<li><a class="reference internal" href="#naming-conventions-for-xafs-arrays">14.1.1. Naming conventions for XAFS arrays</a><ul>
+<li><a class="reference internal" href="#group-argument-and-sys-xafsgroup">14.1.1.1. <cite>group</cite> argument and <code class="docutils literal notranslate"><span class="pre">_sys.xafsGroup</span></code></a></li>
+<li><a class="reference internal" href="#first-argument-group-convention">14.1.1.2. First Argument Group convention</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#plotting-macros-for-xafs">14.1.2. Plotting Macros for XAFS</a><ul>
+<li><a class="reference internal" href="#plot-mu">14.1.2.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_mu()</span></code></a><ul>
+<li><a class="reference internal" href="#plot_mu"><code class="docutils literal notranslate"><span class="pre">plot_mu()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#plot-bkg">14.1.2.2. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_bkg()</span></code></a><ul>
+<li><a class="reference internal" href="#plot_bkg"><code class="docutils literal notranslate"><span class="pre">plot_bkg()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#plot-chik">14.1.2.3. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_chik()</span></code></a><ul>
+<li><a class="reference internal" href="#plot_chik"><code class="docutils literal notranslate"><span class="pre">plot_chik()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#plot-chir">14.1.2.4. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_chir()</span></code></a><ul>
+<li><a class="reference internal" href="#plot_chir"><code class="docutils literal notranslate"><span class="pre">plot_chir()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#plot-chifit">14.1.2.5. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_chifit()</span></code></a><ul>
+<li><a class="reference internal" href="#plot_chifit"><code class="docutils literal notranslate"><span class="pre">plot_chifit()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#plot-path-k">14.1.2.6. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_path_k()</span></code></a><ul>
+<li><a class="reference internal" href="#plot_path_k"><code class="docutils literal notranslate"><span class="pre">plot_path_k()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#plot-path-r">14.1.2.7. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_path_r()</span></code></a><ul>
+<li><a class="reference internal" href="#plot_path_r"><code class="docutils literal notranslate"><span class="pre">plot_path_r()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#plot-paths-k">14.1.2.8. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_paths_k()</span></code></a></li>
+<li><a class="reference internal" href="#plot-paths-r">14.1.2.9. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_paths_r()</span></code></a></li>
+<li><a class="reference internal" href="#plot-prepeaks-baseline">14.1.2.10. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_prepeaks_baseline()</span></code></a></li>
+<li><a class="reference internal" href="#plot-prepeaks-fit">14.1.2.11. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_prepeaks_fit()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#utility-functions-for-xafs">14.1.3. Utility Functions for XAFS</a><ul>
+<li><a class="reference internal" href="#ktoe-and-etok">14.1.3.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">ktoe()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">etok()</span></code></a><ul>
+<li><a class="reference internal" href="#etok"><code class="docutils literal notranslate"><span class="pre">etok()</span></code></a></li>
+<li><a class="reference internal" href="#ktoe"><code class="docutils literal notranslate"><span class="pre">ktoe()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#estimate-noise">14.1.3.2. <code class="xref py py-func docutils literal notranslate"><span class="pre">estimate_noise()</span></code></a><ul>
+<li><a class="reference internal" href="#estimate_noise"><code class="docutils literal notranslate"><span class="pre">estimate_noise()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="xafs.html"
+                          title="previous chapter"><span class="section-number">14. </span>XAFS Analysis</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="xafs_preedge.html"
+                          title="next chapter"><span class="section-number">14.2. </span>XAFS: Pre-edge Subtraction, Normalization, and data treatment</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/xafs_utilities.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
       <div class="clearer"></div>
     </div>
     <div class="related" role="navigation" aria-label="Related">
@@ -828,6 +831,9 @@ small, the estimate may not be that bad.</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="xafs_preedge.html" title="14.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment"
              >next</a> |</li>
@@ -839,6 +845,7 @@ small, the estimate may not be that bad.</p>
    <li><a href="xafs.html">XAFS Analysis</a>|</li>
    <li><a href="xray.html">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
 
           <li class="nav-item nav-item-1"><a href="xafs.html" ><span class="section-number">14. </span>XAFS Analysis</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><span class="section-number">14.1. </span>XAFS Functions: Overview and Naming Conventions</a></li> 

@@ -8,8 +8,9 @@
 
     <title>14. XAFS Analysis &#8212; xraylarch 2026.2.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
+    <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/xraylarch_style.css?v=f3581a04" />
     
     <script src="_static/documentation_options.js?v=2b694ea4"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
@@ -17,32 +18,30 @@
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
-    
+    <script src="_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="14.1. XAFS Functions: Overview and Naming Conventions" href="xafs_utilities.html" />
     <link rel="prev" title="13.8. Advanced Confidence Intervals and Chi-square maps" href="fitting_confidence.html" />
-
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
 <script type="text/x-mathjax-config">
    MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
 </script>
 
-
   </head><body>
-<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<div style=" background-color: #c5daba;  text-align: left; height:60px; padding: 0px">
 <table border=0>
   <tr>
     <td width=20%>
-	<a href="index.html">
-	 <img src="_static/larchcones.png" height=50px alt="larchcones"/></a>
+        <a href="index.html">
+         <img src="_static/larchcones.png" height=55px alt="larchcones"/></a>
     </td>
     <td width=75% padding=0>
       <font size=+2>
-	<a href="index.html" style="color:#772211">
-	  Larch: Data Analysis Tools for X-ray Spectroscopy
-	</a>
+        <a href="index.html" style="color:#335">
+          Larch: Data Analysis Tools for X-ray Spectroscopy
+        </a>
       </font>
     </td>
    </tr></table>
@@ -55,6 +54,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="xafs_utilities.html" title="14.1. XAFS Functions: Overview and Naming Conventions"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -65,42 +67,12 @@
    <li><a href="#">XAFS Analysis</a>|</li>
    <li><a href="xray.html">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
 
         <li class="nav-item nav-item-this"><a href=""><span class="section-number">14. </span>XAFS Analysis</a></li> 
       </ul>
     </div>
-
-      <div class="sphinxsidebar" role="navigation" aria-label="Main">
-        <div class="sphinxsidebarwrapper">
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="fitting_confidence.html"
-                          title="previous chapter"><span class="section-number">13.8. </span>Advanced Confidence Intervals and Chi-square maps</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="xafs_utilities.html"
-                          title="next chapter"><span class="section-number">14.1. </span>XAFS Functions: Overview and Naming Conventions</a></p>
-  </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/xafs.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<search id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</search>
-<script>document.getElementById('searchbox').style.display = "block"</script>
-        </div>
-      </div>
+  
 
     <div class="document">
       <div class="documentwrapper">
@@ -110,13 +82,13 @@
   <section id="xafs-analysis">
 <span id="xafs-chapter"></span><h1><span class="section-number">14. </span>XAFS Analysis<a class="headerlink" href="#xafs-analysis" title="Link to this heading">¶</a></h1>
 <p>One of the primary motivations for Larch was processing XAFS data.  Larch
-was originally conceived to be version 2 of Ifeffit <span id="id1">[<a class="reference internal" href="bibliography.html#id32" title="M Newville. Ifeffit: interactive xafs analysis and feff fitting. Journal of Synchrotron Radiation, 8(Part 2):322-324, MAR 2001. doi:10.1107/S0909049500016964.">Newville (2001)a</a>]</span>,
+was originally conceived to be version 2 of Ifeffit <span class="bibtex-citation" id="id1">[<a class="reference internal" href="bibliography.html#id32" title="M Newville. Ifeffit: interactive xafs analysis and feff fitting. Journal of Synchrotron Radiation, 8(Part 2):322-324, MAR 2001. doi:10.1107/S0909049500016964.">Newville (2001)a</a>]</span>,
 replacing and expanding all the XAFS analysis capabilities of that package.
 XAFS Analysis can generally be broken into a few separate steps:
 This replacement is essentially complete insofar as all the main
 functionality of Ifeffit is available in Larch.  There may still be a few
 minor features of Ifeffit that are not yet available, and some
-functionality to port from Athena <span id="id2">[<a class="reference internal" href="bibliography.html#id33" title="B Ravel and M Newville. ATHENA, ARTEMIS, HEPHAESTUS: data analysis for X-ray absorption spectroscopy using IFEFFIT. Journal of Synchrotron Radiation, 12(Part 4):537-541, 2005. doi:10.1107/S0909049505012719.">Ravel and Newville (2005)</a>]</span> back to the core
+functionality to port from Athena <span class="bibtex-citation" id="id2">[<a class="reference internal" href="bibliography.html#id33" title="B Ravel and M Newville. ATHENA, ARTEMIS, HEPHAESTUS: data analysis for X-ray absorption spectroscopy using IFEFFIT. Journal of Synchrotron Radiation, 12(Part 4):537-541, 2005. doi:10.1107/S0909049505012719.">Ravel and Newville (2005)</a>]</span> back to the core
 library.  In addition, there are some minor differences in implementation
 details, so that slightly different numerical results may be obtained.
 Importantly, several features are available with Larch that were not
@@ -230,6 +202,37 @@ is in the default search path.</p>
           </div>
         </div>
       </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="fitting_confidence.html"
+                          title="previous chapter"><span class="section-number">13.8. </span>Advanced Confidence Intervals and Chi-square maps</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="xafs_utilities.html"
+                          title="next chapter"><span class="section-number">14.1. </span>XAFS Functions: Overview and Naming Conventions</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/xafs.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
       <div class="clearer"></div>
     </div>
     <div class="related" role="navigation" aria-label="Related">
@@ -238,6 +241,9 @@ is in the default search path.</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="xafs_utilities.html" title="14.1. XAFS Functions: Overview and Naming Conventions"
              >next</a> |</li>
@@ -249,6 +255,7 @@ is in the default search path.</p>
    <li><a href="#">XAFS Analysis</a>|</li>
    <li><a href="xray.html">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
 
         <li class="nav-item nav-item-this"><a href=""><span class="section-number">14. </span>XAFS Analysis</a></li> 
       </ul>

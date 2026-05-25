@@ -8,40 +8,39 @@
 
     <title>1. Downloading and Installation &#8212; xraylarch 2026.2.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
+    <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/xraylarch_style.css?v=f3581a04" />
     
     <script src="_static/documentation_options.js?v=2b694ea4"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
-    
+    <script src="_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="2. Getting Started with Larch" href="getting_started.html" />
     <link rel="prev" title="Larch" href="index.html" />
-
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
 <script type="text/x-mathjax-config">
    MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
 </script>
 
-
   </head><body>
-<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<div style=" background-color: #c5daba;  text-align: left; height:60px; padding: 0px">
 <table border=0>
   <tr>
     <td width=20%>
-	<a href="index.html">
-	 <img src="_static/larchcones.png" height=50px alt="larchcones"/></a>
+        <a href="index.html">
+         <img src="_static/larchcones.png" height=55px alt="larchcones"/></a>
     </td>
     <td width=75% padding=0>
       <font size=+2>
-	<a href="index.html" style="color:#772211">
-	  Larch: Data Analysis Tools for X-ray Spectroscopy
-	</a>
+        <a href="index.html" style="color:#335">
+          Larch: Data Analysis Tools for X-ray Spectroscopy
+        </a>
       </font>
     </td>
    </tr></table>
@@ -54,6 +53,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="getting_started.html" title="2. Getting Started with Larch"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -64,76 +66,12 @@
    <li><a href="xafs.html">XAFS Analysis</a>|</li>
    <li><a href="xray.html">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
 
         <li class="nav-item nav-item-this"><a href=""><span class="section-number">1. </span>Downloading and Installation</a></li> 
       </ul>
     </div>
-
-      <div class="sphinxsidebar" role="navigation" aria-label="Main">
-        <div class="sphinxsidebarwrapper">
-  <div>
-    <h3><a href="index.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">1. Downloading and Installation</a><ul>
-<li><a class="reference internal" href="#installing-with-binary-installers">1.1. Installing with Binary Installers</a></li>
-<li><a class="reference internal" href="#installing-with-the-getlarch-sh-and-getlarch-bat-scripts">1.2. Installing with the <cite>GetLarch.sh</cite> and <cite>GetLarch.bat</cite> scripts</a><ul>
-<li><a class="reference internal" href="#windows-notes">1.2.1. Windows Notes</a></li>
-<li><a class="reference internal" href="#macos-notes">1.2.2. MacOS Notes</a></li>
-<li><a class="reference internal" href="#linux-notes">1.2.3. Linux Notes</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#installing-into-an-existing-anaconda-python-environment">1.3. Installing into an existing Anaconda Python environment</a><ul>
-<li><a class="reference internal" href="#conda-conda-forge-and-pip">1.3.1. Conda, Conda-forge, and Pip</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#installing-with-pip-into-an-existing-python-environment">1.4. Installing with <cite>pip</cite> into an existing Python environment</a></li>
-<li><a class="reference internal" href="#updating-x-ray-larch">1.5. Updating X-ray Larch</a></li>
-<li><a class="reference internal" href="#installing-the-development-version">1.6. Installing the development version</a></li>
-<li><a class="reference internal" href="#making-desktop-shortcuts-to-link-to-the-applications">1.7. Making Desktop shortcuts to Link to the Applications</a></li>
-<li><a class="reference internal" href="#larch-for-developers-source-installation">1.8. Larch for developers (source installation)</a><ul>
-<li><a class="reference internal" href="#installing-optional-python-packages-with-larch">1.8.1. Installing Optional Python Packages with Larch</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#getting-help">1.9. Getting Help</a></li>
-<li><a class="reference internal" href="#install-exa">1.10. Docs and Examples</a></li>
-<li><a class="reference internal" href="#citing-larch">1.11. Citing Larch</a></li>
-<li><a class="reference internal" href="#funding-and-support">1.12. Funding and Support</a></li>
-<li><a class="reference internal" href="#acknowledgements">1.13. Acknowledgements</a></li>
-<li><a class="reference internal" href="#license">1.14. License</a></li>
-</ul>
-</li>
-</ul>
-
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="index.html"
-                          title="previous chapter">Larch</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="getting_started.html"
-                          title="next chapter"><span class="section-number">2. </span>Getting Started with Larch</a></p>
-  </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/installation.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<search id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</search>
-<script>document.getElementById('searchbox').style.display = "block"</script>
-        </div>
-      </div>
+  
 
     <div class="document">
       <div class="documentwrapper">
@@ -571,7 +509,7 @@ that contains a <cite>doc</cite> folder with this full documentation, and an
 <h2><span class="section-number">1.11. </span>Citing Larch<a class="headerlink" href="#citing-larch" title="Link to this heading">¶</a></h2>
 <p>Currently, the best citation for Larch is M. Newville, <em>Larch: An Analysis
 Package For XAFS And Related Spectroscopies</em>. Journal of Physics:
-Conference Series, 430:012007 (2013).  <span id="id2">[<a class="reference internal" href="bibliography.html#id4" title="M. Newville. Larch: An Analysis Package For XAFS And Related Spectroscopies. Journal of Physics: Conference Series, 430:012007, 2013. doi:10.1088/1742-6596/430/1/012007.">Newville (2013)</a>]</span></p>
+Conference Series, 430:012007 (2013).  <span class="bibtex-citation" id="id2">[<a class="reference internal" href="bibliography.html#id4" title="M. Newville. Larch: An Analysis Package For XAFS And Related Spectroscopies. Journal of Physics: Conference Series, 430:012007, 2013. doi:10.1088/1742-6596/430/1/012007.">Newville (2013)</a>]</span></p>
 <span class="__dimensions_badge_embed__"
       data-doi="10.1088/1742-6596/430/1/012007"
       data-style="large_rectangle">
@@ -674,6 +612,71 @@ the MIT License:</p>
           </div>
         </div>
       </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">1. Downloading and Installation</a><ul>
+<li><a class="reference internal" href="#installing-with-binary-installers">1.1. Installing with Binary Installers</a></li>
+<li><a class="reference internal" href="#installing-with-the-getlarch-sh-and-getlarch-bat-scripts">1.2. Installing with the <cite>GetLarch.sh</cite> and <cite>GetLarch.bat</cite> scripts</a><ul>
+<li><a class="reference internal" href="#windows-notes">1.2.1. Windows Notes</a></li>
+<li><a class="reference internal" href="#macos-notes">1.2.2. MacOS Notes</a></li>
+<li><a class="reference internal" href="#linux-notes">1.2.3. Linux Notes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#installing-into-an-existing-anaconda-python-environment">1.3. Installing into an existing Anaconda Python environment</a><ul>
+<li><a class="reference internal" href="#conda-conda-forge-and-pip">1.3.1. Conda, Conda-forge, and Pip</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#installing-with-pip-into-an-existing-python-environment">1.4. Installing with <cite>pip</cite> into an existing Python environment</a></li>
+<li><a class="reference internal" href="#updating-x-ray-larch">1.5. Updating X-ray Larch</a></li>
+<li><a class="reference internal" href="#installing-the-development-version">1.6. Installing the development version</a></li>
+<li><a class="reference internal" href="#making-desktop-shortcuts-to-link-to-the-applications">1.7. Making Desktop shortcuts to Link to the Applications</a></li>
+<li><a class="reference internal" href="#larch-for-developers-source-installation">1.8. Larch for developers (source installation)</a><ul>
+<li><a class="reference internal" href="#installing-optional-python-packages-with-larch">1.8.1. Installing Optional Python Packages with Larch</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#getting-help">1.9. Getting Help</a></li>
+<li><a class="reference internal" href="#install-exa">1.10. Docs and Examples</a></li>
+<li><a class="reference internal" href="#citing-larch">1.11. Citing Larch</a></li>
+<li><a class="reference internal" href="#funding-and-support">1.12. Funding and Support</a></li>
+<li><a class="reference internal" href="#acknowledgements">1.13. Acknowledgements</a></li>
+<li><a class="reference internal" href="#license">1.14. License</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="index.html"
+                          title="previous chapter">Larch</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="getting_started.html"
+                          title="next chapter"><span class="section-number">2. </span>Getting Started with Larch</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/installation.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
       <div class="clearer"></div>
     </div>
     <div class="related" role="navigation" aria-label="Related">
@@ -682,6 +685,9 @@ the MIT License:</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="getting_started.html" title="2. Getting Started with Larch"
              >next</a> |</li>
@@ -693,6 +699,7 @@ the MIT License:</p>
    <li><a href="xafs.html">XAFS Analysis</a>|</li>
    <li><a href="xray.html">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
 
         <li class="nav-item nav-item-this"><a href=""><span class="section-number">1. </span>Downloading and Installation</a></li> 
       </ul>

@@ -19,7 +19,7 @@ Downloading and Installation
 .. _Larch Installers:              https://millenia.cars.aps.anl.gov/xraylarch/downloads
 .. _source code:                   https://github.com/xraypy/xraylarch/releases/latest
 .. _Larch for Windows:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-02-Windows-x86_64.exe
-.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-02-MacOSX-x86_64.pkg
+.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-02-MacOSX-arm64.pkg
 .. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-02-Linux-x86_64.sh
 .. _Docs and Examples:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-02_docs-examples.zip
 

@@ -24,7 +24,7 @@ The standard Fourier transform of a signal :math:`f(t)` can be written as
    :nowrap:
 
    \begin{eqnarray*}
-	 {\tilde{f}}(\omega) &=& \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty}
+         {\tilde{f}}(\omega) &=& \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty}
        f(t) e^{-i{\omega}t} dt \\
        f(t) &=& \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty}
        {\tilde{f}}(\omega) e^{i{\omega}t} d{\omega} \\
@@ -83,11 +83,11 @@ points :math:`R_m = m \, \delta R`, the definitions become:
 
    \begin{eqnarray*}
    \tilde\chi(R_m) &=& \frac{i \delta k}{\sqrt{\pi N_{\rm fft}}} \,
-		       \sum_{n=1}^{N_{\rm fft}} \chi(k_n) \,
-		       \Omega(k_n) \, k_n^w e^{2i\pi n m/N_{\rm fft}} \\
+                       \sum_{n=1}^{N_{\rm fft}} \chi(k_n) \,
+                       \Omega(k_n) \, k_n^w e^{2i\pi n m/N_{\rm fft}} \\
    \tilde\chi(k_n) &=& \frac{2 i \delta R}{\sqrt{\pi N_{\rm fft}}} \,
-		       \sum_{m=1}^{N_{\rm fft}} \tilde\chi(R_m) \,
-		       \Omega(R_m) \, e^{-2i\pi n m/N_{\rm fft}} \\
+                       \sum_{m=1}^{N_{\rm fft}} \tilde\chi(R_m) \,
+                       \Omega(R_m) \, e^{-2i\pi n m/N_{\rm fft}} \\
    \end{eqnarray*}
 
 
@@ -144,15 +144,15 @@ encapsulated in the :func:`xftf` function.
     The following data is put into the output group:
 
        ================= ===============================================================
-	array name         meaning
+        array name         meaning
        ================= ===============================================================
-	kwin               window :math:`\Omega(k)` (length of input chi(k)).
-	r                  uniform array of :math:`R`, out to ``rmax_out``.
-	chir               complex array of :math:`\tilde\chi(R)`.
-	chir_mag           magnitude of :math:`\tilde\chi(R)`.
-	chir_pha           phase of :math:`\tilde\chi(R)`.
-	chir_re            real part of :math:`\tilde\chi(R)`.
-	chir_im            imaginary part of :math:`\tilde\chi(R)`.
+        kwin               window :math:`\Omega(k)` (length of input chi(k)).
+        r                  uniform array of :math:`R`, out to ``rmax_out``.
+        chir               complex array of :math:`\tilde\chi(R)`.
+        chir_mag           magnitude of :math:`\tilde\chi(R)`.
+        chir_pha           phase of :math:`\tilde\chi(R)`.
+        chir_re            real part of :math:`\tilde\chi(R)`.
+        chir_im            imaginary part of :math:`\tilde\chi(R)`.
        ================= ===============================================================
 
     It is expected that the input ``k`` be a uniformly spaced array of
@@ -211,15 +211,15 @@ the explicitly real :math:`\chi(k)`.
     The following data is put into the output group:
 
        ================= ===============================================================
-	array name         meaning
+        array name         meaning
        ================= ===============================================================
-	rwin               window :math:`\Omega(R)` (length of input chi(R)).
-	q                  uniform array of :math:`k`, out to ``qmax_out``.
-	chiq               complex array of :math:`\tilde\chi(k)`.
-	chiq_mag           magnitude of :math:`\tilde\chi(k)`.
-	chiq_pha           phase of :math:`\tilde\chi(k)`.
-	chiq_re            real part of :math:`\tilde\chi(k)`.
-	chiq_im            imaginary part of :math:`\tilde\chi(k)`.
+        rwin               window :math:`\Omega(R)` (length of input chi(R)).
+        q                  uniform array of :math:`k`, out to ``qmax_out``.
+        chiq               complex array of :math:`\tilde\chi(k)`.
+        chiq_mag           magnitude of :math:`\tilde\chi(k)`.
+        chiq_pha           phase of :math:`\tilde\chi(k)`.
+        chiq_re            real part of :math:`\tilde\chi(k)`.
+        chiq_im            imaginary part of :math:`\tilde\chi(k)`.
        ================= ===============================================================
 
     In analogy with :func:`xftf`, it is expected that the input ``r`` be a
@@ -283,14 +283,14 @@ available for constructing windows.  A sampling of windows is shown below.
     Table of Fourier Transform Window Types.
 
        =================== =========================================================
-	window name          description
+        window name          description
        =================== =========================================================
-	hanning              cosine-squared taper
-	parzen               linear taper
-	welch                quadratic taper
-	gaussian             Gaussian (normal) function window
-	sine                 sine function window
-	kaiser               Kaiser-Bessel function-derived window
+        hanning              cosine-squared taper
+        parzen               linear taper
+        welch                quadratic taper
+        gaussian             Gaussian (normal) function window
+        sine                 sine function window
+        kaiser               Kaiser-Bessel function-derived window
        =================== =========================================================
 
 In general, the window arrays have a value that gradually increases from 0
@@ -340,57 +340,42 @@ window types and the effect of the various parameters.  The meanings of
 ``xmin``, ``xmax``, ``dx`` and ``dx2`` are identical for the Hanning, Parzen and
 Welch windows, and illustrated in the two following figures.
 
-.. subfigstart::
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig_xafsft1
 
-.. _fig-xafsft1a:
+   .. image::  _images/ftwin_example1.png
+      :width: 100%
 
-.. figure::  _images/ftwin_example1.png
-    :target: _images/ftwin_example1.png
-    :width: 100%
+   .. image::  _images/ftwin_example2.png
+      :width: 100%
 
-.. _fig-xafsft1b:
-
-.. figure::  _images/ftwin_example2.png
-    :target: _images/ftwin_example2.png
-    :width: 100%
-
-.. subfigend::
-    :width: .45
-    :label: fig-xafsft1
-
-    Fourier Transform window examples and illustration of parameter meaning
-    for the Hanning, Parzen, and Welch windows.  Note that
-    :math:`\Omega(x=x_{\rm min}) = \Omega(x=x_{\rm max}) = 0.5`, and that
-    the meaning of ``dx`` is to control the taper over which the window
-    changes from 0 to 1.  Here, ``xmin=5`` and ``xmax=15``.
-
+   Fourier Transform window examples and illustration of parameter
+   meaning for the Hanning, Parzen, and Welch windows.  Note that
+   :math:`\Omega(x=x_{\rm min}) = \Omega(x=x_{\rm max}) = 0.5`, and
+   that the meaning of ``dx`` is to control the taper over which the
+   window changes from 0 to 1.  Here, ``xmin=5`` and ``xmax=15``.
 
 
 Some more window functions:
 
-.. subfigstart::
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig_xafsft2
 
-.. _fig-xafsft2a:
+   .. image::  _images/ftwin_example3.png
+      :width: 100%
 
-.. figure::  _images/ftwin_example3.png
-    :target: _images/ftwin_example3.png
-    :width: 100%
+   .. image::  _images/ftwin_example4.png
+      :width: 100%
 
-.. _fig-xafsft2b:
-
-.. figure::  _images/ftwin_example4.png
-    :target: _images/ftwin_example4.png
-    :width: 100%
-
-.. subfigend::
-    :width: .45
-    :label: fig-xafsft2
-
-    Fourier Transform window examples and illustration of parameter
-    meaning.  On the left, a comparison of Welch, Parzen, and Hanning with
-    the same parameters is shown.  On the right, the effect of ``dx2`` is
-    shown as a different amount of taper on the high- and low-``x`` end of
-    the window.  As before, ``xmin=5`` and ``xmax=15``.
+   Fourier Transform window examples and illustration of parameter
+   meaning.  Left:, a comparison of Welch, Parzen, and Hanning with
+   the same parameters is shown.  Right: the effect of ``dx2`` is
+   shown as a different amount of taper on the high- and low-``x`` end
+   of the window.  As before, ``xmin=5`` and ``xmax=15``.
 
 The Gaussian, Sine, and Kaiser-Bessel windows are illustrated next. These
 go to 1 at the average of ``xmin`` and ``xmax``, but do not stay at 1 over
@@ -401,28 +386,20 @@ and Kaiser-Bessel windows both go to zero at  ``xmin-dx/2`` and ``xmax +
 dx/2``.  For very large values of ``dx``, the Kaiser-Bessel window
 approaches a nearly Gaussian lineshape.
 
-.. subfigstart::
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig_xafsft3
 
-.. _fig-xafsft3a:
+   .. image::  _images/ftwin_example5.png
+      :width: 100%
+   .. image::  _images/ftwin_example6.png
+      :width: 100%
 
-.. figure::  _images/ftwin_example5.png
-    :target: _images/ftwin_example5.png
-    :width: 100%
-
-.. _fig-xafsft3b:
-
-.. figure::  _images/ftwin_example6.png
-    :target: _images/ftwin_example6.png
-    :width: 100%
-
-.. subfigend::
-    :width: .45
-    :label: fig-xafsft3
-
-    Fourier Transform windows. On the left, a comparison of Kaiser-Bessel,
-    Sine, and Gaussian windows with the same parameters is shown.  On the
-    right, the effect of ``dx`` is shown for the Kaiser-Bessel window, and
-    a closer comparison to a Gaussian window is made.
+   Fourier Transform windows. Left: a comparison of Kaiser-Bessel,
+   Sine, and Gaussian windows with the same parameters is shown.
+   Right: the effect of ``dx`` is shown for the Kaiser-Bessel window,
+   and a closer comparison to a Gaussian window is made.
 
 
 Examples: Forward XAFS Fourier transforms
@@ -440,81 +417,66 @@ We start with a comparison of a small value of ``dk`` and a larger value.
 A script that runs :func:`xftf`, changing on ``dk`` would look like::
 
     xftf(dat1.k, dat1.chi, kmin=3, kmax=13, dk=1, window='hanning',
-	 kweight=kweight, group=dat1)
+         kweight=kweight, group=dat1)
 
     dat2 = group(k=dat1.k, chi=dat1.chi) # make a copy of the group
     xftf(dat2.k, dat2.chi, kmin=3, kmax=13, dk=5, window='hanning',
-	 kweight=kweight, group=dat2)
+         kweight=kweight, group=dat2)
 
 would result in the following results:
 
-.. subfigstart::
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig_xafsft4
 
-.. _fig-xafsft4a:
+   .. image::  _images/xft_example1.png
+      :width: 100%
+   .. image::  _images/xft_example2.png
+      :width: 100%
 
-.. figure::  _images/xft_example1.png
-    :target: _images/xft_example1.png
-    :width: 100%
-
-.. _fig-xafsft4b:
-
-.. figure::  _images/xft_example2.png
-    :target: _images/xft_example2.png
-    :width: 100%
-
-.. subfigend::
-    :width: .45
-    :label: fig-xafsft4
-
-    Comparison of the effect of different values of ``dk`` on real XAFS
-    Fourier transforms.  Increasing ``dk`` reduces peak heights and tends
-    to broaden peaks, but the effects are rather small.
+   Comparison of the effect of different values of ``dk`` on real XAFS
+   Fourier transforms.  Increasing ``dk`` reduces peak heights and
+   tends to broaden peaks, but the effects are rather small.
 
 
 A script that runs :func:`xftf` with consistent parameters, but different
 window types::
 
     xftf(dat1.k, dat1.chi, kmin=3, kmax=13, dk=4, window='hanning',
-	 kweight=kweight, group=dat1)
+         kweight=kweight, group=dat1)
 
     dat2 = group(k=dat1.k, chi=dat1.chi) # make a copy of the group
     xftf(dat2.k, dat2.chi, kmin=3, kmax=13, dk=4, window='parzen',
-	 kweight=kweight, group=dat2)
+         kweight=kweight, group=dat2)
 
     dat3 = group(k=dat1.k, chi=dat1.chi) #
     xftf(dat3.k, dat3.chi, kmin=3, kmax=13, dk=4, window='welch',
-	 kweight=kweight, group=dat3)
+         kweight=kweight, group=dat3)
 
     dat4 = group(k=dat1.k, chi=dat1.chi) #
     xftf(dat4.k, dat4.chi, kmin=3, kmax=13, dk=4, window='kaiser',
-	 kweight=kweight, group=dat4)
+         kweight=kweight, group=dat4)
 
     dat5 = group(k=dat1.k, chi=dat1.chi) #
     xftf(dat5.k, dat5.chi, kmin=3, kmax=13, dk=4, window='gaussian',
-	 kweight=kweight, group=dat5)
+         kweight=kweight, group=dat5)
 
 would result in the following results:
 
-.. subfigstart::
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig_xafsft_windows
 
-.. _fig-xafsft_winsa:
+   .. image::  _images/xft_example3.png
+      :width: 100%
 
-.. figure::  _images/xft_example3.png
-    :target: _images/xft_example3.png
-    :width: 100%
+   .. image::  _images/xft_example4.png
+      :width: 100%
 
-.. _fig-xafsft_winsb:
-
-.. figure::  _images/xft_example4.png
-    :target: _images/xft_example4.png
-    :width: 100%
-
-.. subfigend::
-    :width: .45
-    :label: fig-xafsft-windows
-
-    Comparison of the effect of different window types on real XAFS Fourier
-    transforms.
+   Comparison of the effect of different window types on real XAFS Fourier
+   transforms.
 
 We now turn our attention to the different components of the Fourier
 transform.  As above, it is most common to plot the magnitude of the
@@ -523,8 +485,8 @@ can be instructive to plot the real and imaginary components, as shown
 below::
 
     newplot(dat1.r, dat1.chir_mag, xmax=8, label='chir_mag',
-	    show_legend=True, legend_loc='ur', color='black',
-	    xlabel=r'$R \rm\, (\AA)$', ylabel=r'$\chi(R)\rm\,(\AA^{-3})$' )
+            show_legend=True, legend_loc='ur', color='black',
+            xlabel=r'$R \rm\, (\AA)$', ylabel=r'$\chi(R)\rm\,(\AA^{-3})$' )
 
     plot(dat1.r, dat1.chir_re, color='red', label='chir_re')
     plot(dat1.r, dat1.chir_im, color='blue', label='chir_im')
@@ -553,29 +515,22 @@ two different :math:`R` windows to filter either just the first shell of
 the spectra, or the first two shells, and compare the resulting filtered
 :math:`\chi(q)`.
 
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig_xafsft_filter
 
-.. subfigstart::
+   .. image::  _images/xft_example6.png
+      :width: 100%
 
-.. _fig-xafsft_filtera:
+   .. image::  _images/xft_example7.png
+      :width: 100%
 
-.. figure::  _images/xft_example6.png
-    :target: _images/xft_example6.png
-    :width: 100%
-
-.. _fig-xafsft_filterb:
-
-.. figure::  _images/xft_example7.png
-    :target: _images/xft_example7.png
-    :width: 100%
-
-.. subfigend::
-    :width: .45
-    :label: fig-xafsft-filter
-
-    Reverse XAFS Fourier transform, or Fourier filtering.  Here, one can
-    see the effect of different window sizes on the Fourier filtered
-    spectrum.  Including the first two peaks or shells reproduces most of
-    the original spectrum, with only high-frequency components removed.
+   Reverse XAFS Fourier transform, or Fourier filtering.  Here, one
+   can see the effect of different window sizes on the Fourier
+   filtered spectrum.  Including the first two peaks or shells
+   reproduces most of the original spectrum, with only high-frequency
+   components removed.
 
 Note that it is ``chiq_re`` that is compared to the k-weighted ``chi``
 array.

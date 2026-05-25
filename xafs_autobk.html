@@ -8,8 +8,9 @@
 
     <title>14.4. XAFS: Post-edge Background Subtraction &#8212; xraylarch 2026.2.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
+    <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/xraylarch_style.css?v=f3581a04" />
     
     <script src="_static/documentation_options.js?v=2b694ea4"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
@@ -17,32 +18,30 @@
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
-    
+    <script src="_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="14.5. XAFS: Fourier Transforms for XAFS" href="xafs_fourier.html" />
     <link rel="prev" title="14.3. XANES Analysis: Linear Methods, Pre-edge Peak Fitting" href="xafs_xanes.html" />
-
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
 <script type="text/x-mathjax-config">
    MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
 </script>
 
-
   </head><body>
-<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<div style=" background-color: #c5daba;  text-align: left; height:60px; padding: 0px">
 <table border=0>
   <tr>
     <td width=20%>
-	<a href="index.html">
-	 <img src="_static/larchcones.png" height=50px alt="larchcones"/></a>
+        <a href="index.html">
+         <img src="_static/larchcones.png" height=55px alt="larchcones"/></a>
     </td>
     <td width=75% padding=0>
       <font size=+2>
-	<a href="index.html" style="color:#772211">
-	  Larch: Data Analysis Tools for X-ray Spectroscopy
-	</a>
+        <a href="index.html" style="color:#335">
+          Larch: Data Analysis Tools for X-ray Spectroscopy
+        </a>
       </font>
     </td>
    </tr></table>
@@ -55,6 +54,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="xafs_fourier.html" title="14.5. XAFS: Fourier Transforms for XAFS"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -65,77 +67,24 @@
    <li><a href="xafs.html">XAFS Analysis</a>|</li>
    <li><a href="xray.html">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
 
           <li class="nav-item nav-item-1"><a href="xafs.html" accesskey="U"><span class="section-number">14. </span>XAFS Analysis</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><span class="section-number">14.4. </span>XAFS: Post-edge Background Subtraction</a></li> 
       </ul>
     </div>
-
-      <div class="sphinxsidebar" role="navigation" aria-label="Main">
-        <div class="sphinxsidebarwrapper">
-  <div>
-    <h3><a href="index.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">14.4. XAFS: Post-edge Background Subtraction</a><ul>
-<li><a class="reference internal" href="#the-autobk-function">14.4.1. The <code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code> function</a><ul>
-<li><a class="reference internal" href="#autobk"><code class="docutils literal notranslate"><span class="pre">autobk()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#the-autobk-algorithm">14.4.2. The AUTOBK Algorithm</a><ul>
-<li><a class="reference internal" href="#r-rm-bkg-and-spline-for-mu-0-e">14.4.2.1. <span class="math notranslate nohighlight">\(R_{\rm bkg}\)</span> and spline for <span class="math notranslate nohighlight">\(\mu_0(E)\)</span></a></li>
-<li><a class="reference internal" href="#selecting-fourier-transform-parameters">14.4.2.2. Selecting Fourier transform parameters</a></li>
-<li><a class="reference internal" href="#using-a-standard-chi-k">14.4.2.3. Using a standard <span class="math notranslate nohighlight">\(\chi(k)\)</span></a></li>
-<li><a class="reference internal" href="#end-point-clamps-for-the-spline">14.4.2.4. End-point clamps for the spline</a></li>
-<li><a class="reference internal" href="#recommendations">14.4.2.5. Recommendations</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#examples">14.4.3. Examples</a><ul>
-<li><a class="reference internal" href="#basic-example">14.4.3.1. Basic example</a></li>
-<li><a class="reference internal" href="#adjusting-spline-clamps">14.4.3.2. Adjusting spline clamps</a></li>
-<li><a class="reference internal" href="#id2">14.4.3.3. Using a Standard <span class="math notranslate nohighlight">\(\chi(k)\)</span></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="xafs_xanes.html"
-                          title="previous chapter"><span class="section-number">14.3. </span>XANES Analysis:  Linear Methods, Pre-edge Peak Fitting</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="xafs_fourier.html"
-                          title="next chapter"><span class="section-number">14.5. </span>XAFS: Fourier Transforms for XAFS</a></p>
-  </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/xafs_autobk.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<search id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</search>
-<script>document.getElementById('searchbox').style.display = "block"</script>
-        </div>
-      </div>
+  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
+  
+<style>
+  .ss-layout-default-AB { grid-template-areas: 'A B'; }
+</style>
+<p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
 <section id="xafs-post-edge-background-subtraction">
 <h1><span class="section-number">14.4. </span>XAFS: Post-edge Background Subtraction<a class="headerlink" href="#xafs-post-edge-background-subtraction" title="Link to this heading">¶</a></h1>
 <p>Background subtraction is one of the most important data processing steps
@@ -271,7 +220,7 @@ determine <span class="math notranslate nohighlight">\(\chi(k)\)</span> and <spa
 <section id="the-autobk-algorithm">
 <h2><span class="section-number">14.4.2. </span>The AUTOBK Algorithm<a class="headerlink" href="#the-autobk-algorithm" title="Link to this heading">¶</a></h2>
 <p>The background subtraction method used is the <strong>AUTOBK</strong> algorithm
-(see <span id="id1">[<a class="reference internal" href="bibliography.html#id22" title="M. Newville, P. Livins, Y. Yacoby, J. J. Rehr, and E. A. Stern. Near-edge x-ray-absorption fine structure of Pb: A comparison of theory and experiment. Physical Review B, 47(21):14126–14131, 1993. doi:10.1103/PhysRevB.47.14126.">Newville et al. (1993)</a>]</span>), in which a spline function is matched to the
+(see <span class="bibtex-citation" id="id1">[<a class="reference internal" href="bibliography.html#id22" title="M. Newville, P. Livins, Y. Yacoby, J. J. Rehr, and E. A. Stern. Near-edge x-ray-absorption fine structure of Pb: A comparison of theory and experiment. Physical Review B, 47(21):14126–14131, 1993. doi:10.1103/PhysRevB.47.14126.">Newville et al. (1993)</a>]</span>), in which a spline function is matched to the
 low-<em>R</em> components of the resulting <span class="math notranslate nohighlight">\(\chi(k)\)</span>.</p>
 <p>For reference, <span class="math notranslate nohighlight">\(k = \sqrt{2m_e (E-E_0)/\hbar^2}\)</span> is the wavenumber of
 the ejected photo-electron, where <span class="math notranslate nohighlight">\(E_0\)</span> is the absorption threshold
@@ -495,23 +444,24 @@ using all the default inputs would be:</p>
 </pre></div>
 </div>
 <p>with the resulting outputs looking like this:</p>
-<div class="figure compound align-center" id="fig-xafs2">
-<figure class="align-center" id="id3">
-<span id="fig-xafs2a"></span><a class="reference external image-reference" href="_images/xafs_autobk1a.png"><img alt="_images/xafs_autobk1a.png" src="_images/xafs_autobk1a.png" style="width: 100%;" />
+<figure class="sphinx-subfigure align-default" id="fig-xafs2">
+<div class="sphinx-subfigure-grid ss-layout-default-AB" style="display: grid; gap: 8px; grid-gap: 8px;">
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: A;">
+<a class="reference internal image-reference" href="_images/xafs_autobk1a.png"><img alt="_images/xafs_autobk1a.png" src="_images/xafs_autobk1a.png" style="width: 100%;" />
 </a>
+</div>
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: B;">
+<a class="reference internal image-reference" href="_images/xafs_autobk1b.png"><img alt="_images/xafs_autobk1b.png" src="_images/xafs_autobk1b.png" style="width: 100%;" />
+</a>
+</div>
+</div>
 <figcaption>
-<p><span class="caption-number">Figure 14.4.3.1 </span><span class="caption-text"><span class="math notranslate nohighlight">\(\mu(E)\)</span> and background <span class="math notranslate nohighlight">\(\mu_0(E)\)</span></span><a class="headerlink" href="#id3" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Figure 14.4.3.1 </span><span class="caption-text">Example of simple usage of <a class="reference internal" href="#autobk" title="autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> for Cu metal. Left:
+<span class="math notranslate nohighlight">\(\mu(E)\)</span> and background <span class="math notranslate nohighlight">\(\mu_0(E)\)</span>, Right: resulting
+<span class="math notranslate nohighlight">\(k\chi(k)\)</span></span><a class="headerlink" href="#fig-xafs2" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
-<figure class="align-center" id="id4">
-<span id="fig-xafs2b"></span><a class="reference external image-reference" href="_images/xafs_autobk1b.png"><img alt="_images/xafs_autobk1b.png" src="_images/xafs_autobk1b.png" style="width: 100%;" />
-</a>
-<figcaption>
-<p><span class="caption-number">Figure 14.4.3.2 </span><span class="caption-text">resulting <span class="math notranslate nohighlight">\(k\chi(k)\)</span></span><a class="headerlink" href="#id4" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
-<p><span class="caption-text">Example of simple usage of <a class="reference internal" href="#autobk" title="autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> for Cu metal.</span></p>
-</div><p id="fig-xafs2">Thus demonstrating that we can process data on Cu metal.</p>
+<p>Thus demonstrating that we can process data on Cu metal.</p>
 <p>For a slightly more challenging example, we try the As K-edge of scorodite
 (<span class="math notranslate nohighlight">\(\rm FeAsO4 \cdot (nH_2O)\)</span>).  Here, we start by reading in data and
 constructing <span class="math notranslate nohighlight">\(\mu(E)\)</span>, then run <a class="reference internal" href="#autobk" title="autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a>.  We take most of the
@@ -534,17 +484,22 @@ here to demonstrate the method for passing arguments to <a class="reference inte
 </pre></div>
 </div>
 <p>The resulting outputs looks OK:</p>
-<div class="figure compound align-center" id="fig-xafs3">
-<figure class="align-default" id="fig-xafs3a">
-<a class="reference external image-reference" href="_images/xafs_autobk2a.png"><img alt="_images/xafs_autobk2a.png" src="_images/xafs_autobk2a.png" style="width: 100%;" />
+<figure class="sphinx-subfigure align-default" id="fig-xafs3">
+<div class="sphinx-subfigure-grid ss-layout-default-AB" style="display: grid; gap: 8px; grid-gap: 8px;">
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: A;">
+<a class="reference internal image-reference" href="_images/xafs_autobk2a.png"><img alt="_images/xafs_autobk2a.png" src="_images/xafs_autobk2a.png" style="width: 100%;" />
 </a>
-</figure>
-<figure class="align-default" id="fig-xafs3b">
-<a class="reference external image-reference" href="_images/xafs_autobk2b.png"><img alt="_images/xafs_autobk2b.png" src="_images/xafs_autobk2b.png" style="width: 100%;" />
+</div>
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: B;">
+<a class="reference internal image-reference" href="_images/xafs_autobk2b.png"><img alt="_images/xafs_autobk2b.png" src="_images/xafs_autobk2b.png" style="width: 100%;" />
 </a>
+</div>
+</div>
+<figcaption>
+<p><span class="caption-number">Figure 14.4.3.2 </span><span class="caption-text">Example usage of <a class="reference internal" href="#autobk" title="autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> for <span class="math notranslate nohighlight">\(\rm FeAsO4 \cdot (nH_2O)\)</span>.</span><a class="headerlink" href="#fig-xafs3" title="Link to this image">¶</a></p>
+</figcaption>
 </figure>
-<p><span class="caption-text">Example usage of <a class="reference internal" href="#autobk" title="autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> for <span class="math notranslate nohighlight">\(\rm FeAsO4 \cdot (nH_2O)\)</span>.</span></p>
-</div><p id="fig-xafs3">A close examimation of <span class="math notranslate nohighlight">\(k^2\chi(k)\)</span> suggests we might be able to do
+<p>A close examimation of <span class="math notranslate nohighlight">\(k^2\chi(k)\)</span> suggests we might be able to do
 better, which brings us to the next section.</p>
 </section>
 <section id="adjusting-spline-clamps">
@@ -582,11 +537,11 @@ clamp:</p>
 </pre></div>
 </div>
 <p>results in the following comparison:</p>
-<figure class="align-default" id="id5">
+<figure class="align-default" id="id3">
 <span id="xafs-fig4"></span><a class="reference external image-reference" href="_images/xafs_autobk3.png"><img alt="_images/xafs_autobk3.png" src="_images/xafs_autobk3.png" style="width: 65%;" />
 </a>
 <figcaption>
-<p><span class="caption-number">Figure 14.4.3.3 </span><span class="caption-text">Influence of spline clamps of <span class="math notranslate nohighlight">\(\chi(k)\)</span></span><a class="headerlink" href="#id5" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Figure 14.4.3.3 </span><span class="caption-text">Influence of spline clamps of <span class="math notranslate nohighlight">\(\chi(k)\)</span></span><a class="headerlink" href="#id3" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </section>
@@ -633,6 +588,64 @@ function.</p>
           </div>
         </div>
       </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">14.4. XAFS: Post-edge Background Subtraction</a><ul>
+<li><a class="reference internal" href="#the-autobk-function">14.4.1. The <code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code> function</a><ul>
+<li><a class="reference internal" href="#autobk"><code class="docutils literal notranslate"><span class="pre">autobk()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#the-autobk-algorithm">14.4.2. The AUTOBK Algorithm</a><ul>
+<li><a class="reference internal" href="#r-rm-bkg-and-spline-for-mu-0-e">14.4.2.1. <span class="math notranslate nohighlight">\(R_{\rm bkg}\)</span> and spline for <span class="math notranslate nohighlight">\(\mu_0(E)\)</span></a></li>
+<li><a class="reference internal" href="#selecting-fourier-transform-parameters">14.4.2.2. Selecting Fourier transform parameters</a></li>
+<li><a class="reference internal" href="#using-a-standard-chi-k">14.4.2.3. Using a standard <span class="math notranslate nohighlight">\(\chi(k)\)</span></a></li>
+<li><a class="reference internal" href="#end-point-clamps-for-the-spline">14.4.2.4. End-point clamps for the spline</a></li>
+<li><a class="reference internal" href="#recommendations">14.4.2.5. Recommendations</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#examples">14.4.3. Examples</a><ul>
+<li><a class="reference internal" href="#basic-example">14.4.3.1. Basic example</a></li>
+<li><a class="reference internal" href="#adjusting-spline-clamps">14.4.3.2. Adjusting spline clamps</a></li>
+<li><a class="reference internal" href="#id2">14.4.3.3. Using a Standard <span class="math notranslate nohighlight">\(\chi(k)\)</span></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="xafs_xanes.html"
+                          title="previous chapter"><span class="section-number">14.3. </span>XANES Analysis:  Linear Methods, Pre-edge Peak Fitting</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="xafs_fourier.html"
+                          title="next chapter"><span class="section-number">14.5. </span>XAFS: Fourier Transforms for XAFS</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/xafs_autobk.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
       <div class="clearer"></div>
     </div>
     <div class="related" role="navigation" aria-label="Related">
@@ -641,6 +654,9 @@ function.</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="xafs_fourier.html" title="14.5. XAFS: Fourier Transforms for XAFS"
              >next</a> |</li>
@@ -652,6 +668,7 @@ function.</p>
    <li><a href="xafs.html">XAFS Analysis</a>|</li>
    <li><a href="xray.html">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
 
           <li class="nav-item nav-item-1"><a href="xafs.html" ><span class="section-number">14. </span>XAFS Analysis</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><span class="section-number">14.4. </span>XAFS: Post-edge Background Subtraction</a></li> 

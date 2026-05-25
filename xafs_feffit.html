@@ -8,8 +8,9 @@
 
     <title>14.8. XAFS: Fitting XAFS to Feff Paths &#8212; xraylarch 2026.2.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
+    <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/xraylarch_style.css?v=f3581a04" />
     
     <script src="_static/documentation_options.js?v=2b694ea4"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
@@ -17,32 +18,30 @@
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
-    
+    <script src="_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="14.9. XAFS: Computing anomalous scattering factors from XAFS data" href="xafs_diffkk.html" />
     <link rel="prev" title="14.7. XAFS: Reading and using Feff Paths" href="xafs_feffpaths.html" />
-
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
 <script type="text/x-mathjax-config">
    MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
 </script>
 
-
   </head><body>
-<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<div style=" background-color: #c5daba;  text-align: left; height:60px; padding: 0px">
 <table border=0>
   <tr>
     <td width=20%>
-	<a href="index.html">
-	 <img src="_static/larchcones.png" height=50px alt="larchcones"/></a>
+        <a href="index.html">
+         <img src="_static/larchcones.png" height=55px alt="larchcones"/></a>
     </td>
     <td width=75% padding=0>
       <font size=+2>
-	<a href="index.html" style="color:#772211">
-	  Larch: Data Analysis Tools for X-ray Spectroscopy
-	</a>
+        <a href="index.html" style="color:#335">
+          Larch: Data Analysis Tools for X-ray Spectroscopy
+        </a>
       </font>
     </td>
    </tr></table>
@@ -55,6 +54,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="xafs_diffkk.html" title="14.9. XAFS: Computing anomalous scattering factors from XAFS data"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -65,84 +67,26 @@
    <li><a href="xafs.html">XAFS Analysis</a>|</li>
    <li><a href="xray.html">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
 
           <li class="nav-item nav-item-1"><a href="xafs.html" accesskey="U"><span class="section-number">14. </span>XAFS Analysis</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><span class="section-number">14.8. </span>XAFS: Fitting XAFS to Feff Paths</a></li> 
       </ul>
     </div>
-
-      <div class="sphinxsidebar" role="navigation" aria-label="Main">
-        <div class="sphinxsidebarwrapper">
-  <div>
-    <h3><a href="index.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">14.8. XAFS: Fitting XAFS to Feff Paths</a><ul>
-<li><a class="reference internal" href="#the-feffit-strategy-for-modeling-exafs-data">14.8.1. The Feffit Strategy for Modeling EXAFS Data</a></li>
-<li><a class="reference internal" href="#fit-statistics-and-goodness-of-fit-meassures-for-feffit">14.8.2. Fit statistics and goodness-of-fit meassures for <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a></li>
-<li><a class="reference internal" href="#the-feffit-functions-in-larch">14.8.3. The Feffit functions in Larch</a></li>
-<li><a class="reference internal" href="#feffit-transform-and-the-feffit-transform-group">14.8.4. <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit_transform()</span></code> and the Feffit Transform Group</a><ul>
-<li><a class="reference internal" href="#feffit_transform"><code class="docutils literal notranslate"><span class="pre">feffit_transform()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#feffit-dataset">14.8.5. <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit_dataset()</span></code></a><ul>
-<li><a class="reference internal" href="#feffit_dataset"><code class="docutils literal notranslate"><span class="pre">feffit_dataset()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#feffit">14.8.6. <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a><ul>
-<li><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">feffit()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#feffit-report">14.8.7. <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit_report()</span></code></a><ul>
-<li><a class="reference internal" href="#feffit_report"><code class="docutils literal notranslate"><span class="pre">feffit_report()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#example-1-simple-fit-with-1-path">14.8.8. Example 1: Simple fit with 1 Path</a></li>
-<li><a class="reference internal" href="#example-2-fit-1-dataset-with-3-paths">14.8.9. Example 2: Fit 1 dataset with 3 Paths</a></li>
-<li><a class="reference internal" href="#example-3-fit-3-datasets-with-1-path-each">14.8.10. Example 3: Fit 3 datasets with 1 Path each</a></li>
-<li><a class="reference internal" href="#example-4-measuring-coordination-number">14.8.11. Example 4: Measuring Coordination number</a></li>
-<li><a class="reference internal" href="#example-5-comparing-fits-in-different-fit-spaces">14.8.12. Example 5: Comparing Fits in different Fit Spaces</a></li>
-<li><a class="reference internal" href="#example-6-testing-exafs-sensitivity-to-z">14.8.13. Example 6: Testing EXAFS sensitivity to <span class="math notranslate nohighlight">\(Z\)</span></a></li>
-</ul>
-</li>
-</ul>
-
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="xafs_feffpaths.html"
-                          title="previous chapter"><span class="section-number">14.7. </span>XAFS: Reading and using Feff Paths</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="xafs_diffkk.html"
-                          title="next chapter"><span class="section-number">14.9. </span>XAFS: Computing anomalous scattering factors from XAFS data</a></p>
-  </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/xafs_feffit.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<search id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</search>
-<script>document.getElementById('searchbox').style.display = "block"</script>
-        </div>
-      </div>
+  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
+  
+<style>
+  .ss-layout-default-AB { grid-template-areas: 'A B'; }
+  .ss-layout-default-AB_CD_EF { grid-template-areas: 'A B' 'C D' 'E F'; }
+  .ss-layout-default-ABC_DEd { grid-template-areas: 'A B C' 'D E .'; }
+</style>
+<p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
 <section id="xafs-fitting-xafs-to-feff-paths">
 <h1><span class="section-number">14.8. </span>XAFS: Fitting XAFS to Feff Paths<a class="headerlink" href="#xafs-fitting-xafs-to-feff-paths" title="Link to this heading">¶</a></h1>
 <p>Fitting XAFS data with structural models based on Feff calculations is a
@@ -153,7 +97,7 @@ process, and those sections will be referenced here.</p>
 <section id="the-feffit-strategy-for-modeling-exafs-data">
 <h2><span class="section-number">14.8.1. </span>The Feffit Strategy for Modeling EXAFS Data<a class="headerlink" href="#the-feffit-strategy-for-modeling-exafs-data" title="Link to this heading">¶</a></h2>
 <p>The basic approach to modeling EXAFS data in Larch (see
-<span id="id1">[<a class="reference internal" href="bibliography.html#id51" title="M Newville. Exafs analysis using feff and feffit. Journal of Synchrotron Radiation, 8(Part 2):96-100, 2001. doi:10.1107/S0909049500016290.">Newville (2001)b</a>]</span>) is to create a model EXAFS <span class="math notranslate nohighlight">\(\chi(k)\)</span> as a
+<span class="bibtex-citation" id="id1">[<a class="reference internal" href="bibliography.html#id51" title="M Newville. Exafs analysis using feff and feffit. Journal of Synchrotron Radiation, 8(Part 2):96-100, 2001. doi:10.1107/S0909049500016290.">Newville (2001)b</a>]</span>) is to create a model EXAFS <span class="math notranslate nohighlight">\(\chi(k)\)</span> as a
 sum of scattering path&lt;s that will be compared to experimentally derived
 <span class="math notranslate nohighlight">\(\chi(k)\)</span>. The model will consist of a set of FEFF Scattering Paths
 representing the photo-electron scattering from different sets of atoms.
@@ -191,7 +135,7 @@ Nyquist as</p>
 <div class="math notranslate nohighlight">
 \[N_{\rm ind} \approx  \frac{2 \Delta k \Delta R}{\pi} + 1\]</div>
 <p>where <span class="math notranslate nohighlight">\(\Delta k\)</span> and <span class="math notranslate nohighlight">\(\Delta R\)</span> are the <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(R\)</span>
-range of the usable data under consideration.  <span id="id2">[<a class="reference internal" href="bibliography.html#id10" title="E. A. Stern. Number of relevant independent points in x-ray-absorption fine-structure spectra. Physical Review B, 48(13):9825–9827, 1993. doi:10.1103/PhysRevB.48.9825.">Stern (1993)</a>]</span>
+range of the usable data under consideration.  <span class="bibtex-citation" id="id2">[<a class="reference internal" href="bibliography.html#id10" title="E. A. Stern. Number of relevant independent points in x-ray-absorption fine-structure spectra. Physical Review B, 48(13):9825–9827, 1993. doi:10.1103/PhysRevB.48.9825.">Stern (1993)</a>]</span>
 argues convincingly that the ‘+1’ here should be ‘+2’, but we’ll remain
 conservative and keep the ‘+1’, and use this value not only for fit
 statistics but to limit the maximum number of free variables allowed in a
@@ -260,7 +204,7 @@ proper statistical treatment of the data.  For an individual spectrum, what
 can be done easily and automatically is to estimate the noise level
 assuming that the data is dominated by noise that is independent of
 <span class="math notranslate nohighlight">\(R\)</span>: white noise.  The function <a class="reference internal" href="xafs_utilities.html#estimate_noise" title="estimate_noise"><code class="xref py py-func docutils literal notranslate"><span class="pre">estimate_noise()</span></code></a> does this
-<span id="id3">[<a class="reference internal" href="bibliography.html#id8" title="M. Newville, B. Boyanov, and D. E. Sayers. Estimation of uncertainties in XAFS data. Journal of Synchrotron Radiation, 6:264–265, 1999. doi:10.1107/S0909049598018147.">Newville, Boyanov, and Sayers (1999)</a>]</span>, and the estimate derived from this method is
+<span class="bibtex-citation" id="id3">[<a class="reference internal" href="bibliography.html#id8" title="M. Newville, B. Boyanov, and D. E. Sayers. Estimation of uncertainties in XAFS data. Journal of Synchrotron Radiation, 6:264–265, 1999. doi:10.1107/S0909049598018147.">Newville, Boyanov, and Sayers (1999)</a>]</span>, and the estimate derived from this method is
 used unless you specify a value for <code class="docutils literal notranslate"><span class="pre">epsilon_k</span></code> the noise level in
 <span class="math notranslate nohighlight">\(\chi(k)\)</span>.  Though usually <span class="math notranslate nohighlight">\(\epsilon\)</span> is taken to be a scalar
 value, it can be specfied as an array (of the same length as
@@ -774,22 +718,26 @@ commands.</p>
 </pre></div>
 </div>
 <p>and generates the plots shown below</p>
-<div class="figure compound align-center" id="fig-feffit1">
-<figure class="align-default" id="id4">
-<span id="fig-feffit1a"></span><a class="reference external image-reference" href="_images/feffit_example1.png"><img alt="_images/feffit_example1.png" src="_images/feffit_example1.png" style="width: 100%;" />
+<figure class="sphinx-subfigure align-default" id="fig-feffit1">
+<div class="sphinx-subfigure-grid ss-layout-default-AB" style="display: grid; gap: 8px; grid-gap: 8px;">
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: A;">
+<a class="reference internal image-reference" href="_images/feffit_example1.png"><img alt="k space" src="_images/feffit_example1.png" style="width: 100%;" />
 </a>
+<span class="caption">k space</span>
+</div>
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: B;">
+<a class="reference internal image-reference" href="_images/feffit_example2.png"><img alt="R space" src="_images/feffit_example2.png" style="width: 100%;" />
+</a>
+<span class="caption">R space</span>
+</div>
+</div>
 <figcaption>
 <p><span class="caption-number">Figure 14.8.8.1 </span><span class="caption-text">Results for Feffit for a simple 1-shell fit to a spectrum from Cu
-metal.  Data and Fit in <span class="math notranslate nohighlight">\(k\)</span> space</span><a class="headerlink" href="#id4" title="Link to this image">¶</a></p>
+metal. Left: Data and Fit in <span class="math notranslate nohighlight">\(k\)</span> space.  Right: Data and Fit in
+<span class="math notranslate nohighlight">\(R\)</span> space</span><a class="headerlink" href="#fig-feffit1" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
-<figure class="align-default" id="fig-feffit1b">
-<a class="reference external image-reference" href="_images/feffit_example2.png"><img alt="_images/feffit_example2.png" src="_images/feffit_example2.png" style="width: 100%;" />
-</a>
-</figure>
-<p><span class="caption-text">Results for Feffit for a simple 1-shell fit to a spectrum from Cu
-metal.    Data and Fit in <span class="math notranslate nohighlight">\(R\)</span> space</span></p>
-</div><p id="fig-feffit1">This is a pretty good fit to the first shell of Cu metal, and shows the
+<p>This is a pretty good fit to the first shell of Cu metal, and shows the
 basic mechanics of fitting XAFS data to Feff Paths.  There are several
 things that might be added to this for modeling more complex XAFS data,
 including adding more paths to a fit, including multiple-scattering paths,
@@ -1021,18 +969,23 @@ vary independently for each path.</p>
 </pre></div>
 </div>
 <p>With plots of data and fits as shown below.</p>
-<div class="figure compound align-center" id="fig-feffit2">
-<figure class="align-default" id="fig-feffit2a">
-<a class="reference external image-reference" href="_images/feffit_example3.png"><img alt="_images/feffit_example3.png" src="_images/feffit_example3.png" style="width: 100%;" />
+<figure class="sphinx-subfigure align-default" id="fig-feffit2">
+<div class="sphinx-subfigure-grid ss-layout-default-AB" style="display: grid; gap: 8px; grid-gap: 8px;">
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: A;">
+<a class="reference internal image-reference" href="_images/feffit_example3.png"><img alt="_images/feffit_example3.png" src="_images/feffit_example3.png" style="width: 100%;" />
 </a>
-</figure>
-<figure class="align-default" id="fig-feffit2b">
-<a class="reference external image-reference" href="_images/feffit_example4.png"><img alt="_images/feffit_example4.png" src="_images/feffit_example4.png" style="width: 100%;" />
+</div>
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: B;">
+<a class="reference internal image-reference" href="_images/feffit_example4.png"><img alt="_images/feffit_example4.png" src="_images/feffit_example4.png" style="width: 100%;" />
 </a>
+</div>
+</div>
+<figcaption>
+<p><span class="caption-number">Figure 14.8.9.1 </span><span class="caption-text">Results for Feffit for a 3-shell fit to a spectrum from Cu metal,
+constraining all path distances to expand with a single variable.</span><a class="headerlink" href="#fig-feffit2" title="Link to this image">¶</a></p>
+</figcaption>
 </figure>
-<p><span class="caption-text">Results for Feffit for a 3-shell fit to a spectrum from Cu metal,
-constraining all path distances to expand with a single variable.</span></p>
-</div><p id="fig-feffit2">Here, we show both the magnitude and real part of <span class="math notranslate nohighlight">\(\chi(R)\)</span>.  The fit
+<p>Here, we show both the magnitude and real part of <span class="math notranslate nohighlight">\(\chi(R)\)</span>.  The fit
 to the real part shows excellent agreement over the fit <span class="math notranslate nohighlight">\(R\)</span> range of
 [1.4, 3.4] <span class="math notranslate nohighlight">\(\AA\)</span>.  It is often useful the contributions from the
 individual paths.  With the macros defined above, this is pretty
@@ -1042,19 +995,24 @@ straightforward, as we can just do:</p>
 </pre></div>
 </div>
 <p>to generate the following plots of the contributions of the different paths:</p>
-<div class="figure compound align-center" id="fig-feffit3">
-<figure class="align-default" id="fig-feffit3a">
-<a class="reference external image-reference" href="_images/feffit_example5.png"><img alt="_images/feffit_example5.png" src="_images/feffit_example5.png" style="width: 100%;" />
+<figure class="sphinx-subfigure align-default" id="fig-feffit3">
+<div class="sphinx-subfigure-grid ss-layout-default-AB" style="display: grid; gap: 8px; grid-gap: 8px;">
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: A;">
+<a class="reference internal image-reference" href="_images/feffit_example5.png"><img alt="_images/feffit_example5.png" src="_images/feffit_example5.png" style="width: 100%;" />
 </a>
-</figure>
-<figure class="align-default" id="fig-feffit3b">
-<a class="reference external image-reference" href="_images/feffit_example6.png"><img alt="_images/feffit_example6.png" src="_images/feffit_example6.png" style="width: 100%;" />
+</div>
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: B;">
+<a class="reference internal image-reference" href="_images/feffit_example6.png"><img alt="_images/feffit_example6.png" src="_images/feffit_example6.png" style="width: 100%;" />
 </a>
+</div>
+</div>
+<figcaption>
+<p><span class="caption-number">Figure 14.8.9.2 </span><span class="caption-text">Path contributions to full mode for the 3-shell fit to Cu spectrum.</span><a class="headerlink" href="#fig-feffit3" title="Link to this image">¶</a></p>
+</figcaption>
 </figure>
-<p><span class="caption-text">Path contributions to full mode for the 3-shell fit to Cu spectrum.</span></p>
-</div></section>
+</section>
 <section id="example-3-fit-3-datasets-with-1-path-each">
-<span id="fig-feffit3"></span><h2><span class="section-number">14.8.10. </span>Example 3: Fit 3 datasets with 1 Path each<a class="headerlink" href="#example-3-fit-3-datasets-with-1-path-each" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">14.8.10. </span>Example 3: Fit 3 datasets with 1 Path each<a class="headerlink" href="#example-3-fit-3-datasets-with-1-path-each" title="Link to this heading">¶</a></h2>
 <p>We’ll extend the above example by adding two more data sets.  Since the
 three data sets have some things in common, we’ll be able to use some a
 smaller number of total variable parameters for all data sets than if we
@@ -1267,52 +1225,45 @@ ignores the correlation between parameters, which is taken into account in
 the automatically derived uncertainties.  In this case, including this
 correlation significantly reduces the estimated uncertainty.</p>
 <p>The output plots for the fits to the three datasets are given below.</p>
-<div class="figure compound align-center" id="fig-feffit3temps">
-<figure class="align-default" id="id5">
-<span id="fig-feffit3temp10k"></span><a class="reference external image-reference" href="_images/feffit_3temp1.png"><img alt="_images/feffit_3temp1.png" src="_images/feffit_3temp1.png" style="width: 100%;" />
+<figure class="sphinx-subfigure align-default" id="fig-feffit3temps">
+<div class="sphinx-subfigure-grid ss-layout-default-AB_CD_EF" style="display: grid; gap: 8px; grid-gap: 8px;">
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: A;">
+<a class="reference internal image-reference" href="_images/feffit_3temp1.png"><img alt="10 K, k-space" src="_images/feffit_3temp1.png" style="width: 100%;" />
 </a>
+<span class="caption">10 K, k-space</span>
+</div>
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: B;">
+<a class="reference internal image-reference" href="_images/feffit_3temp2.png"><img alt="10 K, R-space" src="_images/feffit_3temp2.png" style="width: 100%;" />
+</a>
+<span class="caption">10 K, R-space</span>
+</div>
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: C;">
+<a class="reference internal image-reference" href="_images/feffit_3temp3.png"><img alt="50 K, k-space" src="_images/feffit_3temp3.png" style="width: 100%;" />
+</a>
+<span class="caption">50 K, k-space</span>
+</div>
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: D;">
+<a class="reference internal image-reference" href="_images/feffit_3temp4.png"><img alt="50 K, R-space" src="_images/feffit_3temp4.png" style="width: 100%;" />
+</a>
+<span class="caption">50 K, R-space</span>
+</div>
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: E;">
+<a class="reference internal image-reference" href="_images/feffit_3temp5.png"><img alt="150 K, k-space" src="_images/feffit_3temp5.png" style="width: 100%;" />
+</a>
+<span class="caption">150 K, k-space</span>
+</div>
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: F;">
+<a class="reference internal image-reference" href="_images/feffit_3temp6.png"><img alt="150 K, R-space" src="_images/feffit_3temp6.png" style="width: 100%;" />
+</a>
+<span class="caption">150 K, R-space</span>
+</div>
+</div>
 <figcaption>
-<p><span class="caption-number">Figure 14.8.10.1 </span><span class="caption-text">Fit to Cu <span class="math notranslate nohighlight">\(\chi(k)\)</span> at 10 K</span><a class="headerlink" href="#id5" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Figure 14.8.10.1 </span><span class="caption-text">Fit to Cu metal at 10 K, 50 K, and 150 K, from simultaneous fit to all 3
+datasets with 5 variables used.</span><a class="headerlink" href="#fig-feffit3temps" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
-<figure class="align-default" id="id6">
-<span id="fig-feffit3temp50k"></span><a class="reference external image-reference" href="_images/feffit_3temp3.png"><img alt="_images/feffit_3temp3.png" src="_images/feffit_3temp3.png" style="width: 100%;" />
-</a>
-<figcaption>
-<p><span class="caption-number">Figure 14.8.10.2 </span><span class="caption-text">Fit to Cu <span class="math notranslate nohighlight">\(\chi(k)\)</span> at 50 K</span><a class="headerlink" href="#id6" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
-<figure class="align-default" id="id7">
-<span id="fig-feffit3temp150k"></span><a class="reference external image-reference" href="_images/feffit_3temp5.png"><img alt="_images/feffit_3temp5.png" src="_images/feffit_3temp5.png" style="width: 100%;" />
-</a>
-<figcaption>
-<p><span class="caption-number">Figure 14.8.10.3 </span><span class="caption-text">Fit to Cu <span class="math notranslate nohighlight">\(\chi(k)\)</span> at 150 K</span><a class="headerlink" href="#id7" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
-<figure class="align-default" id="id8">
-<span id="fig-feffit3temp10r"></span><a class="reference external image-reference" href="_images/feffit_3temp2.png"><img alt="_images/feffit_3temp2.png" src="_images/feffit_3temp2.png" style="width: 100%;" />
-</a>
-<figcaption>
-<p><span class="caption-number">Figure 14.8.10.4 </span><span class="caption-text">Fit to Cu <span class="math notranslate nohighlight">\(\chi(R)\)</span> at 10 K</span><a class="headerlink" href="#id8" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
-<figure class="align-default" id="id9">
-<span id="fig-feffit3temp50r"></span><a class="reference external image-reference" href="_images/feffit_3temp4.png"><img alt="_images/feffit_3temp4.png" src="_images/feffit_3temp4.png" style="width: 100%;" />
-</a>
-<figcaption>
-<p><span class="caption-number">Figure 14.8.10.5 </span><span class="caption-text">Fit to Cu <span class="math notranslate nohighlight">\(\chi(R)\)</span> at 50 K</span><a class="headerlink" href="#id9" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
-<figure class="align-default" id="id10">
-<span id="fig-feffit3temp150r"></span><a class="reference external image-reference" href="_images/feffit_3temp6.png"><img alt="_images/feffit_3temp6.png" src="_images/feffit_3temp6.png" style="width: 100%;" />
-</a>
-<figcaption>
-<p><span class="caption-number">Figure 14.8.10.6 </span><span class="caption-text">Fit to Cu <span class="math notranslate nohighlight">\(\chi(R)\)</span> at 150 K</span><a class="headerlink" href="#id10" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
-<p><span class="caption-text">Fit to Cu metal at 10 K, 50 K, and 150 K, from simultaneous fit to all
-3 datasets with 5 variables used.</span></p>
-</div><p id="fig-feffit3temps">Again, in the interest of brevity and consistency through this chapter,
+<p>Again, in the interest of brevity and consistency through this chapter,
 these example are deliberately simple and meant to be illustrative of the
 capabilities and procedures and should not be viewed as limiting the types
 of problems that can be modeled.</p>
@@ -1470,24 +1421,26 @@ used in the fit.</p>
 </pre></div>
 </div>
 <p>with plots:</p>
-<div class="figure compound align-center" id="fig-feffit-feo">
-<figure class="align-default" id="id11">
-<span id="fig-feffit-feo-a"></span><a class="reference external image-reference" href="_images/feffit_feo_k.png"><img alt="_images/feffit_feo_k.png" src="_images/feffit_feo_k.png" style="width: 100%;" />
+<figure class="sphinx-subfigure align-default" id="fig-feffit-feo">
+<div class="sphinx-subfigure-grid ss-layout-default-AB" style="display: grid; gap: 8px; grid-gap: 8px;">
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: A;">
+<a class="reference internal image-reference" href="_images/feffit_feo_k.png"><img alt="k-space" src="_images/feffit_feo_k.png" style="width: 100%;" />
 </a>
+<span class="caption">k-space</span>
+</div>
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: B;">
+<a class="reference internal image-reference" href="_images/feffit_feo_r.png"><img alt="R-space" src="_images/feffit_feo_r.png" style="width: 100%;" />
+</a>
+<span class="caption">R-space</span>
+</div>
+</div>
 <figcaption>
-<p><span class="caption-number">Figure 14.8.11.1 </span><span class="caption-text">Fits to 2-path fit to FeO EXAFS, <span class="math notranslate nohighlight">\(k\)</span> space</span><a class="headerlink" href="#id11" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Figure 14.8.11.1 </span><span class="caption-text">Fits to 2-path fit to FeO EXAFS</span><a class="headerlink" href="#fig-feffit-feo" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
-<figure class="align-default" id="id12">
-<span id="fig-feffit-feo-b"></span><a class="reference external image-reference" href="_images/feffit_feo_r.png"><img alt="_images/feffit_feo_r.png" src="_images/feffit_feo_r.png" style="width: 100%;" />
-</a>
-<figcaption>
-<p><span class="caption-number">Figure 14.8.11.2 </span><span class="caption-text">Fits to 2-path fit to FeO EXAFS, <span class="math notranslate nohighlight">\(R\)</span> space</span><a class="headerlink" href="#id12" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
-</div></section>
+</section>
 <section id="example-5-comparing-fits-in-different-fit-spaces">
-<span id="fig-feffit-feo"></span><h2><span class="section-number">14.8.12. </span>Example 5: Comparing Fits in different Fit Spaces<a class="headerlink" href="#example-5-comparing-fits-in-different-fit-spaces" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">14.8.12. </span>Example 5: Comparing Fits in different Fit Spaces<a class="headerlink" href="#example-5-comparing-fits-in-different-fit-spaces" title="Link to this heading">¶</a></h2>
 <p>We now turn to comparing fits in unfiltered k-space, R-space, and filter
 k-space (or “q space”).  This is partly to illustrate the preference for
 using R- or q-space for fitting, and partly to demonstrate how one can run
@@ -1737,11 +1690,11 @@ to better determine both <span class="math notranslate nohighlight">\(R\)</span>
 is a little more complex than what we’ve seen above, using many feature of
 the Larch scripting language to do repeated fits and mathematically
 manipulating the arrays of data.</p>
-<figure class="align-center" id="id13">
+<figure class="align-center" id="id4">
 <span id="fig-znse-xafs"></span><a class="reference external image-reference" href="_images/Feffit_ZnSe_Data.png"><img alt="_images/Feffit_ZnSe_Data.png" src="_images/Feffit_ZnSe_Data.png" style="width: 65%;" />
 </a>
 <figcaption>
-<p><span class="caption-number">Figure 14.8.13.1 </span><span class="caption-text">Zn K-edge XAFS data for ZnSe.</span><a class="headerlink" href="#id13" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Figure 14.8.13.1 </span><span class="caption-text">Zn K-edge XAFS data for ZnSe.</span><a class="headerlink" href="#id4" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>For this example, we’ll use Zn K-edge data of ZnSe, with <span class="math notranslate nohighlight">\(\chi(k)\)</span>
@@ -2029,43 +1982,39 @@ might lead us to suspect a trend in the opposite direction.  The confounding
 factor here is <span class="math notranslate nohighlight">\(\sigma^2\)</span> – if we fix <span class="math notranslate nohighlight">\(\sigma^2\)</span> to 0.006 (by
 changing <code class="docutils literal notranslate"><span class="pre">vary=True</span></code> to <code class="docutils literal notranslate"><span class="pre">vary=False</span></code>) and re-run the fits, <span class="math notranslate nohighlight">\(S_0^2\)</span>
 has a slight negative dependence on <span class="math notranslate nohighlight">\(Z\)</span>.</p>
-<div class="figure compound align-center" id="fig-feffit-znse2">
-<figure class="align-default" id="id14">
-<span id="fig-znse-fit-zn"></span><a class="reference external image-reference" href="_images/Feffit_ZnSe_Zn.png"><img alt="_images/Feffit_ZnSe_Zn.png" src="_images/Feffit_ZnSe_Zn.png" style="width: 100%;" />
+<figure class="sphinx-subfigure align-default" id="fig-feffit-znse">
+<div class="sphinx-subfigure-grid ss-layout-default-ABC_DEd" style="display: grid; gap: 8px; grid-gap: 8px;">
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: A;">
+<a class="reference internal image-reference" href="_images/Feffit_ZnSe_Zn.png"><img alt="Zn" src="_images/Feffit_ZnSe_Zn.png" style="width: 100%;" />
 </a>
+<span class="caption">Zn</span>
+</div>
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: B;">
+<a class="reference internal image-reference" href="_images/Feffit_ZnSe_Ge.png"><img alt="Ge" src="_images/Feffit_ZnSe_Ge.png" style="width: 100%;" />
+</a>
+<span class="caption">Ge</span>
+</div>
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: C;">
+<a class="reference internal image-reference" href="_images/Feffit_ZnSe_Se.png"><img alt="Se" src="_images/Feffit_ZnSe_Se.png" style="width: 100%;" />
+</a>
+<span class="caption">Se</span>
+</div>
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: D;">
+<a class="reference internal image-reference" href="_images/Feffit_ZnSe_Br.png"><img alt="Br" src="_images/Feffit_ZnSe_Br.png" style="width: 100%;" />
+</a>
+<span class="caption">Br</span>
+</div>
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: E;">
+<a class="reference internal image-reference" href="_images/Feffit_ZnSe_Rb.png"><img alt="Rb" src="_images/Feffit_ZnSe_Rb.png" style="width: 100%;" />
+</a>
+<span class="caption">Rb</span>
+</div>
+</div>
 <figcaption>
-<p><span class="caption-number">Figure 14.8.13.2 </span><span class="caption-text">Fit to ZnSe with Zn back-scatterer</span><a class="headerlink" href="#id14" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Figure 14.8.13.2 </span><span class="caption-text">Fits to Zn K-edge of ZnSe with various atoms as the back-scatterer.</span><a class="headerlink" href="#fig-feffit-znse" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
-<figure class="align-default" id="id15">
-<span id="fig-znse-fit-ge"></span><a class="reference external image-reference" href="_images/Feffit_ZnSe_Ge.png"><img alt="_images/Feffit_ZnSe_Ge.png" src="_images/Feffit_ZnSe_Ge.png" style="width: 100%;" />
-</a>
-<figcaption>
-<p><span class="caption-number">Figure 14.8.13.3 </span><span class="caption-text">Fit to ZnSe with Ge back-scatterer</span><a class="headerlink" href="#id15" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
-<figure class="align-default" id="id16">
-<span id="fig-znse-fit-se"></span><a class="reference external image-reference" href="_images/Feffit_ZnSe_Se.png"><img alt="_images/Feffit_ZnSe_Se.png" src="_images/Feffit_ZnSe_Se.png" style="width: 100%;" />
-</a>
-<figcaption>
-<p><span class="caption-number">Figure 14.8.13.4 </span><span class="caption-text">Fit to ZnSe with Se back-scatterer</span><a class="headerlink" href="#id16" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
-<figure class="align-default" id="id17">
-<span id="fig-znse-fit-br"></span><a class="reference external image-reference" href="_images/Feffit_ZnSe_Br.png"><img alt="_images/Feffit_ZnSe_Br.png" src="_images/Feffit_ZnSe_Br.png" style="width: 100%;" />
-</a>
-<figcaption>
-<p><span class="caption-number">Figure 14.8.13.5 </span><span class="caption-text">Fit to ZnSe with Br back-scatterer</span><a class="headerlink" href="#id17" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
-<figure class="align-default" id="id18">
-<span id="fig-znse-fit-rb"></span><a class="reference external image-reference" href="_images/Feffit_ZnSe_Rb.png"><img alt="_images/Feffit_ZnSe_Rb.png" src="_images/Feffit_ZnSe_Rb.png" style="width: 100%;" />
-</a>
-<figcaption>
-<p><span class="caption-number">Figure 14.8.13.6 </span><span class="caption-text">Fit to ZnSe with Rb back-scatterer</span><a class="headerlink" href="#id18" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
-<span class="target" id="fig-feffit-znse2"></span></div><p id="index-5">The figures also show <strong>phase-corrected</strong> Fourier transforms using the total
+<p id="index-5">The figures also show <strong>phase-corrected</strong> Fourier transforms using the total
 scattering phase from the Feff calculation to correct the data.  This
 correction is done in the <code class="docutils literal notranslate"><span class="pre">phase_correct()</span></code> procedure, where the data from
 the <em>feffNNNN.dat</em> file (in the <code class="docutils literal notranslate"><span class="pre">_feffdat</span></code> group) is used to construct the
@@ -2074,24 +2023,24 @@ Feff phase shift (<span class="math notranslate nohighlight">\(\delta(k)\)</span
 complex math, we use the <a class="reference internal" href="xafs_fourier.html#xftf_fast" title="xftf_fast"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf_fast()</span></code></a> function to the complex Fourier
 transform and build the magnitude of the transform explicitly.</p>
 <p>The phase corrected transforms are shown in black in
-<a class="reference internal" href="#fig-znse-fit-zn"><span class="std std-numref">Figure 14.8.13.2</span></a> through <a class="reference internal" href="#fig-znse-fit-rb"><span class="std std-numref">Figure 14.8.13.6</span></a>, and show the
-key benefit of these transforms – the peak in the phase corrected
-<span class="math notranslate nohighlight">\(\chi(R)\)</span> peaks much closer to an <span class="math notranslate nohighlight">\(R\)</span> that is the bond distance
-(for Zn-Se, around 2.45 <span class="math notranslate nohighlight">\(\rm\AA\)</span>), whereas the normal XAFS Fourier
-transform peaks much lower.  This suggests a further test on whether the
-bond distance and <span class="math notranslate nohighlight">\(Z\)</span> of the scattering atom are correct.  That is,
-in order for the phase-correction to give the correct interatomic distance,
-the total phase-shift has to be correct, which means that the <span class="math notranslate nohighlight">\(Z\)</span> for
-the scatterer has to be correct (see the EXAFS Equation in Section
+<a class="reference internal" href="#fig-feffit-znse"><span class="std std-numref">Figure 14.8.13.2</span></a>, and show the key benefit of these transforms –
+the peak in the phase corrected <span class="math notranslate nohighlight">\(\chi(R)\)</span> peaks much closer to an
+<span class="math notranslate nohighlight">\(R\)</span> that is the bond distance (for Zn-Se, around 2.45
+<span class="math notranslate nohighlight">\(\rm\AA\)</span>), whereas the normal XAFS Fourier transform peaks much
+lower.  This suggests a further test on whether the bond distance and
+<span class="math notranslate nohighlight">\(Z\)</span> of the scattering atom are correct.  That is, in order for the
+phase-correction to give the correct interatomic distance, the total
+phase-shift has to be correct, which means that the <span class="math notranslate nohighlight">\(Z\)</span> for the
+scatterer has to be correct (see the EXAFS Equation in Section
 <a class="reference internal" href="xafs_feffpaths.html#xafs-exafsequation-sec"><span class="std std-ref">The EXAFS Equation using Feff and FeffPath Groups</span></a>).  So, we can compare the refined distance
 with the peak in the phase-corrected transform – if they agree, it gives
 good confidence that the scatterer is correct.</p>
 <p>Since the spacing of points in <span class="math notranslate nohighlight">\(R\)</span> is <span class="math notranslate nohighlight">\(\sim 0.03\rm\AA\)</span>, using
 the peak position may not be accurate enough.  Instead, we can use the
 value where <span class="math notranslate nohighlight">\(\rm Im[\chi(R)_{\rm{ph cor}}]\)</span> passes through zero (see
-dashed lines in <a class="reference internal" href="#fig-znse-fit-zn"><span class="std std-numref">Figure 14.8.13.2</span></a> through
-<a class="reference internal" href="#fig-znse-fit-rb"><span class="std std-numref">Figure 14.8.13.6</span></a>).  These values are reported in the <a class="reference internal" href="#xafs-feffit-znse-results"><span class="std std-ref">Table
-of ZnSe Results</span></a> as <span class="math notranslate nohighlight">\(R_{\rm{phcor}}\)</span>.</p>
+dashed lines in <a class="reference internal" href="#fig-feffit-znse"><span class="std std-numref">Figure 14.8.13.2</span></a> These values are reported in the
+<a class="reference internal" href="#xafs-feffit-znse-results"><span class="std std-ref">Table of ZnSe Results</span></a> as
+<span class="math notranslate nohighlight">\(R_{\rm{phcor}}\)</span>.</p>
 <p>We see an interesting trend that while the refined distance <em>decreases</em> with
 <span class="math notranslate nohighlight">\(Z\)</span>, the value for <span class="math notranslate nohighlight">\(R_{\rm{phcor}}\)</span> increases slightly.  The two
 values cross between Ge and Se.  This is pretty good agreement, especially
@@ -2115,6 +2064,71 @@ powerful, and give increased confidence in the refined structure.</p>
           </div>
         </div>
       </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">14.8. XAFS: Fitting XAFS to Feff Paths</a><ul>
+<li><a class="reference internal" href="#the-feffit-strategy-for-modeling-exafs-data">14.8.1. The Feffit Strategy for Modeling EXAFS Data</a></li>
+<li><a class="reference internal" href="#fit-statistics-and-goodness-of-fit-meassures-for-feffit">14.8.2. Fit statistics and goodness-of-fit meassures for <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a></li>
+<li><a class="reference internal" href="#the-feffit-functions-in-larch">14.8.3. The Feffit functions in Larch</a></li>
+<li><a class="reference internal" href="#feffit-transform-and-the-feffit-transform-group">14.8.4. <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit_transform()</span></code> and the Feffit Transform Group</a><ul>
+<li><a class="reference internal" href="#feffit_transform"><code class="docutils literal notranslate"><span class="pre">feffit_transform()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#feffit-dataset">14.8.5. <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit_dataset()</span></code></a><ul>
+<li><a class="reference internal" href="#feffit_dataset"><code class="docutils literal notranslate"><span class="pre">feffit_dataset()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#feffit">14.8.6. <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a><ul>
+<li><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">feffit()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#feffit-report">14.8.7. <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit_report()</span></code></a><ul>
+<li><a class="reference internal" href="#feffit_report"><code class="docutils literal notranslate"><span class="pre">feffit_report()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#example-1-simple-fit-with-1-path">14.8.8. Example 1: Simple fit with 1 Path</a></li>
+<li><a class="reference internal" href="#example-2-fit-1-dataset-with-3-paths">14.8.9. Example 2: Fit 1 dataset with 3 Paths</a></li>
+<li><a class="reference internal" href="#example-3-fit-3-datasets-with-1-path-each">14.8.10. Example 3: Fit 3 datasets with 1 Path each</a></li>
+<li><a class="reference internal" href="#example-4-measuring-coordination-number">14.8.11. Example 4: Measuring Coordination number</a></li>
+<li><a class="reference internal" href="#example-5-comparing-fits-in-different-fit-spaces">14.8.12. Example 5: Comparing Fits in different Fit Spaces</a></li>
+<li><a class="reference internal" href="#example-6-testing-exafs-sensitivity-to-z">14.8.13. Example 6: Testing EXAFS sensitivity to <span class="math notranslate nohighlight">\(Z\)</span></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="xafs_feffpaths.html"
+                          title="previous chapter"><span class="section-number">14.7. </span>XAFS: Reading and using Feff Paths</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="xafs_diffkk.html"
+                          title="next chapter"><span class="section-number">14.9. </span>XAFS: Computing anomalous scattering factors from XAFS data</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/xafs_feffit.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
       <div class="clearer"></div>
     </div>
     <div class="related" role="navigation" aria-label="Related">
@@ -2123,6 +2137,9 @@ powerful, and give increased confidence in the refined structure.</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="xafs_diffkk.html" title="14.9. XAFS: Computing anomalous scattering factors from XAFS data"
              >next</a> |</li>
@@ -2134,6 +2151,7 @@ powerful, and give increased confidence in the refined structure.</p>
    <li><a href="xafs.html">XAFS Analysis</a>|</li>
    <li><a href="xray.html">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
 
           <li class="nav-item nav-item-1"><a href="xafs.html" ><span class="section-number">14. </span>XAFS Analysis</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><span class="section-number">14.8. </span>XAFS: Fitting XAFS to Feff Paths</a></li> 

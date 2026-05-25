@@ -8,40 +8,39 @@
 
     <title>9. Programming with Larch from Python &#8212; xraylarch 2026.2.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
+    <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/xraylarch_style.css?v=f3581a04" />
     
     <script src="_static/documentation_options.js?v=2b694ea4"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
-    
+    <script src="_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="10. Larch Macro Language Tutorial" href="larchlang.html" />
     <link rel="prev" title="8. QtRIXS" href="qtrixs.html" />
-
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
 <script type="text/x-mathjax-config">
    MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
 </script>
 
-
   </head><body>
-<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<div style=" background-color: #c5daba;  text-align: left; height:60px; padding: 0px">
 <table border=0>
   <tr>
     <td width=20%>
-	<a href="index.html">
-	 <img src="_static/larchcones.png" height=50px alt="larchcones"/></a>
+        <a href="index.html">
+         <img src="_static/larchcones.png" height=55px alt="larchcones"/></a>
     </td>
     <td width=75% padding=0>
       <font size=+2>
-	<a href="index.html" style="color:#772211">
-	  Larch: Data Analysis Tools for X-ray Spectroscopy
-	</a>
+        <a href="index.html" style="color:#335">
+          Larch: Data Analysis Tools for X-ray Spectroscopy
+        </a>
       </font>
     </td>
    </tr></table>
@@ -54,6 +53,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="larchlang.html" title="10. Larch Macro Language Tutorial"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -64,78 +66,12 @@
    <li><a href="xafs.html">XAFS Analysis</a>|</li>
    <li><a href="xray.html">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
 
         <li class="nav-item nav-item-this"><a href=""><span class="section-number">9. </span>Programming with Larch from Python</a></li> 
       </ul>
     </div>
-
-      <div class="sphinxsidebar" role="navigation" aria-label="Main">
-        <div class="sphinxsidebarwrapper">
-  <div>
-    <h3><a href="index.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">9. Programming with Larch from Python</a><ul>
-<li><a class="reference internal" href="#creating-and-using-a-larch-interpreter-in-python">9.1. creating and using a larch interpreter in Python</a></li>
-<li><a class="reference internal" href="#the-larch-group">9.2. The Larch <cite>Group</cite></a></li>
-<li><a class="reference internal" href="#the-optional-larch-argument">9.3. The optional <cite>_larch</cite> argument</a></li>
-<li><a class="reference internal" href="#converting-larch-code-into-python">9.4. Converting “Larch code” into Python</a></li>
-<li><a class="reference internal" href="#larch-submodules">9.5. Larch submodules</a><ul>
-<li><a class="reference internal" href="#top-level-larch">9.5.1. Top-level <cite>larch</cite></a><ul>
-<li><a class="reference internal" href="#Interpreter"><code class="docutils literal notranslate"><span class="pre">Interpreter</span></code></a></li>
-<li><a class="reference internal" href="#Group"><code class="docutils literal notranslate"><span class="pre">Group</span></code></a></li>
-<li><a class="reference internal" href="#site_config"><code class="docutils literal notranslate"><span class="pre">site_config</span></code></a></li>
-<li><a class="reference internal" href="#is_from_python"><code class="docutils literal notranslate"><span class="pre">is_from_python</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#larch-io">9.5.2. <cite>larch.io</cite></a></li>
-<li><a class="reference internal" href="#larch-xafs">9.5.3. <cite>larch.xafs</cite></a></li>
-<li><a class="reference internal" href="#larch-xray">9.5.4. <cite>larch.xray</cite></a></li>
-<li><a class="reference internal" href="#larch-xrf">9.5.5. <cite>larch.xrf</cite></a></li>
-<li><a class="reference internal" href="#larch-xrd">9.5.6. <cite>larch.xrd</cite></a></li>
-<li><a class="reference internal" href="#larch-xrmmap">9.5.7. <cite>larch.xrmmap</cite></a></li>
-<li><a class="reference internal" href="#larch-fitting">9.5.8. <cite>larch.fitting</cite></a></li>
-<li><a class="reference internal" href="#larch-math">9.5.9. <cite>larch.math</cite></a></li>
-<li><a class="reference internal" href="#larch-utils">9.5.10. <cite>larch.utils</cite></a></li>
-<li><a class="reference internal" href="#larch-epics">9.5.11. <cite>larch.epics</cite></a></li>
-<li><a class="reference internal" href="#larch-xmlrpc-server">9.5.12. <cite>larch.xmlrpc_server</cite></a></li>
-<li><a class="reference internal" href="#larch-shell">9.5.13. <cite>larch.shell</cite></a></li>
-<li><a class="reference internal" href="#larch-wxlib">9.5.14. <cite>larch.wxlib</cite></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="qtrixs.html"
-                          title="previous chapter"><span class="section-number">8. </span>QtRIXS</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="larchlang.html"
-                          title="next chapter"><span class="section-number">10. </span>Larch Macro Language Tutorial</a></p>
-  </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/python.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<search id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</search>
-<script>document.getElementById('searchbox').style.display = "block"</script>
-        </div>
-      </div>
+  
 
     <div class="document">
       <div class="documentwrapper">
@@ -458,6 +394,73 @@ recommend using <a class="reference external" href="https://lmfit.github.io/lmfi
           </div>
         </div>
       </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">9. Programming with Larch from Python</a><ul>
+<li><a class="reference internal" href="#creating-and-using-a-larch-interpreter-in-python">9.1. creating and using a larch interpreter in Python</a></li>
+<li><a class="reference internal" href="#the-larch-group">9.2. The Larch <cite>Group</cite></a></li>
+<li><a class="reference internal" href="#the-optional-larch-argument">9.3. The optional <cite>_larch</cite> argument</a></li>
+<li><a class="reference internal" href="#converting-larch-code-into-python">9.4. Converting “Larch code” into Python</a></li>
+<li><a class="reference internal" href="#larch-submodules">9.5. Larch submodules</a><ul>
+<li><a class="reference internal" href="#top-level-larch">9.5.1. Top-level <cite>larch</cite></a><ul>
+<li><a class="reference internal" href="#Interpreter"><code class="docutils literal notranslate"><span class="pre">Interpreter</span></code></a></li>
+<li><a class="reference internal" href="#Group"><code class="docutils literal notranslate"><span class="pre">Group</span></code></a></li>
+<li><a class="reference internal" href="#site_config"><code class="docutils literal notranslate"><span class="pre">site_config</span></code></a></li>
+<li><a class="reference internal" href="#is_from_python"><code class="docutils literal notranslate"><span class="pre">is_from_python</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#larch-io">9.5.2. <cite>larch.io</cite></a></li>
+<li><a class="reference internal" href="#larch-xafs">9.5.3. <cite>larch.xafs</cite></a></li>
+<li><a class="reference internal" href="#larch-xray">9.5.4. <cite>larch.xray</cite></a></li>
+<li><a class="reference internal" href="#larch-xrf">9.5.5. <cite>larch.xrf</cite></a></li>
+<li><a class="reference internal" href="#larch-xrd">9.5.6. <cite>larch.xrd</cite></a></li>
+<li><a class="reference internal" href="#larch-xrmmap">9.5.7. <cite>larch.xrmmap</cite></a></li>
+<li><a class="reference internal" href="#larch-fitting">9.5.8. <cite>larch.fitting</cite></a></li>
+<li><a class="reference internal" href="#larch-math">9.5.9. <cite>larch.math</cite></a></li>
+<li><a class="reference internal" href="#larch-utils">9.5.10. <cite>larch.utils</cite></a></li>
+<li><a class="reference internal" href="#larch-epics">9.5.11. <cite>larch.epics</cite></a></li>
+<li><a class="reference internal" href="#larch-xmlrpc-server">9.5.12. <cite>larch.xmlrpc_server</cite></a></li>
+<li><a class="reference internal" href="#larch-shell">9.5.13. <cite>larch.shell</cite></a></li>
+<li><a class="reference internal" href="#larch-wxlib">9.5.14. <cite>larch.wxlib</cite></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="qtrixs.html"
+                          title="previous chapter"><span class="section-number">8. </span>QtRIXS</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="larchlang.html"
+                          title="next chapter"><span class="section-number">10. </span>Larch Macro Language Tutorial</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/python.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
       <div class="clearer"></div>
     </div>
     <div class="related" role="navigation" aria-label="Related">
@@ -466,6 +469,9 @@ recommend using <a class="reference external" href="https://lmfit.github.io/lmfi
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="larchlang.html" title="10. Larch Macro Language Tutorial"
              >next</a> |</li>
@@ -477,6 +483,7 @@ recommend using <a class="reference external" href="https://lmfit.github.io/lmfi
    <li><a href="xafs.html">XAFS Analysis</a>|</li>
    <li><a href="xray.html">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
 
         <li class="nav-item nav-item-this"><a href=""><span class="section-number">9. </span>Programming with Larch from Python</a></li> 
       </ul>

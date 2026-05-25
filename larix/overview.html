@@ -8,8 +8,9 @@
 
     <title>5.1. Larix Overview &#8212; xraylarch 2026.2.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css?v=dfcb3266" />
+    <link rel="stylesheet" type="text/css" href="../_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/xraylarch_style.css?v=f3581a04" />
     
     <script src="../_static/documentation_options.js?v=2b694ea4"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
@@ -17,32 +18,30 @@
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
-    
+    <script src="../_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="5.2. Reading and Saving Data into Larix" href="iodata.html" />
-    <link rel="prev" title="5. Larix (was XAS Viewer)" href="../larix.html" />
-
+    <link rel="prev" title="5. Larix" href="../larix.html" />
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
 <script type="text/x-mathjax-config">
    MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
 </script>
 
-
   </head><body>
-<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<div style=" background-color: #c5daba;  text-align: left; height:60px; padding: 0px">
 <table border=0>
   <tr>
     <td width=20%>
-	<a href="../index.html">
-	 <img src="../_static/larchcones.png" height=50px alt="larchcones"/></a>
+        <a href="../index.html">
+         <img src="../_static/larchcones.png" height=55px alt="larchcones"/></a>
     </td>
     <td width=75% padding=0>
       <font size=+2>
-	<a href="../index.html" style="color:#772211">
-	  Larch: Data Analysis Tools for X-ray Spectroscopy
-	</a>
+        <a href="../index.html" style="color:#335">
+          Larch: Data Analysis Tools for X-ray Spectroscopy
+        </a>
       </font>
     </td>
    </tr></table>
@@ -55,75 +54,26 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="iodata.html" title="5.2. Reading and Saving Data into Larix"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../larix.html" title="5. Larix (was XAS Viewer)"
+          <a href="../larix.html" title="5. Larix"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
    <li><a href="../xafs.html">XAFS Analysis</a>|</li>
    <li><a href="../xray.html">X-ray Databases</a>|</li>
    <li><a href="../xrf.html">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
 
-          <li class="nav-item nav-item-1"><a href="../larix.html" accesskey="U"><span class="section-number">5. </span>Larix (was XAS Viewer)</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../larix.html" accesskey="U"><span class="section-number">5. </span>Larix</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.1. </span>Larix Overview</a></li> 
       </ul>
     </div>
-
-      <div class="sphinxsidebar" role="navigation" aria-label="Main">
-        <div class="sphinxsidebarwrapper">
-  <div>
-    <h3><a href="../index.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">5.1. Larix Overview</a><ul>
-<li><a class="reference internal" href="#basic-layout-gui-controls-and-xas-data-management">5.1.1. Basic Layout, GUI Controls, and XAS Data Management</a><ul>
-<li><a class="reference internal" href="#list-of-spectra">5.1.1.1. List of Spectra</a></li>
-<li><a class="reference internal" href="#notebook-tabs">5.1.1.2. Notebook Tabs</a></li>
-<li><a class="reference internal" href="#gui-controls-and-using-the-pin-icon">5.1.1.3. GUI Controls, and using the Pin icon</a></li>
-<li><a class="reference internal" href="#menus-and-dialogs">5.1.1.4. Menus and Dialogs</a></li>
-<li><a class="reference internal" href="#plotting-window">5.1.1.5. Plotting Window</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#data-input-and-output">5.1.2. Data Input and Output</a></li>
-<li><a class="reference internal" href="#data-normalization">5.1.3. Data Normalization</a></li>
-<li><a class="reference internal" href="#xanes-analysis">5.1.4. XANES Analysis</a></li>
-<li><a class="reference internal" href="#exafs-processing">5.1.5. EXAFS Processing</a></li>
-<li><a class="reference internal" href="#exafs-modeling-with-feff">5.1.6. EXAFS Modeling with FEFF</a></li>
-</ul>
-</li>
-</ul>
-
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="../larix.html"
-                          title="previous chapter"><span class="section-number">5. </span>Larix (was XAS Viewer)</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="iodata.html"
-                          title="next chapter"><span class="section-number">5.2. </span>Reading and Saving Data into Larix</a></p>
-  </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/larix/overview.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<search id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</search>
-<script>document.getElementById('searchbox').style.display = "block"</script>
-        </div>
-      </div>
+  
 
     <div class="document">
       <div class="documentwrapper">
@@ -215,7 +165,7 @@ normalization (for more detail, see <a class="reference internal" href="dialogs.
 tabs include panels for fitting pre-edge peaks (<a class="reference internal" href="preedge.html#larix-peakfit"><span class="std std-ref">Pre-edge peak fitting</span></a>),
 Linear Combination Analysis (<a class="reference internal" href="preedge.html#larix-lincombo"><span class="std std-ref">Linear Combination Analysis</span></a>), Principal Component
 Analysis (<a class="reference internal" href="preedge.html#larix-pca"><span class="std std-ref">Principal Component and Non-negative Factor Analysis</span></a>), Advanced Linear Regression
-(<a class="reference internal" href="preedge.html#larix-regression"><span class="std std-ref">Linear Regression with LASSO and PLS to predict external variable</span></a>), EXAFS Data Processing
+(<span class="xref std std-ref">larix_regression</span>), EXAFS Data Processing
 (<a class="reference internal" href="preedge.html#larix-exafs-bkg"><span class="std std-ref">EXAFS Processing: Background Subtraction</span></a> and <a class="reference internal" href="preedge.html#larix-exafs-fft"><span class="std std-ref">EXAFS Processing:  Fourier Transforms</span></a>), and Feff fitting
 (<a class="reference internal" href="preedge.html#larix-feffit"><span class="std std-ref">Fitting EXAFS data to Feff Paths</span></a>).  These panels generally assume that data has been
 pre-edge subtracted and normalized.  Each of these will be covered in more
@@ -381,6 +331,59 @@ Gaussian, etc).  Some formats require the <a class="reference external" href="ht
           </div>
         </div>
       </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">5.1. Larix Overview</a><ul>
+<li><a class="reference internal" href="#basic-layout-gui-controls-and-xas-data-management">5.1.1. Basic Layout, GUI Controls, and XAS Data Management</a><ul>
+<li><a class="reference internal" href="#list-of-spectra">5.1.1.1. List of Spectra</a></li>
+<li><a class="reference internal" href="#notebook-tabs">5.1.1.2. Notebook Tabs</a></li>
+<li><a class="reference internal" href="#gui-controls-and-using-the-pin-icon">5.1.1.3. GUI Controls, and using the Pin icon</a></li>
+<li><a class="reference internal" href="#menus-and-dialogs">5.1.1.4. Menus and Dialogs</a></li>
+<li><a class="reference internal" href="#plotting-window">5.1.1.5. Plotting Window</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#data-input-and-output">5.1.2. Data Input and Output</a></li>
+<li><a class="reference internal" href="#data-normalization">5.1.3. Data Normalization</a></li>
+<li><a class="reference internal" href="#xanes-analysis">5.1.4. XANES Analysis</a></li>
+<li><a class="reference internal" href="#exafs-processing">5.1.5. EXAFS Processing</a></li>
+<li><a class="reference internal" href="#exafs-modeling-with-feff">5.1.6. EXAFS Modeling with FEFF</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../larix.html"
+                          title="previous chapter"><span class="section-number">5. </span>Larix</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="iodata.html"
+                          title="next chapter"><span class="section-number">5.2. </span>Reading and Saving Data into Larix</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/larix/overview.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
       <div class="clearer"></div>
     </div>
     <div class="related" role="navigation" aria-label="Related">
@@ -390,18 +393,22 @@ Gaussian, etc).  Some formats require the <a class="reference external" href="ht
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="iodata.html" title="5.2. Reading and Saving Data into Larix"
              >next</a> |</li>
         <li class="right" >
-          <a href="../larix.html" title="5. Larix (was XAS Viewer)"
+          <a href="../larix.html" title="5. Larix"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
    <li><a href="../xafs.html">XAFS Analysis</a>|</li>
    <li><a href="../xray.html">X-ray Databases</a>|</li>
    <li><a href="../xrf.html">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
 
-          <li class="nav-item nav-item-1"><a href="../larix.html" ><span class="section-number">5. </span>Larix (was XAS Viewer)</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../larix.html" ><span class="section-number">5. </span>Larix</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.1. </span>Larix Overview</a></li> 
       </ul>
     </div>

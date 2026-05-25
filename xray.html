@@ -8,8 +8,9 @@
 
     <title>15. X-ray Databases &#8212; xraylarch 2026.2.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
+    <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/xraylarch_style.css?v=f3581a04" />
     
     <script src="_static/documentation_options.js?v=2b694ea4"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
@@ -17,32 +18,30 @@
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
-    
+    <script src="_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="16. X-ray Fluorescence Analysis" href="xrf.html" />
     <link rel="prev" title="14.9. XAFS: Computing anomalous scattering factors from XAFS data" href="xafs_diffkk.html" />
-
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
 <script type="text/x-mathjax-config">
    MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
 </script>
 
-
   </head><body>
-<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<div style=" background-color: #c5daba;  text-align: left; height:60px; padding: 0px">
 <table border=0>
   <tr>
     <td width=20%>
-	<a href="index.html">
-	 <img src="_static/larchcones.png" height=50px alt="larchcones"/></a>
+        <a href="index.html">
+         <img src="_static/larchcones.png" height=55px alt="larchcones"/></a>
     </td>
     <td width=75% padding=0>
       <font size=+2>
-	<a href="index.html" style="color:#772211">
-	  Larch: Data Analysis Tools for X-ray Spectroscopy
-	</a>
+        <a href="index.html" style="color:#335">
+          Larch: Data Analysis Tools for X-ray Spectroscopy
+        </a>
       </font>
     </td>
    </tr></table>
@@ -55,6 +54,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="xrf.html" title="16. X-ray Fluorescence Analysis"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -65,83 +67,12 @@
    <li><a href="xafs.html">XAFS Analysis</a>|</li>
    <li><a href="#">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
 
         <li class="nav-item nav-item-this"><a href=""><span class="section-number">15. </span>X-ray Databases</a></li> 
       </ul>
     </div>
-
-      <div class="sphinxsidebar" role="navigation" aria-label="Main">
-        <div class="sphinxsidebarwrapper">
-  <div>
-    <h3><a href="index.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">15. X-ray Databases</a><ul>
-<li><a class="reference internal" href="#x-ray-properties-of-the-elements">15.1. X-ray Properties of the Elements</a><ul>
-<li><a class="reference internal" href="#xray.atomic_number"><code class="docutils literal notranslate"><span class="pre">atomic_number()</span></code></a></li>
-<li><a class="reference internal" href="#xray.atomic_symbol"><code class="docutils literal notranslate"><span class="pre">atomic_symbol()</span></code></a></li>
-<li><a class="reference internal" href="#xray.atomic_mass"><code class="docutils literal notranslate"><span class="pre">atomic_mass()</span></code></a></li>
-<li><a class="reference internal" href="#xray.atomic_density"><code class="docutils literal notranslate"><span class="pre">atomic_density()</span></code></a></li>
-<li><a class="reference internal" href="#xray.xray_edge"><code class="docutils literal notranslate"><span class="pre">xray_edge()</span></code></a></li>
-<li><a class="reference internal" href="#xray.xray_line"><code class="docutils literal notranslate"><span class="pre">xray_line()</span></code></a></li>
-<li><a class="reference internal" href="#xray.xray_edges"><code class="docutils literal notranslate"><span class="pre">xray_edges()</span></code></a></li>
-<li><a class="reference internal" href="#xray.xray_lines"><code class="docutils literal notranslate"><span class="pre">xray_lines()</span></code></a></li>
-<li><a class="reference internal" href="#xray.fluo_yield"><code class="docutils literal notranslate"><span class="pre">fluo_yield()</span></code></a></li>
-<li><a class="reference internal" href="#xray.core_width"><code class="docutils literal notranslate"><span class="pre">core_width()</span></code></a></li>
-<li><a class="reference internal" href="#xray.mu_elam"><code class="docutils literal notranslate"><span class="pre">mu_elam()</span></code></a></li>
-<li><a class="reference internal" href="#xray.coherent_xsec"><code class="docutils literal notranslate"><span class="pre">coherent_xsec()</span></code></a></li>
-<li><a class="reference internal" href="#xray.incoherent_xsec"><code class="docutils literal notranslate"><span class="pre">incoherent_xsec()</span></code></a></li>
-<li><a class="reference internal" href="#xray.f0"><code class="docutils literal notranslate"><span class="pre">f0()</span></code></a></li>
-<li><a class="reference internal" href="#xray.f0_ions"><code class="docutils literal notranslate"><span class="pre">f0_ions()</span></code></a></li>
-<li><a class="reference internal" href="#xray.chantler_energies"><code class="docutils literal notranslate"><span class="pre">chantler_energies()</span></code></a></li>
-<li><a class="reference internal" href="#xray.f1_chantler"><code class="docutils literal notranslate"><span class="pre">f1_chantler()</span></code></a></li>
-<li><a class="reference internal" href="#xray.f2_chantler"><code class="docutils literal notranslate"><span class="pre">f2_chantler()</span></code></a></li>
-<li><a class="reference internal" href="#xray.mu_chantler"><code class="docutils literal notranslate"><span class="pre">mu_chantler()</span></code></a></li>
-<li><a class="reference internal" href="#xray.f1f2_cl"><code class="docutils literal notranslate"><span class="pre">f1f2_cl()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#x-ray-properties-of-materials-and-chemicals">15.2. X-ray Properties of Materials and Chemicals</a><ul>
-<li><a class="reference internal" href="#xray.chemparse"><code class="docutils literal notranslate"><span class="pre">chemparse()</span></code></a></li>
-<li><a class="reference internal" href="#xray.material_get"><code class="docutils literal notranslate"><span class="pre">material_get()</span></code></a></li>
-<li><a class="reference internal" href="#xray.material_add"><code class="docutils literal notranslate"><span class="pre">material_add()</span></code></a></li>
-<li><a class="reference internal" href="#xray.material_mu"><code class="docutils literal notranslate"><span class="pre">material_mu()</span></code></a></li>
-<li><a class="reference internal" href="#xray.material_mu_components"><code class="docutils literal notranslate"><span class="pre">material_mu_components()</span></code></a></li>
-<li><a class="reference internal" href="#xray.xray_delta_beta"><code class="docutils literal notranslate"><span class="pre">xray_delta_beta()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="xafs_diffkk.html"
-                          title="previous chapter"><span class="section-number">14.9. </span>XAFS: Computing anomalous scattering factors from XAFS data</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="xrf.html"
-                          title="next chapter"><span class="section-number">16. </span>X-ray Fluorescence Analysis</a></p>
-  </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/xray.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<search id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</search>
-<script>document.getElementById('searchbox').style.display = "block"</script>
-        </div>
-      </div>
+  
 
     <div class="document">
       <div class="documentwrapper">
@@ -164,15 +95,15 @@ cross-sections, elastic scattering terms, and anomalous scattering factors.
 The second category allows these elemental properties to be applied to
 common compounds by name or by chemical formula.</p>
 <p>Much of the X-ray spectroscopic data comes from the compilation of Elam <em>et
-al</em> <span id="id1">[<a class="reference internal" href="bibliography.html#id43" title="W. T. Elam, B. D. Ravel, and J. R. Sieber. A new atomic database for x-ray spectroscopic calculations. Radiation Physics and Chemistry, 63(2):121–128, February 2002. doi:10.1016/S0969-806X(01)00227-4.">Elam, Ravel, and Sieber (2002)</a>]</span>.  The core-hole widths for excited electronic levels
-comes from Keski-Rahkonen and Krause <span id="id2">[<a class="reference internal" href="bibliography.html#id44" title="O. Keski-Rahkonen and M. O. Krause. Total and partial atomic-level widths. Atomic Data and Nuclear Data Tables, 14(2):139–146, 1974. doi:10.1016/S0092-640X(74)80020-3.">Keski-Rahkonen and Krause (1974)</a>]</span> and Krause and
-Oliver <span id="id3">[<a class="reference internal" href="bibliography.html#id45" title="M. O. Krause and J. H. Oliver. Natural widths of atomic k and l levels, ka x-ray lines and several kll auger lines. Journal of Physical and Chemical Reference Data, 8:329, 1979. doi:10.1063/1.555595.">Krause and Oliver (1979)</a>]</span>, while elastic X-ray scattering data,
+al</em> <span class="bibtex-citation" id="id1">[<a class="reference internal" href="bibliography.html#id43" title="W. T. Elam, B. D. Ravel, and J. R. Sieber. A new atomic database for x-ray spectroscopic calculations. Radiation Physics and Chemistry, 63(2):121–128, February 2002. doi:10.1016/S0969-806X(01)00227-4.">Elam, Ravel, and Sieber (2002)</a>]</span>.  The core-hole widths for excited electronic levels
+comes from Keski-Rahkonen and Krause <span class="bibtex-citation" id="id2">[<a class="reference internal" href="bibliography.html#id44" title="O. Keski-Rahkonen and M. O. Krause. Total and partial atomic-level widths. Atomic Data and Nuclear Data Tables, 14(2):139–146, 1974. doi:10.1016/S0092-640X(74)80020-3.">Keski-Rahkonen and Krause (1974)</a>]</span> and Krause and
+Oliver <span class="bibtex-citation" id="id3">[<a class="reference internal" href="bibliography.html#id45" title="M. O. Krause and J. H. Oliver. Natural widths of atomic k and l levels, ka x-ray lines and several kll auger lines. Journal of Physical and Chemical Reference Data, 8:329, 1979. doi:10.1063/1.555595.">Krause and Oliver (1979)</a>]</span>, while elastic X-ray scattering data,
 <span class="math notranslate nohighlight">\(f_0(q)\)</span>,is derived from Waasmaier and Kirfel
-<span id="id4">[<a class="reference internal" href="bibliography.html#id46" title="D. Waasmaier and A. Kirfel. New analytical scattering factor functions for free atoms and ions. Acta Crystallographica A, 51:416–431, 1995. doi:10.1107/S0108767394013292.">Waasmaier and Kirfel (1995)</a>]</span>.  Anomalous cross-sections are available as based
-on the work of Cromer and Liberman <span id="id5">[<a class="reference internal" href="bibliography.html#id47" title="D. T. Cromer and D. A. Liberman. Anomalous dispersion calculations near to and on the long-wavelength side of an absorption-edge. Acta Crystallographica A, 37:267–268, 1981. doi:10.1107/S0567739481000600.">Cromer and Liberman (1981)</a>]</span>, using the
-implementation of Brennan and Cowan <span id="id6">[<a class="reference internal" href="bibliography.html#id48" title="S. Brennan and P. L. Cowan. A suite of programs for calculating x-ray absorption, reflection, and diffraction performance for a variety of materials at arbitrary wavelengths. Review of Scientific Instruments, 63(1):850–853, 1992. doi:10.1063/1.1142625.">Brennan and Cowan (1992)</a>]</span>.  In addition,
+<span class="bibtex-citation" id="id4">[<a class="reference internal" href="bibliography.html#id46" title="D. Waasmaier and A. Kirfel. New analytical scattering factor functions for free atoms and ions. Acta Crystallographica A, 51:416–431, 1995. doi:10.1107/S0108767394013292.">Waasmaier and Kirfel (1995)</a>]</span>.  Anomalous cross-sections are available as based
+on the work of Cromer and Liberman <span class="bibtex-citation" id="id5">[<a class="reference internal" href="bibliography.html#id47" title="D. T. Cromer and D. A. Liberman. Anomalous dispersion calculations near to and on the long-wavelength side of an absorption-edge. Acta Crystallographica A, 37:267–268, 1981. doi:10.1107/S0567739481000600.">Cromer and Liberman (1981)</a>]</span>, using the
+implementation of Brennan and Cowan <span class="bibtex-citation" id="id6">[<a class="reference internal" href="bibliography.html#id48" title="S. Brennan and P. L. Cowan. A suite of programs for calculating x-ray absorption, reflection, and diffraction performance for a variety of materials at arbitrary wavelengths. Review of Scientific Instruments, 63(1):850–853, 1992. doi:10.1063/1.1142625.">Brennan and Cowan (1992)</a>]</span>.  In addition,
 values for absorption cross-sections and anomalous X-ray scattering factors
-from Chantler <span id="id7">[<a class="reference internal" href="bibliography.html#id49" title="C. T. Chanter. Detailed tabulation of atomic form factors, photoelectric absorption and scattering cross section, and mass attenuation coefficients in the vicinity of absorption edges in the soft X-ray (Z=30-36, Z=60-89, E=0.1 keV-10 keV), addressing convergence issues of earlier work. Journal of Physical and Chemical Reference Data, 29(4):597–1048, JUL-AUG 2000. doi:10.1063/1.1321055.">Chanter (2000)</a>]</span> (as from
+from Chantler <span class="bibtex-citation" id="id7">[<a class="reference internal" href="bibliography.html#id49" title="C. T. Chanter. Detailed tabulation of atomic form factors, photoelectric absorption and scattering cross section, and mass attenuation coefficients in the vicinity of absorption edges in the soft X-ray (Z=30-36, Z=60-89, E=0.1 keV-10 keV), addressing convergence issues of earlier work. Journal of Physical and Chemical Reference Data, 29(4):597–1048, JUL-AUG 2000. doi:10.1063/1.1321055.">Chanter (2000)</a>]</span> (as from
 <a class="reference external" href="https://www.nist.gov/pml/data/ffast/index.cfm">https://www.nist.gov/pml/data/ffast/index.cfm</a>) are available.  Except for
 the anomalous cross-section data from Cromer and Liberman (which is
 implemented using the Fortran routine by Brennan and Cowan with slight
@@ -884,6 +815,78 @@ factor <span class="math notranslate nohighlight">\(f_j\)</span>.</p>
           </div>
         </div>
       </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">15. X-ray Databases</a><ul>
+<li><a class="reference internal" href="#x-ray-properties-of-the-elements">15.1. X-ray Properties of the Elements</a><ul>
+<li><a class="reference internal" href="#xray.atomic_number"><code class="docutils literal notranslate"><span class="pre">atomic_number()</span></code></a></li>
+<li><a class="reference internal" href="#xray.atomic_symbol"><code class="docutils literal notranslate"><span class="pre">atomic_symbol()</span></code></a></li>
+<li><a class="reference internal" href="#xray.atomic_mass"><code class="docutils literal notranslate"><span class="pre">atomic_mass()</span></code></a></li>
+<li><a class="reference internal" href="#xray.atomic_density"><code class="docutils literal notranslate"><span class="pre">atomic_density()</span></code></a></li>
+<li><a class="reference internal" href="#xray.xray_edge"><code class="docutils literal notranslate"><span class="pre">xray_edge()</span></code></a></li>
+<li><a class="reference internal" href="#xray.xray_line"><code class="docutils literal notranslate"><span class="pre">xray_line()</span></code></a></li>
+<li><a class="reference internal" href="#xray.xray_edges"><code class="docutils literal notranslate"><span class="pre">xray_edges()</span></code></a></li>
+<li><a class="reference internal" href="#xray.xray_lines"><code class="docutils literal notranslate"><span class="pre">xray_lines()</span></code></a></li>
+<li><a class="reference internal" href="#xray.fluo_yield"><code class="docutils literal notranslate"><span class="pre">fluo_yield()</span></code></a></li>
+<li><a class="reference internal" href="#xray.core_width"><code class="docutils literal notranslate"><span class="pre">core_width()</span></code></a></li>
+<li><a class="reference internal" href="#xray.mu_elam"><code class="docutils literal notranslate"><span class="pre">mu_elam()</span></code></a></li>
+<li><a class="reference internal" href="#xray.coherent_xsec"><code class="docutils literal notranslate"><span class="pre">coherent_xsec()</span></code></a></li>
+<li><a class="reference internal" href="#xray.incoherent_xsec"><code class="docutils literal notranslate"><span class="pre">incoherent_xsec()</span></code></a></li>
+<li><a class="reference internal" href="#xray.f0"><code class="docutils literal notranslate"><span class="pre">f0()</span></code></a></li>
+<li><a class="reference internal" href="#xray.f0_ions"><code class="docutils literal notranslate"><span class="pre">f0_ions()</span></code></a></li>
+<li><a class="reference internal" href="#xray.chantler_energies"><code class="docutils literal notranslate"><span class="pre">chantler_energies()</span></code></a></li>
+<li><a class="reference internal" href="#xray.f1_chantler"><code class="docutils literal notranslate"><span class="pre">f1_chantler()</span></code></a></li>
+<li><a class="reference internal" href="#xray.f2_chantler"><code class="docutils literal notranslate"><span class="pre">f2_chantler()</span></code></a></li>
+<li><a class="reference internal" href="#xray.mu_chantler"><code class="docutils literal notranslate"><span class="pre">mu_chantler()</span></code></a></li>
+<li><a class="reference internal" href="#xray.f1f2_cl"><code class="docutils literal notranslate"><span class="pre">f1f2_cl()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#x-ray-properties-of-materials-and-chemicals">15.2. X-ray Properties of Materials and Chemicals</a><ul>
+<li><a class="reference internal" href="#xray.chemparse"><code class="docutils literal notranslate"><span class="pre">chemparse()</span></code></a></li>
+<li><a class="reference internal" href="#xray.material_get"><code class="docutils literal notranslate"><span class="pre">material_get()</span></code></a></li>
+<li><a class="reference internal" href="#xray.material_add"><code class="docutils literal notranslate"><span class="pre">material_add()</span></code></a></li>
+<li><a class="reference internal" href="#xray.material_mu"><code class="docutils literal notranslate"><span class="pre">material_mu()</span></code></a></li>
+<li><a class="reference internal" href="#xray.material_mu_components"><code class="docutils literal notranslate"><span class="pre">material_mu_components()</span></code></a></li>
+<li><a class="reference internal" href="#xray.xray_delta_beta"><code class="docutils literal notranslate"><span class="pre">xray_delta_beta()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="xafs_diffkk.html"
+                          title="previous chapter"><span class="section-number">14.9. </span>XAFS: Computing anomalous scattering factors from XAFS data</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="xrf.html"
+                          title="next chapter"><span class="section-number">16. </span>X-ray Fluorescence Analysis</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/xray.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
       <div class="clearer"></div>
     </div>
     <div class="related" role="navigation" aria-label="Related">
@@ -892,6 +895,9 @@ factor <span class="math notranslate nohighlight">\(f_j\)</span>.</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="xrf.html" title="16. X-ray Fluorescence Analysis"
              >next</a> |</li>
@@ -903,6 +909,7 @@ factor <span class="math notranslate nohighlight">\(f_j\)</span>.</p>
    <li><a href="xafs.html">XAFS Analysis</a>|</li>
    <li><a href="#">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
 
         <li class="nav-item nav-item-this"><a href=""><span class="section-number">15. </span>X-ray Databases</a></li> 
       </ul>

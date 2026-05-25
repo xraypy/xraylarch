@@ -8,8 +8,9 @@
 
     <title>13.8. Advanced Confidence Intervals and Chi-square maps &#8212; xraylarch 2026.2.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
+    <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/xraylarch_style.css?v=f3581a04" />
     
     <script src="_static/documentation_options.js?v=2b694ea4"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
@@ -17,32 +18,30 @@
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
-    
+    <script src="_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="14. XAFS Analysis" href="xafs.html" />
     <link rel="prev" title="13.7. Simplified Peak Fitting with fit_peak()" href="fitting_fitpeaks.html" />
-
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
 <script type="text/x-mathjax-config">
    MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
 </script>
 
-
   </head><body>
-<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<div style=" background-color: #c5daba;  text-align: left; height:60px; padding: 0px">
 <table border=0>
   <tr>
     <td width=20%>
-	<a href="index.html">
-	 <img src="_static/larchcones.png" height=50px alt="larchcones"/></a>
+        <a href="index.html">
+         <img src="_static/larchcones.png" height=55px alt="larchcones"/></a>
     </td>
     <td width=75% padding=0>
       <font size=+2>
-	<a href="index.html" style="color:#772211">
-	  Larch: Data Analysis Tools for X-ray Spectroscopy
-	</a>
+        <a href="index.html" style="color:#335">
+          Larch: Data Analysis Tools for X-ray Spectroscopy
+        </a>
       </font>
     </td>
    </tr></table>
@@ -55,6 +54,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="xafs.html" title="14. XAFS Analysis"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -65,68 +67,24 @@
    <li><a href="xafs.html">XAFS Analysis</a>|</li>
    <li><a href="xray.html">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
 
           <li class="nav-item nav-item-1"><a href="fitting.html" accesskey="U"><span class="section-number">13. </span>Fitting and Modeling Data</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><span class="section-number">13.8. </span>Advanced Confidence Intervals and Chi-square maps</a></li> 
       </ul>
     </div>
-
-      <div class="sphinxsidebar" role="navigation" aria-label="Main">
-        <div class="sphinxsidebarwrapper">
-  <div>
-    <h3><a href="index.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">13.8. Advanced Confidence Intervals and Chi-square maps</a><ul>
-<li><a class="reference internal" href="#confidence_intervals"><code class="docutils literal notranslate"><span class="pre">confidence_intervals()</span></code></a></li>
-<li><a class="reference internal" href="#confidence_report"><code class="docutils literal notranslate"><span class="pre">confidence_report()</span></code></a></li>
-<li><a class="reference internal" href="#f_test"><code class="docutils literal notranslate"><span class="pre">f_test()</span></code></a></li>
-<li><a class="reference internal" href="#confidence-interval-example-1">13.8.1. Confidence interval, Example 1</a></li>
-<li><a class="reference internal" href="#confidence-interval-example-2">13.8.2. Confidence interval, Example 2</a></li>
-<li><a class="reference internal" href="#chi-square-maps">13.8.3. Chi-square Maps</a><ul>
-<li><a class="reference internal" href="#chi2_map"><code class="docutils literal notranslate"><span class="pre">chi2_map()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="fitting_fitpeaks.html"
-                          title="previous chapter"><span class="section-number">13.7. </span>Simplified Peak Fitting with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="xafs.html"
-                          title="next chapter"><span class="section-number">14. </span>XAFS Analysis</a></p>
-  </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/fitting_confidence.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<search id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</search>
-<script>document.getElementById('searchbox').style.display = "block"</script>
-        </div>
-      </div>
+  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="advanced-confidence-intervals-and-chi-square-maps">
+  
+<style>
+  .ss-layout-default-AB { grid-template-areas: 'A B'; }
+</style>
+<section id="advanced-confidence-intervals-and-chi-square-maps">
 <h1><span class="section-number">13.8. </span>Advanced Confidence Intervals and Chi-square maps<a class="headerlink" href="#advanced-confidence-intervals-and-chi-square-maps" title="Link to this heading">¶</a></h1>
 <p>Having good estimates for uncertainties in fitted parameters is important
 for any scientific analysis.  One of principle attractions to using the
@@ -472,16 +430,24 @@ and a pair with high correlation:</p>
 </pre></div>
 </div>
 <p>with the resulting Chi-square maps looking like this:</p>
-<div class="figure compound align-center" id="fig-chi2map1">
-<figure class="align-center" id="fig-chi2map1a">
-<a class="reference external image-reference" href="_images/fit_example_conf3a.png"><img alt="_images/fit_example_conf3a.png" src="_images/fit_example_conf3a.png" style="width: 100%;" />
-</a>
+<figure class="sphinx-subfigure align-default" id="fig-chi2map1">
+<div class="sphinx-subfigure-grid ss-layout-default-AB outline" style="display: grid; gap: 8px; grid-gap: 8px;">
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: A;">
+<img alt="_images/fit_example_conf3a.png" src="_images/fit_example_conf3a.png" />
+</div>
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: B;">
+<img alt="_images/fit_example_conf3b.png" src="_images/fit_example_conf3b.png" />
+</div>
+</div>
+<figcaption>
+<p><span class="caption-number">Figure 13.8.3.1 </span><span class="caption-text">Chi-square maps for two pairs of variables for the fit to Gaussian
+data.  With the best-fit chi-square value of 0.5134, the contour
+map for relatively uncorrelated parameters <em>amp</em> and <em>cen</em> is shown
+on the left, while that for the more highlycorrelated parameters
+<em>amp</em> and <em>wid</em> is shown on the right.</span><a class="headerlink" href="#fig-chi2map1" title="Link to this image">¶</a></p>
+</figcaption>
 </figure>
-<figure class="align-center" id="fig-chi2map1b">
-<a class="reference external image-reference" href="_images/fit_example_conf3b.png"><img alt="_images/fit_example_conf3b.png" src="_images/fit_example_conf3b.png" style="width: 100%;" />
-</a>
-</figure>
-</div><p id="fig-chi2map1">The circular map for the uncorrelated parameters <em>amp</em> and <em>cen</em>
+<p>The circular map for the uncorrelated parameters <em>amp</em> and <em>cen</em>
 and the elliptical map for the highly correlated parameters <em>amp</em> and <em>wid</em>
 are exactly as would be expected, and what the automated estimate of
 uncertainties and correlations assumes.</p>
@@ -494,16 +460,23 @@ exponential, we calculate the chi-square maps as:</p>
 </pre></div>
 </div>
 <p>with the resulting contour plots:</p>
-<div class="figure compound align-center" id="fig-chi2map2">
-<figure class="align-center" id="fig-chi2map2a">
-<a class="reference external image-reference" href="_images/fit_example_conf4a.png"><img alt="_images/fit_example_conf4a.png" src="_images/fit_example_conf4a.png" style="width: 100%;" />
-</a>
+<figure class="sphinx-subfigure align-default" id="fig-chi2map2">
+<div class="sphinx-subfigure-grid ss-layout-default-AB outline" style="display: grid; gap: 8px; grid-gap: 8px;">
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: A;">
+<img alt="_images/fit_example_conf4a.png" src="_images/fit_example_conf4a.png" />
+</div>
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: B;">
+<img alt="_images/fit_example_conf4b.png" src="_images/fit_example_conf4b.png" />
+</div>
+</div>
+<figcaption>
+<p><span class="caption-number">Figure 13.8.3.2 </span><span class="caption-text">Chi-square maps for two pairs of variables for the fit to Double
+Exponential.  With the best-fit chi-square value of 0.1913, the contour
+map for <em>a1 and *a2</em> is shown on the left, while that for <em>a1</em> and <em>t2</em>
+is shown on the right.</span><a class="headerlink" href="#fig-chi2map2" title="Link to this image">¶</a></p>
+</figcaption>
 </figure>
-<figure class="align-center" id="fig-chi2map2b">
-<a class="reference external image-reference" href="_images/fit_example_conf4b.png"><img alt="_images/fit_example_conf4b.png" src="_images/fit_example_conf4b.png" style="width: 100%;" />
-</a>
-</figure>
-</div><p id="fig-chi2map2">Here, the values of chi-square quickly grow very large away from the ideal
+<p>Here, the values of chi-square quickly grow very large away from the ideal
 fit.  More importantly, the maps are not remotely elliptical.</p>
 <p>Finally, it should be emphasized that while all the tests in this section
 are informative, they are also fairly slow, re-running the fits many times.
@@ -518,6 +491,55 @@ correlation, or when nearing a final analysis.</p>
           </div>
         </div>
       </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">13.8. Advanced Confidence Intervals and Chi-square maps</a><ul>
+<li><a class="reference internal" href="#confidence_intervals"><code class="docutils literal notranslate"><span class="pre">confidence_intervals()</span></code></a></li>
+<li><a class="reference internal" href="#confidence_report"><code class="docutils literal notranslate"><span class="pre">confidence_report()</span></code></a></li>
+<li><a class="reference internal" href="#f_test"><code class="docutils literal notranslate"><span class="pre">f_test()</span></code></a></li>
+<li><a class="reference internal" href="#confidence-interval-example-1">13.8.1. Confidence interval, Example 1</a></li>
+<li><a class="reference internal" href="#confidence-interval-example-2">13.8.2. Confidence interval, Example 2</a></li>
+<li><a class="reference internal" href="#chi-square-maps">13.8.3. Chi-square Maps</a><ul>
+<li><a class="reference internal" href="#chi2_map"><code class="docutils literal notranslate"><span class="pre">chi2_map()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="fitting_fitpeaks.html"
+                          title="previous chapter"><span class="section-number">13.7. </span>Simplified Peak Fitting with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="xafs.html"
+                          title="next chapter"><span class="section-number">14. </span>XAFS Analysis</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/fitting_confidence.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
       <div class="clearer"></div>
     </div>
     <div class="related" role="navigation" aria-label="Related">
@@ -526,6 +548,9 @@ correlation, or when nearing a final analysis.</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="xafs.html" title="14. XAFS Analysis"
              >next</a> |</li>
@@ -537,6 +562,7 @@ correlation, or when nearing a final analysis.</p>
    <li><a href="xafs.html">XAFS Analysis</a>|</li>
    <li><a href="xray.html">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
 
           <li class="nav-item nav-item-1"><a href="fitting.html" ><span class="section-number">13. </span>Fitting and Modeling Data</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><span class="section-number">13.8. </span>Advanced Confidence Intervals and Chi-square maps</a></li> 

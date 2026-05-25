@@ -8,8 +8,9 @@
 
     <title>Larch &#8212; xraylarch 2026.2.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
+    <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/xraylarch_style.css?v=f3581a04" />
     
     <script src="_static/documentation_options.js?v=2b694ea4"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
@@ -17,31 +18,29 @@
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
-    
+    <script src="_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="1. Downloading and Installation" href="installation.html" />
-
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
 <script type="text/x-mathjax-config">
    MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
 </script>
 
-
   </head><body>
-<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<div style=" background-color: #c5daba;  text-align: left; height:60px; padding: 0px">
 <table border=0>
   <tr>
     <td width=20%>
-	<a href="#">
-	 <img src="_static/larchcones.png" height=50px alt="larchcones"/></a>
+        <a href="#">
+         <img src="_static/larchcones.png" height=55px alt="larchcones"/></a>
     </td>
     <td width=75% padding=0>
       <font size=+2>
-	<a href="#" style="color:#772211">
-	  Larch: Data Analysis Tools for X-ray Spectroscopy
-	</a>
+        <a href="#" style="color:#335">
+          Larch: Data Analysis Tools for X-ray Spectroscopy
+        </a>
       </font>
     </td>
    </tr></table>
@@ -54,6 +53,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="installation.html" title="1. Downloading and Installation"
              accesskey="N">next</a> |</li>
    <li>[<a href="#"> Larch</a>|</li>
@@ -61,47 +63,12 @@
    <li><a href="xafs.html">XAFS Analysis</a>|</li>
    <li><a href="xray.html">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
 
         <li class="nav-item nav-item-this"><a href="">Larch</a></li> 
       </ul>
     </div>
-
-      <div class="sphinxsidebar" role="navigation" aria-label="Main">
-        <div class="sphinxsidebarwrapper"><h3> Get Larch</h3>
-<p>Current version: <b>2026.2.0</b></p>
-
-&nbsp; &nbsp; <a href="installation.html">Install Latest Version</a>  <br>
-&nbsp; &nbsp; <a href="https://github.com/xraypy/xraylarch"> Development Version</a> <br>
-&nbsp; &nbsp; <a href="installation.html#getting-help"> Getting Help</a><br>
-
-<h3>Contents</h3>
-
-&nbsp; &nbsp; <a href="#contents"> Table of Contents</a><br>
-
-&nbsp; &nbsp; <a href="getting_started.html"> Getting Started</a><br>
-
-&nbsp; &nbsp; <a href="larix.html"> Larix (was XAS Viewer) </a><br>
-&nbsp; &nbsp; <a href="guis.html"> Other GUIs </a><br>
-&nbsp; &nbsp; <a href="data.html"> Reading Data </a><br>
-&nbsp; &nbsp; <a href="plotting.html"> Plotting Data</a><br>
-&nbsp; &nbsp; <a href="fitting.html"> Fitting Data</a><br>
-&nbsp; &nbsp; <a href="xafs.html"> XAFS Analysis </a><br>
-&nbsp; &nbsp; <a href="xray.html"> X-ray Databases </a><br>
-&nbsp; &nbsp; <a href="xrf.html"> X-ray Fluoresence Analysis</a><br>
-&nbsp; &nbsp; <a href="python.html"> Larch Python library</a><br>
-&nbsp; &nbsp; <a href="larchlang.html"> Larch macro language</a><br>
-<search id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</search>
-<script>document.getElementById('searchbox').style.display = "block"</script>
-        </div>
-      </div>
+  
 
     <div class="document">
       <div class="documentwrapper">
@@ -111,7 +78,7 @@
   <p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
 <section id="larch">
 <h1>Larch<a class="headerlink" href="#larch" title="Link to this heading">¶</a></h1>
-<p>Larch is a open-source library and set of <a class="reference internal" href="#larch-app-table"><span class="std std-ref">applications</span></a>
+<p>Larch is an open-source library and set of <a class="reference internal" href="#larch-app-table"><span class="std std-ref">applications</span></a>
 for processing and analyzing X-ray absorption and fluorescence spectroscopy
 data and X-ray fluorescence and diffraction image data from synchrotron
 beamlines.  Larch provides a comprehensive set fo analysis tools for X-ray
@@ -126,22 +93,22 @@ python libraries including <a class="reference external" href="https://numpy.sci
 for processing and analyzing X-ray spectroscopy and imaging data.
 Several Python libraries - <a class="reference external" href="https://xraypy.github.io/XrayDB/">xraydb</a>, <a class="reference external" href="https://xraypy.github.io/larixite/">larixite</a>, <a class="reference external" href="https://lmfit.github.io/lmfit-py/">lmfit</a>,
 <a class="reference external" href="https://lmfit.github.io/asteval/">asteval</a>, <a class="reference external" href="https://newville.github.io/wxmplot/">wxmplot</a>, and <a class="reference external" href="https://newville.github.io/pyshortcuts/">pyshortcuts</a> - were originally built for
-or as a part of Larch and then spun-off as separate libraries that can
-be used by the broader X-ray and scientific programming communities.</p>
+or Larch, or as a part of Larch and then spun-off into separate
+libraries that can be used by the broader X-ray and scientific
+programming communities.</p>
 <p>Larch includes a few GUI applications that provide user-friendly and
 interactive data visualization for many common X-ray analysis tasks. The most
 notable of these are <a class="reference internal" href="larix.html#larix-app"><span class="std std-ref">Larix</span></a> (was XAS Viewer), <a class="reference internal" href="wxmap_viewer.html#mapviewer-app"><span class="std std-ref">GSE
 Map Viewer</span></a>, and <a class="reference internal" href="xrf_viewer.html#larchxrf-app"><span class="std std-ref">Larch XRF</span></a> (formerly XRF
 Viewer).</p>
-<p>Larch also provides a Python-like macro language - the “Larch language” - for
-interactive and batch processing.  This macro language is an isolated,
-restricted “mini-Python” (from <a class="reference external" href="https://lmfit.github.io/asteval/">asteval</a>), intended to be both easy to use and
-complete enough to automate data processing and analysis available as an
-interactive command-line interface.  This command-line interface is available
-either from the <a class="reference internal" href="guis.html#larchcli-app"><span class="std std-ref">larch</span></a> or <a class="reference internal" href="guis.html#larchgui-app"><span class="std std-ref">Larch GUI</span></a>.
-This macro language is not recommended for serious programming, but it is an
-important part of the Larch package and can be viewed as the bridge between
-using the GUIs for fully interactive, non-coding analysis, and writing
+<p>Larch includes a Python-like macro language - the “Larch language” -
+for interactive and batch processing.  This macro language is an
+isolated, restricted “mini-Python” (from <a class="reference external" href="https://lmfit.github.io/asteval/">asteval</a>), intended to be
+easy to use and complete enough to automate data processing and
+analysis available as an interactive command-line interface.  This
+command-line interface is available either from the <a class="reference internal" href="guis.html#larchcli-app"><span class="std std-ref">larch</span></a> or <a class="reference internal" href="guis.html#larchgui-app"><span class="std std-ref">Larch GUI</span></a>. While not
+recommended for serious programming, it is an important part of the
+Larch package and the bridge between the GUI applications and writing
 batch-processing analysis scripts.</p>
 <p>Most of the GUIs (notably, <a class="reference internal" href="larix.html#larix-app"><span class="std std-ref">Larix</span></a>) work by generating and
 executing this “Larch code”, with all of the real work done through this macro
@@ -230,8 +197,9 @@ license to redistribute.</p>
 </tr>
 </tbody>
 </table>
+</section>
 <section id="table-of-contents">
-<span id="contents"></span><h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Link to this heading">¶</a></h2>
+<span id="contents"></span><h1>Table of Contents<a class="headerlink" href="#table-of-contents" title="Link to this heading">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">1. Downloading and Installation</a><ul>
@@ -267,7 +235,7 @@ license to redistribute.</p>
 <li class="toctree-l2"><a class="reference internal" href="guis.html#basic-larch-gui">4.2. Basic Larch GUI</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="larix.html">5. Larix (was XAS Viewer)</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="larix.html">5. Larix</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="larix/overview.html">5.1. Larix Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="larix/iodata.html">5.2. Reading and Saving Data into Larix</a></li>
 <li class="toctree-l2"><a class="reference internal" href="larix/dialogs.html">5.3. Pre-edge subtraction and Normalization</a></li>
@@ -275,10 +243,9 @@ license to redistribute.</p>
 <li class="toctree-l2"><a class="reference internal" href="larix/preedge.html">5.5. Pre-edge peak fitting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="larix/preedge.html#linear-combination-analysis">5.6. Linear Combination Analysis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="larix/preedge.html#principal-component-and-non-negative-factor-analysis">5.7. Principal Component and Non-negative Factor Analysis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="larix/preedge.html#linear-regression-with-lasso-and-pls-to-predict-external-variable">5.8. Linear Regression with LASSO and PLS to predict external variable</a></li>
-<li class="toctree-l2"><a class="reference internal" href="larix/preedge.html#exafs-processing-background-subtraction">5.9. EXAFS Processing: Background Subtraction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="larix/preedge.html#exafs-processing-fourier-transforms">5.10. EXAFS Processing:  Fourier Transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="larix/preedge.html#fitting-exafs-data-to-feff-paths">5.11. Fitting EXAFS data to Feff Paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larix/preedge.html#exafs-processing-background-subtraction">5.8. EXAFS Processing: Background Subtraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larix/preedge.html#exafs-processing-fourier-transforms">5.9. EXAFS Processing:  Fourier Transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larix/preedge.html#fitting-exafs-data-to-feff-paths">5.10. Fitting EXAFS data to Feff Paths</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="wxmap_viewer.html">6. XRFMap Viewr</a></li>
@@ -366,11 +333,46 @@ license to redistribute.</p>
 </ul>
 </div>
 </section>
-</section>
 
 
             <div class="clearer"></div>
           </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper"><h3> Get Larch</h3>
+<p>Current version: <b>2026.2.0</b></p>
+
+&nbsp; &nbsp; <a href="installation.html">Install Latest Version</a>  <br>
+&nbsp; &nbsp; <a href="https://github.com/xraypy/xraylarch"> Development Version</a> <br>
+&nbsp; &nbsp; <a href="installation.html#getting-help"> Getting Help</a><br>
+
+<h3>Contents</h3>
+
+&nbsp; &nbsp; <a href="#contents"> Table of Contents</a><br>
+
+&nbsp; &nbsp; <a href="getting_started.html"> Getting Started</a><br>
+
+&nbsp; &nbsp; <a href="larix.html"> Larix GUI </a><br>
+&nbsp; &nbsp; <a href="guis.html"> Other GUIs </a><br>
+&nbsp; &nbsp; <a href="data.html"> Reading Data </a><br>
+&nbsp; &nbsp; <a href="plotting.html"> Plotting Data</a><br>
+&nbsp; &nbsp; <a href="fitting.html"> Fitting Data</a><br>
+&nbsp; &nbsp; <a href="xafs.html"> XAFS Analysis </a><br>
+&nbsp; &nbsp; <a href="xray.html"> X-ray Databases </a><br>
+&nbsp; &nbsp; <a href="xrf.html"> X-ray Fluoresence Analysis</a><br>
+&nbsp; &nbsp; <a href="python.html"> Larch Python library</a><br>
+&nbsp; &nbsp; <a href="larchlang.html"> Larch macro language</a><br>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -382,6 +384,9 @@ license to redistribute.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="installation.html" title="1. Downloading and Installation"
              >next</a> |</li>
    <li>[<a href="#"> Larch</a>|</li>
@@ -389,6 +394,7 @@ license to redistribute.</p>
    <li><a href="xafs.html">XAFS Analysis</a>|</li>
    <li><a href="xray.html">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
 
         <li class="nav-item nav-item-this"><a href="">Larch</a></li> 
       </ul>

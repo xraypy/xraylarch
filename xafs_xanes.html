@@ -8,8 +8,9 @@
 
     <title>14.3. XANES Analysis: Linear Methods, Pre-edge Peak Fitting &#8212; xraylarch 2026.2.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css?v=dfcb3266" />
+    <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/xraylarch_style.css?v=f3581a04" />
     
     <script src="_static/documentation_options.js?v=2b694ea4"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
@@ -17,32 +18,30 @@
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
-    
+    <script src="_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="14.4. XAFS: Post-edge Background Subtraction" href="xafs_autobk.html" />
     <link rel="prev" title="14.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment" href="xafs_preedge.html" />
-
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
 <script type="text/x-mathjax-config">
    MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
 </script>
 
-
   </head><body>
-<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<div style=" background-color: #c5daba;  text-align: left; height:60px; padding: 0px">
 <table border=0>
   <tr>
     <td width=20%>
-	<a href="index.html">
-	 <img src="_static/larchcones.png" height=50px alt="larchcones"/></a>
+        <a href="index.html">
+         <img src="_static/larchcones.png" height=55px alt="larchcones"/></a>
     </td>
     <td width=75% padding=0>
       <font size=+2>
-	<a href="index.html" style="color:#772211">
-	  Larch: Data Analysis Tools for X-ray Spectroscopy
-	</a>
+        <a href="index.html" style="color:#335">
+          Larch: Data Analysis Tools for X-ray Spectroscopy
+        </a>
       </font>
     </td>
    </tr></table>
@@ -55,6 +54,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="xafs_autobk.html" title="14.4. XAFS: Post-edge Background Subtraction"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -65,71 +67,24 @@
    <li><a href="xafs.html">XAFS Analysis</a>|</li>
    <li><a href="xray.html">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
 
           <li class="nav-item nav-item-1"><a href="xafs.html" accesskey="U"><span class="section-number">14. </span>XAFS Analysis</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><span class="section-number">14.3. </span>XANES Analysis:  Linear Methods, Pre-edge Peak Fitting</a></li> 
       </ul>
     </div>
-
-      <div class="sphinxsidebar" role="navigation" aria-label="Main">
-        <div class="sphinxsidebarwrapper">
-  <div>
-    <h3><a href="index.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">14.3. XANES Analysis:  Linear Methods, Pre-edge Peak Fitting</a><ul>
-<li><a class="reference internal" href="#pre-edge-peak-fitting">14.3.1. Pre-edge Peak fitting</a></li>
-<li><a class="reference internal" href="#linear-combination-analysis">14.3.2. Linear Combination Analysis</a><ul>
-<li><a class="reference internal" href="#lincombo_fit"><code class="docutils literal notranslate"><span class="pre">lincombo_fit()</span></code></a></li>
-<li><a class="reference internal" href="#lincombo_fitall"><code class="docutils literal notranslate"><span class="pre">lincombo_fitall()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#principal-component-analysis">14.3.3. Principal Component Analysis</a><ul>
-<li><a class="reference internal" href="#pca_train"><code class="docutils literal notranslate"><span class="pre">pca_train()</span></code></a></li>
-<li><a class="reference internal" href="#pca_fit"><code class="docutils literal notranslate"><span class="pre">pca_fit()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#pca-example">14.3.4. PCA example</a></li>
-</ul>
-</li>
-</ul>
-
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="xafs_preedge.html"
-                          title="previous chapter"><span class="section-number">14.2. </span>XAFS: Pre-edge Subtraction, Normalization, and data treatment</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="xafs_autobk.html"
-                          title="next chapter"><span class="section-number">14.4. </span>XAFS: Post-edge Background Subtraction</a></p>
-  </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/xafs_xanes.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<search id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</search>
-<script>document.getElementById('searchbox').style.display = "block"</script>
-        </div>
-      </div>
+  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
+  
+<style>
+  .ss-layout-default-AB { grid-template-areas: 'A B'; }
+</style>
+<p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
 <section id="xanes-analysis-linear-methods-pre-edge-peak-fitting">
 <h1><span class="section-number">14.3. </span>XANES Analysis:  Linear Methods, Pre-edge Peak Fitting<a class="headerlink" href="#xanes-analysis-linear-methods-pre-edge-peak-fitting" title="Link to this heading">¶</a></h1>
 <p>XANES is highly sensitive to oxidation state and coordination environment
@@ -184,7 +139,7 @@ if another spectrum is also explained well by those principal components,
 and so “fits in” with the starting collecion of data.  This is admittedly
 limited knowledge, but can be very useful in enabling further analysis.</p>
 <p>These three approaches are exposed in the Larix application
-(<a class="reference internal" href="larix.html#larix-app"><span class="std std-ref">Larix (was XAS Viewer)</span></a>), and the documentation here largely reflects the
+(<a class="reference internal" href="larix.html#larix-app"><span class="std std-ref">Larix</span></a>), and the documentation here largely reflects the
 operations done there.</p>
 <p>But first a note for all XANES analysis.  All these methods rely on
 comparing the spectral intensities normalized to the main absorption edge.
@@ -468,34 +423,35 @@ project file, but we include it here for completeness.</p>
 <p>Next, we’re ready to train the PCA model with the collection of standard
 spectra, so we make a list of groups <cite>standards</cite> and create a training
 model that we store in <cite>au_pcamodel</cite>.</p>
-<p>With this PCA model, we can investigate the components and their weights.
-To be clear, the PCA process first calculates and removes the mean of all
-the components and then focuses on the variations in the spectra.  This is
-especially helpful for XANES spectra as the mean normalized <span class="math notranslate nohighlight">\(mu(E)\)</span>
-is almost always larger than the variations.  We can then plot the mean and
-the principal components themselves (in <a class="reference internal" href="#fig-xanes-pca1a"><span class="std std-numref">Figure 14.3.4.1</span></a>), and the
-weight of each component (in <a class="reference internal" href="#fig-xanes-pca1b"><span class="std std-numref">Figure 14.3.4.2</span></a>) to explain the
-variations in the training set (note that this does not include the mean,
-and is on a log scale).</p>
-<div class="figure compound align-center" id="fig-xanes-pca">
-<figure class="align-center" id="id1">
-<span id="fig-xanes-pca1a"></span><a class="reference external image-reference" href="_images/PCA_model_components.png"><img alt="_images/PCA_model_components.png" src="_images/PCA_model_components.png" style="width: 100%;" />
+<p>With this PCA model, we can investigate the components and their
+weights.  To be clear, the PCA process first calculates and removes
+the mean of all the components and then focuses on the variations in
+the spectra.  This is especially helpful for XANES spectra as the mean
+normalized <span class="math notranslate nohighlight">\(mu(E)\)</span> is almost always larger than the variations.
+We can then plot the mean and the principal components themselves and
+the weight of each component to explain the variations in the training
+set (note that this does not include the mean, and is on a log scale).</p>
+<figure class="sphinx-subfigure align-default" id="fig-xanes-pca">
+<div class="sphinx-subfigure-grid ss-layout-default-AB" style="display: grid; gap: 8px; grid-gap: 8px;">
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: A;">
+<a class="reference internal image-reference" href="_images/PCA_model_components.png"><img alt="training" src="_images/PCA_model_components.png" style="width: 100%;" />
 </a>
+<span class="caption">training</span>
+</div>
+<div class="sphinx-subfigure-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: B;">
+<a class="reference internal image-reference" href="_images/PCA_model_weights.png"><img alt="results" src="_images/PCA_model_weights.png" style="width: 100%;" />
+</a>
+<span class="caption">results</span>
+</div>
+</div>
 <figcaption>
-<p><span class="caption-number">Figure 14.3.4.1 </span><span class="caption-text">Results for the PCA training set of  6 Au <span class="math notranslate nohighlight">\(L_{III}\)</span> XANES spectra.
-Mean and 4 most important components.</span><a class="headerlink" href="#id1" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Figure 14.3.4.1 </span><span class="caption-text">Left: The mean value and 4 most important components for the set of
+6 Au <span class="math notranslate nohighlight">\(L_{III}\)</span> XANES spectra.  Right: Fractional weights or
+variances for the 4 most important components of the Au XANES
+spectra – not including the mean spectrum.</span><a class="headerlink" href="#fig-xanes-pca" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
-<figure class="align-center" id="id2">
-<span id="fig-xanes-pca1b"></span><a class="reference external image-reference" href="_images/PCA_model_weights.png"><img alt="_images/PCA_model_weights.png" src="_images/PCA_model_weights.png" style="width: 100%;" />
-</a>
-<figcaption>
-<p><span class="caption-number">Figure 14.3.4.2 </span><span class="caption-text">Results for the PCA training set of  6 Au <span class="math notranslate nohighlight">\(L_{III}\)</span> XANES spectra.
-Fractional weights or variances for the 4 most important components of
-the Au XANES spectra – not including the mean spectrum.</span><a class="headerlink" href="#id2" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
-</div><p id="fig-xanes-pca">We also print out the weights of the components which will give:</p>
+<p>We also print out the weights of the components which will give:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Comp</span> <span class="c1">#  |  Weight   |  Cumulative Total</span>
    <span class="mi">1</span>    <span class="o">|</span>  <span class="mf">0.91834</span>  <span class="o">|</span>  <span class="mf">0.91834</span>
    <span class="mi">2</span>    <span class="o">|</span>  <span class="mf">0.04938</span>  <span class="o">|</span>  <span class="mf">0.96772</span>
@@ -505,24 +461,24 @@ the Au XANES spectra – not including the mean spectrum.</span><a class="header
    <span class="mi">6</span>    <span class="o">|</span>  <span class="mf">0.00000</span>  <span class="o">|</span>  <span class="mf">1.00000</span>
 </pre></div>
 </div>
-<p>which shows the values for the weights plotted in <a class="reference internal" href="#fig-xanes-pca1b"><span class="std std-numref">Figure 14.3.4.2</span></a>
+<p>which shows the values for the weights plotted in <a class="reference internal" href="#fig-xanes-pca"><span class="std std-numref">Figure 14.3.4.1</span></a>
 for the principal components.  This shows that the first 2 components
 explain 95% of the variation, and that using 4 components will explain
 99.9% of the variation in the data.</p>
 <p>Finally, we finish the example script by seeing if the unknown spectrum can
 be explained by the 4 principal components from the training set.  This is
-shown in <a class="reference internal" href="#fig-xanes-pcafit"><span class="std std-numref">Figure 14.3.4.3</span></a> and gives good confidence that the data
+shown in <a class="reference internal" href="#fig-xanes-pcafit"><span class="std std-numref">Figure 14.3.4.2</span></a> and gives good confidence that the data
 should be able to be explained by 4 components.  This is consistent with
 the findings using linear combination analysis in section <a class="reference internal" href="fitting_examples.html#fit-example3-sec"><span class="std std-ref">Example 3: Fitting XANES Spectra as a Linear Combination of Other Spectra</span></a>,
 but gives a slightly firmer foundation for using that number of components.</p>
-<figure class="align-center" id="id3">
+<figure class="align-center" id="id1">
 <span id="fig-xanes-pcafit"></span><a class="reference external image-reference" href="_images/PCA_model_fit.png"><img alt="_images/PCA_model_fit.png" src="_images/PCA_model_fit.png" style="width: 50%;" />
 </a>
 <figcaption>
-<p><span class="caption-number">Figure 14.3.4.3 </span><span class="caption-text">Fit to unknown Au <span class="math notranslate nohighlight">\(L_{III}\)</span> XANES spectrum to a linear combination
+<p><span class="caption-number">Figure 14.3.4.2 </span><span class="caption-text">Fit to unknown Au <span class="math notranslate nohighlight">\(L_{III}\)</span> XANES spectrum to a linear combination
 of the mean and 4 principle components of the training set.  The fit
 looks good enough to conclude that this spectrum probably is explained
-by the variances seen in the main 4 components from the training set.</span><a class="headerlink" href="#id3" title="Link to this image">¶</a></p>
+by the variances seen in the main 4 components from the training set.</span><a class="headerlink" href="#id1" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </section>
@@ -531,6 +487,58 @@ by the variances seen in the main 4 components from the training set.</span><a c
 
             <div class="clearer"></div>
           </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">14.3. XANES Analysis:  Linear Methods, Pre-edge Peak Fitting</a><ul>
+<li><a class="reference internal" href="#pre-edge-peak-fitting">14.3.1. Pre-edge Peak fitting</a></li>
+<li><a class="reference internal" href="#linear-combination-analysis">14.3.2. Linear Combination Analysis</a><ul>
+<li><a class="reference internal" href="#lincombo_fit"><code class="docutils literal notranslate"><span class="pre">lincombo_fit()</span></code></a></li>
+<li><a class="reference internal" href="#lincombo_fitall"><code class="docutils literal notranslate"><span class="pre">lincombo_fitall()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#principal-component-analysis">14.3.3. Principal Component Analysis</a><ul>
+<li><a class="reference internal" href="#pca_train"><code class="docutils literal notranslate"><span class="pre">pca_train()</span></code></a></li>
+<li><a class="reference internal" href="#pca_fit"><code class="docutils literal notranslate"><span class="pre">pca_fit()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pca-example">14.3.4. PCA example</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="xafs_preedge.html"
+                          title="previous chapter"><span class="section-number">14.2. </span>XAFS: Pre-edge Subtraction, Normalization, and data treatment</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="xafs_autobk.html"
+                          title="next chapter"><span class="section-number">14.4. </span>XAFS: Post-edge Background Subtraction</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/xafs_xanes.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -542,6 +550,9 @@ by the variances seen in the main 4 components from the training set.</span><a c
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="xafs_autobk.html" title="14.4. XAFS: Post-edge Background Subtraction"
              >next</a> |</li>
         <li class="right" >
@@ -552,6 +563,7 @@ by the variances seen in the main 4 components from the training set.</span><a c
    <li><a href="xafs.html">XAFS Analysis</a>|</li>
    <li><a href="xray.html">X-ray Databases</a>|</li>
    <li><a href="xrf.html">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
 
           <li class="nav-item nav-item-1"><a href="xafs.html" ><span class="section-number">14. </span>XAFS Analysis</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><span class="section-number">14.3. </span>XANES Analysis:  Linear Methods, Pre-edge Peak Fitting</a></li> 
