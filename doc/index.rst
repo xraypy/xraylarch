@@ -1,13 +1,11 @@
 .. xraylarch documentation master file
-
 .. include:: _config.rst
 
 
-=====================================
 Larch
 =====================================
 
-Larch is a open-source library and set of :ref:`applications <larch_app_table>`
+Larch is an open-source library and set of :ref:`applications <larch_app_table>`
 for processing and analyzing X-ray absorption and fluorescence spectroscopy
 data and X-ray fluorescence and diffraction image data from synchrotron
 beamlines.  Larch provides a comprehensive set fo analysis tools for X-ray
@@ -23,8 +21,9 @@ python libraries including `numpy`_, `scipy`_, `h5py`_,
 for processing and analyzing X-ray spectroscopy and imaging data.
 Several Python libraries - `xraydb`_, `larixite`_, `lmfit`_,
 `asteval`_, `wxmplot`_, and `pyshortcuts`_ - were originally built for
-or as a part of Larch and then spun-off as separate libraries that can
-be used by the broader X-ray and scientific programming communities.
+or Larch, or as a part of Larch and then spun-off into separate
+libraries that can be used by the broader X-ray and scientific
+programming communities.
 
 Larch includes a few GUI applications that provide user-friendly and
 interactive data visualization for many common X-ray analysis tasks. The most
@@ -32,15 +31,15 @@ notable of these are :ref:`Larix <larix_app>` (was XAS Viewer), :ref:`GSE
 Map Viewer <mapviewer_app>`, and :ref:`Larch XRF <larchxrf_app>` (formerly XRF
 Viewer).
 
-Larch also provides a Python-like macro language - the "Larch language" - for
-interactive and batch processing.  This macro language is an isolated,
-restricted "mini-Python" (from `asteval`_), intended to be both easy to use and
-complete enough to automate data processing and analysis available as an
-interactive command-line interface.  This command-line interface is available
-either from the :ref:`larch <larchcli_app>` or :ref:`Larch GUI <larchgui_app>`.
-This macro language is not recommended for serious programming, but it is an
-important part of the Larch package and can be viewed as the bridge between
-using the GUIs for fully interactive, non-coding analysis, and writing
+Larch includes a Python-like macro language - the "Larch language" -
+for interactive and batch processing.  This macro language is an
+isolated, restricted "mini-Python" (from `asteval`_), intended to be
+easy to use and complete enough to automate data processing and
+analysis available as an interactive command-line interface.  This
+command-line interface is available either from the :ref:`larch
+<larchcli_app>` or :ref:`Larch GUI <larchgui_app>`. While not
+recommended for serious programming, it is an important part of the
+Larch package and the bridge between the GUI applications and writing
 batch-processing analysis scripts.
 
 Most of the GUIs (notably, :ref:`Larix <larix_app>`) work by generating and
