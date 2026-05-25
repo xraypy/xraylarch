@@ -150,29 +150,20 @@ The fit gives a report (ignoring correlations) like this::
 
 and the plots of the resulting best-fit and components look like these:
 
-.. subfigstart::
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig-fit2
 
-.. _fig-fit2:
+   .. image:: _images/fit_example2a1.png
+      :width: 100%
+      :alt: Data, fit, and residual.
 
-.. figure:: _images/fit_example2a1.png
-    :target: _images/fit_example2a1.png
-    :width: 100%
-    :align: left
+   .. image::  _images/fit_example2a2.png
+      :width: 100%
+      :alt:  Fit and individual components.
 
-    Data, fit, and residual.
-
-.. figure::  _images/fit_example2a2.png
-    :target: _images/fit_example2a2.png
-    :width: 100%
-    :align: right
-
-    Fit and individual components.
-
-.. subfigend::
-    :width: 0.45
-    :label: fig-fit2combined
-
-    Fit to Fe K-edge pre-edge and edge with 2 Gaussian functions
+   Fit to Fe K-edge pre-edge and edge with 2 Gaussian functions
 
 and we see the fit is pretty good.
 
@@ -240,32 +231,21 @@ Akaike and Bayesian information criteria dropped by more than 100.  The
 values for the energy center and amplitude for the error function have both
 moved significantly, as can be seen in the plots for this fit:
 
-.. subfigstart::
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig-fit3
 
-.. _fig-fit3:
+   .. image::  _images/fit_example2b1.png
+      :width: 100%
+      :alt: Data, fit, and residual.
 
-.. figure::  _images/fit_example2b1.png
-    :target: _images/fit_example2b1.png
-    :width: 100%
-    :align: center
+   .. image::  _images/fit_example2b2.png
+      :width: 100%
+      :alt: Fit with individual components.
 
-    Data, fit, and residual.
-
-.. _fig-fit3b:
-
-.. figure::  _images/fit_example2b2.png
-    :target: _images/fit_example2b2.png
-    :width: 100%
-    :align: center
-
-    Fit with individual components.
-
-.. subfigend::
-   :width: 0.45
-   :label: fig-fit3comp
-
-    Fit to Fe K-edge pre-edge and edge with 3 Gaussian functions
-    and an Error function.
+   Fit to Fe K-edge pre-edge and edge with 3 Gaussian functions
+   and an Error function.
 
 
 Finally for this example, we can replace the Gaussian peak shapes with
@@ -307,34 +287,21 @@ and we see that the already very low :math:`\chi^2` reduces by another 10%,
 and improvements of the two information criteria.  which suggests a real
 improvement.  For completeness, the plots from this fit look like this:
 
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig-fit4
 
-.. subfigstart::
+   .. image::  _images/fit_example2c1.png
+      :width: 100%
+      :alt: Data, fit, and residual.
 
-.. _fig-fit4:
+   .. image::  _images/fit_example2c2.png
+      :width: 100%
+      :alt: Fit with individual components.
 
-.. figure::  _images/fit_example2c1.png
-    :target: _images/fit_example2c1.png
-    :width: 100%
-    :align: center
-
-    Data, fit, and residual.
-
-.. _fig-fit4b:
-
-.. figure::  _images/fit_example2c2.png
-    :target: _images/fit_example2c2.png
-    :width: 100%
-    :align: center
-
-    Fit with individual components.
-
-.. subfigend::
-    :width: 0.45
-    :label: fig-fit4comp
-
-    Fit to Fe K-edge pre-edge and edge with 3 Voigt functions
-    and an Error function.
-
+   Fit to Fe K-edge pre-edge and edge with 3 Voigt functions
+   and an Error function.
 
 It's difficult to see a dramatic difference in fit quality for this data,
 but the ability to explore fitting with different lineshapes like this is
@@ -377,32 +344,21 @@ suggests that *s2* is probably a major component of the unknown, though the
 peak around 11950 eV is a feature that only *s1* has, so it too may be an
 important component.
 
-.. subfigstart::
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig-fit5
 
-.. _fig-fit5:
+   .. image::  _images/fit_example3a.png
+      :width: 100%
+      :alt: Components used for linear combinations.
 
-.. figure::  _images/fit_example3a.png
-    :target: _images/fit_example3a.png
-    :width: 100%
-    :align: center
+   .. image::  _images/fit_example3b.png
+      :width: 100%
+      :alt: Fit and residual with components *s1* and *s2*.
 
-    Components used for linear combinations.
-
-.. _fig-fit5b:
-
-.. figure::  _images/fit_example3b.png
-    :target: _images/fit_example3b.png
-    :width: 100%
-    :align: center
-
-    Fit and residual with components *s1* and *s2*.
-
-.. subfigend::
-    :width: 0.45
-    :label: fig-fit5comp
-
-    Linear Combination Fit of gold XANES in cyanobacteria, after
-    :cite:`Lengke2006`.
+   Linear Combination Fit of gold XANES in cyanobacteria, after
+   :cite:`Lengke2006`.
 
 
 To quantitatively fit these spectra, we read in all the data, and then
@@ -516,33 +472,21 @@ The output of running this gives::
 
 and the output plots for the best model look like this:
 
-.. subfigstart::
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig-fit6
 
-.. _fig-fit6:
+   .. image::  _images/fit_example3c1.png
+      :width: 100%
+      :alt: Linear combination fit and residual.
 
-.. figure::  _images/fit_example3c1.png
-    :target: _images/fit_example3c1.png
-    :width: 100%
-    :align: center
+   .. image::  _images/fit_example3c2.png
+      :width: 100%
+      :alt: Weighted contribution from individual components.
 
-    Linear combination fit and residual.
-
-.. _fig-fit6b:
-
-.. figure::  _images/fit_example3c2.png
-    :target: _images/fit_example3c2.png
-    :width: 100%
-    :align: center
-
-    Weighted contribution from individual components.
-
-.. subfigend::
-    :width: 0.45
-    :label: fig-fit6comp
-
-    Linear Combination XANES Fit of gold components in cyanobacteria with
-    species *s1*, *s2*, and *s5*.
-
+   Linear Combination XANES Fit of gold components in cyanobacteria with
+   species *s1*, *s2*, and *s5*.
 
 
 Of course, we aren't necessarily done here as we haven't exhausted all
@@ -620,60 +564,43 @@ that are::
 
 The plots resulting from both sets of Parameters are shown:
 
-.. subfigstart::
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig-fit7
 
-.. _fig-fit7:
+   .. image::  _images/fit_example3d1.png
+      :width: 100%
+      :alt: Data, fit, and residual.
 
-.. figure::  _images/fit_example3d1.png
-    :target: _images/fit_example3d1.png
-    :width: 100%
-    :align: center
-
-    Data, fit, and residual.
-
-.. figure::  _images/fit_example3d2.png
-    :target: _images/fit_example3d2.png
-    :width: 100%
-    :align: center
-
-    Weighted contribution from individual components.
-
-.. subfigend::
-    :width: 0.45
-    :label: fig-fit7comp
-
-    Linear Combination XANES Fit of gold components in cyanobacteria
-    with species *s1*, *s2*, *s3*, and *s6*.
+   .. image::  _images/fit_example3d2.png
+      :width: 100%
+      :alt: Weighted contribution from individual components.
 
 
-.. subfigstart::
+   Linear Combination XANES Fit of gold components in cyanobacteria
+   with species *s1*, *s2*, *s3*, and *s6*.
 
-.. _fig-fit8:
 
-.. figure::  _images/fit_example3e1.png
-    :target: _images/fit_example3e1.png
-    :width: 100%
-    :align: center
 
-    Linear Combination XANES Fit of gold components in cyanobacteria
-    with species *s1*, *s2*, *s3*, and *s5*. Data, fit, and residual.
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig-fit8
 
-.. _fig-fit8b:
+   .. image::  _images/fit_example3e1.png
+      :width: 100%
+      :alt: Linear Combination XANES Fit of gold components in
+            cyanobacteria with species *s1*, *s2*, *s3*, and
+            *s5*. Data, fit, and residual.
 
-.. figure::  _images/fit_example3e2.png
-    :target: _images/fit_example3e2.png
-    :width: 100%
-    :align: center
+   .. image::  _images/fit_example3e2.png
+      :width: 100%
+      :alt: Weighted contribution from individual components.
 
-    Weighted contribution from individual components.
 
-.. subfigend::
-    :width: 0.45
-    :label: fig-fit8comp
-
-    Linear Combination XANES Fit of gold components in cyanobacteria
-    with species *s1*, *s2*, *s3*, and *s5*.
-
+   Linear Combination XANES Fit of gold components in cyanobacteria
+   with species *s1*, *s2*, *s3*, and *s5*.
 
 
 From the plots alone, it is difficult to tell which of these fits is
@@ -687,4 +614,3 @@ looked at many more unknown spectra, and also adjusted the energy ranges of
 the fits, and concludedd that *s1*, *s2*, *s3*, and *s5* were the best
 components, with concentrations of the components very similar to the ones
 found here.
-
