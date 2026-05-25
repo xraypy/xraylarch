@@ -27,8 +27,8 @@ automatic method.
     :param minimizer: the minimizer object returned by :func:`minimize`.
     :param sigmas: list of sigma-levels to find parameter values for.
     :param prob_func: ``None`` or callable function to calculate the
-    	       probability from the optimized chi-square. By default,
-	       :func:`f_compare`, the standard F-test, is used.
+               probability from the optimized chi-square. By default,
+               :func:`f_compare`, the standard F-test, is used.
     :returns:  a dictionary of parameter names, with each value containing
                a list of (sigma, value) pairs.
 
@@ -242,32 +242,21 @@ and a pair with high correlation::
 with the resulting Chi-square maps looking like this:
 
 
-.. subfigstart::
-   
-.. _fig-chi2map1a:
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig-chi2map1
+   :class-grid: outline
 
-.. figure::  _images/fit_example_conf3a.png
-    :target: _images/fit_example_conf3a.png
-    :width: 100%
-    :align: center
+   .. image::  _images/fit_example_conf3a.png
+   .. image::  _images/fit_example_conf3b.png
 
-.. _fig-chi2map1b:
+   Chi-square maps for two pairs of variables for the fit to Gaussian
+   data.  With the best-fit chi-square value of 0.5134, the contour
+   map for relatively uncorrelated parameters *amp* and *cen* is shown
+   on the left, while that for the more highlycorrelated parameters
+   *amp* and *wid* is shown on the right.
 
-.. figure::  _images/fit_example_conf3b.png
-    :target: _images/fit_example_conf3b.png
-    :width: 100%
-    :align: center
-
-.. subfigend::
-   :width: 0.45
-   :label: fig-chi2map1
-
-    Chi-square maps for two pairs of variables for the fit to Gaussian
-    data.  With the best-fit chi-square value of 0.5134, the contour map
-    for relatively uncorrelated parameters *amp* and *cen* is shown on the
-    left, while that for the more highlycorrelated parameters *amp* and
-    *wid* is shown on the right.
-    
 
 The circular map for the uncorrelated parameters *amp* and *cen*
 and the elliptical map for the highly correlated parameters *amp* and *wid*
@@ -285,30 +274,19 @@ exponential, we calculate the chi-square maps as::
 
 with the resulting contour plots:
 
-.. subfigstart::
-   
-.. _fig-chi2map2a:
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig-chi2map2
+   :class-grid: outline
 
-.. figure::  _images/fit_example_conf4a.png
-    :target: _images/fit_example_conf4a.png
-    :width: 100%
-    :align: center
+   .. image:: _images/fit_example_conf4a.png
+   .. image:: _images/fit_example_conf4b.png
 
-.. _fig-chi2map2b:
-
-.. figure::  _images/fit_example_conf4b.png
-    :target: _images/fit_example_conf4b.png
-    :width: 100%
-    :align: center
-
-.. subfigend::
-   :width: 0.45
-   :label: fig-chi2map2
-	    
-    Chi-square maps for two pairs of variables for the fit to Double
-    Exponential.  With the best-fit chi-square value of 0.1913, the contour
-    map for *a1 and *a2* is shown on the left, while that for *a1* and *t2*
-    is shown on the right.
+   Chi-square maps for two pairs of variables for the fit to Double
+   Exponential.  With the best-fit chi-square value of 0.1913, the contour
+   map for *a1 and *a2* is shown on the left, while that for *a1* and *t2*
+   is shown on the right.
 
 
 

@@ -12,7 +12,7 @@ Pre-edge peak fitting
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-The "Pre-edge Peak Fit" tab (show in :numref:`fig_larix_3a`) provides a
+The "Pre-edge Peak Fit" tab (right-hand of in :numref:`fig_larix_3`) provides a
 form for fitting pre-edge peaks to line shapes such as Gaussian, Lorentzian,
 or Voigt functions.  This provides an easy-to-use wrapper around `lmfit`_
 and the :func:`minimize` function for curve-fitting with the ability to
@@ -26,14 +26,14 @@ a reasonable enough approximation of the main absorption edge (say,
 :math:`4p`) so that its tail represents the background of the main edge
 underneath the pre-edge peaks.
 
-Fitting the baseline requires identifying energy ranges for both the main
-spectrum to be fitted and the pre-edge peaks -- the part of the spectrum
-which should be ignored when fitting the baseline.  This is illustrated in
-:numref:`fig_larix_3a` and :numref:`fig_larix_3b`.  Note that there
-are separate ranges for the "fit range" and the "pre-edge peak" range
-(illustrated with grey lines and blue circles on the plot).  The "pre-edge
-peak" range should be inside the fit range so that the baseline can fit
-part of the pre-edge region, at energies below the pre-edge peaks, and part
+Fitting the baseline requires identifying energy ranges for both the
+main spectrum to be fitted and the pre-edge peaks -- the part of the
+spectrum which should be ignored when fitting the baseline.  This is
+illustrated in :numref:`fig_larix_3`.  Note that there are separate
+ranges for the "fit range" and the "pre-edge peak" range (illustrated
+with grey lines and blue circles on the plot).  The "pre-edge peak"
+range should be inside the fit range so that the baseline can fit part
+of the pre-edge region, at energies below the pre-edge peaks, and part
 of the main absorption edge region above the pre-edge peaks.
 
 Clicking "Fit baseline" will fit a baseline function and display the plot
@@ -43,34 +43,26 @@ above, clicking on the plot will select an energy that can then be
 transferred to any of the bounds energy using the corresponding pin icon
 |pin| on the form.
 
-.. subfigstart::
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig_larix_3
 
-.. _fig_larix_3a:
+   .. image:: ../_images/Larix_prepeaks_baseline_form.png
+      :width: 100%
+      :alt: Larix Pre-edge peak Panel
 
-.. figure:: ../_images/Larix_prepeaks_baseline_form.png
-    :target: ../_images/Larix_prepeaks_baseline_form.png
-    :width: 70%
-    :align: center
+   .. image:: ../_images/Larix_prepeaks_baseline_plot.png
+      :width: 65%
+      :alt: Pre-edge peaks with baseline
 
-    Pre-edge peak Panel of Larix, showing how select regions of
-    pre-edge peaks for fitting a baseline.
+   Left: The Pre-edge peak Panel, showing how select regions of
+   pre-edge peaks for fitting a baseline. Right: Plot of pre-edge
+   peaks with baseline.  The grey vertical lines show the fit range
+   and blue circles show the boundaries of the pre-edge peak range
+   ignored in the baseline fit. The pink line shows the centroid of
+   the pre-edge peaks after removal of the baseline.
 
-
-.. _fig_larix_3b:
-
-.. figure:: ../_images/Larix_prepeaks_baseline_plot.png
-    :target: ../_images/Larix_prepeaks_baseline_plot.png
-    :width: 60%
-    :align: center
-
-    Plot of pre-edge peaks with baseline.  The grey vertical lines show the
-    fit range and blue circles show the boundaries of the pre-edge peak
-    range ignored in the baseline fit. The pink line shows the centroid of
-    the pre-edge peaks after removal of the baseline.
-
-.. subfigend::
-    :width: 0.45
-    :label: fig-larix3
 
 
 We will allow the baseline to be refined when fitting the peaks, so it does
@@ -83,7 +75,7 @@ the baseline consists of a Lorentzian curve and a line, there will now be 3
 tabs for the 3 components of the pre-edge peak model.  The background peak
 and the background line will have tabs labeled `bp_` and `bl_`,
 respectively, and the added Gaussian curve will be labeled `gauss1_`, as
-shown in :numref:`fig_larix_4a`, which shows the form with 1 Gaussian
+shown in :numref:`fig_larix_4`, which shows the form with 1 Gaussian
 peak, and the two-component baseline.  You can add more peaks by repeatedly
 selecting the peak type from the drop-down menu labeled *Add Component*.
 
@@ -99,51 +91,41 @@ parameter values by using the Bounds drop-down list (to select *positive*,
 *negative*, or *custom*) and/or set Min and Max values.
 
 After selecting a functional form for the peak, clicking on the "Pick
-Values from Data" button, and then clicking two points on the plot near the
-peak of interest will fill in the form with initial values for the
-parameters for that peak.  This is shown in :numref:`fig_larix_4a`
-which has values filled in from the "two click method", and in
-:numref:`fig_larix_4b` which shows the initial Gaussian peak.  The
-points you pick do not have to be very accurate, and the initial values
-selected for the `amplitude`, `center`, and `sigma` parameters can be
-modified.  You can also set bounds on any of these parameters -- it is
-probably a good idea to enforce the `amplitude` and `sigma` to be positive,
-for example.  If using multiple peaks, it is often helpful to give
-realistic energy bounds for the `center` of each peak, so that the peaks
-don't try to exchange.
+Values from Data" button, and then clicking two points on the plot
+near the peak of interest will fill in the form with initial values
+for the parameters for that peak.  This is shown in
+:numref:`fig_larix_4` which has values filled in from the "two click
+method" and the initial Gaussian peak.  The points you pick do not
+have to be very accurate, and the initial values selected for the
+`amplitude`, `center`, and `sigma` parameters can be modified.  You
+can also set bounds on any of these parameters -- it is probably a
+good idea to enforce the `amplitude` and `sigma` to be positive, for
+example.  If using multiple peaks, it is often helpful to give
+realistic energy bounds for the `center` of each peak, so that the
+peaks don't try to exchange.
 
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig_larix_4
 
-.. subfigstart::
+   .. image:: ../_images/Larix_prepeaks_1gaussian_form.png
+      :width: 100%
+      :alt: Larix Pre-edge peak Panel
 
-.. _fig_larix_4a:
+   .. image:: ../_images/Larix_prepeaks_1gaussian_plot.png
+      :width: 80%
+      :alt:  Plot of initial "guessed" Gaussian.
 
-.. figure:: ../_images/Larix_prepeaks_1gaussian_form.png
-    :target: ../_images/Larix_prepeaks_1gaussian_form.png
-    :width: 100%
-    :align: center
-
-    Pre-edge peak Window of Larix, showing 3 components of a Gaussian
-    and a baseline that includes a line and Lorentzian.
-
-
-.. _fig_larix_4b:
-
-.. figure:: ../_images/Larix_prepeaks_1gaussian_plot.png
-    :target: ../_images/Larix_prepeaks_1gaussian_plot.png
-    :width: 60%
-    :align: center
-
-    Plot of initial Gaussian guessed from the "two click method" for
-    modeling pre-edge peaks.
-
-.. subfigend::
-    :width: 0.45
-    :label: fig-larix4
+   Left: Pre-edge peak Window, showing 3 components of a Gaussian and
+   a baseline that includes a line and Lorentzian.  Right: Plot of
+   initial Gaussian guessed from the "two click method" for modeling
+   pre-edge peaks.
 
 Once the model function is defined and initial parameters values set,
 clicking the Fit Model button will perform the fit. This will bring up
-a Fit Result form shown in :numref:`fig_larix_5a` and an
-initial plot of the data and fit as shown in :numref:`fig_larix_5b`.
+a Fit Result and an initial plot of the data and fit as shown in
+:numref:`fig_larix_5`.
 
 The Fit Result panel contains goodness-of-fit statistics and parameter
 values and uncertainties (or standard error).  At the top portion of the
@@ -165,32 +147,22 @@ variable parameter to show it correlations with other variables.  Note that
 the baseline parameters *are* refined (by default) in the fit to the
 pre-edge peaks.
 
-.. subfigstart::
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig_larix_5
 
-.. _fig_larix_5a:
+   .. image:: ../_images/Larix_prepeaks_fitresult1_form.png
+      :width: 90%
+      :alt: Fit result frame for Pre-edge peak fit
 
-.. figure:: ../_images/Larix_prepeaks_fitresult1_form.png
-    :target: ../_images/Larix_prepeaks_fitresult1_form.png
-    :width: 75%
-    :align: left
+   .. image:: ../_images/Larix_prepeaks_fitresult1_plot.png
+      :alt: Plot of Pre-edge Peak data and best-fit
 
-    Fit result frame for Pre-edge peak fit for a fit with 1 Gaussian.
+   Left: Larix Fit result frame for a peak fit with 1
+   Gaussian. Right: the plot of a fit with 1 Gaussian and baseline.
 
-.. _fig_larix_5b:
-
-.. figure:: ../_images/Larix_prepeaks_fitresult1_plot.png
-    :target: ../_images/Larix_prepeaks_fitresult1_plot.png
-    :width: 60%
-    :align: center
-
-    Pre-edge Peak data and best-fit with 1 Gaussian and baseline.
-
-.. subfigend::
-    :width: 0.45
-    :label: fig-larix5
-
-
-Though the plot of the fit in :numref:`fig_larix_5b` does not look too
+Though the plot of the fit in :numref:`fig_larix_5` does not look too
 bad, we can see the fit is not perfect. Checking the "Plot with residual?"
 box we get the plot in :numref:`fig_larix_6` that shows the data and fit
 and also the residual.  From this, we can see systematic oscillations in
@@ -209,37 +181,27 @@ peaks.
 
     Pre-edge Peak plot of data, fit and residual.
 
+Adding a second Gaussian (and maybe even a third) will greatly help
+this fit.  If we add another Gaussian peak component to the fit model
+using the drop-down menu of "Add component:", select initial values
+for that second Gaussian before, and re-run the fit, we'll see the Fit
+Results form and plot as shown in :numref:`fig_larix_7`.
 
-Adding a second Gaussian (and maybe even a third) will greatly help this
-fit.  If we add another Gaussian peak component to the fit model using the
-drop-down menu of "Add component:", select initial values for that second
-Gaussian before, and re-run the fit, we'll see the Fit Results form and
-plot as shown in :numref:`fig_larix_7a` and :numref:`fig_larix_7b`.
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig_larix_7
 
-.. subfigstart::
+   .. image:: ../_images/Larix_prepeaks_fitresult2_form.png
+      :width: 95%
+      :alt: Fit result frame for Pre-edge peak fit
 
-.. _fig_larix_7a:
+   .. image:: ../_images/Larix_prepeaks_fitresult2_plot.png
+      :width: 95%
+      :alt:   Plot of Pre-edge peak fit
 
-.. figure:: ../_images/Larix_prepeaks_fitresult2_form.png
-    :target: ../_images/Larix_prepeaks_fitresult2_form.png
-    :width: 95%
-    :align: left
-
-    Fit result frame for Pre-edge peak fit for a fit with 2 Gaussians.
-
-.. _fig_larix_7b:
-
-.. figure:: ../_images/Larix_prepeaks_fitresult2_plot.png
-    :target: ../_images/Larix_prepeaks_fitresult2_plot.png
-    :width: 95%
-    :align: center
-
-    Pre-edge Peak data and best-fit with 2 Gaussians and baseline.
-
-.. subfigend::
-   :width: 0.48
-   :alt: pre-edge peak results2
-   :label: fig_larix_7
+   Left: Fit result frame for for a fit with 2 Gaussians. Right:
+   Plot of fit for fit with 2 Gaussians and baseline.
 
 
 As mentioned above, fit results can be saved in two different ways, using
@@ -251,11 +213,11 @@ file that will include the text of the fit report and columns including
 data, best-fit, and each of the components of the model.
 
 To continue with the analysis of the data in this example,
-:numref:`fig_larix_7b` shows that the fit residual still has
+:numref:`fig_larix_7` shows that the fit residual still has
 significant structure, indicating that either another peak should be
 included or that the Gaussian peak shape is not a good model for these
 peaks.  In fact, using 2 Voigt functions significantly improves the fit, as
-shown in :numref:`fig_larix_8a`, with reduced :math:`\chi^2` dropping
+shown in :numref:`fig_larix_8`, with reduced :math:`\chi^2` dropping
 from 4.4e-6 to 3.2e-6 and similar improvements in the AIC and BIC
 statistics.  To do this, the two Gaussian peaks were deleted and two Voigt
 peaks added, with initial values selected with the "two click method".
@@ -263,7 +225,7 @@ peaks added, with initial values selected with the "two click method".
 The fit of the pre-edge peaks is visibly improved but a systematic
 variation in the residual is still seen at the high energy side of the
 pre-edge peaks.  Adding a third Voigt function at around 7117 eV improves
-the fit even more as shown in :numref:`fig_larix_8b`.  As shown, the
+the fit even more as shown in :numref:`fig_larix_8`.  As shown, the
 scale of the residual is now 0.001, ten times better than the scale of the
 fit with 1 peak shown in :numref:`fig_larix_6`, and shows much less
 systematic structure.  In addition, all the fit statistics are improved
@@ -271,33 +233,22 @@ despite now using 14 variables: reduced :math:`\chi^2` becomes from 5.1e-7,
 AIC is -1957 and BIC is -1917.
 
 
-.. subfigstart::
+.. subfigure:: AB
+   :gap: 8px
+   :subcaptions: below
+   :name: fig_larix_8
 
-.. _fig_larix_8a:
+   .. image:: ../_images/Larix_prepeaks_fitresult3_plot.png
+      :width: 95%
+      :alt: Plot of fit result with 2 Voigt functions.
 
-.. figure:: ../_images/Larix_prepeaks_fitresult3_plot.png
-    :target: ../_images/Larix_prepeaks_fitresult3_plot.png
-    :width: 95%
-    :align: left
+   .. image:: ../_images/Larix_prepeaks_fitresult4_plot.png
+      :width: 95%
+      :alt: Plot of fit result with 3 Voigt functions.
 
-    Fit result frame for Pre-edge peak fit
-    for a fit with 2 Voigt functions
-    plus the baseline.
-
-.. _fig_larix_8b:
-
-.. figure:: ../_images/Larix_prepeaks_fitresult4_plot.png
-    :target: ../_images/Larix_prepeaks_fitresult4_plot.png
-    :width: 95%
-    :align: center
-
-    Pre-edge Peak data and best-fit for a fit with 3 Voigt functions plus
-    the baseline.
-
-.. subfigend::
-   :width: 0.48
-   :alt: pre-edge peak results3
-   :label: fig_larix_8
+   Left: Plot of data and best-fit for a fit with 2 Voigt functions
+   plus the baseline. Right: Plot of data and best-fit for a fit with
+   3 Voigt functions plus the baseline.
 
 
 .. _larix_lincombo:
@@ -419,7 +370,7 @@ the results of PCA to ask::
 
 
 Linear Regression with LASSO and PLS to predict external variable
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~l~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
@@ -440,3 +391,4 @@ EXAFS Processing:  Fourier Transforms
 
 Fitting EXAFS data to Feff Paths
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+l
