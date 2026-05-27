@@ -1,4 +1,4 @@
-.. include:: _config.rst
+.. include:: ../_config.rst
 
 .. _larix_app:
 .. _xasviewer_app:
@@ -40,3 +40,5 @@ let us know.
    larix/iodata.rst
    larix/dialogs.rst
    larix/preedge.rst
+   larix/lincombo.rst
+   larix/exafs.rst
