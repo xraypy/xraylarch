@@ -365,7 +365,6 @@ class GSEXRM_MapFile(object):
         if (self.status in (GSEXRM_FileStatus.err_notfound,
                             GSEXRM_FileStatus.wrongfolder) and
             self.folder is not None and isGSEXRM_MapFolder(self.folder)):
-
             if nmaster < 1:
                 self.read_master()
             if self.status == GSEXRM_FileStatus.wrongfolder:
@@ -577,17 +576,19 @@ class GSEXRM_MapFile(object):
 
         if xrd2dbkgdfile is not None:
             self.xrd2dbkgdfile = xrd2dbkgdfile
-        if Path(self.xrd2dbkgdfile).exists():
-            print(f'2DXRD background file loaded: {self.xrd2dbkgdfile}')
-            xrd1dgrp.attrs['2Dbkgdfile'] = self.xrd2dbkgdfile
-            self.bkgd_xrd2d = read_xrd_data(self.xrd2dbkgdfile)*self.bkgdscale
+        if self.xrd2dbkgdfile is not None:
+            if Path(self.xrd2dbkgdfile).exists():
+                print(f'2DXRD background file loaded: {self.xrd2dbkgdfile}')
+                xrd1dgrp.attrs['2Dbkgdfile'] = self.xrd2dbkgdfile
+                self.bkgd_xrd2d = read_xrd_data(self.xrd2dbkgdfile)*self.bkgdscale
 
         if xrd2dmaskfile is not None:
             self.xrd2dmaskfile= xrd2dmaskfile
-        if Path(self.xrd2dmaskfile).exists():
-            print(f'Mask file loaded: {self.xrd2dmaskfile}')
-            xrd1dgrp.attrs['maskfile'] = self.xrd2dmaskfile
-            self.mask_xrd2d = read_xrd_data(self.xrd2dmaskfile)
+        if self.xrd2dmaskfile is not None:
+            if Path(self.xrd2dmaskfile).exists():
+                print(f'Mask file loaded: {self.xrd2dmaskfile}')
+                xrd1dgrp.attrs['maskfile'] = self.xrd2dmaskfile
+                self.mask_xrd2d = read_xrd_data(self.xrd2dmaskfile)
 
         self.h5root.flush()
 
