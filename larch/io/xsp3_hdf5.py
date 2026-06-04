@@ -139,12 +139,22 @@ def read_xsp3_hdf5(fname, npixels=None, verbose=False,
 
     # note: sometimes counts has npix-1 pixels, while the time arrays
     # really have npix...  So we take npix from the time array, and
-    npix = ndattr['CHAN1SCA0'].shape[0]
+    chan1ticks = ndattr['CHAN1SCA0']
+    npix = chan1ticks.shape[0]
     ndpix, ndet, nchan = counts.shape
+    # print("Times: ", chan1ticks[:5]*clockrate)
+    # print("Data Sum: ", sum[:5])
     if npixels is None:
         npixels = npix
         if npixels < ndpix:
             ndpix = npixels
+
+    istart = 0
+    sum = counts[:5,:,:].sum(axis=1).sum(axis=1)
+    if chan1ticks[0] < 5 or sum[0] < 5:
+        istart = 1
+        npixels = npixels - 1
+    # print(f"READ XSP3 HDF5 {npix=}, {ndpix=}, {ndet=}, {nchan=}, {istart=}, {npixels=}")
 
     out = XSP3Data(npixels, ndet, nchan)
     out.numPixels = npixels
@@ -152,13 +162,13 @@ def read_xsp3_hdf5(fname, npixels=None, verbose=False,
 
     if ndpix < npix:
         out.counts = np.zeros((npix, ndet, nchan), dtype='f8')
-        out.counts[:ndpix, :, :]  = counts
+        out.counts[:ndpix, :, :]  = counts[istart:, :, :]
     else:
-        out.counts = counts
+        out.counts = counts[istart:, :, :]
 
     for i in range(ndet):
         chan = f"CHAN{i+1}"
-        clock_ticks = ndattr[f'{chan}SCA0'][()]
+        clock_ticks = ndattr[f'{chan}SCA0'][istart:]
 
         clock_ticks[np.where(clock_ticks<10)] = 10.0
         rtime = clockrate * clock_ticks
@@ -169,21 +179,21 @@ def read_xsp3_hdf5(fname, npixels=None, verbose=False,
         out.outputCounts[:, i] = ocounts
 
         if f"{chan}DTFactor" in ndattr:
-            dtfactor = ndattr[f'{chan}DTFactor'][()]
+            dtfactor = ndattr[f'{chan}DTFactor'][istart:]
         else:
             reset_ticks = 0.0*clock_ticks
             all_events = 0.0*clock_ticks
             event_width = 6.0
             try:
-                reset_ticks = ndattr[f"{chan}SCA1"][()]
+                reset_ticks = ndattr[f"{chan}SCA1"][istart:]
             except:
                 pass
             try:
-                all_events  = ndattr[f"{chan}SCA3"][()]
+                all_events  = ndattr[f"{chan}SCA3"][istart:]
             except:
                 pass
             try:
-                event_width = 1.0 + ndattr[f'{chan}EventWidth'][()]
+                event_width = 1.0 + ndattr[f'{chan}EventWidth'][istart:]
             except:
                 pass
 
