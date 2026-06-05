@@ -50,7 +50,9 @@ from larch.site_config import icondir
 from larch.utils.physical_constants import PLANCK_HC
 
 from ..xrd import lambda_from_E, xrd1d, save1D, calculate_xvalues, read_poni
-from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup, DEFAULT_XRAY_ENERGY
+from ..xrmmap import G1XRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup, DEFAULT_XRAY_ENERGY
+from larch.xrmmap.gsexrm_utils import toggle_winfile
+
 # from ..xrmmap.xrm_mapfile import remove_zigzag
 from ..version import check_larchversion
 from ..epics import pv_fullname
@@ -475,6 +477,10 @@ class MapPanel(GridPanel):
         xrmfile = self.owner.current_file
         if xrmfile is None:
             return
+
+        if self.scandb is not None:
+            toggle_winfile(xrmfile.folder, sleep_time=0.1)
+
         fname = Path(xrmfile.filename).name
         if max_new_rows is None:
             max_new_rows = self.mapproc_nrows.GetStringSelection().lower()
@@ -1684,9 +1690,9 @@ class MapViewerFrame(wx.Frame):
             imd.add_highlight_area(tmask, label=None)
         except:
             print("could not show highlighted area")
-            
 
-        
+
+
     def add_tomodisplay(self, title, det=None, _lassocallback=True):
 
         if _lassocallback:
