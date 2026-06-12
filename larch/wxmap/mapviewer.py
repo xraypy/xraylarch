@@ -50,7 +50,7 @@ from larch.site_config import icondir
 from larch.utils.physical_constants import PLANCK_HC
 
 from ..xrd import lambda_from_E, xrd1d, save1D, calculate_xvalues, read_poni
-from ..xrmmap import G1XRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup, DEFAULT_XRAY_ENERGY
+from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup, DEFAULT_XRAY_ENERGY
 from larch.xrmmap.gsexrm_utils import toggle_winfile
 
 # from ..xrmmap.xrm_mapfile import remove_zigzag
@@ -478,7 +478,8 @@ class MapPanel(GridPanel):
         if xrmfile is None:
             return
 
-        if self.scandb is not None:
+        print("Process Map ", self, getattr(self.owner, 'scandb', 'no scandb'))
+        if hasattr(self.owner, 'scandb') and self.owner.scandb is not None:
             toggle_winfile(xrmfile.folder, sleep_time=0.1)
 
         fname = Path(xrmfile.filename).name
@@ -1365,6 +1366,12 @@ class MapViewerFrame(wx.Frame):
 
         self.data = None
         self.use_scandb = use_scandb
+        self.scandb = None
+        self.instdb = None
+        self.inst_name = None
+        self.move_callback = None
+
+
         self.filemap = {}
         self.im_displays = []
         self.tomo_displays = []
@@ -1416,11 +1423,6 @@ class MapViewerFrame(wx.Frame):
         self.SetSize((max(w0, w1)+5, max(h0, h1)+5))
         self.SetMinSize((500, 300))
         self.Show()
-
-        self.scandb = None
-        self.instdb = None
-        self.inst_name = None
-        self.move_callback = None
 
 
         self.init_larch()
@@ -2249,12 +2251,11 @@ class MapViewerFrame(wx.Frame):
         if xrmfile.dimension is None and isGSEXRM_MapFolder(self.folder):
             xrmfile.read_master()
 
-        # print("PROCESS_FILE!!", xrmfile.folder_has_newdata(), self.h5convert_done,
-        #      filename in self.files_in_progress)
-
-        if (xrmfile.folder_has_newdata() and self.h5convert_done
-            and filename not in self.files_in_progress):
-
+        has_newdata = xrmfile.folder_has_newdata()
+        h5convert_done = self.h5convert_done
+        in_progress = filename in self.files_in_progress
+        print(f"process_file: {filename=} {in_progress=}, {has_newdata=}, {h5convert_done=}")
+        if (has_newdata and h5convert_done and not in_progress):
             self.files_in_progress.append(filename)
             self.h5convert_fname = filename
             self.h5convert_done = False
@@ -2265,11 +2266,13 @@ class MapViewerFrame(wx.Frame):
                 maxrow = max_new_rows + xrmfile.last_row + 1
 
             ## this calls process function of xrm_mapfile class
+            print(f"process_file: start convert thread {maxrow=}")
             self.h5convert_thread = Thread(target=xrmfile.process,
                                            kwargs={'callback':self.updateTimer,
                                                    'maxrow': maxrow})
             self.h5convert_thread.start()
         elif callable(on_complete):
+            print("process_file: running convert process")
             on_complete()
 
     def updateTimer(self, row=None, maxrow=None, filename=None, status=None):

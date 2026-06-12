@@ -125,10 +125,10 @@ class XASNormPanel(TaskPanel):
 
         opts = {'digits': 2, 'increment': 0.05, 'value': 0, 'size': (FSIZE, -1)}
         plot_voff = self.add_floatspin('plot_voff', with_pin=False,
-                                               parent=trow,
-                                               action=self.onPlotSel,
-                                               max_val=10000, min_val=-10000,
-                                               **opts)
+                                        parent=trow,
+                                        action=self.onPlotSel,
+                                        max_val=10000, min_val=-10000,
+                                        **opts)
 
         erange_lab = wx.StaticText(parent=trow, label=' Energy Range:', size=(150, -1))
         voff_lab = wx.StaticText(parent=trow, label=' Y Offset:', size=(150, -1))
@@ -824,6 +824,7 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         cursor history of the first 20 plot windows.
         """
         if xsel is None or opt not in self.wids:
+            print(f"no pin data {xsel=}, {opt=}")
             return
 
         e0 = self.wids['e0'].GetValue()
