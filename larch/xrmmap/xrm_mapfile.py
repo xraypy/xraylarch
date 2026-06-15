@@ -3270,7 +3270,7 @@ class GSEXRM_MapFile(object):
                 out = self.xrmmap[detname][:, :, _roi]
                 # print(f"from v1, got roi map {_roi=}, {detname=}, {out.shape=}")
                 if self.write_access:
-                    print(f"  .. save as {detaddr=}/{roiaddr=}")
+                    # print(f"  .. save as {detaddr=}/{roiaddr=}")
                     self.xrmmap[detaddr][roiaddr].resize((nrow, ncol))
                     self.xrmmap[detaddr][roiaddr][:, :] = out
 
