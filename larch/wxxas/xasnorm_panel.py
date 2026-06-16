@@ -73,6 +73,26 @@ def get_auto_npre(pre1, pre2):
     nrange = abs(pre2 - pre1)
     return 0 if nrange < 5.0 else 1
 
+def set_energy_units(dgroup, parent=None):
+    """set energy units for group"""
+    en_units = getattr(dgroup, 'energy_units', None)
+    if en_units is None:
+        en_units = guess_energy_units(dgroup.energy)
+
+    if en_units != 'eV' and parent is not None:
+        mono_dspace = getattr(dgroup, 'mono_dspace', 1)
+        dlg = EnergyUnitsDialog(parent, dgroup.energy,
+                                unitname=en_units,
+                                dspace=mono_dspace)
+        res = dlg.GetResponse()
+        dlg.Destroy()
+        if res.ok:
+            en_units = res.units
+            dgroup.mono_dspace = res.dspace
+            dgroup.energy = res.energy*1.0
+            dgroup.xplot = dgroup.energy*1.0
+    dgroup.energy_units = en_units
+
 
 class XASNormPanel(TaskPanel):
     """XAS normalization Panel"""
@@ -235,13 +255,19 @@ class XASNormPanel(TaskPanel):
         self.wids['energy_ref'] = Choice(panel, choices=['None'],
                                          action=self.onEnergyRef, size=(325, -1))
 
-        self.wids['nvict'] = Choice(panel, choices=('0', '1', '2', '3'),
-                                    size=(150, -1), action=self.onNormMethod,
-                                    default=defaults.get('nvict', 0))
         self.wids['npre'] = Choice(panel, choices=list(PREEDGE_FORMS),
                                           size=(150, -1), action=self.onNormMethod)
         self.wids['npre'].SetSelection(defaults.get('npre', 1))
 
+        vict_panel = wx.Panel(panel)
+        self.wids['nvict'] = Choice(vict_panel, choices=('0', '1', '2', '3'),
+                                    size=(100, -1), action=self.onNormMethod,
+                                    default=defaults.get('nvict', 0))
+
+        sx = wx.BoxSizer(wx.HORIZONTAL)
+        sx.Add(SimpleText(vict_panel, 'Victoreen Order: '), 0, LEFT, 4)
+        sx.Add(self.wids['nvict'])
+        pack(vict_panel, sx)
 
         opts = {'size': (FSIZE, -1), 'digits': 2, 'increment': 5.0,
                 'action': self.onSet_Ranges,
@@ -345,9 +371,8 @@ class XASNormPanel(TaskPanel):
         panel.Add(CopyBtn('xas_pre'), dcol=1, style=RIGHT)
 
         add_text('Pre-edge Type:')
-        panel.Add(self.wids['npre'], dcol=2)
-        add_text('Victoreen order:')
-        panel.Add(self.wids['nvict'], dcol=2)
+        panel.Add(self.wids['npre'])
+        panel.Add(vict_panel)
 
         panel.Add((5, 5), newrow=True)
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=4, newrow=True)
@@ -355,10 +380,11 @@ class XASNormPanel(TaskPanel):
         add_text('Normalization : ')
         panel.Add(self.wids['norm_method'], dcol=1)
         panel.Add(compare_norms)
-        panel.Add(CopyBtn('xas_norm'), dcol=1, style=RIGHT)
+        panel.Add(CopyBtn('xas_norm_method'), dcol=1, style=RIGHT)
 
         add_text('Norm Energy range: ')
         panel.Add(nor_panel, dcol=2)
+        panel.Add(CopyBtn('xas_norm'), dcol=1, style=RIGHT)
         add_text('Polynomial Type:')
         panel.Add(nnorm_panel, dcol=2)
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=4, newrow=True)
@@ -712,8 +738,10 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
             copy_attrs('pre1', 'pre2', 'nvict', 'show_pre')
         elif name == 'atsym':
             copy_attrs('atsym', 'edge')
+        elif name == 'xas_norm_method':
+            copy_attrs('norm_method')
         elif name == 'xas_norm':
-            copy_attrs('norm_method', 'nnorm', 'norm1', 'norm2', 'auto_nnorm', 'show_norm')
+            copy_attrs('nnorm', 'norm1', 'norm2', 'auto_nnorm', 'show_norm')
         elif name == 'energy_ref':
             copy_attrs('energy_ref')
 
@@ -725,7 +753,7 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
                 for key, val in opts.items():
                     if hasattr(grp, key):
                         setattr(grp, key, val)
-                self.process(grp, force=True)
+                self.process(grp, force=True, use_form=False)
         self.process(dgroup, force=True)
 
 
@@ -857,9 +885,9 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
             self.stale_groups = None
         self.onPlotEither(process=False)
 
-    # def process(self, dgroup=None, force_mback=False, force=False, use_form=True, **kws):
-    def process(self, dgroup=None, force_mback=False, force=False):
-        """ handle process (pre-edge/normalize) of XASS data from XAS form
+    def process(self, dgroup=None, force_mback=False, force=False, use_form=True, **kws):
+        """
+        handle process (pre-edge/normalize) of XASS data from XAS form
         """
         if self.skip_process and not force:
             return
@@ -869,170 +897,148 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
             return
         self.skip_process = True
         conf = self.get_config(dgroup)
+        gname = dgroup.groupname
+        # print(f"### Process {gname=}, {use_form=}")
+        # print(f"Process {conf=}")
         form = self.read_form()
 
-        form['group'] = dgroup.groupname
-        groupnames = list(self.controller.file_groups.keys())
-        self.wids['energy_ref'].SetChoices(groupnames)
-        eref_sel = self.wids['energy_ref'].GetStringSelection()
-        for key, val in self.controller.file_groups.items():
-            if eref_sel in (val, key):
-                self.wids['energy_ref'].SetStringSelection(key)
+        if use_form:
+            groupnames = list(self.controller.file_groups.keys())
+            self.wids['energy_ref'].SetChoices(groupnames)
+            eref_sel = self.wids['energy_ref'].GetStringSelection()
+            for key, val in self.controller.file_groups.items():
+                if eref_sel in (val, key):
+                    self.wids['energy_ref'].SetStringSelection(key)
 
-        en_units = getattr(dgroup, 'energy_units', None)
-        if en_units is None:
-            en_units = guess_energy_units(dgroup.energy)
-
-        if en_units != 'eV':
-            mono_dspace = getattr(dgroup, 'mono_dspace', 1)
-            dlg = EnergyUnitsDialog(self.parent, dgroup.energy,
-                                    unitname=en_units,
-                                    dspace=mono_dspace)
-            res = dlg.GetResponse()
-            dlg.Destroy()
-            if res.ok:
-                en_units = res.units
-                dgroup.mono_dspace = res.dspace
-                dgroup.energy = res.energy*1.0
-                dgroup.xplot = dgroup.energy*1.0
-        dgroup.energy_units = en_units
+        set_energy_units(dgroup, parent=self.parent)
 
         if not hasattr(dgroup, 'e0'):
-            e0 = form['e0'] = find_e0(dgroup)
-        if form['atsym'] == '?':
-            self.set_atom_edge('?', '?')
-
-        cmds = []
-        # test whether the energy shift is 0 or is different from the current energy shift:
-        ediff = 1e15  # just a huge energy step/shift
-        eshift_current = getattr(dgroup, 'energy_shift', ediff)
-        eshift = form.get('energy_shift', ediff)
-        e1 = getattr(dgroup, 'energy', [ediff])
-        e2 = getattr(dgroup, 'energy_orig', None)
-        gname = dgroup.groupname
-
-
-        if (not isinstance(e2, np.ndarray) or (len(e1) != len(e2))):
-            cmds.append("{group:s}.energy_orig = {group:s}.energy[:]")
-
-        if (isinstance(e1, np.ndarray) and isinstance(e2, np.ndarray) and
-            len(e1) == len(e2)):
-            ediff = (e1-e2).min()
-
-        if abs(eshift-ediff) > 1.e-5 or abs(eshift-eshift_current) > 1.e-5:
-            if abs(eshift) > 1e15:
-                eshift = 0.0
-            cmds.extend(["{group:s}.energy_shift = {eshift:.4f}",
-                         "{group:s}.energy = {group:s}.xplot = {group:s}.energy_orig + {group:s}.energy_shift"])
-
-        if len(cmds) > 0:
-            self.larch_eval(('\n'.join(cmds)).format(group=gname, eshift=eshift))
-
-        e0 = form['e0']
-        copts = [gname, f'{e0=:.4f}']
-
-        if not form['auto_step']:
-            copts.append("step=%s" % gformat(float(form['edge_step'])))
-
-        xasmode = getattr(dgroup, 'xasmode', 'unknown')
-        # print(f"process {xasmode=} {dgroup.filename=}")
-        if xasmode.startswith('calc'):
-            copts.append('iscalc=True')
-        #
-        for attr in ('pre1', 'pre2', 'nvict', 'npre', 'nnorm', 'norm1', 'norm2'):
-            val = form[attr]
-            if val is None or val == 'auto':
-                val = 'None'
-            elif attr in ('nvict', 'nnorm', 'npre'):
-                if val in NNORM_CHOICES:
-                    val = NNORM_CHOICES[val]
-                val = int(val)
-                if attr == 'npre' and xasmode.startswith('calc'):
-                    val=0
-            else:
-                val = f"{float(val):.2f}"
-            copts.append(f"{attr}={val}")
-
-        self.larch_eval("pre_edge(%s) " % (', '.join(copts)))
-        self.larch_eval("{group:s}.norm_poly = 1.0*{group:s}.norm".format(**form))
+            if conf.get('e0', None) is None:
+                find_e0(dgroup)
+            conf['e0'] = dgroup.e0
         if not hasattr(dgroup, 'e0'):
             self.skip_process = False
             dgroup.mu = dgroup.yplot * 1.0
             return
 
-        norm_method = form['norm_method'].lower()
-        form['normmeth'] = 'poly'
+        if conf.get('atsym', '?') == '?':
+            atsym, edge = guess_edge(dgroup.e0)
+            conf['atsym'] = dgroup.atsym = atsym
+            conf['edge'] = dgroup.edge = edge
+        if use_form:
+            try:
+                self.wids['atsym'].SetStringSelection(dgroup.atsym)
+                self.wids['edge'].SetStringSelection(dgroup.edge)
+            except:
+                pass
+
+        cmds = []
+        # test whether the energy shift is 0 or is different from the current energy shift:
+        ediff = 0.0
+        eshift = getattr(dgroup, 'energy_shift', 0.00)
+        energy = getattr(dgroup, 'energy', [-1])
+        eorig = getattr(dgroup, 'energy_orig', None)
+        gname = dgroup.groupname
+        if not isinstance(eorig, np.ndarray):
+            cmds.append("{group:s}.energy_orig = {group:s}.energy[:]")
+
+        if (isinstance(energy, np.ndarray) and isinstance(eorig, np.ndarray) and
+            len(energy) == len(eorig)):
+            ediff = (energy-eorig).min()
+
+        if abs(eshift - ediff) > 1.e-5:
+            if abs(eshift) > 1e9:
+                eshift = 0.0
+            cmds.extend([f"{gname}.energy_shift = {eshift:.4f}",
+                         f"{gname}.energy = {gname}.xplot = {gname}.energy_orig + {gname}.energy_shift"])
+
+        if len(cmds) > 0:
+            self.larch_eval(('\n'.join(cmds)).format(group=gname, eshift=eshift))
+
+        copts = [gname, f'e0={dgroup.e0:.4f}']
+        edge_step = dgroup.edge_step
+        if use_form:
+            edge_step = None if form['auto_step'] else float(form['edge_step'])
+        if edge_step is not None:
+            copts.append("step=%s" % gformat(edge_step))
+
+        xasmode = getattr(dgroup, 'xasmode', 'unknown')
+        # print(f"process {xasmode=} {dgroup.filename=}")
+        if xasmode.startswith('calc'):
+            copts.append('iscalc=True')
+        pre_edge_vals = {}
+        for attr in ('pre1', 'pre2', 'nvict', 'npre', 'nnorm', 'norm1', 'norm2'):
+            if use_form:
+                val = form[attr]
+                if val is None or val == 'auto':
+                    val = 'None'
+                elif attr in ('nvict', 'nnorm', 'npre'):
+                    if val in NNORM_CHOICES:
+                        val = NNORM_CHOICES[val]
+                    val = int(val)
+                    if attr == 'npre' and xasmode.startswith('calc'):
+                        val=0
+            else:
+                val = conf.get(attr, None)
+                # print("non-form arg ", attr, val, conf.keys())
+            if val is not None:
+                val = f"{float(val):.2f}"
+                copts.append(f"{attr}={val}")
+                pre_edge_vals[attr] = val
+
+        self.larch_eval("pre_edge(%s) " % (', '.join(copts)))
+        self.larch_eval(f"{gname}.norm_poly = 1.0*{gname}.norm")
+
+        norm_method = conf.get('norm_method', 'polynomial').lower()
+        if use_form:
+            norm_method = form.get('norm_method', 'polynomial').lower()
 
         dgroup.journal.add_ifnew('normalization_method', norm_method)
         if ((not xasmode.startswith('calc')) and
             (force_mback or norm_method.startswith('mback'))):
-            form['normmeth'] = 'mback'
-            copts = [dgroup.groupname]
-            copts.append("z=%d" % atomic_number(form['atsym']))
-            copts.append("edge='%s'" % form['edge'])
+            norm_method = 'mback'
+            copts = [dgroup.groupname, "z=%d" % atomic_number(dgroup.atsym),
+                     f"edge='{dgroup.edge}'"]
             for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
-                val = form[attr]
-                if val is None or val == 'auto':
-                    val = 'None'
-                elif attr in ('nvict', 'nnorm'):
-                    if val in NNORM_CHOICES:
-                        val = NNORM_CHOICES[val]
-                    val = int(val)
-                else:
-                    val = f"{float(val):.2f}"
+                val = pre_edge_vals[attr]
                 copts.append(f"{attr}={val}")
-            self.larch_eval("mback_norm(%s)" % (', '.join(copts)))
+            mcmds = ["mback_norm(%s)" % (', '.join(copts)),
+                     f"{gname}.norm = 1.0*{gname}.norm_{norm_method}"]
 
-            if form['auto_step']:
-                norm_expr = """{group:s}.norm = 1.0*{group:s}.norm_{normmeth:s}
-{group:s}.edge_step = 1.0*{group:s}.edge_step_{normmeth:s}"""
-                self.larch_eval(norm_expr.format(**form))
+            if use_form and form['auto_step']:
+                mcmds.append(f"{gname}.edge_step = 1.0*{gname}.edge_step_{norm_method}")
             else:
-                norm_expr = """{group:s}.norm = 1.0*{group:s}.norm_{normmeth:s}
-{group:s}.norm *= {group:s}.edge_step_{normmeth:s}/{edge_step:.8f}"""
-
-
-                self.larch_eval(norm_expr.format(**form))
+                cval = gformat(edge_step)
+                mcmds.append(f"{gname}.norm *= {gname}.edge_step_{norm_method}/{cval}")
+            self.larch_eval('\n'.join(mcmds))
 
         if norm_method.startswith('area'):
-            form['normmeth'] = 'area'
-            expr = """{group:s}.norm = 1.0*{group:s}.norm_{normmeth:s}
-{group:s}.edge_step = 1.0*{group:s}.edge_step_{normmeth:s}"""
-            self.larch_eval(expr.format(**form))
+            self.larch.eval(f"{gname}.norm = 1.0*{gname}.norm_area")
+            self.larch.eval(f"{gname}.edge_step = 1.0*{gname}.edge_step_area")
 
-        if form['auto_e0'] and hasattr(dgroup, 'e0'):
+        if use_form and form['auto_e0']:
             self.wids['e0'].SetValue(dgroup.e0)
-        if form['auto_step'] and hasattr(dgroup, 'edge_step'):
+        if use_form and form['auto_step']:
             self.wids['edge_step'].SetValue(dgroup.edge_step)
             autoset_fs_increment(self.wids['edge_step'], dgroup.edge_step)
-
-        if hasattr(dgroup, 'e0') and (conf.get('atsym', '?') == '?'):
-            atsym, edge = guess_edge(dgroup.e0)
-            conf['atsym'] = dgroup.atsym = atsym
-            conf['edge'] = dgroup.edge = edge
-            # conf['atsym'] = atsym
-            # conf['edge'] = edge
-        try:
-            self.wids['atsym'].SetStringSelection(dgroup.atsym)
-            self.wids['edge'].SetStringSelection(dgroup.edge)
-        except:
-            pass
 
         for attr in ('e0', 'edge_step'):
             conf[attr] = getattr(dgroup, attr)
 
         if not hasattr(dgroup, 'pre_edge_details'):
             dgroup.pre_edge_details = Group(nnorm=None)
-        self.set_nnorm_widget(getattr(dgroup.pre_edge_details,
-                                      'nnorm', None))
-        for attr in ('pre1', 'pre2', 'norm1', 'norm2'):
+
+        for attr in ('pre1', 'pre2', 'norm1', 'norm2', 'nnorm'):
             conf[attr] = val = getattr(dgroup.pre_edge_details, attr, None)
-            if val is not None:
-                self.wids[attr].SetValue(val)
+            if use_form and val is not None:
+                if attr == 'nnorm':
+                    self.set_nnorm_widget(val)
+                else:
+                    self.wids[attr].SetValue(val)
 
         self.update_config(conf, dgroup=dgroup)
-
         self.skip_process = False
+        ## end of process
 
     def get_plot_energy_offset(self, dgroup):
         selection = self.wids['plot_enoff'].GetSelection()
