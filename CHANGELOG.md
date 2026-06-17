@@ -5,6 +5,24 @@ The GitHub Release Notes will also be useful
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2026.2.1 - 2026-06-17]
+
+### Larix
+ - xasnorm: fix "Copy to Selected Goups" buttons to not copy too many
+   parameters from the currently displayed group.
+
+### Other GUIs
+ - gsemap viewer: several small fixes for map building from rawmap folders.
+
+
+### Exampes/Docs:
+ - work in progress to update docs to more modern Sphinx extension,
+   notably for 'subfigures' in the docs.
+
+### Distribution/Install/General:
+ - update macOS installer link
+ - fix fetching of "nightly build"
+
 ## [2026.2.0 - 2026-05-22]
 
 #### xraylarch library
@@ -51,7 +69,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
  - better handling of out-of-bounds Plot cursor values.
 
 ### XRF Fitting
-
  - fitting GUI tweaks
  - fitting: better checking for setting values for Choice boxes
  - fitting: use timestamp as fit label for XRF fits
@@ -560,9 +577,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
     hitting the pin icon starts a timer which will look for mouse clicks *after* hitting
     the pin icon:
        a) if there are new mouse clicks on the plot, wait at least 3 seconds, and return
-          the most recent position.
+	  the most recent position.
        b) if there are no mouse clicks after 15 seconds, return the most recent position
-           (even before clicking on the pin)
+	   (even before clicking on the pin)
 
 
 ### Fixed
