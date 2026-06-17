@@ -6,18 +6,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>14.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment &#8212; xraylarch 2026.2.1 documentation</title>
+    <title>14.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment &#8212; xraylarch 2026.2.2 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/xraylarch_style.css?v=f3581a04" />
     
-    <script src="_static/documentation_options.js?v=8f11cabd"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/documentation_options.js?v=b8e940d7"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
-    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -285,8 +285,8 @@ subtracts that curve from it.</p>
 <section id="the-mback-algorithm">
 <h2><span class="section-number">14.2.4. </span>The MBACK algorithm<a class="headerlink" href="#the-mback-algorithm" title="Link to this heading">¶</a></h2>
 <p>Larch provides an implementation of the MBACK algorithm of
-Weng <span class="bibtex-citation" id="id1">[<a class="reference internal" href="bibliography.html#id30" title="Tsu-Chien Weng, Geoffrey S. Waldo, and James E. Penner-Hahn. A method for normalization of X-ray absorption spectra. Journal of Synchrotron Radiation, 12(4):506–510, Jul 2005. doi:10.1107/S0909049504034193.">Weng, Waldo, and Penner-Hahn (2005)</a>]</span> with an option of using the modification proposed by
-Lee <em>et al</em> <span class="bibtex-citation" id="id2">[<a class="reference internal" href="bibliography.html#id31" title="Julia C. Lee, Jingen Xiang, Bruce Ravel, Jeffrey Kortright, and Kathryn Flanagan. Condensed matter astrophysics: a prescription for determining the species-specific composition and quantity of interstellar dust using x-rays. The Astrophysical Journal, 702(2):970, 2009. URL: https://stacks.iop.org/0004-637X/702/i=2/a=970, doi:0004-637X/702/i=2/a=970.">Lee et al. (2009)</a>]</span>.  In MBACK, the data are matched to the tabulated
+Weng <span id="id1">[<a class="reference internal" href="bibliography.html#id30" title="Tsu-Chien Weng, Geoffrey S. Waldo, and James E. Penner-Hahn. A method for normalization of X-ray absorption spectra. Journal of Synchrotron Radiation, 12(4):506–510, Jul 2005. doi:10.1107/S0909049504034193.">Weng, Waldo, and Penner-Hahn (2005)</a>]</span> with an option of using the modification proposed by
+Lee <em>et al</em> <span id="id2">[<a class="reference internal" href="bibliography.html#id31" title="Julia C. Lee, Jingen Xiang, Bruce Ravel, Jeffrey Kortright, and Kathryn Flanagan. Condensed matter astrophysics: a prescription for determining the species-specific composition and quantity of interstellar dust using x-rays. The Astrophysical Journal, 702(2):970, 2009. URL: https://stacks.iop.org/0004-637X/702/i=2/a=970, doi:0004-637X/702/i=2/a=970.">Lee et al. (2009)</a>]</span>.  In MBACK, the data are matched to the tabulated
 values of the imaginary part of the energy-dependent correction to the
 Thompson scattering factor, <span class="math notranslate nohighlight">\(f''(E)\)</span>.  To account for any
 instrumental or sample-dependent aspects of the shape of the measured
@@ -314,10 +314,10 @@ adjusted by breaking the minimization function into two regions: the
 <span class="math notranslate nohighlight">\(n_1\)</span> data points below the absorption edge and the <span class="math notranslate nohighlight">\(n_2\)</span>
 data points above the absorption edge.  <span class="math notranslate nohighlight">\(n_1+n_2=N\)</span>, where N is
 the total number of data points.</p>
-<p>If this is used in publication, a citation should be given to Weng <span class="bibtex-citation" id="id3">[<a class="reference internal" href="bibliography.html#id30" title="Tsu-Chien Weng, Geoffrey S. Waldo, and James E. Penner-Hahn. A method for normalization of X-ray absorption spectra. Journal of Synchrotron Radiation, 12(4):506–510, Jul 2005. doi:10.1107/S0909049504034193.">Weng, Waldo, and Penner-Hahn (2005)</a>]</span>.</p>
+<p>If this is used in publication, a citation should be given to Weng <span id="id3">[<a class="reference internal" href="bibliography.html#id30" title="Tsu-Chien Weng, Geoffrey S. Waldo, and James E. Penner-Hahn. A method for normalization of X-ray absorption spectra. Journal of Synchrotron Radiation, 12(4):506–510, Jul 2005. doi:10.1107/S0909049504034193.">Weng, Waldo, and Penner-Hahn (2005)</a>]</span>.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="mback">
-<span class="sig-name descname"><span class="pre">mback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mback" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">mback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mback" title="Link to this definition">¶</a></dt>
 <dd><p>Match measured <span class="math notranslate nohighlight">\(\mu(E)\)</span> data to tabulated cross-section data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -438,7 +438,7 @@ large features near the edge.</p>
 </figure>
 <dl class="py function">
 <dt class="sig sig-object py" id="mback_norm">
-<span class="sig-name descname"><span class="pre">mback_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mback_norm" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">mback_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mback_norm" title="Link to this definition">¶</a></dt>
 <dd><p>A simplified version of <a class="reference internal" href="#mback" title="mback"><code class="xref py py-func docutils literal notranslate"><span class="pre">mback()</span></code></a> to normalize <span class="math notranslate nohighlight">\(\mu(E)\)</span> data
 to tabulated cross-section data for <span class="math notranslate nohighlight">\(f''(E)\)</span>.</p>
 <dl class="simple">
@@ -652,7 +652,7 @@ coordination number and mean-square displacement parameters in the EXAFS,
 and edge-position and pre-edge peak height for XANES.  Fortunately, the
 effect can be corrected for small over-absorption.</p>
 <p>For XANES, a common correction method from the FLUO program by D. Haskel
-(<span class="bibtex-citation" id="id4">[<a class="reference internal" href="bibliography.html#id54" title="D. Haskel. Fluo. 1999. URL: {https://www.aps.anl.gov/~haskel/fluo.html}.">Haskel (1999)</a>]</span>) can be used.  The algorithm is contained in the
+(<span id="id4">[<a class="reference internal" href="bibliography.html#id54" title="D. Haskel. Fluo. 1999. URL: {https://www.aps.anl.gov/~haskel/fluo.html}.">Haskel (1999)</a>]</span>) can be used.  The algorithm is contained in the
 <a class="reference internal" href="#fluo_corr" title="fluo_corr"><code class="xref py py-func docutils literal notranslate"><span class="pre">fluo_corr()</span></code></a> function.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="fluo_corr">
@@ -1058,7 +1058,7 @@ level.</span><a class="headerlink" href="#fig-xafs-deconv3" title="Link to this 
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>
 </html>

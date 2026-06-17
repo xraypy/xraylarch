@@ -6,18 +6,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>14.4. XAFS: Post-edge Background Subtraction &#8212; xraylarch 2026.2.1 documentation</title>
+    <title>14.4. XAFS: Post-edge Background Subtraction &#8212; xraylarch 2026.2.2 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/xraylarch_style.css?v=f3581a04" />
     
-    <script src="_static/documentation_options.js?v=8f11cabd"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/documentation_options.js?v=b8e940d7"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
-    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -97,7 +97,7 @@ subtleties.  This section is devoted to background subtraction with the
 <h2><span class="section-number">14.4.1. </span>The <a class="reference internal" href="#autobk" title="autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> function<a class="headerlink" href="#the-autobk-function" title="Link to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="autobk">
-<span class="sig-name descname"><span class="pre">autobk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rbkg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#autobk" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">autobk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rbkg=1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#autobk" title="Link to this definition">¶</a></dt>
 <dd><p>Determine the post-edge background function, <span class="math notranslate nohighlight">\(\mu_0(E)\)</span>, and
 corresponding <span class="math notranslate nohighlight">\(\chi(k)\)</span>.</p>
 <dl class="field-list simple">
@@ -220,7 +220,7 @@ determine <span class="math notranslate nohighlight">\(\chi(k)\)</span> and <spa
 <section id="the-autobk-algorithm">
 <h2><span class="section-number">14.4.2. </span>The AUTOBK Algorithm<a class="headerlink" href="#the-autobk-algorithm" title="Link to this heading">¶</a></h2>
 <p>The background subtraction method used is the <strong>AUTOBK</strong> algorithm
-(see <span class="bibtex-citation" id="id1">[<a class="reference internal" href="bibliography.html#id22" title="M. Newville, P. Livins, Y. Yacoby, J. J. Rehr, and E. A. Stern. Near-edge x-ray-absorption fine structure of Pb: A comparison of theory and experiment. Physical Review B, 47(21):14126–14131, 1993. doi:10.1103/PhysRevB.47.14126.">Newville et al. (1993)</a>]</span>), in which a spline function is matched to the
+(see <span id="id1">[<a class="reference internal" href="bibliography.html#id22" title="M. Newville, P. Livins, Y. Yacoby, J. J. Rehr, and E. A. Stern. Near-edge x-ray-absorption fine structure of Pb: A comparison of theory and experiment. Physical Review B, 47(21):14126–14131, 1993. doi:10.1103/PhysRevB.47.14126.">Newville et al. (1993)</a>]</span>), in which a spline function is matched to the
 low-<em>R</em> components of the resulting <span class="math notranslate nohighlight">\(\chi(k)\)</span>.</p>
 <p>For reference, <span class="math notranslate nohighlight">\(k = \sqrt{2m_e (E-E_0)/\hbar^2}\)</span> is the wavenumber of
 the ejected photo-electron, where <span class="math notranslate nohighlight">\(E_0\)</span> is the absorption threshold
@@ -676,7 +676,7 @@ function.</p>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>
 </html>

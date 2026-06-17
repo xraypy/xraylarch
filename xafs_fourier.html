@@ -6,18 +6,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>14.5. XAFS: Fourier Transforms for XAFS &#8212; xraylarch 2026.2.1 documentation</title>
+    <title>14.5. XAFS: Fourier Transforms for XAFS &#8212; xraylarch 2026.2.2 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/xraylarch_style.css?v=f3581a04" />
     
-    <script src="_static/documentation_options.js?v=8f11cabd"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/documentation_options.js?v=b8e940d7"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
-    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -179,7 +179,7 @@ and is of primary importance for XAFS analysis.  In Larch, this is
 encapsulated in the <a class="reference internal" href="#xftf" title="xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a> function.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="xftf">
-<span class="sig-name descname"><span class="pre">xftf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xftf" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">xftf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chi=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xftf" title="Link to this definition">¶</a></dt>
 <dd><p>perform a forward XAFS Fourier transform, from <span class="math notranslate nohighlight">\(\chi(k)\)</span> to
 <span class="math notranslate nohighlight">\(\chi(R)\)</span>, using common XAFS conventions.</p>
 <dl class="field-list simple">
@@ -276,7 +276,7 @@ complex.  By convention, the real part of <span class="math notranslate nohighli
 the explicitly real <span class="math notranslate nohighlight">\(\chi(k)\)</span>.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="xftr">
-<span class="sig-name descname"><span class="pre">xftr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xftr" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">xftr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xftr" title="Link to this definition">¶</a></dt>
 <dd><p>perform a reverse XAFS Fourier transform, from <span class="math notranslate nohighlight">\(\chi(R)\)</span> to
 <span class="math notranslate nohighlight">\(\chi(q)\)</span>.</p>
 <dl class="field-list simple">
@@ -376,7 +376,7 @@ extensive literature on such windows, and a lot of choices and parameters
 available for constructing windows.  A sampling of windows is shown below.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="ftwindow">
-<span class="sig-name descname"><span class="pre">ftwindow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dk</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ftwindow" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">ftwindow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmin=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmax=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dk=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ftwindow" title="Link to this definition">¶</a></dt>
 <dd><p>create a Fourier transform window array.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -754,7 +754,7 @@ array.</p>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>
 </html>
