@@ -1,0 +1,260 @@
+
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>5.6. Linear Combination Analysis &#8212; xraylarch 2026.2.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/bizstyle.css?v=5283bb3d" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/xraylarch_style.css?v=f3581a04" />
+    
+    <script src="../_static/documentation_options.js?v=8f11cabd"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5.9. EXAFS Processing: Background Subtraction" href="exafs.html" />
+    <link rel="prev" title="5.5. Pre-edge peak fitting" href="preedge.html" />
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
+  </head><body>
+<div style=" background-color: #c5daba;  text-align: left; height:60px; padding: 0px">
+<table border=0>
+  <tr>
+    <td width=20%>
+        <a href="../index.html">
+         <img src="../_static/larchcones.png" height=55px alt="larchcones"/></a>
+    </td>
+    <td width=75% padding=0>
+      <font size=+2>
+        <a href="../index.html" style="color:#335">
+          Larch: Data Analysis Tools for X-ray Spectroscopy
+        </a>
+      </font>
+    </td>
+   </tr></table>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="exafs.html" title="5.9. EXAFS Processing: Background Subtraction"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="preedge.html" title="5.5. Pre-edge peak fitting"
+             accesskey="P">previous</a> |</li>
+   <li>[<a href="../index.html"> Larch</a>|</li>
+   <li><a href="../getting_started.html"> Getting Started</a>|</li>
+   <li><a href="../xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray.html">X-ray Databases</a>|</li>
+   <li><a href="../xrf.html">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
+
+          <li class="nav-item nav-item-1"><a href="../larix.html" accesskey="U"><span class="section-number">5. </span>Larix</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.6. </span>Linear Combination Analysis</a></li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
+<section id="linear-combination-analysis">
+<span id="larix-lincombo"></span><h1><span class="section-number">5.6. </span>Linear Combination Analysis<a class="headerlink" href="#linear-combination-analysis" title="Link to this heading">¶</a></h1>
+<p>Linear Combination Analysis is useful for modeling a XANES spectrum as a
+combination of other spectra.  In this approach, one asserts that an
+unknown spectrum should be a linear combination of spectra of
+well-characterized samples or “standards”.  With the results from a
+spectral fit, one can then conclude what fraction of atomic environments
+correspond to those of each standard.  For this to work well, the XANES
+data needs to be normalized consistently.</p>
+<p>To use this in Larix, one selects a set of spectra for the “standards”
+and “builds a model” from the selected groups for the standards, and then
+fits one or more spectra from unknown samples to get the fractional weight
+for each sample.  Options include:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>allowing a single energy shift between unknown spectrum and the set
+of standards.</p></li>
+<li><p>trying all combination of standards.</p></li>
+<li><p>forcing all weights to add to 1.0</p></li>
+</ul>
+</div></blockquote>
+<figure class="align-center" id="id2">
+<span id="fig-larix-9a"></span><a class="reference external image-reference" href="../_images/Larix_LCF_main.png"><img alt="../_images/Larix_LCF_main.png" src="../_images/Larix_LCF_main.png" style="width: 75%;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Figure 5.6.1 </span><span class="caption-text">Linear Combination Fitting, main panel</span><a class="headerlink" href="#id2" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id3">
+<span id="fig-larix-9b"></span><a class="reference external image-reference" href="../_images/Larix_LCF_plot.png"><img alt="../_images/Larix_LCF_plot.png" src="../_images/Larix_LCF_plot.png" style="width: 75%;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Figure 5.6.2 </span><span class="caption-text">Linear Combination Fitting, plot of result</span><a class="headerlink" href="#id3" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id4">
+<span id="fig-larix-9c"></span><a class="reference external image-reference" href="../_images/Larix_LCF_results.png"><img alt="../_images/Larix_LCF_results.png" src="../_images/Larix_LCF_results.png" style="width: 75%;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Figure 5.6.3 </span><span class="caption-text">Linear Combination Fitting, results panel</span><a class="headerlink" href="#id4" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="principal-component-and-non-negative-factor-analysis">
+<span id="larix-pca"></span><h1><span class="section-number">5.7. </span>Principal Component and Non-negative Factor Analysis<a class="headerlink" href="#principal-component-and-non-negative-factor-analysis" title="Link to this heading">¶</a></h1>
+<p>Principal Component Analysis (PCA) is one of a family of numerical
+techniques to reduce the number of variable components in a set of data.
+There are many related techniques and procedures, and quite a bit of
+nomenclature and jargon around the methods.</p>
+<p>In essence, all these methods are aimed at taking a large set of similar
+data and trying to determine how many independent components make up that
+larger dataset.    That is, the only question PCA and related methods can
+ever really answer is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>how many independent spectra make up my collection of spectra?
+</pre></div>
+</div>
+<p>It is important to note that PCA cannot tell you what those independent
+spectra represent or even what they look like.  However, you can also use
+the results of PCA to ask:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>is this *other* spectrum made up of the same components as make up my collection?
+</pre></div>
+</div>
+<figure class="align-center" id="id5">
+<span id="fig-larix-10a"></span><a class="reference external image-reference" href="../_images/Larix_PCAmain_page.png"><img alt="../_images/Larix_PCAmain_page.png" src="../_images/Larix_PCAmain_page.png" style="width: 75%;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Figure 5.7.1 </span><span class="caption-text">Principal Component Analysis, main panel</span><a class="headerlink" href="#id5" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id6">
+<span id="fig-larix-10b"></span><a class="reference external image-reference" href="../_images/Larix_PCA_compplot.png"><img alt="../_images/Larix_PCA_compplot.png" src="../_images/Larix_PCA_compplot.png" style="width: 75%;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Figure 5.7.2 </span><span class="caption-text">Principal Component Analysis, Plot of spectral components.</span><a class="headerlink" href="#id6" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id7">
+<span id="fig-larix-10c"></span><a class="reference external image-reference" href="../_images/Larix_PCA_screeplot.png"><img alt="../_images/Larix_PCA_screeplot.png" src="../_images/Larix_PCA_screeplot.png" style="width: 75%;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Figure 5.7.3 </span><span class="caption-text">Principal Component Analysis, Plot of IND statistic and scree-like plot
+of the importance of each component.</span><a class="headerlink" href="#id7" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id8">
+<span id="fig-larix-10d"></span><a class="reference external image-reference" href="../_images/Larix_PCA_targetplot.png"><img alt="../_images/Larix_PCA_targetplot.png" src="../_images/Larix_PCA_targetplot.png" style="width: 75%;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Figure 5.7.4 </span><span class="caption-text">Principal Component Analysis, Plot of target transformation – using
+components to best match an unknown spectra.</span><a class="headerlink" href="#id8" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="linear-regression-with-lasso-and-pls-to-predict-external-variable">
+<span id="larix-regression"></span><h1><span class="section-number">5.8. </span>Linear Regression with LASSO and PLS to predict external variable<a class="headerlink" href="#linear-regression-with-lasso-and-pls-to-predict-external-variable" title="Link to this heading">¶</a></h1>
+<p>Linear</p>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">5.6. Linear Combination Analysis</a></li>
+<li><a class="reference internal" href="#principal-component-and-non-negative-factor-analysis">5.7. Principal Component and Non-negative Factor Analysis</a></li>
+<li><a class="reference internal" href="#linear-regression-with-lasso-and-pls-to-predict-external-variable">5.8. Linear Regression with LASSO and PLS to predict external variable</a></li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="preedge.html"
+                          title="previous chapter"><span class="section-number">5.5. </span>Pre-edge peak fitting</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="exafs.html"
+                          title="next chapter"><span class="section-number">5.9. </span>EXAFS Processing: Background Subtraction</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/larix/lincombo.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="exafs.html" title="5.9. EXAFS Processing: Background Subtraction"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="preedge.html" title="5.5. Pre-edge peak fitting"
+             >previous</a> |</li>
+   <li>[<a href="../index.html"> Larch</a>|</li>
+   <li><a href="../getting_started.html"> Getting Started</a>|</li>
+   <li><a href="../xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray.html">X-ray Databases</a>|</li>
+   <li><a href="../xrf.html">XRF Analysis</a>|</li>
+&nbsp; &nbsp;
+
+          <li class="nav-item nav-item-1"><a href="../larix.html" ><span class="section-number">5. </span>Larix</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.6. </span>Linear Combination Analysis</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright Matthew Newville, The University of Chicago, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    </div>
+  </body>
+</html>

@@ -6,13 +6,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>5.5. Pre-edge peak fitting &#8212; xraylarch 2026.2.0 documentation</title>
+    <title>5.5. Pre-edge peak fitting &#8212; xraylarch 2026.2.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/xraylarch_style.css?v=f3581a04" />
     
-    <script src="../_static/documentation_options.js?v=2b694ea4"></script>
+    <script src="../_static/documentation_options.js?v=8f11cabd"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -21,7 +21,7 @@
     <script src="../_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="6. XRFMap Viewr" href="../wxmap_viewer.html" />
+    <link rel="next" title="5.6. Linear Combination Analysis" href="lincombo.html" />
     <link rel="prev" title="5.3. Pre-edge subtraction and Normalization" href="dialogs.html" />
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
@@ -57,7 +57,7 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../wxmap_viewer.html" title="6. XRFMap Viewr"
+          <a href="lincombo.html" title="5.6. Linear Combination Analysis"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="dialogs.html" title="5.3. Pre-edge subtraction and Normalization"
@@ -84,7 +84,7 @@
 <style>
   .ss-layout-default-AB { grid-template-areas: 'A B'; }
 </style>
-<p>..include:: ../_config.rst</p>
+<p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
 <section id="pre-edge-peak-fitting">
 <span id="larix-peakfit"></span><h1><span class="section-number">5.5. </span>Pre-edge peak fitting<a class="headerlink" href="#pre-edge-peak-fitting" title="Link to this heading">¶</a></h1>
 <p>The “Pre-edge Peak Fit” tab (right-hand of in <a class="reference internal" href="#fig-larix-3"><span class="std std-numref">Figure 5.5.1</span></a>) provides a
@@ -239,11 +239,11 @@ another peak may be needed to explain this data.  This is not too
 surprising here – there are obviously two peaks in the pre-edge – but it
 is does illustrate a useful way to determine when it is useful to add more
 peaks.</p>
-<figure class="align-center" id="id1">
+<figure class="align-center" id="id2">
 <span id="fig-larix-6"></span><a class="reference external image-reference" href="../_images/Larix_prepeaks_fitresult1_residual_plot.png"><img alt="../_images/Larix_prepeaks_fitresult1_residual_plot.png" src="../_images/Larix_prepeaks_fitresult1_residual_plot.png" style="width: 55%;" />
 </a>
 <figcaption>
-<p><span class="caption-number">Figure 5.5.4 </span><span class="caption-text">Pre-edge Peak plot of data, fit and residual.</span><a class="headerlink" href="#id1" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Figure 5.5.4 </span><span class="caption-text">Pre-edge Peak plot of data, fit and residual.</span><a class="headerlink" href="#id2" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>Adding a second Gaussian (and maybe even a third) will greatly help
@@ -314,111 +314,6 @@ plus the baseline. Right: Plot of data and best-fit for a fit with
 </figcaption>
 </figure>
 </section>
-<section id="linear-combination-analysis">
-<span id="larix-lincombo"></span><h1><span class="section-number">5.6. </span>Linear Combination Analysis<a class="headerlink" href="#linear-combination-analysis" title="Link to this heading">¶</a></h1>
-<p>Linear Combination Analysis is useful for modeling a XANES spectrum as a
-combination of other spectra.  In this approach, one asserts that an
-unknown spectrum should be a linear combination of spectra of
-well-characterized samples or “standards”.  With the results from a
-spectral fit, one can then conclude what fraction of atomic environments
-correspond to those of each standard.  For this to work well, the XANES
-data needs to be normalized consistently.</p>
-<p>To use this in Larix, one selects a set of spectra for the “standards”
-and “builds a model” from the selected groups for the standards, and then
-fits one or more spectra from unknown samples to get the fractional weight
-for each sample.  Options include:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>allowing a single energy shift between unknown spectrum and the set
-of standards.</p></li>
-<li><p>trying all combination of standards.</p></li>
-<li><p>forcing all weights to add to 1.0</p></li>
-</ul>
-</div></blockquote>
-<figure class="align-center" id="id2">
-<span id="fig-larix-9a"></span><a class="reference external image-reference" href="../_images/Larix_LCF_main.png"><img alt="../_images/Larix_LCF_main.png" src="../_images/Larix_LCF_main.png" style="width: 75%;" />
-</a>
-<figcaption>
-<p><span class="caption-number">Figure 5.6.1 </span><span class="caption-text">Linear Combination Fitting, main panel</span><a class="headerlink" href="#id2" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
-<figure class="align-center" id="id3">
-<span id="fig-larix-9b"></span><a class="reference external image-reference" href="../_images/Larix_LCF_plot.png"><img alt="../_images/Larix_LCF_plot.png" src="../_images/Larix_LCF_plot.png" style="width: 75%;" />
-</a>
-<figcaption>
-<p><span class="caption-number">Figure 5.6.2 </span><span class="caption-text">Linear Combination Fitting, plot of result</span><a class="headerlink" href="#id3" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
-<figure class="align-center" id="id4">
-<span id="fig-larix-9c"></span><a class="reference external image-reference" href="../_images/Larix_LCF_results.png"><img alt="../_images/Larix_LCF_results.png" src="../_images/Larix_LCF_results.png" style="width: 75%;" />
-</a>
-<figcaption>
-<p><span class="caption-number">Figure 5.6.3 </span><span class="caption-text">Linear Combination Fitting, results panel</span><a class="headerlink" href="#id4" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
-</section>
-<section id="principal-component-and-non-negative-factor-analysis">
-<span id="larix-pca"></span><h1><span class="section-number">5.7. </span>Principal Component and Non-negative Factor Analysis<a class="headerlink" href="#principal-component-and-non-negative-factor-analysis" title="Link to this heading">¶</a></h1>
-<p>Principal Component Analysis (PCA) is one of a family of numerical
-techniques to reduce the number of variable components in a set of data.
-There are many related techniques and procedures, and quite a bit of
-nomenclature and jargon around the methods.</p>
-<p>In essence, all these methods are aimed at taking a large set of similar
-data and trying to determine how many independent components make up that
-larger dataset.    That is, the only question PCA and related methods can
-ever really answer is:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>how many independent spectra make up my collection of spectra?
-</pre></div>
-</div>
-<p>It is important to note that PCA cannot tell you what those independent
-spectra represent or even what they look like.  However, you can also use
-the results of PCA to ask:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>is this *other* spectrum made up of the same components as make up my collection?
-</pre></div>
-</div>
-<figure class="align-center" id="id5">
-<span id="fig-larix-10a"></span><a class="reference external image-reference" href="../_images/Larix_PCAmain_page.png"><img alt="../_images/Larix_PCAmain_page.png" src="../_images/Larix_PCAmain_page.png" style="width: 75%;" />
-</a>
-<figcaption>
-<p><span class="caption-number">Figure 5.7.1 </span><span class="caption-text">Principal Component Analysis, main panel</span><a class="headerlink" href="#id5" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
-<figure class="align-center" id="id6">
-<span id="fig-larix-10b"></span><a class="reference external image-reference" href="../_images/Larix_PCA_compplot.png"><img alt="../_images/Larix_PCA_compplot.png" src="../_images/Larix_PCA_compplot.png" style="width: 75%;" />
-</a>
-<figcaption>
-<p><span class="caption-number">Figure 5.7.2 </span><span class="caption-text">Principal Component Analysis, Plot of spectral components.</span><a class="headerlink" href="#id6" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
-<figure class="align-center" id="id7">
-<span id="fig-larix-10c"></span><a class="reference external image-reference" href="../_images/Larix_PCA_screeplot.png"><img alt="../_images/Larix_PCA_screeplot.png" src="../_images/Larix_PCA_screeplot.png" style="width: 75%;" />
-</a>
-<figcaption>
-<p><span class="caption-number">Figure 5.7.3 </span><span class="caption-text">Principal Component Analysis, Plot of IND statistic and scree-like plot
-of the importance of each component.</span><a class="headerlink" href="#id7" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
-<figure class="align-center" id="id8">
-<span id="fig-larix-10d"></span><a class="reference external image-reference" href="../_images/Larix_PCA_targetplot.png"><img alt="../_images/Larix_PCA_targetplot.png" src="../_images/Larix_PCA_targetplot.png" style="width: 75%;" />
-</a>
-<figcaption>
-<p><span class="caption-number">Figure 5.7.4 </span><span class="caption-text">Principal Component Analysis, Plot of target transformation – using
-components to best match an unknown spectra.</span><a class="headerlink" href="#id8" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
-<p id="larix-regression">Linear Regression with LASSO and PLS to predict external variable
-~~~~~~~~~~~~~~~~~~~~l~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</p>
-</section>
-<section id="exafs-processing-background-subtraction">
-<span id="larix-exafs-bkg"></span><h1><span class="section-number">5.8. </span>EXAFS Processing: Background Subtraction<a class="headerlink" href="#exafs-processing-background-subtraction" title="Link to this heading">¶</a></h1>
-</section>
-<section id="exafs-processing-fourier-transforms">
-<span id="larix-exafs-fft"></span><h1><span class="section-number">5.9. </span>EXAFS Processing:  Fourier Transforms<a class="headerlink" href="#exafs-processing-fourier-transforms" title="Link to this heading">¶</a></h1>
-</section>
-<section id="fitting-exafs-data-to-feff-paths">
-<span id="larix-feffit"></span><h1><span class="section-number">5.10. </span>Fitting EXAFS data to Feff Paths<a class="headerlink" href="#fitting-exafs-data-to-feff-paths" title="Link to this heading">¶</a></h1>
-<p>l</p>
-</section>
 
 
             <div class="clearer"></div>
@@ -428,26 +323,14 @@ components to best match an unknown spectra.</span><a class="headerlink" href="#
       <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
   <div>
-    <h3><a href="../index.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">5.5. Pre-edge peak fitting</a></li>
-<li><a class="reference internal" href="#linear-combination-analysis">5.6. Linear Combination Analysis</a></li>
-<li><a class="reference internal" href="#principal-component-and-non-negative-factor-analysis">5.7. Principal Component and Non-negative Factor Analysis</a></li>
-<li><a class="reference internal" href="#exafs-processing-background-subtraction">5.8. EXAFS Processing: Background Subtraction</a></li>
-<li><a class="reference internal" href="#exafs-processing-fourier-transforms">5.9. EXAFS Processing:  Fourier Transforms</a></li>
-<li><a class="reference internal" href="#fitting-exafs-data-to-feff-paths">5.10. Fitting EXAFS data to Feff Paths</a></li>
-</ul>
-
-  </div>
-  <div>
     <h4>Previous topic</h4>
     <p class="topless"><a href="dialogs.html"
                           title="previous chapter"><span class="section-number">5.3. </span>Pre-edge subtraction and Normalization</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="../wxmap_viewer.html"
-                          title="next chapter"><span class="section-number">6. </span>XRFMap Viewr</a></p>
+    <p class="topless"><a href="lincombo.html"
+                          title="next chapter"><span class="section-number">5.6. </span>Linear Combination Analysis</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -480,7 +363,7 @@ components to best match an unknown spectra.</span><a class="headerlink" href="#
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../wxmap_viewer.html" title="6. XRFMap Viewr"
+          <a href="lincombo.html" title="5.6. Linear Combination Analysis"
              >next</a> |</li>
         <li class="right" >
           <a href="dialogs.html" title="5.3. Pre-edge subtraction and Normalization"
