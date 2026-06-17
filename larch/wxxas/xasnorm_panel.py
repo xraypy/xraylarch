@@ -956,7 +956,7 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
             self.larch_eval(('\n'.join(cmds)).format(group=gname, eshift=eshift))
 
         copts = [gname, f'e0={dgroup.e0:.4f}']
-        edge_step = dgroup.edge_step
+        edge_step = getattr(dgroup, 'edge_step', None)
         if use_form:
             edge_step = None if form['auto_step'] else float(form['edge_step'])
         if edge_step is not None:
