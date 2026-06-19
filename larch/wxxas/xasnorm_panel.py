@@ -913,9 +913,9 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         set_energy_units(dgroup, parent=self.parent)
 
         if not hasattr(dgroup, 'e0'):
-            if conf.get('e0', None) is None:
-                find_e0(dgroup)
+            find_e0(dgroup)
             conf['e0'] = dgroup.e0
+
         if not hasattr(dgroup, 'e0'):
             self.skip_process = False
             dgroup.mu = dgroup.yplot * 1.0
