@@ -718,16 +718,19 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         conf = self.get_config()
         dgroup = self.controller.get_group()
         self.update_config(conf)
-        opts = {}
+        opts = {'auto_step': True, 'edge_step': None}
         name = str(name)
         def copy_attrs(*args):
             for a in args:
                 opts[a] = conf[a]
         if name == 'all':
-            copy_attrs('e0', 'show_e0', 'auto_e0', 'edge_step',
-                       'auto_step', 'energy_shift', 'pre1', 'pre2',
+            copy_attrs('e0', 'auto_e0', 'show_e0',
+                       'energy_shift', 'pre1', 'pre2',
                        'nvict', 'atsym', 'edge', 'norm_method', 'nnorm',
                        'norm1', 'norm2', 'energy_ref', 'show_pre', 'show_norm')
+            if not conf['auto_step']:   # copy non-auto edge_step
+                opts['auto_step'] = False
+                opts['edge_step'] = conf['edge_step']
         elif name == 'xas_e0':
             copy_attrs('e0', 'show_e0', 'auto_e0')
         elif name == 'xas_step':
@@ -956,7 +959,10 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
             self.larch_eval(('\n'.join(cmds)).format(group=gname, eshift=eshift))
 
         copts = [gname, f'e0={dgroup.e0:.4f}']
-        edge_step = getattr(dgroup, 'edge_step', None)
+        # edge step:
+        edge_step = getattr(dgroup, 'edge_step', conf['edge_step'])
+        if conf['auto_step']:
+            edge_step = None
         if use_form:
             edge_step = None if form['auto_step'] else float(form['edge_step'])
         if edge_step is not None:
