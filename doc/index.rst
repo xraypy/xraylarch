@@ -84,7 +84,7 @@ the National Science Foundation - Advanced CyberInfrastructure
     :widths: 20 15 65
 
     Application Name                           | GUI/CLI    | Description
-    :ref:`Larix <larix_app>` (was XAS Viewer)  | GUI        | XAFS  Processing and Analysis: XANES, EXAFS, run Feff, Feff-fitting, more.
+    :ref:`Larix <larix_app>`                   | GUI        | XAFS  Processing and Analysis: XANES, EXAFS, run Feff, Feff-fitting, more.
     :ref:`GSE Map Viewer <mapviewer_app>`      | GUI        | XRF Map Viewer for GSECARS X-ray microprobe data.
     :ref:`Larch_XRF <larchxrf_app>`            | GUI        | Display and Analyze XRF Spectra.
     :ref:`Larch_XRD1D <larchxrd1d_app>`        | GUI        | Display and work with 1-D XRD patterns
