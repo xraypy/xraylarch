@@ -99,17 +99,6 @@ Pre-Edge Subtraction Example
 
 A simple example of pre-edge subtraction:
 
-.. code:: python
-
-    # Larch
-    fname = 'fe2o3_rt1.xmu'
-    dat = read_ascii(fname, labels='energy mu i0')
-
-    pre_edge(dat, group=dat)
-
-    plot_mu(dat, show_pre=True, show_post=True)
-
-or in plain Python:
 
 .. code:: python
 
@@ -120,7 +109,7 @@ or in plain Python:
     fname = 'fe2o3_rt1.xmu'
     dat = read_ascii(fname, labels='energy mu i0')
 
-    pre_edge(dat, group=dat)
+    pre_edge(dat)
 
     plot(dat.energy, dat.mu, label='mu', xlabel='Energy (eV)',
          title=fname,show_legend=True)
@@ -240,7 +229,7 @@ result shown in :numref:`fig-mback-copper`.
     from wxmplot.interactive import plot
 
     data = read_ascii('../xafsdata/cu_10k.xmu')
-    mback(data.energy, data.mu, group=a, z=29, edge='K', order=4)
+    mback(data, z=29, edge='K', order=4)
     plot(data.energy, data.f2, xlabel='Energy (eV)', ylabel='matched absorption', label='$f_2$',
          legend_loc='lr', show_legend=True)
     plot(data.energy, data.fpp, label='Copper foil')
@@ -265,8 +254,12 @@ large features near the edge.
 
 .. code:: python
 
-  data=read_ascii('Talc.xmu')
-  mback(data.e, data.xmu, group=a, z=14, edge='K', order=2, whiteline=50, fit_erfc=True)
+
+    from larch.io import read_ascii
+    from larch.xafs import mback
+    from wxmplot.interactive import plot
+    data=read_ascii('Talc.xmu')
+    mback(data, z=14, edge='K', order=2, whiteline=50, fit_erfc=True)
   newplot(data.e, data.f2, xlabel='Energy (eV)', ylabel='matched absorption', label='$f_2$',
           legend_loc='lr', show_legend=True)
   plot(data.e, data.fpp, label='Talc ($\mathrm{Mg}_3\mathrm{Si}_4\mathrm{O}_{10}\mathrm{(OH)}_2$)')

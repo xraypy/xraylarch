@@ -424,11 +424,12 @@ Listed here are some general purpose functions for XAFS.
 
 An example use would be to print out a table of energies and :math:`k` values::
 
-    larch> kvals = linspace(0, 25, 26)
-    larch> evals = ktoe(kvals)
-    larch> for k,e in zip(kvals, evals)):
-    larch>      print " %5.1f 1/Ang ->  %8.2f eV" %(k , e)
-    larch> endfor
+    >>> from numpy import linspace
+    >>> from larch.xafs import ktoe
+    >>> kvals = linspace(0, 25, 26)
+    >>> evals = ktoe(kvals)
+    >>> for k,e in zip(kvals, evals):
+    >>>     print(f" {k:4.1f} 1/Ang ->  {e:7.2f} eV")
        0.0 1/Ang ->      0.00 eV
        1.0 1/Ang ->      3.81 eV
        2.0 1/Ang ->     15.24 eV
