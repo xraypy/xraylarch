@@ -31,11 +31,12 @@ def get_machineid():
     return hex(uuid.getnode())[2:]
 
 def is_larch_session_file(fname):
+    "check if file is a session file"
     return read_textfile(fname, size=64).startswith('##LARIX:')
 
-
 def save_groups(fname, grouplist):
-    """save a list of groups (and other supported datatypes) to file
+    """
+    save a list of groups (and other supported datatypes) to file
 
     This is a simplified and minimal version of save_session()
 
@@ -254,16 +255,13 @@ def clear_session(_larch=None):
 
 
 def read_session(fname, clean_xasgroups=True):
-    """read Larch Session File, returning data into new data in the
-    current session
+    """read Larch Session File, returning data into new data in the current session
 
     Arguments:
-         fname (str):  name of save file
+         fname (str): name of save file
 
     Returns:
-       Tuple
-       A tuple wih entries:
-
+       Tuple, with entries:
            | configuration  - a dict of configuration for the saved session.
            | command_history  - a list of commands in the saved session.
            | symbols         - a dict of Larch/Python symbols, groups, etc
@@ -342,25 +340,27 @@ def load_session(fname, xasgroups=None, other_syms=None, ignore_groups=None,
                            even if not expicitly set in `_xasgroups`
        verbose (bool): whether to print warnings for overwrites [False]
     Returns:
-        None
+       None
 
     Notes:
-        1. data in the following groups will be merged into existing session groups:
-           `_feffpaths` : dict of "current feff paths"
-           `_feffcache` : dict with cached feff paths and feff runs
-           `_xasgroups` : dict mapping "File Name" and "Group Name", used in `Larix`
+       1. data in the following groups will be merged into existing session groups:
+           _feffpaths : dict of "current feff paths"
+           _feffcache : dict with cached feff paths and feff runs
+           _xasgroups : dict mapping "File Name" and "Group Name", used in `Larix`
 
-        2. to avoid name clashes, group and file names in the `_xasgroups` dictionary
-           may be modified on loading
+       2. to avoid name clashes, group and file names in the `_xasgroups` dictionary
+          may be modified on loading
 
-        3. on xasgroups, ignore_groups, include_xasgrooups:
-           if xasgroups is None, the _xasgroups from the Session will be used,
-              with ignore_groups listing groups to ignore, and include_xasgroups listing
-              groups not in _xasgroups, but that should be added.
-           if xasgroups is not None, it will be used, ignoring the _xasgroups from the Session,
-              and ignoring ignore_groups and include_xasgroups.
-        4. if other_syms is not None, those symbols will be imported, but no others.
-           If left None, all other symbols will be imported.
+       3. on xasgroups, ignore_groups, include_xasgroups:
+          if xasgroups is None, the _xasgroups from the Session will be used,
+          with ignore_groups listing groups to ignore, and include_xasgroups listing
+          groups not in _xasgroups, but that should be added.
+          if xasgroups is not None, it will be used, ignoring the _xasgroups from the Session,
+          and ignoring ignore_groups and include_xasgroups.
+
+       4. if other_syms is not None, those symbols will be imported, but no others.
+          if left None, all other symbols will be imported.
+
 
     """
     # groups to merge into existing session: (_feffpaths, _feffcache, _xasgroups) are pop()ed here
