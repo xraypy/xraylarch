@@ -358,7 +358,7 @@ class TaskPanel(wx.Panel):
         self.command_hist = []
         self.SetFont(get_font())
         self.titleopts = {'font': get_font(larger=1),
-                          'colour': get_color('title_red'), 'style': LEFT}
+                          'colour': 'title_red', 'style': LEFT}
 
         self.font_fixedwidth = get_font(fixed_width=True)
 
