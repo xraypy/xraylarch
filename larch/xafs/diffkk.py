@@ -263,7 +263,7 @@ class diffKKGroup(Group):
         ## interpolate matched data onto an even grid with an even number of elements (about 1 eV)
         npts = int(self.energy[-1] - self.energy[0]) + (int(self.energy[-1] - self.energy[0])%2)
         self.grid = np.linspace(self.energy[0], self.energy[-1], npts)
-        fpp = interp(self.energy, self.f2-self.fpp, self.grid, fill_value=0.0)
+        fpp = interp(self.energy, self.fpp-self.f2, self.grid, fill_value=0.0)
 
         ## do difference KK
         if repr(how).startswith('sca'):
