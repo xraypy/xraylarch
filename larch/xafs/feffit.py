@@ -336,7 +336,7 @@ class FeffitDataSet(Group):
         if transform is None:
             transform = TransformGroup()
         else:
-            trasform = copy(transform)
+            transform = copy(transform)
         self.transform = transform
 
         if model is None:
