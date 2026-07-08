@@ -244,7 +244,7 @@ components of a FeffPath Group, and care must be taken to avoid this.
     +-----------------+-----------------+----------------------------------------------------+
     |   nleg          |  Numerical      | number of path legs (1+number of scatterers)       |
     +-----------------+-----------------+----------------------------------------------------+
-    |   degen         |  Adjustable     | :math:`N`, path degeneracy                         |
+    |   degen         |  Numerical      | :math:`N`, path degeneracy                         |
     +-----------------+-----------------+----------------------------------------------------+
     |   s02           |  Adjustable     | :math:`S_0^2`, amplitude reduction factor          |
     +-----------------+-----------------+----------------------------------------------------+
