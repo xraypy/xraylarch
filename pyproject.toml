@@ -73,6 +73,7 @@ dependencies = ["numpy>=2.2.0",
     "psutil",
     "fabio",
     "pyfai",
+    "sitka-spruce>=0.2",
     "tabulate"]
 
 
@@ -87,6 +88,7 @@ larch_xrd1d = "larch.apps:run_larch_xrd1d"
 gse_mapviewer = "larch.apps:run_gse_mapviewer"
 epics_xrf = "larch.apps:run_epics_xrf"
 larch_jupyterlab = "larch.apps:run_larch_jupyterlab"
+larch_sitka = "larch.apps:run_sitka"
 
 [project.urls]
 Homepage = " https://github.com/xraypy/xraylarch"

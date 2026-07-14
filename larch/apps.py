@@ -122,6 +122,8 @@ LarchApps = {
                              description='X-ray Diffraction Data Viewing'),
     'Jupyter Lab': LarchApp(name='Jupyter Lab', script='larch_jupyterlab', icon='jupyter',
                               description='Jupyter Lab', is_wxapp=False),
+    'Sitka Spruce': LarchApp(name='Sitka', script='larch_sitka', icon='sitka',
+                             description='Hierarchical Data Viewer'),
 
     }
 
@@ -156,6 +158,14 @@ def run_larix():
              mode=app.run_mode, with_wx_inspect=app.wx_inspect).MainLoop()
 
 run_xas_viewer = run_larix
+
+def run_sitka():
+    """Sitka Viewer for HDF5/Zarr viewing"""
+    app = LarchApps['Sitka Spruce']
+    app.prep_cli()
+    from sitka_spruce.sitka import Sitka_App
+    Sitka_App().MainLoop()
+
 
 def run_larch_xrf():
     """X-ray FluorescenceData Viewing and Analysis"""
