@@ -480,6 +480,8 @@ class XASNormPanel(TaskPanel):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
         self.skip_process = True
+        # print(" Fill Form ", dgroup, opts['e0'], opts)
+
         if self.is_xasgroup(dgroup):
             groupnames = list(self.controller.file_groups.keys())
             self.wids['energy_ref'].SetChoices(groupnames)
@@ -494,6 +496,7 @@ class XASNormPanel(TaskPanel):
             if hasattr(dgroup, 'energy'):
                 if e0val < min(dgroup.energy) or e0val > max(dgroup.energy):
                     e0val = -1
+
             self.wids['e0'].SetValue(e0val)
             edge_step = opts.get('edge_step', 1.0)
             if opts['atsym'] == '?' and hasattr(dgroup, 'atsym'):
@@ -779,20 +782,29 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
 
     def onSet_XASE0(self, evt=None, value=None):
         "handle setting auto e0 / show e0"
-        self.update_config({'e0': self.wids['e0'].GetValue(),
-                           'auto_e0':self.wids['auto_e0'].GetValue(),
+        e0val = self.wids['e0'].GetValue()
+        e0_auto = self.wids['auto_e0'].GetValue()
+        self.update_config({'e0': e0val, 'auto_e0': e0_auto,
                            'show_e0': self.wids['show_e0'].GetValue(),
                            'show_pre': self.wids['show_pre'].GetValue(),
                            'show_norm': self.wids['show_norm'].GetValue()
                            })
-        self.onReprocess()
+
+        dgroup = self.controller.get_group()
+        if dgroup is not None:
+            dgroup.e0 = -1 if e0_auto else e0val
+            self.onReprocess()
 
     def onSet_XASE0Val(self, evt=None, value=None):
         "handle setting e0"
         self.wids['auto_e0'].SetValue(0)
-        self.update_config({'e0': self.wids['e0'].GetValue(),
-                            'auto_e0':self.wids['auto_e0'].GetValue()})
-        self.onReprocess()
+        e0val = self.wids['e0'].GetValue()
+        self.update_config({'e0': e0val, 'auto_e0': 0})
+
+        dgroup = self.controller.get_group()
+        if dgroup is not None:
+            dgroup.e0 = e0val
+            self.onReprocess()
 
     def onSet_EnergyShift(self, evt=None, value=None):
         conf = self.get_config()
@@ -817,6 +829,8 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         if edge_step < 0:
             self.wids['edge_step'].SetValue(abs(edge_step))
         self.wids['auto_step'].SetValue(0)
+        dgroup = self.controller.get_group()
+        dgroup.edge_step = edge_step
         self.onReprocess()
         time.sleep(0.01)
 
@@ -914,7 +928,6 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
                     self.wids['energy_ref'].SetStringSelection(key)
 
         set_energy_units(dgroup, parent=self.parent)
-
         if not hasattr(dgroup, 'e0'):
             find_e0(dgroup)
             conf['e0'] = dgroup.e0
