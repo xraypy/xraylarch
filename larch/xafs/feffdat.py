@@ -761,7 +761,7 @@ def ff2chi(paths, group=None, params=None, k=None, kmax=None, kstep=0.05,
     elif isinstance(paths, dict):
         pathlist = list(paths.values())
     else:
-        raise ValueErrror('paths must be list, tuple, or dict')
+        raise ValueError('paths must be list, tuple, or dict')
 
     if len(pathlist) == 0:
         return Group(k=np.linspace(0, 20, 401),
