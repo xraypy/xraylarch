@@ -217,7 +217,7 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, npre=1, pre1=No
             e0 = find_e0(energy, mu)
 
     ie0 = index_nearest(energy, e0)
-    e0 = float(energy[ie0])
+    # e0 = float(energy[ie0])
 
     if pre1 is None:
         # skip first energy point, often bad
