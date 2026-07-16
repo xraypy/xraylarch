@@ -231,7 +231,8 @@ def plot_mu(dgroup, show_norm=False, show_flat=False,
                           _larch=_larch)
         else:
             ie0 = index_nearest(dgroup.energy, dgroup.e0)
-            axes.plot([dgroup.e0-en_offset], [mu[ie0]+offset], **marker_popts)
+            mu_e0 = interp1d(dgroup.energy[ie0-2:ie0+2], mu[ie0-2:ie0+2], dgroup.e0)
+            axes.plot([dgroup.e0-en_offset], [mu_e0+offset], **marker_popts)
 
     if marker_energies is None:
         marker_energies = []
