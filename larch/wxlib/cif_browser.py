@@ -19,6 +19,8 @@ from wx.adv import AboutBox, AboutDialogInfo
 from matplotlib.ticker import FuncFormatter
 
 from wxmplot import PlotPanel
+from wxmplot.interactive import get_wxapp
+
 from xraydb.chemparser import chemparse
 from xraydb import atomic_number
 
@@ -574,7 +576,6 @@ class CIFFrame(wx.Frame):
         fefftext = self.wids['feff_text'].GetValue()
         if len(fefftext) < 100 or 'ATOMS' not in fefftext or not self.with_feff:
             return
-
         ciftext = self.wids['cif_text'].GetValue()
         cif  = self.current_cif
         cif_fname = None
@@ -615,7 +616,8 @@ class CIFFrame(wx.Frame):
             cname = unixpath(Path(folder, fix_filename(cif_fname)))
             with open(cname, 'w', encoding=sys.getdefaultencoding()) as fh:
                 fh.write(strict_ascii(ciftext))
-        wx.CallAfter(self.run_feff, folder, version8=version8)
+
+        self.run_feff( folder, version8=version8)
 
     def run_feff(self, folder=None, version8=True):
         dname = Path(folder).name
@@ -854,7 +856,13 @@ class CIFViewer(LarchWxApp):
         return True
 
 def cif_viewer(**kws):
-    CIFViewer(**kws)
+    """CIF Browser, with Feff
+    """
+    get_wxapp()
+    cview = CIFFrame(with_feff=True)
+    cview.Show()
+    cview.Raise()
+    return cview
 
 if __name__ == '__main__':
     CIFViewer().MainLoop()
