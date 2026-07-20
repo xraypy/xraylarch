@@ -15,7 +15,6 @@ from numpy.polynomial.chebyshev import chebfit, chebval
 import pyFAI
 pyFAI.use_opencl = False
 import pyFAI.units
-from pyFAI import AzimuthalIntegrator
 
 import wx
 import wx.lib.scrolledpanel as scrolled
@@ -283,7 +282,7 @@ class XRD1DFrame(wx.Frame):
         self.parent = parent
         self.wavelength = wavelength
         self.poni = {'wavelength': 1.e-10*self.wavelength} # ! meters!
-        self.pyfai_integrator = None
+        self.fai = None
 
         self.larch = _larch
         if self.larch is None:
@@ -304,6 +303,7 @@ class XRD1DFrame(wx.Frame):
         self.createMenus()
         self.build()
         self.set_wavelength(self.wavelength)
+        self.ponifile = None
         if ponifile is not None:
             self.set_ponifile(ponifile)
 
@@ -399,23 +399,10 @@ class XRD1DFrame(wx.Frame):
                          wildcard="PONI Files(*.poni)|*.poni|All files (*.*)|*.*")
 
         if sfile is not None:
-            try:
-                self.set_poni(read_poni(sfile), with_pyfai=True)
-            except:
-                title = "Could not read PONI File"
-                message = [f"Could not read PONI file {sfile}"]
-                ExceptionPopup(self, title, message)
-
-            top, xfile = os.path.split(sfile)
-            os.chdir(top)
-
-            if self.pyfai_integrator is None:
-                try:
-                    self.pyfai_integrator = AzimuthalIntegrator(**self.poni)
-                except:
-                    self.pyfai_integrator = None
-
-            self.tiff_reader.Enable(self.pyfai_integrator is not None)
+            self.set_ponifile(sfile)
+            # top, xfile = os.path.split(sfile)
+            # os.chdir(top)
+            self.tiff_reader.Enable(self.fai is not None)
 
         self.set_wavelength(self.poni['wavelength']*1.e10)
 
@@ -474,20 +461,13 @@ class XRD1DFrame(wx.Frame):
                          default_dir=get_cwd(),
                          wildcard=TIFFWcards)
         if sfile is not None:
-            top, fname = os.path.split(sfile)
-
-            if self.pyfai_integrator is None:
-                try:
-                    self.pyfai_integrator = AzimuthalIntegrator(**self.poni)
-                except:
-                    title = "Could not create pyFAI integrator: bad PONI data?"
-                    message = [f"Could not create pyFAI integrator"]
-                    ExceptionPopup(self, title, message)
-            if self.pyfai_integrator is None:
-                return
-
-            img =  tifffile.imread(sfile)
-            self.display_xrd_image(img, label=fname)
+            if self.fai is None:
+                title = "Could not create pyFAI integrator: no PONI data?"
+                message = [f"Could not create pyFAI integrator"]
+                ExceptionPopup(self, title, message)
+            else:
+                img =  tifffile.imread(sfile)
+                self.display_xrd_image(img, label=sfile)
 
     def display_xrd_image(self, img, label='Image'):
         if self.mask is not None:
@@ -505,15 +485,15 @@ class XRD1DFrame(wx.Frame):
         else:
             img[np.where(img>MAXVAL)] = 0
         img[np.where(img<-1)] = -1
-        img = img[::-1, :]
 
         imd = self.get_imdisplay()
-        imd.display(img, colomap='gray', auto_contrast=True)
+        imd.display(img[::-1, :], olormap='viridis', contrast_level='0.10')
 
-        integrate = self.pyfai_integrator.integrate1d
-        q, ix = integrate(img, 2048, method='csr', unit='q_A^-1',
-                          correctSolidAngle=True,
-                          polarization_factor=0.999)
+        q, ix = self.fai.integrate1d(img, 2048, method='csr',
+                                     # radial_range=(0, 8),
+                                     unit=pyFAI.units.Q_A,
+                                     correctSolidAngle=True,
+                                     polarization_factor=0.999)
 
         dxrd = xrd1d(label=label, x=q, I=ix, xtype='q',
                      wavelength=self.wavelength)
@@ -776,10 +756,13 @@ class XRD1DFrame(wx.Frame):
 
     def set_ponifile(self, ponifile, with_pyfai=True):
         "set poni from datafile"
+        self.ponifile = ponifile
         try:
             self.set_poni(read_poni(ponifile), with_pyfai=with_pyfai)
         except:
-            pass
+            title = "Could not read PONI File"
+            message = [f"Could not read PONI file {ponifile}"]
+            ExceptionPopup(self, title, message)
 
     def set_poni(self, poni, with_pyfai=True):
         "set poni from dict"
@@ -792,9 +775,9 @@ class XRD1DFrame(wx.Frame):
 
         if with_pyfai:
             try:
-                self.pyfai_integrator = AzimuthalIntegrator(**self.poni)
+                self.fai = pyFAI.load(self.ponifile)
             except:
-                self.pyfai_integrator = None
+                self.fai = None
 
     def set_wavelength(self, value):
         self.wavelength = value
@@ -991,7 +974,7 @@ class XRD1DFrame(wx.Frame):
     def get_imdisplay(self, win=1):
         wintitle='XRD Image Window %i' % win
         opts = dict(wintitle=wintitle, win=win, image=True)
-        self.img_display = self.larch.symtable._plotter.get_display(**opts)
+c        self.img_display = self.larch.symtable._plotter.get_display(**opts)
         return self.img_display
 
     def get_display(self, win=1, stacked=False):
