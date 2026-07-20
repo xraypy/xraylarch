@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+## examples/xafs/doc_xafsft1.py
+
+from pathlib import Path
+from larch import Group
+from larch.io import read_ascii
+from larch.xafs import autobk, xftf
+from larch.plot.wxmplot_xafsplots import plot, plot_chik, plot_chir
+
+dat = read_ascii(Path('..', 'xafsdata', 'feo_rt1.xdi'), labels='energy mu i0')
+autobk(dat, rbkg=1, kweight=2, clamp_hi=10)
+
+d1 = Group(k=dat.k, chi=dat.chi, filename=dat.filename)
+d2 = Group(k=dat.k, chi=dat.chi, filename=dat.filename)
+
+xftf(d1, kweight=2, kmin=3, kmax=13, window='hanning', dk=1)
+xftf(d2, kweight=2, kmin=3, kmax=13, window='hanning', dk=5)
+
+plot(d1.k, d1.kwin, label='Hanning(dk=1)', new=True)
+plot(d2.k, d2.kwin, label='Hanning(dk=5)')
+
+plot_chik(d1, kweight=2, show_window=False, new=False)
+
+plot_chir(d1, label='Hanning(dk=1)', win=2)
+plot_chir(d2, label='Hanning(dk=5)', new=False, win=2)
