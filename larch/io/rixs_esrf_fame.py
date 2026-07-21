@@ -22,7 +22,7 @@ from larch.utils.logging import getLogger
 
 _logger = getLogger("io_rixs_bm16")
 __author__ = "Mauro Rovezzi"
-__version__ = "25.1.2"  #: this is the local version for this module only
+__version__ = "25.1.3"  #: this is the local version for this module only
 
 
 def search_samples(
