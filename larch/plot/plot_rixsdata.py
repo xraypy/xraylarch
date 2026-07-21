@@ -151,7 +151,7 @@ def plot_rixs(
 
     if "line" in cont_type.lower():
         cont = plane.contour(
-            x, y, zz, levels, colors="k", hold="on", linewidths=cont_lwidths
+            x, y, zz, levels, colors="k", linewidths=cont_lwidths
         )
     if x_nticks:
         plane.xaxis.set_major_locator(MaxNLocator(int(x_nticks)))
