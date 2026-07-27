@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 from matplotlib import gridspec
 from matplotlib import cm
-from matplotlib.ticker import MaxNLocator, AutoLocator
+from matplotlib.ticker import MaxNLocator, AutoLocator, MultipleLocator
 from sympy import EX
 
 from larch.utils.logging import getLogger
@@ -31,6 +31,7 @@ def plot_rixs(
     y_label=None,
     x_nticks=0,
     y_nticks=0,
+    tick_step=None,
     x_min=None,
     x_max=None,
     y_min=None,
@@ -66,6 +67,10 @@ def plot_rixs(
 
     cont_imshow : boolean, optional [True]
         use plt.imshow instead of plt.contourf
+
+    tick_step : float, optional [None]
+        energy step (eV) between major XY ticks; minor ticks are
+        placed at half this step. Overrides x_nticks/y_nticks when set.
 
     """
     if not "RixsData" in str(type(rd)):
@@ -153,14 +158,22 @@ def plot_rixs(
         cont = plane.contour(
             x, y, zz, levels, colors="k", linewidths=cont_lwidths
         )
-    if x_nticks:
-        plane.xaxis.set_major_locator(MaxNLocator(int(x_nticks)))
+    if tick_step:
+        plane.xaxis.set_major_locator(MultipleLocator(tick_step))
+        plane.xaxis.set_minor_locator(MultipleLocator(tick_step / 2))
+        plane.yaxis.set_major_locator(MultipleLocator(tick_step))
+        plane.yaxis.set_minor_locator(MultipleLocator(tick_step / 2))
     else:
-        plane.xaxis.set_major_locator(AutoLocator())
-    if y_nticks:
-        plane.yaxis.set_major_locator(MaxNLocator(int(y_nticks)))
-    else:
-        plane.yaxis.set_major_locator(AutoLocator())
+        if x_nticks:
+            plane.xaxis.set_major_locator(MaxNLocator(int(x_nticks)))
+        else:
+            plane.xaxis.set_major_locator(AutoLocator())
+        if y_nticks:
+            plane.yaxis.set_major_locator(MaxNLocator(int(y_nticks)))
+        else:
+            plane.yaxis.set_major_locator(AutoLocator())
+
+    plt.setp(plane.get_xticklabels(), rotation=45, ha="right")
 
     # colorbar
     if cbar_show:
