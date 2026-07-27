@@ -5,6 +5,12 @@ The GitHub Release Notes will also be useful
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+#### xraylarch library
+ - fix `larch.plot`/RIXS imports eagerly loading `larch.wxlib`, which forced
+   IPython's "%gui wx" hook and could deadlock a Jupyter kernel
+
 ## [2026.2.2 - 2026-06-17]
 
 ### Larix
