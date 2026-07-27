@@ -253,15 +253,27 @@ class RixsData(object):
         self.rixs_map = _zzcrop
         self.rixs_et_map = _ezzcrop
         self.label = f"{self.name} [{self._crop_area}]"
+        self.norm()
+
+    def reset_crop(self, **grid_kws):
+        """resets the RIXS plane to the initial grid, undoing any crop"""
+        self._logger.info("resetting RIXS plane to initial grid (undo crop)")
+        self.grid_rixs_from_col(**grid_kws)
+        self.label = self.name
+        self._crop_area = None
+
+    def reset_cuts(self):
+        """resets the line cuts and color palette"""
+        self._logger.info("resetting line cuts")
+        self.line_cuts = {}
+        self._palette = None
+        self._palette = CycleColors()
 
     def reset(self, **grid_kws):
         """resets to initial data"""
         self._logger.info("resetting to initial data (grid RIXS plane and line cuts)")
-        self.grid_rixs_from_col(**grid_kws)
-        self.line_cuts = {}
-        self.label = self.name
-        self._palette = None
-        self._palette = CycleColors()
+        self.reset_crop(**grid_kws)
+        self.reset_cuts()
 
     def grid_rixs_from_col(self, ene_grid=None, grid_method=None):
         """Grid RIXS map from XYZ columns"""
@@ -354,11 +366,19 @@ class RixsData(object):
         self._logger.info(f"added RIXS {mode} cut: '{label}'")
 
     def norm(self):
-        """Simple map normalization to max-min"""
-        self.rixs_map = self.rixs_map / (
-            np.nanmax(self.rixs_map) - np.nanmin(self.rixs_map)
-        )
-        self._logger.info("rixs map normalized to max-min")
+        """Normalize the RIXS plane(s) between 0 and 1 (min/max normalization)
+
+        The min/max intensity of `rixs_map` and `rixs_et_map` (if present)
+        is rescaled so that the minimum value maps to 0 and the maximum
+        value maps to 1.
+        """
+        for attr in ("rixs_map", "rixs_et_map"):
+            zz = getattr(self, attr)
+            if zz is None:
+                continue
+            zzmin, zzmax = np.nanmin(zz), np.nanmax(zz)
+            setattr(self, attr, (zz - zzmin) / (zzmax - zzmin))
+        self._logger.info(f"{self.name} normalized between 0 and 1")
 
 
 if __name__ == "__main__":
