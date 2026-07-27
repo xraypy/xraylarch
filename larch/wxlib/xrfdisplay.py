@@ -1742,8 +1742,8 @@ class XRFDisplayFrame(wx.Frame):
         dlg.Destroy()
         return path
 
-from wxmplot.interactive import get_wxapp
 def larch_xrf_viewer():
+    from wxmplot.interactive import get_wxapp
     get_wxapp()
     xview = XRFDisplayFrame()
     xview.Show()

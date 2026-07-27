@@ -19,7 +19,6 @@ import wx
 from pathlib import Path
 from copy import deepcopy
 from wxmplot import PlotFrame, ImageFrame, StackedPlotFrame
-from wxmplot.interactive import get_wxapp
 from wxmplot.colors import rgb2hex, hex2rgb
 import larch
 from ..utils import mkdir
@@ -28,14 +27,6 @@ from ..larchlib import ensuremod
 from ..site_config import user_larchdir
 
 from .xrfdisplay import XRFDisplayFrame
-
-try:
-    from IPython import get_ipython
-    ipython = get_ipython()
-    if ipython is not None:
-        ipython.find_magic('gui')('wx')
-except Exception:
-    ipython = None
 
 mplconfdir = Path(user_larchdir, 'matplotlib').as_posix()
 mkdir(mplconfdir)
@@ -508,6 +499,10 @@ def get_display(win=1, _larch=None, wxparent=None, size=None, position=None,
 
     def _get_disp(symname, creator, win, ddict, wxparent,
                   size, position, _larch):
+        # import here, not at module level: this enables the IPython/Jupyter
+        # 'wx' event loop hook, which should only happen once a wx display is
+        # actually requested, not merely because this module got imported.
+        from wxmplot.interactive import get_wxapp
         wxapp = get_wxapp()
         display = None
         new_display = False
