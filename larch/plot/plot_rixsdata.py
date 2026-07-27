@@ -173,7 +173,7 @@ def plot_rixs(
         else:
             plane.yaxis.set_major_locator(AutoLocator())
 
-    plt.setp(plane.get_xticklabels(), rotation=45, ha="right")
+    plt.setp(plane.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
 
     # colorbar
     if cbar_show:
@@ -195,8 +195,20 @@ def plot_rixs(
     return fig
 
 
-def plot_rixs_cuts(rd, et=True, fig_name="plot_rixs_cuts", fig_size=(8, 10), fig_dpi=75):
-    """plot RIXS line cuts"""
+def plot_rixs_cuts(
+    rd, et=True, fig_name="plot_rixs_cuts", fig_size=(8, 10), fig_dpi=75, tick_step=None
+):
+    """plot RIXS line cuts
+
+    Parameters
+    ----------
+
+    tick_step : float, optional [None]
+        energy step (eV) between major ticks on the energy axis (x);
+        minor ticks are placed at half this step. Does not affect the
+        intensity axis (y).
+
+    """
     assert len(rd.line_cuts.keys()) >= 1, "no line cuts are present"
     plt.close(fig_name)
     fig, axs = plt.subplots(nrows=3, num=fig_name, figsize=fig_size, dpi=fig_dpi)
@@ -234,6 +246,10 @@ def plot_rixs_cuts(rd, et=True, fig_name="plot_rixs_cuts", fig_size=(8, 10), fig
         ax.set_xlabel(x_label)
         ax.set_ylabel(y_label)
         ax.plot(x, y, label=label, color=color)
+        if tick_step:
+            ax.xaxis.set_major_locator(MultipleLocator(tick_step))
+            ax.xaxis.set_minor_locator(MultipleLocator(tick_step / 2))
+        plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
         ax.legend()
     fig.tight_layout()
     return fig
