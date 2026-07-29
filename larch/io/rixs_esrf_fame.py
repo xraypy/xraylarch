@@ -22,12 +22,13 @@ from larch.utils.logging import getLogger
 
 _logger = getLogger("io_rixs_bm16")
 __author__ = "Mauro Rovezzi"
-__version__ = "25.1.2"  #: this is the local version for this module only
+__version__ = "25.1.3"  #: this is the local version for this module only
 
 
 def search_samples(
     datadir: Union[str, Path],
     ignore_names: list[str] = ["rack", "mount", "align", "bl_"],
+    grepstr: str = "*",
 ) -> list[Path]:
     samples = []
     if isinstance(datadir, str):
@@ -37,7 +38,7 @@ def search_samples(
         errmsg = f"Cannot access: {search_dir}"
         _logger.error(errmsg)
         return samples
-    fnames = sorted(search_dir.glob("*"), key=lambda x: x.stat().st_ctime)
+    fnames = sorted(search_dir.glob(grepstr), key=lambda x: x.stat().st_ctime)
     isamp = 0
     _logger.info("Samples:")
     for fname in fnames:

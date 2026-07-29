@@ -33,19 +33,62 @@ try:
 except ImportError:
     HAS_WXPYTHON = False
 
-get_display = plot = oplot = fitplot = plot_marker = plot_axvline = None
-
 def get_zorders(*args):
     return [0]
 
 def get_markercolors(trace=1, **kws):
     return '#AA0000', '#99887780'
 
+get_display = plot = oplot = fitplot = plot_marker = plot_axvline = imshow = None
+
+_wx_plotter_funcs = {}
+
+def _load_wx_plotter_funcs():
+    """import larch.wxlib.plotter lazily: it pulls in the full wx GUI
+    machinery (and wxmplot's IPython 'gui wx' event-loop hook), which
+    should only happen once a wx display is actually needed, not merely
+    because this module got imported.
+    """
+    if not _wx_plotter_funcs:
+        from larch.wxlib.plotter import (get_display, plot, oplot,
+                                         fitplot, plot_marker,
+                                         plot_axvline, imshow,
+                                         get_zorders, get_markercolors)
+        _wx_plotter_funcs.update(get_display=get_display, plot=plot,
+                                  oplot=oplot, fitplot=fitplot,
+                                  plot_marker=plot_marker,
+                                  plot_axvline=plot_axvline, imshow=imshow,
+                                  get_zorders=get_zorders,
+                                  get_markercolors=get_markercolors)
+    return _wx_plotter_funcs
+
 if HAS_WXPYTHON:
-    from larch.wxlib.plotter import (get_display, plot, oplot,
-                                     fitplot, plot_marker,
-                                     plot_axvline, imshow,
-                                     get_zorders, get_markercolors)
+    def get_display(*args, **kws):
+        return _load_wx_plotter_funcs()['get_display'](*args, **kws)
+
+    def plot(*args, **kws):
+        return _load_wx_plotter_funcs()['plot'](*args, **kws)
+
+    def oplot(*args, **kws):
+        return _load_wx_plotter_funcs()['oplot'](*args, **kws)
+
+    def fitplot(*args, **kws):
+        return _load_wx_plotter_funcs()['fitplot'](*args, **kws)
+
+    def plot_marker(*args, **kws):
+        return _load_wx_plotter_funcs()['plot_marker'](*args, **kws)
+
+    def plot_axvline(*args, **kws):
+        return _load_wx_plotter_funcs()['plot_axvline'](*args, **kws)
+
+    def imshow(*args, **kws):
+        return _load_wx_plotter_funcs()['imshow'](*args, **kws)
+
+    def get_zorders(*args, **kws):
+        return _load_wx_plotter_funcs()['get_zorders'](*args, **kws)
+
+    def get_markercolors(*args, **kws):
+        return _load_wx_plotter_funcs()['get_markercolors'](*args, **kws)
 
 def redraw(win=1, xmin=None, xmax=None, ymin=None, ymax=None,
            dymin=None, dymax=None,

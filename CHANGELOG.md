@@ -5,6 +5,17 @@ The GitHub Release Notes will also be useful
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+#### xraylarch library
+ - fix `larch.plot`/RIXS imports eagerly loading `larch.wxlib`, which forced
+   IPython's "%gui wx" hook and could deadlock a Jupyter kernel
+ - RIXS: split `RixsData.reset()` into `reset_crop`/`reset_cuts`, fix
+   `norm()` to properly min-max normalize both RIXS planes, and add a
+   `tick_step` option to `plot_rixs`/`plot_rixs_cuts` for evenly spaced
+   energy ticks
+ - RIXS: add sample-name glob filter to `rixs_esrf_fame.search_samples`
+
 ## [2026.2.2 - 2026-06-17]
 
 ### Larix
