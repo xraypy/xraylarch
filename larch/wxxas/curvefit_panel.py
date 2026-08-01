@@ -152,9 +152,10 @@ if not hasattr({group}.curvefit, 'fit_history'): {group}.curvefit.fit_history = 
 COMMANDS['curvefit_setup'] = """# setup curve-fit
 if not hasattr({group}, 'xdat'): {group:s}.xdat = 1.0*{group}.xplot
 {group:s}.xplot = 1.0*{group:s}.xdat
-{group:s}.yplot = 1.0*{group:s}.{array_name:s}
+{group:s}.yplot = {group:s}.ydat = 1.0*{group:s}.{array_name:s}
 curvefit_setup({group:s},y={group}.{array_name}, xmin={xmin}, xmax={xmax})
 """
+
 
 COMMANDS['set_yerr_const'] = "{group}.curvefit.y_std = {group}.yerr*ones(len({group}.curvefit.ydat))"
 COMMANDS['set_yerr_array'] = """
@@ -479,7 +480,7 @@ class CurveFitResultFrame(wx.Frame):
         for name, dgroup in self.datasets.items():
             if not hasattr(dgroup, 'curvefit'):
                 continue
-            for cvfit in getattr(dgroup.prepeaks, 'fit_history', []):
+            for cvfit in getattr(dgroup.curvefit, 'fit_history', []):
                 try:
                     xparams = cvfit.result.params.keys()
                 except Expcetion:
@@ -510,7 +511,7 @@ class CurveFitResultFrame(wx.Frame):
                     continue
 
                 result = cvfit.result
-                label = getattr(pkfit, 'label', f'fit #{i}')
+                label = getattr(cvfit, 'label', f'fit #{i}')
                 dat = [dgroup.filename, dgroup.groupname, label,
                        f'{result.ndata}', f'{result.nvarys}']
                 for attr in ('chisqr', 'redchi', 'aic', 'bic', 'rsquared'):
@@ -550,9 +551,9 @@ class CurveFitResultFrame(wx.Frame):
             result = cvfit.result
             export_modelresult(result, filename=outfile,
                                datafile=dgroup.filename,
-                               xdata=cvfit.xdata,
-                               ydata=cvfit.ydata,
-                               yerr=cvfit.y_sdt)
+                               xdata=cvfit.xdat,
+                               ydata=cvfit.ydat,
+                               yerr=cvfit.y_std)
 
 
     def get_fitresult(self, nfit=None):
@@ -1669,9 +1670,10 @@ class CurveFitPanel(TaskPanel):
         elif yerr_type == 2: # array name
             yarrname = self.wids['yerr_array'].GetStringSelection()
             if yename != 'yerr':
-                cmd = f"{gname}.yerr = {gname}.{yarrname}*1.0"
+                cmd = f"{gname}.y_std = {gname}.{yarrname}*1.0"
         if cmd is not None:
             self.larch_eval(cmd)
+        self.larch.eval(f"{gname}.curvefit.y_std = {gname}.y_std*1.0")
 
     def build_fitmodel(self, groupname=None):
         """ use fit components to build model"""
@@ -1724,7 +1726,6 @@ class CurveFitPanel(TaskPanel):
         cmds.extend(modcmds)
         cmds.append(COMMANDS['curvefit_prep'].format(group=dgroup.groupname,
                                                user_opts=repr(opts)))
-
         self.larch_eval("\n".join(cmds))
 
     def onFitSelected(self, event=None):
