@@ -92,6 +92,16 @@ PLOTWIN_SIZE = (550, 550)
 QUIT_MESSAGE = '''Really Quit? You may want to save your project before quitting.
  This is not done automatically!'''
 
+class FileDropTarget(wx.FileDropTarget):
+    def __init__(self, window, callback):
+        wx.FileDropTarget.__init__(self)
+        self.window = window
+        self.callback = callback
+
+    def OnDropFiles(self, x, y, filenames):
+        self.callback(filenames)
+        return True
+
 
 def assign_gsescan_groups(group):
     labels = group.array_labels
@@ -535,6 +545,9 @@ class LarixFrame(wx.Frame):
                                                  with_remove_from_list=False)
 
         # set_color(self.controller.filelist, 'list_fg', bg='list_bg')
+
+        self.controller.filelist.SetDropTarget(FileDropTarget(self,
+                                                              self.onDroppedFiles))
 
         tsizer = wx.BoxSizer(wx.HORIZONTAL)
         tsizer.Add(sel_all, 1, LEFT|wx.GROW, 1)
@@ -1465,6 +1478,26 @@ before clearing"""
                                           'Re-read file?'))
         if do_read:
             self.onRead(path)
+
+
+    def onDroppedFiles(self, filenames):
+        """action for filenames dropped to FileList"""
+        def file_mtime(x):
+            return os.stat(x).st_mtime
+
+        self.paths2read = [Path(p).as_posix() for p in filenames]
+        self.paths2read = sorted(self.paths2read, key=file_mtime)
+
+        path = self.paths2read.pop(0)
+
+        do_read = True
+        if path in self.controller.file_groups:
+            do_read = (wx.ID_YES == Popup(self,
+                                          "Re-read file '%s'?" % path,
+                                          'Re-read file?'))
+        if do_read:
+            self.onRead(path)
+
 
     def onRead(self, path):
         fpath = Path(path).absolute()
