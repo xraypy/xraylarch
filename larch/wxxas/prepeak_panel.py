@@ -826,6 +826,7 @@ class PrePeakPanel(TaskPanel):
         self.models_peaks = models_peaks
         self.models_other = models_other
 
+        self.e0_label = SimpleText(pan,  'E0 not set')
 
         self.message = SimpleText(pan,
                                  'first fit baseline, then add peaks to fit model.')
@@ -847,11 +848,11 @@ class PrePeakPanel(TaskPanel):
         pan.Add(self.loadresults_btn)
 
         add_text('Array to fit: ')
-        pan.Add(self.array_choice, dcol=3)
-        pan.Add((5,5))
+        pan.Add(self.array_choice, dcol=2)
+        pan.Add(self.e0_label, dcol=2)
         pan.Add(self.showresults_btn)
 
-        add_text('Fit X/Energy Range: ')
+        add_text('Fit Energy Range: ')
         pan.Add(ppeak_emin)
         add_text(' : ', newrow=False)
         pan.Add(ppeak_emax)
@@ -944,19 +945,31 @@ class PrePeakPanel(TaskPanel):
         dgroup.prepeak_config = conf
 
     def fill_form(self, dgroup, newgroup=False):
+        # print("Prepeak fill form ", dgroup)
         if isinstance(dgroup, Group):
             if not hasattr(dgroup, 'norm'):
                 self.parent.process_normalization(dgroup)
+
+            self.e0_label.SetLabel(f"E0 = {dgroup.e0:.2f}")
+            emin = min(dgroup.energy)
+            emax = max(dgroup.energy)
+
             conf = getattr(dgroup, 'prepeak_config', {})
             for attr in ('elo', 'ehi', 'emin', 'emax'):
-                if attr in conf:
-                    self.wids[f'ppeak_{attr}'].SetValue(conf[attr])
+                curr = self.wids[f'ppeak_{attr}'].GetValue()
+                curr = conf.get(attr, curr)
+                if curr < emin:
+                    curr += dgroup.e0
+
+                self.wids[f'ppeak_{attr}'].SetValue(curr)
 
         elif isinstance(dgroup, dict):
             self.wids['ppeak_emin'].SetValue(dgroup['emin'])
             self.wids['ppeak_emax'].SetValue(dgroup['emax'])
             self.wids['ppeak_elo'].SetValue(dgroup['elo'])
             self.wids['ppeak_ehi'].SetValue(dgroup['ehi'])
+            print("Prepeak fill formB conf from dict ")
+            print(dgroup)
 
             self.array_choice.SetStringSelection(dgroup['array_desc'])
             self.bline_choice.SetStringSelection(dgroup['baseline_form'])

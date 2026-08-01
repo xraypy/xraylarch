@@ -92,9 +92,9 @@ def prepeaks_setup(energy, norm=None, arrayname=None, group=None, emin=None, ema
             elo = dat_e0 - 15.0
         if ehi is None:
             ehi = dat_e0 - 5.0
-        if emin < 0:
+        if emin < dat_emin:
             emin += dat_e0
-        if elo < 0:
+        if elo < dat_emin:
             elo += dat_e0
         if emax < dat_emin:
             emax += dat_e0
