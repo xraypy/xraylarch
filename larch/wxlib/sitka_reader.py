@@ -114,6 +114,7 @@ class SitkaReaderFrame(wx.Frame) :
 
         padd_text(' Use Sitka to Browse Files and Save Arrays ', newrow=False,  **opts)
         padd_text(' Then Use "Update Arrays" to update the array choices here ', **opts)
+        padd_text(' NOT WORKING YET!!', **opts)
 
         panel.Add(wids['update_arrays'], dcol=3, newrow=True)
 

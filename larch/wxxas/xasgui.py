@@ -23,6 +23,8 @@ from wx.adv import AboutBox, AboutDialogInfo
 
 from wx.richtext import RichTextCtrl
 
+from sitka_spruce import SitkaFrame
+
 import larch
 from larch import Group, Journal, Entry
 from larch.io import save_session, read_session
@@ -35,7 +37,7 @@ from larch.utils.strutils import (file2groupname, unique_name,
 from larch.larchlib import read_workdir, save_workdir, read_config, save_config
 
 from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
-                         SpecfileImporter, XasImporter,
+                         SpecfileImporter, XasImporter, SitkaReaderFrame,
                          FileCheckList,
                          FloatCtrl, FloatSpin, SetTip, get_icon, SimpleText,
                          TextCtrl, pack, Button, Popup, HLine, FileSave,
@@ -1526,13 +1528,13 @@ before clearing"""
         elif is_larch_session_file(fullpath):
             self.onLoadSession(path=fullpath)
 
-        # check for simple HDF5 (should be improved!!)
-        # elif h5py.is_hdf5(fullpath):
-        #     self.show_subframe('read_hdf5', None, # HDF5DataFileFrame,
-        #                        filename=fullpath,
-        #                        config=self.last_hdf5_config,
-        #                        _larch=self.larch_buffer.larchshell,
-        #                        read_ok_cb=self.onReadHDF5_OK)
+        # check for simple HDF5 (after Spec/HDF5 !!)
+        elif h5py.is_hdf5(fullpath):
+            self.show_subframe('sitka', SitkaFrame)
+            self.show_subframe('sitka_reader', SitkaReaderFrame,
+                               filename=fullpath,
+                               sitka=self.subframes['sitka'],
+                               read_ok_cb=self.onReadSitka_OK)
 
         # default to ASCII Column File
         else:
@@ -1542,12 +1544,10 @@ before clearing"""
                                _larch=self.larch_buffer.larchshell,
                                read_ok_cb=self.onRead_OK)
 
-    def onReadHDF5_OK(self, script, path, arraylist, config=None):
-        """read 1d datasets from HDF5 files, with a minimum length of 4 datapoints"""
-        self.larch.eval("_specfile = specfile('{path:s}')".format(path=path))
-        dgroup = None
-        fname = Path(path).name
-        print("Read data from hdf5 file ", path, arraylist, script)
+    def onReadSitka_OK(self, paths, arraylist):
+        """read 1d datasets from HDF5 files, with a minimum length of 5 datapoints"""
+        print("read sitka ok ", paths, arraylist)
+
 
 
     def onReadSpecfile_OK(self, script, path, scanlist, config=None):
