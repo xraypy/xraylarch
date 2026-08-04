@@ -72,7 +72,7 @@ dependencies = ["numpy>=2.2.0",
     "psutil",
     "fabio",
     "pyfai",
-    "sitka-spruce>=0.2",
+    "sitka-spruce>=0.4",
     "tabulate"]
 
 
