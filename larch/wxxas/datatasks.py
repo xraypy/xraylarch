@@ -411,26 +411,28 @@ class EnergyCalibrateFrame(wx.Frame):
 
         pars = Parameters()
         ex0 = dat.e0 - ref.e0
-        emax = abs(ex0) + 50.0
         if abs(ex0) > 20:
-            ex0 = ex0/10.0
-        elif abs(ex0) > 5:
-            ex0 = ex0/3.0
+            ex0 = ex0/5.0
 
-        i1 = index_of(ref.xplot, ref.e0-emax)
-        i2 = index_of(ref.xplot, ref.e0+emax)
+        emax = abs(ex0) + 50.0
+        i1 = index_of(ref.xplot, ref.e0 - 0.5*emax)
+        i2 = index_of(ref.xplot, ref.e0 + emax)
 
         def resid(pars, ref, dat, i1, i2):
             "fit residual"
-            newx = dat.xplot + pars['eshift'].value
+            eshift = pars['eshift'].value
+            newx = dat.xplot + eshift
             scale = pars['scale'].value
-            y = interp(newx, dat.dmude, ref.xplot, kind='cubic')
-            return boxcar((y*scale - ref.dmude)[i1:i2], npts=1)
+            y = interp(newx, dat.norm, ref.xplot, kind='cubic')
+            diff_norm = (y*scale-ref.norm)[i1:i2]
+            diff_dmude = ((np.gradient(y*scale) -
+                           np.gradient(ref.norm))/np.gradient(ref.xplot))[i1:i2]
+            return np.concatenate((boxcar(diff_norm, npts=1),
+                                   boxcar(diff_dmude, npts=3)))
 
-        pars.add('eshift', value=ex0, min=-emax, max=emax)
-        pars.add('scale', value=1.0, min=1.e-6, max=1e6)
-        result = minimize(resid, pars, args=(ref, dat, i1, i2),
-                              max_nfev=1000)
+        pars.add('eshift', value=ex0, min=-2*emax, max=2*emax)
+        pars.add('scale', value=1.0, min=1.e-3, max=1e4)
+        result = minimize(resid, pars, args=(ref, dat, i1, i2),  max_nfev=1000)
         return result.params['eshift'].value
 
 
