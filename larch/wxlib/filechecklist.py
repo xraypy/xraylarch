@@ -43,6 +43,7 @@ class FileCheckList(wx.CheckListBox):
                         ("Select None above\tCtrl+Shift+Left",  self.select_noneabove,  "ctrl+shift+left"),
                         ("Select None below\tCtrl+Shift+Right",  self.select_nonebelow, "ctrl+shift+right"),
                         ("Invert Selections\tCtrl+I",  self.select_invert, "ctrl+I"),
+                        ("Sort Selected Alphabetically\tCtrl+Shift+A",  self.select_sort, "ctrl+shift+A"),
                         ("--sep--", None, None),
                         (f"Move up\t{aname}+Up",           self.move_up, f"{alt}+up"),
                         (f"Move down\t{aname}+Down",         self.move_down, f"{alt}+down"),
@@ -207,10 +208,22 @@ class FileCheckList(wx.CheckListBox):
     def select_invert(self, event=None):
         sel = self.GetCheckedStrings()
         all = list(self.GetStrings())
-        # self.SetCheckedStrings([])
-        new = [a for a in all if a not in sel]
-        self.SetCheckedStrings(new)
+        self.SetCheckedStrings([a for a in all if a not in sel])
 
+    def select_sort(self, event=None):
+        "sort selected strings alphabetically"
+        all = list(self.GetStrings())
+        selsort = sorted([a for a in self.GetCheckedStrings()])
+        pos, sel = {}, {}
+        for name in all:
+            ix = all.index(name)
+            pos[ix] = name
+            if name in selsort:
+                sel[ix] = name
+        final = []
+        for ix, name in pos.items():
+            final.append(selsort.pop(0) if ix in sel else name)
+        self.refresh(final)
 
     def select_allabove(self, event=None, name=None):
         self._alter_list(select=True, reverse=False)
