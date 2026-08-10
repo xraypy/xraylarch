@@ -42,6 +42,7 @@ class FileCheckList(wx.CheckListBox):
                         ("Select None\tCtrl+D",        self.select_none, "ctrl+D"),
                         ("Select None above\tCtrl+Shift+Left",  self.select_noneabove,  "ctrl+shift+left"),
                         ("Select None below\tCtrl+Shift+Right",  self.select_nonebelow, "ctrl+shift+right"),
+                        ("Invert Selections\tCtrl+I",  self.select_invert, "ctrl+I"),
                         ("--sep--", None, None),
                         (f"Move up\t{aname}+Up",           self.move_up, f"{alt}+up"),
                         (f"Move down\t{aname}+Down",         self.move_down, f"{alt}+down"),
@@ -202,6 +203,14 @@ class FileCheckList(wx.CheckListBox):
 
     def select_none(self, event=None):
         self.SetCheckedStrings([])
+
+    def select_invert(self, event=None):
+        sel = self.GetCheckedStrings()
+        all = list(self.GetStrings())
+        # self.SetCheckedStrings([])
+        new = [a for a in all if a not in sel]
+        self.SetCheckedStrings(new)
+
 
     def select_allabove(self, event=None, name=None):
         self._alter_list(select=True, reverse=False)
