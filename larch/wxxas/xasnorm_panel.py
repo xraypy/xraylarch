@@ -897,7 +897,7 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         self.process(dgroup=dgroup)
         if self.stale_groups is not None:
             for g in self.stale_groups:
-                print("onReprocess stale group ", g, g.filename)
+                # print("onReprocess stale group ", g, g.filename)
                 self.process(dgroup=g, force=True)
             self.stale_groups = None
         self.onPlotEither(process=False)
