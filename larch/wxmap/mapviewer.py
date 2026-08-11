@@ -2254,7 +2254,7 @@ class MapViewerFrame(wx.Frame):
         has_newdata = xrmfile.folder_has_newdata()
         h5convert_done = self.h5convert_done
         in_progress = filename in self.files_in_progress
-        print(f"process_file: {filename=} {in_progress=}, {has_newdata=}, {h5convert_done=}")
+        # print(f"process_file: {filename=} {in_progress=}, {has_newdata=}, {h5convert_done=}")
         if (has_newdata and h5convert_done and not in_progress):
             self.files_in_progress.append(filename)
             self.h5convert_fname = filename
