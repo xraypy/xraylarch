@@ -974,7 +974,7 @@ class XRD1DFrame(wx.Frame):
     def get_imdisplay(self, win=1):
         wintitle='XRD Image Window %i' % win
         opts = dict(wintitle=wintitle, win=win, image=True)
-c        self.img_display = self.larch.symtable._plotter.get_display(**opts)
+        self.img_display = self.larch.symtable._plotter.get_display(**opts)
         return self.img_display
 
     def get_display(self, win=1, stacked=False):
