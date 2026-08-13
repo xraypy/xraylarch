@@ -834,17 +834,22 @@ class FeffPathPanel(wx.Panel):
             opts['maxval'] = 25.0
             opts['minval'] = -25.0
 
+
         result = self.feffit_panel.update_params_for_expr(expr, **opts)
+        if result is None:
+            return
+
         if result:
             pargroup = self.feffit_panel.get_paramgroup()
-            _eval = pargroup._params._asteval
-            try:
-                value = _eval.eval(expr, show_errors=False, raise_errors=False)
-                if value is not None:
-                    value = gformat(value, 10)
-                    self.wids[name + '_val'].SetLabel(f'={value}')
-            except:
-                result = False
+            if hasattr(pargroup._params, '_asteval'):
+                _eval = pargroup._params._asteval
+                try:
+                    value = _eval.eval(expr, show_errors=False, raise_errors=False)
+                    if value is not None:
+                        value = gformat(value, 10)
+                        self.wids[name + '_val'].SetLabel(f'={value}')
+                except:
+                    result = False
         self.feffit_panel.model_needs_rebuild = True
         fgcol, bgcol = 'text_invalid', 'text_invalid_bg'
         if result:
@@ -890,7 +895,10 @@ class FeffPathPanel(wx.Panel):
 
     def update_values(self):
         pargroup = self.feffit_panel.get_paramgroup()
-        _eval = pargroup._params._asteval
+        try:
+            _eval = pargroup._params._asteval
+        except AttributeError:
+            return
         for par in ('amp', 'e0', 'delr', 'sigma2', 'third', 'ei'):
             expr = self.wids[par].GetValue().strip()
             if len(expr) > 0:
@@ -1682,13 +1690,15 @@ class FeffitPanel(TaskPanel):
         if expr is None:
             return
         pargroup = self.get_paramgroup()
-        if hasattr(pargroup, '__params__'):
-            symtable = pargroup.__params__._asteval.symtable
-        elif hasattr(pargroup, '_params'):
-            symtable = pargroup._params._asteval.symtable
-        else:
-            pargroup._params = Parameters()
-            symtable = pargroup._params._asteval.symtable
+        _params = getattr(pargroup, '_params',
+                          getattr(pargroup, '__params__', None))
+        if _params is None:
+            _params = pargroup._params = Parameters()
+
+        try:
+            symtable = _params._asteval.symtable
+        except Exception:
+            symtable = {}
 
         extras= ''
         if minval is not None:
