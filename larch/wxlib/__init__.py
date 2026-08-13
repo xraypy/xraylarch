@@ -127,15 +127,15 @@ if HAS_WXPYTHON:
                          HyperText, get_icon, OkCancel,
                          SavedParameterDialog, GridPanel, RowPanel,
                          make_steps, set_float, FloatCtrl,
-                         EditableListBox,
                          FileDropTarget, NumericCombo, FloatSpin,
                          FileOpen, FileSave, SelectWorkdir,
                          FloatSpinWithPin, flatnotebook,
                          PeriodicTablePanel, gcd, ExceptionPopup,
                          show_wxsizes, panel_pack,
-                         COLORS, GUIColors, GUI_COLORS, set_color, get_color)
+                         COLORS, GUIColors, GUI_COLORS,
+                         set_color, get_color)
 
-    from .filechecklist import FileCheckList
+    from .filechecklist import FileCheckList, EditableListBox
 
     from . import larchframe
     from . import larchfilling
