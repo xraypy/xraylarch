@@ -43,7 +43,7 @@ from larch.wxlib import (LarchFrame, FloatSpin, EditableListBox,
                          Check, MenuItem, CEN, LEFT, FRAMESTYLE,
                          Font, FONTSIZE, flatnotebook, LarchUpdaterDialog,
                          PeriodicTablePanel, FeffResultsPanel, LarchWxApp,
-                         ExceptionPopup, set_color)
+                         ExceptionPopup)
 
 from larch.xrd import CifStructure, get_amcsd, find_cifs, get_cif, parse_cif_file
 
@@ -129,8 +129,8 @@ class CIFFrame(wx.Frame):
         splitter.SetMinimumPaneSize(250)
 
         leftpanel = wx.Panel(splitter, size=(375, -1))
-        self.ciflist = EditableListBox(leftpanel, self.onShowCIF, size=(375, -1))
-        # set_color(self.ciflist, 'list_fg', bg='list_bg')
+        self.ciflist = EditableListBox(leftpanel, self.onShowCIF,
+                                       size=(375, -1))
         self.cif_selections = {}
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -138,7 +138,7 @@ class CIFFrame(wx.Frame):
         pack(leftpanel, sizer)
 
         # right hand side
-        rightpanel = scrolled.ScrolledPanel(splitter)
+        rightpanel = wx.Panel(splitter)
         panel = wx.Panel(rightpanel, size=(725, -1))
 
         self.ciflist.SetMinSize((375, 250))
@@ -157,15 +157,15 @@ class CIFFrame(wx.Frame):
                                       style=wx.TE_PROCESS_ENTER)
         wids['mineral'].Bind(wx.EVT_TEXT_ENTER, self.onSearch)
 
-        authlab = SimpleText(panel, ' Author Name: ')
-        wids['author'] = wx.TextCtrl(panel, value='',   size=(250, -1),
-                                     style=wx.TE_PROCESS_ENTER)
-        wids['author'].Bind(wx.EVT_TEXT_ENTER, self.onSearch)
+        # authlab = SimpleText(panel, ' Author Name: ')
+        # wids['author'] = wx.TextCtrl(panel, value='',   size=(250, -1),
+        #                             style=wx.TE_PROCESS_ENTER)
+        # wids['author'].Bind(wx.EVT_TEXT_ENTER, self.onSearch)
 
-        journlab = SimpleText(panel, ' Journal Name: ')
-        wids['journal'] = wx.TextCtrl(panel, value='',   size=(250, -1),
-                                      style=wx.TE_PROCESS_ENTER)
-        wids['journal'].Bind(wx.EVT_TEXT_ENTER, self.onSearch)
+        # journlab = SimpleText(panel, ' Journal Name: ')
+        # wids['journal'] = wx.TextCtrl(panel, value='',   size=(250, -1),
+        #                              style=wx.TE_PROCESS_ENTER)
+        # wids['journal'].Bind(wx.EVT_TEXT_ENTER, self.onSearch)
 
         elemlab = SimpleText(panel, ' Include Elements: ')
         elemhint= SimpleText(panel, ' example: O, Fe, Si ')
@@ -200,13 +200,13 @@ class CIFFrame(wx.Frame):
         sizer.Add(minlab,          (ir, 0), (1, 1), LEFT, 3)
         sizer.Add(wids['mineral'], (ir, 1), (1, 3), LEFT, 3)
         sizer.Add(minhint,         (ir, 4), (1, 2), LEFT, 3)
-        ir += 1
-        sizer.Add(authlab,        (ir, 0), (1, 1), LEFT, 3)
-        sizer.Add(wids['author'], (ir, 1), (1, 3), LEFT, 3)
+        # ir += 1
+        # sizer.Add(authlab,        (ir, 0), (1, 1), LEFT, 3)
+        # sizer.Add(wids['author'], (ir, 1), (1, 3), LEFT, 3)
 
-        ir += 1
-        sizer.Add(journlab,        (ir, 0), (1, 1), LEFT, 3)
-        sizer.Add(wids['journal'], (ir, 1), (1, 3), LEFT, 3)
+        # ir += 1
+        # sizer.Add(journlab,        (ir, 0), (1, 1), LEFT, 3)
+        # sizer.Add(wids['journal'], (ir, 1), (1, 3), LEFT, 3)
 
         ir += 1
         sizer.Add(elemlab,        (ir, 0), (1, 1), LEFT, 3)
@@ -361,11 +361,11 @@ class CIFFrame(wx.Frame):
         self.nb.SetSelection(0)
 
         r_sizer = wx.BoxSizer(wx.VERTICAL)
-        r_sizer.Add(panel, 0, LEFT|wx.GROW|wx.ALL)
+        r_sizer.Add(panel, 0,   LEFT|wx.ALL)
         r_sizer.Add(self.nb, 1, LEFT|wx.GROW, 2)
 
         pack(rightpanel, r_sizer)
-        rightpanel.SetupScrolling()
+        # rightpanel.SetupScrolling()
         splitter.SplitVertically(leftpanel, rightpanel, 1)
 
 
@@ -386,12 +386,12 @@ class CIFFrame(wx.Frame):
         mineral_name = self.wids['mineral'].GetValue().strip()
         if len(mineral_name) < 1:
             mineral_name = None
-        author_name = self.wids['author'].GetValue().strip()
-        if len(author_name) < 1:
-            author_name = None
-        journal_name = self.wids['journal'].GetValue().strip()
-        if len(journal_name) < 1:
-            journal_name = None
+        #author_name = self.wids['author'].GetValue().strip()
+        #if len(author_name) < 1:
+        author_name = None
+        # journal_name = self.wids['journal'].GetValue().strip()
+        # if len(journal_name) < 1:
+        journal_name = None
         contains_elements = self.wids['contains_elements'].GetValue().strip()
         if len(contains_elements) < 1:
             contains_elements = None
