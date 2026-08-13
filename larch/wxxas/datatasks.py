@@ -1287,7 +1287,10 @@ class DeglitchFrame(wx.Frame):
             xplot = self.dgroup.energy[:]
         else:
             xplot = self.dgroup.xplot[:]
-        yplot = self.dgroup.yplot[:]
+        if hasattr(self.dgroup, 'yplot'):
+            yplot = self.dgroup.yplot[:]
+        elif hasattr(self.dgroup, 'ydat'):        
+            yplot = self.dgroup.ydat[:]
         if datatype == 'mu' and hasattr(self.dgroup, 'mu'):
             yplot = self.dgroup.mu[:]
         elif datatype == 'norm':
