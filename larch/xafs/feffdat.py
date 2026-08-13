@@ -44,6 +44,7 @@ class FeffDatFile(Group):
     def __init__(self, filename=None,  **kws):
         kwargs = dict(name='feff.dat: %s' % filename)
         kwargs.update(kws)
+        self.filename = filename
         self.__rmass = None
         self.__geometry = None
         Group.__init__(self,  **kwargs)
