@@ -45,6 +45,8 @@ class FeffDatFile(Group):
         kwargs = dict(name='feff.dat: %s' % filename)
         kwargs.update(kws)
         self.filename = filename
+        self.__reff__ = 0
+        self.__nleg__ = 0
         self.__rmass = None
         self.__geometry = None
         Group.__init__(self,  **kwargs)
@@ -63,13 +65,15 @@ class FeffDatFile(Group):
         return FeffDatFile(filename=self.filename)
 
     @property
-    def reff(self): return self.__reff__
+    def reff(self):
+        return self.__reff__
 
     @reff.setter
     def reff(self, val):     pass
 
     @property
-    def nleg(self): return self.__nleg__
+    def nleg(self):
+        return self.__nleg__
 
     @nleg.setter
     def nleg(self, val):    pass
@@ -77,7 +81,7 @@ class FeffDatFile(Group):
     @property
     def rmass(self):
         """reduced mass for a path"""
-        if self.__rmass is None:
+        if self.__rmass is None and hasattr(self, 'geom'):
             rmass = 0
             for atsym, iz, ipot, amass, x, y, z in self.geom:
                 rmass += 1.0/max(1., amass)
@@ -95,6 +99,8 @@ class FeffDatFile(Group):
         """
         if not hasattr(self, '_geometry'):
             self.__geometry = None
+        if not hasattr(self, 'geom'):
+            return None
         if self.__geometry is None:
             self.__geometry = []
             pts, atoms = [], []
@@ -143,7 +149,6 @@ class FeffDatFile(Group):
          self.vint, self.rs_int, self.potentials, self.geom, self.__rmass,
          self.k, self.real_phc, self.mag_feff, self.pha_feff,
          self.red_fact, self.lam, self.rep, self.pha, self.amp) = state
-
         self.k = np.array(self.k)
         self.real_phc = np.array(self.real_phc)
         self.mag_feff = np.array(self.mag_feff)
