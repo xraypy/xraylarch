@@ -1,0 +1,40 @@
+## examples/feffit/doc_feffdat_03.py
+
+from larch import Group
+from larch.xafs import feffpath, path2chi, ff2chi
+from wxmplot.interactive import plot
+
+# read some paths
+path1 = feffpath('feff_feo01.dat')
+path2 = feffpath('feff_feo02.dat')
+path3 = feffpath('feff_feo03.dat')
+path4 = feffpath('feff_feo04.dat')
+path5 = feffpath('feff_feo05.dat')
+
+# apply an e0 shift and s02 to all paths:
+for p in (path1, path2, path3, path4, path5):
+    p.e0  = -0.5
+    p.s02 =  0.9
+    p.sigma2 = 0.008
+
+path1.sigma2 = 0.003
+path2.sigma2 = 0.004
+path3.sigma2 = 0.006
+
+mysum = Group(label='FeO sum of paths 1,2,3,4,5')
+
+ff2chi([path1, path2, path3, path4, path5], group=mysum)
+
+## now, we can also simply sum paths 3,4,5...
+mysum.chi345 = path3.chi + path4.chi + path5.chi
+
+
+plot(mysum.k, mysum.chi*mysum.k**2, label='sum(1,2,3,4,5)', show_legend=True,
+        xlabel=' $ k \\rm\\, (\\AA^{-1})$',
+        ylabel='$ k^2\\chi(k)$',  title=mysum.label, new=True)
+
+plot(path1.k, -2.+path1.chi*path1.k**2, label='path1')
+plot(path2.k, -4+path2.chi*path2.k**2, label='path2')
+plot(path3.k, -6+mysum.chi345*path3.k**2, label='sum(3,4,5)')
+
+## end examples/feffit/doc_feffdat_03.py

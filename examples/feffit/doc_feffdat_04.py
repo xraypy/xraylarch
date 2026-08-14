@@ -1,0 +1,54 @@
+## examples/feffit/doc_feffdat_04.py
+
+from larch import Group
+from larch.fitting import param
+from larch.xafs import feffpath, path2chi, ff2chi
+from wxmplot.interactive import plot
+
+
+# read some paths
+path1 = feffpath('feff_feo01.dat')
+path2 = feffpath('feff_feo02.dat')
+
+# create a group containing parameters
+pars = Group(del_e0 = param('del_e0', -4.0, min=-10, max=10),
+             amp= param('amp', 0.8, min=0.3, max=1.5))
+
+for p in (path1, path2):
+    p.e0  = 'del_e0'
+    p.s02 = 'amp'
+    p.sigma2 = 0.003
+    if p == path2:
+        p.sigma2 = 0.005
+
+mysum = Group(label='FeO sum of paths')
+
+ff2chi([path1, path2], group=mysum, paramgroup=pars)
+
+label='E0=%.1f, S02=%.1f' % (pars.del_e0.value, pars.amp.value)
+
+plot(mysum.k, mysum.chi*mysum.k**2,
+     label=label, show_legend=True,
+     xlabel='$ k \\rm\\, (\\AA^{-1})$',
+     ylabel='$ k^2\\chi(k)$',  title=mysum.label, new=True)
+
+
+# now change parameter values, re-do sum
+pars.del_e0.value = 3.5
+pars.amp.value = 0.95
+
+# re-calculate chi for each path with paramgroup set
+# then sum the paths ourselves
+path2chi(path1, paramgroup=pars)
+path2chi(path2, paramgroup=pars)
+
+mysum.chi_alt = path1.chi + path2.chi
+
+label='E0=%.1f, S02=%.1f' % (pars.del_e0.value, pars.amp.value)
+plot(mysum.k, mysum.chi_alt*mysum.k**2, label=label)
+
+## end examples/feffit/doc_feffdat4.lar
+
+
+
+## end examples/feffit/doc_feffdat_04.py
