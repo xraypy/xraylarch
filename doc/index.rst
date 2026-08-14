@@ -88,6 +88,7 @@ the National Science Foundation - Advanced CyberInfrastructure
     :ref:`GSE Map Viewer <mapviewer_app>`      | GUI        | XRF Map Viewer for GSECARS X-ray microprobe data.
     :ref:`Larch_XRF <larchxrf_app>`            | GUI        | Display and Analyze XRF Spectra.
     :ref:`Larch_XRD1D <larchxrd1d_app>`        | GUI        | Display and work with 1-D XRD patterns
+    `sitka spruce`_                            | GUI        | Data Browser for HDF5 and Zarr data
     Jupyter Lab                                | Browser    | Run Jupyter Lab in a browser using the Python installed with X-ray Larch.
     :ref:`larch <larchcli_app>`                | CLI        | simple shell command-line interface
     :ref:`Larch GUI <larchgui_app>`            | GUI        | enhanced command-line interface with data browser
