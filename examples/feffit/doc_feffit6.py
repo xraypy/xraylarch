@@ -1,0 +1,126 @@
+## examples/feffit/doc_feffit6.lar
+
+# Testing sensitivity to Z of backscatterer, and
+# how well "phase corrected" Fourier transforms predict distance
+import numpy as np
+
+from larch import Group
+from larch.io import read_ascii
+from larch.math import interp, linregress
+from larch.fitting import param, guess, param_group
+from larch.xafs import (autobk, feffpath, feffit_transform,
+                        feffit_dataset, feffit, feffit_report, xftf_fast)
+from larch.wxlib.xafsplots import plot_chifit
+from wxmplot.interactive import plot
+
+def get_zinc_mu(filename, labels='energy dwelltime i0 i1'):
+    """read raw data, do background subtraction"""
+    dat = read_ascii(filename, labels=labels)
+    dat.mu = -np.log(dat.i1 / dat.i0)
+    autobk(dat, e0 = 9666.0, rbkg=1.25, kweight=2)
+    return dat
+
+def plot_chidata(data, title, win=1):
+    kopts = dict(xlabel=r'$k \rm\,(\AA^{-1})$',
+                 ylabel=r'$k^2\chi(k) \rm\,(\AA^{-2})$',
+                 title=title, xmax=14, new=True, win=win)
+    plot(data.k, data.chi*data.k**2, title=title, **kopts)
+
+
+def rplot_fit(dset, title, win=1):
+    "make R-spae plots of results"
+    ropts = dict(xlabel=r'$R \rm\,(\AA)$',
+                 ylabel=r'$|\chi(R)| \rm\,(\AA^{-3})$',
+                 title=title, xmax=6, win=win, show_legend=True)
+    plot(dset.data.r,  dset.data.chir_mag, new=True, label='data', **ropts)
+    plot(dset.model.r,  dset.model.chir_mag,  label='Feff Path', win=win)
+
+    chir_pha = dset.model.chir_phcor
+    chir_pha_mag = np.sqrt(chir_pha.real**2 + chir_pha.imag**2)
+    plot(dset.model.r,  chir_pha_mag,  win=win, label='phase-corrected data')
+
+    # find region around peak in phase-corrected chi(R)
+
+    irmax = np.where(chir_pha_mag == max(chir_pha_mag))[0][0]
+    x = dset.model.r[irmax-1: irmax+2]
+    y = dset.model.chir_im[irmax-1: irmax+2]
+    plot(x, y, win=win, color='black', style='short dashed',
+         marker='o', label='Im[phase-corrected]')
+    return
+
+def phase_correct(dset):
+   "calculate phase-corrected FT, find estimate of R"
+   nrpts = len(dset.model.r)
+   path1 = list(dset.paths.items())[0][1]
+   # get phase from Feff path
+   feff_pha = interp(path1._feffdat.k, path1._feffdat.pha, dset.model.k)
+   # phase-corrected Fourier Transform
+   chir_pha = xftf_fast(dset.data.chi * np.exp(0-1j*feff_pha) *
+                        dset.data.kwin * dset.data.k**2)[:nrpts]
+   chir_pha_mag = np.sqrt(chir_pha.real**2 + chir_pha.imag**2)
+   dset.model.chir_phcor = chir_pha
+
+   # find region around peak in phase-corrected chi(R)
+   irmax = np.where(chir_pha_mag == max(chir_pha_mag))[0][0]
+   x = dset.model.r[irmax-1: irmax+2]
+   y = dset.model.chir_im[irmax-1: irmax+2]
+   # find where Im[chi(R)_phase_corrected] = 0: use linear regression
+   o = linregress(y, x)
+   dset.model.rphcor = o[1]
+   return o[1]
+#enddef
+
+###################################################
+znse_data = get_zinc_mu('../xafsdata/znse_zn_xafs.001',
+                        labels='energy dwelltime i0 i1')
+
+# plot_chidata(znse_data, 'Zn K-edge ZnSe')
+
+# define Feff Paths, storing them in dictionary
+paths = {}
+pathargs = dict(degen=4.0, s02='amp', e0='del_e0', sigma2='sig2', deltar='del_r')
+paths['Zn'] = feffpath('Feff_ZnSe/feff_znzn.dat', **pathargs)
+paths['Ga'] = feffpath('Feff_ZnSe/feff_znga.dat', **pathargs)
+paths['Ge'] = feffpath('Feff_ZnSe/feff_znge.dat', **pathargs)
+paths['As'] = feffpath('Feff_ZnSe/feff_znas.dat', **pathargs)
+paths['Se'] = feffpath('Feff_ZnSe/feff_znse.dat', **pathargs)
+paths['Br'] = feffpath('Feff_ZnSe/feff_znbr.dat', **pathargs)
+paths['Kr'] = feffpath('Feff_ZnSe/feff_znkr.dat', **pathargs)
+paths['Rb'] = feffpath('Feff_ZnSe/feff_znrb.dat', **pathargs)
+
+# set FT tranform and Fit ranges
+trans = feffit_transform(rmin=1.5, rmax=3.0, kmin=3, kmax=13,
+                         kw=2, dk=4, window='kaiser')
+
+# perform fit for each scatterer
+print( '|Scatterer|RedChi2|    S02     |   sigma2      |      E0     |      R       |R_phcor|')
+fmt = '|  %s     | %5.1f |%s|%s|%s|%s|%7.3f|'
+
+results = {}
+for ix, scatterer in enumerate(('Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb')):
+    dset  = feffit_dataset(data=znse_data, paths={scatterer: paths[scatterer]},
+                           transform=trans)
+    pars = Group(amp    = guess(1.0),
+                 del_e0 = guess(0.1, min=-20, max=20),
+                 sig2   = param(0.006, vary=True, min=0),
+                 del_r  = guess(0.) )
+
+    out = feffit(pars, dset)
+    path1 = out.datasets[0].paths[scatterer]
+    # read scatterer from Feff geometry, to be sure it's correct
+    scatt = path1._feffdat.geom[1][0]
+    title = 'Path: Zn-%s ' % scatt
+    r_phcor = phase_correct(out.datasets[0])
+    rplot_fit(out.datasets[0], title, win=1+ix)
+
+    redchi = out.chi2_reduced
+
+    _amp   = '%5.2f(%.2f) ' % (out.params['amp'].value, out.params['amp'].stderr)
+    _de0   = '%6.2f(%.2f) ' % (out.params['del_e0'].value,  out.params['del_e0'].stderr)
+    _ss2   = '%6.4f(%.4f) ' % (out.params['sig2'].value,  out.params['sig2'].stderr)
+    _r     = '%6.3f(%.3f) ' % (path1.reff+out.params['del_r'].value, out.params['del_r'].stderr)
+    print( fmt % (scatt, redchi, _amp, _ss2, _de0, _r, r_phcor))
+    results[scatterer] = out
+#endfor
+
+## end examples/feffit/doc_feffit6.py

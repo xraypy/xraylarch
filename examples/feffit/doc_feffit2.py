@@ -1,0 +1,58 @@
+## examples/feffit/doc_feffit2.py
+
+from larch.io import read_ascii
+from larch.fitting import param, guess, param_group
+from larch.xafs import autobk, feffpath, feffit_transform, feffit_dataset, feffit, feffit_report
+from larch.wxlib.xafsplots import plot_chifit
+
+
+def write_report(filename, out):
+    "write report to file"
+    try:
+        f = open(filename, 'w')
+        f.write(out)
+        f.close()
+    except:
+        print( 'could not write %s' % filename)
+
+
+# read data
+cu_data  = read_ascii('../xafsdata/cu_metal_rt.xdi')
+cu_data.mu = cu_data.mutrans
+autobk(cu_data, rbkg=1.1, kw=2)
+
+# define fitting parameter group
+pars = param_group(amp    = param(1,    vary=True),
+             del_e0 = param(3,    vary=True),
+             c3_1   = param(.002, vary=True),
+             sig2_1 = param(.002, vary=True),
+             sig2_2 = param(.002, vary=True),
+             sig2_3 = param(.002, vary=True),
+             alpha  = param(0,    vary=True) )
+
+# define 3 Feff Path, give expressions for Path Parameters
+path1 = feffpath('feff0001.dat',     s02 = 'amp', e0 = 'del_e0',
+                 sigma2 = 'sig2_1',  deltar  = 'alpha*reff', third='c3_1')
+
+path2 = feffpath('feff0002.dat',     s02 = 'amp', e0 = 'del_e0',
+                 sigma2 = 'sig2_2',  deltar  = 'alpha*reff')
+
+path3 = feffpath('feff0003.dat',     s02 = 'amp', e0 = 'del_e0',
+                  sigma2 = 'sig2_3', deltar  = 'alpha*reff')
+
+trans = feffit_transform(kmin=3, kmax=17, kw=2, dk=4, window='kaiser', rmin=1.4, rmax=3.5)
+
+# define dataset to include data, pathlist, transform
+dset  = feffit_dataset(data=cu_data, pathlist=[path1, path2, path3], transform=trans)
+
+# perform fit!
+out = feffit(pars, dset)
+
+report = feffit_report(out)
+print( report)
+
+write_report('doc_feffit2.out', report)
+
+plot_chifit(dset, title='Three-shell fit to Cu', rmax=5)
+
+## end examples/feffit/doc_feffit2.py
