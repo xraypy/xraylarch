@@ -5,16 +5,57 @@ The GitHub Release Notes will also be useful
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [2026.3.0 - 2026-08-14]
 
-#### xraylarch library
- - fix `larch.plot`/RIXS imports eagerly loading `larch.wxlib`, which forced
-   IPython's "%gui wx" hook and could deadlock a Jupyter kernel
- - RIXS: split `RixsData.reset()` into `reset_crop`/`reset_cuts`, fix
-   `norm()` to properly min-max normalize both RIXS planes, and add a
-   `tick_step` option to `plot_rixs`/`plot_rixs_cuts` for evenly spaced
-   energy ticks
- - RIXS: add sample-name glob filter to `rixs_esrf_fame.search_samples`
+### Larix
+- better dark mode on Windows
+- better setting e0 from XASnorm form, forcing to group e0 value
+- fix setting of e0 for groups during processing, say for merged groups
+- force edge_step to 'auto' to re-trigger finding edge_step for
+   more cases of Copy Parmeters
+- show E0 and use absolute energies in Pre-edge Peak fitting
+- show mu(e0) from interpolated, not nearest value
+- add 'sort alphabetically' to File List
+- add Invert Selection to File List
+- add drag-and-drop support for file reads to File List
+- fix annoying double-scrolling window in CIF Browser
+- better dark/light colors for EditableList Box
+- check for 'yplot' or 'ydat' for data tasks
+- use both norm and dnorm/de for energy auto-energy alignment
+- better handling of loading saved Feffit models
+- cleanups for curvefitting, correctly getting uncertainty arrays,
+  saving results
+
+### Other GUIs
+- RIXS updates + fix sever bug with Jupyter and Wx matplotlib backend
+- fix deadlocking Jupyter kernel from ipython wx gui
+- xrd1d; fix invocation of pyFAI with ponifile
+- work (incomplete) toward start of larch_xrf_viewer, that could be
+  used interactively
+- add sitka icons
+- better dark mode on Windows
+
+### Library
+- fix `larch.plot`/RIXS imports eagerly loading `larch.wxlib`, which forced
+  IPython's "%gui wx" hook and could deadlock a Jupyter kernel
+- RIXS: split `RixsData.reset()` into `reset_crop`/`reset_cuts`, fix
+  `norm()` to properly min-max normalize both RIXS planes, and add a
+  `tick_step` option to `plot_rixs`/`plot_rixs_cuts` for evenly spaced
+  energy ticks
+- RIXS: add sample-name glob filter to `rixs_esrf_fame.search_samples`
+- Fixed inverted fpp in diffkk
+- more hardening of feffdat object that are not fully initialized
+- initialize feffdat filename
+- allow e0 to be not on the supplied energy grid
+- fix typo in feffdat.py
+
+### Project
+- add dependency for sitka_spruce hdf5 browser, and desktop shortcut
+- add many pure-Python processing examples, translated from .lar files
+- update dos for FEFF to make it clear that N cannot be a variable.
+- drop Python 3.10 support
+- updated install scripts and binary installers
+
 
 ## [2026.2.2 - 2026-06-17]
 
@@ -588,9 +629,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
     hitting the pin icon starts a timer which will look for mouse clicks *after* hitting
     the pin icon:
        a) if there are new mouse clicks on the plot, wait at least 3 seconds, and return
-          the most recent position.
+	  the most recent position.
        b) if there are no mouse clicks after 15 seconds, return the most recent position
-           (even before clicking on the pin)
+	   (even before clicking on the pin)
 
 
 ### Fixed
