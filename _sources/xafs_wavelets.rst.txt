@@ -60,7 +60,7 @@ Applying the Cauchy wavelet transform to Fe K-edge data of FeO is fairly
 straightforward:
 
 
-.. literalinclude:: ../examples/xafs/wavelet_example.lar
+.. literalinclude:: ../examples/xafs/wavelet_example.py
 
 
 With results for the Cauchy transforms looking like (here, :math:`k`\ is

@@ -6,7 +6,6 @@
 .. _Dioptas: https://github.com/Dioptas/Dioptas
 .. _Feff Project: https://feff.phys.washington.edu/
 
-
 .. _XDI:   https://github.com/XraySpectroscopy/XAS-Data-Interchange/
 .. _XDI metadata dictionary:   https://github.com/XraySpectroscopy/XAS-Data-Interchange/blob/master/specification/dictionary.md
 
@@ -17,7 +16,8 @@
 
 .. _pyepics:  https://pyepics.github.com/pyepics/
 .. _xraydb:   https://xraypy.github.io/XrayDB/
-.. _larixite:   https://xraypy.github.io/larixite/
+.. _larixite:  https://xraypy.github.io/larixite/
+.. _sitka spruce:    https://xraypy.github.io/sitka-spruce/
 .. _lmfit:    https://lmfit.github.io/lmfit-py/
 .. _asteval:  https://lmfit.github.io/asteval/
 .. _wxmplot:  https://newville.github.io/wxmplot/

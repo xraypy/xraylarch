@@ -302,31 +302,17 @@ for further documentation.
     copied. Instead, the HDF5 file is kept open and data accessed from the
     file as needed.
 
-An example using :func:`h5_group` shows that one can browse through the
-data heirarchy of the HDF5 file, and pick out the needed data::
+This is a fairly thin wrapper around the `h5py` module, but allows
+accessing elements by attribute.  An example using :func:`h5_group`
+shows that one can browse through the data heirarchy of the HDF5 file,
+and pick out the needed data::
 
-    larch> g = h5group('test.h5')
-    larch> show(g)
-    == Group test.h5: 3 symbols ==
-      attrs: {u'Collection Time': ': Sat Feb 4 13:29:00 2012', u'Version': '1.0.0',
-              u'Beamline': 'GSECARS, 13-IDC / APS', u'Title': 'Epics Scan Data'}
-      data: <Group test.h5/data>
-      h5_file: <HDF5 file "test.h5" (mode r)>
-    larch>show(g.data)
-    == Group test.h5/data: 5 symbols ==
-      attrs: {u'scan_prefix': '13IDC:', u'start_time': ': Sat Feb 4 13:29:00 2012',
-            u'correct_deadtime': 'True', u'dimension': 2,
-            u'stop_time': ': Sat Feb 4 13:44:52 2009'}
-      environ: <Group test.h5/data/environ>
-      full_xrf: <Group test.h5/data/full_xrf>
-      merged_xrf: <Group test.h5/data/merged_xrf>
-      scan: <Group test.h5/data/scan>
-
-
-    larch> g.data.scan.sums
+    >>> from larch.io import h5group
+    >>> from larch.utils.show import show
+    >>> g = h5group('test.h5')
+    >>> dsum = g.data.scan.sums
+    >>> print(dsum)
     <HDF5 dataset "det": shape (15, 26, 26), type "<f8">
-
-    larch> imshow(g.data.scan.sums[8:,:,:])
 
 This interface is general-purpose but somewhat low-level.  As HDF5 formats
 and schemas become standardized, better interfaces can easily be made on

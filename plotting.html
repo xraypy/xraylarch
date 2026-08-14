@@ -6,18 +6,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>12. Plotting and Displaying Data &#8212; xraylarch 2026.2.2 documentation</title>
+    <title>12. Plotting and Displaying Data &#8212; xraylarch 2026.3.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/xraylarch_style.css?v=f3581a04" />
     
-    <script src="_static/documentation_options.js?v=b8e940d7"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/documentation_options.js?v=5abc04fd"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script src="_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -767,25 +767,26 @@ the image, change the color table, change the intensity scaling, change the
 interpolattion algorithm used.  You can also toggle between showing an
 image of continuously varying intensities and a contour map.  An example
 image, generated with</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/plotting/doc_image2d.lar</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/plotting/doc_image2d.py</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w">  </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wxmplot.interactive</span><span class="w"> </span><span class="kn">import</span> <span class="n">imshow</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">gauss2d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">sx</span><span class="p">,</span> <span class="n">sy</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">outer</span><span class="p">(</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(((</span><span class="n">y</span><span class="o">-</span><span class="n">y0</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">sy</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span>
-                 <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(((</span><span class="n">x</span><span class="o">-</span><span class="n">x0</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">sx</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
-<span class="n">enddef</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(((</span><span class="n">y</span><span class="o">-</span><span class="n">y0</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">sy</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(((</span><span class="n">x</span><span class="o">-</span><span class="n">x0</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">sx</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
 
 <span class="n">ny</span><span class="p">,</span> <span class="n">nx</span> <span class="o">=</span> <span class="mi">350</span><span class="p">,</span> <span class="mi">400</span>
-<span class="n">ix</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="n">nx</span><span class="p">)</span>
-<span class="n">iy</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="n">ny</span><span class="p">)</span>
+<span class="n">ix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nx</span><span class="p">)</span>
+<span class="n">iy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">ny</span><span class="p">)</span>
 <span class="n">x</span>  <span class="o">=</span>  <span class="n">ix</span> <span class="o">/</span> <span class="mf">10.</span>
 <span class="n">y</span>  <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">+</span> <span class="n">iy</span> <span class="o">/</span> <span class="mf">10.0</span>
 
-<span class="n">dat</span> <span class="o">=</span> <span class="mf">0.2</span> <span class="o">+</span> <span class="p">(</span><span class="mf">0.05</span><span class="o">*</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">nx</span><span class="o">*</span><span class="n">ny</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">ny</span><span class="p">,</span> <span class="n">nx</span><span class="p">)</span> <span class="o">+</span>
+<span class="n">dat</span> <span class="o">=</span> <span class="mf">0.2</span> <span class="o">+</span> <span class="p">(</span><span class="mf">0.05</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">nx</span><span class="o">*</span><span class="n">ny</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">ny</span><span class="p">,</span> <span class="n">nx</span><span class="p">)</span> <span class="o">+</span>
              <span class="mf">2.0</span><span class="o">*</span><span class="n">gauss2d</span><span class="p">(</span><span class="n">ix</span><span class="p">,</span> <span class="n">iy</span><span class="p">,</span> <span class="mi">190</span><span class="p">,</span>   <span class="mi">176</span><span class="p">,</span>  <span class="mi">57</span><span class="p">,</span>  <span class="mi">69</span><span class="p">))</span>
 
 <span class="n">imshow</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">colormap</span><span class="o">=</span><span class="s1">&#39;coolwarm&#39;</span><span class="p">)</span>
 
-<span class="c1">## end of examples/plotting/doc_image2d.lar</span>
+<span class="c1">## end of examples/plotting/doc_image2d.py</span>
 </pre></div>
 </div>
 <p>is shown below:</p>
@@ -828,45 +829,48 @@ use <a class="reference internal" href="#plotter.get_display" title="_plotter.ge
 <p>As an example of what you can do with this, here we make a histogram plot
 from a sampling of a more conitinuous distribution.  This  uses
 matplotlib’s <code class="xref py py-func docutils literal notranslate"><span class="pre">hist()</span></code> function,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/plotting/doc_use_mpl.lar</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/plotting/doc_use_mpl.py</span>
 <span class="c1">#</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">gamma</span>
-
+<span class="kn">from</span><span class="w"> </span><span class="nn">wxmplot.interactive</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot</span>
 <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;GNXAS-like distribution function&#39;</span>
 
 <span class="n">sigma</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">r0</span> <span class="o">=</span> <span class="mf">0.12</span><span class="p">,</span> <span class="mf">0.65</span><span class="p">,</span> <span class="mf">3.0</span>
 <span class="n">q</span>    <span class="o">=</span> <span class="mi">4</span><span class="o">/</span><span class="n">beta</span><span class="o">**</span><span class="mi">2</span>
-<span class="n">amp</span>  <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">sigma</span><span class="o">*</span><span class="nb">abs</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span><span class="o">*</span><span class="n">gamma</span><span class="p">(</span><span class="n">q</span><span class="p">))</span>
+<span class="n">amp</span>  <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">sigma</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span><span class="o">*</span><span class="n">gamma</span><span class="p">(</span><span class="n">q</span><span class="p">))</span>
 
 <span class="c1"># calculate g(r) on a fine r-grid:</span>
-<span class="n">r</span>   <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mf">2.5</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span>
+<span class="n">r</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">2.5</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span>
 <span class="n">arg</span> <span class="o">=</span> <span class="n">q</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">r</span><span class="o">-</span><span class="n">r0</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">beta</span><span class="o">*</span><span class="n">sigma</span><span class="p">)</span>
-<span class="n">gr</span>  <span class="o">=</span> <span class="n">amp</span> <span class="o">*</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">arg</span><span class="p">)</span><span class="o">*</span><span class="n">arg</span><span class="o">**</span><span class="p">(</span><span class="n">q</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">gr</span>  <span class="o">=</span> <span class="n">amp</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">arg</span><span class="p">)</span><span class="o">*</span><span class="n">arg</span><span class="o">**</span><span class="p">(</span><span class="n">q</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 <span class="c1"># note removal of nan&#39;s and impossible values</span>
-<span class="n">gr</span><span class="p">[</span><span class="n">isnan</span><span class="p">(</span><span class="n">gr</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="k">if</span> <span class="nb">min</span><span class="p">(</span><span class="n">gr</span><span class="p">)</span><span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span> <span class="n">gr</span><span class="p">[</span><span class="n">where</span><span class="p">(</span><span class="n">gr</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">gr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">gr</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">if</span> <span class="nb">min</span><span class="p">(</span><span class="n">gr</span><span class="p">)</span><span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="n">gr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">gr</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
 
 <span class="c1"># standard plot of g(r)</span>
-<span class="n">newplot</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">gr</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$R\,\rm(\AA)$&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$g(R)$&#39;</span><span class="p">,</span>
-        <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">fullbox</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">display</span> <span class="o">=</span> <span class="n">plot</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">gr</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+             <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;$R</span><span class="se">\\</span><span class="s1">,</span><span class="se">\\</span><span class="s1">rm(</span><span class="se">\\</span><span class="s1">AA)$&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$g(R)$&#39;</span><span class="p">,</span>
+             <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">fullbox</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
 <span class="c1"># calculate g(r) on a coarse r-grid:</span>
-<span class="n">hr</span>   <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mf">2.5</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>
+<span class="n">hr</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">2.5</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>
 <span class="n">harg</span> <span class="o">=</span> <span class="n">q</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">hr</span><span class="o">-</span><span class="n">r0</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">beta</span><span class="o">*</span><span class="n">sigma</span><span class="p">)</span>
-<span class="n">hgr</span>  <span class="o">=</span> <span class="n">amp</span> <span class="o">*</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">harg</span><span class="p">)</span><span class="o">*</span><span class="n">harg</span><span class="o">**</span><span class="p">(</span><span class="n">q</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">hgr</span><span class="p">[</span><span class="n">isnan</span><span class="p">(</span><span class="n">hgr</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="k">if</span> <span class="nb">min</span><span class="p">(</span><span class="n">hgr</span><span class="p">)</span><span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="n">hgr</span><span class="p">[</span><span class="n">where</span><span class="p">(</span><span class="n">hgr</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">hgr</span>  <span class="o">=</span> <span class="n">amp</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">harg</span><span class="p">)</span><span class="o">*</span><span class="n">harg</span><span class="o">**</span><span class="p">(</span><span class="n">q</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">hgr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">hgr</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">if</span> <span class="nb">min</span><span class="p">(</span><span class="n">hgr</span><span class="p">)</span><span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="n">hgr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">hgr</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
 
 <span class="c1"># get panel, matplotlib axes</span>
-<span class="n">panel</span> <span class="o">=</span> <span class="n">get_display</span><span class="p">()</span><span class="o">.</span><span class="n">panel</span>
+<span class="n">panel</span> <span class="o">=</span> <span class="n">display</span><span class="o">.</span><span class="n">panel</span>
 <span class="n">axes</span>  <span class="o">=</span> <span class="n">panel</span><span class="o">.</span><span class="n">axes</span>
 
 <span class="c1"># plot histogram of coarse-grid data</span>
 <span class="n">histo</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">hr</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">hgr</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">hr</span><span class="p">),</span> <span class="n">rwidth</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
 <span class="n">panel</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
 
-<span class="c1">## end of examples/plotting/doc_use_mpl.lar</span>
+<span class="c1">## end of examples/plotting/doc_use_mpl.py</span>
 </pre></div>
 </div>
 <p>which generates a plot that looks like</p>
@@ -980,7 +984,7 @@ matplotlib’s <code class="xref py py-func docutils literal notranslate"><span 
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
     </div>
   </body>
 </html>

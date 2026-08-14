@@ -510,7 +510,7 @@ interpolattion algorithm used.  You can also toggle between showing an
 image of continuously varying intensities and a contour map.  An example
 image, generated with
 
-.. literalinclude:: ../examples/plotting/doc_image2d.lar
+.. literalinclude:: ../examples/plotting/doc_image2d.py
 
 is shown below:
 
@@ -562,7 +562,7 @@ As an example of what you can do with this, here we make a histogram plot
 from a sampling of a more conitinuous distribution.  This  uses
 matplotlib's :func:`hist` function,
 
-.. literalinclude:: ../examples/plotting/doc_use_mpl.lar
+.. literalinclude:: ../examples/plotting/doc_use_mpl.py
 
 which generates a plot that looks like
 

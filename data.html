@@ -6,18 +6,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>11. Reading and Writing Data &#8212; xraylarch 2026.2.2 documentation</title>
+    <title>11. Reading and Writing Data &#8212; xraylarch 2026.3.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/xraylarch_style.css?v=f3581a04" />
     
-    <script src="_static/documentation_options.js?v=b8e940d7"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/documentation_options.js?v=5abc04fd"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script src="_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -477,7 +477,7 @@ reading and writing.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="larch.io.AthenaProject">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">AthenaProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.AthenaProject" title="Link to this definition">¶</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">AthenaProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.AthenaProject" title="Link to this definition">¶</a></dt>
 <dd><p>A representation of an Athena Project File</p>
 </dd></dl>
 
@@ -593,30 +593,16 @@ copied. Instead, the HDF5 file is kept open and data accessed from the
 file as needed.</p>
 </dd></dl>
 
-<p>An example using <a class="reference internal" href="#larch.io.h5_group" title="larch.io.h5_group"><code class="xref py py-func docutils literal notranslate"><span class="pre">h5_group()</span></code></a> shows that one can browse through the
-data heirarchy of the HDF5 file, and pick out the needed data:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">h5group</span><span class="p">(</span><span class="s1">&#39;test.h5&#39;</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">show</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
-<span class="o">==</span> <span class="n">Group</span> <span class="n">test</span><span class="o">.</span><span class="n">h5</span><span class="p">:</span> <span class="mi">3</span> <span class="n">symbols</span> <span class="o">==</span>
-  <span class="n">attrs</span><span class="p">:</span> <span class="p">{</span><span class="sa">u</span><span class="s1">&#39;Collection Time&#39;</span><span class="p">:</span> <span class="s1">&#39;: Sat Feb 4 13:29:00 2012&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Version&#39;</span><span class="p">:</span> <span class="s1">&#39;1.0.0&#39;</span><span class="p">,</span>
-          <span class="sa">u</span><span class="s1">&#39;Beamline&#39;</span><span class="p">:</span> <span class="s1">&#39;GSECARS, 13-IDC / APS&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Title&#39;</span><span class="p">:</span> <span class="s1">&#39;Epics Scan Data&#39;</span><span class="p">}</span>
-  <span class="n">data</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">test</span><span class="o">.</span><span class="n">h5</span><span class="o">/</span><span class="n">data</span><span class="o">&gt;</span>
-  <span class="n">h5_file</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">HDF5</span> <span class="n">file</span> <span class="s2">&quot;test.h5&quot;</span> <span class="p">(</span><span class="n">mode</span> <span class="n">r</span><span class="p">)</span><span class="o">&gt;</span>
-<span class="n">larch</span><span class="o">&gt;</span><span class="n">show</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-<span class="o">==</span> <span class="n">Group</span> <span class="n">test</span><span class="o">.</span><span class="n">h5</span><span class="o">/</span><span class="n">data</span><span class="p">:</span> <span class="mi">5</span> <span class="n">symbols</span> <span class="o">==</span>
-  <span class="n">attrs</span><span class="p">:</span> <span class="p">{</span><span class="sa">u</span><span class="s1">&#39;scan_prefix&#39;</span><span class="p">:</span> <span class="s1">&#39;13IDC:&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;: Sat Feb 4 13:29:00 2012&#39;</span><span class="p">,</span>
-        <span class="sa">u</span><span class="s1">&#39;correct_deadtime&#39;</span><span class="p">:</span> <span class="s1">&#39;True&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;dimension&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-        <span class="sa">u</span><span class="s1">&#39;stop_time&#39;</span><span class="p">:</span> <span class="s1">&#39;: Sat Feb 4 13:44:52 2009&#39;</span><span class="p">}</span>
-  <span class="n">environ</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">test</span><span class="o">.</span><span class="n">h5</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">environ</span><span class="o">&gt;</span>
-  <span class="n">full_xrf</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">test</span><span class="o">.</span><span class="n">h5</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">full_xrf</span><span class="o">&gt;</span>
-  <span class="n">merged_xrf</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">test</span><span class="o">.</span><span class="n">h5</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">merged_xrf</span><span class="o">&gt;</span>
-  <span class="n">scan</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">test</span><span class="o">.</span><span class="n">h5</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">scan</span><span class="o">&gt;</span>
-
-
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">scan</span><span class="o">.</span><span class="n">sums</span>
-<span class="o">&lt;</span><span class="n">HDF5</span> <span class="n">dataset</span> <span class="s2">&quot;det&quot;</span><span class="p">:</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">26</span><span class="p">,</span> <span class="mi">26</span><span class="p">),</span> <span class="nb">type</span> <span class="s2">&quot;&lt;f8&quot;</span><span class="o">&gt;</span>
-
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">imshow</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">scan</span><span class="o">.</span><span class="n">sums</span><span class="p">[</span><span class="mi">8</span><span class="p">:,:,:])</span>
+<p>This is a fairly thin wrapper around the <cite>h5py</cite> module, but allows
+accessing elements by attribute.  An example using <a class="reference internal" href="#larch.io.h5_group" title="larch.io.h5_group"><code class="xref py py-func docutils literal notranslate"><span class="pre">h5_group()</span></code></a>
+shows that one can browse through the data heirarchy of the HDF5 file,
+and pick out the needed data:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">larch.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">h5group</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">larch.utils.show</span><span class="w"> </span><span class="kn">import</span> <span class="n">show</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">h5group</span><span class="p">(</span><span class="s1">&#39;test.h5&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dsum</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">scan</span><span class="o">.</span><span class="n">sums</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">dsum</span><span class="p">)</span>
+<span class="go">&lt;HDF5 dataset &quot;det&quot;: shape (15, 26, 26), type &quot;&lt;f8&quot;&gt;</span>
 </pre></div>
 </div>
 <p>This interface is general-purpose but somewhat low-level.  As HDF5 formats
@@ -798,23 +784,21 @@ supplied or available symbols: every Group with a “groupname” and
 <dl class="py function">
 <dt class="sig sig-object py" id="larch.io.read_session">
 <span class="sig-prename descclassname"><span class="pre">larch.io.</span></span><span class="sig-name descname"><span class="pre">read_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clean_xasgroups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.io.read_session" title="Link to this definition">¶</a></dt>
-<dd><p>read Larch Session File, returning data into new data in the
-current session</p>
+<dd><p>read Larch Session File, returning data into new data in the current session</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – name of save file</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><p>Tuple
-A tuple wih entries:</p>
-<blockquote>
-<div><div class="line-block">
+<dd class="field-even"><p><div class="line-block">
 <div class="line">configuration  - a dict of configuration for the saved session.</div>
 <div class="line">command_history  - a list of commands in the saved session.</div>
 <div class="line">symbols         - a dict of Larch/Python symbols, groups, etc</div>
 </div>
-</div></blockquote>
 </p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple, with entries</p>
 </dd>
 </dl>
 <div class="admonition seealso">
@@ -846,26 +830,24 @@ even if not expicitly set in <cite>_xasgroups</cite></p></li>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<ol class="arabic">
-<li><p>data in the following groups will be merged into existing session groups:
-<cite>_feffpaths</cite> : dict of “current feff paths”
-<cite>_feffcache</cite> : dict with cached feff paths and feff runs
-<cite>_xasgroups</cite> : dict mapping “File Name” and “Group Name”, used in <cite>Larix</cite></p></li>
-<li><p>to avoid name clashes, group and file names in the <cite>_xasgroups</cite> dictionary
-may be modified on loading</p></li>
-<li><p>on xasgroups, ignore_groups, include_xasgrooups:
-if xasgroups is None, the _xasgroups from the Session will be used,</p>
-<blockquote>
-<div><p>with ignore_groups listing groups to ignore, and include_xasgroups listing
-groups not in _xasgroups, but that should be added.</p>
-</div></blockquote>
-<dl class="simple">
-<dt>if xasgroups is not None, it will be used, ignoring the _xasgroups from the Session,</dt><dd><p>and ignoring ignore_groups and include_xasgroups.</p>
+<ol class="arabic simple">
+<li><dl class="simple">
+<dt>data in the following groups will be merged into existing session groups:</dt><dd><p>_feffpaths : dict of “current feff paths”
+_feffcache : dict with cached feff paths and feff runs
+_xasgroups : dict mapping “File Name” and “Group Name”, used in <cite>Larix</cite></p>
 </dd>
 </dl>
 </li>
+<li><p>to avoid name clashes, group and file names in the <cite>_xasgroups</cite> dictionary
+may be modified on loading</p></li>
+<li><p>on xasgroups, ignore_groups, include_xasgroups:
+if xasgroups is None, the _xasgroups from the Session will be used,
+with ignore_groups listing groups to ignore, and include_xasgroups listing
+groups not in _xasgroups, but that should be added.
+if xasgroups is not None, it will be used, ignoring the _xasgroups from the Session,
+and ignoring ignore_groups and include_xasgroups.</p></li>
 <li><p>if other_syms is not None, those symbols will be imported, but no others.
-If left None, all other symbols will be imported.</p></li>
+if left None, all other symbols will be imported.</p></li>
 </ol>
 </dd></dl>
 
@@ -1031,7 +1013,7 @@ If left None, all other symbols will be imported.</p></li>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
     </div>
   </body>
 </html>

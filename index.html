@@ -6,18 +6,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Larch &#8212; xraylarch 2026.2.2 documentation</title>
+    <title>Larch &#8212; xraylarch 2026.3.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/xraylarch_style.css?v=f3581a04" />
     
-    <script src="_static/documentation_options.js?v=b8e940d7"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/documentation_options.js?v=5abc04fd"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script src="_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -155,7 +155,7 @@ license to redistribute.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><a class="reference internal" href="larix.html#larix-app"><span class="std std-ref">Larix</span></a> (was XAS Viewer)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="larix.html#larix-app"><span class="std std-ref">Larix</span></a></p></td>
 <td><p>GUI</p></td>
 <td><p>XAFS  Processing and Analysis: XANES, EXAFS, run Feff, Feff-fitting, more.</p></td>
 </tr>
@@ -171,27 +171,31 @@ license to redistribute.</p>
 <td><p>GUI</p></td>
 <td><p>Display and work with 1-D XRD patterns</p></td>
 </tr>
-<tr class="row-even"><td><p>Jupyter Lab</p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://xraypy.github.io/sitka-spruce/">sitka spruce</a></p></td>
+<td><p>GUI</p></td>
+<td><p>Data Browser for HDF5 and Zarr data</p></td>
+</tr>
+<tr class="row-odd"><td><p>Jupyter Lab</p></td>
 <td><p>Browser</p></td>
 <td><p>Run Jupyter Lab in a browser using the Python installed with X-ray Larch.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="guis.html#larchcli-app"><span class="std std-ref">larch</span></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="guis.html#larchcli-app"><span class="std std-ref">larch</span></a></p></td>
 <td><p>CLI</p></td>
 <td><p>simple shell command-line interface</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="guis.html#larchgui-app"><span class="std std-ref">Larch GUI</span></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="guis.html#larchgui-app"><span class="std std-ref">Larch GUI</span></a></p></td>
 <td><p>GUI</p></td>
 <td><p>enhanced command-line interface with data browser</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="xafs_feffpaths.html#feff6l-app"><span class="std std-ref">feff6l</span></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="xafs_feffpaths.html#feff6l-app"><span class="std std-ref">feff6l</span></a></p></td>
 <td><p>CLI</p></td>
 <td><p>Feff 6 EXAFS calculations</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="xafs_feffpaths.html#feff8l-app"><span class="std std-ref">feff8l</span></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="xafs_feffpaths.html#feff8l-app"><span class="std std-ref">feff8l</span></a></p></td>
 <td><p>CLI</p></td>
 <td><p>Feff 8 EXAFS calculations (no XANES)</p></td>
 </tr>
-<tr class="row-odd"><td><p>qtrixs</p></td>
+<tr class="row-even"><td><p>qtrixs</p></td>
 <td><p>GUI <cite>beta</cite></p></td>
 <td><p>Display RIXS planes, take profiles</p></td>
 </tr>
@@ -342,7 +346,7 @@ license to redistribute.</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper"><h3> Get Larch</h3>
-<p>Current version: <b>2026.2.2</b></p>
+<p>Current version: <b>2026.3.0</b></p>
 
 &nbsp; &nbsp; <a href="installation.html">Install Latest Version</a>  <br>
 &nbsp; &nbsp; <a href="https://github.com/xraypy/xraylarch"> Development Version</a> <br>
@@ -402,7 +406,7 @@ license to redistribute.</p>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
     </div>
   </body>
 </html>

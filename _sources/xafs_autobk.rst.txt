@@ -302,7 +302,7 @@ Basic example
 The simplest example of reading data and doing background subtraction would
 using all the default inputs would be:
 
-.. literalinclude:: ../examples/xafs/doc_autobk1.lar
+.. literalinclude:: ../examples/xafs/doc_autobk_01.py
 
 with the resulting outputs looking like this:
 
@@ -332,7 +332,7 @@ default values for pararmeters, but pass explicit parameters such as
 parameters is not critically important for this data set, and is mostly
 here to demonstrate the method for passing arguments to :func:`pre_edge`.
 
-.. literalinclude:: ../examples/xafs/doc_autobk2.lar
+.. literalinclude:: ../examples/xafs/doc_autobk_02.py
 
 The resulting outputs looks OK:
 
@@ -361,7 +361,7 @@ high-:math:`k` end of the spectra.  Playing with the spline clamps
 discussed above, we try a few options to study the effect of adding a
 clamp:
 
-.. literalinclude:: ../examples/xafs/doc_autobk3.lar
+.. literalinclude:: ../examples/xafs/doc_autobk_03.py
 
 results in the following comparison:
 
@@ -389,4 +389,4 @@ function.
 As an example:
 
 
-.. literalinclude:: ../examples/xafs/doc_autobk4.lar
+.. literalinclude:: ../examples/xafs/doc_autobk_04.py

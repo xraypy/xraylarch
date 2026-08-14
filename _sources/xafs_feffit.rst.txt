@@ -438,7 +438,7 @@ Example 1: Simple fit with 1 Path
 We start with a fairly minimal example, fitting spectra read from a data
 file with a single Feff Path.
 
-.. literalinclude:: ../examples/feffit/doc_feffit1.lar
+.. literalinclude:: ../examples/feffit/doc_feffit1.py
 
 
 This simply follows the essential steps:
@@ -497,21 +497,16 @@ including adding more paths to a fit, including multiple-scattering paths,
 simultaneously modeling more than one data set, and building more complex
 fitting models.  We'll get to these in the following examples.
 
-But first, a small detour.  The plotting commands in the above example for
-plotting :math:`\chi(k)` and :math:`\chi(R)` for data and model will be
-useful for the other examples as well, so we'll create a slightly
-generalized function to make such plots and put this and several other
-plotting functions into a separate file, *doc_macros.lar*.  This will look
-like this:
+But first, a small detour.  The plotting commands in the above example
+for plotting :math:`\chi(k)` and :math:`\chi(R)` for data and model
+will be useful for the other examples as well, so we the plotting
+functions from `larch.wxlib.xafsplots` to give consistent labels and
+titles.  This defines several new plotting functions
+:func:`plot_chifit`, :func:`plot_path_k`, and :func:`plot_path_r`, and
+so on which we'll find useful in later examples.  Using the first of
+these, we can then replace the plot commands in the script above
+with::
 
-.. literalinclude:: ../examples/feffit/doc_macros.lar
-
-This defines several new plotting functions :func:`plot_chifit`,
-:func:`plot_path_k`, and :func:`plot_path_r`, and so on which we'll find
-useful in later examples.  Using the first of these, we can then replace
-the plot commands in the script above with::
-
-    run('doc_macros.lar')
     plot_chifit(dset, title='First shell fit to Cu')
 
 and get reproducible plots without having to copy and paste the same code
@@ -547,7 +542,7 @@ will be updated to the correct value for each path.  Thus, as the value of
 This ensures that all the path lengths change in a manner consistent with
 one another.
 
-.. literalinclude:: ../examples/feffit/doc_feffit2.lar
+.. literalinclude:: ../examples/feffit/doc_feffit2.py
 
 Here we simply create ``path2`` and ``path3`` using nearly the same parameters
 as for ``path1``.   Compared to the previous example, the other changes
@@ -634,7 +629,7 @@ variable parameters for three temperature-dependent distances and 1
 variable parameter for three temperature-dependent mean-square
 displacements. The full script for the fit looks like this:
 
-.. literalinclude:: ../examples/feffit/doc_feffit3.lar
+.. literalinclude:: ../examples/feffit/doc_feffit3.py
 
 Here we read in 3 datasets for :math:`\mu(E)` data and do the background
 subtraction on each of them.  We define 5 fitting parameters, including the
@@ -725,7 +720,7 @@ We'll allow ``n1`` and ``n2`` to vary in the fit, and also define variable
 parameters for the other path parameters, including separate variables for
 :math:`\Delta R` and :math:`\sigma^2`.  The script for this fit is below:
 
-.. literalinclude:: ../examples/feffit/doc_feffit4.lar
+.. literalinclude:: ../examples/feffit/doc_feffit4.py
 
 The most important point here is the definitions used in setting up the
 amplitudes for the paths:  first, that we set ``degen`` to 1, and second
@@ -905,7 +900,7 @@ including defining functions, and constructs like loops and dictionaries,
 as well as mathematical manipulation of the resulting arrays for the phase
 correction.  The full script is:
 
-.. literalinclude:: ../examples/feffit/doc_feffit6.lar
+.. literalinclude:: ../examples/feffit/doc_feffit6.py
 
 
 After reading in the data, the script builds Feff Paths, putting them into

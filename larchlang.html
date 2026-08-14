@@ -6,15 +6,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>10. Larch Macro Language Tutorial &#8212; xraylarch 2026.2.2 documentation</title>
+    <title>10. Larch Macro Language Tutorial &#8212; xraylarch 2026.3.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/xraylarch_style.css?v=f3581a04" />
     
-    <script src="_static/documentation_options.js?v=b8e940d7"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/documentation_options.js?v=5abc04fd"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
     <script src="_static/bizstyle.js"></script>
@@ -82,21 +82,21 @@
 <span id="tutorial-chapter"></span><h1><span class="section-number">10. </span>Larch Macro Language Tutorial<a class="headerlink" href="#larch-macro-language-tutorial" title="Link to this heading">¶</a></h1>
 <p>Larch provides both a Python programming library and Python-like
 programming or macro language (which we’ll call <em>Larch macro language</em>
-here) for processing of scientific data.  You can use either of these to
-interact with the X-ray analysis functions described throughout this
-document.  If you already know Python or are interested in learning and
-using Python, we definitely encourage to use the Python interface.</p>
-<p>Here, the <em>Larch macro language</em> is described in some detail. This macro
-language is a dialect of Python and is used for the Larch command-line
-shell program.  This macro language is also used for communication between
-the Larch server process and Athena/Artemis.  Perhaps most importantly, it
-is also embedded in the Larch GUI applications so that you can “open the
-Larch buffer” and use the Larch/Python functions on the data that has been
-loaded into the GUI.  The <em>Larix</em> program really does all of its work
-with the Larch buffer so that you can see the complete (if somewhat)
-verbose list of commands and functions it is running when processing your
-data.  You can take these commands as documentation of the processing steps
-or use them as examples for writing batch processing scripts or more
+here) for processing of scientific data.  You can use either of these
+to interact with the X-ray analysis functions described throughout
+this document, but we strongly encourage to use the Python interface.</p>
+<p>Here, the <em>Larch macro language</em> is described in some detail.</p>
+<p>This macro language is a dialect of Python, similar to <cite>asteval</cite>.  It
+is used internally for the Larch command-line shell program, and by
+the GUI programs.  This macro language can also used for communication
+between the Larch server process using remote-procedure calls.  In the
+Larch GUI applications so that you can “open the Larch buffer” and use
+the Larch/Python functions on the data that has been loaded into the
+GUI.  The <em>Larix</em> program does all of its work with the Larch buffer
+so that you can see the complete (if somewhat verbose) list of
+commands and functions it is running when processing your data.  You
+can take these commands as documentation of the processing steps or
+use them as examples for writing batch processing scripts or more
 complex programs.</p>
 <p>This chapter describes the Larch language and using it for data processing.
 An important goal of Larch is to make writing and modifying data analysis
@@ -111,9 +111,7 @@ help the reader.</p>
 Knowledge of Python will greatly simplify learning Larch, and vice versa.
 This shared syntax is intentional, so that as you learn Larch, you will
 also be learning Python, which can be used to extend Larch.  Alternatively,
-knowledge of Python will make Larch easy to learn.  For further details on
-Python, including tutorials, see the Python documentation at
-<a class="reference external" href="https://python.org/">https://python.org/</a></p>
+knowledge of Python will make Larch easy to learn.</p>
 <p>Contents:</p>
 <div class="toctree-wrapper compound">
 <ul>
@@ -245,7 +243,7 @@ Python, including tutorials, see the Python documentation at
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
     </div>
   </body>
 </html>

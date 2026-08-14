@@ -6,22 +6,23 @@ Larch Macro Language Tutorial
 
 Larch provides both a Python programming library and Python-like
 programming or macro language (which we'll call *Larch macro language*
-here) for processing of scientific data.  You can use either of these to
-interact with the X-ray analysis functions described throughout this
-document.  If you already know Python or are interested in learning and
-using Python, we definitely encourage to use the Python interface.
+here) for processing of scientific data.  You can use either of these
+to interact with the X-ray analysis functions described throughout
+this document, but we strongly encourage to use the Python interface.
 
-Here, the *Larch macro language* is described in some detail. This macro
-language is a dialect of Python and is used for the Larch command-line
-shell program.  This macro language is also used for communication between
-the Larch server process and Athena/Artemis.  Perhaps most importantly, it
-is also embedded in the Larch GUI applications so that you can "open the
-Larch buffer" and use the Larch/Python functions on the data that has been
-loaded into the GUI.  The *Larix* program really does all of its work
-with the Larch buffer so that you can see the complete (if somewhat)
-verbose list of commands and functions it is running when processing your
-data.  You can take these commands as documentation of the processing steps
-or use them as examples for writing batch processing scripts or more
+Here, the *Larch macro language* is described in some detail.
+
+This macro language is a dialect of Python, similar to `asteval`.  It
+is used internally for the Larch command-line shell program, and by
+the GUI programs.  This macro language can also used for communication
+between the Larch server process using remote-procedure calls.  In the
+Larch GUI applications so that you can "open the Larch buffer" and use
+the Larch/Python functions on the data that has been loaded into the
+GUI.  The *Larix* program does all of its work with the Larch buffer
+so that you can see the complete (if somewhat verbose) list of
+commands and functions it is running when processing your data.  You
+can take these commands as documentation of the processing steps or
+use them as examples for writing batch processing scripts or more
 complex programs.
 
 
@@ -39,9 +40,7 @@ The Larch language is implemented in Python, and heavily based upon it.
 Knowledge of Python will greatly simplify learning Larch, and vice versa.
 This shared syntax is intentional, so that as you learn Larch, you will
 also be learning Python, which can be used to extend Larch.  Alternatively,
-knowledge of Python will make Larch easy to learn.  For further details on
-Python, including tutorials, see the Python documentation at
-https://python.org/
+knowledge of Python will make Larch easy to learn.
 
 Contents:
 

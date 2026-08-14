@@ -6,18 +6,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>14.8. XAFS: Fitting XAFS to Feff Paths &#8212; xraylarch 2026.2.2 documentation</title>
+    <title>14.8. XAFS: Fitting XAFS to Feff Paths &#8212; xraylarch 2026.3.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/xraylarch_style.css?v=f3581a04" />
     
-    <script src="_static/documentation_options.js?v=b8e940d7"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/documentation_options.js?v=5abc04fd"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script src="_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -97,7 +97,7 @@ process, and those sections will be referenced here.</p>
 <section id="the-feffit-strategy-for-modeling-exafs-data">
 <h2><span class="section-number">14.8.1. </span>The Feffit Strategy for Modeling EXAFS Data<a class="headerlink" href="#the-feffit-strategy-for-modeling-exafs-data" title="Link to this heading">¶</a></h2>
 <p>The basic approach to modeling EXAFS data in Larch (see
-<span id="id1">[<a class="reference internal" href="bibliography.html#id51" title="M Newville. Exafs analysis using feff and feffit. Journal of Synchrotron Radiation, 8(Part 2):96-100, 2001. doi:10.1107/S0909049500016290.">Newville (2001)b</a>]</span>) is to create a model EXAFS <span class="math notranslate nohighlight">\(\chi(k)\)</span> as a
+<span class="bibtex-citation" id="id1">[<a class="reference internal" href="bibliography.html#id51" title="M Newville. Exafs analysis using feff and feffit. Journal of Synchrotron Radiation, 8(Part 2):96-100, 2001. doi:10.1107/S0909049500016290.">Newville (2001)b</a>]</span>) is to create a model EXAFS <span class="math notranslate nohighlight">\(\chi(k)\)</span> as a
 sum of scattering path&lt;s that will be compared to experimentally derived
 <span class="math notranslate nohighlight">\(\chi(k)\)</span>. The model will consist of a set of FEFF Scattering Paths
 representing the photo-electron scattering from different sets of atoms.
@@ -135,7 +135,7 @@ Nyquist as</p>
 <div class="math notranslate nohighlight">
 \[N_{\rm ind} \approx  \frac{2 \Delta k \Delta R}{\pi} + 1\]</div>
 <p>where <span class="math notranslate nohighlight">\(\Delta k\)</span> and <span class="math notranslate nohighlight">\(\Delta R\)</span> are the <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(R\)</span>
-range of the usable data under consideration.  <span id="id2">[<a class="reference internal" href="bibliography.html#id10" title="E. A. Stern. Number of relevant independent points in x-ray-absorption fine-structure spectra. Physical Review B, 48(13):9825–9827, 1993. doi:10.1103/PhysRevB.48.9825.">Stern (1993)</a>]</span>
+range of the usable data under consideration.  <span class="bibtex-citation" id="id2">[<a class="reference internal" href="bibliography.html#id10" title="E. A. Stern. Number of relevant independent points in x-ray-absorption fine-structure spectra. Physical Review B, 48(13):9825–9827, 1993. doi:10.1103/PhysRevB.48.9825.">Stern (1993)</a>]</span>
 argues convincingly that the ‘+1’ here should be ‘+2’, but we’ll remain
 conservative and keep the ‘+1’, and use this value not only for fit
 statistics but to limit the maximum number of free variables allowed in a
@@ -204,7 +204,7 @@ proper statistical treatment of the data.  For an individual spectrum, what
 can be done easily and automatically is to estimate the noise level
 assuming that the data is dominated by noise that is independent of
 <span class="math notranslate nohighlight">\(R\)</span>: white noise.  The function <a class="reference internal" href="xafs_utilities.html#estimate_noise" title="estimate_noise"><code class="xref py py-func docutils literal notranslate"><span class="pre">estimate_noise()</span></code></a> does this
-<span id="id3">[<a class="reference internal" href="bibliography.html#id8" title="M. Newville, B. Boyanov, and D. E. Sayers. Estimation of uncertainties in XAFS data. Journal of Synchrotron Radiation, 6:264–265, 1999. doi:10.1107/S0909049598018147.">Newville, Boyanov, and Sayers (1999)</a>]</span>, and the estimate derived from this method is
+<span class="bibtex-citation" id="id3">[<a class="reference internal" href="bibliography.html#id8" title="M. Newville, B. Boyanov, and D. E. Sayers. Estimation of uncertainties in XAFS data. Journal of Synchrotron Radiation, 6:264–265, 1999. doi:10.1107/S0909049598018147.">Newville, Boyanov, and Sayers (1999)</a>]</span>, and the estimate derived from this method is
 used unless you specify a value for <code class="docutils literal notranslate"><span class="pre">epsilon_k</span></code> the noise level in
 <span class="math notranslate nohighlight">\(\chi(k)\)</span>.  Though usually <span class="math notranslate nohighlight">\(\epsilon\)</span> is taken to be a scalar
 value, it can be specfied as an array (of the same length as
@@ -269,7 +269,7 @@ or list of datasets groups.</p></li>
 <h2><span class="section-number">14.8.4. </span><a class="reference internal" href="#feffit_transform" title="feffit_transform"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffit_transform()</span></code></a> and the Feffit Transform Group<a class="headerlink" href="#feffit-transform-and-the-feffit-transform-group" title="Link to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="feffit_transform">
-<span class="sig-name descname"><span class="pre">feffit_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fitspace='r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kmin=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kmax=20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kweight=2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feffit_transform" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">feffit_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fitspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kweight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feffit_transform" title="Link to this definition">¶</a></dt>
 <dd><p>create and return Feffit Transform group to be used in a Feffit dataset.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -595,13 +595,12 @@ Transforms for XAFS</span></a>.</p>
 <h2><span class="section-number">14.8.8. </span>Example 1: Simple fit with 1 Path<a class="headerlink" href="#example-1-simple-fit-with-1-path" title="Link to this heading">¶</a></h2>
 <p>We start with a fairly minimal example, fitting spectra read from a data
 file with a single Feff Path.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/feffit/doc_feffit1.lar</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/feffit/doc_feffit1.py</span>
 
-<span class="c1"># import needed for python:</span>
-<span class="c1">#from larch.io import read_ascii</span>
-<span class="c1">#from larch.fitting import param, guess, param_group</span>
-<span class="c1">#from larch.xafs import autobk, feffpath, feffit_transform, feffit_dataset, feffit, feffit_report</span>
-<span class="c1">#from larch.wxlib.xafsplots import plot_chifit</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_ascii</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.fitting</span><span class="w"> </span><span class="kn">import</span> <span class="n">param</span><span class="p">,</span> <span class="n">guess</span><span class="p">,</span> <span class="n">param_group</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.xafs</span><span class="w"> </span><span class="kn">import</span> <span class="n">autobk</span><span class="p">,</span> <span class="n">feffpath</span><span class="p">,</span> <span class="n">feffit_transform</span><span class="p">,</span> <span class="n">feffit_dataset</span><span class="p">,</span> <span class="n">feffit</span><span class="p">,</span> <span class="n">feffit_report</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.wxlib.xafsplots</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_chifit</span>
 
 <span class="c1"># read data</span>
 <span class="n">cu_data</span>  <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/cu_metal_rt.xdi&#39;</span><span class="p">)</span>
@@ -629,18 +628,18 @@ file with a single Feff Path.</p>
 <span class="c1"># perform fit!</span>
 <span class="n">out</span> <span class="o">=</span> <span class="n">feffit</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">dset</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">feffit_report</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
- 
+
 <span class="k">try</span><span class="p">:</span>
     <span class="n">fout</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;doc_feffit1.out&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
     <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">feffit_report</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
     <span class="n">fout</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 <span class="k">except</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;could not write doc_feffit1.out&#39;</span><span class="p">)</span>
-<span class="c1">#endtry</span>
-<span class="c1"># </span>
+
+<span class="c1">#</span>
 <span class="n">plot_chifit</span><span class="p">(</span><span class="n">dset</span><span class="p">)</span>
 
-<span class="c1">## end examples/feffit/doc_feffit1.lar</span>
+<span class="c1">## end examples/feffit/doc_feffit1.py</span>
 </pre></div>
 </div>
 <p>This simply follows the essential steps:</p>
@@ -743,34 +742,16 @@ things that might be added to this for modeling more complex XAFS data,
 including adding more paths to a fit, including multiple-scattering paths,
 simultaneously modeling more than one data set, and building more complex
 fitting models.  We’ll get to these in the following examples.</p>
-<p>But first, a small detour.  The plotting commands in the above example for
-plotting <span class="math notranslate nohighlight">\(\chi(k)\)</span> and <span class="math notranslate nohighlight">\(\chi(R)\)</span> for data and model will be
-useful for the other examples as well, so we’ll create a slightly
-generalized function to make such plots and put this and several other
-plotting functions into a separate file, <em>doc_macros.lar</em>.  This will look
-like this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">write_report</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">out</span><span class="p">):</span>
-    <span class="s2">&quot;write report to file&quot;</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
-        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-    <span class="k">except</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;could not write </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
-    <span class="c1">#endtry</span>
-<span class="c1">#enddef</span>
-
-<span class="c1">## end of examples/feffit/doc_macros.lar</span>
-</pre></div>
-</div>
-<p>This defines several new plotting functions <a class="reference internal" href="xafs_utilities.html#plot_chifit" title="plot_chifit"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_chifit()</span></code></a>,
-<a class="reference internal" href="xafs_utilities.html#plot_path_k" title="plot_path_k"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_path_k()</span></code></a>, and <a class="reference internal" href="xafs_utilities.html#plot_path_r" title="plot_path_r"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_path_r()</span></code></a>, and so on which we’ll find
-useful in later examples.  Using the first of these, we can then replace
-the plot commands in the script above with:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;doc_macros.lar&#39;</span><span class="p">)</span>
-<span class="n">plot_chifit</span><span class="p">(</span><span class="n">dset</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;First shell fit to Cu&#39;</span><span class="p">)</span>
+<p>But first, a small detour.  The plotting commands in the above example
+for plotting <span class="math notranslate nohighlight">\(\chi(k)\)</span> and <span class="math notranslate nohighlight">\(\chi(R)\)</span> for data and model
+will be useful for the other examples as well, so we the plotting
+functions from <cite>larch.wxlib.xafsplots</cite> to give consistent labels and
+titles.  This defines several new plotting functions
+<a class="reference internal" href="xafs_utilities.html#plot_chifit" title="plot_chifit"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_chifit()</span></code></a>, <a class="reference internal" href="xafs_utilities.html#plot_path_k" title="plot_path_k"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_path_k()</span></code></a>, and <a class="reference internal" href="xafs_utilities.html#plot_path_r" title="plot_path_r"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_path_r()</span></code></a>, and
+so on which we’ll find useful in later examples.  Using the first of
+these, we can then replace the plot commands in the script above
+with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plot_chifit</span><span class="p">(</span><span class="n">dset</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;First shell fit to Cu&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>and get reproducible plots without having to copy and paste the same code
@@ -801,13 +782,12 @@ will be updated to the correct value for each path.  Thus, as the value of
 <code class="docutils literal notranslate"><span class="pre">reff</span></code>, so that each <code class="docutils literal notranslate"><span class="pre">deltar</span></code> will be different but not independent.
 This ensures that all the path lengths change in a manner consistent with
 one another.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/feffit/doc_feffit2.lar</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/feffit/doc_feffit2.py</span>
 
-<span class="c1"># import needed for python:</span>
-<span class="c1"># from larch.io import read_ascii</span>
-<span class="c1"># from larch.fitting import param, guess, param_group</span>
-<span class="c1"># from larch.xafs import autobk, feffpath, feffit_transform, feffit_dataset, feffit, feffit_report</span>
-<span class="c1"># from larch.wxlib.xafsplots import plot_chifit</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_ascii</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.fitting</span><span class="w"> </span><span class="kn">import</span> <span class="n">param</span><span class="p">,</span> <span class="n">guess</span><span class="p">,</span> <span class="n">param_group</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.xafs</span><span class="w"> </span><span class="kn">import</span> <span class="n">autobk</span><span class="p">,</span> <span class="n">feffpath</span><span class="p">,</span> <span class="n">feffit_transform</span><span class="p">,</span> <span class="n">feffit_dataset</span><span class="p">,</span> <span class="n">feffit</span><span class="p">,</span> <span class="n">feffit_report</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.wxlib.xafsplots</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_chifit</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">write_report</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">out</span><span class="p">):</span>
@@ -818,8 +798,6 @@ one another.</p>
         <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">except</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;could not write </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
-    <span class="c1">#endtry</span>
-<span class="c1">#enddef</span>
 
 
 <span class="c1"># read data</span>
@@ -861,7 +839,7 @@ one another.</p>
 
 <span class="n">plot_chifit</span><span class="p">(</span><span class="n">dset</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Three-shell fit to Cu&#39;</span><span class="p">,</span> <span class="n">rmax</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 
-<span class="c1">## end examples/feffit/doc_feffit2.lar</span>
+<span class="c1">## end examples/feffit/doc_feffit2.py</span>
 </pre></div>
 </div>
 <p>Here we simply create <code class="docutils literal notranslate"><span class="pre">path2</span></code> and <code class="docutils literal notranslate"><span class="pre">path3</span></code> using nearly the same parameters
@@ -1040,7 +1018,13 @@ multiple-scattering paths in simple systems.  The model then uses 2
 variable parameters for three temperature-dependent distances and 1
 variable parameter for three temperature-dependent mean-square
 displacements. The full script for the fit looks like this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/feffit/doc_feffit3.lar</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/feffit/doc_feffit3.py</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Group</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_ascii</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.fitting</span><span class="w"> </span><span class="kn">import</span> <span class="n">param</span><span class="p">,</span> <span class="n">guess</span><span class="p">,</span> <span class="n">param_group</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.xafs</span><span class="w"> </span><span class="kn">import</span> <span class="n">autobk</span><span class="p">,</span> <span class="n">feffpath</span><span class="p">,</span> <span class="n">feffit_transform</span><span class="p">,</span> <span class="n">feffit_dataset</span><span class="p">,</span> <span class="n">feffit</span><span class="p">,</span> <span class="n">feffit_report</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.wxlib.xafsplots</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_chifit</span>
 
 <span class="c1"># read 3 datasets</span>
 <span class="n">cu_10</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/cu_10k.xmu&#39;</span><span class="p">)</span>
@@ -1053,7 +1037,7 @@ displacements. The full script for the fit looks like this:</p>
 <span class="n">autobk</span><span class="p">(</span><span class="n">cu_150</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">cu_150</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">cu_150</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">kw</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
 <span class="c1"># define fitting parameter group</span>
-<span class="n">pars</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">amp</span>    <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+<span class="n">pars</span> <span class="o">=</span> <span class="n">Group</span><span class="p">(</span><span class="n">amp</span>    <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
              <span class="n">del_e0</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">2.0</span><span class="p">),</span>
              <span class="n">theta</span>  <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">250</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
              <span class="n">dr_off</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
@@ -1085,14 +1069,19 @@ displacements. The full script for the fit looks like this:</p>
 <span class="n">report</span> <span class="o">=</span> <span class="n">feffit_report</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span> <span class="n">report</span><span class="p">)</span>
-<span class="n">run</span><span class="p">(</span><span class="s1">&#39;doc_macros.lar&#39;</span><span class="p">)</span>
-<span class="n">write_report</span><span class="p">(</span><span class="s1">&#39;doc_feffit3.out&#39;</span><span class="p">,</span> <span class="n">report</span><span class="p">)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">fout</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;doc_feffit3.out&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">feffit_report</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
+    <span class="n">fout</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;could not write doc_feffit3.out&#39;</span><span class="p">)</span>
+
 
 <span class="n">plot_chifit</span><span class="p">(</span><span class="n">dset_10</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;fit to Cu, 10K&#39;</span><span class="p">,</span> <span class="n">rmax</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">plot_chifit</span><span class="p">(</span><span class="n">dset_50</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;fit to Cu, 50K&#39;</span><span class="p">,</span> <span class="n">rmax</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="n">plot_chifit</span><span class="p">(</span><span class="n">dset_150</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;fit to Cu, 150K&#39;</span><span class="p">,</span> <span class="n">rmax</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 
-<span class="c1"># ## end examples/feffit/doc_feffit3.lar</span>
+<span class="c1"># ## end examples/feffit/doc_feffit3.py</span>
 </pre></div>
 </div>
 <p>Here we read in 3 datasets for <span class="math notranslate nohighlight">\(\mu(E)\)</span> data and do the background
@@ -1287,15 +1276,21 @@ amplitude to be <code class="docutils literal notranslate"><span class="pre">s02
 We’ll allow <code class="docutils literal notranslate"><span class="pre">n1</span></code> and <code class="docutils literal notranslate"><span class="pre">n2</span></code> to vary in the fit, and also define variable
 parameters for the other path parameters, including separate variables for
 <span class="math notranslate nohighlight">\(\Delta R\)</span> and <span class="math notranslate nohighlight">\(\sigma^2\)</span>.  The script for this fit is below:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/feffit/doc_feffit4.lar</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/feffit/doc_feffit4.py</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Group</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_ascii</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.fitting</span><span class="w"> </span><span class="kn">import</span> <span class="n">param</span><span class="p">,</span> <span class="n">guess</span><span class="p">,</span> <span class="n">param_group</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.xafs</span><span class="w"> </span><span class="kn">import</span> <span class="n">autobk</span><span class="p">,</span> <span class="n">feffpath</span><span class="p">,</span> <span class="n">feffit_transform</span><span class="p">,</span> <span class="n">feffit_dataset</span><span class="p">,</span> <span class="n">feffit</span><span class="p">,</span> <span class="n">feffit_report</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.wxlib.xafsplots</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_chifit</span>
 
 <span class="n">feo_dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/feo_xafs.dat&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy mu&#39;</span><span class="p">)</span>
 <span class="n">autobk</span><span class="p">(</span><span class="n">feo_dat</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
 
 <span class="c1"># define fitting parameter group</span>
-<span class="n">pars</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">n1</span>     <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+<span class="n">pars</span> <span class="o">=</span> <span class="n">Group</span><span class="p">(</span><span class="n">n1</span>     <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
              <span class="n">n2</span>     <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-             <span class="n">s02</span>    <span class="o">=</span> <span class="mf">0.700</span><span class="p">,</span>
+             <span class="n">s02</span>    <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.700</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
              <span class="n">de0</span>    <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span>
              <span class="n">sig2_1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.002</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
              <span class="n">delr_1</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">0.</span><span class="p">),</span>
@@ -1327,11 +1322,17 @@ parameters for the other path parameters, including separate variables for
                        <span class="n">transform</span><span class="o">=</span><span class="n">trans</span><span class="p">)</span>
 <span class="n">out</span> <span class="o">=</span> <span class="n">feffit</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">dset</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span> <span class="n">feffit_report</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
-<span class="n">run</span><span class="p">(</span><span class="s1">&#39;doc_macros.lar&#39;</span><span class="p">)</span>
-<span class="n">write_report</span><span class="p">(</span><span class="s1">&#39;doc_feffit4.out&#39;</span><span class="p">,</span> <span class="n">feffit_report</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">fout</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;doc_feffit4.out&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">feffit_report</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
+    <span class="n">fout</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;could not write doc_feffit4.out&#39;</span><span class="p">)</span>
+
+
 
 <span class="n">plot_chifit</span><span class="p">(</span><span class="n">dset</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Two-path fit to FeO&#39;</span><span class="p">)</span>
-<span class="c1">## end examples/feffit/doc_feffit4.lar</span>
+<span class="c1">## end examples/feffit/doc_feffit4.py</span>
 </pre></div>
 </div>
 <p>The most important point here is the definitions used in setting up the
@@ -1785,21 +1786,30 @@ correction.  The full script is:</p>
 
 <span class="c1"># Testing sensitivity to Z of backscatterer, and</span>
 <span class="c1"># how well &quot;phase corrected&quot; Fourier transforms predict distance</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Group</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_ascii</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.math</span><span class="w"> </span><span class="kn">import</span> <span class="n">interp</span><span class="p">,</span> <span class="n">linregress</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.fitting</span><span class="w"> </span><span class="kn">import</span> <span class="n">param</span><span class="p">,</span> <span class="n">guess</span><span class="p">,</span> <span class="n">param_group</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.xafs</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">autobk</span><span class="p">,</span> <span class="n">feffpath</span><span class="p">,</span> <span class="n">feffit_transform</span><span class="p">,</span>
+                        <span class="n">feffit_dataset</span><span class="p">,</span> <span class="n">feffit</span><span class="p">,</span> <span class="n">feffit_report</span><span class="p">,</span> <span class="n">xftf_fast</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.wxlib.xafsplots</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_chifit</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wxmplot.interactive</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">get_zinc_mu</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy dwelltime i0 i1&#39;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;read raw data, do background subtraction&quot;&quot;&quot;</span>
     <span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
-    <span class="n">dat</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="o">-</span><span class="n">ln</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">i1</span> <span class="o">/</span> <span class="n">dat</span><span class="o">.</span><span class="n">i0</span><span class="p">)</span>
+    <span class="n">dat</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">i1</span> <span class="o">/</span> <span class="n">dat</span><span class="o">.</span><span class="n">i0</span><span class="p">)</span>
     <span class="n">autobk</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">e0</span> <span class="o">=</span> <span class="mf">9666.0</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.25</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">dat</span>
-<span class="c1">#enddef</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">plot_chidata</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="n">kopts</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$k \rm\,(\AA^{-1})$&#39;</span><span class="p">,</span>
                  <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$k^2\chi(k) \rm\,(\AA^{-2})$&#39;</span><span class="p">,</span>
                  <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="n">win</span><span class="p">)</span>
     <span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">chi</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="o">**</span><span class="n">kopts</span><span class="p">)</span>
-<span class="c1">#enddef</span>
+
 
 <span class="k">def</span><span class="w"> </span><span class="nf">rplot_fit</span><span class="p">(</span><span class="n">dset</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="s2">&quot;make R-spae plots of results&quot;</span>
@@ -1810,18 +1820,17 @@ correction.  The full script is:</p>
     <span class="n">plot</span><span class="p">(</span><span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">r</span><span class="p">,</span>  <span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">chir_mag</span><span class="p">,</span>  <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Feff Path&#39;</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="n">win</span><span class="p">)</span>
 
     <span class="n">chir_pha</span> <span class="o">=</span> <span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">chir_phcor</span>
-    <span class="n">chir_pha_mag</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">chir_pha</span><span class="o">.</span><span class="n">real</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">chir_pha</span><span class="o">.</span><span class="n">imag</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">chir_pha_mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">chir_pha</span><span class="o">.</span><span class="n">real</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">chir_pha</span><span class="o">.</span><span class="n">imag</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
     <span class="n">plot</span><span class="p">(</span><span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">r</span><span class="p">,</span>  <span class="n">chir_pha_mag</span><span class="p">,</span>  <span class="n">win</span><span class="o">=</span><span class="n">win</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;phase-corrected data&#39;</span><span class="p">)</span>
 
     <span class="c1"># find region around peak in phase-corrected chi(R)</span>
 
-    <span class="n">irmax</span> <span class="o">=</span> <span class="n">where</span><span class="p">(</span><span class="n">chir_pha_mag</span> <span class="o">==</span> <span class="nb">max</span><span class="p">(</span><span class="n">chir_pha_mag</span><span class="p">))[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">irmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">chir_pha_mag</span> <span class="o">==</span> <span class="nb">max</span><span class="p">(</span><span class="n">chir_pha_mag</span><span class="p">))[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">r</span><span class="p">[</span><span class="n">irmax</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span> <span class="n">irmax</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">chir_im</span><span class="p">[</span><span class="n">irmax</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span> <span class="n">irmax</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>
     <span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="n">win</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;short dashed&#39;</span><span class="p">,</span>
          <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Im[phase-corrected]&#39;</span><span class="p">)</span>
     <span class="k">return</span>
-<span class="c1">#enddef</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">phase_correct</span><span class="p">(</span><span class="n">dset</span><span class="p">):</span>
    <span class="s2">&quot;calculate phase-corrected FT, find estimate of R&quot;</span>
@@ -1830,13 +1839,13 @@ correction.  The full script is:</p>
    <span class="c1"># get phase from Feff path</span>
    <span class="n">feff_pha</span> <span class="o">=</span> <span class="n">interp</span><span class="p">(</span><span class="n">path1</span><span class="o">.</span><span class="n">_feffdat</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">path1</span><span class="o">.</span><span class="n">_feffdat</span><span class="o">.</span><span class="n">pha</span><span class="p">,</span> <span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">k</span><span class="p">)</span>
    <span class="c1"># phase-corrected Fourier Transform</span>
-   <span class="n">chir_pha</span> <span class="o">=</span> <span class="n">xftf_fast</span><span class="p">(</span><span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">chi</span> <span class="o">*</span> <span class="n">exp</span><span class="p">(</span><span class="mi">0</span><span class="o">-</span><span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">feff_pha</span><span class="p">)</span> <span class="o">*</span>
+   <span class="n">chir_pha</span> <span class="o">=</span> <span class="n">xftf_fast</span><span class="p">(</span><span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">chi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">0</span><span class="o">-</span><span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">feff_pha</span><span class="p">)</span> <span class="o">*</span>
                         <span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">kwin</span> <span class="o">*</span> <span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">)[:</span><span class="n">nrpts</span><span class="p">]</span>
-   <span class="n">chir_pha_mag</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">chir_pha</span><span class="o">.</span><span class="n">real</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">chir_pha</span><span class="o">.</span><span class="n">imag</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+   <span class="n">chir_pha_mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">chir_pha</span><span class="o">.</span><span class="n">real</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">chir_pha</span><span class="o">.</span><span class="n">imag</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
    <span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">chir_phcor</span> <span class="o">=</span> <span class="n">chir_pha</span>
 
    <span class="c1"># find region around peak in phase-corrected chi(R)</span>
-   <span class="n">irmax</span> <span class="o">=</span> <span class="n">where</span><span class="p">(</span><span class="n">chir_pha_mag</span> <span class="o">==</span> <span class="nb">max</span><span class="p">(</span><span class="n">chir_pha_mag</span><span class="p">))[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+   <span class="n">irmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">chir_pha_mag</span> <span class="o">==</span> <span class="nb">max</span><span class="p">(</span><span class="n">chir_pha_mag</span><span class="p">))[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
    <span class="n">x</span> <span class="o">=</span> <span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">r</span><span class="p">[</span><span class="n">irmax</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span> <span class="n">irmax</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>
    <span class="n">y</span> <span class="o">=</span> <span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">chir_im</span><span class="p">[</span><span class="n">irmax</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span> <span class="n">irmax</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>
    <span class="c1"># find where Im[chi(R)_phase_corrected] = 0: use linear regression</span>
@@ -1875,7 +1884,7 @@ correction.  The full script is:</p>
 <span class="k">for</span> <span class="n">ix</span><span class="p">,</span> <span class="n">scatterer</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">((</span><span class="s1">&#39;Zn&#39;</span><span class="p">,</span> <span class="s1">&#39;Ga&#39;</span><span class="p">,</span> <span class="s1">&#39;Ge&#39;</span><span class="p">,</span> <span class="s1">&#39;As&#39;</span><span class="p">,</span> <span class="s1">&#39;Se&#39;</span><span class="p">,</span> <span class="s1">&#39;Br&#39;</span><span class="p">,</span> <span class="s1">&#39;Kr&#39;</span><span class="p">,</span> <span class="s1">&#39;Rb&#39;</span><span class="p">)):</span>
     <span class="n">dset</span>  <span class="o">=</span> <span class="n">feffit_dataset</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">znse_data</span><span class="p">,</span> <span class="n">paths</span><span class="o">=</span><span class="p">{</span><span class="n">scatterer</span><span class="p">:</span> <span class="n">paths</span><span class="p">[</span><span class="n">scatterer</span><span class="p">]},</span>
                            <span class="n">transform</span><span class="o">=</span><span class="n">trans</span><span class="p">)</span>
-    <span class="n">pars</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">amp</span>    <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">1.0</span><span class="p">),</span>
+    <span class="n">pars</span> <span class="o">=</span> <span class="n">Group</span><span class="p">(</span><span class="n">amp</span>    <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">1.0</span><span class="p">),</span>
                  <span class="n">del_e0</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=-</span><span class="mi">20</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span>
                  <span class="n">sig2</span>   <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.006</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
                  <span class="n">del_r</span>  <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">0.</span><span class="p">)</span> <span class="p">)</span>
@@ -1898,7 +1907,7 @@ correction.  The full script is:</p>
     <span class="n">results</span><span class="p">[</span><span class="n">scatterer</span><span class="p">]</span> <span class="o">=</span> <span class="n">out</span>
 <span class="c1">#endfor</span>
 
-<span class="c1">## end examples/feffit/doc_feffit6.lar</span>
+<span class="c1">## end examples/feffit/doc_feffit6.py</span>
 </pre></div>
 </div>
 <p>After reading in the data, the script builds Feff Paths, putting them into
@@ -2159,7 +2168,7 @@ powerful, and give increased confidence in the refined structure.</p>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
     </div>
   </body>
 </html>

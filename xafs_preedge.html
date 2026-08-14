@@ -6,18 +6,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>14.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment &#8212; xraylarch 2026.2.2 documentation</title>
+    <title>14.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment &#8212; xraylarch 2026.3.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/xraylarch_style.css?v=f3581a04" />
     
-    <script src="_static/documentation_options.js?v=b8e940d7"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/documentation_options.js?v=5abc04fd"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script src="_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -248,16 +248,6 @@ subtracts that curve from it.</p>
 <section id="pre-edge-subtraction-example">
 <h2><span class="section-number">14.2.3. </span>Pre-Edge Subtraction Example<a class="headerlink" href="#pre-edge-subtraction-example" title="Link to this heading">¶</a></h2>
 <p>A simple example of pre-edge subtraction:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Larch</span>
-<span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;fe2o3_rt1.xmu&#39;</span>
-<span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy mu i0&#39;</span><span class="p">)</span>
-
-<span class="n">pre_edge</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat</span><span class="p">)</span>
-
-<span class="n">plot_mu</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">show_pre</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">show_post</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>or in plain Python:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">larch.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_ascii</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">larch.xafs</span><span class="w"> </span><span class="kn">import</span> <span class="n">pre_edge</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">wxmplot.interactive</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot</span>
@@ -265,7 +255,7 @@ subtracts that curve from it.</p>
 <span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;fe2o3_rt1.xmu&#39;</span>
 <span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy mu i0&#39;</span><span class="p">)</span>
 
-<span class="n">pre_edge</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat</span><span class="p">)</span>
+<span class="n">pre_edge</span><span class="p">(</span><span class="n">dat</span><span class="p">)</span>
 
 <span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;mu&#39;</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Energy (eV)&#39;</span><span class="p">,</span>
      <span class="n">title</span><span class="o">=</span><span class="n">fname</span><span class="p">,</span><span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -285,8 +275,8 @@ subtracts that curve from it.</p>
 <section id="the-mback-algorithm">
 <h2><span class="section-number">14.2.4. </span>The MBACK algorithm<a class="headerlink" href="#the-mback-algorithm" title="Link to this heading">¶</a></h2>
 <p>Larch provides an implementation of the MBACK algorithm of
-Weng <span id="id1">[<a class="reference internal" href="bibliography.html#id30" title="Tsu-Chien Weng, Geoffrey S. Waldo, and James E. Penner-Hahn. A method for normalization of X-ray absorption spectra. Journal of Synchrotron Radiation, 12(4):506–510, Jul 2005. doi:10.1107/S0909049504034193.">Weng, Waldo, and Penner-Hahn (2005)</a>]</span> with an option of using the modification proposed by
-Lee <em>et al</em> <span id="id2">[<a class="reference internal" href="bibliography.html#id31" title="Julia C. Lee, Jingen Xiang, Bruce Ravel, Jeffrey Kortright, and Kathryn Flanagan. Condensed matter astrophysics: a prescription for determining the species-specific composition and quantity of interstellar dust using x-rays. The Astrophysical Journal, 702(2):970, 2009. URL: https://stacks.iop.org/0004-637X/702/i=2/a=970, doi:0004-637X/702/i=2/a=970.">Lee et al. (2009)</a>]</span>.  In MBACK, the data are matched to the tabulated
+Weng <span class="bibtex-citation" id="id1">[<a class="reference internal" href="bibliography.html#id30" title="Tsu-Chien Weng, Geoffrey S. Waldo, and James E. Penner-Hahn. A method for normalization of X-ray absorption spectra. Journal of Synchrotron Radiation, 12(4):506–510, Jul 2005. doi:10.1107/S0909049504034193.">Weng, Waldo, and Penner-Hahn (2005)</a>]</span> with an option of using the modification proposed by
+Lee <em>et al</em> <span class="bibtex-citation" id="id2">[<a class="reference internal" href="bibliography.html#id31" title="Julia C. Lee, Jingen Xiang, Bruce Ravel, Jeffrey Kortright, and Kathryn Flanagan. Condensed matter astrophysics: a prescription for determining the species-specific composition and quantity of interstellar dust using x-rays. The Astrophysical Journal, 702(2):970, 2009. URL: https://stacks.iop.org/0004-637X/702/i=2/a=970, doi:0004-637X/702/i=2/a=970.">Lee et al. (2009)</a>]</span>.  In MBACK, the data are matched to the tabulated
 values of the imaginary part of the energy-dependent correction to the
 Thompson scattering factor, <span class="math notranslate nohighlight">\(f''(E)\)</span>.  To account for any
 instrumental or sample-dependent aspects of the shape of the measured
@@ -314,10 +304,10 @@ adjusted by breaking the minimization function into two regions: the
 <span class="math notranslate nohighlight">\(n_1\)</span> data points below the absorption edge and the <span class="math notranslate nohighlight">\(n_2\)</span>
 data points above the absorption edge.  <span class="math notranslate nohighlight">\(n_1+n_2=N\)</span>, where N is
 the total number of data points.</p>
-<p>If this is used in publication, a citation should be given to Weng <span id="id3">[<a class="reference internal" href="bibliography.html#id30" title="Tsu-Chien Weng, Geoffrey S. Waldo, and James E. Penner-Hahn. A method for normalization of X-ray absorption spectra. Journal of Synchrotron Radiation, 12(4):506–510, Jul 2005. doi:10.1107/S0909049504034193.">Weng, Waldo, and Penner-Hahn (2005)</a>]</span>.</p>
+<p>If this is used in publication, a citation should be given to Weng <span class="bibtex-citation" id="id3">[<a class="reference internal" href="bibliography.html#id30" title="Tsu-Chien Weng, Geoffrey S. Waldo, and James E. Penner-Hahn. A method for normalization of X-ray absorption spectra. Journal of Synchrotron Radiation, 12(4):506–510, Jul 2005. doi:10.1107/S0909049504034193.">Weng, Waldo, and Penner-Hahn (2005)</a>]</span>.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="mback">
-<span class="sig-name descname"><span class="pre">mback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mback" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">mback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mback" title="Link to this definition">¶</a></dt>
 <dd><p>Match measured <span class="math notranslate nohighlight">\(\mu(E)\)</span> data to tabulated cross-section data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -402,7 +392,7 @@ result shown in <a class="reference internal" href="#fig-mback-copper"><span cla
 <span class="kn">from</span><span class="w"> </span><span class="nn">wxmplot.interactive</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot</span>
 
 <span class="n">data</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/cu_10k.xmu&#39;</span><span class="p">)</span>
-<span class="n">mback</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">29</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">mback</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">29</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 <span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">f2</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Energy (eV)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;matched absorption&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;$f_2$&#39;</span><span class="p">,</span>
      <span class="n">legend_loc</span><span class="o">=</span><span class="s1">&#39;lr&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">fpp</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Copper foil&#39;</span><span class="p">)</span>
@@ -422,8 +412,11 @@ measured at the Si K edge, with the result shown in
 <a class="reference internal" href="#fig-mback-talc"><span class="std std-numref">Figure 14.2.4.2</span></a>.  Note that the order of the Legendre polynomial
 is set to 2 and that the <code class="docutils literal notranslate"><span class="pre">whiteline</span></code> parameter is set to avoid the
 large features near the edge.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;Talc.xmu&#39;</span><span class="p">)</span>
-<span class="n">mback</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">whiteline</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">fit_erfc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>  <span class="kn">from</span><span class="w"> </span><span class="nn">larch.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_ascii</span>
+  <span class="kn">from</span><span class="w"> </span><span class="nn">larch.xafs</span><span class="w"> </span><span class="kn">import</span> <span class="n">mback</span>
+  <span class="kn">from</span><span class="w"> </span><span class="nn">wxmplot.interactive</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot</span>
+  <span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;Talc.xmu&#39;</span><span class="p">)</span>
+  <span class="n">mback</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">whiteline</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">fit_erfc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">newplot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">f2</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Energy (eV)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;matched absorption&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;$f_2$&#39;</span><span class="p">,</span>
         <span class="n">legend_loc</span><span class="o">=</span><span class="s1">&#39;lr&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">fpp</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Talc ($\mathrm</span><span class="si">{Mg}</span><span class="s1">_3\mathrm</span><span class="si">{Si}</span><span class="s1">_4\mathrm</span><span class="si">{O}</span><span class="s1">_</span><span class="si">{10}</span><span class="s1">\mathrm{(OH)}_2$)&#39;</span><span class="p">)</span>
@@ -438,7 +431,7 @@ large features near the edge.</p>
 </figure>
 <dl class="py function">
 <dt class="sig sig-object py" id="mback_norm">
-<span class="sig-name descname"><span class="pre">mback_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mback_norm" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">mback_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mback_norm" title="Link to this definition">¶</a></dt>
 <dd><p>A simplified version of <a class="reference internal" href="#mback" title="mback"><code class="xref py py-func docutils literal notranslate"><span class="pre">mback()</span></code></a> to normalize <span class="math notranslate nohighlight">\(\mu(E)\)</span> data
 to tabulated cross-section data for <span class="math notranslate nohighlight">\(f''(E)\)</span>.</p>
 <dl class="simple">
@@ -652,7 +645,7 @@ coordination number and mean-square displacement parameters in the EXAFS,
 and edge-position and pre-edge peak height for XANES.  Fortunately, the
 effect can be corrected for small over-absorption.</p>
 <p>For XANES, a common correction method from the FLUO program by D. Haskel
-(<span id="id4">[<a class="reference internal" href="bibliography.html#id54" title="D. Haskel. Fluo. 1999. URL: {https://www.aps.anl.gov/~haskel/fluo.html}.">Haskel (1999)</a>]</span>) can be used.  The algorithm is contained in the
+(<span class="bibtex-citation" id="id4">[<a class="reference internal" href="bibliography.html#id54" title="D. Haskel. Fluo. 1999. URL: {https://www.aps.anl.gov/~haskel/fluo.html}.">Haskel (1999)</a>]</span>) can be used.  The algorithm is contained in the
 <a class="reference internal" href="#fluo_corr" title="fluo_corr"><code class="xref py py-func docutils literal notranslate"><span class="pre">fluo_corr()</span></code></a> function.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="fluo_corr">
@@ -824,8 +817,17 @@ the gridded data, approximately the finest energy step in the data.</p>
 <h3><span class="section-number">14.2.7.3. </span>Examples using <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a> and <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code><a class="headerlink" href="#examples-using-xas-deconvolve-and-xas-convolve" title="Link to this heading">¶</a></h3>
 <p>An example using <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a> to deconvolve a XAFS spectrum would
 be:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/xafs/doc_deconv1.lar</span>
-<span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/fe2o3_rt1.xmu&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy mu i0&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_ascii</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.xafs</span><span class="w"> </span><span class="kn">import</span> <span class="n">autobk</span><span class="p">,</span> <span class="n">pre_edge</span><span class="p">,</span> <span class="n">xas_deconvolve</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.plot.wxmplot_xafsplots</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_mu</span><span class="p">,</span> <span class="n">plot</span>
+
+<span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="s1">&#39;xafsdata&#39;</span><span class="p">,</span> <span class="s1">&#39;fe2o3_rt1.xmu&#39;</span><span class="p">)</span>
+
+<span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy mu i0&#39;</span><span class="p">)</span>
 
 <span class="n">pre_edge</span><span class="p">(</span><span class="n">dat</span><span class="p">)</span>
 <span class="n">xas_deconvolve</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">esigma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
@@ -833,7 +835,7 @@ be:</p>
 <span class="n">plot_mu</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">show_norm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">emin</span><span class="o">=-</span><span class="mi">30</span><span class="p">,</span> <span class="n">emax</span><span class="o">=</span><span class="mi">70</span><span class="p">)</span>
 <span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">deconv</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;deconvolved&#39;</span><span class="p">)</span>
 
-<span class="c1">## end of examples/xafs/doc_deconv1.lar</span>
+<span class="c1">## end of examples/xafs/doc_deconv_01.py</span>
 </pre></div>
 </div>
 <p>resulting in deconvolved data:</p>
@@ -849,10 +851,21 @@ we can use the <a class="reference internal" href="xray.html#xray.core_width" ti
 We can also test that the deconvolution is correct by using
 <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code> to re-convolve the result and comparing it to original
 data.  This can be done with:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/xafs/doc_deconv2.lar</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1">## examples/xafs/doc_deconv_02.py</span>
 
-<span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/cu_metal_rt.xdi&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy i0 i1 mu&#39;</span><span class="p">)</span>
-<span class="n">dat</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="o">-</span><span class="n">log</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">i1</span> <span class="o">/</span> <span class="n">dat</span><span class="o">.</span><span class="n">i0</span><span class="p">)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Group</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_ascii</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xraydb</span><span class="w"> </span><span class="kn">import</span> <span class="n">core_width</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.xafs</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">autobk</span><span class="p">,</span> <span class="n">pre_edge</span><span class="p">,</span>
+                        <span class="n">xas_deconvolve</span><span class="p">,</span> <span class="n">xas_convolve</span> <span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.plot.wxmplot_xafsplots</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_mu</span><span class="p">,</span> <span class="n">plot</span>
+
+<span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="s1">&#39;xafsdata&#39;</span><span class="p">,</span> <span class="s1">&#39;cu_metal_rt.xdi&#39;</span><span class="p">)</span>
+<span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy i0 i1 mu_o&#39;</span><span class="p">)</span>
+<span class="n">dat</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">i1</span> <span class="o">/</span> <span class="n">dat</span><span class="o">.</span><span class="n">i0</span><span class="p">)</span>
 
 <span class="n">pre_edge</span><span class="p">(</span><span class="n">dat</span><span class="p">)</span>
 
@@ -864,12 +877,12 @@ data.  This can be done with:</p>
 <span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">deconv</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;deconvolved&#39;</span><span class="p">)</span>
 
 <span class="c1"># Test convolution:</span>
-<span class="n">test</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">dat</span><span class="o">.</span><span class="n">deconv</span><span class="p">)</span>
+<span class="n">test</span> <span class="o">=</span> <span class="n">Group</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">dat</span><span class="o">.</span><span class="n">deconv</span><span class="p">)</span>
 <span class="n">xas_convolve</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="n">esigma</span><span class="o">=</span><span class="n">esigma</span><span class="p">)</span>
 <span class="n">plot_mu</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">show_norm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">emin</span><span class="o">=-</span><span class="mi">50</span><span class="p">,</span> <span class="n">emax</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">norm</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;original&#39;</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="n">plot</span><span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="mi">100</span><span class="o">*</span><span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">conv</span><span class="o">-</span><span class="n">dat</span><span class="o">.</span><span class="n">norm</span><span class="p">),</span>
      <span class="n">label</span><span class="o">=</span><span class="s1">&#39;(reconvolved - original)x100&#39;</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="c1">## end of examples/xafs/doc_deconv2.lar</span>
 </pre></div>
 </div>
 <p>with results shown below:</p>
@@ -897,34 +910,42 @@ particularly dramatic and useful.  As with the copper spectrum above, we’ll
 deconvolve <span class="math notranslate nohighlight">\(L_{\rm III}\)</span> XAFS for platinum, using the nominal energy
 width of the core level (5.17 eV).  For this example, we also see
 noticeable improvement in amplitude of the XAFS.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/xafs/doc_deconv3.lar</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1">## examples/xafs/doc_deconv_03.py</span>
 
-<span class="n">data</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/pt_metal_rt.xdi&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy time i1 i0&#39;</span><span class="p">)</span>
-<span class="n">data</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="o">-</span><span class="n">log</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">i1</span> <span class="o">/</span> <span class="n">data</span><span class="o">.</span><span class="n">i0</span><span class="p">)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Group</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_ascii</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xraydb</span><span class="w"> </span><span class="kn">import</span> <span class="n">core_width</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.xafs</span><span class="w"> </span><span class="kn">import</span> <span class="n">pre_edge</span><span class="p">,</span> <span class="n">autobk</span><span class="p">,</span> <span class="n">xftf</span><span class="p">,</span> <span class="n">xas_deconvolve</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.plot.wxmplot_xafsplots</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_mu</span><span class="p">,</span> <span class="n">plot_chik</span><span class="p">,</span> <span class="n">plot_chir</span><span class="p">,</span> <span class="n">plot</span>
+
+<span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="s1">&#39;xafsdata&#39;</span><span class="p">,</span> <span class="s1">&#39;pt_metal_rt.xdi&#39;</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy time i1 i0&#39;</span><span class="p">)</span>
+<span class="n">data</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">i1</span> <span class="o">/</span> <span class="n">data</span><span class="o">.</span><span class="n">i0</span><span class="p">)</span>
 
 <span class="n">pre_edge</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 <span class="n">autobk</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.1</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="n">xftf</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">17</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">kwindow</span><span class="o">=</span><span class="s1">&#39;kaiser&#39;</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">xftf</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">17</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s1">&#39;kaiser&#39;</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
 <span class="n">xas_deconvolve</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">esigma</span><span class="o">=</span><span class="n">core_width</span><span class="p">(</span><span class="s1">&#39;Pt&#39;</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;L3&#39;</span><span class="p">))</span>
 
-<span class="n">decon</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">deconv</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+<span class="n">decon</span> <span class="o">=</span> <span class="n">Group</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">deconv</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
 <span class="n">autobk</span><span class="p">(</span><span class="n">decon</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.1</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="n">xftf</span><span class="p">(</span><span class="n">decon</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">17</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">kwindow</span><span class="o">=</span><span class="s1">&#39;kaiser&#39;</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">xftf</span><span class="p">(</span><span class="n">decon</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">17</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s1">&#39;kaiser&#39;</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
 <span class="c1"># plot in E</span>
 <span class="n">plot_mu</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">show_norm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">emin</span><span class="o">=-</span><span class="mi">50</span><span class="p">,</span> <span class="n">emax</span><span class="o">=</span><span class="mi">250</span><span class="p">)</span>
-<span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">deconv</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;deconvolved&#39;</span><span class="p">,</span>  <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">deconv</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;deconvolved&#39;</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="c1"># plot in k</span>
 <span class="n">plot_chik</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">show_window</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="n">plot_chik</span><span class="p">(</span><span class="n">decon</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">show_window</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-          <span class="n">label</span><span class="o">=</span><span class="s1">&#39;deconvolved&#39;</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plot_chik</span><span class="p">(</span><span class="n">decon</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">show_window</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;deconvolved&#39;</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
 <span class="c1"># plot in R</span>
-<span class="n">plot_chir</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>  <span class="n">win</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">plot_chir</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="n">plot_chir</span><span class="p">(</span><span class="n">decon</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;deconvolved&#39;</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-<span class="c1">## end examples/xafs/doc_deconv3.lar</span>
 </pre></div>
 </div>
 <p>with results shown below:</p>
@@ -1058,7 +1079,7 @@ level.</span><a class="headerlink" href="#fig-xafs-deconv3" title="Link to this 
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright Matthew Newville, The University of Chicago, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
     </div>
   </body>
 </html>

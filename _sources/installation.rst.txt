@@ -18,10 +18,10 @@ Downloading and Installation
 .. _GetLarch.bat:                  https://raw.githubusercontent.com/xraypy/xraylarch/master/installers/GetLarch.bat
 .. _Larch Installers:              https://millenia.cars.aps.anl.gov/xraylarch/downloads
 .. _source code:                   https://github.com/xraypy/xraylarch/releases/latest
-.. _Larch for Windows:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-02-Windows-x86_64.exe
-.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-02-MacOSX-arm64.pkg
-.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-02-Linux-x86_64.sh
-.. _Docs and Examples:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-02_docs-examples.zip
+.. _Larch for Windows:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-03-Windows-x86_64.exe
+.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-03-MacOSX-arm64.pkg
+.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-03-Linux-x86_64.sh
+.. _Docs and Examples:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2026-03_docs-examples.zip
 
 .. _Ifeffit Mailing List: https://millenia.cars.aps.anl.gov/mailman3/lists/ifeffit.millenia.cars.aps.anl.gov/
 
@@ -258,9 +258,9 @@ ecosystem" infrastructure and then install xraylarch with pip:
 
 .. code:: bash
 
-   conda create -y --name xraylarch python>=3.13.9
+   conda create -y --name xraylarch python>=3.13.11
    conda activate xraylarch
-   conda install -y -c conda-forge numpy scipy matplotlib h5py>=3.10 wxpython>=4.2.2 mkl_fft
+   conda install -y -c conda-forge numpy scipy matplotlib h5py>=3.13 wxpython>=4.3.0 mkl_fft
    pip install "xraylarch[larix]"
 
 Optionally, you can add other packages with
