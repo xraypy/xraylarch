@@ -522,7 +522,7 @@ Examples using :func:`xas_deconvolve` and :func:`xas_convolve`
 An example using :func:`xas_deconvolve` to deconvolve a XAFS spectrum would
 be:
 
-.. literalinclude:: ../examples/xafs/doc_deconv1.lar
+.. literalinclude:: ../examples/xafs/doc_deconv_01.py
 
 
 resulting in deconvolved data:
@@ -543,7 +543,7 @@ We can also test that the deconvolution is correct by using
 :func:`xas_convolve` to re-convolve the result and comparing it to original
 data.  This can be done with:
 
-.. literalinclude:: ../examples/xafs/doc_deconv2.lar
+.. literalinclude:: ../examples/xafs/doc_deconv_02.py
 
 with results shown below:
 
@@ -570,7 +570,7 @@ deconvolve :math:`L_{\rm III}` XAFS for platinum, using the nominal energy
 width of the core level (5.17 eV).  For this example, we also see
 noticeable improvement in amplitude of the XAFS.
 
-.. literalinclude:: ../examples/xafs/doc_deconv3.lar
+.. literalinclude:: ../examples/xafs/doc_deconv_03.py
 
 with results shown below:
 
