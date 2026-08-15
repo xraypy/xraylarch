@@ -23,11 +23,6 @@ try:
 except ImportError:
     pass
 
-if HAS_WXPYTHON:
-    # note: this will be needed for some macOS builds until wxPython 4.2.1 is released.
-    if uname == 'darwin':
-        wx.PyApp.IsDisplayAvailable = lambda _: True
-
 def use_mpl_wxagg():
     """import matplotlib, set backend to wxAgg"""
     if HAS_WXPYTHON:
@@ -90,6 +85,9 @@ class LarchApp(object):
         self.wx_inspect = args.wx_inspect
         self.run_mode = args.run_mode
         if self.is_wxapp:
+            if not HAS_WXPYTHON:
+                print(f'{self.name} requires wxPython, try `pip install "xraylarch[wxgui]"`')
+                return False
             set_locale()
             use_mpl_wxagg()
         # put the python executables onto path
@@ -100,7 +98,7 @@ class LarchApp(object):
         pathenv.insert(0, Path(sys.prefix).absolute().as_posix())
         pathenv.insert(0, Path(sys.prefix, bindir).absolute().as_posix())
         os.environ['PATH'] = delim.join(pathenv)
-
+        return True
 
 LarchApps = {
     'larch': LarchApp(name='Larch CLI', script='larch', icon='larch',
@@ -137,7 +135,10 @@ def run_larch_jupyterlab():
                     'labextensions', 'jupyter_app_launcher').as_posix()
     os.environ['JUPYTER_APP_LAUNCHER_PATH'] = launcher
 
-    from jupyterlab import labapp
+    try:
+        from jupyterlab import labapp
+    except ImportError:
+        print('cannot import jupyterlab: try `pip install "xraylarch[jupyter]"`')
     labapp.main()
 
 def run_gse_mapviewer():
@@ -179,8 +180,7 @@ def run_epics_xrf():
     try:
         from .epics import EpicsXRFApp
     except ImportError:
-        print('cannot import EpicsXRFApp: try `pip install "xraylarch[epics]"`')
-
+        print('cannot import EpicsXRFApp: try `pip install "xraylarch[epics,wxgui]"`')
     parser = ArgumentParser(description='Epics XRF Control')
     parser.add_argument('prefix', nargs='?',  help="Epics Detector Prefix (ie, 'XSP3_QX7:')")
     parser.add_argument('-n', '--nmca', dest='nmca', default='4',
@@ -233,14 +233,6 @@ def run_xrd2d_viewer():
     use_mpl_wxagg()
     from .wxxrd import XRD2DViewer
     XRD2DViewer().MainLoop()
-
-def run_gse_dtcorrect():
-    """GSE DT Correct """
-    set_locale()
-    use_mpl_wxagg()
-    from .wxmap import DTViewer
-    DTViewer().MainLoop()
-
 
 def run_feff6l():
     "run feff6l"
@@ -338,7 +330,10 @@ def run_larch():
     elif args.wxgui:
         set_locale()
         use_mpl_wxagg()
-        from .wxlib.larchframe import LarchApp
+        try:
+            from .wxlib.larchframe import LarchApp
+        except ImportError:
+            print('cannot import LarchApp: try `pip install "xraylarch[wxgui]"`')
         LarchApp(with_inspection=True).MainLoop()
 
     # run wx Larch CLI
