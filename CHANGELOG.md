@@ -5,6 +5,13 @@ The GitHub Release Notes will also be useful
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+
+## [2026.3.1 - 2026-08-15]
+
+### Project
+- move sitka to be a 'wxgui' optional dependency
+
+
 ## [2026.3.0 - 2026-08-14]
 
 ### Larix
