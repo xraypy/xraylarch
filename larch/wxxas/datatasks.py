@@ -2,7 +2,7 @@ import copy
 from functools import partial
 # from pathlib import Path
 import numpy as np
-from lmfit import Parameters, minimize, report_fit
+from lmfit import Parameters, minimize
 from matplotlib.ticker import FuncFormatter
 
 import wx
@@ -22,7 +22,7 @@ from larch.wxlib import (GridPanel, FloatCtrl, FloatSpin,
 from larch.plot import plotlabels_wx as plotlabels, set_label_weight
 from larch.xafs import etok, ktoe, find_energy_step
 from larch.utils.physical_constants import ATOM_SYMS
-from larch.math import smooth, boxcar
+from larch.math import boxcar
 
 Plot_Choices = {'Normalized': 'norm', 'Derivative': 'dmude'}
 
@@ -378,7 +378,7 @@ class EnergyCalibrateFrame(wx.Frame):
                 sharedrefs.append(key)
         nshare = len(sharedrefs)
         if nshare == 1:
-            self.wids['sharedref_msg'].SetLabel(f"1 group has this reference")
+            self.wids['sharedref_msg'].SetLabel("1 group has this reference")
         else:
             self.wids['sharedref_msg'].SetLabel(f"{nshare} groups share this reference")
         return sharedrefs
@@ -407,7 +407,7 @@ class EnergyCalibrateFrame(wx.Frame):
         dat = datagroup
         dat.xplot = dat.energy_orig[:]
         ref.xplot = ref.energy_orig[:]
-        estep = find_energy_step(dat.xplot)
+        # estep = find_energy_step(dat.xplot)
 
         pars = Parameters()
         ex0 = dat.e0 - ref.e0
@@ -1602,7 +1602,7 @@ class SpectraCalcFrame(wx.Frame):
             xname = 'xplot'
 
         disp = self.controller.get_display(stacked=False)
-        ppanel = disp.panel
+        # ppanel = disp.panel
         self.controller.set_datatask_name('Spectra Calc')
         set_plotwindow_title(disp, self.controller.larch)
 
