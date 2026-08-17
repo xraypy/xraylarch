@@ -101,10 +101,10 @@ class LarchApp(object):
         return True
 
 LarchApps = {
-    'larch': LarchApp(name='Larch CLI', script='larch', icon='larch',
-                      description='Basic Command-line interface for Larch'),
-    'Larch GUI': LarchApp(name='Larch GUI', script='larch --wxgui', icon='larch',
-                      description='Enhanced Command-line interface for Larch'),
+    #'larch': LarchApp(name='Larch CLI', script='larch', icon='larch',
+    #                  description='Basic Command-line interface for Larch'),
+    #'Larch GUI': LarchApp(name='Larch GUI', script='larch --wxgui', icon='larch',
+    #                  description='Enhanced Command-line interface for Larch'),
     'Larch Updater': LarchApp(name='Update Larch',  icon='larch',
                       script='_ -m pip install --upgrade xraylarch larixite asteval lmfit asteval wxmplot wxutils',
                               description='Larch Updater', is_wxapp=False),
