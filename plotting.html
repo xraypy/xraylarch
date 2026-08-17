@@ -6,13 +6,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>12. Plotting and Displaying Data &#8212; xraylarch 2026.3.0 documentation</title>
+    <title>12. Plotting and Displaying Data &#8212; xraylarch 2026.3.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/xraylarch_style.css?v=f3581a04" />
     
-    <script src="_static/documentation_options.js?v=5abc04fd"></script>
+    <script src="_static/documentation_options.js?v=fec480e4"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -82,40 +82,48 @@
   <p><span class="math notranslate nohighlight">\(\newcommand{\AA}{\unicode{x212B}}\)</span></p>
 <section id="plotting-and-displaying-data">
 <span id="plotting-chapter"></span><h1><span class="section-number">12. </span>Plotting and Displaying Data<a class="headerlink" href="#plotting-and-displaying-data" title="Link to this heading">¶</a></h1>
-<p>Plotting and Visualizing data are vital to any scientific analysis package,
-and Larch provides several methods for data visualization.  These are
-largely built on two types of data display.  The first is the line plot
-(sometimes calld an xy plot), which shows traces of a set of functions
-y(x).  The second type of data display supported is the 2-dimensional image
-display, in which a grey scale or false color map shows an image
-representing a 2-dimensional array of intensity.</p>
-<p>Though not a dedicated plotting and graphics packages, Larch attempts to
-provide satisfying graphical displays of data, and the basic plots made
-with Larch are of high enough quality to include in publications.  In
-addition, both line plots and image display provide interactive features
-such as zooming in and out, changing properties such as colors and labels.
-Finally, copying and saving images of the graphics is easy and can be done
-either with keyboard commands such as Ctrl-C or from dropdown menus on the
-graphic elements.</p>
+<p>Plotting and data visualizing are vital to any scientific analysis
+package. Most plotting and data visualization tasks in Larch are one
+of two types. The first is the line plot (sometimes calld an xy plot),
+which shows traces of a set of functions y(x).  The second type of
+data display supported is the 2-dimensional image display, in which a
+grey scale or false color map shows an image representing a
+2-dimensional array of intensity.</p>
+<p>Most of the graphics that Larch creates are based on Graphical User
+interfaces, such as <a class="reference internal" href="larix.html#larix-app"><span class="std std-ref">Larix</span></a> and <a class="reference internal" href="wxmap_viewer.html#mapviewer-app"><span class="std std-ref">XRFMap Viewer</span></a>, are built with wxPython, and so use the <a class="reference external" href="https://newville.github.io/wxmplot/">wxmplot</a>
+library which was developed partially for Larch.  This libray uses
+<a class="reference external" href="https://matplotlib.org/">matplotlib</a> to give publication-quality plots and image displays,
+while providing convenient user interactivity and customization for
+plots and image displays.</p>
+<p>Though not a dedicated plotting and graphics packages, Larch attempts
+to provide satisfying graphical displays of data, and the basic plots
+made with Larch are of high enough quality to include in publications.
+In addition, both line plots and image display provide interactive
+features such as zooming in and out, changing properties such as
+colors and labels.  Finally, copying and saving images of the graphics
+is easy and can be done either with keyboard commands such as Ctrl-C
+or from dropdown menus on the graphic elements.</p>
 <section id="line-plots">
-<span id="module-_plotter"></span><h2><span class="section-number">12.1. </span>Line Plots<a class="headerlink" href="#line-plots" title="Link to this heading">¶</a></h2>
-<p>Larch provides a few functions for making line plots, with the principle
-function being called <a class="reference internal" href="#plotter.plot" title="_plotter.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a>.  The <a class="reference internal" href="#plotter.plot" title="_plotter.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a> function takes two
-arrays: <cite>x</cite>, the abscissa array, and <cite>y</cite>, the ordinate array.  It also
-accepts a very large number of optional arguments for setting properties
-like color, line style, labels, and so on.  Most of these properties can
-also be set after the plot is displayed through the graphical display of
-the plot itself.  The plots are fully interactive so that coordinates can
+<span id="module-larch.wxlib"></span><h2><span class="section-number">12.1. </span>Line Plots<a class="headerlink" href="#line-plots" title="Link to this heading">¶</a></h2>
+<p>Larch provides a few functions, adopted from <a class="reference external" href="https://newville.github.io/wxmplot/interactive.html">wxmplot.interactive</a>, for
+making line plots, with the principle function being called
+<a class="reference internal" href="#larch.wxlib.plot" title="larch.wxlib.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a>.  The <a class="reference internal" href="#larch.wxlib.plot" title="larch.wxlib.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a> function takes two arrays: <cite>x</cite>, the
+abscissa array, and <cite>y</cite>, the ordinate array.  It also accepts a very
+large number of optional arguments for setting properties like color,
+line style, labels, and so on.  Most of these properties can also be
+set after the plot is displayed through the graphical display of the
+plot itself.  The plots are fully interactive so that coordinates can
 be seen (and written to larch variables) by clicking on the plot, and
 zooming in on portions of the plot can be done with click-and-drag.
-Right-clicking will pop up a list of options for zooming out, configuring
-the plot, or saving a PNG image of the plot.  Menus on the window frame
-give even more options, including Copy-to-clipboard and printing.</p>
+Right-clicking will pop up a list of options for zooming out,
+configuring the plot, or saving a PNG image of the plot.  Menus on the
+window frame give even more options, including Copy-to-clipboard and
+printing.</p>
 <p>Multiple plot windows can be shown simultaneously, each in an independent
 window, and you can control which one is drawn to with a plot window index
 <code class="docutils literal notranslate"><span class="pre">win</span></code>.</p>
 <section id="plot-newplot-and-oplot">
-<h3><span class="section-number">12.1.1. </span><a class="reference internal" href="#plotter.plot" title="_plotter.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a>, <a class="reference internal" href="#plotter.newplot" title="_plotter.newplot"><code class="xref py py-func docutils literal notranslate"><span class="pre">newplot()</span></code></a>, and <a class="reference internal" href="#plotter.oplot" title="_plotter.oplot"><code class="xref py py-func docutils literal notranslate"><span class="pre">oplot()</span></code></a><a class="headerlink" href="#plot-newplot-and-oplot" title="Link to this heading">¶</a></h3>
+<h3><span class="section-number">12.1.1. </span><a class="reference internal" href="#larch.wxlib.plot" title="larch.wxlib.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a>, <a class="reference internal" href="#larch.wxlib.newplot" title="larch.wxlib.newplot"><code class="xref py py-func docutils literal notranslate"><span class="pre">newplot()</span></code></a>, and <a class="reference internal" href="#larch.wxlib.oplot" title="larch.wxlib.oplot"><code class="xref py py-func docutils literal notranslate"><span class="pre">oplot()</span></code></a><a class="headerlink" href="#plot-newplot-and-oplot" title="Link to this heading">¶</a></h3>
 <p>These functions all create a Line Plot from array of <cite>x</cite> and <cite>y</cite> data that
 are taken to be ordered, and so can be drawn as connected by lines from one
 point to the next.  These functions share many options to set labels,
@@ -123,8 +131,8 @@ colors, and so on to modify the resulting plot.  All options are specified
 by the keyword/value arguments described in the <a class="reference internal" href="#plotopt-table"><span class="std std-ref">Table of Plot
 Arguments</span></a> below.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="plotter.plot">
-<span class="sig-prename descclassname"><span class="pre">_plotter.</span></span><span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kws</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.plot" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="larch.wxlib.plot">
+<span class="sig-prename descclassname"><span class="pre">larch.wxlib.</span></span><span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kws</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.wxlib.plot" title="Link to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -139,8 +147,8 @@ same size.   Each x, y pair displayed  is called a <em>trace</em>.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="plotter.newplot">
-<span class="sig-prename descclassname"><span class="pre">_plotter.</span></span><span class="sig-name descname"><span class="pre">newplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kws</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.newplot" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="larch.wxlib.newplot">
+<span class="sig-prename descclassname"><span class="pre">larch.wxlib.</span></span><span class="sig-name descname"><span class="pre">newplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kws</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.wxlib.newplot" title="Link to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -150,13 +158,13 @@ same size.   Each x, y pair displayed  is called a <em>trace</em>.</p>
 </ul>
 </dd>
 </dl>
-<p>This is essentially the same a <a class="reference internal" href="#plotter.plot" title="_plotter.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a>, but with the option  <cite>new=True</cite>.
+<p>This is essentially the same a <a class="reference internal" href="#larch.wxlib.plot" title="larch.wxlib.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a>, but with the option  <cite>new=True</cite>.
 The rest of the arguments are as</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="plotter.oplot">
-<span class="sig-prename descclassname"><span class="pre">_plotter.</span></span><span class="sig-name descname"><span class="pre">oplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kws</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.oplot" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="larch.wxlib.oplot">
+<span class="sig-prename descclassname"><span class="pre">larch.wxlib.</span></span><span class="sig-name descname"><span class="pre">oplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kws</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.wxlib.oplot" title="Link to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -166,12 +174,12 @@ The rest of the arguments are as</p>
 </ul>
 </dd>
 </dl>
-<p>This is essentially the same a <a class="reference internal" href="#plotter.plot" title="_plotter.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a>, but with the option  <cite>new=False</cite>.</p>
+<p>This is essentially the same a <a class="reference internal" href="#larch.wxlib.plot" title="larch.wxlib.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a>, but with the option  <cite>new=False</cite>.</p>
 </dd></dl>
 
-<p id="plotopt-table"><strong>Table of Plot Arguments</strong> These arguments apply for the <a class="reference internal" href="#plotter.plot" title="_plotter.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a>, <a class="reference internal" href="#plotter.newplot" title="_plotter.newplot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">newplot()</span></code></a>, and
-<a class="reference internal" href="#plotter.scatterplot" title="_plotter.scatterplot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">scatterplot()</span></code></a> methods.  Except where noted, the arguments are available for <a class="reference internal" href="#plotter.plot" title="_plotter.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a> and
-<a class="reference internal" href="#plotter.newplot" title="_plotter.newplot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">newplot()</span></code></a>.  In addition, the <a class="reference internal" href="#plotter.scatterplot" title="_plotter.scatterplot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">scatterplot()</span></code></a> method uses many of the same arguments for the
+<p id="plotopt-table"><strong>Table of Plot Arguments</strong> These arguments apply for the <a class="reference internal" href="#larch.wxlib.plot" title="larch.wxlib.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a>, <a class="reference internal" href="#larch.wxlib.newplot" title="larch.wxlib.newplot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">newplot()</span></code></a>, and
+<a class="reference internal" href="#larch.wxlib.scatterplot" title="larch.wxlib.scatterplot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">scatterplot()</span></code></a> methods.  Except where noted, the arguments are available for <a class="reference internal" href="#larch.wxlib.plot" title="larch.wxlib.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a> and
+<a class="reference internal" href="#larch.wxlib.newplot" title="larch.wxlib.newplot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">newplot()</span></code></a>.  In addition, the <a class="reference internal" href="#larch.wxlib.scatterplot" title="larch.wxlib.scatterplot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">scatterplot()</span></code></a> method uses many of the same arguments for the
 same meaning, as indicated by the right-most column.</p>
 <blockquote>
 <div><blockquote>
@@ -260,7 +268,7 @@ same meaning, as indicated by the right-most column.</p>
 <tr class="row-even"><td><p>use_dates</p></td>
 <td><p>bool</p></td>
 <td><p>False</p></td>
-<td><p>to show dates in xlabel (<a class="reference internal" href="#plotter.plot" title="_plotter.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a> only)</p></td>
+<td><p>to show dates in xlabel (<a class="reference internal" href="#larch.wxlib.plot" title="larch.wxlib.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a> only)</p></td>
 <td><p>no</p></td>
 </tr>
 <tr class="row-odd"><td><p>linewidth</p></td>
@@ -372,7 +380,7 @@ same meaning, as indicated by the right-most column.</p>
 <td><p>no</p></td>
 </tr>
 <tr class="row-odd"><td></td>
-<td colspan="3"><p><strong>arguments that apply only for</strong> <a class="reference internal" href="#plotter.scatterplot" title="_plotter.scatterplot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">scatterplot()</span></code></a></p></td>
+<td colspan="3"><p><strong>arguments that apply only for</strong> <a class="reference internal" href="#larch.wxlib.scatterplot" title="larch.wxlib.scatterplot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">scatterplot()</span></code></a></p></td>
 <td></td>
 </tr>
 <tr class="row-even"><td><p>size</p></td>
@@ -399,7 +407,7 @@ same meaning, as indicated by the right-most column.</p>
 displays, etc) and the properties of each trace (color, linewidth, …)
 are preserved for the duration of that window.   A few specific notes:</p>
 <blockquote>
-<div><p>1. The title, label, and grid arguments to <a class="reference internal" href="#plotter.plot" title="_plotter.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a> default to <code class="docutils literal notranslate"><span class="pre">None</span></code>,
+<div><p>1. The title, label, and grid arguments to <a class="reference internal" href="#larch.wxlib.plot" title="larch.wxlib.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a> default to <code class="docutils literal notranslate"><span class="pre">None</span></code>,
 which means to use the previously used value.</p>
 <p>2. The <em>use_dates</em> option is not very rich, and simply turns x-values that
 are Unix timestamps into x labels showing the dates.</p>
@@ -424,17 +432,17 @@ transition to a new value as a sudden step, you want ‘steps-post’.</p>
 <p>Again, most of these values can be configured interactively from the Plot configuration window.</p>
 </div></blockquote>
 <dl class="py method">
-<dt class="sig sig-object py" id="plotter.scatterplot">
-<span class="sig-prename descclassname"><span class="pre">_plotter.</span></span><span class="sig-name descname"><span class="pre">scatterplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kws</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.scatterplot" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="larch.wxlib.scatterplot">
+<span class="sig-prename descclassname"><span class="pre">larch.wxlib.</span></span><span class="sig-name descname"><span class="pre">scatterplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kws</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.wxlib.scatterplot" title="Link to this definition">¶</a></dt>
 <dd><p>A scatterplot differs from a line plot in that the set of x, y values
 are not assumed to be in any particular order, and so are not connected
-with a line.  Arguments are very similar to those for <a class="reference internal" href="#plotter.plot" title="_plotter.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a>, and
+with a line.  Arguments are very similar to those for <a class="reference internal" href="#larch.wxlib.plot" title="larch.wxlib.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a>, and
 are listed in  <a class="reference internal" href="#plotopt-table"><span class="std std-ref">Table of Plot Arguments</span></a>.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="plotter.update_trace">
-<span class="sig-prename descclassname"><span class="pre">_plotter.</span></span><span class="sig-name descname"><span class="pre">update_trace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">win</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">side</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'left'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.update_trace" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="larch.wxlib.update_trace">
+<span class="sig-prename descclassname"><span class="pre">larch.wxlib.</span></span><span class="sig-name descname"><span class="pre">update_trace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">win</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">side</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'left'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.wxlib.update_trace" title="Link to this definition">¶</a></dt>
 <dd><p>updates an existing trace of a plot.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -448,7 +456,7 @@ are listed in  <a class="reference internal" href="#plotopt-table"><span class="
 </dd>
 </dl>
 <p>This function is particularly useful for data to be plotted is changing
-and you wish to update traces from a previous <a class="reference internal" href="#plotter.plot" title="_plotter.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a> with new
+and you wish to update traces from a previous <a class="reference internal" href="#larch.wxlib.plot" title="larch.wxlib.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a> with new
 data without completely redrawing the entire plot.  Using this method
 is substantially faster than replotting, and should be used for dynamic
 plots, such as plottting the progress of some function during a fit.
@@ -459,8 +467,8 @@ just happens that the data for the trace has been replaced.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="plotter.plot_text">
-<span class="sig-prename descclassname"><span class="pre">_plotter.</span></span><span class="sig-name descname"><span class="pre">plot_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">win</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">side</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'left'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'left'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">va</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'center'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.plot_text" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="larch.wxlib.plot_text">
+<span class="sig-prename descclassname"><span class="pre">larch.wxlib.</span></span><span class="sig-name descname"><span class="pre">plot_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">win</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">side</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'left'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'left'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">va</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'center'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.wxlib.plot_text" title="Link to this definition">¶</a></dt>
 <dd><p>add text at x, y coordinates of the plot window</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -479,8 +487,8 @@ just happens that the data for the trace has been replaced.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="plotter.plot_arrow">
-<span class="sig-prename descclassname"><span class="pre">_plotter.</span></span><span class="sig-name descname"><span class="pre">plot_arrow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">win</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kws</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.plot_arrow" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="larch.wxlib.plot_arrow">
+<span class="sig-prename descclassname"><span class="pre">larch.wxlib.</span></span><span class="sig-name descname"><span class="pre">plot_arrow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">win</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kws</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.wxlib.plot_arrow" title="Link to this definition">¶</a></dt>
 <dd><p>draw arrow from x1, y1 to x2, y2.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -503,8 +511,8 @@ just happens that the data for the trace has been replaced.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="plotter.plot_marker">
-<span class="sig-prename descclassname"><span class="pre">_plotter.</span></span><span class="sig-name descname"><span class="pre">plot_marker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">marker</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'o'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'_nolegend_'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">win</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kws</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.plot_marker" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="larch.wxlib.plot_marker">
+<span class="sig-prename descclassname"><span class="pre">larch.wxlib.</span></span><span class="sig-name descname"><span class="pre">plot_marker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">marker</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'o'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'_nolegend_'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">win</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kws</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.wxlib.plot_marker" title="Link to this definition">¶</a></dt>
 <dd><p>draw a single marker at x, y</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -556,8 +564,8 @@ just happens that the data for the trace has been replaced.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="plotter.save_plot">
-<span class="sig-prename descclassname"><span class="pre">_plotter.</span></span><span class="sig-name descname"><span class="pre">save_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">600</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">win</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facecolor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'w'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edgecolor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'w'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transparent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.save_plot" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="larch.wxlib.save_plot">
+<span class="sig-prename descclassname"><span class="pre">larch.wxlib.</span></span><span class="sig-name descname"><span class="pre">save_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">600</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">win</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facecolor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'w'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edgecolor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'w'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transparent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.wxlib.save_plot" title="Link to this definition">¶</a></dt>
 <dd><p>save the current plot to a PNG or other output formats.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -575,9 +583,9 @@ just happens that the data for the trace has been replaced.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="plotter.save_image">
-<span class="sig-prename descclassname"><span class="pre">_plotter.</span></span><span class="sig-name descname"><span class="pre">save_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">600</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">win</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facecolor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'w'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edgecolor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'w'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transparent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.save_image" title="Link to this definition">¶</a></dt>
-<dd><p>save the current 2D image from <a class="reference internal" href="#plotter.imshow" title="_plotter.imshow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">imshow()</span></code></a> to a PNG or other output formats.</p>
+<dt class="sig sig-object py" id="larch.wxlib.save_image">
+<span class="sig-prename descclassname"><span class="pre">larch.wxlib.</span></span><span class="sig-name descname"><span class="pre">save_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">600</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">win</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facecolor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'w'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edgecolor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'w'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transparent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.wxlib.save_image" title="Link to this definition">¶</a></dt>
+<dd><p>save the current 2D image from <a class="reference internal" href="#larch.wxlib.imshow" title="larch.wxlib.imshow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">imshow()</span></code></a> to a PNG or other output formats.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -594,8 +602,8 @@ just happens that the data for the trace has been replaced.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="plotter.get_display">
-<span class="sig-prename descclassname"><span class="pre">_plotter.</span></span><span class="sig-name descname"><span class="pre">get_display</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">win</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.get_display" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="larch.wxlib.get_display">
+<span class="sig-prename descclassname"><span class="pre">larch.wxlib.</span></span><span class="sig-name descname"><span class="pre">get_display</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">win</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.wxlib.get_display" title="Link to this definition">¶</a></dt>
 <dd><p>return the underlying Display object. For advanced usage, this allows
 access to the PlotDisplay object, which is the wxPython frame for the
 plot window.  The plot itself is contained in the <code class="docutils literal notranslate"><span class="pre">panel</span></code> attribute,
@@ -606,9 +614,11 @@ more details, see <a class="reference internal" href="#plot-mpl-sec"><span class
 </section>
 <section id="plot-examples">
 <h3><span class="section-number">12.1.2. </span>Plot Examples<a class="headerlink" href="#plot-examples" title="Link to this heading">¶</a></h3>
-<p>Here are a few example line plots, to whet your appetite:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">101</span><span class="p">)</span>
-<span class="n">y1</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<p>Here are a few example line plots:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.wxlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">newplot</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">101</span><span class="p">)</span>
+<span class="n">y1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 <span class="n">y2</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">+</span><span class="mf">0.2</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="p">(</span><span class="mf">0.2</span><span class="o">*</span><span class="n">x</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
 <span class="n">newplot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y1</span><span class="p">)</span>
 </pre></div>
@@ -721,8 +731,8 @@ normal white color) if there is an error in rendering your TeX string.</p>
 <section id="image-display-and-contour">
 <h2><span class="section-number">12.2. </span>Image Display and Contour<a class="headerlink" href="#image-display-and-contour" title="Link to this heading">¶</a></h2>
 <dl class="py method">
-<dt class="sig sig-object py" id="plotter.imshow">
-<span class="sig-prename descclassname"><span class="pre">_plotter.</span></span><span class="sig-name descname"><span class="pre">imshow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colormap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kws</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.imshow" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="larch.wxlib.imshow">
+<span class="sig-prename descclassname"><span class="pre">larch.wxlib.</span></span><span class="sig-name descname"><span class="pre">imshow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colormap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kws</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.wxlib.imshow" title="Link to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -737,8 +747,8 @@ normal white color) if there is an error in rendering your TeX string.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="plotter.contour">
-<span class="sig-prename descclassname"><span class="pre">_plotter.</span></span><span class="sig-name descname"><span class="pre">contour</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colormap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlevels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kws</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.contour" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="larch.wxlib.contour">
+<span class="sig-prename descclassname"><span class="pre">larch.wxlib.</span></span><span class="sig-name descname"><span class="pre">contour</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colormap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlevels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kws</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.wxlib.contour" title="Link to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -817,13 +827,15 @@ plots and images to do plotting tasks not covered above.</p>
 functionality, as well as some support for 3-dimensioanl plotting.  Larch
 gives you access to the maplotlib API by giving you access to the
 matplotlib Axes and Canvas for any displayed plot.   To get this, you would
-use <a class="reference internal" href="#plotter.get_display" title="_plotter.get_display"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_display()</span></code></a> to get the current display window, then access the
+use <a class="reference internal" href="#larch.wxlib.get_display" title="larch.wxlib.get_display"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_display()</span></code></a> to get the current display window, then access the
 <code class="docutils literal notranslate"><span class="pre">panel.axes</span></code> member:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">101</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">y</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">display</span> <span class="o">=</span> <span class="n">get_display</span><span class="p">(</span><span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">display</span><span class="o">.</span><span class="n">pane</span><span class="o">.</span><span class="n">axes</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.wxlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot</span><span class="p">,</span> <span class="n">get_display</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">101</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">display</span> <span class="o">=</span> <span class="n">get_display</span><span class="p">(</span><span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">axes</span> <span class="o">=</span> <span class="n">display</span><span class="o">.</span><span class="n">pane</span><span class="o">.</span><span class="n">axes</span>
 </pre></div>
 </div>
 <p>As an example of what you can do with this, here we make a histogram plot
@@ -897,17 +909,17 @@ matplotlib’s <code class="xref py py-func docutils literal notranslate"><span 
 <li><a class="reference internal" href="#">12. Plotting and Displaying Data</a><ul>
 <li><a class="reference internal" href="#line-plots">12.1. Line Plots</a><ul>
 <li><a class="reference internal" href="#plot-newplot-and-oplot">12.1.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code>, <code class="xref py py-func docutils literal notranslate"><span class="pre">newplot()</span></code>, and <code class="xref py py-func docutils literal notranslate"><span class="pre">oplot()</span></code></a><ul>
-<li><a class="reference internal" href="#plotter.plot"><code class="docutils literal notranslate"><span class="pre">plot()</span></code></a></li>
-<li><a class="reference internal" href="#plotter.newplot"><code class="docutils literal notranslate"><span class="pre">newplot()</span></code></a></li>
-<li><a class="reference internal" href="#plotter.oplot"><code class="docutils literal notranslate"><span class="pre">oplot()</span></code></a></li>
-<li><a class="reference internal" href="#plotter.scatterplot"><code class="docutils literal notranslate"><span class="pre">scatterplot()</span></code></a></li>
-<li><a class="reference internal" href="#plotter.update_trace"><code class="docutils literal notranslate"><span class="pre">update_trace()</span></code></a></li>
-<li><a class="reference internal" href="#plotter.plot_text"><code class="docutils literal notranslate"><span class="pre">plot_text()</span></code></a></li>
-<li><a class="reference internal" href="#plotter.plot_arrow"><code class="docutils literal notranslate"><span class="pre">plot_arrow()</span></code></a></li>
-<li><a class="reference internal" href="#plotter.plot_marker"><code class="docutils literal notranslate"><span class="pre">plot_marker()</span></code></a></li>
-<li><a class="reference internal" href="#plotter.save_plot"><code class="docutils literal notranslate"><span class="pre">save_plot()</span></code></a></li>
-<li><a class="reference internal" href="#plotter.save_image"><code class="docutils literal notranslate"><span class="pre">save_image()</span></code></a></li>
-<li><a class="reference internal" href="#plotter.get_display"><code class="docutils literal notranslate"><span class="pre">get_display()</span></code></a></li>
+<li><a class="reference internal" href="#larch.wxlib.plot"><code class="docutils literal notranslate"><span class="pre">plot()</span></code></a></li>
+<li><a class="reference internal" href="#larch.wxlib.newplot"><code class="docutils literal notranslate"><span class="pre">newplot()</span></code></a></li>
+<li><a class="reference internal" href="#larch.wxlib.oplot"><code class="docutils literal notranslate"><span class="pre">oplot()</span></code></a></li>
+<li><a class="reference internal" href="#larch.wxlib.scatterplot"><code class="docutils literal notranslate"><span class="pre">scatterplot()</span></code></a></li>
+<li><a class="reference internal" href="#larch.wxlib.update_trace"><code class="docutils literal notranslate"><span class="pre">update_trace()</span></code></a></li>
+<li><a class="reference internal" href="#larch.wxlib.plot_text"><code class="docutils literal notranslate"><span class="pre">plot_text()</span></code></a></li>
+<li><a class="reference internal" href="#larch.wxlib.plot_arrow"><code class="docutils literal notranslate"><span class="pre">plot_arrow()</span></code></a></li>
+<li><a class="reference internal" href="#larch.wxlib.plot_marker"><code class="docutils literal notranslate"><span class="pre">plot_marker()</span></code></a></li>
+<li><a class="reference internal" href="#larch.wxlib.save_plot"><code class="docutils literal notranslate"><span class="pre">save_plot()</span></code></a></li>
+<li><a class="reference internal" href="#larch.wxlib.save_image"><code class="docutils literal notranslate"><span class="pre">save_image()</span></code></a></li>
+<li><a class="reference internal" href="#larch.wxlib.get_display"><code class="docutils literal notranslate"><span class="pre">get_display()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#plot-examples">12.1.2. Plot Examples</a></li>
@@ -916,8 +928,8 @@ matplotlib’s <code class="xref py py-func docutils literal notranslate"><span 
 </ul>
 </li>
 <li><a class="reference internal" href="#image-display-and-contour">12.2. Image Display and Contour</a><ul>
-<li><a class="reference internal" href="#plotter.imshow"><code class="docutils literal notranslate"><span class="pre">imshow()</span></code></a></li>
-<li><a class="reference internal" href="#plotter.contour"><code class="docutils literal notranslate"><span class="pre">contour()</span></code></a></li>
+<li><a class="reference internal" href="#larch.wxlib.imshow"><code class="docutils literal notranslate"><span class="pre">imshow()</span></code></a></li>
+<li><a class="reference internal" href="#larch.wxlib.contour"><code class="docutils literal notranslate"><span class="pre">contour()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#advanced-plotting-using-matplotlib">12.3. Advanced Plotting: using matplotlib</a></li>

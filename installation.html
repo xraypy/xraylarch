@@ -6,13 +6,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>1. Downloading and Installation &#8212; xraylarch 2026.3.0 documentation</title>
+    <title>1. Downloading and Installation &#8212; xraylarch 2026.3.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/xraylarch_style.css?v=f3581a04" />
     
-    <script src="_static/documentation_options.js?v=5abc04fd"></script>
+    <script src="_static/documentation_options.js?v=fec480e4"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -80,18 +80,20 @@
             
   <section id="downloading-and-installation">
 <span id="install-chapter"></span><h1><span class="section-number">1. </span>Downloading and Installation<a class="headerlink" href="#downloading-and-installation" title="Link to this heading">¶</a></h1>
-<p>The latest release version of Larch is 2026.3.0.  Larch is in active
+<p>The latest release version of Larch is 2026.3.1.  Larch is in active
 and continuing development.  We do not use a strict schedule, but for
-the past few years, new versions have typically been released every 3
-or 4 months.  See <cite>_Larch Releases (github.com)</cite> for details.</p>
+the past few years, new versions have typically been released every
+few months.  See <a class="reference external" href="https://github.com/xraypy/xraylarch/releases">Larch Releases (github.com)</a> for details and
+release notes.</p>
 <p>There are three ways to install Larch.</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li><p><a class="reference internal" href="#install-binary"><span class="std std-ref">Installing with Binary Installers</span></a>.  Recommended to get started with Larix or other Larch GUI applications.</p></li>
-<li><p><a class="reference internal" href="#install-scripts"><span class="std std-ref">Installing with the GetLarch.sh and GetLarch.bat scripts</span></a>. Use these if your comfortable with the
+<li><p><a class="reference internal" href="#install-binary"><span class="std std-ref">Installing with Binary Installers</span></a>.  This is recommended to get started with Larix or other Larch GUI applications.</p></li>
+<li><p><a class="reference internal" href="#install-scripts"><span class="std std-ref">Installing with the GetLarch.sh and GetLarch.bat scripts</span></a>. Use these if your comfortable with the system
 command-line or want to customize your installation.</p></li>
-<li><p><a class="reference internal" href="#install-conda"><span class="std std-ref">Installing into an existing Anaconda Python environment</span></a>. Use this if you already have an Anaconda Python
-environment that you want to use.</p></li>
+<li><p><a class="reference internal" href="#install-conda"><span class="std std-ref">Installing into an existing Anaconda Python environment</span></a>. Use this if you re comfortable with
+Python, and want to install in an existing Python
+environment.</p></li>
 </ol>
 </div></blockquote>
 <p>Each of these will install a complete Python environment with all the
@@ -208,6 +210,14 @@ for most individual Windows installations or to
 <code class="docutils literal notranslate"><span class="pre">C:\Users\&lt;YourName&gt;\AppData\Local\xraylarch</span></code> if your machine is part of a
 Windows Workgroup or Domain.   As mentioned above, if your user name has a space
 in it, you will probably need to install to <code class="docutils literal notranslate"><span class="pre">C:\Users\Public</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you get prompted for an administrative password during the
+installation process, you should make sure you are installing to a folder
+that is writable by your user account.  The Larch install will install
+binary executables, that can be viewed as a security by some, but will
+write files only to the user folder.</p>
+</div>
 <p>Alternatively you can download the <a class="reference external" href="https://raw.githubusercontent.com/xraypy/xraylarch/master/installers/GetLarch.bat">GetLarch.bat</a> script, and run that by
 double-clicking on it. This will download, install, and configure the Larch
 package, with a result that should be identical to the Installer script.</p>
@@ -254,20 +264,21 @@ is using an X86_64 processor, let us know and we can try to help.</p>
 <section id="linux-notes">
 <span id="install-lin"></span><h3><span class="section-number">1.2.3. </span>Linux Notes<a class="headerlink" href="#linux-notes" title="Link to this heading">¶</a></h3>
 <p>For Linux, use the <a class="reference external" href="https://raw.githubusercontent.com/xraypy/xraylarch/master/installers/GetLarch.sh">GetLarch.sh</a> script and run that in a Terminal session.</p>
-<p>Desktop shortcuts as <code class="docutils literal notranslate"><span class="pre">.desktop</span></code> files will be created on all Linux
-platforms, but whether these actually appear on your desktop depends on the
-Windowing system used: they will appear on the desktop with KDE and many other
-systems, but not with Gnome.  Clickable icons should also show up in the
-Applications selection of the “Start Menu” or Applications list.</p>
+<p>Desktop shortcuts will be created as <code class="docutils literal notranslate"><span class="pre">.desktop</span></code> files on all Linux
+platforms, but whether these actually appear on your desktop depends
+on the Windowing system used: they will appear on the desktop with KDE
+and many other systems, but not with Gnome.  Clickable icons should
+also show up in the Applications selection of the “Start Menu” or
+Applications list.</p>
 </section>
 </section>
 <section id="installing-into-an-existing-anaconda-python-environment">
 <span id="install-conda"></span><h2><span class="section-number">1.3. </span>Installing into an existing Anaconda Python environment<a class="headerlink" href="#installing-into-an-existing-anaconda-python-environment" title="Link to this heading">¶</a></h2>
-<p>If are already using an existing <a class="reference external" href="https://www.anaconda.com/">Anaconda Python</a>, you may want to
-install Larch into that environment or create a new environment for
-it. Larch uses many of the common “scipy ecosystem” packages. The main
-must-have packages are <cite>numpy</cite>, <cite>scipy</cite>, <cite>matplotlib</cite>, and <cite>h5py</cite>. In
-addition, the following extra packages that you may need include:</p>
+<p>If are already using <a class="reference external" href="https://www.anaconda.com/">Anaconda Python</a>, you may want to install Larch
+into that environment or create a new environment for it. Larch uses
+many of the common “scipy ecosystem” packages. The main must-have
+packages are <cite>numpy</cite>, <cite>scipy</cite>, <cite>matplotlib</cite>, and <cite>h5py</cite>. In addition,
+the following extra packages that you may need include:</p>
 <blockquote>
 <div><ul class="simple">
 <li><p><cite>wxpython</cite>: needed for all plotting, graphics and GUI applications.</p></li>
@@ -285,13 +296,21 @@ package or try something like this to first create a dedicated “scipy
 ecosystem” infrastructure and then install xraylarch with pip:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-y<span class="w"> </span>--name<span class="w"> </span>xraylarch<span class="w"> </span>python&gt;<span class="o">=</span><span class="m">3</span>.13.11
 conda<span class="w"> </span>activate<span class="w"> </span>xraylarch
-conda<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>numpy<span class="w"> </span>scipy<span class="w"> </span>matplotlib<span class="w"> </span>h5py&gt;<span class="o">=</span><span class="m">3</span>.13<span class="w"> </span>wxpython&gt;<span class="o">=</span><span class="m">4</span>.3.0<span class="w"> </span>mkl_fft
+conda<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>numpy<span class="w"> </span>scipy<span class="w"> </span>matplotlib<span class="w"> </span>h5py&gt;<span class="o">=</span><span class="m">3</span>.13<span class="w"> </span>wxpython&gt;<span class="o">=</span><span class="m">4</span>.3.0
+conda<span class="w"> </span>install<span class="w"> </span>mkl_fft<span class="w">      </span><span class="c1"># will not work on macos</span>
 pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;xraylarch[larix]&quot;</span>
 </pre></div>
 </div>
 <p>Optionally, you can add other packages with</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>openbabel<span class="w"> </span>tomopy<span class="w">  </span><span class="c1"># &lt;- optional packages</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>mkl_fft is highly recommend for Linux and Windows using x86_64
+processors: it typically gives 2x fasster Fourier transforms, which
+are used heavily in EXAFS analysis. This package is not available
+for Macos using Apple silicon processors.</p>
 </div>
 <p>Many of the packages needed can be installed either as Anaconda
 packages, or as plain Python packages from PyPI, and with the <cite>pip</cite>
@@ -354,9 +373,11 @@ OS-specific packaging system), and not from Pip.</p>
 </section>
 <section id="installing-with-pip-into-an-existing-python-environment">
 <h2><span class="section-number">1.4. </span>Installing with <cite>pip</cite> into an existing Python environment<a class="headerlink" href="#installing-with-pip-into-an-existing-python-environment" title="Link to this heading">¶</a></h2>
-<p>Larch relies on the “scipy ecosystem”, and has a large number of packages that
-it depends on. Most of these are available as binary (so-called “wheel” files)
-from <a class="reference external" href="https://pypi.org">PyPI</a>, so that a simple</p>
+<p>Larch can be installed into a non-<cite>conda</cite> Python environment, but it
+might be a little more work.  Larch relies on the “scipy ecosystem”,
+and has a large number of packages that it depends on. Most of these
+are available as binary (so-called “wheel” files) from <a class="reference external" href="https://pypi.org">PyPI</a>, so
+that a simple</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>xraylarch
 </pre></div>
 </div>
@@ -415,17 +436,18 @@ notify you about available updates.</p>
 <div class="versionchanged">
 <p><span class="versionmodified changed">Changed in version 2026.1.0.</span></p>
 </div>
-<p>Beginning with version <cite>2026.1.0</cite>, the Jupyter Lab browser-based interface to
-Python is installed with Larch, and a shortcut is includeed in the
-<cite>Larch</cite> folder on your desktop.  Running Jupyter Lab includes a
-“Terminal”, that runs in your browser.  This should be shown under the
-“Other” category on the main Launcher, or can be invoked from the
-File-&gt;Terminal menu.</p>
+<p>Beginning with version <cite>2026.1.0</cite>, the Jupyter Lab browser-based
+interface to Python is installed with Larch, and a shortcut is
+includeed in the <cite>Larch</cite> folder on your desktop.  Running Jupyter Lab
+includes a “Terminal”, that runs in your browser.  This should be
+shown under the “Other” category on the main Launcher, or can be
+invoked from the File-&gt;Terminal menu.</p>
 <p>This Terminal conveniently runs with the same environment settings as
 Larch, so knows which <cite>pip</cite> and <cite>python</cite> command to use, whereas the
 shell or Windows command environment may not.</p>
-<p>That is, we highly recommend using the Terminal with Jupyter Lab to
-upgrade your Larch installation.</p>
+<p>We highly recommend using the Terminal with Jupyter Lab to upgrade
+your Larch installation and pasting in the command above as the
+simplest way to upgrade your installation.</p>
 </section>
 <section id="installing-the-development-version">
 <h2><span class="section-number">1.6. </span>Installing the development version<a class="headerlink" href="#installing-the-development-version" title="Link to this heading">¶</a></h2>
@@ -579,7 +601,7 @@ documentation, and all material associated with Larch are distributed under
 the MIT License:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">The</span> <span class="n">MIT</span> <span class="n">License</span>
 
-<span class="n">Copyright</span> <span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">2025</span> <span class="n">Matthew</span> <span class="n">Newville</span><span class="p">,</span> <span class="n">The</span> <span class="n">University</span> <span class="n">of</span> <span class="n">Chicago</span>
+<span class="n">Copyright</span> <span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">2026</span> <span class="n">Matthew</span> <span class="n">Newville</span><span class="p">,</span> <span class="n">The</span> <span class="n">University</span> <span class="n">of</span> <span class="n">Chicago</span>
                         <span class="n">Mauro</span> <span class="n">Rovezzi</span><span class="p">,</span> <span class="n">University</span> <span class="n">Grenoble</span> <span class="n">Alpes</span><span class="p">,</span> <span class="n">CNRS</span>
                         <span class="n">Bruce</span> <span class="n">Ravel</span><span class="p">,</span> <span class="n">National</span> <span class="n">Institute</span> <span class="n">of</span> <span class="n">Science</span> <span class="ow">and</span> <span class="n">Technology</span>
                         <span class="n">Margaret</span> <span class="n">Koker</span><span class="p">,</span> <span class="n">Lawrence</span> <span class="n">University</span>

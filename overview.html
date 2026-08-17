@@ -6,13 +6,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>3. Larch: Motivation and Overview &#8212; xraylarch 2026.3.0 documentation</title>
+    <title>3. Larch: Motivation and Overview &#8212; xraylarch 2026.3.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/xraylarch_style.css?v=f3581a04" />
     
-    <script src="_static/documentation_options.js?v=5abc04fd"></script>
+    <script src="_static/documentation_options.js?v=fec480e4"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -155,27 +155,32 @@ with organizing data is <strong>Group</strong>.  This is simply a container into
 any sort of data or function can be placed, including other Groups.  The
 data in a Group can be accessed using a syntax of <strong>&lt;Group&gt;.&lt;Member&gt;</strong>,
 as with:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_group</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">11</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">10.2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;group 1&#39;</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_group</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">my_group</span><span class="o">.</span><span class="n">scale</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">my_group</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">plot</span><span class="p">(</span><span class="n">my_group</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">my_group</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">my_group</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Group</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">larch.wxlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot</span>
+<span class="n">my_group</span> <span class="o">=</span> <span class="n">Group</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">51</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">10.2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;group 1&#39;</span><span class="p">)</span>
+<span class="n">my_group</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">my_group</span><span class="o">.</span><span class="n">scale</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">my_group</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">my_group</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">my_group</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">my_group</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The Group <code class="docutils literal notranslate"><span class="pre">my_group</span></code> holds data for <code class="docutils literal notranslate"><span class="pre">x</span></code>, <code class="docutils literal notranslate"><span class="pre">y</span></code>, and <code class="docutils literal notranslate"><span class="pre">title</span></code>.  Here,
 the <code class="docutils literal notranslate"><span class="pre">range()</span></code> function gives an array of 11 elements ([0, 1, 2, …, 10])
 that will be held by <code class="docutils literal notranslate"><span class="pre">my_group.x</span></code>.  You can see the contents of a group
 with the <a class="reference internal" href="larchlang/builtins.html#show" title="show"><code class="xref py py-func docutils literal notranslate"><span class="pre">show()</span></code></a> function:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">show</span><span class="p">(</span><span class="n">my_group</span><span class="p">)</span>
-<span class="o">==</span> <span class="n">Group</span> <span class="mh">0x6e15970</span><span class="p">:</span> <span class="mi">4</span> <span class="n">symbols</span> <span class="o">==</span>
-  <span class="n">scale</span><span class="p">:</span> <span class="mf">10.2</span>
-  <span class="n">t</span><span class="p">:</span> <span class="s1">&#39;group 1&#39;</span>
-  <span class="n">x</span><span class="p">:</span> <span class="n">array</span><span class="o">&lt;</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,),</span> <span class="nb">type</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span><span class="o">&gt;</span>
-  <span class="n">y</span><span class="p">:</span> <span class="n">array</span><span class="o">&lt;</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,),</span> <span class="nb">type</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> <span class="kn">from</span><span class="w"> </span><span class="nn">larch.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">show</span>
+ <span class="n">show</span><span class="p">(</span><span class="n">my_group</span><span class="p">)</span>
+<span class="w"> </span><span class="sd">&#39;&#39;&#39;== Group 0x6e15970: 4 symbols ==</span>
+<span class="sd">   scale: 10.2</span>
+<span class="sd">   title: &#39;group 1&#39;</span>
+<span class="sd">   x: array&lt;shape=(11,), type=dtype(&#39;int32&#39;)&gt;</span>
+<span class="sd">   y: array&lt;shape=(11,), type=dtype(&#39;float64&#39;)&gt;</span>
+<span class="sd">&#39;&#39;&#39;</span>
 </pre></div>
 </div>
 <p>which shows that this group has 4 components, and lists the components.
 As the <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code> members hold array, the size and datatype of the
 array is shown.  Doing:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">my_group</span><span class="o">.</span><span class="n">y</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">my_group</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
 <span class="p">[</span>  <span class="mf">0.</span>           <span class="mf">8.58300405</span>   <span class="mf">9.27483375</span>   <span class="mf">1.43942408</span>  <span class="o">-</span><span class="mf">7.71938545</span>
   <span class="o">-</span><span class="mf">9.7810276</span>   <span class="o">-</span><span class="mf">2.85003808</span>   <span class="mf">6.70126331</span>  <span class="mf">10.09145412</span>   <span class="mf">4.20360855</span>
   <span class="o">-</span><span class="mf">5.54901533</span><span class="p">]</span>
@@ -189,34 +194,6 @@ value that you might want to be optimized in a least-squares fit.   Thus, a
 Parameter can be flagged as a variable, or fixed to not be varied.  In
 addition, it can be given a mathematical expression in terms of other
 Parameters to determine its value as a constrained value.</p>
-</section>
-<section id="capabilities">
-<h2><span class="section-number">3.2. </span>Capabilities<a class="headerlink" href="#capabilities" title="Link to this heading">¶</a></h2>
-<p>At this writing, Larch has the following general capabilities:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>a full suite of mathematical functionality, with array handling
-builtin (so that functions work on full arrays).</p></li>
-<li><p>a general purpose language with flow-control (for and while loops),
-and conditional evaluation (if-then-else).</p></li>
-<li><p>some built-in I/O functionality for ASCII files and HDF5.</p></li>
-<li><p>simple line plots, with customizable line properties.</p></li>
-<li><p>simple 2-D image dispays, with some rudimentary customization.</p></li>
-<li><p>general-purpose minimization and curve-fitting.</p></li>
-</ul>
-</div></blockquote>
-<p>For XAFS analysis in particular, Larch is able to do essentially all the data processing
-and analysis steps that Ifeffit can do, including:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>pre-edge background subtraction and normalization</p></li>
-<li><p>background subtraction for isolating chi(k)</p></li>
-<li><p>XAFS Fourier transforms</p></li>
-<li><p>reading and manipulating Feff Path files</p></li>
-<li><p>fitting Feff Paths to XAFS data</p></li>
-<li><p>general-purpose minimization and curve-fitting.</p></li>
-</ul>
-</div></blockquote>
 </section>
 </section>
 
@@ -232,7 +209,6 @@ and analysis steps that Ifeffit can do, including:</p>
     <ul>
 <li><a class="reference internal" href="#">3. Larch: Motivation and Overview</a><ul>
 <li><a class="reference internal" href="#key-concepts-of-larch">3.1. Key Concepts of Larch</a></li>
-<li><a class="reference internal" href="#capabilities">3.2. Capabilities</a></li>
 </ul>
 </li>
 </ul>

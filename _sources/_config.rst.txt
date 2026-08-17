@@ -21,6 +21,7 @@
 .. _lmfit:    https://lmfit.github.io/lmfit-py/
 .. _asteval:  https://lmfit.github.io/asteval/
 .. _wxmplot:  https://newville.github.io/wxmplot/
+.. _wxmplot.interactive:  https://newville.github.io/wxmplot/interactive.html
 .. _pyshortcuts:  https://newville.github.io/pyshortcuts/
 
 

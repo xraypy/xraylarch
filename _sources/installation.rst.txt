@@ -31,16 +31,19 @@ Downloading and Installation
 
 The latest release version of Larch is |release|.  Larch is in active
 and continuing development.  We do not use a strict schedule, but for
-the past few years, new versions have typically been released every 3
-or 4 months.  See `_Larch Releases (github.com)` for details.
+the past few years, new versions have typically been released every
+few months.  See `Larch Releases (github.com)`_ for details and
+release notes.
 
 There are three ways to install Larch.
 
-   1. :ref:`install-binary`.  Recommended to get started with Larix or other Larch GUI applications.
-   2. :ref:`install-scripts`. Use these if your comfortable with the
+   1. :ref:`install-binary`.  This is recommended to get started with Larix or other Larch GUI applications.
+   2. :ref:`install-scripts`. Use these if your comfortable with the system
       command-line or want to customize your installation.
-   3. :ref:`install-conda`. Use this if you already have an Anaconda Python
-      environment that you want to use.
+   3. :ref:`install-conda`. Use this if you re comfortable with
+      Python, and want to install in an existing Python
+      environment.
+
 
 Each of these will install a complete Python environment with all the
 packages needed to use the GUI applications or use Larch as a Python
@@ -157,8 +160,9 @@ for most individual Windows installations or to
 Windows Workgroup or Domain.   As mentioned above, if your user name has a space
 in it, you will probably need to install to ``C:\Users\Public``.
 
+.. note::
 
-.. note: If you get prompted for an administrative password during the
+   If you get prompted for an administrative password during the
    installation process, you should make sure you are installing to a folder
    that is writable by your user account.  The Larch install will install
    binary executables, that can be viewed as a security by some, but will
@@ -219,26 +223,26 @@ is using an X86_64 processor, let us know and we can try to help.
 Linux Notes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 For Linux, use the `GetLarch.sh`_ script and run that in a Terminal session.
 
-Desktop shortcuts as ``.desktop`` files will be created on all Linux
-platforms, but whether these actually appear on your desktop depends on the
-Windowing system used: they will appear on the desktop with KDE and many other
-systems, but not with Gnome.  Clickable icons should also show up in the
-Applications selection of the "Start Menu" or Applications list.
+Desktop shortcuts will be created as ``.desktop`` files on all Linux
+platforms, but whether these actually appear on your desktop depends
+on the Windowing system used: they will appear on the desktop with KDE
+and many other systems, but not with Gnome.  Clickable icons should
+also show up in the Applications selection of the "Start Menu" or
+Applications list.
 
 
 .. _install-conda:
 
 Installing into an existing Anaconda Python environment
-=========================================================
+=============================================================
 
-If are already using an existing `Anaconda Python`_, you may want to
-install Larch into that environment or create a new environment for
-it. Larch uses many of the common "scipy ecosystem" packages. The main
-must-have packages are `numpy`, `scipy`, `matplotlib`, and `h5py`. In
-addition, the following extra packages that you may need include:
+If are already using `Anaconda Python`_, you may want to install Larch
+into that environment or create a new environment for it. Larch uses
+many of the common "scipy ecosystem" packages. The main must-have
+packages are `numpy`, `scipy`, `matplotlib`, and `h5py`. In addition,
+the following extra packages that you may need include:
 
    * `wxpython`: needed for all plotting, graphics and GUI applications.
    * `pymatgen`: needed for handling CIF files to generate Feff input files.
@@ -255,12 +259,12 @@ To create a dedicated environment for Larch, can either use the `conda-forge`
 package or try something like this to first create a dedicated "scipy
 ecosystem" infrastructure and then install xraylarch with pip:
 
-
 .. code:: bash
 
    conda create -y --name xraylarch python>=3.13.11
    conda activate xraylarch
-   conda install -y -c conda-forge numpy scipy matplotlib h5py>=3.13 wxpython>=4.3.0 mkl_fft
+   conda install -y -c conda-forge numpy scipy matplotlib h5py>=3.13 wxpython>=4.3.0
+   conda install mkl_fft      # will not work on macos
    pip install "xraylarch[larix]"
 
 Optionally, you can add other packages with
@@ -268,6 +272,14 @@ Optionally, you can add other packages with
 .. code:: bash
 
    conda install -y -c conda-forge openbabel tomopy  # <- optional packages
+
+.. note::
+
+   mkl_fft is highly recommend for Linux and Windows using x86_64
+   processors: it typically gives 2x fasster Fourier transforms, which
+   are used heavily in EXAFS analysis. This package is not available
+   for Macos using Apple silicon processors.
+
 
 Many of the packages needed can be installed either as Anaconda
 packages, or as plain Python packages from PyPI, and with the `pip`
@@ -317,9 +329,11 @@ other packages from PyPI.  We recommend you follow a similar process.
 Installing with `pip` into an existing Python environment
 ===========================================================
 
-Larch relies on the "scipy ecosystem", and has a large number of packages that
-it depends on. Most of these are available as binary (so-called "wheel" files)
-from `PyPI`_, so that a simple
+Larch can be installed into a non-`conda` Python environment, but it
+might be a little more work.  Larch relies on the "scipy ecosystem",
+and has a large number of packages that it depends on. Most of these
+are available as binary (so-called "wheel" files) from `PyPI`_, so
+that a simple
 
 .. code:: bash
 
@@ -399,19 +413,20 @@ in the appropriate shell or Windows command environment.
 
 .. versionchanged:: 2026.1.0
 
-Beginning with version `2026.1.0`, the Jupyter Lab browser-based interface to
-Python is installed with Larch, and a shortcut is includeed in the
-`Larch` folder on your desktop.  Running Jupyter Lab includes a
-"Terminal", that runs in your browser.  This should be shown under the
-"Other" category on the main Launcher, or can be invoked from the
-File->Terminal menu.
+Beginning with version `2026.1.0`, the Jupyter Lab browser-based
+interface to Python is installed with Larch, and a shortcut is
+includeed in the `Larch` folder on your desktop.  Running Jupyter Lab
+includes a "Terminal", that runs in your browser.  This should be
+shown under the "Other" category on the main Launcher, or can be
+invoked from the File->Terminal menu.
 
 This Terminal conveniently runs with the same environment settings as
 Larch, so knows which `pip` and `python` command to use, whereas the
 shell or Windows command environment may not.
 
-That is, we highly recommend using the Terminal with Jupyter Lab to
-upgrade your Larch installation.
+We highly recommend using the Terminal with Jupyter Lab to upgrade
+your Larch installation and pasting in the command above as the
+simplest way to upgrade your installation.
 
 
 Installing the development version

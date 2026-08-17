@@ -5,13 +5,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; xraylarch 2026.3.0 documentation</title>
+    <title>Index &#8212; xraylarch 2026.3.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=5283bb3d" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/xraylarch_style.css?v=f3581a04" />
     
-    <script src="_static/documentation_options.js?v=5abc04fd"></script>
+    <script src="_static/documentation_options.js?v=fec480e4"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -111,19 +111,12 @@
         <li><a href="fitting_fitpeaks.html#module-_math">module</a>
 </li>
       </ul></li>
-      <li>
-    _plotter
-
-      <ul>
-        <li><a href="plotting.html#module-_plotter">module</a>
-</li>
-      </ul></li>
       <li><a href="larchlang/procedures.html#index-0">_sys variables</a>
+</li>
+      <li><a href="fitting_parameters.html#index-0">_sys.fiteval</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="fitting_parameters.html#index-0">_sys.fiteval</a>
-</li>
       <li><a href="xafs_feffpaths.html#index-5">_sys.fiteval with Feff paths</a>
 </li>
       <li>
@@ -636,7 +629,7 @@
         <li><a href="fitting_confidence.html#confidence_report">built-in function</a>
 </li>
       </ul></li>
-      <li><a href="plotting.html#plotter.contour">contour() (in module _plotter)</a>
+      <li><a href="plotting.html#larch.wxlib.contour">contour() (in module larch.wxlib)</a>
 </li>
       <li>
     copy()
@@ -937,7 +930,7 @@
         <li><a href="larchlang/builtins.html#get">built-in function</a>
 </li>
       </ul></li>
-      <li><a href="plotting.html#plotter.get_display">get_display() (in module _plotter)</a>
+      <li><a href="plotting.html#larch.wxlib.get_display">get_display() (in module larch.wxlib)</a>
 </li>
       <li>
     getattr()
@@ -1036,7 +1029,7 @@
         <li><a href="larchlang/builtins.html#id">built-in function</a>
 </li>
       </ul></li>
-      <li><a href="plotting.html#plotter.imshow">imshow() (in module _plotter)</a>
+      <li><a href="plotting.html#larch.wxlib.imshow">imshow() (in module larch.wxlib)</a>
 </li>
       <li><a href="xray.html#xray.incoherent_xsec">incoherent_xsec() (in module _xray)</a>
 </li>
@@ -1101,6 +1094,13 @@
 </li>
       </ul></li>
       <li>
+    larch.wxlib
+
+      <ul>
+        <li><a href="plotting.html#module-larch.wxlib">module</a>
+</li>
+      </ul></li>
+      <li>
     len()
 
       <ul>
@@ -1121,10 +1121,10 @@
         <li><a href="xafs_xanes.html#lincombo_fitall">built-in function</a>
 </li>
       </ul></li>
-      <li><a href="fitting_lineshapes.html#index-0">lineshapes for fitting</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="fitting_lineshapes.html#index-0">lineshapes for fitting</a>
+</li>
       <li>
     list()
 
@@ -1228,8 +1228,6 @@
       <ul>
         <li><a href="fitting_fitpeaks.html#module-_math">_math</a>
 </li>
-        <li><a href="plotting.html#module-_plotter">_plotter</a>
-</li>
         <li><a href="xray.html#module-_xray">_xray</a>
 </li>
         <li><a href="xrf.html#module-_xrf">_xrf</a>
@@ -1237,6 +1235,8 @@
         <li><a href="guis.html#module-guis">guis</a>
 </li>
         <li><a href="data.html#module-larch.io">larch.io</a>
+</li>
+        <li><a href="plotting.html#module-larch.wxlib">larch.wxlib</a>
 </li>
       </ul></li>
       <li>
@@ -1264,7 +1264,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="data.html#larch.io.netcdf_group">netcdf_group() (in module larch.io)</a>
 </li>
-      <li><a href="plotting.html#plotter.newplot">newplot() (in module _plotter)</a>
+      <li><a href="plotting.html#larch.wxlib.newplot">newplot() (in module larch.wxlib)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1290,7 +1290,7 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="plotting.html#plotter.oplot">oplot() (in module _plotter)</a>
+      <li><a href="plotting.html#larch.wxlib.oplot">oplot() (in module larch.wxlib)</a>
 </li>
       <li>
     ord()
@@ -1363,9 +1363,9 @@
       </ul></li>
       <li><a href="xafs_feffit.html#index-3">Phase-corrected Fourier transforms</a>, <a href="xafs_feffit.html#index-4">[1]</a>, <a href="xafs_feffit.html#index-5">[2]</a>
 </li>
-      <li><a href="plotting.html#plotter.plot">plot() (in module _plotter)</a>
+      <li><a href="plotting.html#larch.wxlib.plot">plot() (in module larch.wxlib)</a>
 </li>
-      <li><a href="plotting.html#plotter.plot_arrow">plot_arrow() (in module _plotter)</a>
+      <li><a href="plotting.html#larch.wxlib.plot_arrow">plot_arrow() (in module larch.wxlib)</a>
 </li>
       <li>
     plot_bkg()
@@ -1397,7 +1397,7 @@
         <li><a href="xafs_utilities.html#plot_chir">built-in function</a>
 </li>
       </ul></li>
-      <li><a href="plotting.html#plotter.plot_marker">plot_marker() (in module _plotter)</a>
+      <li><a href="plotting.html#larch.wxlib.plot_marker">plot_marker() (in module larch.wxlib)</a>
 </li>
       <li>
     plot_mu()
@@ -1420,7 +1420,7 @@
         <li><a href="xafs_utilities.html#plot_path_r">built-in function</a>
 </li>
       </ul></li>
-      <li><a href="plotting.html#plotter.plot_text">plot_text() (in module _plotter)</a>
+      <li><a href="plotting.html#larch.wxlib.plot_text">plot_text() (in module larch.wxlib)</a>
 </li>
       <li>
     pow()
@@ -1555,13 +1555,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="data.html#larch.io.AthenaProject.save">save() (larch.io.AthenaProject method)</a>
 </li>
-      <li><a href="plotting.html#plotter.save_image">save_image() (in module _plotter)</a>
+      <li><a href="plotting.html#larch.wxlib.save_image">save_image() (in module larch.wxlib)</a>
 </li>
-      <li><a href="plotting.html#plotter.save_plot">save_plot() (in module _plotter)</a>
+      <li><a href="plotting.html#larch.wxlib.save_plot">save_plot() (in module larch.wxlib)</a>
 </li>
       <li><a href="data.html#larch.io.save_session">save_session() (in module larch.io)</a>
 </li>
-      <li><a href="plotting.html#plotter.scatterplot">scatterplot() (in module _plotter)</a>
+      <li><a href="plotting.html#larch.wxlib.scatterplot">scatterplot() (in module larch.wxlib)</a>
 </li>
       <li>
     set()
@@ -1710,7 +1710,7 @@
         <li><a href="larchlang/builtins.html#unicode">built-in function</a>
 </li>
       </ul></li>
-      <li><a href="plotting.html#plotter.update_trace">update_trace() (in module _plotter)</a>
+      <li><a href="plotting.html#larch.wxlib.update_trace">update_trace() (in module larch.wxlib)</a>
 </li>
   </ul></td>
 </tr></table>
