@@ -408,7 +408,7 @@ assume 1 :math:`k` weight -- these will take the first one listed.
 
         ================= =====================================================================
          array name        description
-        ================= =====================================================================
+        ================= ==============b=======================================================
             k                  wavenumber array of :math:`k`.
             chi                :math:`\chi(k)`.
             kwin               window :math:`\Omega(k)` (length of input chi(k)).
@@ -644,19 +644,18 @@ Note that an uncertainty is estimated for the Path parameters, including
 Such derived uncertainties do reflect the uncertainties and correlations
 between variables.  For example, a simplistic evaluation for the standard
 error in one of the ``sigma2`` parameters using the estimated variance in
-the ``theta`` might be done as follows::
+the ``theta`` might be done as follows (at the end of the above script)::
 
-    larch> _ave = sigma2_eins(10, pars.theta)
-    larch> _dlo = sigma2_eins(10, pars.theta-pars.theta.stderr) - _ave
-    larch> _dhi = sigma2_eins(10, pars.theta+pars.theta.stderr) - _ave
-    larch> print "sigma2(T=10) = %.5f  (%+.5f, %+.5f)" % (_ave, _dlo, _dhi)
-    sigma2(T=10) = 0.00328  (+0.00011, -0.00011)
+    _ave = sigma2_eins(150, out.paramgroup.theta, path1_150)
+    _dlo = sigma2_eins(150, out.paramgroup.theta-out.paramgroup.theta.stderr, path1_150) - _ave
+    _dhi = sigma2_eins(150, out.paramgroup.theta+out.paramgroup.theta.stderr, path1_150) - _ave
+    print(f"sigma2(T=150) = {_ave:.5f}  ({_dlo:+.5f}, {_dhi:+.5f})")
 
-This gives an estimate about 3 times larger than the estimate automatically
-derived from the fit.  The reason for this is that the simple evaluation
-ignores the correlation between parameters, which is taken into account in
-the automatically derived uncertainties.  In this case, including this
-correlation significantly reduces the estimated uncertainty.
+which prints (approximately)::
+
+    sigma2(T=150) = 0.00504  (+0.00031, -0.00028)
+
+and is pretty consistent with reported value.
 
 The output plots for the fits to the three datasets are given below.
 
@@ -763,23 +762,27 @@ previous example.
 
 To change fitting models and transform parameters, we'll make copies of the
 parameter groups and dataset groups, make a few changes, and re-run the
-fits.  For example, we can change the fitting space with (see
-examples/feffit/doc_feffit5.lar)::
+fits.
 
-    larch> pars2 = copy(pars)   # copy parameters
-    larch> dset2 = copy(dset)   # copy dataset
-    larch> dset2.transform.fitspace = 'q'  # fit in backtransformed k-space
+.. literalinclude:: ../examples/feffit/doc_feffit5.py
+
+In a bit more detail, we can change the fitting space with::
+
+    pars2 = copy(pars)   # copy parameters
+    dset2 = copy(dset)   # copy dataset
+    dset2.transform.fitspace = 'q'  # fit in backtransformed k-space
 
 Now we can run :func:`feffit` with the new parameter group and Dataset
 group, and compare the results either by plotting models from the different
 copies of the dataset or by viewing the parameter values and fit statistics
 with::
 
-    larch> out2  = feffit(pars2, dset2)
-    larch> print '*** R Space ***'
-    larch> print feffit_report(out, with_paths=False, min_correl=0.5)
-    larch> print '*** Q Space ***'
-    larch> print feffit_report(out2, with_paths=False, min_correl=0.5)
+    out2  = feffit(pars2, dset2)
+    print'*** R Space ***'
+    print(feffit_report(out, with_paths=False, min_correl=0.5))
+
+    print('*** Q Space ***')
+    print(feffit_report(out2, with_paths=False, min_correl=0.5))
 
 which gives
 
@@ -793,12 +796,12 @@ and uncertainties for the varied parameters are quite close for the fit in
 
 Now, we can try the fit in unfiltered 'K' space::
 
-    larch> pars3 = copy(pars)   # copy parameters
-    larch> dset3 = copy(dset)   # copy dataset
-    larch> dset3.transform.kweight = 2
-    larch> dset3.transform.fitspace = 'k'
-    larch> out3 = feffit(pars3, dset3)
-    larch  print feffit_report(out3, with_paths=False, min_correl=0.5)
+    pars3 = copy(pars)   # copy parameters
+    dset3 = copy(dset)   # copy dataset
+    dset3.transform.kweight = 2
+    dset3.transform.fitspace = 'k'
+    out3 = feffit(pars3, dset3)
+    print(feffit_report(out3, with_paths=False, min_correl=0.5)
 
 (we need to specify only one k-weight for a k-space fit) which gives:
 
@@ -917,27 +920,32 @@ the phase-corrected :math:`\chi(R)` is then calculated, and the peak value of
     started at the nominal distance of 2.454 :math:`\rm\AA`.
 
 
-   +-----------+-------------------+---------------+------------------+-------------+-------------+------------------------+
-   |Scatterer  |reduced chi-square | :math:`S_0^2` | :math:`\sigma^2` | :math:`E_0` |  :math:`R`  |:math:`R_{\rm{ph cor}}` |
-   +===========+===================+===============+==================+=============+=============+========================+
-   |  Zn (30)  |  57.5             | 0.73(0.07)    | 0.0040(0.0006)   | -7.98(1.23) | 2.471(0.006)|  2.451                 |
-   +-----------+-------------------+---------------+------------------+-------------+-------------+------------------------+
-   |  Ge (32)  |  32.4             | 0.90(0.06)    | 0.0050(0.0005)   | -2.99(0.93) | 2.461(0.004)|  2.457                 |
-   +-----------+-------------------+---------------+------------------+-------------+-------------+------------------------+
-   |  Se (34)  |  12.7             | 0.89(0.04)    | 0.0059(0.0003)   | 0.09(0.58)  | 2.448(0.003)|  2.461                 |
-   +-----------+-------------------+---------------+------------------+-------------+-------------+------------------------+
-   |  Br (35)  |  16.7             | 1.08(0.06)    | 0.0070(0.0004)   | 1.71(0.79)  | 2.444(0.003)|  2.462                 |
-   +-----------+-------------------+---------------+------------------+-------------+-------------+------------------------+
-   |  Rb (37)  |  88.7             | 1.10(0.14)    | 0.0073(0.0009)   | 5.27(1.42)  | 2.425(0.007)|  2.467                 |
-   +-----------+-------------------+---------------+------------------+-------------+-------------+------------------------+
-
+   +-------------+-----------+-------------+--------------+-----------------+-----------------+------------+
+   | Scatterer   |   RedChi2 | S02         | E0           | sigma2          | R               |   R_phcorr |
+   +=============+===========+=============+==============+=================+=================+============+
+   | Zn (30)     |     30.17 | 0.72 (0.07) | -6.99 (1.28) | 0.0040 (0.0007) | 2.4714 (0.0058) |     2.4513 |
+   +-------------+-----------+-------------+--------------+-----------------+-----------------+------------+
+   | Ga (31)     |     19.89 | 0.83 (0.07) | -3.51 (1.08) | 0.0050 (0.0006) | 2.4689 (0.0049) |     2.4516 |
+   +-------------+-----------+-------------+--------------+-----------------+-----------------+------------+
+   | Ge (32)     |     16.95 | 0.79 (0.06) | -1.99 (0.96) | 0.0050 (0.0005) | 2.4609 (0.0044) |     2.4534 |
+   +-------------+-----------+-------------+--------------+-----------------+-----------------+------------+
+   | As (33)     |      7.86 | 0.94 (0.05) | +0.45 (0.69) | 0.0060 (0.0004) | 2.4578 (0.0031) |     2.4541 |
+   +-------------+-----------+-------------+--------------+-----------------+-----------------+------------+
+   | Se (34)     |      6.28 | 0.89 (0.04) | +1.08 (0.58) | 0.0059 (0.0003) | 2.4483 (0.0027) |     2.4572 |
+   +-------------+-----------+-------------+--------------+-----------------+-----------------+------------+
+   | Br (35)     |      6.72 | 1.07 (0.05) | +2.69 (0.63) | 0.0070 (0.0003) | 2.4438 (0.0029) |     2.4572 |
+   +-------------+-----------+-------------+--------------+-----------------+-----------------+------------+
+   | Kr (36)     |     16.65 | 1.14 (0.09) | +3.04 (0.97) | 0.0073 (0.0006) | 2.4350 (0.0045) |     2.4588 |
+   +-------------+-----------+-------------+--------------+-----------------+-----------------+------------+
+   | Rb (37)     |     41.87 | 1.10 (0.13) | +6.24 (1.40) | 0.0074 (0.0009) | 2.4251 (0.0065) |     2.4618 |
+   +-------------+-----------+-------------+--------------+-----------------+-----------------+------------+
 
 
 The results of the fits are given in the :ref:`Table of ZnSe Results
 <xafs-feffit_znse_results>`, with graphs below showing fits to the 5
 different scatterers.  The dependence of the results on :math:`Z` of the
 back-scattering atom is seen to be reasonably strong.  The values for reduced
-chi-square definitely indicate that Zn-Se is the best fit, and the values for
+chi-square suggests that Zn-Se is the best fit, and the values for
 the fitted parameters have rather clear correlations with :math:`Z` --
 :math:`S_0^2`, :math:`\sigma^2`, and :math:`E_0` increase with :math:`Z`,
 while :math:`R` decreases.  If anything, the :math:`Z \pm 5` rule-of-thumb

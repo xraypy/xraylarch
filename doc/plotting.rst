@@ -6,42 +6,54 @@
 Plotting and Displaying Data
 ====================================
 
-Plotting and Visualizing data are vital to any scientific analysis package,
-and Larch provides several methods for data visualization.  These are
-largely built on two types of data display.  The first is the line plot
-(sometimes calld an xy plot), which shows traces of a set of functions
-y(x).  The second type of data display supported is the 2-dimensional image
-display, in which a grey scale or false color map shows an image
-representing a 2-dimensional array of intensity.
+Plotting and data visualizing are vital to any scientific analysis
+package. Most plotting and data visualization tasks in Larch are one
+of two types. The first is the line plot (sometimes calld an xy plot),
+which shows traces of a set of functions y(x).  The second type of
+data display supported is the 2-dimensional image display, in which a
+grey scale or false color map shows an image representing a
+2-dimensional array of intensity.
 
-Though not a dedicated plotting and graphics packages, Larch attempts to
-provide satisfying graphical displays of data, and the basic plots made
-with Larch are of high enough quality to include in publications.  In
-addition, both line plots and image display provide interactive features
-such as zooming in and out, changing properties such as colors and labels.
-Finally, copying and saving images of the graphics is easy and can be done
-either with keyboard commands such as Ctrl-C or from dropdown menus on the
-graphic elements.
+Most of the graphics that Larch creates are based on Graphical User
+interfaces, such as :ref:`Larix <larix_app>` and :ref:`XRFMap Viewer
+<mapviewer_app>`, are built with wxPython, and so use the `wxmplot`_
+library which was developed partially for Larch.  This libray uses
+`matplotlib`_ to give publication-quality plots and image displays,
+while providing convenient user interactivity and customization for
+plots and image displays.
 
-.. module:: _plotter
+
+Though not a dedicated plotting and graphics packages, Larch attempts
+to provide satisfying graphical displays of data, and the basic plots
+made with Larch are of high enough quality to include in publications.
+In addition, both line plots and image display provide interactive
+features such as zooming in and out, changing properties such as
+colors and labels.  Finally, copying and saving images of the graphics
+is easy and can be done either with keyboard commands such as Ctrl-C
+or from dropdown menus on the graphic elements.
+
+
+.. module:: larch.wxlib
    :synopsis: Plotting functions
 
 
 Line Plots
 =========================
 
-Larch provides a few functions for making line plots, with the principle
-function being called :meth:`plot`.  The :meth:`plot` function takes two
-arrays: `x`, the abscissa array, and `y`, the ordinate array.  It also
-accepts a very large number of optional arguments for setting properties
-like color, line style, labels, and so on.  Most of these properties can
-also be set after the plot is displayed through the graphical display of
-the plot itself.  The plots are fully interactive so that coordinates can
+Larch provides a few functions, adopted from `wxmplot.interactive`_, for
+making line plots, with the principle function being called
+:meth:`plot`.  The :meth:`plot` function takes two arrays: `x`, the
+abscissa array, and `y`, the ordinate array.  It also accepts a very
+large number of optional arguments for setting properties like color,
+line style, labels, and so on.  Most of these properties can also be
+set after the plot is displayed through the graphical display of the
+plot itself.  The plots are fully interactive so that coordinates can
 be seen (and written to larch variables) by clicking on the plot, and
 zooming in on portions of the plot can be done with click-and-drag.
-Right-clicking will pop up a list of options for zooming out, configuring
-the plot, or saving a PNG image of the plot.  Menus on the window frame
-give even more options, including Copy-to-clipboard and printing.
+Right-clicking will pop up a list of options for zooming out,
+configuring the plot, or saving a PNG image of the plot.  Menus on the
+window frame give even more options, including Copy-to-clipboard and
+printing.
 
 Multiple plot windows can be shown simultaneously, each in an independent
 window, and you can control which one is drawn to with a plot window index
@@ -332,10 +344,12 @@ same meaning, as indicated by the right-most column.
 Plot Examples
 ~~~~~~~~~~~~~~~~~
 
-Here are a few example line plots, to whet your appetite::
+Here are a few example line plots::
 
-    x = linspace(0, 10, 101)
-    y1 = sin(x)
+    import numpy as np
+    from larch.wxlib import newplot
+    x = np.linspace(0, 10, 101)
+    y1 = np.sin(x)
     y2 = -2 +0.2*x + (0.2*x)**2
     newplot(x, y1)
 
@@ -552,11 +566,13 @@ matplotlib Axes and Canvas for any displayed plot.   To get this, you would
 use :func:`get_display` to get the current display window, then access the
 ``panel.axes`` member::
 
-   larch> x = linspace(0, 10, 101)
-   larch> y = sin(x)
-   larch> plot(x, y)
-   larch> display = get_display(win=1)
-   larch> axes = display.pane.axes
+    import numpy as np
+    from larch.wxlib import plot, get_display
+    x = np.linspace(0, 10, 101)
+    y = np.sin(x)
+    plot(x, y)
+    display = get_display(win=1)
+    axes = display.pane.axes
 
 As an example of what you can do with this, here we make a histogram plot
 from a sampling of a more conitinuous distribution.  This  uses

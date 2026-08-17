@@ -91,27 +91,32 @@ any sort of data or function can be placed, including other Groups.  The
 data in a Group can be accessed using a syntax of **<Group>.<Member>**,
 as with::
 
-     larch> my_group = group(x = range(11), scale=10.2, title='group 1')
-     larch> my_group.y = my_group.scale * sin(my_group.x)
-     larch> plot(my_group.x, my_group.y, title=my_group.title)
+     import numpy as np
+     from larch import Group
+     from larch.wxlib import plot
+     my_group = Group(x=range(51), scale=10.2, title='group 1')
+     my_group.y = my_group.scale * np.sin(my_group.x)
+     plot(my_group.x, my_group.y, title=my_group.title)
 
 The Group ``my_group`` holds data for ``x``, ``y``, and ``title``.  Here,
 the ``range()`` function gives an array of 11 elements ([0, 1, 2, ..., 10])
 that will be held by ``my_group.x``.  You can see the contents of a group
 with the :func:`show` function::
 
-    larch> show(my_group)
-    == Group 0x6e15970: 4 symbols ==
+    from larch.utils import show
+    show(my_group)
+    '''== Group 0x6e15970: 4 symbols ==
       scale: 10.2
-      t: 'group 1'
+      title: 'group 1'
       x: array<shape=(11,), type=dtype('int32')>
       y: array<shape=(11,), type=dtype('float64')>
+   '''
 
 which shows that this group has 4 components, and lists the components.
 As the ``x`` and ``y`` members hold array, the size and datatype of the
 array is shown.  Doing::
 
-    larch> print my_group.y
+    print(my_group.y)
     [  0.           8.58300405   9.27483375   1.43942408  -7.71938545
       -9.7810276   -2.85003808   6.70126331  10.09145412   4.20360855
       -5.54901533]
@@ -125,28 +130,3 @@ value that you might want to be optimized in a least-squares fit.   Thus, a
 Parameter can be flagged as a variable, or fixed to not be varied.  In
 addition, it can be given a mathematical expression in terms of other
 Parameters to determine its value as a constrained value.
-
-
-Capabilities
-=================
-
-At this writing, Larch has the following general capabilities:
-
-   * a full suite of mathematical functionality, with array handling
-     builtin (so that functions work on full arrays).
-   * a general purpose language with flow-control (for and while loops),
-     and conditional evaluation (if-then-else).
-   * some built-in I/O functionality for ASCII files and HDF5.
-   * simple line plots, with customizable line properties.
-   * simple 2-D image dispays, with some rudimentary customization.
-   * general-purpose minimization and curve-fitting.
-
-For XAFS analysis in particular, Larch is able to do essentially all the data processing
-and analysis steps that Ifeffit can do, including:
-
-   * pre-edge background subtraction and normalization
-   * background subtraction for isolating chi(k)
-   * XAFS Fourier transforms
-   * reading and manipulating Feff Path files
-   * fitting Feff Paths to XAFS data
-   * general-purpose minimization and curve-fitting.

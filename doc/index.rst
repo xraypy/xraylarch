@@ -27,9 +27,8 @@ programming communities.
 
 Larch includes a few GUI applications that provide user-friendly and
 interactive data visualization for many common X-ray analysis tasks. The most
-notable of these are :ref:`Larix <larix_app>` (was XAS Viewer), :ref:`GSE
-Map Viewer <mapviewer_app>`, and :ref:`Larch XRF <larchxrf_app>` (formerly XRF
-Viewer).
+notable of these are :ref:`Larix <larix_app>`, :ref:`GSE
+Map Viewer <mapviewer_app>`, and :ref:`Larch XRF <larchxrf_app>`.
 
 Larch includes a Python-like macro language - the "Larch language" -
 for interactive and batch processing.  This macro language is an
@@ -85,7 +84,7 @@ the National Science Foundation - Advanced CyberInfrastructure
 
     Application Name                           | GUI/CLI    | Description
     :ref:`Larix <larix_app>`                   | GUI        | XAFS  Processing and Analysis: XANES, EXAFS, run Feff, Feff-fitting, more.
-    :ref:`GSE Map Viewer <mapviewer_app>`      | GUI        | XRF Map Viewer for GSECARS X-ray microprobe data.
+    :ref:`XRFMap Viewer <mapviewer_app>`       | GUI        | XRF Map Viewer for GSECARS-style X-ray microprobe data.
     :ref:`Larch_XRF <larchxrf_app>`            | GUI        | Display and Analyze XRF Spectra.
     :ref:`Larch_XRD1D <larchxrd1d_app>`        | GUI        | Display and work with 1-D XRD patterns
     `sitka spruce`_                            | GUI        | Data Browser for HDF5 and Zarr data
@@ -118,7 +117,7 @@ Table of Contents
    larchlang.rst
    data.rst
    plotting.rst
-   fitting
+   fitting.rst
    xafs.rst
    xray.rst
    xrf.rst
