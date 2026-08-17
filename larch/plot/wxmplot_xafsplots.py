@@ -1385,9 +1385,16 @@ def plot_curvefit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
         raise ValueError('Cannot get x or y data for fit')
     xplot = xplot*1.0
     yplot = yplot*1.0
-
-    xmin, xmax = get_erange(dgroup, opts['xmin'], opts['xmax'])
-
+    
+    dat_xmin = float(min(xplot))
+    dat_xmax = float(max(xplot))
+    xmin = opts['xmin'] if opts['xmin'] is not None else dat_xmin
+    xmax = opts['xmax'] if opts['xmax'] is not None else dat_xmax
+    if xmin < dat_xmin:
+        xmin = max(xmin, dat_emin)
+    if xmax < dat_xmin:
+        xmax = min(xmax, dat_emax)
+    
     if show_init:
         yfit   = fit.init_fit
         ycomps = None #  pkfit.init_ycomps
