@@ -1,4 +1,4 @@
-.. include:: ../_config.rst
+.. include:: _config.rst
 
 .. _larix_app:
 .. _xasviewer_app:
