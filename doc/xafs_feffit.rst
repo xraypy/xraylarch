@@ -408,7 +408,7 @@ assume 1 :math:`k` weight -- these will take the first one listed.
 
         ================= =====================================================================
          array name        description
-        ================= ==============b=======================================================
+        ================= =====================================================================
             k                  wavenumber array of :math:`k`.
             chi                :math:`\chi(k)`.
             kwin               window :math:`\Omega(k)` (length of input chi(k)).
