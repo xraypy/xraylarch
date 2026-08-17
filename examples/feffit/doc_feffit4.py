@@ -7,7 +7,7 @@ from larch.xafs import autobk, feffpath, feffit_transform, feffit_dataset, feffi
 from larch.wxlib.xafsplots import plot_chifit
 
 feo_dat = read_ascii('../xafsdata/feo_xafs.dat', labels='energy mu')
-autobk(feo_dat, kweight=2, rbkg=0.9)
+autobk(feo_dat, kweight=2, rbkg=1.05, clamp_hi=300)
 
 # define fitting parameter group
 pars = Group(n1     = param(6, vary=True),

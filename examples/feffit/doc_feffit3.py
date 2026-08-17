@@ -3,7 +3,7 @@
 from larch import Group
 from larch.io import read_ascii
 from larch.fitting import param, guess, param_group
-from larch.xafs import autobk, feffpath, feffit_transform, feffit_dataset, feffit, feffit_report
+from larch.xafs import autobk, feffpath, feffit_transform, feffit_dataset, feffit, feffit_report, sigma2_eins
 from larch.wxlib.xafsplots import plot_chifit
 
 # read 3 datasets
@@ -60,5 +60,10 @@ except:
 plot_chifit(dset_10, title='fit to Cu, 10K', rmax=5, win=1)
 plot_chifit(dset_50, title='fit to Cu, 50K', rmax=5, win=3)
 plot_chifit(dset_150, title='fit to Cu, 150K', rmax=5, win=5)
+
+_ave = sigma2_eins(150, out.paramgroup.theta, path1_150)
+_dlo = sigma2_eins(150, out.paramgroup.theta-out.paramgroup.theta.stderr, path1_150) - _ave
+_dhi = sigma2_eins(150, out.paramgroup.theta+out.paramgroup.theta.stderr, path1_150) - _ave
+print(f"sigma2(T=150) = {_ave:.5f}  ({_dlo:+.5f}, {_dhi:+.5f})")
 
 # ## end examples/feffit/doc_feffit3.py

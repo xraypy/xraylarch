@@ -4,6 +4,9 @@
 # how well "phase corrected" Fourier transforms predict distance
 import numpy as np
 
+from xraydb import atomic_number
+from tabulate import tabulate
+
 from larch import Group
 from larch.io import read_ascii
 from larch.math import interp, linregress
@@ -17,7 +20,7 @@ def get_zinc_mu(filename, labels='energy dwelltime i0 i1'):
     """read raw data, do background subtraction"""
     dat = read_ascii(filename, labels=labels)
     dat.mu = -np.log(dat.i1 / dat.i0)
-    autobk(dat, e0 = 9666.0, rbkg=1.25, kweight=2)
+    autobk(dat, e0 = 9665.0, rbkg=1.21, kweight=2)
     return dat
 
 def plot_chidata(data, title, win=1):
@@ -92,11 +95,16 @@ paths['Rb'] = feffpath('Feff_ZnSe/feff_znrb.dat', **pathargs)
 trans = feffit_transform(rmin=1.5, rmax=3.0, kmin=3, kmax=13,
                          kw=2, dk=4, window='kaiser')
 
-# perform fit for each scatterer
-print( '|Scatterer|RedChi2|    S02     |   sigma2      |      E0     |      R       |R_phcor|')
-fmt = '|  %s     | %5.1f |%s|%s|%s|%s|%7.3f|'
 
-results = {}
+def fmt_par(par, n=4, sign=False, offset=0.0):
+    if sign:
+        out = f'{(offset+par.value):+.{n}f} ({par.stderr:.{n}f}) '
+    else:
+        out = f'{(offset+par.value):.{n}f} ({par.stderr:.{n}f}) '
+    return out
+
+results = []
+# perform fit for each scatterer
 for ix, scatterer in enumerate(('Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb')):
     dset  = feffit_dataset(data=znse_data, paths={scatterer: paths[scatterer]},
                            transform=trans)
@@ -115,12 +123,19 @@ for ix, scatterer in enumerate(('Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb'))
 
     redchi = out.chi2_reduced
 
-    _amp   = '%5.2f(%.2f) ' % (out.params['amp'].value, out.params['amp'].stderr)
-    _de0   = '%6.2f(%.2f) ' % (out.params['del_e0'].value,  out.params['del_e0'].stderr)
-    _ss2   = '%6.4f(%.4f) ' % (out.params['sig2'].value,  out.params['sig2'].stderr)
-    _r     = '%6.3f(%.3f) ' % (path1.reff+out.params['del_r'].value, out.params['del_r'].stderr)
-    print( fmt % (scatt, redchi, _amp, _ss2, _de0, _r, r_phcor))
-    results[scatterer] = out
-#endfor
+
+    _amp   = fmt_par(out.params['amp'], n=2)
+    _de0   = fmt_par(out.params['del_e0'], n=2, sign=True)
+    _ss2   = fmt_par(out.params['sig2'], n=4)
+    _r     = fmt_par(out.params['del_r'], n=4, offset=path1.reff)
+    results.append({'Scatterer': f'{scatt} ({atomic_number(scatt)})',
+                    'RedChi2': f'{redchi:.2f}',
+                    'S02': _amp,    'E0': _de0,
+                    'sigma2': _ss2,  'R': _r,
+                    'R_phcorr': f'{r_phcor:.4f}'})
+
+
+print(tabulate(results, headers='keys', tablefmt='grid'))
+
 
 ## end examples/feffit/doc_feffit6.py
