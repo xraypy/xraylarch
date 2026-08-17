@@ -1,77 +1,77 @@
 =================== FEFFIT RESULTS ====================
 [[Statistics]]
-  n_function_calls     = 65
+  n_function_calls     = 57
   n_variables          = 7
   n_data_points        = 144
   n_independent        = 17.1064802
-  chi_square           = 64.9851682
-  reduced chi_square   = 6.43004950
-  r-factor             = 0.01751179
-  Akaike info crit     = 36.8320484
-  Bayesian info crit   = 42.7082499
+  chi_square           = 12.9967944
+  reduced chi_square   = 1.28598623
+  r-factor             = 0.00962984
+  Akaike info crit     = 9.29991566
+  Bayesian info crit   = 15.1761171
  
-[[Variables]]
-  de0                  = -1.4741655 +/- 1.1341834  (init= 0.1000000)
-  delr_1               = -0.0293664 +/- 0.0107585  (init= 0.0000000)
-  delr_2               =  0.0478234 +/- 0.0083873  (init= 0.0000000)
-  n1                   =  5.5267534 +/- 1.2499525  (init= 6.0000000)
-  n2                   =  11.407633 +/- 1.5333836  (init= 12.000000)
-  sig2_1               =  0.0120204 +/- 0.0027069  (init= 0.0020000)
-  sig2_2               =  0.0125357 +/- 0.0011737  (init= 0.0020000)
+[[Parameters]]
+  n1                   =  4.5782993 +/- 0.7679652  (init= 6.0000000)
+  n2                   =  11.337027 +/- 1.1172974  (init= 12.000000)
+  s02                  =  0.7000000 (fixed)
+  de0                  = -1.2898576 +/- 0.8403550  (init= 0.1000000)
+  sig2_1               =  0.0100610 +/- 0.0018561  (init= 0.0020000)
+  delr_1               = -0.0281372 +/- 0.0077257  (init= 0.0000000)
+  sig2_2               =  0.0124806 +/- 8.5976e-4  (init= 0.0020000)
+  delr_2               =  0.0492370 +/- 0.0062031  (init= 0.0000000)
  
 [[Correlations]] (unreported correlations are <  0.100)
   n2, sig2_2           =  0.939
-  de0, delr_2          =  0.919
-  n1, sig2_1           =  0.897
-  de0, delr_1          =  0.582
-  delr_1, delr_2       =  0.539
-  delr_1, sig2_1       =  0.220
-  delr_1, n1           =  0.190
-  delr_2, sig2_2       =  0.184
-  de0, n1              = -0.178
-  delr_2, n2           =  0.159
-  delr_2, n1           = -0.156
-  de0, sig2_1          = -0.125
-  delr_2, sig2_1       = -0.107
-  n1, n2               =  0.106
+  de0, delr_2          =  0.920
+  n1, sig2_1           =  0.891
+  de0, delr_1          =  0.566
+  delr_1, delr_2       =  0.524
+  sig2_1, delr_1       =  0.218
+  n1, delr_1           =  0.192
+  sig2_2, delr_2       =  0.180
+  n1, de0              = -0.156
+  n2, delr_2           =  0.155
+  n1, delr_2           = -0.136
+  de0, sig2_1          = -0.108
  
 [[Dataset]]
-  unique_id            = 'da77uds7'
+  unique_id            = 'dhhm2h3e'
   fit space            = 'r'
   r-range              = 1.000, 3.200
   k-range              = 2.000, 13.500
   k window, dk         = 'kaiser', 3.000
-  paths used in fit    = ['feff_feo01.dat', 'feff_feo02.dat']
   k-weight             = 3
-  epsilon_k            = Array(mean=7.7074e-4, std=0.0018654)
-  epsilon_r            = 0.1661149
+  epsilon_k            = Array(mean=0.0012660, std=0.0036037)
+  epsilon_r            = 0.2728536
   n_independent        = 17.106
+  paths used in fit    = '/Users/Newville/Codes/xraylarch/examples/feffit/feff_feo01.dat'
+                       = '/Users/Newville/Codes/xraylarch/examples/feffit/feff_feo02.dat'
  
 [[Paths]]
- = Path 'pjuumtmhe' = Fe K Edge
-    feffdat file = feff_feo01.dat, from feff run ''
+ = Path 'pccm2fz7b' Fe K Edge
+    feffdat file = /Users/Newville/Codes/xraylarch/examples/feffit/feff_feo01.dat
     geometry  atom      x        y        z      ipot
-              Fe       0.0000,  0.0000,  0.0000  0 (absorber)
-               O       0.0000,  2.1387,  0.0000  1
+              Fe       0.00000,  0.00000,  0.00000  0 (absorber)
+               O       0.00000,  2.13870,  0.00000  1
      reff   =  2.1387000
      degen  =  1.0000000
-     n*s02  =  3.8687274 +/- 0.8749668  := 's02*n1'
-     e0     = -1.4741655 +/- 1.1341834  := 'de0'
-     r      =  2.1093336 +/- 0.0107585  := 'reff + delr_1'
-     deltar = -0.0293664 +/- 0.0107585  := 'delr_1'
-     sigma2 =  0.0120204 +/- 0.0027069  := 'sig2_1'
+     n*s02  =  3.2048095 +/- 0.5375757  := 's02*n1'
+     e0     = -1.2898576 +/- 0.8403550  := 'de0'
+     r      =  2.1105628 +/- 0.0077257  := 'reff + delr_1'
+     deltar = -0.0281372 +/- 0.0077257  := 'delr_1'
+     sigma2 =  0.0100610 +/- 0.0018561  := 'sig2_1'
 
- = Path 'p7etnrdqr' = Fe K Edge
-    feffdat file = feff_feo02.dat, from feff run ''
+ = Path 'panjsagzw' Fe K Edge
+    feffdat file = /Users/Newville/Codes/xraylarch/examples/feffit/feff_feo02.dat
     geometry  atom      x        y        z      ipot
-              Fe       0.0000,  0.0000,  0.0000  0 (absorber)
-              Fe       2.1387,  0.0000, -2.1387  2
+              Fe       0.00000,  0.00000,  0.00000  0 (absorber)
+              Fe       2.13870,  0.00000, -2.13870  2
      reff   =  3.0246000
      degen  =  1.0000000
-     n*s02  =  7.9853429 +/- 1.0733686  := 's02*n2'
-     e0     = -1.4741655 +/- 1.1341834  := 'de0'
-     r      =  3.0724234 +/- 0.0083873  := 'reff + delr_2'
-     deltar =  0.0478234 +/- 0.0083873  := 'delr_2'
-     sigma2 =  0.0125357 +/- 0.0011737  := 'sig2_2'
+     n*s02  =  7.9359189 +/- 0.7821082  := 's02*n2'
+     e0     = -1.2898576 +/- 0.8403550  := 'de0'
+     r      =  3.0738370 +/- 0.0062031  := 'reff + delr_2'
+     deltar =  0.0492370 +/- 0.0062031  := 'delr_2'
+     sigma2 =  0.0124806 +/- 8.5976e-4  := 'sig2_2'
 
 =======================================================

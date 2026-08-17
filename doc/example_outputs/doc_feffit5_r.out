@@ -1,40 +1,42 @@
 =================== FEFFIT RESULTS ====================
 [[Statistics]]
-  n_function_calls     = 65
+  n_function_calls     = 57
   n_variables          = 7
   n_data_points        = 144
   n_independent        = 17.1064802
-  chi_square           = 64.9851682
-  reduced chi_square   = 6.43004950
-  r-factor             = 0.01751179
-  Akaike info crit     = 36.8320484
-  Bayesian info crit   = 42.7082499
+  chi_square           = 12.9967944
+  reduced chi_square   = 1.28598623
+  r-factor             = 0.00962984
+  Akaike info crit     = 9.29991566
+  Bayesian info crit   = 15.1761171
  
-[[Variables]]
-  de0                  = -1.4741655 +/- 1.1341834  (init= 0.1000000)
-  delr_1               = -0.0293664 +/- 0.0107585  (init= 0.0000000)
-  delr_2               =  0.0478234 +/- 0.0083873  (init= 0.0000000)
-  n1                   =  5.5267534 +/- 1.2499525  (init= 6.0000000)
-  n2                   =  11.407633 +/- 1.5333836  (init= 12.000000)
-  sig2_1               =  0.0120204 +/- 0.0027069  (init= 0.0020000)
-  sig2_2               =  0.0125357 +/- 0.0011737  (init= 0.0020000)
+[[Parameters]]
+  n1                   =  4.5782993 +/- 0.7679652  (init= 6.0000000)
+  n2                   =  11.337027 +/- 1.1172974  (init= 12.000000)
+  s02                  =  0.7000000 (fixed)
+  de0                  = -1.2898576 +/- 0.8403550  (init= 0.1000000)
+  sig2_1               =  0.0100610 +/- 0.0018561  (init= 0.0020000)
+  delr_1               = -0.0281372 +/- 0.0077257  (init= 0.0000000)
+  sig2_2               =  0.0124806 +/- 8.5976e-4  (init= 0.0020000)
+  delr_2               =  0.0492370 +/- 0.0062031  (init= 0.0000000)
  
 [[Correlations]] (unreported correlations are <  0.500)
   n2, sig2_2           =  0.939
-  de0, delr_2          =  0.919
-  n1, sig2_1           =  0.897
-  de0, delr_1          =  0.582
-  delr_1, delr_2       =  0.539
+  de0, delr_2          =  0.920
+  n1, sig2_1           =  0.891
+  de0, delr_1          =  0.566
+  delr_1, delr_2       =  0.524
  
 [[Dataset]]
-  unique_id            = 'da77uds7'
+  unique_id            = 'dhhm2h3e'
   fit space            = 'r'
   r-range              = 1.000, 3.200
   k-range              = 2.000, 13.500
   k window, dk         = 'kaiser', 3.000
-  paths used in fit    = ['feff_feo01.dat', 'feff_feo02.dat']
   k-weight             = 3
-  epsilon_k            = Array(mean=7.7074e-4, std=0.0018654)
-  epsilon_r            = 0.1661149
+  epsilon_k            = Array(mean=0.0012660, std=0.0036037)
+  epsilon_r            = 0.2728536
   n_independent        = 17.106
+  paths used in fit    = '/Users/Newville/Codes/xraylarch/examples/feffit/feff_feo01.dat'
+                       = '/Users/Newville/Codes/xraylarch/examples/feffit/feff_feo02.dat'
 =======================================================
