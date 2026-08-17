@@ -5,15 +5,16 @@
 Larch
 =====================================
 
-Larch is an open-source library and set of :ref:`applications <larch_app_table>`
-for processing and analyzing X-ray absorption and fluorescence spectroscopy
-data and X-ray fluorescence and diffraction image data from synchrotron
-beamlines.  Larch provides a comprehensive set fo analysis tools for X-ray
-absorption fine-structure spectroscopy (XAFS), including both X-ray absorption
-near-edge spectroscopy (XANES) and extended X-ray absorption fine-structure
-spectroscopy (EXAFS).  Larch also provides visualization and analysis tools for
-X-ray fluorescence (XRF) spectra and XRF and X-ray diffraction (XRD) images as
-collected at scanning X-ray microprobe beamlines.
+Larch is an open-source Python library and set of :ref:`applications
+<larch_app_table>` for processing and analyzing X-ray absorption and
+fluorescence spectroscopy data and X-ray fluorescence and diffraction
+image data from synchrotron beamlines.  Larch provides a comprehensive
+set fo analysis tools for X-ray absorption fine-structure spectroscopy
+(XAFS), including both X-ray absorption near-edge spectroscopy (XANES)
+and extended X-ray absorption fine-structure spectroscopy (EXAFS).
+Larch also provides visualization and analysis tools for X-ray
+fluorescence (XRF) spectra and XRF and X-ray diffraction (XRD) images
+as collected at scanning X-ray microprobe beamlines.
 
 Larch is written in Python and relies on the excellent scientific
 python libraries including `numpy`_, `scipy`_, `h5py`_,
@@ -26,9 +27,10 @@ libraries that can be used by the broader X-ray and scientific
 programming communities.
 
 Larch includes a few GUI applications that provide user-friendly and
-interactive data visualization for many common X-ray analysis tasks. The most
-notable of these are :ref:`Larix <larix_app>`, :ref:`GSE
-Map Viewer <mapviewer_app>`, and :ref:`Larch XRF <larchxrf_app>`.
+interactive data visualization for many common X-ray analysis
+tasks. The most notable of these are :ref:`Larix <larix_app>`,
+:ref:`GSE Map Viewer <mapviewer_app>`, and :ref:`Larch XRF
+<larchxrf_app>`.
 
 Larch includes a Python-like macro language - the "Larch language" -
 for interactive and batch processing.  This macro language is an
@@ -70,30 +72,33 @@ the National Science Foundation - Advanced CyberInfrastructure
 
 **Table of Larch Applications**
 
-    These applications installed with Larch, in addition to a basic Python
-    library. Here, GUI = Graphical User Interface, CLI = Command Line
-    Interface, and `beta` indicates a work in progress. The Feff6L and
-    Feff8L codes are the open-source versions of Feff6 and Feff8, written
-    by the `Feff Project`_, and included with Larch by permission and with
-    license to redistribute.
+    These applications installed with Larch, in addition to a basic
+    Python library. Here, the Application Type will be GUI = Graphical
+    User Interface, CLI = Command Line Interface, or Broswer to
+    indictate that it runs in a browser. `beta` indicates a work in
+    progress, and `dep` indicates that it is deprecated and not recommended
+    for primary use.  The Feff6L and Feff8L codes are the open-source
+    versions of Feff6 and Feff8, written by the `Feff Project`_, and
+    included with Larch by permission and with license to
+    redistribute.
 
 .. csv-table::
     :delim: |
     :header-rows: 1
     :widths: 20 15 65
 
-    Application Name                           | GUI/CLI    | Description
-    :ref:`Larix <larix_app>`                   | GUI        | XAFS  Processing and Analysis: XANES, EXAFS, run Feff, Feff-fitting, more.
-    :ref:`XRFMap Viewer <mapviewer_app>`       | GUI        | XRF Map Viewer for GSECARS-style X-ray microprobe data.
-    :ref:`Larch_XRF <larchxrf_app>`            | GUI        | Display and Analyze XRF Spectra.
-    :ref:`Larch_XRD1D <larchxrd1d_app>`        | GUI        | Display and work with 1-D XRD patterns
-    `sitka spruce`_                            | GUI        | Data Browser for HDF5 and Zarr data
-    Jupyter Lab                                | Browser    | Run Jupyter Lab in a browser using the Python installed with X-ray Larch.
-    :ref:`larch <larchcli_app>`                | CLI        | simple shell command-line interface
-    :ref:`Larch GUI <larchgui_app>`            | GUI        | enhanced command-line interface with data browser
-    :ref:`feff6l <feff6l_app>`                 | CLI        | Feff 6 EXAFS calculations
-    :ref:`feff8l <feff8l_app>`                 | CLI        | Feff 8 EXAFS calculations (no XANES)
-    qtrixs                                     | GUI `beta` | Display RIXS planes, take profiles
+    Application Name                      | Type       | Description
+    :ref:`Larix <larix_app>`              | GUI        | XAFS  Processing and Analysis: XANES, EXAFS, run Feff, Feff-fitting, more.
+    :ref:`XRFMap Viewer <mapviewer_app>`  | GUI        | XRF Map Viewer for GSECARS-style X-ray microprobe data.
+    :ref:`Larch_XRF <larchxrf_app>`       | GUI        | Display and Analyze XRF Spectra.
+    :ref:`Larch_XRD1D <larchxrd1d_app>`   | GUI `beta` | Display and work with 1-D XRD patterns
+    `sitka spruce`_                       | GUI `beta` | Data Browser for HDF5 and Zarr data
+    qtrixs                                | GUI `beta` | Display RIXS planes, take profiles
+    Jupyter Lab                           | Browser    | Run Jupyter Lab in a browser using the Python installed with X-ray Larch.
+    :ref:`feff8l <feff8l_app>`            | CLI        | Feff 8 EXAFS calculations (no XANES)
+    :ref:`feff6l <feff6l_app>`            | CLI `dep`  | Feff 6 EXAFS calculations
+    :ref:`larch <larchcli_app>`           | CLI `dep`  | simple shell command-line interface
+    :ref:`Larch GUI <larchgui_app>`       | GUI `dep`  | enhanced command-line interface with data browser
 
 
 .. _contents:
