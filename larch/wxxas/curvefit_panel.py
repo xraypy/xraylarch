@@ -191,6 +191,7 @@ class CurveFitResultFrame(wx.Frame):
         self.datasets = {}
         self.form = {}
         self.larch_eval = self.fit_frame.larch_eval
+        self.report_frame = None
         self.nfit = 0
         self.createMenus()
         self.build()
@@ -268,9 +269,6 @@ class CurveFitResultFrame(wx.Frame):
 
         pack(ppanel, psizer)
 
-#         wids['load_model'] = Button(panel, 'Load this Model for Fitting',
-#                                     size=(250, -1), action=self.onLoadModel)
-
         wids['plot_choice'] = Button(panel, 'Plot This Fit',
                                      size=(125, -1), action=self.onPlot)
 
@@ -292,11 +290,14 @@ class CurveFitResultFrame(wx.Frame):
         sizer.Add(wids['model_desc'],  (irow, 0), (1, 6), LEFT)
 
         self.wids['use_model'] = Button(panel, 'Load This Model for Fitting',
-                                       size=(275, -1), action=self.onCopyModel)
+                                       size=(250, -1), action=self.onCopyModel)
 
         self.wids['copy_params'] = Button(panel, 'Update Model with best-fit values',
-                                          size=(275, -1), action=self.onCopyParams)
+                                          size=(250, -1), action=self.onCopyParams)
 
+        self.wids['show_fitreport'] = Button(panel, 'Show Fit Report',
+                                          size=(250, -1), action=self.onShowFitReport)
+        
         irow += 1
         sizer.Add(self.wids['use_model'], (irow, 0), (1, 2), LEFT)
         sizer.Add(self.wids['copy_params'], (irow, 2), (1, 3), LEFT)
@@ -323,6 +324,7 @@ class CurveFitResultFrame(wx.Frame):
 
         sizer.Add(title, (irow, 0), (1, 1), LEFT)
         sizer.Add(subtitle, (irow, 1), (1, 1), LEFT)
+        sizer.Add(self.wids['show_fitreport'], (irow, 2), (1, 2), LEFT)        
 
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
 
@@ -331,7 +333,6 @@ class CurveFitResultFrame(wx.Frame):
         xw = (170, 75, 75, 110, 115, 115, 100)
         if uname=='darwin':
             xw = (150, 70, 70, 90, 95, 95, 95)
-
 
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
         sview.AppendTextColumn('Label',  width=xw[0])
@@ -366,13 +367,13 @@ class CurveFitResultFrame(wx.Frame):
         pview.SetFont(self.font_fixedwidth)
         self.wids['paramsdata'] = []
 
-        xw = (180, 140, 150, 250)
+        xw = (180, 135, 135, 270)
         if uname=='darwin':
             xw = (180, 110, 110, 250)
         pview.AppendTextColumn('Parameter',  width=xw[0])
         pview.AppendTextColumn('Best Value', width=xw[1])
-        pview.AppendTextColumn('1-\u03c3 Uncertainty', width=xw[2])
-        pview.AppendTextColumn('Initial value or constraint expression',     width=xw[3])
+        pview.AppendTextColumn('Stderr (1\u03c3)', width=xw[2])
+        pview.AppendTextColumn('Initial value/Constraint',     width=xw[3])
 
         for col in range(4):
             this = pview.Columns[col]
@@ -409,9 +410,9 @@ class CurveFitResultFrame(wx.Frame):
         cview = self.wids['correl'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         cview.SetFont(self.font_fixedwidth)
 
-        cview.AppendTextColumn('Parameter 1',    width=150)
-        cview.AppendTextColumn('Parameter 2',    width=150)
-        cview.AppendTextColumn('Correlation',    width=150)
+        cview.AppendTextColumn('Parameter 1',    width=180)
+        cview.AppendTextColumn('Parameter 2',    width=180)
+        cview.AppendTextColumn('Correlation',    width=200)
 
         for col in (0, 1, 2):
             this = cview.Columns[col]
@@ -420,7 +421,7 @@ class CurveFitResultFrame(wx.Frame):
             if col == 2:
                 align = wx.ALIGN_RIGHT
             this.Alignment = this.Renderer.Alignment = align
-        cview.SetMinSize((475, 150))
+        cview.SetMinSize((625, 150))
 
         irow += 1
         sizer.Add(cview, (irow, 0), (1, 5), LEFT)
@@ -633,7 +634,7 @@ class CurveFitResultFrame(wx.Frame):
             name1, name2 = namepair.split('$$')
             self.wids['correl'].AppendItem((name1, name2, "% .4f" % corval))
 
-
+        
     def onCopyModel(self, evt=None):
         dataset = evt.GetString()
         dgroup = self.datasets.get(evt.GetString(), None)
@@ -641,9 +642,30 @@ class CurveFitResultFrame(wx.Frame):
         self.fit_frame.use_modelresult(modelresult=result, dgroup=dgroup)
 
     def onCopyParams(self, evt=None):
-        fit = self.get_fitresult()
-        self.fit_frame.update_start_values(fit.result.params)
+        fitresult = self.get_fitresult()
+        self.fit_frame.update_start_values(fitresult.result.params)
 
+    def onShowFitReport(self, event=None):
+        fitresult = self.get_fitresult()
+        text = fitresult.result.fit_report()
+        fname = self.datagroup.filename
+        label = fitresult.label
+        title = f'Report for {fname} fit "{label}"'
+        
+        default_filename = 'curvefit_report.txt'
+        wildcard = 'Text Files (*.txt)|*.txt'
+        try:
+            self.report_frame.set_text(text)
+            self.report_frame.SetTitle(title)
+            self.report_frame.default_filename = default_filename
+            self.report_frame.wildcard = wildcard
+        except:
+            self.report_frame = ReportFrame(parent=self.parent,
+                                            text=text, title=title,
+                                            default_filename=default_filename,
+                                            wildcard=wildcard)
+
+        
     def ShowDataSet(self, evt=None):
         dataset = evt.GetString()
         group = self.datasets.get(evt.GetString(), None)
