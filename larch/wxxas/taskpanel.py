@@ -520,6 +520,10 @@ class TaskPanel(wx.Panel):
     def larch_get(self, sym):
         """get value from larch symbol table"""
         return self.controller.larch.symtable.get_symbol(sym)
+    
+    def larch_set(self, sym, val):
+        """set a symbol to a value in larch symbol table"""
+        return self.controller.larch.symtable.set_symbol(sym, val)
 
     def build_display(self, **titleopts):
         """build display"""
