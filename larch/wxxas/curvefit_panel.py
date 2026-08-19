@@ -641,8 +641,8 @@ class CurveFitResultFrame(wx.Frame):
         self.fit_frame.use_modelresult(modelresult=result, dgroup=dgroup)
 
     def onCopyParams(self, evt=None):
-        result = self.get_fitresult()
-        self.fit_frame.update_start_values(result.result.params)
+        fit = self.get_fitresult()
+        self.fit_frame.update_start_values(fit.result.params)
 
     def ShowDataSet(self, evt=None):
         dataset = evt.GetString()
@@ -1027,8 +1027,7 @@ class CurveFitParamsPanel(wx.Panel):
         self.panel.irow = 1
         self.parwids = {}
         self.update()
-        if event is not None:
-            event.Skip()
+
 
     def set_init_values(self, params):
         for pname, par in params.items():
@@ -1867,15 +1866,24 @@ class CurveFitPanel(TaskPanel):
 
     def update_start_values(self, params):
         """fill parameters with best fit values"""
-        allparwids = {}
+           
         for comp in self.fit_components.values():
             if comp.usebox is not None and comp.usebox.IsChecked():
                 for name, parwids in comp.parwids.items():
-                    allparwids[name] = parwids
-
-        for pname, par in params.items():
-            if pname in allparwids:
-                allparwids[pname].value.SetValue(par.value)
+                    if name in params:
+                        par = params[name]
+                        parwids.value.SetValue(par.value)
+                        parwids.minval.SetValue(par.min)
+                        parwids.maxval.SetValue(par.max)
+                        varstr = 'vary' if par.vary else 'fix'
+                        if par.expr is not None:
+                            varstr = 'constrain'
+                            parwids.expr.SetValue(par.expr)
+                        parwids.vary.SetStringSelection(varstr)
+                        parwids.onVaryChoice()
+                        
+        self.larch_set('curvefit_params', params)        
+        self.params_panel.update()
 
     def autosave_modelresult(self, result, fname=None):
         """autosave model result to user larch folder"""
