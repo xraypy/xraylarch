@@ -8,7 +8,7 @@ import sys
 import time
 
 from functools import partial
-
+from pathlib import Path
 import numpy as np
 from numpy.polynomial.chebyshev import chebfit, chebval
 
@@ -467,7 +467,7 @@ class XRD1DFrame(wx.Frame):
                 ExceptionPopup(self, title, message)
             else:
                 img =  tifffile.imread(sfile)
-                self.display_xrd_image(img, label=sfile)
+                self.display_xrd_image(img, label=Path(sfile).name)
 
     def display_xrd_image(self, img, label='Image'):
         if self.mask is not None:
@@ -487,7 +487,7 @@ class XRD1DFrame(wx.Frame):
         img[np.where(img<-1)] = -1
 
         imd = self.get_imdisplay()
-        imd.display(img[::-1, :], olormap='viridis', contrast_level='0.10')
+        imd.display(img, olormap='bone', contrast_level='0.10')
 
         q, ix = self.fai.integrate1d(img, 2048, method='csr',
                                      # radial_range=(0, 8),
