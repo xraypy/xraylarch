@@ -20,7 +20,12 @@ from scipy.interpolate import UnivariateSpline
 from lmfit import Parameters, Parameter
 
 from xraydb import atomic_mass, atomic_symbol
-from pyshortcuts import fix_varname
+from pyshortcuts import fix_varname, read_textfile
+
+try:
+    from feffdb import FeffDatabase
+except ImportError:
+    FeffDatabase = None
 
 from larch.symboltable import Group
 from larch.larchlib import isNamedClass
@@ -40,6 +45,16 @@ FDAT_ARRS = ('real_phc', 'mag_feff', 'pha_feff', 'red_fact',
 FEFFDAT_VALUES = ('reff', 'nleg', 'degen', 'rmass', 'rnorman',
                   'gam_ch', 'rs_int', 'vint', 'vmu', 'vfermi')
 
+FEFF_DB = None
+
+
+def pathname_valid(fname):
+    if fname in ('', None):
+        return False
+    return (Path(fname).exists()  or
+            (fname.startswith('feffdb[') and fname.endswith(']')))
+
+
 class FeffDatFile(Group):
     def __init__(self, filename=None,  **kws):
         kwargs = dict(name='feff.dat: %s' % filename)
@@ -50,7 +65,7 @@ class FeffDatFile(Group):
         self.__rmass = None
         self.__geometry = None
         Group.__init__(self,  **kwargs)
-        if filename not in ('', None) and Path(filename).exists():
+        if pathname_valid(filename):
             self._read(filename)
 
     def __repr__(self):
@@ -172,21 +187,31 @@ class FeffDatFile(Group):
 
 
     def _read(self, filename):
-        try:
-            with open(filename, 'r') as fh:
-                lines = fh.readlines()
-        except:
-            print(f"Error reading Feff Data file '{filename}'")
-            return
+        if Path(filename).exists():
+            fefftext = read_textfile(filename)
+        elif (filename.startswith('feffdb[') and filename.endswith(']')):
+            global FEFF_DB
+            if FEFF_DB is None and FeffDatabase is not None:
+                FEFF_DB = FeffDatabase()
+            try:
+                fefftext = FEFF_DB.get_feffdat(filename[7:-1])
+            except Exception:
+                print(f"Error reading Feff Database '{filename}'")
+                return
+            if fefftext is None:
+                print(f"could not find entry in Feff Database '{filename}'")
+                return
+
+
         self.filename = filename
         mode = 'header'
         self.potentials, self.geom = [], []
         data = []
         pcounter = 0
         iline = 0
-        for line in lines:
+        for line in fefftext.split('\n'):
             iline += 1
-            line = line[:-1].strip()
+            line = line.strip()
             if line.startswith('#'): line = line[1:]
             line = line.strip()
             if iline == 1:
@@ -200,7 +225,9 @@ class FeffDatFile(Group):
                 mode = 'path'
                 continue
             #
-            if mode == 'header' and (re.match(r'^Abs\b', line) or re.match(r'^Pot\s+\d+\b', line)) and re.search(r'\bZ\s*=', line):
+            if (mode == 'header' and
+                (re.match(r'^Abs\b', line) or re.match(r'^Pot\s+\d+\b', line)) and
+                re.search(r'\bZ\s*=', line)):
                 words = line.replace('=', ' ').split()
                 ipot, z, rmt, rnm = (0, 0, 0, 0)
                 words.pop(0)
@@ -284,7 +311,7 @@ class FeffPathGroup(Group):
 
         self.__def_degen = 1
 
-        if filename not in ('', None) and Path(filename).exists():
+        if filename not in ('', None):
             self._feffdat = FeffDatFile(filename=filename)
             xpath = Path(filename).absolute()
             self.filename = xpath.as_posix()
@@ -817,8 +844,9 @@ def feffpath(filename='', label='', feffrun='', s02=None, degen=None,
     ---------
         a FeffPath Group.
     """
-    if filename != '' and not Path(filename).exists():
+    if not pathname_valid(filename):
         raise ValueError(f"Feff Path file '{filename:s}' not found")
+
     return FeffPathGroup(filename=filename, label=label, feffrun=feffrun,
                          s02=s02, degen=degen, e0=e0, ei=ei, deltar=deltar,
                          sigma2=sigma2, third=third, fourth=fourth, use=use)
