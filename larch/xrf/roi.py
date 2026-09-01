@@ -104,8 +104,12 @@ class ROI(Group):
                                      data[self.right+1:irmax])).mean()
 
         #total and net cts
+        # the ROI covers the inclusive channel range [left, right], that is
+        # (right-left+1) channels, so the mean background must be scaled by
+        # that same number of channels.
+        nchans = self.right - self.left + 1
         self.total  = data[self.left:self.right+1].sum()
-        self.net    = self.total - bgr_counts*(self.right-self.left)
+        self.net    = self.total - bgr_counts*nchans
         out = self.total
         if net:
             out = self.net

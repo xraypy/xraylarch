@@ -4,4 +4,5 @@ pytest test_athena_addgroup.py test_basic_processing.py \
  test_larchexamples_xafs.py test_larchexamples_xray.py \
  test_math_deglitch.py test_math_utils.py test_plot_rixsdata_import.py \
  test_read_beamlinedata.py \
- test_read_xafsdata.py test_symbol_callbacks.py test_xas_data_source.py
+ test_read_xafsdata.py test_symbol_callbacks.py test_xas_data_source.py \
+ test_xrf_roi.py
