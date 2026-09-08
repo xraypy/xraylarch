@@ -82,7 +82,7 @@ class LarchApp:
         self.wx_inspect = args.wx_inspect
         self.run_mode = args.run_mode
         if self.is_wxapp:
-            if wx is not None:
+            if wx is None:
                 print(f'{self.name} requires wxPython, try `pip install "xraylarch[wxgui]"`')
                 return False
             set_locale()
