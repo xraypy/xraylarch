@@ -8,28 +8,21 @@ from datetime import datetime
 import ast
 import traceback
 import inspect
+import yaml
+import tomllib
+
 from collections import namedtuple
 from pathlib import Path
 
 import ctypes
 import ctypes.util
 
+
 from .symboltable import Group, isgroup
 from .site_config import user_larchdir
 from .closure import Closure
 from .utils import uname, bindir, get_cwd, read_textfile
 
-import yaml
-try:
-    import tomllib
-except ImportError:
-    import tomli as tomllib
-
-try:
-    import tomli_w
-    HAS_TOMLI_W = True
-except:
-    HAS_TOMLI_W = False
 
 HAS_TERMCOLOR = False
 try:
@@ -458,14 +451,8 @@ def save_config(conffile, config, form='yaml'):
     compare read_confif(conffile) which will read this value
     """
     cfile = Path(conffile).absolute()
-    if form == 'toml':
-        if HAS_TOMLI_W:
-            dat = tomli_w.dumps(config)
-        else:
-            dat = tomllib.dumps(config)
-    else:
-        dat = yaml.dump(config, default_flow_style=None,
-                        indent=5, sort_keys=False)
+    dat = yaml.safe_dump(config, default_flow_style=None,
+                         indent=5, sort_keys=False)
     with open(conffile, 'wb') as fh:
         fh.write(dat.encode('utf-8'))
 
