@@ -61,8 +61,6 @@ dependencies = ["numpy>=2.2.0",
     "packaging",
     "pip",
     "pyyaml",
-    "tomli",
-    "tomli_w",
     "termcolor",
     "dill",
     "imageio",
@@ -106,3 +104,13 @@ jupyter = ["jupyter_core>=5.0", "jupyter_client", "jupyter_server", "notebook", 
         "ipywidgets", "plotly", "bokeh", "py3dmol"]
 larix = ["xraylarch[wxgui, jupyter]"]
 all = ["xraylarch[dev, doc, wxgui, jupyter, qtgui, epics]"]
+
+
+
+[tool.ruff]
+exclude = ['larch/__init__.py', 'larch/version.py',
+           'sandbox','doc', 'dist', 'build', 'examples']
+line-length = 95
+
+[tool.ruff.lint]
+ignore = ['BLE001', 'I001']  # 'except Exception, order of imports
