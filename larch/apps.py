@@ -2,30 +2,27 @@
 main Larch Applications
 """
 import os
-import time
 import sys
 import locale
-import inspect
 import shutil
 from argparse import ArgumentParser
 from pathlib import Path
 from threading import Thread
-from pyshortcuts import make_shortcut, ico_ext, get_folders
+from pyshortcuts import get_folders, ico_ext, make_shortcut
 
 from .site_config import icondir, uname
-from .version import (__date__, make_banner, check_larchversion,
-                      upgrade_nightly_build, upgrade_from_pypi)
 
-HAS_WXPYTHON = False
+from .version import (check_larchversion, make_banner,
+                      upgrade_from_pypi, upgrade_nightly_build)
+
 try:
     import wx
-    HAS_WXPYTHON = True
 except ImportError:
-    pass
+    wx = None
 
 def use_mpl_wxagg():
     """import matplotlib, set backend to wxAgg"""
-    if HAS_WXPYTHON:
+    if wx is not None:
         import matplotlib
         try:
             matplotlib.use('WXAgg', force=True)
@@ -33,13 +30,13 @@ def use_mpl_wxagg():
             pass
 
 def build_mpl_fontcache():
-    from matplotlib import font_manager
+    pass
 
 def set_locale():
     """set locale to 'C' for these applications"""
     locale.setlocale(locale.LC_ALL, 'C')
 
-class LarchApp(object):
+class LarchApp:
     """wrapper for Larh application"""
     def __init__(self, name, script, icon=None, description=None,
                  is_wxapp=True, filetype=None):
@@ -85,7 +82,7 @@ class LarchApp(object):
         self.wx_inspect = args.wx_inspect
         self.run_mode = args.run_mode
         if self.is_wxapp:
-            if not HAS_WXPYTHON:
+            if wx is not None:
                 print(f'{self.name} requires wxPython, try `pip install "xraylarch[wxgui]"`')
                 return False
             set_locale()
@@ -285,9 +282,7 @@ def run_larch():
             print(vinfo.message)
         return
 
-    with_wx = HAS_WXPYTHON and (not args.nowx)
-
-    #
+    with_wx = (wx is not None)  and (not args.nowx)
 
     # create desktop icons
     if args.makeicons:
@@ -300,9 +295,8 @@ def run_larch():
                 shutil.rmtree(larchdir)
             except PermissionError:
                 print("Cannot remove folder ", larchdir)
-                pass
 
-        for n, app in LarchApps.items():
+        for app in LarchApps.values():
             app.make_desktop_shortcut()
         font_thread.join()
         return
