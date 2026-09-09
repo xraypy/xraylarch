@@ -18,6 +18,7 @@ from pathlib import Path
 from pyshortcuts import uname, fix_filename
 import os
 import sys
+
 HAS_WXPYTHON = False
 try:
     import wx
@@ -68,6 +69,19 @@ def get_font(larger=0, smaller=0, serif=False, fixed_width=False):
     for i in range(smaller):
         fnt = fnt.Smaller()
     return fnt
+
+def set_dock_icon(icnspath):
+    """try to set dock icon for Darwin"""
+    if uname == 'darwin':
+        try:
+            from AppKit import NSApplication, NSImage, NSData
+            icon_bytes = icnspath.read_bytes()
+            nsdata = NSData.dataWithBytes_length_(icon_bytes, len(icon_bytes))
+            nsimage = NSImage.alloc().initWithData_(nsdata)
+            nsapp = NSApplication.sharedApplication()
+            nsapp.setApplicationIconImage_(nsimage)
+        except Exception:
+            pass
 
 
 def DarwinHLine(parent, size=(700, 3)):
