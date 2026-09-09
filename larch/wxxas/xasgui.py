@@ -45,7 +45,8 @@ from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
                          set_color, GUI_COLORS, CEN, LEFT, FRAMESTYLE,
                          flatnotebook, LarchUpdaterDialog, GridPanel, CIFFrame,
                          Structure2FeffFrame, FeffResultsFrame, LarchWxApp,
-                         OkCancel, ExceptionPopup, get_font)
+                         OkCancel, ExceptionPopup, get_font,
+                         set_dock_icon)
 
 
 from larch.wxlib.plotter import get_display, save_plot_config
@@ -452,6 +453,9 @@ class LarixFrame(wx.Frame):
 
         iconfile = Path(icondir, ICON_FILE).as_posix()
         self.SetIcon(wx.Icon(iconfile, wx.BITMAP_TYPE_ICO))
+        if uname == 'darwin':
+            set_dock_icon(Path(icondir,
+                               ICON_FILE.replace('.ico', '.icns')))
 
         self.timers = {'pin': wx.Timer(self),
                        'autosave': wx.Timer(self)}
