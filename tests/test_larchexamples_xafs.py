@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """ Tests of Larch Scripts  """
 import unittest
+import copy
 from pathlib import Path
 import time
 import ast
@@ -198,6 +199,53 @@ class TestScripts(TestCase):
         assert(len(self.session.get_errors()) == 0)
         self.isNear('_ave', 0.005030, places=4)
         self.isNear('_dlo', 0.000315, places=4)
+
+    def test18_feffit_save_fit_stale_paths(self):
+        """Regression test for the wxxas FeffitResultFrame.onSaveFit bug where
+        saving fit results raised AttributeError('chiq_re')/AttributeError('chir_mag')
+        or TypeError('NoneType' object is not subscriptable).
+
+        This happens when the FeffPathGroup objects held by a fit's dataset get
+        replaced (eg. by rebuilding the fit model in the GUI after running the fit)
+        with objects that have never been through ff2chi()/save_outputs(), so they
+        lack the chi/chir/chiq arrays that onSaveFit reads. The fix is for
+        onSaveFit to call dset.prepare_fit()/_residual()/save_outputs() (as
+        onPlot already did) before reading any path arrays.
+        """
+        self.runscript('doc_feffit1.lar', dirname=base_dir / 'examples' / 'feffit')
+        assert(len(self.session.get_errors()) == 0)
+
+        out  = self.session.run('out')
+        dset = out.datasets[0]
+
+        # simulate paths that were rebuilt/replaced after the fit ran, so they
+        # have never been through ff2chi()/save_outputs()
+        dset.paths = {label: path.__copy__() for label, path in dset.paths.items()}
+
+        label0 = next(iter(dset.paths))
+        stale_path = dset.paths[label0]
+        self.assertIsNone(stale_path.chi)
+        with self.assertRaises(AttributeError):
+            stale_path.chir_mag
+        with self.assertRaises(AttributeError):
+            stale_path.chiq_re
+
+        # this is exactly the sequence onSaveFit now runs before extracting
+        # output arrays (matching what onPlot already did)
+        dset.prepare_fit(out.params)
+        dset._residual(out.params)
+        dset.save_outputs()
+
+        form_to_yname = {'chik': 'chi', 'chikw': 'chi', 'chir_mag': 'chir_mag',
+                         'chir_re': 'chir_re', 'chiq': 'chiq_re'}
+        for label, path in dset.paths.items():
+            for form, yname in form_to_yname.items():
+                xname = 'r' if form.startswith('chir') else 'k'
+                xarr = getattr(dset.data, xname)
+                nx = len(xarr)
+                yarr = getattr(path, yname, None)
+                self.assertIsNotNone(yarr, f"path '{label}' missing '{yname}' for form '{form}'")
+                self.assertTrue(len(yarr) >= nx)
 
 
 def test_remove_files():
