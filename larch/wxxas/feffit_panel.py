@@ -2462,6 +2462,9 @@ class FeffitResultFrame(wx.Frame):
         buff.append('#' + '---'*25)
 
         ds0 = result.datasets[0]
+        ds0.prepare_fit(result.params)
+        ds0._residual(result.params)
+        ds0.save_outputs()
 
         xname = 'r' if form.startswith('chir') else 'k'
         yname = form
