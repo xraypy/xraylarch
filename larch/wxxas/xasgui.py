@@ -45,8 +45,12 @@ from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
                          set_color, GUI_COLORS, CEN, LEFT, FRAMESTYLE,
                          flatnotebook, LarchUpdaterDialog, GridPanel, CIFFrame,
                          Structure2FeffFrame, FeffResultsFrame, LarchWxApp,
-                         OkCancel, ExceptionPopup, get_font,
-                         set_dock_icon)
+                         OkCancel, ExceptionPopup, get_font)
+
+try:
+    from wxutils import SetAppDisplayName, SetDockIcon
+except:
+    SetAppDisplayName = SetDockIcon = None
 
 
 from larch.wxlib.plotter import get_display, save_plot_config
@@ -88,6 +92,7 @@ CEN |=  wx.ALL
 FILE_WILDCARDS = "Data Files|*.dat;*.DAT;*.xdi;*.txt;*.TXT;*.prj;*.sp*c;*.h*5;*.larix;*.0*;*.1*;*.2*;*.3*;*.4*;*.5*;*.6*;*.7*;*.8*;*.9*|All files (*.*)|*.*"
 
 ICON_FILE = 'onecone.ico'
+ICON_FILE_MAC = 'onecone.icns'
 LARIX_SIZE = (1050, 850)
 LARIX_MINSIZE = (500, 250)
 PLOTWIN_SIZE = (550, 550)
@@ -453,9 +458,8 @@ class LarixFrame(wx.Frame):
 
         iconfile = Path(icondir, ICON_FILE).as_posix()
         self.SetIcon(wx.Icon(iconfile, wx.BITMAP_TYPE_ICO))
-        if uname == 'darwin':
-            set_dock_icon(Path(icondir,
-                               ICON_FILE.replace('.ico', '.icns')))
+        if uname == 'darwin' and SetDockIcon is not None:
+            SetDockIcon(Path(icondir, ICON_FILE_MAC))
 
         self.timers = {'pin': wx.Timer(self),
                        'autosave': wx.Timer(self)}
@@ -464,6 +468,8 @@ class LarixFrame(wx.Frame):
         self.cursor_dat = {}
 
         self.subframes = {}
+        if SetAppDisplayName is not None:
+            SetAppDisplayName('Larix')
         self.SetTitle(LARIX_TITLE)
         self.SetSize(LARIX_SIZE)
         self.SetMinSize(LARIX_MINSIZE)
