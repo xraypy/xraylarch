@@ -723,9 +723,12 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         self.update_config(conf)
         opts = {'auto_step': True, 'edge_step': None}
         name = str(name)
+
         def copy_attrs(*args):
             for a in args:
                 opts[a] = conf[a]
+
+
         if name == 'all':
             copy_attrs('e0', 'auto_e0', 'show_e0',
                        'energy_shift', 'pre1', 'pre2',
@@ -751,10 +754,12 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
         elif name == 'energy_ref':
             copy_attrs('energy_ref')
 
+        print("OnCopParam ", name, opts)
         for checked in self.controller.filelist.GetCheckedStrings():
             groupname = self.controller.file_groups[str(checked)]
             grp = self.controller.get_group(groupname)
             if grp != dgroup and not getattr(grp, 'is_frozen', False):
+                print("Update Config ", grp.filename, opts)
                 self.update_config(opts, dgroup=grp)
                 for key, val in opts.items():
                     if hasattr(grp, key):
@@ -902,7 +907,7 @@ plot({groupname}.energy, {groupname}.norm_mback, label='norm (MBACK)',
             self.stale_groups = None
         self.onPlotEither(process=False)
 
-    def process(self, dgroup=None, force_mback=False, force=False, use_form=True, **kws):
+    def process(self, dgroup=None, force_mback=False, force=False, use_form=True):
         """
         handle process (pre-edge/normalize) of XASS data from XAS form
         """
