@@ -968,10 +968,10 @@ class ColumnDataFileFrame(wx.Frame) :
         filename = path.name
         path = path.as_posix()
         reader, text = guess_filereader(path, return_text=True)
+
         if reader == 'read_specfile':
             if not is_specfile(path, require_multiple_scans=True):
                 reader = 'read_ascii'
-
         if reader in ('read_xdi', 'read_gsexdi'):
             # first check for Nans and Infs
             nan_result = look_for_nans(path)
@@ -1121,7 +1121,7 @@ class ColumnDataFileFrame(wx.Frame) :
         dtype = getattr(self.workgroup, 'datatype', 'xytype')
         if dtype == 'xas':
             if self.reader == 'read_gsescan':
-                buff.append("{group}.xplot = {group}.x")
+                buff.append("{group}.xplot = {group}.xdat[:]")
             buff.append("{group}.energy = {group}.xplot[:]")
             buff.append("{group}.mu = {group}.yplot[:]")
             buff.append("{group}.xasmode = '%s'" % (xasmode))
