@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.typing import ArrayLike, NDArray
 from scipy.interpolate import CubicSpline
 
 from larch import Group
@@ -8,7 +9,9 @@ from larch.math import (index_of, interp1d,
 from .xafsutils import ktoe, etok, TINY_ENERGY
 
 @Make_CallArgs(["energy", "mu"])
-def sort_xafs(energy, mu=None, group=None, fix_repeats=True, remove_nans=True, overwrite=True):
+def sort_xafs(energy: ArrayLike | Group, mu: ArrayLike | None = None,
+              group: Group | None = None, fix_repeats: bool = True,
+              remove_nans: bool = True, overwrite: bool = True) -> None:
     """sort energy, mu pair of XAFS data so that energy is monotonically increasing
 
     Arguments
@@ -33,6 +36,8 @@ def sort_xafs(energy, mu=None, group=None, fix_repeats=True, remove_nans=True, o
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
                                          fcn_name='sort_xafs')
+    energy = np.asarray(energy)
+    mu = np.asarray(mu)
 
     indices = np.argsort(energy)
     new_energy  = energy[indices]
@@ -54,9 +59,12 @@ def sort_xafs(energy, mu=None, group=None, fix_repeats=True, remove_nans=True, o
 
 
 @Make_CallArgs(["energy", "mu"])
-def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
-               pre_step=2, xanes_step=None, exafs1=15, exafs2=None,
-               exafs_kstep=0.05, method='boxcar'):
+def rebin_xafs(energy: ArrayLike | Group, mu: ArrayLike | None = None,
+               group: Group | None = None, e0: float | None = None,
+               pre1: float | None = None, pre2: float = -30,
+               pre_step: float = 2, xanes_step: float | None = None,
+               exafs1: float = 15, exafs2: float | None = None,
+               exafs_kstep: float = 0.05, method: str = 'boxcar') -> None:
     """rebin XAFS energy and mu to a 'standard 3 region XAFS scan'
 
     Arguments
@@ -151,7 +159,7 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
     # pre:   (pre1 -> pre2) with pre_step (in E-space)
     # xanes: (pre2 -> exafs1) with xanes_step (in E-space)
     # exafs: (exafs1 -> exafs2) with exafs_kstep (in k-space)
-    en = []
+    elist: list[float] = []
     for start, stop, step, isk in ((pre1, pre2, pre_step, False),
                                    (pre2, exafs1, xanes_step, False),
                                    (exafs1, exafs2, exafs_kstep, True)):
@@ -166,12 +174,36 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
         reg = np.linspace(start, stop, npts)
         if isk:
             reg = ktoe(reg)
-        en.extend(e0 + reg[:-1])
+        elist.extend(e0 + reg[:-1])
 
+    energy = np.asarray(energy)
+    mu = np.asarray(mu)
+    en = np.asarray(elist, dtype=float)
+    mu_out: NDArray[np.float64] | list[float] | None = None
+    err_out: NDArray[np.float64] | list[float] | None = None
+    if len(en) > 0 and len(energy) > 1 and np.all(np.diff(energy) >= 0):
+        mu_out, err_out = _rebin_sorted(energy, mu, en, method)
+    if mu_out is None:
+        mu_out, err_out = _rebin_loop(energy, mu, en, method)
+
+    newname = group.__name__ + '_rebinned'
+    group.rebinned = Group(energy=np.array(en), mu=np.array(mu_out),
+                           delta_mu=np.array(err_out), e0=e0,
+                           __name__=newname)
+    return
+
+
+def _rebin_loop(energy: NDArray[np.float64], mu: NDArray[np.float64],
+                en: NDArray[np.float64],
+                method: str) -> tuple[list[float], list[float]]:
+    """rebin energy, mu onto en, one bin at a time (works for unsorted energy)
+
+    returns lists of mu and delta_mu values
+    """
     # find the segment boundaries of the old energy array
     bounds = [index_of(energy, e) for e in en]
-    mu_out = []
-    err_out = []
+    mu_out: list[float] = []
+    err_out: list[float] = []
 
     j0 = 0
     for i in range(len(en)):
@@ -189,12 +221,10 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
                 jx += 1
 
             val = interp1d(energy[j0:jx], mu[j0:jx], en[i])
-            err = mu[j0:jx].std()
             if np.isnan(val):
                 j0 = max(0, j0-1)
                 jx = min(len(energy), jx+1)
                 val = interp1d(energy[j0:jx], mu[j0:jx], en[i])
-                err = mu[j0:jx].std()
         else:
             if method.startswith('box'):
                 val =  mu[j0:j1].mean()
@@ -209,8 +239,90 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
             err_out.append(mu[j0:j1].std())
         j0 = j1
 
-    newname = group.__name__ + '_rebinned'
-    group.rebinned = Group(energy=np.array(en), mu=np.array(mu_out),
-                           delta_mu=np.array(err_out), e0=e0,
-                           __name__=newname)
-    return
+    return mu_out, err_out
+
+
+def _interp_bin(energy: NDArray[np.float64], mu: NDArray[np.float64],
+                en: NDArray[np.float64], i: int, j0: int,
+                j1: int) -> tuple[float, int]:
+    """linear interpolation for bin i, segment energy[j0:j1] with
+    fewer than 3 points, as in _rebin_loop
+
+    returns value and (possibly widened) j0
+    """
+    jx = j1 + 1
+    if (jx - j0) < 3:
+        jx += 1
+    val = interp1d(energy[j0:jx], mu[j0:jx], en[i])
+    if np.isnan(val):
+        j0 = max(0, j0-1)
+        jx = min(len(energy), jx+1)
+        val = interp1d(energy[j0:jx], mu[j0:jx], en[i])
+    return val, j0
+
+
+def _rebin_sorted(energy: NDArray[np.float64], mu: NDArray[np.float64],
+                  en: NDArray[np.float64], method: str
+                  ) -> tuple[NDArray[np.float64], NDArray[np.float64]] | tuple[None, None]:
+    """vectorized version of _rebin_loop, for monotonically increasing energy
+
+    gives the same results as _rebin_loop, or (None, None) if
+    the bins cannot be found this way
+    """
+    npts, nbins = len(energy), len(en)
+    # bin boundaries, as index_of(energy, en) for sorted energy
+    bounds = np.clip(np.searchsorted(energy, en, side='right') - 1, 0, None)
+    j1 = np.empty(nbins, dtype=int)
+    j1[:-1] = (bounds[:-1] + bounds[1:] + 1) // 2
+    j1[-1] = npts - 1
+    j0 = np.empty(nbins, dtype=int)
+    j0[1:] = j1[:-1]
+    j0[0] = max(0, np.searchsorted(energy, en[0]-5, side='right') - 1)
+    if not (np.all(np.isfinite(en)) and np.all(j1 >= j0)):
+        return None, None
+
+    mu_out = np.full(nbins, np.nan)
+    err_out = np.full(nbins, np.nan)
+
+    # mean and std of mu in all non-empty segments
+    full = j1 > j0
+    if full.any():
+        jstart = j0[full]
+        jend = j1[full][-1]
+        nseg = (j1 - j0)[full]
+        offsets = jstart - jstart[0]
+        mu_seg = mu[jstart[0]:jend]
+        mean = np.add.reduceat(mu_seg, offsets) / nseg
+        dev = mu_seg - np.repeat(mean, nseg)
+        err_out[full] = np.sqrt(np.add.reduceat(dev*dev, offsets) / nseg)
+        if method.startswith('box'):
+            mu_out[full] = mean
+        elif not method.startswith('spl'):
+            en_seg = energy[jstart[0]:jend]
+            mu_out[full] = ((np.add.reduceat(mu_seg*en_seg, offsets) / nseg) /
+                            (np.add.reduceat(en_seg, offsets) / nseg))
+
+    # segments with fewer than 3 points: linear interpolation.
+    # the interpolation window is energy[j0:jx], use np.interp on the
+    # full arrays where the bracketing points are inside the window.
+    small = (j1 - j0) < 3
+    jx = j1 + 1
+    jx = np.minimum(jx + ((jx - j0) < 3), npts)
+    jlo = np.searchsorted(energy, en, side='right') - 1
+    val = np.interp(en, energy, mu)
+    easy = small & (jlo >= j0) & (jlo <= jx - 2) & ~np.isnan(val)
+    mu_out[easy] = val[easy]
+
+    # remaining bins, in order: spline and other interpolations
+    if method.startswith('spl'):
+        todo = ~easy
+    else:
+        todo = small & ~easy
+    for i in np.where(todo)[0]:
+        if small[i]:
+            mu_out[i], j0w = _interp_bin(energy, mu, en, i, j0[i], j1[i])
+            if j0w != j0[i]:
+                err_out[i] = np.nan if j0w == j1[i] else mu[j0w:j1[i]].std()
+        else:
+            mu_out[i] = CubicSpline(energy[j0[i]:j1[i]], mu[j0[i]:j1[i]])(en[i])
+    return mu_out, err_out

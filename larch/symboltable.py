@@ -3,6 +3,7 @@
 SymbolTable for Larch interpreter
 '''
 import copy
+from typing import TYPE_CHECKING, Any
 import numpy
 from pyshortcuts import gformat
 from . import site_config
@@ -40,6 +41,12 @@ class Group():
         self.__name__ = name
         for key, val in kws.items():
             setattr(self, key, val)
+
+    if TYPE_CHECKING:
+        # Group members are set dynamically: tell type checkers that
+        # any attribute may exist (no effect at runtime)
+        def __getattr__(self, name: str) -> Any: ...
+        def __setattr__(self, name: str, value: Any) -> None: ...
 
     def __len__(self):
         return len(dir(self))
