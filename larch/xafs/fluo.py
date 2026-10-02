@@ -43,11 +43,15 @@ def fluo_corr(energy, mu, formula, elem, group=None, edge='K', line='Ka', anginp
     pre_opts = {'e0': None, 'nnorm': 1, 'nvict': 0,
                 'pre1': None, 'pre2': -30,
                 'norm1': 100, 'norm2': None}
-    if hasattr(group, 'pre_edge_details'):
-        uopts = getattr(group.pre_edge_details, 'call_args', {})
-        for attr in pre_opts:
-            if attr in uopts:
-                pre_opts[attr] = uopts[attr]
+    # use the ranges pre_edge() settled on for this group, so that
+    # norm_corr is normalized the same way as norm
+    details = getattr(group, 'pre_edge_details', None)
+    if details is not None:
+        for attr in ('pre1', 'pre2', 'norm1', 'norm2', 'nnorm'):
+            if getattr(details, attr, None) is not None:
+                pre_opts[attr] = getattr(details, attr)
+        if getattr(group, 'e0', None) is not None:
+            pre_opts['e0'] = group.e0
     pre_opts.update(pre_kws)
     pre_opts['step'] = None
     pre_opts['nvict'] = 0
