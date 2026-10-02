@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.typing import ArrayLike, NDArray
 from scipy.interpolate import CubicSpline
 
 from larch import Group
@@ -8,7 +9,9 @@ from larch.math import (index_of, interp1d,
 from .xafsutils import ktoe, etok, TINY_ENERGY
 
 @Make_CallArgs(["energy", "mu"])
-def sort_xafs(energy, mu=None, group=None, fix_repeats=True, remove_nans=True, overwrite=True):
+def sort_xafs(energy: ArrayLike | Group, mu: ArrayLike | None = None,
+              group: Group | None = None, fix_repeats: bool = True,
+              remove_nans: bool = True, overwrite: bool = True) -> None:
     """sort energy, mu pair of XAFS data so that energy is monotonically increasing
 
     Arguments
@@ -33,6 +36,8 @@ def sort_xafs(energy, mu=None, group=None, fix_repeats=True, remove_nans=True, o
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
                                          fcn_name='sort_xafs')
+    energy = np.asarray(energy)
+    mu = np.asarray(mu)
 
     indices = np.argsort(energy)
     new_energy  = energy[indices]
@@ -54,9 +59,12 @@ def sort_xafs(energy, mu=None, group=None, fix_repeats=True, remove_nans=True, o
 
 
 @Make_CallArgs(["energy", "mu"])
-def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
-               pre_step=2, xanes_step=None, exafs1=15, exafs2=None,
-               exafs_kstep=0.05, method='boxcar'):
+def rebin_xafs(energy: ArrayLike | Group, mu: ArrayLike | None = None,
+               group: Group | None = None, e0: float | None = None,
+               pre1: float | None = None, pre2: float = -30,
+               pre_step: float = 2, xanes_step: float | None = None,
+               exafs1: float = 15, exafs2: float | None = None,
+               exafs_kstep: float = 0.05, method: str = 'boxcar') -> None:
     """rebin XAFS energy and mu to a 'standard 3 region XAFS scan'
 
     Arguments
@@ -151,7 +159,7 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
     # pre:   (pre1 -> pre2) with pre_step (in E-space)
     # xanes: (pre2 -> exafs1) with xanes_step (in E-space)
     # exafs: (exafs1 -> exafs2) with exafs_kstep (in k-space)
-    en = []
+    elist: list[float] = []
     for start, stop, step, isk in ((pre1, pre2, pre_step, False),
                                    (pre2, exafs1, xanes_step, False),
                                    (exafs1, exafs2, exafs_kstep, True)):
@@ -166,12 +174,13 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
         reg = np.linspace(start, stop, npts)
         if isk:
             reg = ktoe(reg)
-        en.extend(e0 + reg[:-1])
+        elist.extend(e0 + reg[:-1])
 
     energy = np.asarray(energy)
     mu = np.asarray(mu)
-    en = np.asarray(en, dtype=float)
-    mu_out = None
+    en = np.asarray(elist, dtype=float)
+    mu_out: NDArray[np.float64] | list[float] | None = None
+    err_out: NDArray[np.float64] | list[float] | None = None
     if len(en) > 0 and len(energy) > 1 and np.all(np.diff(energy) >= 0):
         mu_out, err_out = _rebin_sorted(energy, mu, en, method)
     if mu_out is None:
@@ -184,15 +193,17 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
     return
 
 
-def _rebin_loop(energy, mu, en, method):
+def _rebin_loop(energy: NDArray[np.float64], mu: NDArray[np.float64],
+                en: NDArray[np.float64],
+                method: str) -> tuple[list[float], list[float]]:
     """rebin energy, mu onto en, one bin at a time (works for unsorted energy)
 
     returns lists of mu and delta_mu values
     """
     # find the segment boundaries of the old energy array
     bounds = [index_of(energy, e) for e in en]
-    mu_out = []
-    err_out = []
+    mu_out: list[float] = []
+    err_out: list[float] = []
 
     j0 = 0
     for i in range(len(en)):
@@ -231,7 +242,9 @@ def _rebin_loop(energy, mu, en, method):
     return mu_out, err_out
 
 
-def _interp_bin(energy, mu, en, i, j0, j1):
+def _interp_bin(energy: NDArray[np.float64], mu: NDArray[np.float64],
+                en: NDArray[np.float64], i: int, j0: int,
+                j1: int) -> tuple[float, int]:
     """linear interpolation for bin i, segment energy[j0:j1] with
     fewer than 3 points, as in _rebin_loop
 
@@ -248,7 +261,9 @@ def _interp_bin(energy, mu, en, i, j0, j1):
     return val, j0
 
 
-def _rebin_sorted(energy, mu, en, method):
+def _rebin_sorted(energy: NDArray[np.float64], mu: NDArray[np.float64],
+                  en: NDArray[np.float64], method: str
+                  ) -> tuple[NDArray[np.float64], NDArray[np.float64]] | tuple[None, None]:
     """vectorized version of _rebin_loop, for monotonically increasing energy
 
     gives the same results as _rebin_loop, or (None, None) if
