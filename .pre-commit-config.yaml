@@ -1,0 +1,28 @@
+# pre-commit hooks, see https://pre-commit.com
+# install once with:  pre-commit install
+# run on all files:   pre-commit run --all-files
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.22
+    hooks:
+      - id: ruff-check
+
+  # mypy runs from the active environment (pip install -e ".[dev]"),
+  # so it sees the installed numpy and scipy-stubs
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: mypy
+        language: system
+        types: [python]
+        require_serial: true
+        exclude: ^(sandbox|doc|examples|history)/

@@ -93,7 +93,9 @@ Documentation = "https://xraypy.github.io/xraylarch/"
 Tracker = "https://github.com/xraypy/xraylarch/issues"
 
 [project.optional-dependencies]
-dev = ["build", "twine", "pre-commit", "pytest", "pytest-xvfb;platform_system=='Linux'", "pytest-cov", "coverage"]
+dev = ["build", "twine", "pre-commit", "ruff", "mypy", "scipy-stubs",
+       "pytest", "pytest-xvfb;platform_system=='Linux'", "pytest-cov", "pytest-xdist",
+       "coverage", "hypothesis"]
 doc = ["Sphinx", "numpydoc", "sphinx-copybutton", "sphinx-subfigure", "sphinxcontrib-video", "sphinxcontrib-bibtex", "sphinxcontrib-argdoc"]
 wxgui = ["wxpython>=4.3.0",  "wxmplot>=2026.2.2", "wxutils>=2026.3.0", "sitka-spruce>=0.4.1",
          "darkdetect",  "pyobjc-framework-Cocoa; platform_system == 'Darwin'"]
@@ -113,4 +115,13 @@ exclude = ['larch/__init__.py', 'larch/version.py',
 line-length = 95
 
 [tool.ruff.lint]
-ignore = ['BLE001', 'I001']  # 'except Exception, order of imports
+ignore = ['BLE001',  # except Exception
+          'I001',    # order of imports
+          'E265',    # block comment should start with '# '
+          'E501']    # line too long
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+follow_imports = 'silent'
+exclude = ['^sandbox/', '^doc/', '^dist/', '^build/', '^examples/', '^history/']
