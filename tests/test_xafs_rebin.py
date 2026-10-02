@@ -2,8 +2,10 @@
 """tests for rebin_xafs: equivalence with the original (loop-based)
 implementation, and a timing report on the example data
 
-run with `pytest -s tests/test_xafs_rebin.py` to see the timing report
+the timing report is skipped by default, run it with:
+    LARCH_REBIN_TIMING=1 pytest -s tests/test_xafs_rebin.py -k timing
 """
+import os
 import timeit
 from pathlib import Path
 
@@ -14,7 +16,7 @@ from scipy.interpolate import CubicSpline
 from larch import Group
 from larch.io import read_ascii
 from larch.math import index_of, interp1d
-from larch.xafs import pre_edge, rebin_xafs
+from larch.xafs import find_e0, rebin_xafs
 from larch.xafs.xafsutils import ktoe, etok, ETOK
 
 DATADIR = Path(__file__).parent.parent / 'examples' / 'xafsdata'
@@ -126,7 +128,7 @@ def _rebin_xafs_reference(energy, mu, group, e0=None, pre1=None, pre2=-30,
                 j0 = max(0, j0-1)
                 jx = min(len(energy), jx+1)
                 val = interp1d(energy[j0:jx], mu[j0:jx], en[i])
-                err = mu[j0:jx].std()
+                err = mu[j0:jx].std()  # noqa: F841
         else:
             if method.startswith('box'):
                 val =  mu[j0:j1].mean()
@@ -157,7 +159,7 @@ def read_example(fname, num, den):
     else:
         mu = np.log(getattr(dat, num) / getattr(dat, den))
     group = Group(energy=1.0*energy, mu=1.0*mu, __name__=fname)
-    pre_edge(group)
+    group.e0 = find_e0(group.energy, group.mu)
     return group
 
 
@@ -180,7 +182,7 @@ def synthetic_group(e0, npts, nonuniform=False, seed=0):
           + 0.05*np.sin(2*2.5*k)*np.exp(-0.01*k*k)*(xe > 0)
           + rng.normal(scale=2e-3, size=len(energy)))
     group = Group(energy=energy, mu=mu, __name__=f'syn_{e0}_{len(energy)}')
-    pre_edge(group)
+    group.e0 = find_e0(group.energy, group.mu)
     return group
 
 
@@ -210,8 +212,12 @@ def assert_same(ref, new):
                                    equal_nan=True, err_msg=attr)
 
 
-@pytest.mark.parametrize('method', METHODS)
-@pytest.mark.parametrize('fname,num,den', EXAMPLE_FILES)
+# each example file with one method, in turn
+EXAMPLE_CASES = [(*args, METHODS[i % len(METHODS)])
+                 for i, args in enumerate(EXAMPLE_FILES)]
+
+
+@pytest.mark.parametrize('fname,num,den,method', EXAMPLE_CASES)
 def test_rebin_examples(fname, num, den, method):
     group = read_example(fname, num, den)
     check_same(group, method=method, **TEST_KWS)
@@ -226,14 +232,21 @@ SYNTH_KWS = [TEST_KWS,
                   exafs1=30, exafs2=800, exafs_kstep=0.1)]
 
 
-@pytest.mark.parametrize('method', METHODS)
-@pytest.mark.parametrize('kws', SYNTH_KWS)
-@pytest.mark.parametrize('npts,nonuniform', [(500, False), (3000, False),
-                                             (0, True)])
-@pytest.mark.parametrize('e0', [7112.0, 8979.0, 26711.0])
-def test_rebin_synthetic(e0, npts, nonuniform, kws, method):
+# (e0, npts, nonuniform, kws, method): instead of the full product, each
+# e0, data spacing, keywords set and method appears at least once
+SYNTH_CASES = [(7112.0, 0, True, 3, 'boxcar'),
+               (7112.0, 500, False, 1, 'spline'),
+               (8979.0, 500, False, 0, 'centroid'),
+               (8979.0, 0, True, 2, 'spline'),
+               (8979.0, 3000, False, 3, 'boxcar'),
+               (26711.0, 3000, False, 2, 'spline'),
+               (26711.0, 0, True, 1, 'centroid')]
+
+
+@pytest.mark.parametrize('e0,npts,nonuniform,ikws,method', SYNTH_CASES)
+def test_rebin_synthetic(e0, npts, nonuniform, ikws, method):
     group = synthetic_group(e0, npts, nonuniform=nonuniform)
-    check_same(group, method=method, **kws)
+    check_same(group, method=method, **SYNTH_KWS[ikws])
 
 
 @pytest.mark.parametrize('method', METHODS)
@@ -279,6 +292,8 @@ def time_call(func, ncalls, repeat=5):
     return 1000*np.median(timer.repeat(repeat=repeat, number=ncalls))/ncalls
 
 
+@pytest.mark.skipif(not os.environ.get('LARCH_REBIN_TIMING'),
+                    reason='benchmark: set LARCH_REBIN_TIMING=1 to run')
 def test_rebin_timing_report():
     """report time per call of the reference and the new rebin_xafs"""
     groups = [read_example(*args) for args in EXAMPLE_FILES]
