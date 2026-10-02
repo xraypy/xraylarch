@@ -36,7 +36,7 @@ EXAMPLE_FILES = [('cu_rt01.xmu', 'mu', None),
 METHODS = ('boxcar', 'centroid', 'spline')
 
 # famewoks default parameters
-FAMEWOKS_KWS = dict(pre1=None, pre2=-30, pre_step=2, xanes_step=None,
+TEST_KWS = dict(pre1=None, pre2=-30, pre_step=2, xanes_step=None,
                     exafs1=15, exafs2=None, exafs_kstep=0.05)
 
 
@@ -214,10 +214,10 @@ def assert_same(ref, new):
 @pytest.mark.parametrize('fname,num,den', EXAMPLE_FILES)
 def test_rebin_examples(fname, num, den, method):
     group = read_example(fname, num, den)
-    check_same(group, method=method, **FAMEWOKS_KWS)
+    check_same(group, method=method, **TEST_KWS)
 
 
-SYNTH_KWS = [FAMEWOKS_KWS,
+SYNTH_KWS = [TEST_KWS,
              dict(pre1=-150, pre2=-30, pre_step=5, xanes_step=0.3,
                   exafs1=15, exafs2=None, exafs_kstep=0.05),
              dict(pre1=None, pre2=-15, pre_step=2, xanes_step=None,
@@ -270,7 +270,7 @@ def test_rebin_edge_cases(method):
         grp = synthetic_group(8979.0, npts)
         grp.mu[[10, 150, 151, 220, 260, 400]] = np.nan
         # (CubicSpline refuses NaN: the spline method may raise)
-        check_same(grp, method=method, **FAMEWOKS_KWS)
+        check_same(grp, method=method, **TEST_KWS)
 
 
 def time_call(func, ncalls, repeat=5):
@@ -290,10 +290,10 @@ def test_rebin_timing_report():
             ref = Group(__name__=group.__name__, e0=group.e0)
             def run_ref():
                 _rebin_xafs_reference(group.energy, group.mu, ref,
-                                      method=method, **FAMEWOKS_KWS)
+                                      method=method, **TEST_KWS)
             def run_new():
                 rebin_xafs(group.energy, group.mu, group=group,
-                           method=method, **FAMEWOKS_KWS)
+                           method=method, **TEST_KWS)
             t_ref = time_call(run_ref, 2, repeat=3)
             t_new = time_call(run_new, 20)
             lines.append(f"{group.__name__:22s} {len(group.energy):5d} "
