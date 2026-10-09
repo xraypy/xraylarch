@@ -40,8 +40,8 @@ def fluo_corr(energy, mu, formula, elem, group=None, edge='K', line='Ka', anginp
                                          defaults=(mu,), group=group,
                                          fcn_name='fluo_corr')
     # gather pre-edge options
-    pre_opts = {'e0': None, 'nnorm': 1, 'nvict': 0,
-                'pre1': None, 'pre2': -30,
+    pre_opts = {'nnorm': 1, 'nvict': 0,
+                'pre1': None, 'pre2': -30.,
                 'norm1': 100, 'norm2': None}
     # use the ranges pre_edge() settled on for this group, so that
     # norm_corr is normalized the same way as norm
@@ -53,8 +53,8 @@ def fluo_corr(energy, mu, formula, elem, group=None, edge='K', line='Ka', anginp
         if getattr(group, 'e0', None) is not None:
             pre_opts['e0'] = group.e0
     pre_opts.update(pre_kws)
+    pre_opts['e0'] = None
     pre_opts['step'] = None
-    pre_opts['nvict'] = 0
 
     # generate normalized mu for correction
     preinp   = preedge(energy, mu, **pre_opts)
