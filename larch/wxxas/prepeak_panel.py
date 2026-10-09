@@ -907,7 +907,16 @@ class PrePeakPanel(TaskPanel):
         sizer.Add((5, 5), 0, LEFT, 3)
         sizer.Add(self.mod_nb,  1, LEFT|wx.GROW, 5)
 
+        self.wids['mainpanel'] = pan
+        self.wids['mod_nb'] =  self.mod_nb
+
         pack(self, sizer)
+
+    def onSizeEvent(self, event=None):
+        wnew, hnew = event.GetSize()
+        for wname in ('mainpanel', 'mod_nb'):
+            w, h = self.wids[wname].GetSize()
+            self.wids[wname].SetSize((wnew-10, h))
 
 
     def onEnableBaseline(self, event=None, **kws):

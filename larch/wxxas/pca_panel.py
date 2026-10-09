@@ -92,7 +92,7 @@ class PCAPanel(TaskPanel):
         wids['save_model'].Disable()
 
         collabels = [' Variance ', ' IND value ', 'IND/IND_Best']
-        colsizes = [125, 125, 125]
+        colsizes = [150, 175, 200]
         coltypes = ['float:12,6', 'float:12,6', 'float:12,5']
         coldefs  = [0.0, 0.0, 1.0]
 
@@ -102,7 +102,7 @@ class PCAPanel(TaskPanel):
                                           defaults=coldefs,
                                           colsizes=colsizes, rowlabelsize=60)
 
-        wids['pca_table'].SetMinSize((500, 150))
+        wids['pca_table'].SetMinSize((650, 150))
         wids['pca_table'].EnableEditing(False)
 
 
@@ -122,7 +122,7 @@ class PCAPanel(TaskPanel):
                                           defaults=coldefs,
                                           colsizes=colsizes, rowlabelsize=60)
 
-        wids['fit_table'].SetMinSize((700, 200))
+        wids['fit_table'].SetMinSize((650, 200))
         wids['fit_table'].EnableEditing(False)
 
 
@@ -168,11 +168,18 @@ class PCAPanel(TaskPanel):
 
 
         panel.pack()
+        self.wids['mainpanel'] = panel
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add((10, 10), 0, LEFT, 3)
         sizer.Add(panel, 1, LEFT, 3)
         pack(self, sizer)
         self.skip_process = False
+
+    def onSizeEvent(self, event=None):
+        wnew, hnew = event.GetSize()
+        for wname in ('mainpanel', 'pca_table', 'fit_table'):
+            w, h = self.wids[wname].GetSize()
+            self.wids[wname].SetSize((wnew-10, h))
 
     def onSet_WeightMin(self, evt=None, value=None):
         "handle setting edge step"

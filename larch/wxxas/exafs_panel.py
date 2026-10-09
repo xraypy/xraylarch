@@ -411,12 +411,19 @@ class EXAFSPanel(TaskPanel):
         panel.Add(copy_all, dcol=5, style=RIGHT)
 
         panel.pack()
-
+        self.wids['plotpanel'] = ppanel
+        self.wids['mainpanel'] = panel
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(ppanel, 0, LEFT, 1)
         sizer.Add(panel, 0, LEFT, 1)
         pack(self, sizer)
         self.skip_process = False
+
+    def onSizeEvent(self, event=None):
+        wnew, hnew = event.GetSize()
+        for wname in ('mainpanel', 'plotpanel'):
+            w, h = self.wids[wname].GetSize()
+            self.wids[wname].SetSize((wnew-10, h))
 
     def onEXAFSConfigSelect(self, evt=None):
         name = self.wids['exafs_conf_choice'].GetStringSelection()

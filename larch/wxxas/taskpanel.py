@@ -374,6 +374,12 @@ class TaskPanel(wx.Panel):
         self.fit_xspace = 'e'
         self.fit_last_erange = None
 
+        self.Bind(wx.EVT_SIZE, self.onSizeEvent)
+
+    def onSizeEvent(self, event=None):
+        h, w = event.GetSize()
+        # self.grid.SetSize((h-10, w-10))
+
     def is_xasgroup(self, dgroup):
         return getattr(dgroup, 'datatype', 'raw').startswith('xa')
 
@@ -520,7 +526,7 @@ class TaskPanel(wx.Panel):
     def larch_get(self, sym):
         """get value from larch symbol table"""
         return self.controller.larch.symtable.get_symbol(sym)
-    
+
     def larch_set(self, sym, val):
         """set a symbol to a value in larch symbol table"""
         return self.controller.larch.symtable.set_symbol(sym, val)

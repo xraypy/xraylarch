@@ -163,7 +163,15 @@ class XYDataPanel(TaskPanel):
         sizer.Add((5, 5), 0, LEFT, 3)
         sizer.Add(panel, 0, LEFT, 3)
         sizer.Add((5, 5), 0, LEFT, 3)
+        self.wids['mainpanel'] = panel
         pack(self, sizer)
+
+    def onSizeEvent(self, event=None):
+        wnew, hnew = event.GetSize()
+        for wname in ('mainpanel',):
+            w, h = self.wids[wname].GetSize()
+            self.wids[wname].SetSize((wnew-10, h))
+
 
     def get_config(self, dgroup=None):
         """custom get_config"""

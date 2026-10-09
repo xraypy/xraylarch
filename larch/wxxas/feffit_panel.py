@@ -1064,6 +1064,9 @@ class FeffitPanel(TaskPanel):
         pan.Add(HLine(pan, size=(600, 2)), dcol=6, newrow=True)
         pan.pack()
 
+        self.wids['mainpanel'] = pan
+        self.wids['paths_nb'] =  self.paths_nb
+
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add((5, 5), 0, LEFT, 3)
         sizer.Add(pan, 0, LEFT, 3)
@@ -1072,6 +1075,12 @@ class FeffitPanel(TaskPanel):
         sizer.Add((5, 5), 0, LEFT, 3)
         sizer.Add(self.paths_nb,  1, LEFT|wx.GROW, 5)
         pack(self, sizer)
+
+    def onSizeEvent(self, event=None):
+        wnew, hnew = event.GetSize()
+        for wname in ('mainpanel', 'paths_nb'):
+            w, h = self.wids[wname].GetSize()
+            self.wids[wname].SetSize((wnew-10, h))
 
     def onRmin(self, event=None, **kws):
         dgroup = self.controller.get_group()
@@ -2045,7 +2054,9 @@ class FeffitResultFrame(wx.Frame):
 
         self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
 
-        panel = scrolled.ScrolledPanel(splitter)
+        # panel = scrolled.ScrolledPanel(splitter)
+
+        panel = wx.Panel(splitter)
 
         panel.SetMinSize((725, 575))
         panel.SetSize((850, 575))
@@ -2224,7 +2235,7 @@ class FeffitResultFrame(wx.Frame):
                            colour=get_color('title'), style=LEFT)
 
         ppanel = wx.Panel(panel)
-        ppanel.SetMinSize((450, 20))
+        ppanel.SetMinSize((700, 20))
         self.wids['all_correl'] = Button(ppanel, 'Show All',
                                           size=(100, -1), action=self.onAllCorrel)
 
@@ -2255,22 +2266,33 @@ class FeffitResultFrame(wx.Frame):
             if col == 2:
                 align = wx.ALIGN_RIGHT
             this.Alignment = this.Renderer.Alignment = align
-        cview.SetMinSize((550, 150))
+        cview.SetMinSize((700, 150))
 
         irow += 1
         sizer.Add(cview, (irow, 0), (1, 5), LEFT)
 
+        self.wids['mainpanel'] = panel
+        panel.SetMinSize((700, 650))
         pack(panel, sizer)
-        panel.SetupScrolling()
 
         splitter.SplitVertically(self.filelist, panel, 1)
 
+
         mainsizer = wx.BoxSizer(wx.VERTICAL)
         mainsizer.Add(splitter, 1, wx.GROW|wx.ALL, 5)
-
         pack(self, mainsizer)
+
+        panel.Bind(wx.EVT_SIZE, self.onSizeEvent)
+
+
         self.Show()
         self.Raise()
+
+    def onSizeEvent(self, event=None):
+        wnew, hnew = event.GetSize()
+        for wname in ('stats', 'params', 'correl'):
+            w, h = self.wids[wname].GetSize()
+            self.wids[wname].SetSize((wnew-10, h))
 
     def show_report(self, text, title='Text', default_filename='out.txt',
                     wildcard=None):

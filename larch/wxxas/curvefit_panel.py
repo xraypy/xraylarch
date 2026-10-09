@@ -297,7 +297,7 @@ class CurveFitResultFrame(wx.Frame):
 
         self.wids['show_fitreport'] = Button(panel, 'Show Fit Report',
                                           size=(250, -1), action=self.onShowFitReport)
-        
+
         irow += 1
         sizer.Add(self.wids['use_model'], (irow, 0), (1, 2), LEFT)
         sizer.Add(self.wids['copy_params'], (irow, 2), (1, 3), LEFT)
@@ -324,7 +324,7 @@ class CurveFitResultFrame(wx.Frame):
 
         sizer.Add(title, (irow, 0), (1, 1), LEFT)
         sizer.Add(subtitle, (irow, 1), (1, 1), LEFT)
-        sizer.Add(self.wids['show_fitreport'], (irow, 2), (1, 2), LEFT)        
+        sizer.Add(self.wids['show_fitreport'], (irow, 2), (1, 2), LEFT)
 
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
 
@@ -634,7 +634,7 @@ class CurveFitResultFrame(wx.Frame):
             name1, name2 = namepair.split('$$')
             self.wids['correl'].AppendItem((name1, name2, "% .4f" % corval))
 
-        
+
     def onCopyModel(self, evt=None):
         dataset = evt.GetString()
         dgroup = self.datasets.get(evt.GetString(), None)
@@ -651,7 +651,7 @@ class CurveFitResultFrame(wx.Frame):
         fname = self.datagroup.filename
         label = fitresult.label
         title = f'Report for {fname} fit "{label}"'
-        
+
         default_filename = 'curvefit_report.txt'
         wildcard = 'Text Files (*.txt)|*.txt'
         try:
@@ -665,7 +665,7 @@ class CurveFitResultFrame(wx.Frame):
                                             default_filename=default_filename,
                                             wildcard=wildcard)
 
-        
+
     def ShowDataSet(self, evt=None):
         dataset = evt.GetString()
         group = self.datasets.get(evt.GetString(), None)
@@ -1335,7 +1335,17 @@ class CurveFitPanel(TaskPanel):
         sizer.Add((5, 5), 0, LEFT, 3)
         sizer.Add(self.mod_nb,  1, LEFT|wx.GROW, 5)
 
+        self.wids['mainpanel'] = pan
+        self.wids['mod_nb'] =  self.mod_nb
+
         pack(self, sizer)
+
+
+    def onSizeEvent(self, event=None):
+        wnew, hnew = event.GetSize()
+        for wname in ('mainpanel', 'mod_nb'):
+            w, h = self.wids[wname].GetSize()
+            self.wids[wname].SetSize((wnew-10, h))
 
     def get_config(self, dgroup=None):
         """get processing configuration for a group"""
@@ -1888,7 +1898,7 @@ class CurveFitPanel(TaskPanel):
 
     def update_start_values(self, params):
         """fill parameters with best fit values"""
-           
+
         for comp in self.fit_components.values():
             if comp.usebox is not None and comp.usebox.IsChecked():
                 for name, parwids in comp.parwids.items():
@@ -1903,8 +1913,8 @@ class CurveFitPanel(TaskPanel):
                             parwids.expr.SetValue(par.expr)
                         parwids.vary.SetStringSelection(varstr)
                         parwids.onVaryChoice()
-                        
-        self.larch_set('curvefit_params', params)        
+
+        self.larch_set('curvefit_params', params)
         self.params_panel.update()
 
     def autosave_modelresult(self, result, fname=None):

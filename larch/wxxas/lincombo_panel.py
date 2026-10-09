@@ -748,7 +748,7 @@ class LinearComboPanel(TaskPanel):
         panel.Add(wids['add_selected'], dcol=4)
 
         collabels = [' File/Group Name   ', 'weight', 'min', 'max']
-        colsizes = [325, 100, 100, 100]
+        colsizes = [300, 125, 125, 125]
         coltypes = ['str', 'float:12,4', 'float:12,4', 'float:12,4']
         coldefs  = ['', 1.0/MAX_COMPONENTS, 0.0, 1.0]
 
@@ -780,9 +780,17 @@ class LinearComboPanel(TaskPanel):
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add((10, 10), 0, LEFT, 3)
+        wids['mainpanel'] = panel
         sizer.Add(panel, 1, LEFT, 3)
         pack(self, sizer)
         self.skip_process = False
+
+    def onSizeEvent(self, event=None):
+        wnew, hnew = event.GetSize()
+        for wname in ('mainpanel', 'table'):
+            w, h = self.wids[wname].GetSize()
+            self.wids[wname].SetSize((wnew-10, h))
+
 
     def onPanelExposed(self, **kws):
         # called when notebook is selected
