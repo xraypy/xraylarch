@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from datetime import datetime
 from collections import namedtuple
+from contextlib import suppress
 from larch.utils import read_textfile
 
 FPathInfo = namedtuple('FeffPathInfo',
@@ -11,7 +12,10 @@ class FeffCalcResults:
     def __init__(self, folder=None, header=None, ipots=None,
                  paths=None, datetime=None, absorber=None,
                  shell=None, input_text=None):
-        self.folder = Path(folder).absolute().as_posix()
+        self.folder = folder
+        with suppress(Exception):
+            self.folder = Path(folder).absolute().as_posix()
+
         self.header = header
         self.ipots = ipots
         self.paths = paths
