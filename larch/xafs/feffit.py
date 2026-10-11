@@ -46,7 +46,6 @@ def propagate_uncertainties(result, datasets, _larch=None):
         n_idp = 0
         for ds in datasets:
             n_idp += ds.n_idp
-
         if isinstance(result.params, dict):
             result.params = dict2params(result.params)
 
@@ -505,6 +504,10 @@ class FeffitDataSet(Group):
             if path.spline_coefs is None:
                 path.create_spline_coefs()
 
+        self.setup_bkg_params(params)
+        self._prepared = True
+
+    def setup_bkg_params(self, params):
         self.bkg_spline = {}
         if self.refine_bkg:
             trans.rbkg = max(trans.rbkg, trans.rmin)
@@ -512,14 +515,12 @@ class FeffitDataSet(Group):
             self.n_idp = 1 + 2*(trans.rmax)*(trans.kmax-trans.kmin)/pi
             nspline = 1 + round(2*(trans.rbkg)*(trans.kmax-trans.kmin)/pi)
             knots_k = np.linspace(trans.kmin, trans.kmax, nspline)
-            # np.linspace(trans.kmax, trans.kmax+trans.kstep/10.0, 3)))
             knots_y = np.linspace(-1e-4, 1.e-4, nspline)
             knots, coefs, order = splrep(knots_k, knots_y, k=3)
             self.bkg_spline = {'knots': knots, 'coefs': coefs,
                                'nspline': nspline, 'order':order}
             for i in range(nspline):
                 params.add(f'bkg{i:02d}_{self.hashkey}', value=0, vary=True)
-        self._prepared = True
 
 
     def estimate_noise(self, chi=None, rmin=15.0, rmax=30.0, all_kweights=True):
@@ -707,7 +708,7 @@ class FeffitDataSet(Group):
                      'sigma2_expr','third_expr', 'fourth_expr', 'ei_expr']
         headers = ['filename', 'geometry', 'R_eff', 'Degen', 'N*S02','E0', 'R',
                    'sigma2', 'third',  'fourth', 'Ei',
-                   'N*S02 Expr', 'Degen  Expr', 'E0 Expr', 'R Expr',
+                   'N*S02 Expr', 'E0 Expr', 'R Expr',
                    'sigma2 Expr', 'third Expr', 'fourth Expr', 'Ei Expr']
         table = []
         for path in self.pathlist:
@@ -856,6 +857,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True,
     if isNamedClass(datasets, FeffitDataSet):
         datasets = [datasets]
 
+
     # we need unique dataset hashes if refine_bkg is used
     dset_hashkeys = []
     for ds in datasets:
@@ -933,6 +935,8 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True,
         setattr(out, attr, getattr(result, attr, None))
     return out
 
+
+
 def feffit_conf_map(result, xpar, ypar, nsamples=41, nsigma=3.5):
     """
     return 2d map of confidence interval (sigma values) for a pair of variables from feffit
@@ -955,7 +959,6 @@ def feffit_conf_map(result, xpar, ypar, nsamples=41, nsigma=3.5):
     chisqr0 = min(result.chi_square, chi2_map.min())
     sigma_map = np.sqrt((chi2_map-chisqr0)/result.chi2_reduced)
     return xvals, yvals, sigma_map
-
 
 
 def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
@@ -982,6 +985,47 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
     if not input_ok:
         print( 'must pass output of feffit()!')
         return
+
+    needs_uncertainties = False
+    for name, par in result.params.items():
+        if par.stderr is None and (par.vary or
+                                   par.expr not in (None, '', 'None')):
+            needs_uncertainties = True
+
+    # check the Path Parameters, rebuilding if needing
+    # this is because Path hashkeys may not be stable across versions
+    dset = result.datasets[0]
+    path = dset.pathlist[0]
+    pname = f'deltar_{dset.hashkey}_{path.hashkey}'
+    if pname not in params:
+        needs_uncertainties = True
+        params = Parameters()
+        add_sigma2funcs(params)
+        for name in result.var_names:
+            opar = result.params[name]
+            params.add(name, value=opar.value, vary=opar.vary, expr=opar.expr,
+                       min=opar.min, max=opar.max)
+            params[name].skip = getattr(opar, 'skip', False)
+            params[name].stderr = getattr(opar, 'stderr', None)
+            params[name].correl = getattr(opar, 'correl', None)
+        for dset in result.datasets:
+            for label, path in dset.paths.items():
+                path.create_path_params(params=params, dataset=dset.hashkey)
+                if path.spline_coefs is None:
+                    path.create_spline_coefs()
+            if dset.refine_bkg:
+                dset.setup_bkg_params(params)
+
+        result.params_orig = deepcopy(result.params)
+        result.params = params
+
+    if needs_uncertainties:
+        try:
+            propagate_uncertainties(result, result.datasets)
+        except Exception:
+            pass
+
+    #################
 
     path_hashkeys = []
     for ds in datasets:
