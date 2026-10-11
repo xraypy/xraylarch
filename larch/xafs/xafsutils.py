@@ -15,6 +15,8 @@ FT_WINDOWS_SHORT = tuple([a[:3].lower() for a in FT_WINDOWS])
 
 NUMLEN = 10
 def gfmt(x):
+    if isinstance(x, str):
+        return x
     return gformat(x, length=NUMLEN)
 
 def etok(energy):
