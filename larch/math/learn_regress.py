@@ -167,7 +167,7 @@ def lasso_train(groups, varname='valence', arrayname='norm', alpha=None,
 
     nvals = len(groups)
     ymean = norms = nonzero = None
-    spectra_scaled = spectra[:]
+    spectra_scaled = 1.0*spectra
     if fit_intercept and normalize:
         s_scalar = StandardScaler().fit(spectra)
         spectra_scaled = s_scalar.transform(spectra)
