@@ -1310,6 +1310,7 @@ before clearing"""
                                                 master=master,
                                                 yarray=yname,
                                                 outgroup=gname)
+            gname = this.groupname
 
             mfiles, mgroups = [], []
             for g in groups.values():
