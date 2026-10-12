@@ -434,17 +434,16 @@ class FitSpectraFrame(wx.Frame):
         wids['det_efano'] = SimpleText(pdet, size=(250, -1),
                                        label='E_Fano= %.4e' % FanoFactors['Si'])
 
-        opts.update(digits=1, max_val=90, min_val=0, increment=1)
-        wids['angle_in'] = FloatSpin(pdet, value=45, **opts)
-        wids['angle_out'] = FloatSpin(pdet, value=45, **opts)
+        # opts.update(digits=1, max_val=90, min_val=0, increment=1)
+        # wids['angle_in'] = FloatSpin(pdet, value=45, **opts)
+        # wids['angle_out'] = FloatSpin(pdet, value=45, **opts)
 
-        opts.update(digits=1, max_val=5e9, min_val=0, increment=1)
-        wids['det_dist'] = FloatSpin(pdet, value=50, **opts)
-        wids['det_area'] = FloatSpin(pdet, value=50, **opts)
+        # opts.update(digits=1, max_val=5e9, min_val=0, increment=1)
+        # wids['det_dist'] = FloatSpin(pdet, value=50, **opts)
+        # wids['det_area'] = FloatSpin(pdet, value=50, **opts)
 
-        for notyet in ('angle_in', 'angle_out', 'det_dist', 'det_area',
-                       'flux_in'):
-            wids[notyet].Disable()
+        # for notyet in ('angle_in', 'angle_out', 'det_dist', 'det_area',
+        #               'flux_in'):
 
         wids['fit_toler'] = Choice(pdet, choices=FitTols, size=(125, -1))
         wids['fit_toler'].SetStringSelection('1.e-5')
@@ -503,18 +502,17 @@ class FitSpectraFrame(wx.Frame):
         pdet.Add(wids['pileup_amp_vary'])
         pdet.Add(wids['pileup_use'], dcol=3)
 
-        addLine(pdet)
-        pdet.AddText(' Geometry:', colour='#880000', dcol=1, newrow=True)
-        pdet.AddText(Geom_Text, dcol=3)
-        pdet.AddText('   Incident Angle (deg):', newrow=True)
-        pdet.Add(wids['angle_in'])
-        pdet.AddText('   Exit Angle (deg):', newrow=False)
-        pdet.Add(wids['angle_out'])
-        pdet.AddText('   Detector Distance (mm): ', newrow=True)
-        pdet.Add(wids['det_dist'])
-        pdet.AddText('   Detector Area (mm^2): ', newrow=False)
-        pdet.Add(wids['det_area'])
-
+#        addLine(pdet)
+#         pdet.AddText(' Geometry:', colour='#880000', dcol=1, newrow=True)
+#         pdet.AddText(Geom_Text, dcol=3)
+#         pdet.AddText('   Incident Angle (deg):', newrow=True)
+#         pdet.Add(wids['angle_in'])
+#         pdet.AddText('   Exit Angle (deg):', newrow=False)
+#         pdet.Add(wids['angle_out'])
+#         pdet.AddText('   Detector Distance (mm): ', newrow=True)
+#         pdet.Add(wids['det_dist'])
+#         pdet.AddText('   Detector Area (mm^2): ', newrow=False)
+#         pdet.Add(wids['det_area'])
 
         addLine(pdet)
         pdet.pack()
