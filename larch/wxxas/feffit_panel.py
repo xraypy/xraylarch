@@ -2641,7 +2641,7 @@ class FeffitResultFrame(wx.Frame):
                     val = f'{val:.4f}'
                     # val = gformat(val, 9)
                 args.append(val)
-            wids['stats'].AppendItem(tuple(args)
+            wids['stats'].AppendItem(tuple(args))
         wids['data_title'].SetLabel(self.datagroup.filename)
         self.show_fitresult(nfit=0)
 
