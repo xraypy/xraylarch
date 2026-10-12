@@ -191,7 +191,7 @@ def remove_dups(arr, tiny=1.e-6):
            5.      , 6.      , 7.      , 7.000001, 8.      ])
     """
     try:
-        work = np.asarray(arr*1.0)
+        work = np.asarray(arr)
     except Exception:
         print('remove_dups: argument is not an array')
 
