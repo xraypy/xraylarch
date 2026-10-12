@@ -127,8 +127,8 @@ def rebin_xafs(energy: ArrayLike | Group, mu: ArrayLike | None = None,
     if e0 is None:
         raise ValueError("need e0")
 
-    emin = min(energy) - e0
-    emax = max(energy) - e0
+    emin = np.min(energy) - e0
+    emax = np.max(energy) - e0
 
     if pre1 is None:
         pre1 = pre_step*int(emin/pre_step)
