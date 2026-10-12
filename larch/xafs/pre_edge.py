@@ -218,6 +218,7 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, npre=1, pre1=No
 
     ie0 = index_nearest(energy, e0)
     # e0 = float(energy[ie0])
+    emin, emax = energy.min(), energy.max()
 
     if pre1 is None:
         # skip first energy point, often bad
@@ -225,7 +226,7 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, npre=1, pre1=No
             pre1  = 5.0*round((energy[1] - e0)/5.0)
         else:
             pre1  = 2.0*round((energy[1] - e0)/2.0)
-    pre1 = max(pre1,  (min(energy) - e0))
+    pre1 = max(pre1,  (emin - e0))
     if pre2 is None:
         pre2 = 0.5*pre1
     if pre1 > pre2:
@@ -241,10 +242,10 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, npre=1, pre1=No
         npre = 0
 
     if norm2 is None:
-        norm2 = 5.0*round((max(energy) - e0)/5.0)
+        norm2 = 5.0*round((emax - e0)/5.0)
     if norm2 < 0:
-        norm2 = max(energy) - e0 - norm2
-    norm2 = min(norm2, (max(energy) - e0))
+        norm2 = emax - e0 - norm2
+    norm2 = min(norm2, (emax - e0))
 
     if norm1 is None:
         norm1 = min(25, 5.0*round(norm2/15.0))

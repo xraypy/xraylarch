@@ -125,11 +125,12 @@ def mback(energy, mu=None, group=None, z=None, edge='K', e0=None, pre1=None, pre
     pre1_input = pre1
     norm2_input = norm2
 
-    if pre1 is None:  pre1  = min(energy) - e0
-    if norm2 is None: norm2 = max(energy) - e0
-    if norm2 < 0:     norm2 = max(energy) - e0 - norm2
-    pre1  = max(pre1,  (min(energy) - e0))
-    norm2 = min(norm2, (max(energy) - e0))
+    emin, emax = energy.min(), energy.max()
+    if pre1 is None:  pre1  = emin - e0
+    if norm2 is None: norm2 = emax - e0
+    if norm2 < 0:     norm2 = emax - e0 - norm2
+    pre1  = max(pre1,  (emin - e0))
+    norm2 = min(norm2, (emax - e0))
 
     if pre1 > pre2:
         pre1, pre2 = pre2, pre1
@@ -297,9 +298,9 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
     weights = np.ones(len(energy))*1.0
 
     if norm2 is None:
-        norm2 = max(energy) - e0
+        norm2 = np.max(energy) - e0
     if norm2 < 0:
-        norm2 = (max(energy) - e0)  - norm2
+        norm2 = (np.max(energy) - e0)  - norm2
 
     # avoid l2 and higher edges
     if edge.lower().startswith('l'):

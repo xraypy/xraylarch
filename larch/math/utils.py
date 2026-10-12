@@ -200,8 +200,8 @@ def remove_dups(arr, tiny=1.e-6):
     shape = work.shape
     work = work.flatten()
 
-    min_step = min(np.diff(work))
-    tval = (abs(min(work)) + abs(max(work))) /2.0
+    min_step = np.diff(work).min()
+    tval = (abs(work.min()) + abs(work.max())) /2.0
     if min_step > 10*tiny:
         return work
     previous_val = np.nan
