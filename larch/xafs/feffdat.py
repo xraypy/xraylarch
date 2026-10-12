@@ -47,7 +47,6 @@ FEFFDAT_VALUES = ('reff', 'nleg', 'degen', 'rmass', 'rnorman',
 
 FEFF_DB = None
 
-
 def pathname_valid(fname):
     if fname in ('', None):
         return False
@@ -70,8 +69,8 @@ class FeffDatFile(Group):
 
     def __repr__(self):
         if self.filename is not None:
-            return '<Feff.dat File Group: %s>' % self.filename
-        return '<Feff.dat File Group (empty)>'
+            return f'FeffDatFile({self.filename})'
+        return 'FeffDatFile(None)'
 
     def __copy__(self):
         return FeffDatFile(filename=self.filename)
@@ -91,7 +90,8 @@ class FeffDatFile(Group):
         return self.__nleg__
 
     @nleg.setter
-    def nleg(self, val):    pass
+    def nleg(self, val):
+        pass
 
     @property
     def rmass(self):
@@ -134,7 +134,8 @@ class FeffDatFile(Group):
             a = p1 - p0
             b = p2 - p1
             dist = float(np.linalg.norm(pts[i]-pts[i-1]))
-            beta = float(np.acos(np.dot(a, b) / np.sqrt((np.dot(a, a) * np.dot(b, b))))*180/np.pi)
+            beta = np.acos(np.dot(a, b) / np.sqrt(np.dot(a, a) * np.dot(b, b)))
+            beta = float(beta)*180/np.pi
             sym, ipot, x, y, z = atoms[i]
             self.__geometry.append((sym, ipot, dist, x, y, z, beta, 0.0))
         return self.__geometry
@@ -184,6 +185,22 @@ class FeffDatFile(Group):
                 self.pha_feff.tolist(), self.red_fact.tolist(),
                 self.lam.tolist(), self.rep.tolist(), self.pha.tolist(),
                 self.amp.tolist())
+
+
+    @property
+    def hashkey(self):
+        """generate hash for this path"""
+        rep = [self.absorber, self.shell]
+        for atom in self.geom:
+            rep.extend(atom)
+        for attr in FEFFDAT_VALUES:
+            rep.append("%7.4f" % getattr(self, attr, 0.0))
+        s = " ".join([str(r) for r in rep])
+        return 'p' + b32hash(s)[:8].lower()
+
+    @hashkey.setter
+    def hashkey(self, val):
+        pass
 
 
     def _read(self, filename):
@@ -317,6 +334,7 @@ class FeffPathGroup(Group):
             self.filename = xpath.as_posix()
             self.feffrun = xpath.parent.as_posix()
 
+
         if self._feffdat is not None:
             self.create_spline_coefs()
             self.geom  = self._feffdat.geom
@@ -324,7 +342,7 @@ class FeffPathGroup(Group):
             self.absorber = self._feffdat.absorber
             self.__def_degen  = self._feffdat.degen
 
-            self.hashkey = self.__geom2label()
+            self.hashkey = self._feffdat.hashkey
             if self.label in ('', None):
                 self.label = self.hashkey
 
@@ -335,7 +353,7 @@ class FeffPathGroup(Group):
 
 
     def init_path_params(self, degen=None, s02=None, e0=None, ei=None,
-                       deltar=None, sigma2=None, third=None, fourth=None):
+                         deltar=None, sigma2=None, third=None, fourth=None):
         """set inital values/expressions for path parameters for Feff Path"""
         self.degen = self.__def_degen if degen  is None else degen
         self.s02    = 1.0      if s02    is None else s02
@@ -381,23 +399,15 @@ class FeffPathGroup(Group):
         self.absorber = self._feffdat.absorber
         def_degen  = self._feffdat.degen
 
-        self.hashkey = self.__geom2label()
+        self.hashkey = self._feffdat.hashkey
+        def_label = "p%s" % (hex(hash(self))[2:])
         if self.label in ('', None):
             self.label = self.hashkey
 
-
-    def __geom2label(self):
-        """generate label by hashing full filename and path geometry"""
-        rep = [self._feffdat.degen, self._feffdat.shell, self.filename]
-        for atom in self.geom:
-            rep.extend(atom)
-        rep.append("%7.4f" % self._feffdat.reff)
-        s = "|".join([str(i) for i in rep])
-        return "p%s" % (b32hash(s)[:8].lower())
-
     def pathpar_name(self, parname):
         """
-        get internal name of lmfit Parameter for a path paramter, using Path's hashkey
+        get internal name of lmfit Parameter for a path paramter,
+        using Path's hashkey
         """
         return f'{parname}_{self.dataset}_{self.hashkey}'
 
@@ -448,7 +458,7 @@ class FeffPathGroup(Group):
         if isinstance(params, Group):
             params = group2params(params)
         if params is not None:
-           self.params = params
+            self.params = params
         if self.params is None:
             self.params = Parameters()
         if dataset is not None:
@@ -460,8 +470,8 @@ class FeffPathGroup(Group):
         if self.params._asteval.symtable.get('sigma2_debye', None) is None:
             add_sigma2funcs(self.params)
         if self.label is None:
-            self.label = self.__geom2label()
-        self.store_feffdat()
+            self.label = self.hashkey
+            self.store_feffdat()
         for pname in PATH_PARS:
             val =  getattr(self, pname)
             attr = 'value'
@@ -470,7 +480,7 @@ class FeffPathGroup(Group):
             kws =  {'vary': False, attr: val}
             parname = self.pathpar_name(pname)
             self.params.add(parname, **kws)
-            self.params[parname].is_pathparam = True
+            # self.params[parname].is_pathparam = True
 
     def create_spline_coefs(self):
         """pre-calculate spline coefficients for feff data"""
@@ -512,8 +522,9 @@ class FeffPathGroup(Group):
             val = kws.get(pname, None)
             if val is None:
                 parname = self.pathpar_name(pname)
-                val = self.params[parname]._getval()
-            out.append(val)
+                if parname in self.params:
+                    val = self.params[parname]._getval()
+                    out.append(val)
         return out
 
     def path_paramvals(self, **kws):
@@ -527,17 +538,19 @@ class FeffPathGroup(Group):
         pathpars = {}
         for pname in PATH_PARS:
             parname = self.pathpar_name(pname)
+            dat = (0, 0)
             if parname in self.params:
-                pathpars[pname] = (self.params[parname].value,
-                                   self.params[parname].stderr)
+                dat = (self.params[parname].value,
+                       self.params[parname].stderr)
+            pathpars[pname] = dat
 
         out = {'filename': self.filename,
-                 'label': self.label,
-                 'absorber': self.absorber,
-                 'shell': self.shell,
-                 'nleg': f'{self.nleg}',
-                 'degen': f'{self.degen}',
-                 'reff': f'{self.reff:.6f}'}
+               'label': self.label,
+               'absorber': self.absorber,
+               'shell': self.shell,
+               'nleg': f'{self.nleg}',
+               'degen': f'{self.degen}',
+               'reff': f'{self.reff:.6f}'}
 
         geom = []
         gshort = []
@@ -545,8 +558,8 @@ class FeffPathGroup(Group):
         for atsym, iz, ipot, amass, x, y, z in self.geom:
             geom.append(geomformat % (atsym, ipot, x, y, z))
             gshort.append(f'{atsym}({ipot})')
-        out['geometry'] = '\n'.join(geom)
-        out['geom'] = '-'.join(gshort)
+            out['geometry'] = '\n'.join(geom)
+            out['geom'] = '-'.join(gshort)
 
         def sfmt(x): return gformat(x, length=8)
 
@@ -568,7 +581,7 @@ class FeffPathGroup(Group):
                     if par is not None:
                         val = par.value
                         std = par.stderr
-            if std is None  or std <= 0:
+            if std is None or std <= 0:
                 svalue = sfmt(val)
                 std = 0.0
             else:
@@ -591,13 +604,13 @@ class FeffPathGroup(Group):
             if parname in self.params:
                 pathpars[pname] = (self.params[parname].value,
                                    self.params[parname].stderr)
+                # print(f'Path par {pname=}, {parname=} ', pathpars[pname])
 
         out = [f" = Path '{self.label}' {self.absorber} {self.shell} Edge",
                f"    feffdat file = {self.filename}"]
         geomlabel  = '    geometry  atom      x        y        z      ipot'
         geomformat = '            %4s      %s, %s, %s  %d'
         out.append(geomlabel)
-
         for atsym, iz, ipot, amass, x, y, z in self.geom:
             s = geomformat % (atsym, x, y, z, ipot)
             if ipot == 0:
@@ -607,7 +620,6 @@ class FeffPathGroup(Group):
         stderrs = {}
         out.append(f'     reff   = {gfmt(self._feffdat.reff):s}')
         out.append(f'     degen  = {gfmt(self.degen):s}')
-
         for pname in PATH_PARS_WITH_R:
             val = strval = getattr(self, pname, 0)
             parname = self.pathpar_name(pname)
@@ -636,12 +648,20 @@ class FeffPathGroup(Group):
                         std = par.stderr
 
             if std is None  or std <= 0:
-                svalue = gfmt(val)
+                if isinstance(val, float):
+                    svalue = gfmt(val)
+                elif isinstance(val, int):
+                    svalue = str(val)
+                else:
+                    svalue = val
             else:
                 svalue = "{:s} +/-{:s}".format(gfmt(val), gfmt(std))
+            if (pname in ('third', 'fourth', 'ei') and
+                abs(val) < 1.e-19 and (std is None or std <= 0)):
+                continue
+
             if pname == 's02':
                 pname = 'n*s02'
-
             svalue = "     {:7s}= {:s}".format(pname, svalue)
             if isinstance(strval, Parameter):
                 if strval.expr not in (None, ''):
@@ -649,8 +669,6 @@ class FeffPathGroup(Group):
             elif isinstance(strval, str):
                 svalue = "{:s}  := '{:s}'".format(svalue, strval)
 
-            if val == 0 and pname in ('third', 'fourth', 'ei'):
-                continue
             out.append(svalue)
         return '\n'.join(out)
 
@@ -660,11 +678,11 @@ class FeffPathGroup(Group):
             self.create_path_params(params=params)
         else:
             self.create_path_params(params=group2params(params))
-        self._calc_chi(**kws)
+            self._calc_chi(**kws)
 
     def _calc_chi(self, k=None, kmax=None, kstep=None, degen=None, s02=None,
-                 e0=None, ei=None, deltar=None, sigma2=None,
-                 third=None, fourth=None, debug=False, interp='cubic', **kws):
+                  e0=None, ei=None, deltar=None, sigma2=None,
+                  third=None, fourth=None, debug=False, interp='cubic', **kws):
         """calculate chi(k) with the provided parameters"""
         fdat = self._feffdat
         if fdat.reff < 0.05:
@@ -674,7 +692,7 @@ class FeffPathGroup(Group):
         if k is None:
             if kmax is None:
                 kmax = 30.0
-            kmax = min(max(fdat.k), kmax)
+                kmax = min(max(fdat.k), kmax)
             if kstep is None: kstep = 0.05
             k = kstep * np.arange(int(1.01 + kmax/kstep), dtype='float64')
         if not self.use:
@@ -686,8 +704,8 @@ class FeffPathGroup(Group):
         reff = fdat.reff
         # get values for all the path parameters
         (s02, e0, deltar, sigma2, third, fourth, ei)  = \
-          self.__path_params(s02=s02, e0=e0, deltar=deltar,
-                            sigma2=sigma2, third=third, fourth=fourth, ei=ei)
+            self.__path_params(s02=s02, e0=e0, deltar=deltar,
+                               sigma2=sigma2, third=third, fourth=fourth, ei=ei)
 
         # create e0-shifted energy and k, careful to look for |e0| ~= 0.
         en = k*k - e0*ETOK
@@ -696,7 +714,7 @@ class FeffPathGroup(Group):
                 en[np.where(abs(en) < 1.5*SMALL_ENERGY)] = SMALL_ENERGY
             except ValueError:
                 pass
-        # q is the e0-shifted wavenumber
+            # q is the e0-shifted wavenumber
         q = np.sign(en)*np.sqrt(abs(en))
 
         # lookup Feff.dat values (pha, amp, rep, lam)
