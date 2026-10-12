@@ -324,6 +324,7 @@ class LockedSessionDialog(wx.Dialog):
         self.SetFont(get_font())
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
+        self.sessionlist = sessionlist[-25:]
         title1 = ' Auto-saved Sessions with open Lock Files: '
 
         title2 = ' These are auto-saved files from sessions that may have crashed or shut down abruptly,'
@@ -347,8 +348,7 @@ class LockedSessionDialog(wx.Dialog):
         for i, t in enumerate(col_labels):
             panel.Add(SimpleText(panel, t), newrow=(i==0))
 
-        self.sessionlist = sessionlist
-        for lockfile, sesspath in sessionlist:
+        for lockfile, sesspath in self.sessionlist:
             stat = os.stat(sesspath)
             mtime = time_ago(stat.st_mtime)
             fsize = f"{(stat.st_size/1.e6):.2f}"
