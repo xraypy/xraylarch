@@ -287,13 +287,13 @@ class EditParamsFrame(wx.Frame):
                  paramgroup=None, selected=None):
         wx.Frame.__init__(self, None, -1,
                           'Edit Feffit Parameters',
-                          style=FRAMESTYLE, size=(550, 325))
+                          style=FRAMESTYLE, size=(650, 500))
 
         self.parent = parent
         self.feffit_panel = feffit_panel
         self.paramgroup = paramgroup
 
-        spanel = scrolled.ScrolledPanel(self, size=(500, 275))
+        spanel = scrolled.ScrolledPanel(self, size=(550, 450))
         spanel.SetBackgroundColour(get_color('text_bg'))
 
         self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
@@ -451,10 +451,11 @@ class FeffitParamsPanel(wx.Panel):
         self.feffit_panel = feffit_panel
         self.parwids = {}
         self.SetFont(Font(FONTSIZE))
-        spanel = scrolled.ScrolledPanel(self)
-        spanel.SetSize((250, 250))
-        spanel.SetMinSize((50, 50))
-        panel = self.panel = GridPanel(spanel, ncols=8, nrows=30, pad=1, itemstyle=LEFT)
+        spanel = scrolled.ScrolledPanel(self, size=(650, 450))
+        spanel.SetMinSize((350,  250))
+        self.spanel = spanel
+        panel = self.panel = GridPanel(spanel, ncols=8, nrows=30, pad=3, gap=5,
+                                       itemstyle=LEFT)
         panel.SetFont(Font(FONTSIZE))
 
         def SLabel(label, size=(80, -1), **kws):
@@ -470,21 +471,28 @@ class FeffitParamsPanel(wx.Panel):
                        SLabel("  Max", size=(60, -1)),
                        SLabel(" Expression")))
 
+        self.hline = None
         self.update()
-        panel.pack()
+
         ssizer = wx.BoxSizer(wx.VERTICAL)
-        ssizer.Add(panel, 1,  wx.GROW|wx.ALL, 2)
+        ssizer.Add(panel, 1,  wx.GROW|wx.ALL|wx.EXPAND, 2)
         pack(spanel, ssizer)
 
+
+        msizer = wx.BoxSizer(wx.VERTICAL)
+        msizer.Add(spanel, 1, wx.GROW|wx.ALL, 2)
+
+        pack(self, msizer)
+        # print("Params ", self.GetSize(), self.GetBestSize())
         spanel.SetupScrolling()
-        mainsizer = wx.BoxSizer(wx.VERTICAL)
-        mainsizer.Add(spanel, 1, wx.GROW|wx.ALL, 2)
-        pack(self, mainsizer)
+
 
     def Rebuild(self, event=None):
         for pname, parwid in self.parwids.items():
             for x in parwid.widgets:
                 x.Destroy()
+        self.hline.Destroy()
+        self.hline = None
         self.panel.irow = 1
         self.parwids = {}
         self.update()
@@ -527,7 +535,6 @@ class FeffitParamsPanel(wx.Panel):
                 self.panel.Add(pwids.name, newrow=True)
                 self.panel.AddMany((pwids.value, pwids.vary, pwids.bounds,
                                     pwids.minval, pwids.maxval, pwids.expr))
-                self.panel.pack()
 
             pwids = self.parwids[pname]
             varstr = 'vary' if par.vary else 'fix'
@@ -542,7 +549,13 @@ class FeffitParamsPanel(wx.Panel):
                 pwids.minval.SetValue(par.min)
                 pwids.maxval.SetValue(par.max)
             pwids.onVaryChoice()
+
+
+        if self.hline is None:
+            self.hline = HLine(self.panel, size=(650, 3))
+            self.panel.Add(self.hline, dcol=8, newrow=True)
         self.panel.Update()
+        self.panel.pack()
 
 
     def onEditParams(self, event=None):
@@ -682,7 +695,7 @@ class FeffPathPanel(wx.Panel):
         self.geomstr = geomstr
 
         def SLabel(label, size=(80, -1), **kws):
-            return  SimpleText(panel, label, size=size, style=LEFT, **kws)
+            return  SimpleText(panel, ' '+label, size=size, style=LEFT, **kws)
 
         self.wids = wids = {}
         for name, expr in (('label', user_label),
@@ -720,7 +733,7 @@ class FeffPathPanel(wx.Panel):
                                    datatypes=['str', 'str', 'str'],
                                    colsizes=[80, 50, 80],
                                    defaults=['', '', ''], cornerlabel='leg')
-
+        wids['pathgeom'].SetMinSize((250, 125))
 
         gdata = []
         for sym, ipot, dist, x, y, z, beta, eta in geometry:
@@ -754,9 +767,12 @@ class FeffPathPanel(wx.Panel):
             panel.AddMany((SLabel(label),  wids[f'{name}_val'], wids[name], wcopy),
                           newrow=True)
 
-        panel.Add(SLabel(geom_title, size=(245, -1)), irow=3, icol=4, dcol=1, style=wx.ALIGN_LEFT)
+        panel.Add(SLabel(geom_title, size=(245, -1)), irow=3, icol=4, dcol=1,
+                  style=wx.ALIGN_LEFT)
         panel.Add(wids['pathgeom'], irow=4, icol=4, dcol=3, drow=7)
         panel.pack()
+        wids['pathgeom'].SetSize((250, 125))
+
         sizer= wx.BoxSizer(wx.VERTICAL)
         sizer.Add(panel, 1, LEFT|wx.GROW|wx.ALL, 2)
         pack(self, sizer)
@@ -970,8 +986,6 @@ class FeffitPanel(TaskPanel):
                                    action=self.onPlot)
         wids['plot1_ftwins'] = Check(pan, default=False, label='Plot FT Windows',
                                        action=self.onPlot)
-
-
         wids['plot2_win'] = Choice(pan, choices=PlotWindowChoices,
                                    action=self.onPlot, size=(55, -1))
         wids['plot2_win'].SetStringSelection('2')
@@ -1080,7 +1094,7 @@ class FeffitPanel(TaskPanel):
         wnew, hnew = event.GetSize()
         for wname in ('mainpanel', 'paths_nb'):
             w, h = self.wids[wname].GetSize()
-            self.wids[wname].SetSize((wnew-10, h))
+            self.wids[wname].SetSize((wnew, h))
 
     def onRmin(self, event=None, **kws):
         dgroup = self.controller.get_group()
@@ -1230,7 +1244,6 @@ class FeffitPanel(TaskPanel):
         # then make sure it is built and remembered before switching to the new group
         # print(" fill form ", self.dgroup, dgroup, self.model_needs_rebuild)
         if self.dgroup is not None and self.dgroup != dgroup and self.model_needs_rebuild:
-            #    print("REBUILD")
             opts = self.process(self.dgroup)
             self.build_fitmodel(self.dgroup, opts=opts)
 
@@ -2220,7 +2233,7 @@ class FeffitResultFrame(wx.Frame):
 
         for col in range(4):
             this = pview.Columns[col]
-            this.Sortable = False
+            this.Sortable = col in (0, 3)
             this.Alignment = wx.ALIGN_RIGHT if col in (1, 2) else wx.ALIGN_LEFT
             this.Renderer.Alignment = this.Alignment
 
@@ -2314,17 +2327,6 @@ class FeffitResultFrame(wx.Frame):
         if result is None:
             return
 
-        needs_uncertainties = False
-        for name, par in result.params.items():
-            if par.stderr is None and (par.vary or
-                                       par.expr not in (None, '', 'None')):
-                needs_uncertainties = True
-        if needs_uncertainties:
-            try:
-                propagate_uncertainties(result, result.datasets)
-            except Exception:
-                pass
-
         label = getattr(result, 'label', self.wids['fit_label'].GetValue())
         text = f'# Feffit Report for {self.datagroup.filename} fit "{label}"\n'
         text = text + feffit_report(result)
@@ -2337,13 +2339,6 @@ class FeffitResultFrame(wx.Frame):
         if result is None:
             return
 
-        needs_uncertainties = False
-        for name, par in result.params.items():
-            if par.stderr is None and (par.vary or
-                                       par.expr not in (None, '', 'None')):
-                needs_uncertainties = True
-        if needs_uncertainties:
-            propagate_uncertainties(result, result.datasets)
         dset =  result.datasets[0]
         CSVFrame(parent=self.parent, csv=dset.csv_path_report(result.params, format=False))
 
@@ -2538,7 +2533,9 @@ class FeffitResultFrame(wx.Frame):
             return None
         if self.nfit > n_hist:
             self.nfit = 0
-        return self.feffit_history[self.nfit]
+        result = self.feffit_history[self.nfit]
+        feffit_report(result, with_paths=True)
+        return result
 
 
     def onSelectFit(self, evt=None):
@@ -2623,6 +2620,7 @@ class FeffitResultFrame(wx.Frame):
         if larch_eval is not None:
             self.larch_eval = larch_eval
         datagroup = self.datagroup
+
         self.feffit_history = getattr(self.datagroup, 'feffit_history', [])
         cur = self.get_fitresult()
         if cur is None:
@@ -2631,7 +2629,7 @@ class FeffitResultFrame(wx.Frame):
         wids['stats'].DeleteAllItems()
         for i, res in enumerate(self.feffit_history):
             label = getattr(res, 'label', f'fit {i+1}')
-            args = [f"{i+1}", label, f'{len(res.datasets[0].paths)}']
+            args = [f"{(i+1):02d}", label, f'{len(res.datasets[0].paths)}']
             for attr in ('nvarys', 'n_independent', 'chi_square',
                          'chi2_reduced', 'rfactor'):
                 val = getattr(res, attr)
@@ -2643,7 +2641,7 @@ class FeffitResultFrame(wx.Frame):
                     val = f'{val:.4f}'
                     # val = gformat(val, 9)
                 args.append(val)
-            wids['stats'].AppendItem(tuple(args))
+            wids['stats'].AppendItem(tuple(args)
         wids['data_title'].SetLabel(self.datagroup.filename)
         self.show_fitresult(nfit=0)
 
@@ -2657,7 +2655,9 @@ class FeffitResultFrame(wx.Frame):
             return
 
         path_hashkeys = []
+        dset_hashkeys = []
         for ds in result.datasets:
+            dset_hashkeys.append(ds.hashkey)
             path_hashkeys.extend([p.hashkey for p in ds.paths.values()])
 
         wids = self.wids
@@ -2667,7 +2667,9 @@ class FeffitResultFrame(wx.Frame):
         wids['paramsdata'] = []
         for param in reversed(result.params.values()):
             pname = param.name
-            if any([pname.endswith('_%s' % phash) for phash in path_hashkeys]):
+            if any([pname.endswith(f'_{phash}') for phash in path_hashkeys]):
+                continue
+            if any([f'_{dhash}_p' in pname for dhash in dset_hashkeys]):
                 continue
             if getattr(param, 'skip', None) not in (False, None):
                 continue
