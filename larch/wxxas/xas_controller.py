@@ -522,10 +522,12 @@ class XASController():
             master = grouplist[0]
         gmaster = self.get_group(master)
         xarray = 'xplot' if gmaster.datatype=='xydata' else 'energy'
-        outgroup = fix_varname(outgroup.lower())
         if outgroup is None:
             outgroup = 'merged'
-        outgroup = unique_name(outgroup, self.file_groups, max=1000)
+        outgroup = fix_varname(outgroup.lower())
+        # must not clash with an existing group name (not just a file name)
+        used_names = set(self.file_groups.values()) | set(dir(self.symtable))
+        outgroup = unique_name(outgroup, used_names, max=1000)
 
         glist = "[%s]" % (', '.join(grouplist))
 
@@ -534,6 +536,7 @@ class XASController():
         self.larch.eval(cmd)
 
         this = self.get_group(outgroup)
+        this.groupname = outgroup
         if not hasattr(gmaster, 'config'):
             self.init_group_config(gmaster)
         if not hasattr(this, 'config'):
