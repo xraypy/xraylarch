@@ -1001,6 +1001,10 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
         needs_uncertainties = True
         params = Parameters()
         add_sigma2funcs(params)
+
+        for attr in FEFFDAT_VALUES:
+            params._asteval.symtable[attr] = 1.0
+
         for name in result.var_names:
             opar = result.params[name]
             params.add(name, value=opar.value, vary=opar.vary, expr=opar.expr,
