@@ -471,7 +471,7 @@ class FeffPathGroup(Group):
             add_sigma2funcs(self.params)
         if self.label is None:
             self.label = self.hashkey
-            self.store_feffdat()
+        self.store_feffdat()
         for pname in PATH_PARS:
             val =  getattr(self, pname)
             attr = 'value'
