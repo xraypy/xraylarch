@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # models for debye-waller factors for xafs
-
+import sys
 import ctypes
 import numpy as np
 from larch.larchlib import get_dll
@@ -353,6 +353,7 @@ def sigma2_eins(t, theta):
     theta = max(float(theta), 1.e-5)
     t     = max(float(t), 1.e-5)
     rmass = 0.
+
     for sym, iz, ipot, amass, x, y, z in feffpath.geom:
         rmass = rmass + 1.0/max(0.1, amass)
     rmass = 1.0/max(1.e-12, rmass)
@@ -375,7 +376,6 @@ def sigma2_debye(t, theta):
     return sigma2_correldebye(natoms, tempk, thetad, rnorm,
                               atomx, atomy, atomz, atomm)
 
-
 def gnxas(r0, sigma, beta):
     if feffpath is None:
         return 0.
@@ -388,15 +388,17 @@ def gnxas(r0, sigma, beta):
         a2q = alpha**(q-1)
     except:
         a2q = 1.e100
-
-    print('> ', reff, alpha, q)
-
     return max(0, 2*exp(-alpha)*a2q/(sigma*abs(beta)*gamma(q)))
-
 """
+
+def _printer(self, *out, file=sys.stdout, flush=True, sep=' ', end='\n'):
+    print(*out, file=file, sep=sep, end=end)
+    file.flush()
+
 def add_sigma2funcs(params):
     """set sigma2funcs into Parameters' asteval"""
     f_eval = params._asteval
+    f_eval.symtable['print'] = _printer
     f_eval.symtable['EINS_FACTOR'] = EINS_FACTOR
     f_eval.symtable['sigma2_correldebye'] = sigma2_correldebye
     f_eval.symtable['feffpath'] = None
