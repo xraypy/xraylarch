@@ -1,4 +1,4 @@
-include README.md LICENSE INSTALL  MANIFEST.in setup.py pyproject.toml
+include README.md LICENSE AI_POLICY.md INSTALL  MANIFEST.in setup.py pyproject.toml
 exclude *.lar *.pyc core.* *~ *.pdf .deps
 recursive-include larch *
 recursive-exclude tests *
