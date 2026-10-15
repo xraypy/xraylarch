@@ -126,4 +126,5 @@ Table of Contents
    xafs.rst
    xray.rst
    xrf.rst
+   ai_policy.rst
    bibliography.rst
