@@ -2,13 +2,12 @@ import copy
 from functools import partial
 # from pathlib import Path
 import numpy as np
-from lmfit import Parameters, minimize
 from matplotlib.ticker import FuncFormatter
 
 import wx
 # from wxmplot import PlotPanel
 from xraydb import guess_edge
-from larch.math import index_of, index_nearest, interp
+from larch.math import index_nearest
 from larch.utils.strutils import file2groupname
 from larch.utils import path_split
 
@@ -20,9 +19,9 @@ from larch.wxlib import (GridPanel, FloatCtrl, FloatSpin,
                          get_markercolors, set_plotwindow_title)
 
 from larch.plot import plotlabels_wx as plotlabels, set_label_weight
-from larch.xafs import etok, ktoe, find_energy_step
+from larch import Group
+from larch.xafs import etok, ktoe, find_energy_step, energy_align
 from larch.utils.physical_constants import ATOM_SYMS
-from larch.math import boxcar
 
 Plot_Choices = {'Normalized': 'norm', 'Derivative': 'dmude'}
 
@@ -400,46 +399,27 @@ class EnergyCalibrateFrame(wx.Frame):
         self.on_align(use_zoom=False)
 
     def fit_eshift(self, datagroup):
-        """auto-fit for one datagroup to current reference"""
+        """auto-fit for one datagroup to current reference,
+        on the original energies: returns nan if the fit fails"""
         ref = self.controller.get_group(self.wids['reflist'].GetStringSelection())
-
         ensure_en_orig(datagroup)
-        dat = datagroup
-        dat.xplot = dat.energy_orig[:]
-        ref.xplot = ref.energy_orig[:]
-        # estep = find_energy_step(dat.xplot)
-
-        pars = Parameters()
-        ex0 = dat.e0 - ref.e0
-        if abs(ex0) > 20:
-            ex0 = ex0/5.0
-
-        emax = abs(ex0) + 50.0
-        i1 = index_of(ref.xplot, ref.e0 - 0.5*emax)
-        i2 = index_of(ref.xplot, ref.e0 + emax)
-
-        def resid(pars, ref, dat, i1, i2):
-            "fit residual"
-            eshift = pars['eshift'].value
-            newx = dat.xplot + eshift
-            scale = pars['scale'].value
-            y = interp(newx, dat.norm, ref.xplot, kind='cubic')
-            diff_norm = (y*scale-ref.norm)[i1:i2]
-            diff_dmude = ((np.gradient(y*scale) -
-                           np.gradient(ref.norm))/np.gradient(ref.xplot))[i1:i2]
-            return np.concatenate((boxcar(diff_norm, npts=1),
-                                   boxcar(diff_dmude, npts=3)))
-
-        pars.add('eshift', value=ex0, min=-2*emax, max=2*emax)
-        pars.add('scale', value=1.0, min=1.e-3, max=1e4)
-        result = minimize(resid, pars, args=(ref, dat, i1, i2),  max_nfev=1000)
-        return result.params['eshift'].value
+        ensure_en_orig(ref)
+        dat = Group(energy=datagroup.energy_orig[:], mu=datagroup.mu,
+                    norm=datagroup.norm, e0=datagroup.e0)
+        refgroup = Group(energy=ref.energy_orig[:], mu=ref.mu,
+                         norm=ref.norm, e0=ref.e0)
+        eshift = energy_align(dat, refgroup, array='norm')
+        if not np.isfinite(eshift):
+            self.controller.write_message(f'energy alignment failed for {datagroup.filename}')
+        return eshift
 
 
     def on_align(self, event=None, name=None, value=None, use_zoom=True):
         ref = self.controller.get_group(self.wids['reflist'].GetStringSelection())
         ensure_en_orig(ref)
         eshift = self.fit_eshift(self.dgroup)
+        if not np.isfinite(eshift):
+            return
         self.wids['eshift'].SetValue(eshift)
 
         xnew = self.dgroup.energy_orig + eshift
@@ -457,6 +437,8 @@ class EnergyCalibrateFrame(wx.Frame):
             ensure_en_orig(dgroup)
 
             eshift = self.fit_eshift(dgroup)
+            if not np.isfinite(eshift):
+                continue
             dgroup.energy_shift = eshift
             dgroup.xplot = dgroup.energy = eshift + dgroup.energy_orig[:]
             dgroup.journal.add('energy_shift ', eshift)
