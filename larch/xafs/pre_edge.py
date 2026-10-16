@@ -522,7 +522,7 @@ def energy_align(group, reference, array='dmude', emin=-15, emax=35):
     if not hasattr(group, 'dmude'):
         mu = getattr(group, 'norm', getattr(group, 'mu'))
         en = getattr(group, 'energy')
-        group.dmude = gradient(mu)/gradient(en)
+        group.dmude = np.gradient(mu)/np.gradient(en)
 
 
     if not (hasattr(reference, 'energy') and hasattr(reference, 'mu')
@@ -532,7 +532,7 @@ def energy_align(group, reference, array='dmude', emin=-15, emax=35):
     if not hasattr(reference, 'dmude'):
         mu = getattr(reference, 'norm', getattr(reference, 'mu'))
         en = getattr(reference, 'energy')
-        reference.dmude = gradient(mu)/gradient(en)
+        reference.dmude = np.gradient(mu)/np.gradient(en)
 
     xdat = group.energy[:]*1.0
     xref = reference.energy[:]*1.0
@@ -550,7 +550,7 @@ def energy_align(group, reference, array='dmude', emin=-15, emax=35):
     xref = remove_nans(xref[:], interp=True)
     yref = remove_nans(yref[:], interp=True)
 
-    i1 = index_of(xref, reference.e0-emin)
+    i1 = index_of(xref, reference.e0+emin)
     i2 = index_of(xref, reference.e0+emax)
 
     def align_resid(params, xdat, ydat, xref, yref, i1, i2):
