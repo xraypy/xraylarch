@@ -511,6 +511,8 @@ def energy_align(group, reference, array='dmude', emin=-15, emax=35):
     -----
       1.  Both group and reference must be XAFS data, with arrays of 'energy' and 'mu'.
           The reference group must already have an e0 value set.
+          If the group also has an e0 value, the fit starts from the e0
+          difference (reference.e0 - group.e0), otherwise from 0.
 
       2.  The alignment can be done with 'mu' or 'dmude'.  If it does not exist, the
           dmude array will be built for group and reference.
@@ -560,8 +562,16 @@ def energy_align(group, reference, array='dmude', emin=-15, emax=35):
         ytmp = interp(newx, ydat, xref, kind='cubic')
         return (ytmp*scale - yref)[i1:i2]
 
+    # start from the e0 difference, if the group has a usable e0
+    eshift0 = 0.0
+    group_e0 = getattr(group, 'e0', None)
+    if group_e0 is not None:
+        de0 = reference.e0 - group_e0
+        if np.isfinite(de0) and abs(de0) < 50:
+            eshift0 = de0
+
     params = Parameters()
-    params.add('eshift', value=0, min=-50, max=50)
+    params.add('eshift', value=eshift0, min=-50, max=50)
     params.add('scale', value=1, min=0, max=50)
 
     try:
