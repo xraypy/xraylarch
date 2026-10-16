@@ -23,11 +23,11 @@ def synthetic_mu(energy: np.ndarray, e0: float) -> np.ndarray:
     return step + whiteline
 
 
-def make_groups() -> tuple[Group, Group]:
+def make_groups(shift: float = SHIFT) -> tuple[Group, Group]:
     rng = np.random.default_rng(0)
     energy = np.arange(E0 - 100, E0 + 200, 0.25)
     ref_mu = synthetic_mu(energy, E0) + NOISE*rng.normal(size=energy.size)
-    dat_mu = synthetic_mu(energy, E0 + SHIFT) + NOISE*rng.normal(size=energy.size)
+    dat_mu = synthetic_mu(energy, E0 + shift) + NOISE*rng.normal(size=energy.size)
     ref = Group(energy=energy, mu=ref_mu, e0=E0)
     dat = Group(energy=energy.copy(), mu=dat_mu)
     return dat, ref
@@ -50,3 +50,14 @@ def test_energy_align_recovers_shift(array: str) -> None:
     eshift = energy_align(dat, ref, array=array)
     assert eshift == pytest.approx(-SHIFT, abs=0.05)
     assert dat.eshift == eshift
+
+
+@pytest.mark.parametrize('shift', [8.0, -8.0])
+def test_energy_align_large_shift_from_e0(shift: float) -> None:
+    """with a group e0 the fit starts from the e0 difference, and recovers
+    shifts that a dmude fit started from 0 misses"""
+    dat, ref = make_groups(shift)
+    # an e0 off by 0.5 eV is still a good enough starting point
+    dat.e0 = E0 + shift + 0.5
+    eshift = energy_align(dat, ref)
+    assert eshift == pytest.approx(-shift, abs=0.05)
