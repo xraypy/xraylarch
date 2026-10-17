@@ -8,9 +8,12 @@ from lmfit import Parameters, Minimizer, report_fit
 from xraydb import guess_edge
 from larch import Group
 from larch.larchlib import Make_CallArgs, parse_group_args
-from larch.math import (index_of, index_nearest, interp, smooth,
+from larch.math import (index_of, index_nearest, interp, smooth, boxcar,
                         polyfit, remove_dups, remove_nans, remove_nans2)
+from larch.utils.logging import getLogger
 from .xafsutils import set_xafsGroup, TINY_ENERGY
+
+_logger = getLogger('larch.xafs.energy_align')
 
 MODNAME = '_xafs'
 MAX_NNORM = 5
@@ -490,7 +493,9 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
         if group.edge is None:  group.edge = _edge
     return
 
-def energy_align(group, reference, array='dmude', emin=-15, emax=35):
+def energy_align(group: Group, reference: Group, array: str = 'auto',
+                 emin: float = -25, emax: float = 50, use_smooth: bool = True,
+                 max_nfev: int = 1000) -> float:
     """
     align XAFS data group to a reference group
 
@@ -498,79 +503,95 @@ def energy_align(group, reference, array='dmude', emin=-15, emax=35):
     ---------
     group      Larch group for spectrum to be aligned (see Note 1)
     reference  Larch group for reference spectrum     (see Note 1)
-    array      string of 'dmude', 'norm', or 'mu'     (see Note 2) ['dmude']
-    emin       float, min energy relative to e0 of reference for alignment [-15]
-    emax       float, max energy relative to e0 of reference for alignment [+35]
+    array      string of 'auto', 'norm', 'mu', or 'dmude'  (see Note 2) ['auto']
+    emin       float, min energy relative to e0 of reference for alignment [-25]
+    emax       float, max energy relative to e0 of reference for alignment [+50]
+    use_smooth bool, whether to smooth the fit residual with a boxcar [True]
+    max_nfev   int, maximum number of function evaluations in the fit [1000]
 
     Returns
     -------
-    eshift   energy shift to add to group.energy to match reference.
-             This value will also be written to group.eshift
+    eshift   energy shift to add to group.energy to match reference, or nan
+             if the fit fails. This value will also be written to group.eshift
 
     Notes
     -----
       1.  Both group and reference must be XAFS data, with arrays of 'energy' and 'mu'.
           The reference group must already have an e0 value set.
+          If the group also has an e0 value, the fit starts from the e0 difference
+          (reference.e0 - group.e0, divided by 5 if larger than 20 eV, to limit the
+          effect of a wrong e0), otherwise from 0.  The fit window [emin, emax]
+          is widened by this starting value.
 
-      2.  The alignment can be done with 'mu' or 'dmude'.  If it does not exist, the
-          dmude array will be built for group and reference.
+      2.  The aligned spectrum is 'norm' if both groups have it, or else 'mu'
+          ('auto'), or the one given ('norm' or 'mu').  The fit compares both the
+          spectrum and its energy derivative, or only the derivative ('dmude'),
+          with a scale factor and a linear baseline, so that 'mu' does not need
+          to be normalized.
+
+      3.  No arrays are written to group or reference: only group.eshift is set.
 
     """
-    if not (hasattr(group, 'energy') and hasattr(group, 'mu')):
-        raise ValueError("group must have attributes 'energy' and 'mu'")
+    if array not in ('auto', 'norm', 'mu', 'dmude'):
+        raise ValueError("array must be one of 'auto', 'norm', 'mu', 'dmude'")
+    for label, grp in (('group', group), ('reference', reference)):
+        if not (hasattr(grp, 'energy') and hasattr(grp, 'mu')):
+            raise ValueError(f"{label} must have attributes 'energy' and 'mu'")
+    if getattr(reference, 'e0', None) is None:
+        raise ValueError("reference must have attribute 'e0'")
 
-    if not hasattr(group, 'dmude'):
-        mu = getattr(group, 'norm', getattr(group, 'mu'))
-        en = getattr(group, 'energy')
-        group.dmude = gradient(mu)/gradient(en)
+    yname = array
+    if array in ('auto', 'dmude'):
+        has_norm = hasattr(group, 'norm') and hasattr(reference, 'norm')
+        yname = 'norm' if has_norm else 'mu'
+    elif not (hasattr(group, yname) and hasattr(reference, yname)):
+        raise ValueError(f"group and reference must have attribute '{yname}'")
+    use_spectrum = array != 'dmude'
 
+    xdat = remove_nans(np.asarray(group.energy, dtype=float), interp=True)
+    ydat = remove_nans(np.asarray(getattr(group, yname), dtype=float), interp=True)
+    xref = remove_nans(np.asarray(reference.energy, dtype=float), interp=True)
+    yref = remove_nans(np.asarray(getattr(reference, yname), dtype=float), interp=True)
+    dxref = np.gradient(xref)
+    dyref = np.gradient(yref)/dxref
 
-    if not (hasattr(reference, 'energy') and hasattr(reference, 'mu')
-            and hasattr(reference, 'e0') ):
-        raise ValueError("reference must have attributes 'energy', 'mu', and 'e0'")
+    e0ref = reference.e0
+    eshift0 = 0.0
+    e0dat = getattr(group, 'e0', None)
+    if e0dat is not None and np.isfinite(e0ref - e0dat):
+        eshift0 = e0ref - e0dat
+        if abs(eshift0) > 20:
+            eshift0 = eshift0/5.0
+    ewid = abs(eshift0)
+    i1 = index_of(xref, e0ref + emin - 0.5*ewid)
+    i2 = index_of(xref, e0ref + emax + ewid)
+    eshift_max = 2*(max(abs(emin), abs(emax)) + ewid)
+    nbox_spec, nbox_deriv = (1, 3) if use_smooth else (0, 0)
 
-    if not hasattr(reference, 'dmude'):
-        mu = getattr(reference, 'norm', getattr(reference, 'mu'))
-        en = getattr(reference, 'energy')
-        reference.dmude = gradient(mu)/gradient(en)
-
-    xdat = group.energy[:]*1.0
-    xref = reference.energy[:]*1.0
-    ydat = group.dmude[:]*1.0
-    yref = reference.dmude[:]*1.0
-    if array == 'mu':
-        ydat = group.mu[:]*1.0
-        yref = reference.mu[:]*1.0
-    elif array == 'norm':
-        ydat = group.norm[:]*1.0
-        yref = reference.norm[:]*1.0
-
-    xdat = remove_nans(xdat[:], interp=True)
-    ydat = remove_nans(ydat[:], interp=True)
-    xref = remove_nans(xref[:], interp=True)
-    yref = remove_nans(yref[:], interp=True)
-
-    i1 = index_of(xref, reference.e0-emin)
-    i2 = index_of(xref, reference.e0+emax)
-
-    def align_resid(params, xdat, ydat, xref, yref, i1, i2):
-        "fit residual"
-        newx = xdat + params['eshift'].value
-        scale = params['scale'].value
-        ytmp = interp(newx, ydat, xref, kind='cubic')
-        return (ytmp*scale - yref)[i1:i2]
+    def align_resid(params):
+        "fit residual: spectrum and derivative differences"
+        pars = params.valuesdict()
+        ytmp = pars['scale']*interp(xdat + pars['eshift'], ydat, xref, kind='cubic')
+        ytmp += pars['c0'] + pars['c1']*(xref - e0ref)
+        dytmp = np.gradient(ytmp)/dxref
+        resid = [boxcar((dytmp - dyref)[i1:i2], npts=nbox_deriv)]
+        if use_spectrum:
+            resid.insert(0, boxcar((ytmp - yref)[i1:i2], npts=nbox_spec))
+        return np.concatenate(resid)
 
     params = Parameters()
-    params.add('eshift', value=0, min=-50, max=50)
-    params.add('scale', value=1, min=0, max=50)
+    params.add('eshift', value=eshift0, min=-eshift_max, max=eshift_max)
+    params.add('scale', value=1.0, min=1.e-3, max=1.e4)
+    params.add('c0', value=0.0, vary=use_spectrum)
+    params.add('c1', value=0.0)
 
     try:
-        fit = Minimizer(align_resid, params,
-                        fcn_args=(xdat, ydat, xref, yref, i1, i2))
+        fit = Minimizer(align_resid, params, max_nfev=max_nfev)
         result = fit.leastsq()
-        eshift = result.params['eshift'].value
-    except:
-        eshift = 0
+        eshift = float(result.params['eshift'].value)
+    except Exception as exc:
+        _logger.warning(f"energy_align: fit failed ({type(exc).__name__}: {exc})")
+        eshift = np.nan
 
     group.eshift = eshift
     return eshift
