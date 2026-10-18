@@ -239,7 +239,7 @@ class CurveFitResultFrame(wx.Frame):
                                         size=(250, -1))
         set_color(self.filelist, 'list_fg', bg='list_bg')
 
-        panel = scrolled.ScrolledPanel(splitter)
+        panel = wx.Panel(splitter)
 
         panel.SetMinSize((775, 575))
         self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
@@ -427,16 +427,24 @@ class CurveFitResultFrame(wx.Frame):
         sizer.Add(cview, (irow, 0), (1, 5), LEFT)
 
         pack(panel, sizer)
-        panel.SetupScrolling()
 
         splitter.SplitVertically(self.filelist, panel, 1)
 
         mainsizer = wx.BoxSizer(wx.VERTICAL)
         mainsizer.Add(splitter, 1, wx.GROW|wx.ALL, 5)
 
+        panel.Bind(wx.EVT_SIZE, self.onSizeEvent)
+
         pack(self, mainsizer)
         self.Show()
         self.Raise()
+
+
+    def onSizeEvent(self, event=None):
+        wnew, hnew = event.GetSize()
+        for wname in ('stats', 'params', 'correl'):
+            w, h = self.wids[wname].GetSize()
+            self.wids[wname].SetSize((wnew, h))
 
     def onUpdateLabel(self, event=None):
         result = self.get_fitresult()
@@ -1345,7 +1353,7 @@ class CurveFitPanel(TaskPanel):
         wnew, hnew = event.GetSize()
         for wname in ('mainpanel', 'mod_nb'):
             w, h = self.wids[wname].GetSize()
-            self.wids[wname].SetSize((wnew-10, h))
+            self.wids[wname].SetSize((wnew, h))
 
     def get_config(self, dgroup=None):
         """get processing configuration for a group"""

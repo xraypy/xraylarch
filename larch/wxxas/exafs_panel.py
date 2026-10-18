@@ -423,7 +423,7 @@ class EXAFSPanel(TaskPanel):
         wnew, hnew = event.GetSize()
         for wname in ('mainpanel', 'plotpanel'):
             w, h = self.wids[wname].GetSize()
-            self.wids[wname].SetSize((wnew-10, h))
+            self.wids[wname].SetSize((wnew, h))
 
     def onEXAFSConfigSelect(self, evt=None):
         name = self.wids['exafs_conf_choice'].GetStringSelection()

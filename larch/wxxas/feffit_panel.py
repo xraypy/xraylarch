@@ -2067,8 +2067,6 @@ class FeffitResultFrame(wx.Frame):
 
         self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
 
-        # panel = scrolled.ScrolledPanel(splitter)
-
         panel = wx.Panel(splitter)
 
         panel.SetMinSize((725, 575))
@@ -2297,7 +2295,6 @@ class FeffitResultFrame(wx.Frame):
 
         panel.Bind(wx.EVT_SIZE, self.onSizeEvent)
 
-
         self.Show()
         self.Raise()
 
@@ -2305,7 +2302,7 @@ class FeffitResultFrame(wx.Frame):
         wnew, hnew = event.GetSize()
         for wname in ('stats', 'params', 'correl'):
             w, h = self.wids[wname].GetSize()
-            self.wids[wname].SetSize((wnew-10, h))
+            self.wids[wname].SetSize((wnew, h))
 
     def show_report(self, text, title='Text', default_filename='out.txt',
                     wildcard=None):

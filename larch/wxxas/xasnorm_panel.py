@@ -396,7 +396,7 @@ class XASNormPanel(TaskPanel):
         self.wids['mainpanel'] = panel
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add((5, 5), 0, LEFT, 3)
-        sizer.Add(panel, 0, LEFT, 3)
+        sizer.Add(panel, 1, LEFT|wx.GROW, 5)
         sizer.Add((5, 5), 0, LEFT, 3)
         pack(self, sizer)
 
@@ -405,7 +405,7 @@ class XASNormPanel(TaskPanel):
         wnew, hnew = event.GetSize()
         for wname in ('mainpanel', ):
             w, h = self.wids[wname].GetSize()
-            self.wids[wname].SetSize((wnew-10, h))
+            self.wids[wname].SetSize((wnew, h))
 
 
     def onNormConfigSelect(self, evt=None):

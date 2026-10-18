@@ -227,9 +227,9 @@ class PrePeakFitResultFrame(wx.Frame):
                                         size=(250, -1))
         set_color(self.filelist, 'list_fg', bg='list_bg')
 
-        panel = scrolled.ScrolledPanel(splitter)
+        panel = wx.Panel(splitter)
 
-        panel.SetMinSize((775, 575))
+        panel.SetMinSize((750, 600))
         self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
 
         # title row
@@ -337,7 +337,7 @@ class PrePeakFitResultFrame(wx.Frame):
             this.Alignment = wx.ALIGN_RIGHT if col > 0 else wx.ALIGN_LEFT
             this.Renderer.Alignment = this.Alignment
 
-        sview.SetMinSize((775, 150))
+        sview.SetMinSize((725, 150))
 
         irow += 1
         sizer.Add(sview, (irow, 0), (1, 5), LEFT)
@@ -368,7 +368,7 @@ class PrePeakFitResultFrame(wx.Frame):
             this.Alignment = wx.ALIGN_RIGHT if col in (1, 2) else wx.ALIGN_LEFT
             this.Renderer.Alignment = this.Alignment
 
-        pview.SetMinSize((775, 200))
+        pview.SetMinSize((725, 200))
         pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
 
         irow += 1
@@ -409,13 +409,13 @@ class PrePeakFitResultFrame(wx.Frame):
             if col == 2:
                 align = wx.ALIGN_RIGHT
             this.Alignment = this.Renderer.Alignment = align
-        cview.SetMinSize((475, 150))
+        cview.SetMinSize((725, 150))
 
         irow += 1
         sizer.Add(cview, (irow, 0), (1, 5), LEFT)
 
+        self.wids['mainpanel'] = panel
         pack(panel, sizer)
-        panel.SetupScrolling()
 
         splitter.SplitVertically(self.filelist, panel, 1)
 
@@ -423,8 +423,16 @@ class PrePeakFitResultFrame(wx.Frame):
         mainsizer.Add(splitter, 1, wx.GROW|wx.ALL, 5)
 
         pack(self, mainsizer)
+
+        panel.Bind(wx.EVT_SIZE, self.onSizeEvent)
         self.Show()
         self.Raise()
+
+    def onSizeEvent(self, event=None):
+        wnew, hnew = event.GetSize()
+        for wname in ('stats', 'params', 'correl'):
+            w, h = self.wids[wname].GetSize()
+            self.wids[wname].SetSize((wnew, h))
 
     def onUpdateLabel(self, event=None):
         result = self.get_fitresult()
@@ -916,7 +924,7 @@ class PrePeakPanel(TaskPanel):
         wnew, hnew = event.GetSize()
         for wname in ('mainpanel', 'mod_nb'):
             w, h = self.wids[wname].GetSize()
-            self.wids[wname].SetSize((wnew-10, h))
+            self.wids[wname].SetSize((wnew, h))
 
 
     def onEnableBaseline(self, event=None, **kws):
@@ -977,8 +985,6 @@ class PrePeakPanel(TaskPanel):
             self.wids['ppeak_emax'].SetValue(dgroup['emax'])
             self.wids['ppeak_elo'].SetValue(dgroup['elo'])
             self.wids['ppeak_ehi'].SetValue(dgroup['ehi'])
-            print("Prepeak fill formB conf from dict ")
-            print(dgroup)
 
             self.array_choice.SetStringSelection(dgroup['array_desc'])
             self.bline_choice.SetStringSelection(dgroup['baseline_form'])

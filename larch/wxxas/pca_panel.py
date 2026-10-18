@@ -179,7 +179,7 @@ class PCAPanel(TaskPanel):
         wnew, hnew = event.GetSize()
         for wname in ('mainpanel', 'pca_table', 'fit_table'):
             w, h = self.wids[wname].GetSize()
-            self.wids[wname].SetSize((wnew-10, h))
+            self.wids[wname].SetSize((wnew, h))
 
     def onSet_WeightMin(self, evt=None, value=None):
         "handle setting edge step"

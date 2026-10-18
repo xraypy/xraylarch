@@ -170,7 +170,7 @@ class XYDataPanel(TaskPanel):
         wnew, hnew = event.GetSize()
         for wname in ('mainpanel',):
             w, h = self.wids[wname].GetSize()
-            self.wids[wname].SetSize((wnew-10, h))
+            self.wids[wname].SetSize((wnew, h))
 
 
     def get_config(self, dgroup=None):

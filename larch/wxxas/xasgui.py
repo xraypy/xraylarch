@@ -840,9 +840,9 @@ class LarixFrame(wx.Frame):
                  'Save Session History as Larch Script',
                  self.onSaveLarchHistory)
 
-        if self.with_wx_inspect:
-            MenuItem(self, file_menu, 'wx inspect\tCtrl+I',
-                     'Show wx inspection window',   self.onwxInspect)
+        #if self.with_wx_inspect:
+        MenuItem(self, file_menu, 'wx inspect\tCtrl+I',
+                 'Show wx inspection window',   self.onwxInspect)
 
         file_menu.AppendSeparator()
 
