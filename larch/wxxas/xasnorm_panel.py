@@ -432,7 +432,7 @@ class XASNormPanel(TaskPanel):
                                   config_opts=self.norm_configs,
                                   default_off=['e0', 'edge', 'energy_shift'])
 
-    def onNormConfigSaved(sself):
+    def onNormConfigSaved(self):
         self.wids['norm_conf_choice'].SetChoices(list(self.norm_configs))
         self.controller.save_xasnorm_config(self.norm_configs)
         spath = Path(user_larchdir, 'larix', 'larix_xasnorm.conf').as_posix()
@@ -488,7 +488,6 @@ class XASNormPanel(TaskPanel):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
         self.skip_process = True
-        # print(" Fill Form ", dgroup, opts['e0'], opts)
 
         if self.is_xasgroup(dgroup):
             groupnames = list(self.controller.file_groups.keys())
