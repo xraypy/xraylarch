@@ -7,7 +7,6 @@ import locale
 import shutil
 from argparse import ArgumentParser
 from pathlib import Path
-from threading import Thread
 from pyshortcuts import get_folders, ico_ext, make_shortcut
 
 from .site_config import icondir, uname
@@ -28,9 +27,6 @@ def use_mpl_wxagg():
             matplotlib.use('WXAgg', force=True)
         except ImportError:
             pass
-
-def build_mpl_fontcache():
-    pass
 
 def set_locale():
     """set locale to 'C' for these applications"""
@@ -286,9 +282,6 @@ def run_larch():
 
     # create desktop icons
     if args.makeicons:
-        font_thread = Thread(target=build_mpl_fontcache)
-        font_thread.start()
-
         larchdir = Path(get_folders().desktop, 'Larch').absolute()
         if Path(larchdir).exists():
             try:
@@ -298,7 +291,6 @@ def run_larch():
 
         for app in LarchApps.values():
             app.make_desktop_shortcut()
-        font_thread.join()
         return
 
     # update to latest release or nightly build
