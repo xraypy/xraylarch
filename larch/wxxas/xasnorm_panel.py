@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 XANES Normalization panel
 """
@@ -16,24 +15,23 @@ from larch.xafs.xafsutils import guess_energy_units
 from larch.xafs.pre_edge import find_e0
 
 from larch.wxlib import (FloatSpin, SimpleText, pack, Button, HLine,
-                        GridPanel, TextCtrl, Choice, Check, RIGHT, LEFT,
-                        FRAMESTYLE, get_font,
-                        get_widget_value, set_widget_value)
+                         Choice, Check, RIGHT, LEFT,
+                         get_widget_value, set_widget_value)
 
 from larch.plot import plotlabels_wx as plotlabels
 from larch.site_config import user_larchdir
 from .xas_dialogs import EnergyUnitsDialog
 from .taskpanel import TaskPanel, TaskConfigFrame, autoset_fs_increment
-from . import config as larix_config
+# from . import config as larix_config
 from .config import (make_array_choice, EDGES, ATSYMS, PREEDGE_FORMS,
                      NNORM_CHOICES, NNORM_STRINGS, NORM_METHODS,
                      Plot_EnergyRanges)
 
 np.seterr(all='ignore')
 
-PLOTOPTS_1 = dict(style='solid', marker='None')
-PLOTOPTS_2 = dict(style='short dashed', zorder=3, marker='None')
-PLOTOPTS_D = dict(style='solid', zorder=2, side='right', marker='None')
+PLOTOPTS_1 = {'style': 'solid', 'marker': 'None'}
+PLOTOPTS_2 = {'style': 'short dashed', 'zorder': 3, 'marker': 'None'}
+PLOTOPTS_D = {'style': 'solid', 'zorder': 2, 'side': 'right', 'marker': 'None'}
 
 Plot_Choices1 = make_array_choice(['mu','norm', 'flat', 'dmude'])
 Plot_Choices2 = make_array_choice(['noplot', 'prelines',
@@ -404,7 +402,7 @@ class XASNormPanel(TaskPanel):
     def onSizeEvent(self, event=None):
         wnew, hnew = event.GetSize()
         for wname in ('mainpanel', ):
-            w, h = self.wids[wname].GetSize()
+            _, h = self.wids[wname].GetSize()
             self.wids[wname].SetSize((wnew, h))
 
 
