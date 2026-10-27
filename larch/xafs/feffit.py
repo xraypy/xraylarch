@@ -837,16 +837,21 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True,
         for pname, par in paramgroup.items():
             par._delay_asteval = True
             setattr(work_paramgroup, pname, par)
+    if isinstance(paramgroup, Parameters):
+        params = paramgroup
+    else:
+        params = Parameters()
+        for pname, par in work_paramgroup._params.items():
+            par._delay_asteval = True
+            params.add(par)
 
-    # prepare working Parameters
-    params = Parameters()
     add_sigma2funcs(params)
     for attr in FEFFDAT_VALUES:
         params._asteval.symtable[attr] = 1.0
-
-    for pname, par in work_paramgroup._params.items():
-        par._delay_asteval = True
-        params.add(par)
+#
+#     for pname, par in work_paramgroup._params.items():
+#         par._delay_asteval = True
+#         params.add(par)
 
     for pname, parval in paramgroup.items(): # explicitly copy 'skip'!
         if pname == '_params':
