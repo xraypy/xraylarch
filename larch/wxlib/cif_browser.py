@@ -451,6 +451,7 @@ class CIFFrame(wx.Frame):
         self.current_cif = cif
         self.has_xrd1d = False
         self.wids['cif_text'].SetValue(cif.ciftext)
+        self.wids['feff_runbutton'].Disable()
 
         if self.with_feff:
             elems =  chemparse(cif.formula.replace(' ', ''))
