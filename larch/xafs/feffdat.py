@@ -26,6 +26,7 @@ try:
     from feffdb import FeffDatabase
 except ImportError:
     FeffDatabase = None
+    print("no FeffDatabase")
 
 from larch.symboltable import Group
 from larch.larchlib import isNamedClass
@@ -47,11 +48,22 @@ FEFFDAT_VALUES = ('reff', 'nleg', 'degen', 'rmass', 'rnorman',
 
 FEFF_DB = None
 
+def pfmt(x):
+    if isinstance(x, str):
+        return x
+    return gformat(x, length=9)
+
 def pathname_valid(fname):
     if fname in ('', None):
         return False
     return (Path(fname).exists()  or
             (fname.startswith('feffdb[') and fname.endswith(']')))
+
+def set_feffdb(dbname):
+    global FEFF_DB
+    dbfile = get_feffdb_path(dbname=dbname)
+    if dbfile is not None:
+        FEFF_DB = FeffDatabase(dbfile, read_only=True)
 
 
 class FeffDatFile(Group):
@@ -65,7 +77,10 @@ class FeffDatFile(Group):
         self.__geometry = None
         Group.__init__(self,  **kwargs)
         if pathname_valid(filename):
-            self._read(filename)
+            try:
+                self._read(filename)
+            except ValueError:
+                pass
 
     def __repr__(self):
         if self.filename is not None:
@@ -209,16 +224,13 @@ class FeffDatFile(Group):
         elif (filename.startswith('feffdb[') and filename.endswith(']')):
             global FEFF_DB
             if FEFF_DB is None and FeffDatabase is not None:
-                FEFF_DB = FeffDatabase()
+                FEFF_DB = FeffDatabase(read_only=True)
             try:
                 fefftext = FEFF_DB.get_feffdat(filename[7:-1])
             except Exception:
-                print(f"Error reading Feff Database '{filename}'")
-                return
+                raise ValueError(f"Error reading Feff Database '{filename}'")
             if fefftext is None:
-                print(f"could not find entry in Feff Database '{filename}'")
-                return
-
+                raise ValueError(f"could not read Feff Database Entry: '{filename}'")
 
         self.filename = filename
         mode = 'header'
@@ -291,6 +303,7 @@ class FeffDatFile(Group):
                 if len(d) == 7:
                     data.append(d)
         data = np.array(data).transpose()
+
         self.k        = data[0]
         self.real_phc = data[1]
         self.mag_feff = data[2]
@@ -310,7 +323,6 @@ class FeffPathGroup(Group):
         kwargs = dict(filename=filename)
         kwargs.update(kws)
         Group.__init__(self, **kwargs)
-
         self.filename = filename
         self.feffrun = feffrun
         self.label = label
@@ -330,17 +342,21 @@ class FeffPathGroup(Group):
 
         if filename not in ('', None):
             self._feffdat = FeffDatFile(filename=filename)
-            xpath = Path(filename).absolute()
-            self.filename = xpath.as_posix()
-            self.feffrun = xpath.parent.as_posix()
+            if filename.startswith('feffdb[') and filename.endswith(']'):
+                self.filename = filename
+                self.feffrun = 'feffdb'
+            else:
+                xpath = Path(filename).absolute()
+                self.filename = xpath.as_posix()
+                self.feffrun = xpath.parent.as_posix()
 
-
-        if self._feffdat is not None:
+        if self._feffdat is not None and hasattr(self._feffdat, 'k'):
             self.create_spline_coefs()
             self.geom  = self._feffdat.geom
             self.shell = self._feffdat.shell
             self.absorber = self._feffdat.absorber
             self.__def_degen  = self._feffdat.degen
+            self.k = self._feffdat.k
 
             self.hashkey = self._feffdat.hashkey
             if self.label in ('', None):
@@ -524,7 +540,7 @@ class FeffPathGroup(Group):
                 parname = self.pathpar_name(pname)
                 if parname in self.params:
                     val = self.params[parname]._getval()
-                    out.append(val)
+            out.append(val)
         return out
 
     def path_paramvals(self, **kws):
@@ -597,6 +613,7 @@ class FeffPathGroup(Group):
 
     def report(self):
         "return  text report of parameters"
+        print("Path Report ", self.params)
         tmpvals = self.__path_params()
         pathpars = {}
         for pname in PATH_PARS:
@@ -618,8 +635,8 @@ class FeffPathGroup(Group):
             out.append(s)
 
         stderrs = {}
-        out.append(f'     reff   = {gfmt(self._feffdat.reff):s}')
-        out.append(f'     degen  = {gfmt(self.degen):s}')
+        out.append(f'     reff   = {pfmt(self._feffdat.reff):s}')
+        out.append(f'     degen  = {pfmt(self.degen):s}')
         for pname in PATH_PARS_WITH_R:
             val = strval = getattr(self, pname, 0)
             parname = self.pathpar_name(pname)
@@ -649,19 +666,17 @@ class FeffPathGroup(Group):
 
             if std is None  or std <= 0:
                 if isinstance(val, float):
-                    svalue = gfmt(val)
+                    svalue = pfmt(val)
                 elif isinstance(val, int):
                     svalue = str(val)
                 else:
                     svalue = val
             else:
-                svalue = "{:s} +/-{:s}".format(gfmt(val), gfmt(std))
+                svalue = "{:s} +/-{:s}".format(pfmt(val), pfmt(std))
             if (pname in ('third', 'fourth', 'ei') and
                 abs(val) < 1.e-19 and (std is None or std <= 0)):
                 continue
 
-            if pname == 's02':
-                pname = 'n*s02'
             svalue = "     {:7s}= {:s}".format(pname, svalue)
             if isinstance(strval, Parameter):
                 if strval.expr not in (None, ''):
@@ -815,8 +830,7 @@ def ff2chi(paths, group=None, params=None, k=None, kmax=None, kstep=0.05,
         raise ValueError('paths must be list, tuple, or dict')
 
     if len(pathlist) == 0:
-        return Group(k=np.linspace(0, 20, 401),
-                     chi=np.zeros(401, dtype='float64'))
+        raise ValueError('path list must contain at least one path')
 
     for path in pathlist:
         if not isNamedClass(path, FeffPathGroup):
