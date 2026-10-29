@@ -31,7 +31,7 @@ from .feffit import (FeffitDataSet, TransformGroup, feffit,
                      feffit_dataset, feffit_transform, feffit_report,
                      propagate_uncertainties, feffit_conf_map)
 
-from .autobk import autobk, autobk_lmfit, autobk_delta_chi
+from .autobk import autobk, autobk_lmfit, autobk_leastsq, autobk_delta_chi
 from .mback import mback, mback_norm
 from .diffkk import diffkk, diffKKGroup
 from .fluo import fluo_corr
