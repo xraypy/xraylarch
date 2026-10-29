@@ -14,7 +14,7 @@ from larch import Group, isgroup
 from larch.larchlib import Make_CallArgs, parse_group_args
 from larch.math import index_of, index_nearest, realimag, remove_dups
 
-from .xafsutils import ETOK, TINY_ENERGY, set_xafsGroup
+from .xafsutils import ETOK, KTOE, TINY_ENERGY, set_xafsGroup
 from .xafsft import ftwindow, xftf_fast
 from .pre_edge import find_e0, pre_edge
 
@@ -26,16 +26,25 @@ def spline_eval(kraw, mu, knots, coefs, order, kout):
     chi = UnivariateSpline(kraw, (mu-bkg), s=0)(kout)
     return bkg, chi
 
-def _resid(vcoefs, ncoef, kraw, mu, chi_std, knots, order, kout,
+def _resid_leastsq(vcoefs, ncoef, kraw, mu, k_std, chi_std, knots, order, kout,
             ftwin, nfft, irbkg, nclamp, clamp_lo, clamp_hi):
     global NFEV
     NFEV += 1
     nspl = len(vcoefs)
-    coefs = np.ones(ncoef)*vcoefs[-1]
-    coefs[:nspl] = vcoefs
+    lcoef = vcoefs[-1]
+    if chi_std is not None:
+        std_amp, std_de = vcoefs[-2], vcoefs[-1]
+        lcoef = vcoefs[-3]
+        nspl = nspl -2
+
+    coefs = np.ones(ncoef)*lcoef
+    coefs[:nspl] = vcoefs[:nspl]
     bkg, chi = spline_eval(kraw, mu, knots, coefs, order, kout)
     if chi_std is not None:
-        chi = chi - chi_std
+        e_std = ETOK*(k_std**2*KTOE + std_de)
+        kshift = np.sign(e_std)*np.sqrt(abs(e_std))
+        chi = chi - std_amp*np.interp(kout, kshift, chi_std)
+
     out =  realimag(xftf_fast(chi*ftwin, nfft=nfft)[:irbkg])
     if nclamp == 0:
         return out
@@ -46,7 +55,7 @@ def _resid(vcoefs, ncoef, kraw, mu, chi_std, knots, order, kout,
 
 
 @Make_CallArgs(["energy" ,"mu"])
-def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=None,
+def autobk_leastsq(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=None,
            edge_step=None, kmin=0, kmax=None, kweight=1, dk=0.1,
            win='hanning', k_std=None, chi_std=None, nfft=2048, kstep=0.05,
            pre_edge_kws=None, nclamp=3, clamp_lo=0, clamp_hi=1,
@@ -115,7 +124,6 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=None,
     if ek0 is None and isgroup(group, 'e0'):
         ek0 = group.e0
 
-    # print(f"AUTOBK {group=}, {ek0=}, {edge_step=}")
     if ek0 is not None and (ek0 < energy.min() or ek0 > energy.max()):
         ek0 = None
     if ek0 is None or edge_step is None:
@@ -150,8 +158,8 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=None,
     iemax = min(len(energy), 2+index_of(energy, ek0+kmax*kmax/ETOK)) - 1
 
     # interpolate provided chi(k) onto the kout grid
-    if chi_std is not None and k_std is not None:
-        chi_std = np.interp(kout, k_std, chi_std)
+    # if chi_std is not None and k_std is not None:
+    #     chi_std = np.interp(kout, k_std, chi_std)
     # pre-load FT window
     ftwin = kout**kweight * ftwindow(kout, xmin=kmin, xmax=kmax,
                                      window=win, dx=dk, dx2=dk)
@@ -192,19 +200,25 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=None,
     NFEV = 0
 
     vcoefs = 1.0*coefs[:nspl]
-    userargs = (len(coefs), kraw_, mu_, chi_std, knots, order, kout,
+    if chi_std is not None:
+        vcoefs = np.concatenate((vcoefs, np.array((1.0, 0.0))))
+    userargs = (len(coefs), kraw_, mu_, k_std, chi_std, knots, order, kout,
                ftwin, nfft, irbkg, nclamp, clamp_lo, clamp_hi)
 
-    lsout = leastsq(_resid, vcoefs, userargs, maxfev=2000*(ncoefs+1),
+    lsout = leastsq(_resid_leastsq, vcoefs, userargs, maxfev=2000*(ncoefs+1),
                     gtol=0.0, ftol=1.e-6, xtol=1.e-6, epsfcn=1.e-6,
                     full_output=1, col_deriv=0, factor=100, diag=None)
 
     best, covar, _infodict, errmsg, ier = lsout
     final_coefs        = coefs[:]
-    final_coefs[:nspl] = best[:]
-    final_coefs[nspl:] = best[-1]
+    if chi_std is not None:
+        final_coefs[:nspl] = best[:-2]*1.0
+        final_coefs[nspl:] = best[-3]
+    else:
+        final_coefs[:nspl] = best*1.0
+        final_coefs[nspl:] = best[-1]
 
-    chisqr = ((_resid(best, *userargs))**2).sum()
+    chisqr = ((_resid_leastsq(best, *userargs))**2).sum()
     redchi = chisqr / (2*irbkg+2*nclamp - nspl)
 
     coefs_std = np.array([np.sqrt(redchi*covar[i, i]) for i in range(nspl)])
@@ -231,6 +245,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=None,
                                  nknots=len(spl_k), knots=knots, order=order,
                                  init_knots_y=spl_y, nspl=nspl,
                                  init_chi=initchi/edge_step, coefs=final_coefs,
+                                 vars_chistd = coefs,
                                  coefs_std=coefs_std, iek0=iek0, iemax=iemax,
                                  ek0=ek0, covar=covar, chisqr=chisqr,
                                  redchi=redchi, init_bkg=init_bkg,
@@ -287,15 +302,18 @@ def autobk_delta_chi(group, err_sigma=1):
 
 
 ## version of autobk using lmfit
-
-def _lmfit_resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
-            kraw=None, mu=None, kout=None, ftwin=1, kweight=1, chi_std=None,
-            nclamp=0, clamp_lo=0, clamp_hi=0, **kws):
+def _resid_lmfit(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
+                 kraw=None, mu=None, kout=None, ftwin=1, kweight=1, k_std=None,
+                 chi_std=None, nclamp=0, clamp_lo=0, clamp_hi=0, **kws):
     # coefs = [getattr(pars, FMT_COEF % i) for i in range(ncoefs)]
     coefs = [pars[FMT_COEF % i].value for i in range(ncoefs)]
     bkg, chi = spline_eval(kraw, mu, knots, coefs, order, kout)
     if chi_std is not None:
-        chi = chi - chi_std
+        std_amp = pars['std_amp'].value
+        std_de = pars['std_de'].value
+        e_std = ETOK*(k_std**2*KTOE + std_de)
+        kshift = np.sign(e_std)*np.sqrt(abs(e_std))
+        chi = chi - std_amp*np.interp(kout, kshift, chi_std)
     out =  realimag(xftf_fast(chi*ftwin, nfft=nfft)[:irbkg])
     if nclamp == 0:
         return out
@@ -304,7 +322,6 @@ def _lmfit_resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
     return  np.concatenate((out,
                             abs(clamp_lo)*scale*chi[:nclamp],
                             abs(clamp_hi)*scale*chi[-nclamp:]))
-
 
 
 @Make_CallArgs(["energy" ,"mu"])
@@ -412,8 +429,8 @@ def autobk_lmfit(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=
     iemax = min(len(energy), 2+index_of(energy, ek0+kmax*kmax/ETOK)) - 1
 
     # interpolate provided chi(k) onto the kout grid
-    if chi_std is not None and k_std is not None:
-        chi_std = np.interp(kout, k_std, chi_std)
+    # if chi_std is not None and k_std is not None:
+    #     chi_std = np.interp(kout, k_std, chi_std)
     # pre-load FT window
     ftwin = kout**kweight * ftwindow(kout, xmin=kmin, xmax=kmax,
                                      window=win, dx=dk, dx2=dk)
@@ -451,13 +468,17 @@ def autobk_lmfit(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=
     for i in range(len(coefs)):
         params.add(name = FMT_COEF % i, value=coefs[i], vary=i<len(spl_y))
 
+    if chi_std is not None:
+        params.add(name='std_amp', value=1.0, min=0.05, max=20.0, vary=True)
+        params.add(name='std_de', value=0.0, min=-10.0, max=10.0, vary=True)
+
     initbkg, initchi = spline_eval(kraw[:iemax-iek0+1], mu[iek0:iemax+1],
                                    knots, coefs, order, kout)
 
     # do fit
-    result = minimize(_lmfit_resid, params, method='leastsq',
+    result = minimize(_resid_lmfit, params, method='leastsq',
                       gtol=1.e-6, ftol=1.e-6, xtol=1.e-6, epsfcn=1.e-6,
-                      kws = dict(ncoefs=len(coefs), chi_std=chi_std,
+                      kws = dict(ncoefs=len(coefs), k_std=k_std, chi_std=chi_std,
                                  knots=knots, order=order,
                                  kraw=kraw[:iemax-iek0+1],
                                  mu=mu[iek0:iemax+1], irbkg=irbkg, kout=kout,
@@ -484,7 +505,8 @@ def autobk_lmfit(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=
     # now fill in 'autobk_details' group
     details = Group(kmin=kmin, kmax=kmax, irbkg=irbkg, nknots=len(spl_k),
                     knots_k=knots, init_knots_y=spl_y, nspl=nspl,
-                    init_chi=initchi/edge_step, report=fit_report(result))
+                    init_chi=initchi/edge_step,
+                    report=fit_report(result, min_correl=0.8))
     details.init_bkg = mu[:]*1.0
     details.init_bkg[iek0:iek0+len(bkg)] = initbkg
     details.knots_y  = np.array([coefs[i] for i in range(nspl)])
@@ -543,3 +565,6 @@ def autobk_lmfit(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=
             group.delta_chi = dchi
             group.delta_bkg = 0.0*mu
             group.delta_bkg[iek0:iek0+len(dbkg)] = dbkg
+
+
+autobk = autobk_lmfit
