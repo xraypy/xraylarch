@@ -11,6 +11,12 @@ import wx
 import darkdetect
 
 from pyshortcuts import fix_varname, get_cwd, uname
+
+try:
+    from feffdb import FeffDatabase
+except ImportError:
+    FeffDatabase = None
+
 import larch
 from larch import Group, Journal, Entry
 from larch.larchlib import read_config, save_config
@@ -95,6 +101,11 @@ class XASController():
                             config[sname] = val
 
         self.config = self.larch.symtable._sys.larix_config = config
+
+        self.feffdb = None
+        if FeffDatabase is not None:
+            self.feffdb = FeffDatabase()
+
 
         self.session_id = get_sessionid(extra=id(self))
         self.session_lockfile = f"{SESSION_LOCK}_{self.session_id}.dat"
