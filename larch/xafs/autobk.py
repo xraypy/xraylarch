@@ -17,6 +17,7 @@ from larch.math import index_of, index_nearest, realimag, remove_dups
 from .xafsutils import ETOK, KTOE, TINY_ENERGY, set_xafsGroup
 from .xafsft import ftwindow, xftf_fast
 from .pre_edge import find_e0, pre_edge
+from .feffdat import feffpath
 
 FMT_COEF = 'coef_%2.2i'
 NFEV = 0
@@ -157,9 +158,6 @@ def autobk_leastsq(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek
     kout  = kstep * np.arange(int(1.01+kmax/kstep), dtype='float64')
     iemax = min(len(energy), 2+index_of(energy, ek0+kmax*kmax/ETOK)) - 1
 
-    # interpolate provided chi(k) onto the kout grid
-    # if chi_std is not None and k_std is not None:
-    #     chi_std = np.interp(kout, k_std, chi_std)
     # pre-load FT window
     ftwin = kout**kweight * ftwindow(kout, xmin=kmin, xmax=kmax,
                                      window=win, dx=dk, dx2=dk)
@@ -327,7 +325,7 @@ def _resid_lmfit(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
 @Make_CallArgs(["energy" ,"mu"])
 def autobk_lmfit(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=None,
            edge_step=None, kmin=0, kmax=None, kweight=1, dk=0.1,
-           win='hanning', k_std=None, chi_std=None, nfft=2048, kstep=0.05,
+           win='hanning', std_feffpath=None, k_std=None, chi_std=None, nfft=2048, kstep=0.05,
            pre_edge_kws=None, nclamp=3, clamp_lo=0, clamp_hi=0,
            calc_uncertainties=True, err_sigma=1, _larch=None, **kws):
     """Use Autobk algorithm to remove XAFS background
@@ -351,6 +349,7 @@ def autobk_lmfit(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=
       win:       FFT window function name.     ['hanning']
       nfft:      array size to use for FFT [2048]
       kstep:     k step size to use for FFT [0.05]
+      std_feffpath: feffpath (file or feffdb entry) to use as standard.
       k_std:     optional k array for standard chi(k).
       chi_std:   optional chi array for standard chi(k).
       nclamp:    number of energy end-points for clamp [3]
@@ -428,9 +427,17 @@ def autobk_lmfit(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=
     kout  = kstep * np.arange(int(1.01+kmax/kstep), dtype='float64')
     iemax = min(len(energy), 2+index_of(energy, ek0+kmax*kmax/ETOK)) - 1
 
-    # interpolate provided chi(k) onto the kout grid
-    # if chi_std is not None and k_std is not None:
-    #     chi_std = np.interp(kout, k_std, chi_std)
+    # use feffpath file or feffdb tag for std
+    if std_feffpath is not None:
+        try:
+            feff_path = feffpath(std_feffpath)
+            feff_path._calc_chi(kmax=20, sigma2=0.01)
+            k_std = feff_path.k
+            chi_std = feff_path.chi
+        except ValueError:
+            print(f"Warning: no Feff Database Path found: '{std_feffpath}'")
+
+
     # pre-load FT window
     ftwin = kout**kweight * ftwindow(kout, xmin=kmin, xmax=kmax,
                                      window=win, dx=dk, dx2=dk)
