@@ -76,11 +76,8 @@ class FeffDatFile(Group):
         self.__rmass = None
         self.__geometry = None
         Group.__init__(self,  **kwargs)
-        if pathname_valid(filename):
-            try:
-                self._read(filename)
-            except ValueError:
-                pass
+        if filename is not None:
+            self._read(filename)
 
     def __repr__(self):
         if self.filename is not None:
@@ -219,9 +216,7 @@ class FeffDatFile(Group):
 
 
     def _read(self, filename):
-        if Path(filename).exists():
-            fefftext = read_textfile(filename)
-        elif (filename.startswith('feffdb[') and filename.endswith(']')):
+        if (filename.startswith('feffdb[') and filename.endswith(']')):
             global FEFF_DB
             if FEFF_DB is None and FeffDatabase is not None:
                 FEFF_DB = FeffDatabase(read_only=True)
@@ -230,7 +225,11 @@ class FeffDatFile(Group):
             except Exception:
                 raise ValueError(f"Error reading Feff Database '{filename}'")
             if fefftext is None:
-                raise ValueError(f"could not read Feff Database Entry: '{filename}'")
+                raise ValueError(f"Feff Database Path not found: '{filename}'")
+        elif Path(filename).exists():
+            fefftext = read_textfile(filename)
+        else:
+            raise ValueError(f"Feff Path not found: '{filename}'")
 
         self.filename = filename
         mode = 'header'
@@ -613,7 +612,6 @@ class FeffPathGroup(Group):
 
     def report(self):
         "return  text report of parameters"
-        print("Path Report ", self.params)
         tmpvals = self.__path_params()
         pathpars = {}
         for pname in PATH_PARS:
