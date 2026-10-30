@@ -61,9 +61,21 @@ PlotCmds = {mu_bkg:  "plot_bkg({group:s}, norm=False, ",
 CLAMPLIST = ('0', '1', '2', '5', '10', '20', '50', '100', '200', '500', '1000',
              '2000', '5000', '10000')
 
+STD_TYPES = ('No Standard', 'Data Group', 'Feff Database')
+
 autobk_cmd = """autobk({group:s}, rbkg={rbkg: .3f}, ek0={ek0: .4f},
       kmin={bkg_kmin: .3f}, kmax={bkg_kmax: .3f}, kweight={bkg_kweight: .1f},
       clamp_lo={bkg_clamplo:.0f}, clamp_hi={bkg_clamphi:.0f})"""
+
+autobk_cmd_feffstd = """autobk({group:s}, rbkg={rbkg: .3f}, ek0={ek0: .4f},
+      kmin={bkg_kmin: .3f}, kmax={bkg_kmax: .3f}, kweight={bkg_kweight: .1f},
+      clamp_lo={bkg_clamplo:.0f}, clamp_hi={bkg_clamphi:.0f},
+      std_feffpath='{std_feffpath}')"""
+
+autobk_cmd_datastd = """autobk({group:s}, rbkg={rbkg: .3f}, ek0={ek0: .4f},
+      kmin={bkg_kmin: .3f}, kmax={bkg_kmax: .3f}, kweight={bkg_kweight: .1f},
+      clamp_lo={bkg_clamplo:.0f}, clamp_hi={bkg_clamphi:.0f},
+      k_std={k_std}, chi_std={chi_std})"""
 
 xftf_cmd = """xftf({group:s}, kmin={fft_kmin: .3f}, kmax={fft_kmax: .3f}, dk={fft_dk: .3f},
       kweight={fft_kweight: .3f}, window='{fft_kwindow:s}', rmax_out={fft_rmaxout:.1f})"""
@@ -295,6 +307,12 @@ class EXAFSPanel(TaskPanel):
         wids['bkg_clamplo'] = Choice(panel, **opts)
         wids['bkg_clamphi'] = Choice(panel, **opts)
 
+        # std
+        wids['std_type'] = Choice(panel, choices=STD_TYPES, size=(125, -1), action=self.onStdType)
+        wids['std_type'].SetSelection(0)
+        wids['std_select'] = Choice(panel, choices=['-'], size=(200, -1),
+                                    action=self.onProcess)
+
         wids['fft_kwindow'] = Choice(panel, choices=list(FT_WINDOWS),
                                      action=self.onProcess, size=(125, -1))
 
@@ -360,6 +378,12 @@ class EXAFSPanel(TaskPanel):
         panel.Add( wids['bkg_clamphi'])
         panel.Add(CopyBtn('bkg_clamp'), style=RIGHT)
 
+        # STD
+        add_text('\u03c7(k) Standard: ', newrow=True)
+        panel.Add(wids['std_type'], dcol=1)
+        panel.Add(wids['std_select'], dcol=2)
+        panel.Add(CopyBtn('bkg_std'), style=RIGHT)
+
         panel.Add(HLine(panel, size=(600,3)), dcol=8, newrow=True)
 
         panel.Add(SimpleText(panel, ' Fourier transform (k->R) ', size=(275, -1),
@@ -418,6 +442,36 @@ class EXAFSPanel(TaskPanel):
         sizer.Add(panel, 0, LEFT, 1)
         pack(self, sizer)
         self.skip_process = False
+
+    def onStdType(self, evt=None):
+        sel = self.wids['std_type'].GetStringSelection().lower()
+
+        self.wids['std_select'].Enable(not sel.startswith('no'))
+        dgroup = self.controller.get_group()
+        self.wids['std_select'].Clear()
+        feffdb = self.controller.feffdb
+        plist = []
+        if sel.startswith('data'):
+            for fname, gname in self.controller.file_groups.items():
+                agroup = self.controller.get_group(gname)
+                if (dgroup != agroup and
+                    agroup.atsym == dgroup.atsym and
+                    agroup.edge == dgroup.edge and
+                    hasattr(agroup, 'chi') and
+                    hasattr(agroup, 'k')):
+                    plist.append(fname)
+        elif sel.startswith('feff') and feffdb is not None:
+            plist = []
+            for path in feffdb.list_feffdat(absorber=dgroup.atsym,
+                                            edge=getattr(dgroup, 'edge', 'K')):
+                desc = path['compound']
+                if desc.startswith('<missing'):
+                    desc = path['formula']
+                plist.append(f"{path['label']} : {desc}")
+        if len(plist) == 0:
+            plist = ['-']
+        self.wids['std_select'].SetChoices(plist)
+        self.onProcess()
 
     def onSizeEvent(self, event=None):
         wnew, hnew = event.GetSize()
@@ -608,6 +662,15 @@ class EXAFSPanel(TaskPanel):
             except:
                 print("failed to read exafs attr ", attr)
 
+        std_type = wids['std_type'].GetStringSelection().lower()
+        std_sel  = wids['std_select'].GetStringSelection()
+        conf['bkg_std'] = None
+        if std_type.lower().startswith('feff'):
+            fdb_sel = std_sel.split(':')[0].strip()
+            conf['bkg_std'] = f'feffdb[{fdb_sel}]'
+        else:
+            conf['bkg_std'] = f'datagroup: {std_sel}'
+
         time.sleep(0.001)
         self.skip_process = False
         dgroup = self.controller.get_group()
@@ -756,6 +819,14 @@ class EXAFSPanel(TaskPanel):
         # copy config to command args (so that group can be added)
         opts = {k:v for k, v in conf.items()}
         opts['group'] = gname = dgroup.groupname
+        if conf['bkg_std'] is not None:
+            if conf['bkg_std'].startswith('feffdb'):
+                opts['std_feffpath'] = conf['bkg_std']
+            elif conf['bkg_std'].startswith('datagroup'):
+                fname = conf['bkg_std'].replace('datagroup:', '').strip()
+                gname  = self.controller.file_groups[fname]
+                opts['k_std']  = f'{gname}.k'
+                opts['chi_std'] = f'{gname}.chi'
 
         bkgpars = []
         for attr in ('ek0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
@@ -764,11 +835,21 @@ class EXAFSPanel(TaskPanel):
             if val is None:
                 val = -1
             bkgpars.append(f"{val}:.4f")
+        if 'std_feffpath' in opts:
+            bkgpars.append(f"std:{opts['std_feffpath']}")
+        elif 'chi_std' in opts:
+            bkgpars.append(f"std:{opts['chi_std']}")
         bkgpars = ':'.join(bkgpars)
         lastpars = self.last_process_bkg.get(gname, '')
         if (force or (bkgpars != lastpars) or
               (getattr(dgroup, 'chi', None) is None)):
-            self.larch_eval(autobk_cmd.format(**opts))
+            cmd = autobk_cmd
+            if 'std_feffpath' in opts:
+                cmd = autobk_cmd_feffstd
+            elif 'chi_std' in opts:
+                cmf = autobk_cmd_datastd
+            cmd = cmd.format(**opts)
+            self.larch_eval(cmd)
             self.last_process_bkg[gname] = bkgpars
             self.last_process_fft[gname] = None
 
@@ -905,7 +986,6 @@ class EXAFSPanel(TaskPanel):
         cmd = cmd.format(group=dgroup.groupname)
         # print("Get Plot Command: ", cmd)
         return cmd
-
 
     def onPlotSel(self, evt=None):
         group_ids = self.controller.filelist.GetCheckedStrings()
