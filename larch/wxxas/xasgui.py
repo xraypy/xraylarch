@@ -44,8 +44,8 @@ from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
                          FileOpen, Choice, Check, MenuItem, HyperText,
                          set_color, GUI_COLORS, CEN, LEFT, FRAMESTYLE,
                          flatnotebook, LarchUpdaterDialog, GridPanel, CIFFrame,
-                         Structure2FeffFrame, FeffResultsFrame, LarchWxApp,
-                         OkCancel, ExceptionPopup, get_font)
+                         Structure2FeffFrame, FeffResultsFrame, FeffDBFrame,
+                         LarchWxApp, OkCancel, ExceptionPopup, get_font)
 
 try:
     from wxutils import SetAppDisplayName, SetDockIcon
@@ -69,9 +69,9 @@ from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
                           LockedSessionDialog, fit_dialog_window)
 
 from .datatasks import (RebinDataFrame, DeglitchFrame,
-                         EnergyCalibrateFrame, SmoothDataFrame,
-                         OverAbsorptionFrame, DeconvolutionFrame,
-                         SpectraCalcFrame)
+                        EnergyCalibrateFrame, SmoothDataFrame,
+                        OverAbsorptionFrame, DeconvolutionFrame,
+                        SpectraCalcFrame)
 
 from larch.io import (read_ascii, read_xdi, read_gsexdi, gsescan_group,
                       groups2csv, is_athena_project,
@@ -920,6 +920,9 @@ class LarixFrame(wx.Frame):
         MenuItem(self, feff_menu, "Import Feff Paths from Feff Calculations",
                  "Browse Feff Calculations, Get Feff Paths", self.onFeffBrowse)
 
+        MenuItem(self, feff_menu, "Import Feff Paths from Feff Database",
+                 "Browse Feff Database", self.onFeffDBBrowse)
+
         self.menubar.Append(feff_menu, "Feff")
 
         hmenu = wx.Menu()
@@ -1458,6 +1461,10 @@ before clearing"""
 
     def onFeffBrowse(self, event=None):
         self.show_subframe('feff_paths', FeffResultsFrame, _larch=self.larch,
+                           path_importer=self.get_nbpage('feffit')[1].add_path)
+
+    def onFeffDBBrowse(self, event=None):
+        self.show_subframe('feffdb', FeffDBFrame, _larch=self.larch,
                            path_importer=self.get_nbpage('feffit')[1].add_path)
 
     def onLoadFitResult(self, event=None):

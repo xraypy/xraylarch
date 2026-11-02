@@ -169,6 +169,7 @@ if HAS_WXPYTHON:
 
 
     from .feff_browser import FeffResultsFrame, FeffResultsPanel
+    from .feffdb_browser import FeffDBFrame
     from .cif_browser import CIFFrame
     from .structure2feff_browser import Structure2FeffFrame
 
