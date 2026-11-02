@@ -500,7 +500,7 @@ class FeffResultsFrame(wx.Frame):
         self.fefflist.select_all()
 
     def onSelNone(self, event=None):
-        self.fefflist.select_none()
+        self.fefflist.select_all(use=False)
 
     def onRemoveFeffFolders(self, event=None):
         dlg = RemoveFeffCalcDialog(self, ncalcs=len(self.fefflist.GetCheckedStrings()))
