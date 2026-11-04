@@ -668,7 +668,7 @@ class EXAFSPanel(TaskPanel):
         if std_type.lower().startswith('feff'):
             fdb_sel = std_sel.split(':')[0].strip()
             conf['bkg_std'] = f'feffdb[{fdb_sel}]'
-        else:
+        elif std_type.lower().startswith('data') and std_sel != '-':
             conf['bkg_std'] = f'datagroup: {std_sel}'
 
         time.sleep(0.001)
