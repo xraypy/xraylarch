@@ -7,7 +7,6 @@ import sys
 import time
 
 import wx
-import wx.lib.scrolledpanel as scrolled
 import wx.dataview as dv
 import numpy as np
 
@@ -162,7 +161,7 @@ class LinComboResultFrame(wx.Frame):
         set_color(self.filelist, 'list_fg', bg='list_bg')
 
 
-        panel = scrolled.ScrolledPanel(splitter)
+        panel = wx.Panel(splitter)
 
         self.SetMinSize((650, 600))
         self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
@@ -192,7 +191,6 @@ class LinComboResultFrame(wx.Frame):
         wids['fitspace_title'] = SimpleText(panel, 'Array Fit: ')
 
         copts = dict(size=(125, 30), default=True, action=self.onPlotOne)
-        # wids['show_e0'] = Check(panel, label='show E0?', **copts)
         wids['show_fitrange'] = Check(panel, label='show fit range?', **copts)
 
         irow = 0
@@ -293,7 +291,9 @@ class LinComboResultFrame(wx.Frame):
         sizer.Add(HLine(panel, size=(675, 3)), (irow, 0), (1, 4), LEFT)
 
         pack(panel, sizer)
-        panel.SetupScrolling()
+        panel.Bind(wx.EVT_SIZE, self.onSizeEvent)
+        # self.wids['mainpanel'] = panel
+
 
         splitter.SplitVertically(self.filelist, panel, 1)
 
@@ -310,6 +310,12 @@ class LinComboResultFrame(wx.Frame):
         group = self.datasets.get(evt.GetString(), None)
         if group is not None:
             self.show_results(datagroup=group)
+
+    def onSizeEvent(self, event=None):
+        wnew, hnew = event.GetSize()
+        for wname in ('stats', 'weightspanel'):
+            w, h = self.wids[wname].GetSize()
+            self.wids[wname].SetSize((wnew, h))
 
     def add_results(self, dgroup, form=None, larch_eval=None, show=True):
         name = dgroup.filename
@@ -429,9 +435,9 @@ class LinComboResultFrame(wx.Frame):
         wids['params'].DeleteAllItems()
 
         for pname, par in fit_result.params.items():
-            args = [pname, gformat(par.value, 10), '--']
+            args = [pname, gformat(par.value, 9), '--']
             if par.stderr is not None:
-                args[2] = gformat(par.stderr, 10)
+                args[2] = gformat(par.stderr, 9)
             self.wids['params'].AppendItem(tuple(args))
 
     def onPlotOne(self, evt=None):
@@ -990,7 +996,7 @@ lcf_result = {func:s}({gname:s}, [{comps:s}],
             script = "%s\n{gname:s}.lcf_result = lcf_result\n" % script
         else:
             script = "%s\n{gname:s}.lcf_result = [lcf_result]\n" % script
-
+        # print("LIN COMBO : ", script.format(**form))
         self.larch_eval(script.format(**form))
 
         dgroup = self.controller.get_group(groupname)
