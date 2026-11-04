@@ -1673,12 +1673,19 @@ class FeffitPanel(TaskPanel):
 
         pathpanel.enable_editing()
 
+        if filename.startwith('feffdb['):
+            feffrun = 'feffdb'
         pdat = {'title': title, 'fullpath': filename,
                 'feffrun': feffrun, 'use':True}
+
         pdat.update(pathpanel.get_expressions())
 
+
+        # print(feffcache['paths'])
+        # print(f"For cache_path:  {pdat=} ")
+
         if title not in feffcache['paths']:
-            if Path(filename).exists():
+            if Path(filename).exists() or filename.startswith('feffdb['):
                 self.larch_eval(COMMANDS['cache_path'].format(**pdat))
             else:
                 print(f"cannot find file Feff data file '{filename}'")
