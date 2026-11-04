@@ -305,7 +305,11 @@ class XYDataPanel(TaskPanel):
         if xname not in xarr:
             xname = 'xdat'
 
-        xdat = getattr(dgroup, xname, dgroup.xdat)
+        try:
+            xdat = getattr(dgroup, xname, dgroup.xdat)
+        except:
+            xdat = None
+
         if xdat is None:
             return
         dgroup.xdat = 1.0  * xdat
@@ -592,6 +596,7 @@ class XYDataPanel(TaskPanel):
             dgroup.plot_yarrays = [('ynorm', PLOTOPTS_1, lab),
                                    ('i0', PLOTOPTS_D, lab2)]
         dgroup.plot_ylabel = lab
+        dgroup.plot_extras = []
         needs_proc = False
         for attr in req_attrs:
             needs_proc = needs_proc or (not hasattr(dgroup, attr))
@@ -599,8 +604,6 @@ class XYDataPanel(TaskPanel):
         if needs_proc:
             self.process(dgroup=dgroup, force=True)
 
-        y4e0 = dgroup.yplot = getattr(dgroup, dgroup.plot_yarrays[0][0], dgroup.ydat)
-        dgroup.plot_extras = []
 
 
     def plot(self, dgroup, title=None, plot_yarrays=None, yoff=0,
