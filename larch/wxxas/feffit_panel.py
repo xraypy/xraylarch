@@ -1673,7 +1673,7 @@ class FeffitPanel(TaskPanel):
 
         pathpanel.enable_editing()
 
-        if filename.startwith('feffdb['):
+        if filename.startswith('feffdb['):
             feffrun = 'feffdb'
         pdat = {'title': title, 'fullpath': filename,
                 'feffrun': feffrun, 'use':True}
