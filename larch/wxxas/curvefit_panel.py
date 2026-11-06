@@ -39,7 +39,7 @@ from larch.math.fitmodels import (ConstantModel, LinearModel,
 from larch.io.export_modelresult import export_modelresult
 from larch.io import save_groups, read_groups
 
-from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl,
+from larch.wxlib import (grow_width, ReportFrame, BitmapButton, FloatCtrl,
                          FloatSpin, SetTip, GridPanel, get_icon,
                          SimpleText, pack, Button, HLine, Choice,
                          Check, MenuItem, GUI_COLORS, set_color, CEN,
@@ -441,10 +441,8 @@ class CurveFitResultFrame(wx.Frame):
 
 
     def onSizeEvent(self, event=None):
-        wnew, hnew = event.GetSize()
-        for wname in ('stats', 'params', 'correl'):
-            w, h = self.wids[wname].GetSize()
-            self.wids[wname].SetSize((wnew, h))
+        grow_width([self.wids[wname] for wname in ('stats', 'params', 'correl')],
+                   event.GetSize()[0])
 
     def onUpdateLabel(self, event=None):
         result = self.get_fitresult()
@@ -1350,10 +1348,8 @@ class CurveFitPanel(TaskPanel):
 
 
     def onSizeEvent(self, event=None):
-        wnew, hnew = event.GetSize()
-        for wname in ('mainpanel', 'mod_nb'):
-            w, h = self.wids[wname].GetSize()
-            self.wids[wname].SetSize((wnew, h))
+        grow_width([self.wids[wname] for wname in ('mainpanel', 'mod_nb')],
+                   event.GetSize()[0])
 
     def get_config(self, dgroup=None):
         """get processing configuration for a group"""

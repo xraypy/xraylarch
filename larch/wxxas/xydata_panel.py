@@ -13,7 +13,7 @@ from larch.utils import  path_split, file2groupname
 from larch.math import index_of
 from larch.xafs.xafsutils import guess_energy_units
 
-from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, get_icon,
+from larch.wxlib import (grow_width, BitmapButton, FloatCtrl, FloatSpin, get_icon,
                          SimpleText, pack, Button, HLine, Choice, Check,
                          GridPanel, CEN, RIGHT, LEFT,
                          get_zoomlimits, set_zoomlimits,
@@ -167,11 +167,8 @@ class XYDataPanel(TaskPanel):
         pack(self, sizer)
 
     def onSizeEvent(self, event=None):
-        wnew, hnew = event.GetSize()
-        for wname in ('mainpanel',):
-            w, h = self.wids[wname].GetSize()
-            self.wids[wname].SetSize((wnew, h))
-
+        grow_width([self.wids[wname] for wname in ('mainpanel',)],
+                   event.GetSize()[0])
 
     def get_config(self, dgroup=None):
         """custom get_config"""
