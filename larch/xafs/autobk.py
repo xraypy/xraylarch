@@ -44,7 +44,7 @@ def _resid_leastsq(vcoefs, ncoef, kraw, mu, k_std, chi_std, knots, order, kout,
     if chi_std is not None:
         e_std = ETOK*(k_std**2*KTOE + std_de)
         kshift = np.sign(e_std)*np.sqrt(abs(e_std))
-        chi = chi - std_amp*np.interp(kout, kshift, chi_std)
+        chi = chi - std_amp*np.interp(kout, kshift, chi_std, left=0.0, right=0.0)
 
     out =  realimag(xftf_fast(chi*ftwin, nfft=nfft)[:irbkg])
     if nclamp == 0:
@@ -311,7 +311,7 @@ def _resid_lmfit(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
         std_de = pars['std_de'].value
         e_std = ETOK*(k_std**2*KTOE + std_de)
         kshift = np.sign(e_std)*np.sqrt(abs(e_std))
-        chi = chi - std_amp*np.interp(kout, kshift, chi_std)
+        chi = chi - std_amp*np.interp(kout, kshift, chi_std, left=0.0, right=0.0)
     out =  realimag(xftf_fast(chi*ftwin, nfft=nfft)[:irbkg])
     if nclamp == 0:
         return out
@@ -434,8 +434,9 @@ def autobk_lmfit(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=
             feff_path._calc_chi(kmax=20, sigma2=0.01)
             k_std = feff_path.k
             chi_std = feff_path.chi
-        except ValueError:
-            print(f"Warning: no Feff Database Path found: '{std_feffpath}'")
+        except Exception as exc:
+            print(f"Warning: cannot use Feff path '{std_feffpath}' as standard: {exc}")
+            k_std = chi_std = None
 
 
     # pre-load FT window
