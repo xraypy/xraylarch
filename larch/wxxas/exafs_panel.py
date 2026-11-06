@@ -21,7 +21,7 @@ from larch.xafs.pre_edge import find_e0
 from larch.site_config import user_larchdir
 from .xas_dialogs import EnergyUnitsDialog
 from .taskpanel import TaskPanel, TaskConfigFrame, update_confval
-from .config import ATHENA_CLAMPNAMES, Plot_EnergyRanges
+from .config import ATHENA_CLAMPNAMES, BKG_STD_TYPES, Plot_EnergyRanges
 
 np.seterr(all='ignore')
 
@@ -60,8 +60,6 @@ PlotCmds = {mu_bkg:  "plot_bkg({group:s}, norm=False, ",
 
 CLAMPLIST = ('0', '1', '2', '5', '10', '20', '50', '100', '200', '500', '1000',
              '2000', '5000', '10000')
-
-STD_TYPES = ('No Standard', 'Data Group', 'Feff Database')
 
 autobk_cmd = """autobk({group:s}, rbkg={rbkg: .3f}, ek0={ek0: .4f},
       kmin={bkg_kmin: .3f}, kmax={bkg_kmax: .3f}, kweight={bkg_kweight: .1f},
@@ -116,7 +114,6 @@ NAMED_PLOTOPTS['E and R space'] = _cnf
 class EXAFSPanel(TaskPanel):
     """EXAFS Panel"""
     def __init__(self, parent, controller=None, **kws):
-
         self.plot_conf = {}
         self.plot_opts = {}
         for key, value in NAMED_PLOTOPTS.items():
@@ -142,7 +139,6 @@ class EXAFSPanel(TaskPanel):
         wids = self.wids
         self.skip_process = True
         defaults = self.exafs_configs['default']
-
         ppanel = GridPanel(self, ncols=7, nrows=10, pad=2, itemstyle=LEFT)
         wids['plot_one'] = Button(ppanel, 'Plot Current Group', size=(175, -1),
                               action=self.onPlotOne)
@@ -308,9 +304,9 @@ class EXAFSPanel(TaskPanel):
         wids['bkg_clamphi'] = Choice(panel, **opts)
 
         # std
-        wids['std_type'] = Choice(panel, choices=STD_TYPES, size=(125, -1), action=self.onStdType)
-        wids['std_type'].SetSelection(0)
-        wids['std_select'] = Choice(panel, choices=['-'], size=(200, -1),
+        wids['bkg_std_type'] = Choice(panel, choices=BKG_STD_TYPES, size=(125, -1), action=self.onStdType)
+        wids['bkg_std_type'].SetSelection(0)
+        wids['bkg_std_select'] = Choice(panel, choices=['-'], size=(200, -1),
                                     action=self.onProcess)
 
         wids['fft_kwindow'] = Choice(panel, choices=list(FT_WINDOWS),
@@ -380,8 +376,8 @@ class EXAFSPanel(TaskPanel):
 
         # STD
         add_text('\u03c7(k) Standard: ', newrow=True)
-        panel.Add(wids['std_type'], dcol=1)
-        panel.Add(wids['std_select'], dcol=2)
+        panel.Add(wids['bkg_std_type'], dcol=1)
+        panel.Add(wids['bkg_std_select'], dcol=2)
         panel.Add(CopyBtn('bkg_std'), style=RIGHT)
 
         panel.Add(HLine(panel, size=(600,3)), dcol=8, newrow=True)
@@ -444,11 +440,11 @@ class EXAFSPanel(TaskPanel):
         self.skip_process = False
 
     def onStdType(self, evt=None):
-        sel = self.wids['std_type'].GetStringSelection().lower()
+        sel = self.wids['bkg_std_type'].GetStringSelection().lower()
 
-        self.wids['std_select'].Enable(not sel.startswith('no'))
+        self.wids['bkg_std_select'].Enable(not sel.startswith('no'))
         dgroup = self.controller.get_group()
-        self.wids['std_select'].Clear()
+        self.wids['bkg_std_select'].Clear()
         feffdb = self.controller.feffdb
         plist = []
         if sel.startswith('data'):
@@ -470,7 +466,7 @@ class EXAFSPanel(TaskPanel):
                 plist.append(f"{path['label']} : {desc}")
         if len(plist) == 0:
             plist = ['-']
-        self.wids['std_select'].SetChoices(plist)
+        self.wids['bkg_std_select'].SetChoices(plist)
         self.onProcess()
 
     def onSizeEvent(self, event=None):
@@ -621,7 +617,7 @@ class EXAFSPanel(TaskPanel):
                 wids[attr].SetStringSelection(opts[attr])
 
 
-        for attr in ('bkg_clamplo', 'bkg_clamphi'):
+        for attr in ('bkg_clamplo', 'bkg_clamphi', 'bkg_std_type', 'bkg_std_select'):
             val = opts.get(attr, 0)
             try:
                 val = int(val)
@@ -662,14 +658,9 @@ class EXAFSPanel(TaskPanel):
             except:
                 print("failed to read exafs attr ", attr)
 
-        std_type = wids['std_type'].GetStringSelection().lower()
-        std_sel  = wids['std_select'].GetStringSelection()
-        conf['bkg_std'] = None
-        if std_type.lower().startswith('feff'):
-            fdb_sel = std_sel.split(':')[0].strip()
-            conf['bkg_std'] = f'feffdb[{fdb_sel}]'
-        elif std_type.lower().startswith('data') and std_sel != '-':
-            conf['bkg_std'] = f'datagroup: {std_sel}'
+        conf['bkg_std_type'] = wids['bkg_std_type'].GetStringSelection().lower()
+        conf['bkg_std_select'] = wids['bkg_std_select'].GetStringSelection()
+
 
         time.sleep(0.001)
         self.skip_process = False
@@ -819,14 +810,18 @@ class EXAFSPanel(TaskPanel):
         # copy config to command args (so that group can be added)
         opts = {k:v for k, v in conf.items()}
         opts['group'] = gname = dgroup.groupname
-        if conf['bkg_std'] is not None:
-            if conf['bkg_std'].startswith('feffdb'):
-                opts['std_feffpath'] = conf['bkg_std']
-            elif conf['bkg_std'].startswith('datagroup'):
-                fname = conf['bkg_std'].replace('datagroup:', '').strip()
-                gname  = self.controller.file_groups[fname]
-                opts['k_std']  = f'{gname}.k'
-                opts['chi_std'] = f'{gname}.chi'
+
+        # look for bkg-standard
+        bstd_type = opts['bkg_std_type'].lower()
+        bstd_sel  = opts['bkg_std_select']
+        if bstd_type.startswith('feff') and ':' in bstd_sel:
+            fdb_sel = bstd_sel.split(':')[0].strip()
+            opts['std_feffpath'] = f'feffdb[{fdb_sel}]'
+        elif bstd_type.startswith('datagr') and bstd_sel != '-':
+            fname = bstd_sel.replace('datagroup:', '').strip()
+            gname  = self.controller.file_groups[fname]
+            opts['k_std']  = f'{gname}.k'
+            opts['chi_std'] = f'{gname}.chi'
 
         bkgpars = []
         for attr in ('ek0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
