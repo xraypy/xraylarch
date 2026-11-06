@@ -82,6 +82,8 @@ NNORM_STRINGS = {int(v): k for k, v in NNORM_CHOICES.items()}
 NORM_METHODS = ('polynomial', 'mback')
 PREEDGE_FORMS = {'Constant': 0, 'Linear': 1}
 
+BKG_STD_TYPES = ['No Standard', 'Data Group', 'Feff Database']
+
 Plot_EnergyRanges = {'full E range': None,
                      'E0 -10:+50eV':  (-10, 50),
                      'E0 -20:+80eV':  (-20, 80),
@@ -234,7 +236,10 @@ exafs = [CVar('rbkg', 1.0, 'float', min=0, step=0.1, max=10, desc='R value separ
          CVar('fft_dr',    0.25, 'float', min=0, step=0.05, desc='window parameter for EXAFS Back Fourier transform'),
          CVar('fft_rwindow', 'Hanning', 'choice', choices=FT_WINDOWS, desc='window type for EXAFS Back Fourier transform'),
          CVar('fft_rmaxout',  12.0, 'float', min=0, step=0.5, desc='maximum output R value for EXAFS Fourier transform'),
-         CVar('plot_rmax',     8.0, 'float', min=0, step=0.5, desc='maximum R value for EXAFS chi(R) plots')]
+         CVar('plot_rmax',     8.0, 'float', min=0, step=0.5, desc='maximum R value for EXAFS chi(R) plots'),
+         CVar('bkg_std_type',  'No Standard', 'choice', choices=list(BKG_STD_TYPES)),
+         CVar('bkg_std_select',  '', 'string', desc='select dataset or feffdb path for bkg standard'),
+         ]
 
 
 feffit  = [CVar('plot_paths', True, 'bool',   desc='Whether to plot individual paths in results for Feff fitting'),
