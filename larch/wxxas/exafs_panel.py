@@ -440,10 +440,17 @@ class EXAFSPanel(TaskPanel):
         self.skip_process = False
 
     def onStdType(self, evt=None):
+        self.update_std_choices()
+        self.onProcess()
+
+    def update_std_choices(self, dgroup=None, selected=None):
+        """rebuild list of choices for the bkg standard, optionally
+        selecting a previously saved choice (without processing)"""
         sel = self.wids['bkg_std_type'].GetStringSelection().lower()
 
         self.wids['bkg_std_select'].Enable(not sel.startswith('no'))
-        dgroup = self.controller.get_group()
+        if dgroup is None:
+            dgroup = self.controller.get_group()
         self.wids['bkg_std_select'].Clear()
         feffdb = self.controller.feffdb
         plist = []
@@ -451,14 +458,14 @@ class EXAFSPanel(TaskPanel):
             for fname, gname in self.controller.file_groups.items():
                 agroup = self.controller.get_group(gname)
                 if (dgroup != agroup and
-                    agroup.atsym == dgroup.atsym and
-                    agroup.edge == dgroup.edge and
+                    getattr(agroup, 'atsym', None) == getattr(dgroup, 'atsym', None) and
+                    getattr(agroup, 'edge', None) == getattr(dgroup, 'edge', None) and
                     hasattr(agroup, 'chi') and
                     hasattr(agroup, 'k')):
                     plist.append(fname)
         elif sel.startswith('feff') and feffdb is not None:
             plist = []
-            for path in feffdb.list_feffdat(absorber=dgroup.atsym,
+            for path in feffdb.list_feffdat(absorber=getattr(dgroup, 'atsym', None),
                                             edge=getattr(dgroup, 'edge', 'K')):
                 desc = path['compound']
                 if desc.startswith('<missing'):
@@ -467,7 +474,8 @@ class EXAFSPanel(TaskPanel):
         if len(plist) == 0:
             plist = ['-']
         self.wids['bkg_std_select'].SetChoices(plist)
-        self.onProcess()
+        if selected is not None and selected in plist:
+            self.wids['bkg_std_select'].SetStringSelection(selected)
 
     def onSizeEvent(self, event=None):
         wnew, hnew = event.GetSize()
@@ -481,7 +489,20 @@ class EXAFSPanel(TaskPanel):
             self.exafs_configs[name].update(self.get_defaultconfig()) # from Preferences
 
         opts = self.exafs_configs.get(name, {})
+        self.skip_process = True
+        try:
+            std_type = str(opts.get('bkg_std_type', 'No Standard')).lower()
+            for choice in BKG_STD_TYPES:
+                if choice.lower() == std_type:
+                    self.wids['bkg_std_type'].SetStringSelection(choice)
+                    break
+            self.update_std_choices(selected=opts.get('bkg_std_select', ''))
+        except Exception:
+            print("could not set background standard from config")
+        self.skip_process = False
         for key, val in opts.items():
+            if key in ('bkg_std_type', 'bkg_std_select'):
+                continue
             if key in self.wids:
                 if key in ('bkg_clamplo', 'bkg_clamphi'):
                     val = str(int(val))
@@ -594,11 +615,12 @@ class EXAFSPanel(TaskPanel):
             ek0 = dgroup.ek0 = dgroup.e0 = find_e0(dgroup)
         if ek0 is None:
             print("cannot determine E0 for this group")
+            self.skip_process = False
             return
 
         rbkg = getattr(dgroup, 'rbkg', None)
         if rbkg is None:
-            rkbg = dgroup.rbkg = opts.get('rbkg', 1.0)
+            rbkg = dgroup.rbkg = opts.get('rbkg', 1.0)
 
         for attr in ('ek0', 'rbkg'):
             wids[attr].SetValue(getattr(dgroup, attr))
@@ -617,7 +639,7 @@ class EXAFSPanel(TaskPanel):
                 wids[attr].SetStringSelection(opts[attr])
 
 
-        for attr in ('bkg_clamplo', 'bkg_clamphi', 'bkg_std_type', 'bkg_std_select'):
+        for attr in ('bkg_clamplo', 'bkg_clamphi'):
             val = opts.get(attr, 0)
             try:
                 val = int(val)
@@ -628,6 +650,17 @@ class EXAFSPanel(TaskPanel):
                 wids[attr].SetStringSelection("%d" % int(val))
             except:
                 pass
+
+        # background standard: restore type, rebuild choices, select saved value
+        std_type = str(opts.get('bkg_std_type', 'No Standard')).lower()
+        for choice in BKG_STD_TYPES:
+            if choice.lower() == std_type:
+                wids['bkg_std_type'].SetStringSelection(choice)
+                break
+        else:
+            wids['bkg_std_type'].SetSelection(0)
+        self.update_std_choices(dgroup=dgroup,
+                                selected=opts.get('bkg_std_select', ''))
 
         frozen = opts.get('is_frozen', False)
         if hasattr(dgroup, 'is_frozen'):
@@ -665,7 +698,8 @@ class EXAFSPanel(TaskPanel):
         time.sleep(0.001)
         self.skip_process = False
         dgroup = self.controller.get_group()
-        setattr(dgroup.config, self.configname, conf)
+        if dgroup is not None:
+            setattr(dgroup.config, self.configname, conf)
         return conf
 
     def read_plot_conf(self):
@@ -714,7 +748,7 @@ class EXAFSPanel(TaskPanel):
                                'bkg_clamphi', 'fft_kmin', 'fft_kmax',
                                'fft_kwindow', 'fft_dk', 'fft_rmin',
                                'fft_rmax', 'fft_rmaxout', 'fft_rwindow',
-                               'fft_dr')
+                               'fft_dr', 'bkg_std_type', 'bkg_std_select')
             set_ek0 = True
             set_rbkg = True
 
@@ -728,6 +762,8 @@ class EXAFSPanel(TaskPanel):
             opts = copy_attrs('bkg_kmin', 'bkg_kmax')
         elif name == 'bkg_clamp':
             opts = copy_attrs('bkg_clamplo', 'bkg_clamphi')
+        elif name == 'bkg_std':
+            opts = copy_attrs('bkg_std_type', 'bkg_std_select')
         elif name == 'fft_krange':
             opts = copy_attrs('fft_kmin', 'fft_kmax')
         elif name == 'fft_kwindow':
@@ -780,18 +816,22 @@ class EXAFSPanel(TaskPanel):
         if self.skip_process or ((time.time() - self.last_process_time) < 0.5):
             return
         self.last_process_time = time.time()
+        dgroup = self.controller.get_group()
+        if dgroup is None:
+            return
+        self.dgroup = dgroup
         self.skip_process = True
-        self.dgroup = self.controller.get_group()
+        try:
+            conf = getattr(dgroup.config, self.configname, None)
+            if conf is None:
+                conf = self.get_config(dgroup=dgroup)
+            if 'ek0' not in conf:
+                conf['ek0']  = conf.get('e0', getattr(dgroup, 'e0', -1))
 
-        conf = getattr(self.dgroup.config, self.configname, None)
-        if conf is None:
-            conf = self.get_config(dgroup=self.dgroup)
-        if 'ek0' not in conf:
-            conf['ek0']  = conf.get('e0', getattr(self.dgroup, 'e0', -1))
-
-        self.read_form()
-        self.process(dgroup=self.dgroup)
-        self.skip_process = False
+            self.read_form()
+            self.process(dgroup=dgroup)
+        finally:
+            self.skip_process = False
         plotter = self.onPlotSel if self.last_plot=='selected' else self.onPlotOne
         wx.CallAfter(plotter)
 
@@ -812,16 +852,16 @@ class EXAFSPanel(TaskPanel):
         opts['group'] = gname = dgroup.groupname
 
         # look for bkg-standard
-        bstd_type = opts['bkg_std_type'].lower()
-        bstd_sel  = opts['bkg_std_select']
+        bstd_type = str(opts.get('bkg_std_type', '')).lower()
+        bstd_sel  = str(opts.get('bkg_std_select', '')).strip()
         if bstd_type.startswith('feff') and ':' in bstd_sel:
             fdb_sel = bstd_sel.split(':')[0].strip()
             opts['std_feffpath'] = f'feffdb[{fdb_sel}]'
-        elif bstd_type.startswith('datagr') and bstd_sel != '-':
-            fname = bstd_sel.replace('datagroup:', '').strip()
-            gname  = self.controller.file_groups[fname]
-            opts['k_std']  = f'{gname}.k'
-            opts['chi_std'] = f'{gname}.chi'
+        elif (bstd_type.startswith('data') and bstd_sel not in ('', '-')
+              and bstd_sel in self.controller.file_groups):
+            std_gname = self.controller.file_groups[bstd_sel]
+            opts['k_std']  = f'{std_gname}.k'
+            opts['chi_std'] = f'{std_gname}.chi'
 
         bkgpars = []
         for attr in ('ek0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
@@ -829,7 +869,11 @@ class EXAFSPanel(TaskPanel):
             val = opts.get(attr, 0.0)
             if val is None:
                 val = -1
-            bkgpars.append(f"{val}:.4f")
+            try:
+                val = f"{float(val):.4f}"
+            except (TypeError, ValueError):
+                val = str(val)
+            bkgpars.append(val)
         if 'std_feffpath' in opts:
             bkgpars.append(f"std:{opts['std_feffpath']}")
         elif 'chi_std' in opts:
@@ -842,7 +886,7 @@ class EXAFSPanel(TaskPanel):
             if 'std_feffpath' in opts:
                 cmd = autobk_cmd_feffstd
             elif 'chi_std' in opts:
-                cmf = autobk_cmd_datastd
+                cmd = autobk_cmd_datastd
             cmd = cmd.format(**opts)
             self.larch_eval(cmd)
             self.last_process_bkg[gname] = bkgpars
