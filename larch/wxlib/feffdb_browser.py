@@ -285,7 +285,7 @@ class FeffDBFrame(wx.Frame):
 
     def onImportPath(self, event=None):
         if len(self.model.feffpaths) > 0:
-            sel = [dat in self.model.data if dat[6]]
+            sel = [dat for dat in self.model.data if dat[6]]
 
             row = self.get_current_feffdat_row()
             if len(sel) == 0 and row is not None:
