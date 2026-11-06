@@ -27,6 +27,14 @@ def spline_eval(kraw, mu, knots, coefs, order, kout):
     chi = UnivariateSpline(kraw, (mu-bkg), s=0)(kout)
     return bkg, chi
 
+def _shifted_std(kout, k_std, chi_std, std_de):
+    """chi of a standard, shifted in energy by std_de, interpolated onto kout
+    (zero outside the range of the standard)"""
+    e_std = ETOK*(k_std**2*KTOE + std_de)
+    kshift = np.sign(e_std)*np.sqrt(abs(e_std))
+    return np.interp(kout, kshift, chi_std, left=0.0, right=0.0)
+
+
 def _resid_leastsq(vcoefs, ncoef, kraw, mu, k_std, chi_std, knots, order, kout,
             ftwin, nfft, irbkg, nclamp, clamp_lo, clamp_hi):
     global NFEV
@@ -42,9 +50,7 @@ def _resid_leastsq(vcoefs, ncoef, kraw, mu, k_std, chi_std, knots, order, kout,
     coefs[:nspl] = vcoefs[:nspl]
     bkg, chi = spline_eval(kraw, mu, knots, coefs, order, kout)
     if chi_std is not None:
-        e_std = ETOK*(k_std**2*KTOE + std_de)
-        kshift = np.sign(e_std)*np.sqrt(abs(e_std))
-        chi = chi - std_amp*np.interp(kout, kshift, chi_std, left=0.0, right=0.0)
+        chi = chi - std_amp*_shifted_std(kout, k_std, chi_std, std_de)
 
     out =  realimag(xftf_fast(chi*ftwin, nfft=nfft)[:irbkg])
     if nclamp == 0:
@@ -309,9 +315,7 @@ def _resid_lmfit(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
     if chi_std is not None:
         std_amp = pars['std_amp'].value
         std_de = pars['std_de'].value
-        e_std = ETOK*(k_std**2*KTOE + std_de)
-        kshift = np.sign(e_std)*np.sqrt(abs(e_std))
-        chi = chi - std_amp*np.interp(kout, kshift, chi_std, left=0.0, right=0.0)
+        chi = chi - std_amp*_shifted_std(kout, k_std, chi_std, std_de)
     out =  realimag(xftf_fast(chi*ftwin, nfft=nfft)[:irbkg])
     if nclamp == 0:
         return out
