@@ -19,7 +19,7 @@ from larch import Group
 from larch.math import index_of
 from larch.xafs import etok, ktoe
 
-from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
+from larch.wxlib import (grow_width, BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
                          GridPanel, get_icon, SimpleText, pack, Button,
                          HLine, Choice, Check, CEN, LEFT, Font, FONTSIZE,
                          FONTSIZE_FW, MenuItem, FRAMESTYLE, GUI_COLORS,
@@ -291,9 +291,8 @@ class LinComboResultFrame(wx.Frame):
         sizer.Add(HLine(panel, size=(675, 3)), (irow, 0), (1, 4), LEFT)
 
         pack(panel, sizer)
+        self.wids['mainpanel'] = panel
         panel.Bind(wx.EVT_SIZE, self.onSizeEvent)
-        # self.wids['mainpanel'] = panel
-
 
         splitter.SplitVertically(self.filelist, panel, 1)
 
@@ -312,17 +311,13 @@ class LinComboResultFrame(wx.Frame):
             self.show_results(datagroup=group)
 
     def onSizeEvent(self, event=None):
-        wnew, hnew = event.GetSize()
-        for wname in ('stats', 'weightspanel'):
-            w, h = self.wids[wname].GetSize()
-            self.wids[wname].SetSize((wnew, h))
+        width = event.GetSize()[0]
+        tables = ('stats', 'weightspanel')
+        grow_width([self.wids['mainpanel']], width)
+        grow_width([self.wids[wname] for wname in tables], width-5)
 
     def add_results(self, dgroup, form=None, larch_eval=None, show=True):
         name = dgroup.filename
-        #         fitspace = ARRAYS.get(self.datagroup.lcf_result[0].arrayname, 'unknown')
-        #         if fitspace in (None, 'None', 'unknown'):
-        #             return
-        #         name = f'{dgroup.filename} , {fitspace}'
         if name not in self.filelist.GetItems():
             self.filelist.Append(name)
         self.datasets[name] = dgroup
@@ -792,10 +787,11 @@ class LinearComboPanel(TaskPanel):
         self.skip_process = False
 
     def onSizeEvent(self, event=None):
-        wnew, hnew = event.GetSize()
-        for wname in ('mainpanel', 'table'):
-            w, h = self.wids[wname].GetSize()
-            self.wids[wname].SetSize((wnew, h))
+        width = event.GetSize()[0]
+        tables = ('table',)
+        grow_width([self.wids['mainpanel']], width)
+        grow_width([self.wids[wname] for wname in tables], width-5)
+
 
 
     def onPanelExposed(self, **kws):

@@ -17,7 +17,7 @@ from larch.math.lincombo_fitting import get_arrays
 from larch.utils import get_cwd, gformat
 
 from larch.xafs import etok, ktoe
-from larch.wxlib import (BitmapButton, FloatCtrl, get_icon, SimpleText,
+from larch.wxlib import (grow_width, BitmapButton, FloatCtrl, get_icon, SimpleText,
                          pack, Button, HLine, Choice, Check, CEN, RIGHT,
                          LEFT, Font, FileSave, FileOpen, DataTableGrid)
 
@@ -176,10 +176,10 @@ class PCAPanel(TaskPanel):
         self.skip_process = False
 
     def onSizeEvent(self, event=None):
-        wnew, hnew = event.GetSize()
-        for wname in ('mainpanel', 'pca_table', 'fit_table'):
-            w, h = self.wids[wname].GetSize()
-            self.wids[wname].SetSize((wnew, h))
+        width = event.GetSize()[0]
+        tables = ('pca_table', 'fit_table')
+        grow_width([self.wids['mainpanel']], width)
+        grow_width([self.wids[wname] for wname in tables], width-5)
 
     def onSet_WeightMin(self, evt=None, value=None):
         "handle setting edge step"
