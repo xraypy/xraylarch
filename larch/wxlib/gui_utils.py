@@ -233,6 +233,14 @@ def fileprompt(mode='open', multi=True, message = None,
     return path
 
 
+def grow_width(widgets, width):
+    """set the width of each widget (e.g. DataView grids) to `width`,
+    keeping its current height, so they grow horizontally with their parent"""
+    for widget in widgets:
+        if widget is not None:
+            widget.SetSize((width, widget.GetSize()[1]))
+
+
 def set_widget_value(widget, value):
     """generic method to set value for wx widget based on widget type/class
        class                 method
