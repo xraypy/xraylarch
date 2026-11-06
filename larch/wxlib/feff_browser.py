@@ -20,7 +20,7 @@ from larch.wxlib import (GridPanel, Button, pack, SimpleText,
                          Font, LEFT, FRAMESTYLE,
                          FONTSIZE, MenuItem, EditableListBox, OkCancel,
                          FileCheckList, Choice, HLine, ReportFrame, Popup,
-                         LarchWxApp)
+                         LarchWxApp, grow_width)
 
 from larch.xafs import get_feff_pathinfo
 from larch.utils.physical_constants import ATOM_SYMS
@@ -257,13 +257,18 @@ class FeffResultsPanel(wx.Panel):
 
         mainsizer = wx.BoxSizer(wx.VERTICAL)
         mainsizer.Add(panel,    0, LEFT, 1)
-        mainsizer.Add(self.dvc, 0, LEFT, 1)
+        mainsizer.Add(self.dvc, 0, LEFT|wx.GROW, 1)
 
         pack(self, mainsizer)
+        self.Bind(wx.EVT_SIZE, self.onSizeEvent)
         self.dvc.EnsureVisible(self.model.GetItem(0))
 
         if feffresult is not None:
             self.set_feffresult(feffresult)
+
+    def onSizeEvent(self, event=None):
+        if event is not None:
+            grow_width([self.dvc], event.GetSize()[0]-5)
 
     def onSelAll(self, event=None):
         self.model.select_all(True)
