@@ -3,33 +3,27 @@
 GUI Frame for XRF display, reading larch MCA group
 
 """
-import sys
-import time
-import copy
+from copy import deepcopy
 from collections import namedtuple
 from functools import partial
 from pathlib import Path
 import wx
 import wx.lib.mixins.inspection
-import wx.lib.scrolledpanel as scrolled
 import wx.dataview as dv
-import wx.lib.colourselect  as csel
 
 import numpy as np
-import matplotlib
-from matplotlib.ticker import LogFormatter, FuncFormatter
+from matplotlib.ticker import FuncFormatter
 
 from pyshortcuts import uname, bytes2str, get_cwd, fix_filename
 
 from wxutils import register_darkdetect, DARK_THEME
 
 from wxmplot import PlotPanel
+
 from . import (SimpleText, FileCheckList, Font, pack, Popup,
-               set_color, get_icon, get_font,
-               SetTip, Button, Check, MenuItem, Choice,
-               FileOpen, FileSave, HLine, GridPanel,
-               CEN, LEFT, RIGHT, PeriodicTablePanel,
-               OkCancel)
+               get_icon, get_font,  Button, Check, MenuItem,
+               FileSave, GridPanel, PeriodicTablePanel,
+               LEFT, RIGHT, OkCancel)
 
 from ..math import index_of
 from ..io import GSEMCA_File
@@ -38,7 +32,6 @@ from ..interpreter import Interpreter
 
 from .gui_utils import LarchWxApp
 from .larchframe import LarchFrame
-# from .periodictable import PeriodicTablePanel
 
 from .xrfdisplay_utils import (XRFCalibrationFrame,
                                XrayLinesFrame,
@@ -66,8 +59,8 @@ def txt(panel, label, size=75, colour=None, font=None, style=None):
         style = wx.ALIGN_LEFT|wx.ALL|wx.GROW
     if colour is None:
         colour = wx.Colour(0, 0, 50)
-    this = SimpleText(panel, label, size=(size, -1),
-                      colour=colour, style=style)
+        this = SimpleText(panel, label, size=(size, -1),
+                          colour=colour, style=style)
     if font is not None: this.SetFont(font)
     return this
 
@@ -218,7 +211,7 @@ class XRFDataBrowser(wx.Frame):
         if fname is None:
             fname = self.filelist.GetStringSelection()
 
-        mca = xrf_files[fname]
+        mca = self.parent.xrf_files[fname]
         newname = fname + '_copy'
         self.parent.xrf_files[newname] = deepcopy(mca)
         self.update_grouplist()
@@ -514,9 +507,6 @@ class XRFDisplayFrame(wx.Frame):
         self.font_fixedwidth = get_font(fixed_width=True)
 
         labstyle = wx.ALIGN_LEFT|wx.EXPAND
-        ctrlstyle = wx.ALIGN_LEFT
-        txtstyle=wx.ALIGN_LEFT|wx.ST_NO_AUTORESIZE|wx.TE_PROCESS_ENTER
-        Font10 = Font(10)
         Font11 = Font(11)
         Font12 = Font(12)
         #
@@ -641,7 +631,6 @@ class XRFDisplayFrame(wx.Frame):
 
         xlines.SetMinSize((300, 240))
         xlines.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectXrayLine)
-        store = xlines.GetStore()
 
         # main layout
         # may have to adjust comparison....
@@ -788,7 +777,6 @@ class XRFDisplayFrame(wx.Frame):
         if self.energy_for_zoom is not None:
             emid = self.energy_for_zoom
         dmin, dmax = emin, emax
-        drange = erange
         if self.mca is not None:
             dmin, dmax = self.mca.energy.min(), self.mca.energy.max()
         return (emid, erange, dmin, dmax)
@@ -823,7 +811,6 @@ class XRFDisplayFrame(wx.Frame):
         e1 = max(dmin, emid-1.25*erange)
         e2 = min(dmax, emid+1.25*erange)
         i1 = index_of(self.mca.energy, e1)
-        if i1 > 0 : ii = i1 -1
         i2 = index_of(self.mca.energy, e2) + 1
 
         ymin, ymax = self.plotpanel.axes.get_ylim()
@@ -841,7 +828,6 @@ class XRFDisplayFrame(wx.Frame):
 
     def onShowCPS(self, event=None):
         use_cps = event.IsChecked()
-        rtime = max(1.e-5, self.mca.real_time)
         self.ymin = 0.25 if use_cps else 0.9
         self.show_cps = use_cps
         self.replot()
@@ -899,9 +885,6 @@ class XRFDisplayFrame(wx.Frame):
             left, right = right, left
         self.mca.add_roi(name=roiname, left=left, right=right, sort=True)
         self.set_roilist(mca=self.mca)
-        for roi in self.mca.rois:
-            if roi.name.lower()==roiname:
-                selected_roi = roi
         self.plot(self.xdat, self.ydat)
         self.onROI(label=roiname)
         if self.selected_elem is not None:
@@ -1398,7 +1381,7 @@ class XRFDisplayFrame(wx.Frame):
         except:
             decade = 0
         scale = 10**decade
-        out = outx = f"%.1fe%i" % (val/scale, decade)
+        out = f"{val/scale:.1f}e{decade}"
         if decade < -1.5:
             out = f"{val:.2f}"
         elif decade < -0.5:
@@ -1552,7 +1535,6 @@ class XRFDisplayFrame(wx.Frame):
                 panel.oplot(xroi, yroi, **kwargs)
 
 
-        yscale = {False:'linear', True:'log'}[self.ylog_scale]
         panel.set_viewlimits()
         panel.set_viewlimits()
         panel.cursor_mode = 'zoom'
@@ -1624,7 +1606,6 @@ class XRFDisplayFrame(wx.Frame):
     def oplot(self, x, y, color=None, label=None, **kws):
         xdat = 1.0*x[:]
         ydat = 1.0*y[:]
-        ymax = max(ydat)*1.25
         if hasattr(self, 'ymax'):
             self.ymax = max(self.ymax, max(ydat))*1.25
 
