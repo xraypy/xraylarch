@@ -33,7 +33,7 @@ except ImportError:
     FeffDatabase = None
 
 ATSYMS = ['< All Atoms>'] + ATOM_SYMS[:96]
-EDGES  = ['< All Edges>', 'K', 'L3', 'L2', 'L1', 'M5']
+EDGES  = {'< All Edges>': 'All', 'K': 'K', 'L3': 'L3', 'L2':'L2'}
 
 
 LEFT = LEFT|wx.ALL
@@ -123,6 +123,7 @@ class FeffDBFrame(wx.Frame):
             self.feffdb = FeffDatabase()
 
         self.elem = None
+        self.edge = None
 
         if _larch is None:
             self.larch = larch.Interpreter()
@@ -145,7 +146,6 @@ class FeffDBFrame(wx.Frame):
         self.model = FeffDBPathsModel(None, with_use=callable(path_importer))
         wids['dvc'].AssociateModel(self.model)
 
-
         toplabel = SimpleText(panel, 'Select Absorbing Atom from Periodic Table:',
                               size=(375, -1))
 
@@ -163,10 +163,6 @@ class FeffDBFrame(wx.Frame):
             b.SetFont(Font(FONTSIZE))
             return b
 
-
-        wids['edge'] = Choice(panel, choices=EDGES, size=(125, -1),
-                                      action=self.onElement)
-
         wids['feffinp'] = Btn("Show Feff.inp", self.onShowFeffInp)
         wids['ciffile'] = Btn("Show CIF File", self.onShowCIFFile)
 
@@ -176,16 +172,32 @@ class FeffDBFrame(wx.Frame):
 
 
         panel.Add(toplabel,  dcol=5, style=CEN|wx.GROW)
-        panel.Add(wids['ptable'], dcol=5, style=CEN|wx.GROW, newrow=True)
+
+        btnpan = wx.Panel(panel)
+        btnsizer = wx.BoxSizer(wx.VERTICAL)
+        btnsizer.Add(SimpleText(btnpan, 'Edge'))
+
+        style = wx.RB_GROUP
+        for label, key in EDGES.items():
+            rb = wx.RadioButton(btnpan, -1, f' {label} ', style=style|wx.ALIGN_LEFT)
+            rb.Bind(wx.EVT_RADIOBUTTON, self.onEdge)
+            style = 0
+            wids[f'rb_edge_{key}'] = rb
+            btnsizer.Add(rb)
+        wids['rb_edge_All'].SetValue(1)
+
+        pack(btnpan, btnsizer)
+
+        panel.Add(wids['ptable'], dcol=3, drow=4, style=CEN, newrow=True)
+        panel.Add(btnpan,         icol=3, irow=1, dcol=1, drow=3, style=LEFT)
+        panel.irow = 6
         panel.Add(HLine(panel, size=(600, 3)), dcol=5, newrow=True)
 
-        panel.Add(SimpleText(panel, 'Absorption Edge:'), dcol=1, newrow=True)
-        panel.Add(wids['edge'])
         panel.Add(wids['feffinp'], newrow=True)
         panel.Add(wids['ciffile'])
 
         if callable(self.path_importer):
-            panel.Add(wids['import'], newrow=True)
+            panel.Add(wids['import'])
             panel.Add(wids['selnone'])
 
         panel.Add(HLine(panel, size=(600, 3)), dcol=5, newrow=True)
@@ -220,23 +232,28 @@ class FeffDBFrame(wx.Frame):
         self.Bind(wx.EVT_SIZE, self.onSizeEvent)
 
 
-
     def onSizeEvent(self, event=None):
         wnew, hnew = event.GetSize()
         self.wids['mainpanel'].SetSize((wnew, hnew))
 
         w, h = self.wids['dvc'].GetSize()
-        self.wids['dvc'].SetSize((wnew, hnew-300))
+        print('onSize ', wnew, hnew, w, h)
+        self.wids['dvc'].SetSize((wnew-12, hnew-300))
+
+    def onEdge(self, event=None):
+        for label, key in EDGES.items():
+            if self.wids[f'rb_edge_{key}'].GetValue():
+                self.edge = key
+        self.onElement(elem=self.elem)
 
     def onElement(self, event=None, elem=None):
         if elem is not None:
             self.elem = elem
-        edge = self.wids['edge'].GetStringSelection()
-        if edge.startswith('<'):
-            edge = None
+        if self.edge == 'All':
+            self.edge = None
 
         if self.elem is not None:
-            paths = self.feffdb.list_feffdat(absorber=self.elem, edge=edge)
+            paths = self.feffdb.list_feffdat(absorber=self.elem, edge=self.edge)
             self.model.set_data(paths)
 
     def get_current_feffdat_row(self):
@@ -268,39 +285,43 @@ class FeffDBFrame(wx.Frame):
 
     def onImportPath(self, event=None):
         if len(self.model.feffpaths) > 0:
+            sel = [dat in self.model.data if dat[6]]
+
             row = self.get_current_feffdat_row()
-            imported = 0
-            for dat in self.model.data:
-                if dat[6]:
-                    label = dat[0]
-                    row = self.feffdb.get_rows('feffdat',
-                                               where={'label': label},
-                                            limit_one=True)
-                    abso, scat = ATSYMS[row.absorber], ATSYMS[row.scatterer]
+            if len(sel) == 0 and row is not None:
+                for dat in self.model.data:
+                    if dat[0] == row.label:
+                        sel.append(dat)
 
-                    # Single-scattering only!
-                    #  see feffutils.py for expected geometry
-                    geomstr = f'[{abso}] > {scat} > [{abso}]'
-                    catom, satom = json.loads(row.geometry)
-                    geometry = [[satom[0], int(satom[2]), float(row.reff),
-                                 float(satom[4]), float(satom[5]),
-                                 float(satom[6]), 180.0, 0.0],
-                                [catom[0], int(catom[2]), float(row.reff),
-                                 float(catom[4]), float(catom[5]),
-                                 float(catom[6]), 180.0, 0.0]]
+            for dat in sel:
+                label = dat[0]
+                row = self.feffdb.get_rows('feffdat',
+                                           where={'label': label},
+                                        limit_one=True)
+                abso, scat = ATSYMS[row.absorber], ATSYMS[row.scatterer]
+
+                # Single-scattering only!
+                #  see feffutils.py for expected geometry
+                geomstr = f'[{abso}] > {scat} > [{abso}]'
+                catom, satom = json.loads(row.geometry)
+                geometry = [[satom[0], int(satom[2]), float(row.reff),
+                             float(satom[4]), float(satom[5]),
+                             float(satom[6]), 180.0, 0.0],
+                            [catom[0], int(catom[2]), float(row.reff),
+                             float(catom[4]), float(catom[5]),
+                             float(catom[6]), 180.0, 0.0]]
 
 
-                    pathinfo = FPathInfo(filename=f'feffdb{label}',
-                                         absorber=abso, shell=row.edge,
-                                         reff=float(row.reff),
-                                         nleg=len(geometry),
-                                         degen=row.degen,
-                                         cwratio=100.0,
-                                         geom=geomstr,
-                                         geometry=geometry)
+                pathinfo = FPathInfo(filename=f'feffdb{label}',
+                                     absorber=abso, shell=row.edge,
+                                     reff=float(row.reff),
+                                     nleg=len(geometry),
+                                     degen=row.degen,
+                                     cwratio=100.0,
+                                     geom=geomstr,
+                                     geometry=geometry)
 
-                    self.path_importer(f'feffdb[{label}]', pathinfo)
-                    imported += 1
+                self.path_importer(f'feffdb[{label}]', pathinfo)
 
             self.onSelNone()
 
