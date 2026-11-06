@@ -11,7 +11,7 @@ import numpy as np
 from functools import partial
 from pathlib import Path
 from larch.math import index_of
-from larch.wxlib import (FloatCtrl, FloatSpin, GridPanel,
+from larch.wxlib import (grow_width, FloatCtrl, FloatSpin, GridPanel,
                          SimpleText, pack, Button, HLine, Choice,
                          get_widget_value, set_widget_value,
                          TextCtrl, Check, CEN, RIGHT, LEFT)
@@ -443,6 +443,18 @@ class EXAFSPanel(TaskPanel):
         self.update_std_choices()
         self.onProcess()
 
+    def restore_std(self, opts, dgroup=None):
+        """restore bkg standard type and selection from a config dict"""
+        std_type = str(opts.get('bkg_std_type', 'No Standard')).lower()
+        for choice in BKG_STD_TYPES:
+            if choice.lower() == std_type:
+                self.wids['bkg_std_type'].SetStringSelection(choice)
+                break
+        else:
+            self.wids['bkg_std_type'].SetSelection(0)
+        self.update_std_choices(dgroup=dgroup,
+                                selected=opts.get('bkg_std_select', ''))
+
     def update_std_choices(self, dgroup=None, selected=None):
         """rebuild list of choices for the bkg standard, optionally
         selecting a previously saved choice (without processing)"""
@@ -478,10 +490,8 @@ class EXAFSPanel(TaskPanel):
             self.wids['bkg_std_select'].SetStringSelection(selected)
 
     def onSizeEvent(self, event=None):
-        wnew, hnew = event.GetSize()
-        for wname in ('mainpanel', 'plotpanel'):
-            w, h = self.wids[wname].GetSize()
-            self.wids[wname].SetSize((wnew, h))
+        grow_width([self.wids[wname] for wname in ('mainpanel', 'plotpanel')],
+                   event.GetSize()[0])
 
     def onEXAFSConfigSelect(self, evt=None):
         name = self.wids['exafs_conf_choice'].GetStringSelection()
@@ -491,15 +501,9 @@ class EXAFSPanel(TaskPanel):
         opts = self.exafs_configs.get(name, {})
         self.skip_process = True
         try:
-            std_type = str(opts.get('bkg_std_type', 'No Standard')).lower()
-            for choice in BKG_STD_TYPES:
-                if choice.lower() == std_type:
-                    self.wids['bkg_std_type'].SetStringSelection(choice)
-                    break
-            self.update_std_choices(selected=opts.get('bkg_std_select', ''))
-        except Exception:
-            print("could not set background standard from config")
-        self.skip_process = False
+            self.restore_std(opts)
+        finally:
+            self.skip_process = False
         for key, val in opts.items():
             if key in ('bkg_std_type', 'bkg_std_select'):
                 continue
@@ -652,15 +656,7 @@ class EXAFSPanel(TaskPanel):
                 pass
 
         # background standard: restore type, rebuild choices, select saved value
-        std_type = str(opts.get('bkg_std_type', 'No Standard')).lower()
-        for choice in BKG_STD_TYPES:
-            if choice.lower() == std_type:
-                wids['bkg_std_type'].SetStringSelection(choice)
-                break
-        else:
-            wids['bkg_std_type'].SetSelection(0)
-        self.update_std_choices(dgroup=dgroup,
-                                selected=opts.get('bkg_std_select', ''))
+        self.restore_std(opts, dgroup=dgroup)
 
         frozen = opts.get('is_frozen', False)
         if hasattr(dgroup, 'is_frozen'):
@@ -852,12 +848,12 @@ class EXAFSPanel(TaskPanel):
         opts['group'] = gname = dgroup.groupname
 
         # look for bkg-standard
-        bstd_type = str(opts.get('bkg_std_type', '')).lower()
-        bstd_sel  = str(opts.get('bkg_std_select', '')).strip()
+        bstd_type = opts.get('bkg_std_type', '').lower()
+        bstd_sel  = opts.get('bkg_std_select', '').strip()
         if bstd_type.startswith('feff') and ':' in bstd_sel:
             fdb_sel = bstd_sel.split(':')[0].strip()
             opts['std_feffpath'] = f'feffdb[{fdb_sel}]'
-        elif (bstd_type.startswith('data') and bstd_sel not in ('', '-')
+        elif (bstd_type.startswith('data')
               and bstd_sel in self.controller.file_groups):
             std_gname = self.controller.file_groups[bstd_sel]
             opts['k_std']  = f'{std_gname}.k'
