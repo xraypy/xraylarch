@@ -41,9 +41,8 @@ wavelet = 'EXAFS wavelet'
 PlotE_Choices = [norm_bkg, mu_bkg, chie]
 PlotK_Choices = [chik, chikq, chiq]
 PlotR_Choices = [chirmag, chirre, chirmr, wavelet]
-PlotWindowChoices = ['No 2nd Plot', '2', '3', '4', '5']
-
-PLOT_SPACES = ['E', 'k', 'R']
+Plot2_Windows = ['None', '2', '3', '4']
+Plot_Spaces = ['E', 'k', 'R']
 
 PlotCmds = {mu_bkg:  "plot_bkg({group:s}, norm=False, ",
             norm_bkg:  "plot_bkg({group:s}, norm=True, ",
@@ -87,7 +86,7 @@ NAMED_PLOTOPTS = {'default': {'plot1_space': 'k',
                               'plot_voffset': 0.0,
                               'plot_kweight': 2,
                               'plot_rmax': 8.0,
-                              'plot2_win': 'No 2nd Plot',
+                              'plot2_win': 'None',
                               'plot_echoice': 'norm+bkg',
                               'plot_erange': 'full E Range',
                               'plot_kchoice': 'chik',
@@ -157,10 +156,6 @@ class EXAFSPanel(TaskPanel):
                                       action=self.onPlot, size=(90, -1),
                                       min_val=2, max_val=25)
 
-        wids['plot2_win']  = Choice(ppanel, size=(125, -1), choices=PlotWindowChoices,
-                                   action=self.onPlot)
-        wids['plot2_win'].SetSelection(0)
-
         wids['plot_opt']  = Choice(ppanel,  choices=list(self.plot_opts),
                                     size=(175, -1), action=self.onPlotOptSel)
 
@@ -185,7 +180,7 @@ class EXAFSPanel(TaskPanel):
             wids[f'plot{t}_space'] = pan = wx.Panel(ppanel)
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             style = wx.RB_GROUP
-            for s in ('E', 'k', 'R'):
+            for s in Plot_Spaces:
                 rb = wx.RadioButton(pan, -1, f' {s} ', style=style)
                 style = 0
                 rb.Bind(wx.EVT_RADIOBUTTON, partial(self.onRadButton, space=t))
@@ -197,6 +192,19 @@ class EXAFSPanel(TaskPanel):
         wids['plot2_rb_r'].SetValue(1)
         self.plot1_space = 'k'
         self.plot2_space = 'R'
+
+        wids[f'plot2_win'] = pan = wx.Panel(ppanel)
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        style = wx.RB_GROUP
+        for s in Plot2_Windows:
+            rb = wx.RadioButton(pan, -1, f' {s}', style=style)
+            style = 0
+            rb.Bind(wx.EVT_RADIOBUTTON, self.onPlot2Win)
+            wids[f'plot2_win_{s}'] = rb
+            sizer.Add(rb)
+        pack(pan, sizer)
+        wids['plot2_win_None'].SetValue(1)
+        self.plot2_win = 'None'
 
         wids['plot_show_kwin'] = Check(ppanel, default=False, label='show k->R Window',
                                            action=self.onPlot)
@@ -541,6 +549,10 @@ class EXAFSPanel(TaskPanel):
             self.plot2_space = label.strip().lower()
         self.onPlot()
 
+    def onPlot2Win(self, event=None, space='unknown'):
+        self.plot2_win = event.GetEventObject().GetLabel().strip()
+        self.onPlot()
+
     def get_config(self, dgroup=None):
         """get and processing configuration for a group (but not from form)"""
         if dgroup is None:
@@ -705,7 +717,7 @@ class EXAFSPanel(TaskPanel):
         for attr in ('plot_voffset', 'plot_kweight', 'plot_rmax'):
             pconf[attr] = wids[attr].GetValue()
 
-        for attr in ('plot2_win', 'plot_echoice', 'plot_erange',
+        for attr in ('plot_echoice', 'plot_erange',
                     'plot_kchoice', 'plot_rchoice'):
             pconf[attr] = wids[attr].GetStringSelection()
 
@@ -714,6 +726,7 @@ class EXAFSPanel(TaskPanel):
 
         pconf['plot1_space'] = self.plot1_space
         pconf['plot2_space'] = self.plot2_space
+        pconf['plot2_win'] = self.plot2_win
         self.plot_conf = pconf
 
     def onSaveConfigBtn(self, evt=None):
@@ -910,10 +923,11 @@ class EXAFSPanel(TaskPanel):
         data = {}
         data['plot1_space'] = self.plot1_space
         data['plot2_space'] = self.plot2_space
+        data['plot2_win'] = self.plot2_win
         for attr in ('plot_voffset', 'plot_kweight', 'plot_rmax'):
             data[attr] = wids[attr].GetValue()
 
-        for attr in ('plot2_win', 'plot_echoice', 'plot_erange',
+        for attr in ('plot_echoice', 'plot_erange',
                      'plot_kchoice', 'plot_rchoice'):
             data[attr] = wids[attr].GetStringSelection()
 
@@ -938,13 +952,18 @@ class EXAFSPanel(TaskPanel):
                 self.plot1_space = sval
             else:
                 self.plot2_space = sval
-            for s in ('e', 'k', 'r'):
+            for s in Plot_Spaces:
+                s = s.lower()
                 wids[f'plot{t}_rb_{s}'].SetValue(s==sval)
+        p2win =  data[f'plot2_win']
+        for s in Plot2_Windows:
+            wids[f'plot2_win_{s}'].SetValue(s==p2win)
+
 
         for attr in ('plot_voffset', 'plot_kweight', 'plot_rmax'):
             wids[attr].SetValue(float(data[attr]))
 
-        for attr in ('plot2_win', 'plot_echoice', 'plot_erange',
+        for attr in ('plot_echoice', 'plot_erange',
                      'plot_kchoice', 'plot_rchoice'):
             wids[attr].SetStringSelection(data[attr])
 
@@ -1044,7 +1063,7 @@ class EXAFSPanel(TaskPanel):
                                        label=f"'{dgroup.filename}'",
                                        title=title))
 
-            if conf['plot2_win'] in ('1', '2', '3', '4', '5'):
+            if conf['plot2_win'] in ('2', '3', '4', '5'):
                 cmds.append(self._get_plotcmd(dgroup, space=2,
                                        delay_draw=True, new=(i==0),
                                        offset=i*offset,
@@ -1053,7 +1072,7 @@ class EXAFSPanel(TaskPanel):
 
 
         cmds.append("redraw(win=1, show_legend=True)")
-        if conf['plot2_win'] in ('1', '2', '3', '4', '5'):
+        if conf['plot2_win'] in ('2', '3', '4', '5'):
             cmds.append("redraw(win=2, show_legend=True)")
         self.larch_eval('\n'.join(cmds))
         self.last_plot = 'selected'
