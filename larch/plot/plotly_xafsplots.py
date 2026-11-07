@@ -445,9 +445,8 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
     fig.add_plot(dgroup.k, chi+offset, label=label)
 
     if show_window and hasattr(dgroup, 'kwin'):
-        kwin = dgroup.kwin
-        if scale_window:
-            kwin = kwin*max(abs(chi))
+        wscale = max(abs(chi)) if scale_window else 1.0
+        kwin = dgroup.kwin *1.25*wscale
         fig.add_plot(dgroup.k, kwin+offset, label='window')
 
     return fig.show(title=title, xlabel=plotlabels.k, xmin=0, xmax=kmax,
@@ -455,7 +454,7 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
                         show=show)
 
 def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
-              show_window=False, rmax=None, label=None, title=None,
+              show_window=False, scale_window=True, rmax=None, label=None, title=None,
               offset=0, show=True, fig=None):
     """
     plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
@@ -470,6 +469,7 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
      show_real    bool whether to plot Re[chi(R)] [False]
      show_imag    bool whether to plot Im[chi(R)] [False]
      show_window  bool whether to R-windw for back FT (will be scaled) [False]
+     scale_window bool whether to scale k-window to max |chi(R)| [True]
      label        string for label [``None`` to use 'chir']
      title        string for plot title [None, may use filename if available]
      rmax         max R to show [None, end of data]
@@ -507,7 +507,8 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
         fig.add_plot(dgroup.r, dgroup.chir_im+offset, label=f'{label} (imag)')
 
     if show_window and hasattr(dgroup, 'rwin'):
-        rwin = dgroup.rwin * max(dgroup.chir_mag)
+        wscale = max(abs(dgroup.chir_mag)) if scale_window else 1.0
+        rwin = dgroup.rwin*1.25*wscale
         fig.add_plot(dgroup.r, rwin+offset, label='window')
 
     return fig.show(title=title, xlabel=plotlabels.r, ylabel=ylabel, xmax=rmax, show=show)
@@ -541,9 +542,20 @@ def plot_chiq(dgroup, kweight=None, kmin=0, kmax=None, show_chik=False, label=No
      1. The input data group must have the following attributes:
          k, chi, kwin, filename
     """
+    if not hasattr(dgroup, 'chiq_re'):
+        raise ValueError("plot_chiq needs group with filtered-k ('q') data")
+
     kweight = _get_kweight(dgroup, kweight)
-    nk = len(dgroup.k)
-    chiq = dgroup.chiq_re[:nk]
+
+    nq = len(dgroup.chiq_re)
+    if hasattr(dgroup, 'q'):
+        q = dgroup.q
+    else:
+        q = dgroup.k*1.0
+
+    nq = min(nq, len(q))
+    q = q[:nq]
+    chiq = dgroup.chiq_re[:nq]
 
     if label is None:
         label = 'chi(q) (filtered)'
@@ -560,9 +572,8 @@ def plot_chiq(dgroup, kweight=None, kmin=0, kmax=None, show_chik=False, label=No
         fig.add_plot(dgroup.k, chik+offset, label='chi(k) (unfiltered)')
 
     if show_window and hasattr(dgroup, 'kwin'):
-        kwin = dgroup.kwin
-        if scale_window:
-            kwin = kwin*max(abs(chiq))
+        wscale = max(abs(dgroup.chiq_re)) if scale_window else 1.0
+        kwin = dgroup.kwin*1.25*wscale
         fig.add_plot(dgroup.k, kwin+offset, label='window')
 
     ylabel = set_label_weight(plotlabels.chikw, kweight)

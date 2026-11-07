@@ -502,9 +502,8 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
     if show_window and hasattr(dgroup, 'kwin'):
         zorders = get_zorders(disp)
         zwin = zorders[0] - 2
-        kwin = dgroup.kwin
-        if scale_window:
-            kwin *= max(abs(chi))
+        wscale = max(abs(chi)) if scale_window else 1.0
+        kwin = dgroup.kwin *1.25*wscale
         plot(dgroup.k, kwin+offset, zorder=zwin, label='window',  **opts)
     redraw(win=win, xmax=kmax, _larch=_larch)
 
@@ -578,9 +577,8 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
     if show_window and hasattr(dgroup, 'rwin'):
         zorders = get_zorders(disp)
         zwin = zorders[0] - 2
-        rwin = dgroup.rwin
-        if scale_window:
-            rwin *= max(dgroup.chir_mag)
+        wscale = max(abs(dgroup.chir_mag)) if scale_window else 1.0
+        rwin = dgroup.rwin*1.25*wscale
         plot(dgroup.r, rwin+offset, label='window', zorder=zwin, **opts)
 
     if show_mag or show_real or show_imag or show_window:
@@ -620,17 +618,28 @@ def plot_chiq(dgroup, kweight=None, kmax=None, show_chik=False, label=None,
     if disp is None:
         return
 
+    if not hasattr(dgroup, 'chiq_re'):
+        raise ValueError("plot_chiq needs group with filtered-k ('q') data")
+
     kweight = get_kweight(dgroup, kweight)
-    nk = len(dgroup.k)
-    chiq = dgroup.chiq_re[:nk]
+
+    nq = len(dgroup.chiq_re)
+    if hasattr(dgroup, 'q'):
+        q = dgroup.q
+    else:
+        q = dgroup.k*1.0
+
+    nq = min(nq, len(q))
+    q = q[:nq]
+    chiq = dgroup.chiq_re[:nq]
     opts = dict(win=win, show_legend=True, delay_draw=True, _larch=_larch)
     if label is None:
-        label = 'chi(q) (filtered)'
+        label = 'chi(q) (filtered k)'
 
     if new:
         title = get_title(dgroup, title=title)
 
-    plot(dgroup.k, chiq+offset, xlabel=plotlabels.k,
+    plot(q, chiq+offset, xlabel=plotlabels.k,
          ylabel=set_label_weight(plotlabels.chikw, kweight),
          title=title, label=label, new=new, xmax=kmax, **opts)
 
@@ -642,9 +651,8 @@ def plot_chiq(dgroup, kweight=None, kmax=None, show_chik=False, label=None,
 
     if show_window and hasattr(dgroup, 'kwin'):
         zwin = zorders[0] - 3
-        kwin = dgroup.kwin
-        if scale_window:
-            kwin = kwin*max(abs(chiq))
+        wscale = max(abs(dgroup.chiq_re)) if scale_window else 1.0
+        kwin = dgroup.kwin*1.25*wscale
         plot(dgroup.k, kwin+offset, zorder=zwin, label='window',  **opts)
 
     redraw(win=win, xmax=kmax, _larch=_larch)
@@ -1385,7 +1393,7 @@ def plot_curvefit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
         raise ValueError('Cannot get x or y data for fit')
     xplot = xplot*1.0
     yplot = yplot*1.0
-    
+
     dat_xmin = float(min(xplot))
     dat_xmax = float(max(xplot))
     xmin = opts['xmin'] if opts['xmin'] is not None else dat_xmin
@@ -1394,7 +1402,7 @@ def plot_curvefit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
         xmin = max(xmin, dat_emin)
     if xmax < dat_xmin:
         xmax = min(xmax, dat_emax)
-    
+
     if show_init:
         yfit   = fit.init_fit
         ycomps = None #  pkfit.init_ycomps
