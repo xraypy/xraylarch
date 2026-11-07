@@ -34,6 +34,7 @@ except ImportError:
 
 ATSYMS = ['< All Atoms>'] + ATOM_SYMS[:96]
 EDGES  = {'< All Edges>': 'All', 'K': 'K', 'L3': 'L3', 'L2':'L2'}
+SCATTERERS = {'< All Scatterers>': 'All', 'oxygen only': 'Only_O', 'no oxygen': 'No_O'}
 
 
 LEFT = LEFT|wx.ALL
@@ -124,6 +125,7 @@ class FeffDBFrame(wx.Frame):
 
         self.elem = None
         self.edge = None
+        self.scatterer = None
 
         if _larch is None:
             self.larch = larch.Interpreter()
@@ -171,26 +173,47 @@ class FeffDBFrame(wx.Frame):
             wids['selnone']   = Btn("Select None",   self.onSelNone)
 
 
-        panel.Add(toplabel,  dcol=5, style=CEN|wx.GROW)
+        panel.Add(toplabel,  dcol=3, style=CEN|wx.GROW)
 
-        btnpan = wx.Panel(panel)
+        # edge radio button
+        edgepan = wx.Panel(panel)
         btnsizer = wx.BoxSizer(wx.VERTICAL)
-        btnsizer.Add(SimpleText(btnpan, 'Edge'))
+        btnsizer.Add(SimpleText(edgepan, 'Edges'))
 
         style = wx.RB_GROUP
-        for label, key in EDGES.items():
-            rb = wx.RadioButton(btnpan, -1, f' {label} ', style=style|wx.ALIGN_LEFT)
+        iset = False
+        for label in EDGES:
+            rb = wx.RadioButton(edgepan, -1, f' {label} ', style=style|wx.ALIGN_LEFT)
             rb.Bind(wx.EVT_RADIOBUTTON, self.onEdge)
             style = 0
-            wids[f'rb_edge_{key}'] = rb
+            if not iset:
+                iset = True
+                rb.SetValue(1)
             btnsizer.Add(rb)
-        wids['rb_edge_All'].SetValue(1)
+        # wids['rb_edge_All'].SetValue(1)
+        pack(edgepan, btnsizer)
 
-        pack(btnpan, btnsizer)
+        # scatterer radio button
+        scatpan = wx.Panel(panel)
+        btnsizer = wx.BoxSizer(wx.VERTICAL)
+        btnsizer.Add(SimpleText(scatpan, 'Scatterers'))
 
-        panel.Add(wids['ptable'], dcol=3, drow=4, style=CEN, newrow=True)
-        panel.Add(btnpan,         icol=3, irow=1, dcol=1, drow=3, style=LEFT)
-        panel.irow = 6
+        style = wx.RB_GROUP
+        iset = False
+        for label in SCATTERERS:
+            rb = wx.RadioButton(scatpan, -1, f' {label} ', style=style|wx.ALIGN_LEFT)
+            rb.Bind(wx.EVT_RADIOBUTTON, self.onScatterer)
+            style = 0
+            if not iset:
+                iset = True
+                rb.SetValue(1)
+            btnsizer.Add(rb)
+        pack(scatpan, btnsizer)
+
+        panel.Add(wids['ptable'], dcol=3, drow=3, style=CEN, newrow=True)
+        panel.Add(edgepan,    icol=3, irow=1, dcol=1, drow=1, style=LEFT)
+        panel.Add(scatpan,    icol=3, irow=2, dcol=1, drow=1, style=LEFT)
+        panel.irow = 4
         panel.Add(HLine(panel, size=(600, 3)), dcol=5, newrow=True)
 
         panel.Add(wids['feffinp'], newrow=True)
@@ -237,13 +260,16 @@ class FeffDBFrame(wx.Frame):
         self.wids['mainpanel'].SetSize((wnew, hnew))
 
         w, h = self.wids['dvc'].GetSize()
-        print('onSize ', wnew, hnew, w, h)
         self.wids['dvc'].SetSize((wnew-12, hnew-300))
 
     def onEdge(self, event=None):
-        for label, key in EDGES.items():
-            if self.wids[f'rb_edge_{key}'].GetValue():
-                self.edge = key
+        sel = event.GetEventObject().GetLabel().strip()
+        self.edge = EDGES.get(sel, 'All')
+        self.onElement(elem=self.elem)
+
+    def onScatterer(self, event=None):
+        sel = event.GetEventObject().GetLabel().strip()
+        self.scatterer = SCATTERERS.get(sel, 'All')
         self.onElement(elem=self.elem)
 
     def onElement(self, event=None, elem=None):
@@ -252,8 +278,25 @@ class FeffDBFrame(wx.Frame):
         if self.edge == 'All':
             self.edge = None
 
+        filter_oxy = False
+        scatt = None
+        if self.scatterer == 'Only_O':
+            scatt = 8
+        elif self.scatterer == 'No_O':
+            filter_oxy = True
+
         if self.elem is not None:
-            paths = self.feffdb.list_feffdat(absorber=self.elem, edge=self.edge)
+            paths = self.feffdb.list_feffdat(absorber=self.elem,
+                                             scatterer=scatt,
+                                             edge=self.edge)
+
+            if filter_oxy:
+                filt = []
+                for p in paths:
+                    if p['scatterer'] != 'O':
+                        filt.append(p)
+                paths = filt
+
             self.model.set_data(paths)
 
     def get_current_feffdat_row(self):
