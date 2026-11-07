@@ -259,7 +259,7 @@ class LinComboResultFrame(wx.Frame):
             this.Sortable = isort
             this.Alignment = this.Renderer.Alignment = align
 
-        sview.SetMinSize((700, 175))
+        sview.SetMinSize((700, 200))
 
         irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]', font=Font(FONTSIZE+2),
@@ -282,13 +282,10 @@ class LinComboResultFrame(wx.Frame):
         os = wx.BoxSizer(wx.VERTICAL)
         os.Add(p1, 1, 3)
         pack(ppan, os)
-        ppan.SetMinSize((700, 175))
+        ppan.SetMinSize((700, 200))
 
         irow += 1
         sizer.Add(ppan, (irow, 0), (1, 4), LEFT)
-
-        irow += 1
-        sizer.Add(HLine(panel, size=(675, 3)), (irow, 0), (1, 4), LEFT)
 
         pack(panel, sizer)
         self.wids['mainpanel'] = panel
@@ -315,6 +312,11 @@ class LinComboResultFrame(wx.Frame):
         tables = ('stats', 'weightspanel')
         grow_width([self.wids['mainpanel']], width)
         grow_width([self.wids[wname] for wname in tables], width-5)
+
+        wtot, htot = self.wids['mainpanel'].GetSize()
+        panh = max(200, htot-525)
+        self.wids['weightspanel'].SetSize((width-5, panh))
+
 
     def add_results(self, dgroup, form=None, larch_eval=None, show=True):
         name = dgroup.filename
