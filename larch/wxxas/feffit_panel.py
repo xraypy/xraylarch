@@ -40,7 +40,7 @@ from larch.xafs import feffit_report, feffpath, feffit_dataset, propagate_uncert
 from larch.xafs.feffdat import FEFFDAT_VALUES
 from larch.xafs.xafsutils import FT_WINDOWS
 
-from larch.wxlib import (ReportFrame, CSVFrame, BitmapButton,
+from larch.wxlib import (grow_width, ReportFrame, CSVFrame, BitmapButton,
                          FloatCtrl, FloatSpin, SetTip, GridPanel,
                          get_icon, SimpleText, pack, Button, HLine,
                          Choice, Check, MenuItem, OkCancel, CEN,
@@ -1091,10 +1091,8 @@ class FeffitPanel(TaskPanel):
         pack(self, sizer)
 
     def onSizeEvent(self, event=None):
-        wnew, hnew = event.GetSize()
-        for wname in ('mainpanel', 'paths_nb'):
-            w, h = self.wids[wname].GetSize()
-            self.wids[wname].SetSize((wnew, h))
+        grow_width([self.wids[wname] for wname in ('mainpanel', 'paths_nb')],
+                   event.GetSize()[0])
 
     def onRmin(self, event=None, **kws):
         dgroup = self.controller.get_group()
@@ -2306,10 +2304,8 @@ class FeffitResultFrame(wx.Frame):
         self.Raise()
 
     def onSizeEvent(self, event=None):
-        wnew, hnew = event.GetSize()
-        for wname in ('stats', 'params', 'correl'):
-            w, h = self.wids[wname].GetSize()
-            self.wids[wname].SetSize((wnew, h))
+        grow_width([self.wids[wname] for wname in ('stats', 'params', 'correl')],
+                   event.GetSize()[0])
 
     def show_report(self, text, title='Text', default_filename='out.txt',
                     wildcard=None):
@@ -2415,7 +2411,6 @@ class FeffitResultFrame(wx.Frame):
         opts['plot2_win'] = int(opts['plot2_win'])
         opts['plot_kw'] = int(opts['plot_kw'])
 
-
         result_name  = f'{self.datagroup.groupname}.feffit_history[{self.nfit}]'
         label = getattr(result, 'label', self.wids['fit_label'].GetValue())
 
@@ -2424,7 +2419,8 @@ class FeffitResultFrame(wx.Frame):
         opts['pargroup_name'] = f'{result_name}.paramgroup'
         opts['title'] = f'{self.datagroup.filename}: {label}'
 
-        for attr in ('kmin', 'kmax', 'dk', 'rmin', 'rmax', 'fitspace'):
+        for attr in ('kmin', 'kmax', 'dk', 'window',
+                     'rmin', 'rmax', 'dr', 'rwindow', 'fitspace'):
             opts[attr] = getattr(trans, attr)
         opts['fit_kwstring'] = "%s" % getattr(trans, 'kweight')
         opts['kwindow']  = getattr(trans, 'window')
