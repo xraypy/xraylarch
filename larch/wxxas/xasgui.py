@@ -25,6 +25,11 @@ from wx.richtext import RichTextCtrl
 
 from sitka_spruce import SitkaFrame
 
+try:
+    from feffdb import FeffDatabase
+except ImportError:
+    FeffDatabase = None
+
 import larch
 from larch import Group, Journal, Entry
 from larch.io import save_session, read_session
@@ -920,8 +925,9 @@ class LarixFrame(wx.Frame):
         MenuItem(self, feff_menu, "Import Feff Paths from Feff Calculations",
                  "Browse Feff Calculations, Get Feff Paths", self.onFeffBrowse)
 
-        MenuItem(self, feff_menu, "Import Feff Paths from Feff Database",
-                 "Browse Feff Database", self.onFeffDBBrowse)
+        if FeffDatabase is not None:
+            MenuItem(self, feff_menu, "Import Feff Paths from Feff Database",
+                     "Browse Feff Database", self.onFeffDBBrowse)
 
         self.menubar.Append(feff_menu, "Feff")
 
