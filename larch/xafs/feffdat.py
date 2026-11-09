@@ -26,7 +26,6 @@ try:
     from feffdb import FeffDatabase
 except ImportError:
     FeffDatabase = None
-    print("no FeffDatabase")
 
 from larch.symboltable import Group
 from larch.larchlib import isNamedClass
