@@ -152,13 +152,15 @@ class FeffDBFrame(wx.Frame):
                               size=(375, -1))
 
 
-        pfont = 13 if uname=='darwin' else 11
-
+        pfont = 11
+        if uname=='darwin':
+            pfont = 13
+        elif uname=='linux':
+            pfont = 9
         wids['ptable'] = PeriodicTablePanel(panel, multi_select=False,
                                             fontsize=pfont,
                                             size=(375, 200),
                                             onselect=self.onElement)
-
 
         def Btn(msg, action, wid=175):
             b = Button(panel, msg, size=(wid, -1),  action=action)
@@ -273,6 +275,10 @@ class FeffDBFrame(wx.Frame):
         self.onElement(elem=self.elem)
 
     def onElement(self, event=None, elem=None):
+        if self.feffdb is None:
+            Popup(self, "No FeffDatabase found",
+                  "You may need to install feffdb")
+            return
         if elem is not None:
             self.elem = elem
         if self.edge == 'All':
