@@ -510,6 +510,7 @@ class FeffitDataSet(Group):
     def setup_bkg_params(self, params):
         self.bkg_spline = {}
         if self.refine_bkg:
+            trans = self.transform
             trans.rbkg = max(trans.rbkg, trans.rmin)
             trans.rmin = trans.rstep
             self.n_idp = 1 + 2*(trans.rmax)*(trans.kmax-trans.kmin)/pi
