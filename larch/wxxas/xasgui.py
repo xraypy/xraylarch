@@ -811,7 +811,8 @@ class LarixFrame(wx.Frame):
 
         self.recent_menu = wx.Menu()
         self.get_recent_session_menu()
-        file_menu.Append(-1, 'Recent Session Files',  self.recent_menu)
+
+        file_menu.AppendSubMenu(self.recent_menu, 'Recent Session Files')
 
         file_menu.AppendSeparator()
 
