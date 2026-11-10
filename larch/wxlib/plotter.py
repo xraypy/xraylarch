@@ -114,7 +114,8 @@ def get_plot_config(**kws):
     saved_conf = {}
     conffile = Path(user_larchdir, WXMPLOT_CONF)
     if conffile.exists():
-        saved_conf = yaml.safe_load(open(conffile.as_posix(), 'r').read())
+        with open(conffile.as_posix(), 'r') as fh:
+            saved_conf = yaml.safe_load(fh.read())
     for key in conf:
         if key in saved_conf:
             conf[key] = saved_conf[key]
