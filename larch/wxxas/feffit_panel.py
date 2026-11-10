@@ -550,10 +550,6 @@ class FeffitParamsPanel(wx.Panel):
                 pwids.maxval.SetValue(par.max)
             pwids.onVaryChoice()
 
-
-        if self.hline is None:
-            self.hline = HLine(self.panel, size=(650, 3))
-            self.panel.Add(self.hline, dcol=8, newrow=True)
         self.panel.Update()
         self.panel.pack()
 
@@ -1835,14 +1831,7 @@ class FeffitPanel(TaskPanel):
         cmds.append('# end of build model')
         cmds = "\n".join(cmds)
         self.larch_eval(cmds)
-
-        # _paths = self.larch.symtable._feffpaths
-        # _params = self.larch.symtable._feffit_params
-        # _ftrans = self.larch.symtable._feffit_trans
-        # print("Set Feffit Model ", self.dgroup)
-        # self.dgroup.feffit_model = (deepcopy(_paths), deepcopy(_params), deepcopy(_ftrans))
         return opts
-
 
     def get_used_params(self):
         used_syms = []
