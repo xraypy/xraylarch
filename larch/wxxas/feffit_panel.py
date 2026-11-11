@@ -471,7 +471,6 @@ class FeffitParamsPanel(wx.Panel):
                        SLabel("  Max", size=(60, -1)),
                        SLabel(" Expression")))
 
-        self.hline = None
         self.update()
 
         ssizer = wx.BoxSizer(wx.VERTICAL)
@@ -491,8 +490,7 @@ class FeffitParamsPanel(wx.Panel):
         for pname, parwid in self.parwids.items():
             for x in parwid.widgets:
                 x.Destroy()
-        self.hline.Destroy()
-        self.hline = None
+
         self.panel.irow = 1
         self.parwids = {}
         self.update()
