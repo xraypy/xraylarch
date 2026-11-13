@@ -11,16 +11,17 @@ from collections import namedtuple
 from packaging.version import parse as ver_parse
 
 import importlib
-import urllib3
+import requests
 from subprocess import check_call
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # libraries whose versions might be interesting to know
 LIBS_VERSIONS = ('numpy', 'scipy', 'matplotlib', 'h5py', 'sklearn', 'skimage',
                  'sqlalchemy', 'fabio', 'pyFAI', 'PIL', 'imageio', 'silx',
                  'tomopy', 'pymatgen.core', 'numdifftools', 'xraydb', 'lmfit',
                  'asteval', 'wx', 'wxmplot')
+
+import warnings
+warnings.warn('once')
 
 def version_data(with_libraries=False):
     "get version data"
@@ -105,7 +106,7 @@ def show_version():
 ########
 ## for comparing current with remote version
 ########
-VERSION_URL='https://raw.githubusercontent.com/xraypy/xraylarch/gh-pages/version.txt'
+VERSION_URL = 'https://raw.githubusercontent.com/xraypy/xraylarch/gh-pages/version.txt'
 
 VersionStatus = namedtuple('VersionStatus', ('update_available',
                                              'local_version',
@@ -121,12 +122,11 @@ from a Command Window or Terminal.
 
 LATEST_MESSAGE = """Larch version {local_version:s} is up to date."""
 
-def check_larchversion():
+def check_larchversion(verbose=False):
     "check version, return VersionStatus tuple"
     local_version = __release_version__
-    import requests
     try:
-        req = requests.get(VERSION_URL, verify=False, timeout=3.10)
+        req = requests.get(VERSION_URL, timeout=2.0)
     except:
         return VersionStatus(False, local_version, 'unknown', 'offline')
     remote_version = '0.9.001'
@@ -139,6 +139,8 @@ def check_larchversion():
                     break
         except:
             pass
+    if verbose:
+        print(f"CHECK LARCH VERSION : {local_version=}, {remote_version=} ")
     update_available = ver_parse(remote_version) > ver_parse(local_version)
     message = UPDATE_MESSAGE if update_available else LATEST_MESSAGE
     message = message.format(remote_version=remote_version,
