@@ -424,7 +424,7 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
 
 
 def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
-              eweight=0, offset=0, how_k=False, fig=None, show=True):
+              eweight=0, offset=0, show_k=False, fig=None, show=True):
     """
     plot_chie(dgroup, emin=None, emax=None, label=None, new=True, fig=None):
 
@@ -437,7 +437,7 @@ def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
      emax        max energy to show, absolute or relative to E0 [None, end of data]
      label       string for label [``None``: 'mu']
      title       string for plot title [None, may use filename if available]
-     eweight     energy weightingn for energisdef es>e0  [0]
+     eweight     energy weighting for energies>e0  [0]
      offset      vertical offset to use for y-array [0]
      show        display the BokehFigure now [True]
      fig         BokehFigure to re-use [None]
