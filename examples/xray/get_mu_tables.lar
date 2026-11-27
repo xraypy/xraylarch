@@ -1,7 +1,10 @@
 # example getting tabulated mu values from mu_elam
-from numpy import linspace, log
-from xraydb import mu_elam, atomic_symbol
-from wxmplot.interactive import plot
+
+#py:
+#from numpy import linspace, log
+#from xraydb import mu_elam, atomic_symbol
+#from wxmplot.interactive import plot
+
 e = linspace(0, 20000, 401)
 z1, z2, z3 = 12, 20, 38
 # z1, z2, z3 = 16, 34, 82

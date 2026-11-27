@@ -99,7 +99,7 @@ plotlabels_web = Group(k   = r'$$k \rm\,(\unicode{x212B}^{-1})$$',
                    xplot = r'$$x$$',
                    yplot= r'$$y$$',
                    ynorm = r'$$\rm{scaled}\, y$$',
-                   xshift = r'$${\rm{shifted}\, $$',
+                   xshift = r'$$\rm{shifted}\, x$$',
                    dydx = r'$$dy/dx$$',
                    d2ydx = r'$$d^2y/dx^2$$')
 
