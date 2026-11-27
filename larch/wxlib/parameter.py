@@ -83,7 +83,7 @@ class ParameterWidgets(object):
             try:
                 value = param.value
             except:
-                value = -np.Inf
+                value = -np.inf
 
         else:
             value = param.value
